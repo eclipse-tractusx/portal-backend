@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,17 +19,17 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
 /// <summary>
 /// Implementation of <see cref="IServiceBusinessLogic"/>.
@@ -147,15 +147,24 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             throw new ForbiddenException($"User {iamUserId} is not allowed to change the service.");
         }
 
-        await _offerService.ValidateSalesManager(data.SalesManager, iamUserId, _settings.SalesManagerRoles).ConfigureAwait(false);
+        if (data.SalesManager.HasValue)
+        {
+            await _offerService.ValidateSalesManager(data.SalesManager.Value, iamUserId, _settings.SalesManagerRoles).ConfigureAwait(false);
+        }
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        offerRepository.AttachAndModifyOffer(serviceId, offer =>
-        {
-            offer.Name = data.Title;
-            offer.SalesManagerId = data.SalesManager;
-            offer.ContactEmail = data.ContactEmail;
-        });
+        offerRepository.AttachAndModifyOffer(
+            serviceId,
+            offer =>
+            {
+                offer.Name = data.Title;
+                offer.SalesManagerId = data.SalesManager;
+                offer.ContactEmail = data.ContactEmail;
+            },
+            offer =>
+            {
+                offer.SalesManagerId = serviceData.SalesManagerId;
+            });
 
         _offerService.UpsertRemoveOfferDescription(serviceId, data.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), serviceData.Descriptions);
         _offerService.CreateOrUpdateOfferLicense(serviceId, data.Price, serviceData.OfferLicense);
@@ -182,6 +191,17 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc/>
     public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId) =>
         Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.SERVICE, sorting, statusId));
+            .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.SERVICE, sorting, statusId ?? OfferSubscriptionStatusId.ACTIVE));
 
+    /// <inheritdoc/>
+    public Task SubmitServiceAsync(Guid serviceId, string iamUserId) => 
+        _offerService.SubmitOfferAsync(serviceId, iamUserId, OfferTypeId.SERVICE, _settings.SubmitServiceNotificationTypeIds, _settings.CompanyAdminRoles);
+
+    /// <inheritdoc/>
+    public Task ApproveServiceRequestAsync(Guid appId, string iamUserId) =>
+        _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.SERVICE, _settings.ApproveServiceNotificationTypeIds, _settings.ApproveServiceUserRoles);
+
+    /// <inheritdoc />
+    public Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data) => 
+        _offerService.DeclineOfferAsync(serviceId, iamUserId, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.ServiceMarketplaceAddress);
 }

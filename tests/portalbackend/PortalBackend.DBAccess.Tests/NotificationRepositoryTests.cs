@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,17 +22,16 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 /// <summary>
 /// Tests the functionality of the <see cref="NotificationRepository"/>
@@ -139,7 +138,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, 0, 15, null).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, null)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -155,7 +154,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, 0, 15, NotificationSorting.DateAsc).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, NotificationSorting.DateAsc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -170,7 +169,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, 0, 15, NotificationSorting.DateDesc).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, NotificationSorting.DateDesc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -185,7 +184,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, 0, 15, NotificationSorting.ReadStatusAsc).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -200,7 +199,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, 0, 15, NotificationSorting.ReadStatusDesc).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, NotificationSorting.ReadStatusDesc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -216,7 +215,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, false, null, 0, 15, null)
+            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, false, null, null, null)(0, 15)
             .ConfigureAwait(false);
 
         // Assert
@@ -233,7 +232,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null, 0, 15, null)
+            .GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null, null, null)(0, 15)
             .ConfigureAwait(false);
 
         // Assert
@@ -249,7 +248,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO, 0, 15, NotificationSorting.ReadStatusDesc).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.INFO, null, NotificationSorting.ReadStatusDesc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -264,12 +263,27 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.ACTION, 0, 15, NotificationSorting.ReadStatusAsc).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, NotificationTypeId.ACTION, null, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
         results!.Data.Count().Should().Be(2);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true && x.TypeId == NotificationTypeId.ACTION));
+    }
+
+    [Fact]
+    public async Task GetAllAsDetailsByUserIdUntracked_WithTopic_ReturnsExpectedNotificationDetailData()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, NotificationTopicId.INFO, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
+
+        // Assert
+        results.Should().NotBeNull();
+        results!.Data.Count().Should().Be(2);
+        results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.NotificationTopic == NotificationTopicId.INFO));
     }
 
     #endregion

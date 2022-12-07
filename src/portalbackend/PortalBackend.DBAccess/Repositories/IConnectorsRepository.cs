@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 /// <summary>
 /// Repository for accessing connectors on persistence layer.
@@ -36,6 +36,8 @@ public interface IConnectorsRepository
     IQueryable<Connector> GetAllCompanyConnectorsForIamUser(string iamUserId);
 
     Task<(ConnectorData ConnectorData, bool IsProviderUser)> GetConnectorByIdForIamUser(Guid connectorId, string iamUser);
+
+    Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, string iamUser);
 
     /// <summary>
     /// Creates a given connector in persistence layer. 
@@ -59,4 +61,12 @@ public interface IConnectorsRepository
     /// <param name="bpns"></param>
     /// <returns></returns>
     IAsyncEnumerable<(string BusinessPartnerNumber, string ConnectorEndpoint)> GetConnectorEndPointDataAsync(IEnumerable<string> bpns);
+    
+    /// <summary>
+    /// Attaches the entity with the given id to the db context and modifies the given values.
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    /// <param name="setOptionalParameters">Action to set the parameters</param>
+    /// <returns>The updated connector</returns>
+    Connector AttachAndModifyConnector(Guid connectorId, Action<Connector>? setOptionalParameters = null);
 }

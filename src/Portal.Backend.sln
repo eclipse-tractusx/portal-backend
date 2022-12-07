@@ -48,11 +48,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Offers.Library", "marketpla
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Service", "marketplace\Services.Service\Services.Service.csproj", "{DC95EBAD-4D8F-435C-8E9B-A21FAC7BE570}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "notification", "notification", "{3A5882B1-2CFA-48F2-A960-CD5EC8C9FCAB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "notifications", "notifications", "{3A5882B1-2CFA-48F2-A960-CD5EC8C9FCAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.Library", "notification\Notification.Library\Notification.Library.csproj", "{3C153FC0-5F98-4BDF-881C-1A793F49C0B4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications.Library", "notifications\Notifications.Library\Notifications.Library.csproj", "{3C153FC0-5F98-4BDF-881C-1A793F49C0B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.Service", "notification\Notification.Service\Notification.Service.csproj", "{C7246E73-0047-4816-9457-56AE31FBFF15}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications.Service", "notifications\Notifications.Service\Notifications.Service.csproj", "{C7246E73-0047-4816-9457-56AE31FBFF15}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "portalbackend", "portalbackend", "{774A1FBD-53C1-43A8-82ED-C8001AC9967C}"
 EndProject
@@ -88,9 +88,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Offers.Library.Tests", "..\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Service.Tests", "..\tests\marketplace\Services.Service.Tests\Services.Service.Tests.csproj", "{6C2F85D7-0443-4711-96DF-66EC46CA1A98}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.Library.Tests", "..\tests\notification\Notification.Library.Tests\Notification.Library.Tests.csproj", "{B6DE0855-385D-4A8C-BC22-04BE2105A2F4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications.Library.Tests", "..\tests\notifications\Notifications.Library.Tests\Notifications.Library.Tests.csproj", "{B6DE0855-385D-4A8C-BC22-04BE2105A2F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.Service.Tests", "..\tests\notification\Notification.Service.Tests\Notification.Service.Tests.csproj", "{12F16E1B-0275-4F41-8353-C2C9A79BA4E9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications.Service.Tests", "..\tests\notifications\Notifications.Service.Tests\Notifications.Service.Tests.csproj", "{12F16E1B-0275-4F41-8353-C2C9A79BA4E9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortalBackend.DBAccess.Tests", "..\tests\portalbackend\PortalBackend.DBAccess.Tests\PortalBackend.DBAccess.Tests.csproj", "{53E03A1A-E59F-4C67-80B4-5A232BF01A81}"
 EndProject
@@ -109,6 +109,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.BaseDependencies", "framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj", "{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Provisioning.Migrations", "provisioning\Provisioning.Migrations\Provisioning.Migrations.csproj", "{3F7A02D4-073C-40FE-B228-8E1BA96B1946}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Token", "framework\Framework.Token\Framework.Token.csproj", "{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Token.Tests", "..\tests\framework\Framework.Token.Tests\Framework.Token.Tests.csproj", "{4316375F-361B-49D6-A310-08CD96D04398}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -636,6 +640,30 @@ Global
 		{3F7A02D4-073C-40FE-B228-8E1BA96B1946}.Release|x64.Build.0 = Release|Any CPU
 		{3F7A02D4-073C-40FE-B228-8E1BA96B1946}.Release|x86.ActiveCfg = Release|Any CPU
 		{3F7A02D4-073C-40FE-B228-8E1BA96B1946}.Release|x86.Build.0 = Release|Any CPU
+		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F}.Debug|x64.Build.0 = Debug|Any CPU
+		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F}.Debug|x86.Build.0 = Debug|Any CPU
+		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F}.Release|x64.ActiveCfg = Release|Any CPU
+		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F}.Release|x64.Build.0 = Release|Any CPU
+		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F}.Release|x86.ActiveCfg = Release|Any CPU
+		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F}.Release|x86.Build.0 = Release|Any CPU
+		{4316375F-361B-49D6-A310-08CD96D04398}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4316375F-361B-49D6-A310-08CD96D04398}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4316375F-361B-49D6-A310-08CD96D04398}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4316375F-361B-49D6-A310-08CD96D04398}.Debug|x64.Build.0 = Debug|Any CPU
+		{4316375F-361B-49D6-A310-08CD96D04398}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4316375F-361B-49D6-A310-08CD96D04398}.Debug|x86.Build.0 = Debug|Any CPU
+		{4316375F-361B-49D6-A310-08CD96D04398}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4316375F-361B-49D6-A310-08CD96D04398}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4316375F-361B-49D6-A310-08CD96D04398}.Release|x64.ActiveCfg = Release|Any CPU
+		{4316375F-361B-49D6-A310-08CD96D04398}.Release|x64.Build.0 = Release|Any CPU
+		{4316375F-361B-49D6-A310-08CD96D04398}.Release|x86.ActiveCfg = Release|Any CPU
+		{4316375F-361B-49D6-A310-08CD96D04398}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -656,6 +684,7 @@ Global
 		{FB2E573E-23BD-4111-A3E5-2C75B9920946} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{F0EFB95B-39DD-4FDB-A044-0BB9302DDC41} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{1EFC9D98-C8EE-4399-9B2D-876CDDE8CFD3} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
+		{4316375F-361B-49D6-A310-08CD96D04398} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{06418D5E-5963-4D46-8F09-A0E132721C64} = {E0B99F7E-D108-4054-92C2-31304C5060DE}
 		{AB6C26B2-2EA8-4E19-9A76-EBE0BF097173} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 		{E6C12BC5-998A-49BD-A737-7C02D14EC5CA} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
@@ -687,5 +716,6 @@ Global
 		{A1862697-AB25-4D79-B601-02733A3490B2} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 		{3F7A02D4-073C-40FE-B228-8E1BA96B1946} = {AE4A5C54-72F3-4B55-BB86-09DFA3AA3D7B}
+		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 	EndGlobalSection
 EndGlobal

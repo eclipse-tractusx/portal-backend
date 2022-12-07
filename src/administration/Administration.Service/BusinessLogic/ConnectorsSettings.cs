@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,7 +20,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
 /// Settings used in business logic concerning connectors.
@@ -34,10 +34,10 @@ public class ConnectorsSettings
     public int MaxPageSize { get; set; }
 
     /// <summary>
-    /// SD Factory endpoint for registering connectors.
+    /// Allowed content types for the certificate
     /// </summary>
     [Required]
-    public string SdFactoryUrl { get; set; } = null!;
+    public IEnumerable<string> ValidCertificationContentTypes { get; set; } = null!;
 }
 
 public static class ConnectorsSettingsExtensions

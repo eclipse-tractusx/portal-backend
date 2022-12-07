@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
 /// Business logic for handling connector api requests.
@@ -74,4 +74,15 @@ public interface IConnectorsBusinessLogic
     /// <param name="bpns"></param>
     /// <returns></returns>
     IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns);
+
+    /// <summary>
+    /// Triggers the daps endpoint for the given trigger
+    /// </summary>
+    /// <param name="connectorId">Id of the connector the endpoint should get triggered for.</param>
+    /// <param name="certificate">The certificate</param>
+    /// <param name="accessToken">Bearer token to be used for authorizing the sd factory request.</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns><c>true</c> if the call to daps was successful, otherwise <c>false</c>.</returns>
+    Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, string accessToken, string iamUserId, CancellationToken cancellationToken);
 }

@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
 /// <summary>
 /// Business logic for handling app release-related operations. Includes persistence layer access.
@@ -127,7 +127,7 @@ public interface IAppReleaseBusinessLogic
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.
     /// </summary>
-    Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15);
+    Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting);
 
     /// <summary>
     /// Update app status and create notification
@@ -145,4 +145,12 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task<IEnumerable<AppRoleData>>  AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, string iamUserId);
+    
+    /// <summary>
+    /// Approve App Status from IN_Review to Active
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task ApproveAppRequestAsync(Guid appId, string iamUserId);
 }

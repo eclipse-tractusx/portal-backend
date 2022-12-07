@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,14 +19,14 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Linq.Expressions;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 /// <inheritdoc />
 public class NotificationRepository : INotificationRepository
@@ -44,35 +44,35 @@ public class NotificationRepository : INotificationRepository
 
     /// <inheritdoc />
     public Notification CreateNotification(Guid receiverUserId, NotificationTypeId notificationTypeId,
-        bool isRead, Action<Notification>? setOptionalParameter = null)
+        bool isRead, Action<Notification>? setOptionalParameters = null)
     {
         var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow,
             notificationTypeId, isRead);
-        setOptionalParameter?.Invoke(notification);
+        setOptionalParameters?.Invoke(notification);
 
         return _dbContext.Add(notification).Entity;
     }
 
-    public Notification AttachAndModifyNotification(Guid notificationId, Action<Notification>? setOptionalParameter = null)
+    public void AttachAndModifyNotification(Guid notificationId, Action<Notification> setOptionalParameters)
     {
         var notification = _dbContext.Attach(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
-        setOptionalParameter?.Invoke(notification);
-        return notification;
+        setOptionalParameters.Invoke(notification);
     }
 
     public Notification DeleteNotification(Guid notificationId) =>
         _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
 
     /// <inheritdoc />
-    public Task<Pagination.Source<NotificationDetailData>?> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, int skip, int take, NotificationSorting? sorting) =>
-        Pagination.CreateSourceQueryAsync(
+    public Func<int,int,Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, NotificationSorting? sorting) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
             _dbContext.Notifications.AsNoTracking()
                 .Where(notification =>
-                    notification.Receiver!.IamUser!.UserEntityId == iamUserId
-                    && (!isRead.HasValue || notification.IsRead == isRead.Value)
-                    && (!typeId.HasValue || notification.NotificationTypeId == typeId.Value))
+                    notification.Receiver!.IamUser!.UserEntityId == iamUserId &&
+                    (!isRead.HasValue || notification.IsRead == isRead.Value) &&
+                    (!typeId.HasValue || notification.NotificationTypeId == typeId.Value) &&
+                    (!topicId.HasValue || notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId == topicId.Value))
                 .GroupBy(notification => notification.ReceiverUserId),
             sorting switch
             {

@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,14 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 public class CompanyRolesRepository : ICompanyRolesRepository
 {
@@ -43,8 +43,8 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                 companyRoleId
             )).Entity;
 
-    public CompanyAssignedRole RemoveCompanyAssignedRole(CompanyAssignedRole companyAssignedRole) =>
-        _dbContext.Remove(companyAssignedRole).Entity;
+    public void RemoveCompanyAssignedRoles(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
+        _dbContext.RemoveRange(companyRoleIds.Select(companyRoleId => new CompanyAssignedRole(companyId, companyRoleId)));
 
     public Task<CompanyRoleAgreementConsentData?> GetCompanyRoleAgreementConsentDataAsync(Guid applicationId, string iamUserId) =>
         _dbContext.CompanyApplications
@@ -52,9 +52,9 @@ public class CompanyRolesRepository : ICompanyRolesRepository
             .Select(application => new CompanyRoleAgreementConsentData(
                 application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault(),
                 application.CompanyId,
-                application,
-                application.Company.CompanyAssignedRoles,
-                application.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)))
+                application.ApplicationStatusId,
+                application.Company.CompanyAssignedRoles.Select(ar => ar.CompanyRoleId),
+                application.Company.Consents.Select(c => new ConsentData(c.Id, c.ConsentStatusId, c.AgreementId))))
             .SingleOrDefaultAsync();
 
     public IAsyncEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds) =>

@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,9 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
 
 public static class Paths
 {
     public static readonly string Notification = "/api/notification";
+    public static readonly string Connectors = "/api/administration/connectors";
 }

@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 /// <inheritdoc/>
 public class CompanyRepository : ICompanyRepository
@@ -49,11 +49,10 @@ public class CompanyRepository : ICompanyRepository
                 CompanyStatusId.PENDING,
                 DateTimeOffset.UtcNow)).Entity;
 
-    public Company AttachAndModifyCompany(Guid companyId, Action<Company>? setOptionalParameters = null)
+    public void AttachAndModifyCompany(Guid companyId, Action<Company> setOptionalParameters)
     {
         var company = _context.Attach(new Company(companyId, null!, default, default)).Entity;
-        setOptionalParameters?.Invoke(company);
-        return company;
+        setOptionalParameters.Invoke(company);
     }
 
     public Address CreateAddress(string city, string streetname, string countryAlpha2Code) =>
@@ -72,20 +71,6 @@ public class CompanyRepository : ICompanyRepository
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
             .Select(iamUser => iamUser!.CompanyUser!.Company)
             .Select(company => new ValueTuple<string,Guid>(company!.Name, company.Id))
-            .SingleOrDefaultAsync();
-
-    public Task<(Guid CompanyId, string CompanyName, string? Alias, Guid CompanyUserId)> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId) =>
-        _context.Companies.AsNoTracking()
-            .Where(company => company.CompanyApplications.Any(application => application.Id == applicationId))
-            .Select(company => new ValueTuple<Guid,string,string?,Guid>(
-                company.Id,
-                company.Name,
-                company.IdentityProviders
-                    .Where(identityProvider => identityProvider.IdentityProviderCategoryId == IdentityProviderCategoryId.KEYCLOAK_SHARED)
-                    .Select(identityProvider => identityProvider.IamIdentityProvider!.IamIdpAlias)
-                    .SingleOrDefault(),
-                company.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)!.Id
-            ))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -157,11 +142,10 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public ProviderCompanyDetail AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail>? setOptionalParameters = null)
+    public void AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail> setOptionalParameters)
     {
         var providerCompanyDetail = _context.Attach(new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, default)).Entity;
-        setOptionalParameters?.Invoke(providerCompanyDetail);
-        return providerCompanyDetail;
+        setOptionalParameters.Invoke(providerCompanyDetail);
     }
     
     /// <inheritdoc />
@@ -169,5 +153,19 @@ public class CompanyRepository : ICompanyRepository
         _context.Companies.AsNoTracking()
             .Where(x => x.Id == companyId)
             .Select(x => x.BusinessPartnerNumber)
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<BpdmData?> GetBpdmDataForApplicationAsync(string iamUserId, Guid applicationId) =>
+        _context.CompanyApplications.AsNoTracking()
+            .Where(x => x.Id == applicationId)
+            .Select(x => new BpdmData(
+                    x.ApplicationStatusId,
+                    x.Company!.Name,
+                    x.Company!.Address!.CountryAlpha2Code,
+                    x.Company!.Address!.Zipcode,
+                    x.Company!.Address!.City,
+                    x.Company!.Address!.Streetname,
+                    x.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
 }

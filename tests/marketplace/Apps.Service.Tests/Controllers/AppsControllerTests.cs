@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,17 +23,17 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
 
 public class AppsControllerTests
 {
@@ -300,11 +300,28 @@ public class AppsControllerTests
             .Returns(responseData);
 
         //Act
-        var result = await this._controller.AutoSetupService(data).ConfigureAwait(false);
+        var result = await this._controller.AutoSetupApp(data).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.AutoSetupAppAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<OfferAutoSetupResponseData>(result);
         result.Should().Be(responseData);
+    }
+        
+    [Fact]
+    public async Task DeclineAppRequest_ReturnsNoContent()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var data = new OfferDeclineRequest("Just a test");
+        A.CallTo(() => _logic.DeclineAppRequestAsync(A<Guid>._, A<string>._, A<OfferDeclineRequest>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.DeclineAppRequest(appId, data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.DeclineAppRequestAsync(appId, IamUserId, data)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 }

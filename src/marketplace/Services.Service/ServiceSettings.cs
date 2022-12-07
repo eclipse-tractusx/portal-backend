@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,9 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Services.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service;
 
 /// <summary>
 /// Settings for the service service
@@ -43,10 +44,37 @@ public class ServiceSettings
     public IDictionary<string,IEnumerable<string>> SalesManagerRoles { get; init; } = null!;
     
     /// <summary>
+    /// Notification Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<NotificationTypeId> SubmitServiceNotificationTypeIds { get; set; } = null!;
+
+    /// <summary>
     /// BasePortalAddress url required for subscription email 
     /// </summary>
     [Required(AllowEmptyStrings = false)]
     public string BasePortalAddress { get; init; } = null!;
+
+    /// <summary>
+    /// ServiceMarketplaceAddress url required for the rejection email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string ServiceMarketplaceAddress { get; init; } = null!;
+
+    /// <summary>
+    /// Approve Service Notification Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<NotificationTypeId> ApproveServiceNotificationTypeIds { get; init; } = null!;
+
+    /// <summary>
+    /// Roles to notify when a new subscription was created for sales and App Manager
+    /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> ApproveServiceUserRoles { get; init; } = null!;
+
 }
 
 public static class ServiceSettingsExtension

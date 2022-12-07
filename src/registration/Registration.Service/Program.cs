@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 Microsoft and BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,13 +19,13 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.FileProviders;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Web;
-using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
 var VERSION = "v2";
 

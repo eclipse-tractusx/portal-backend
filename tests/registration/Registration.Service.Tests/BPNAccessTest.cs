@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 Microsoft and BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,14 +21,14 @@
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Net;
 using System.Text.Json;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Bpn.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests
 {
     public class BPNAccessTest
     {

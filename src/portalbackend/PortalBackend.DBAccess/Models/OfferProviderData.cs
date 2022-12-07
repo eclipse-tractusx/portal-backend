@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
 /// Model for Offer with status
@@ -39,7 +39,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="ContactEmail"></param>
 /// <param name="ContactNumber"></param>
 /// <returns></returns>
-public record OfferProviderData(string? Title, string Provider, string? LeadPictureUri, string? ProviderName, IEnumerable<string> UseCase, IEnumerable<OfferDescriptionData> Descriptions, IEnumerable<AgreementAssignedOfferData> Agreements, IEnumerable<string> SupportedLanguageCodes, string? Price, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber, IEnumerable<DocumentTypeData> Documents);
+public record OfferProviderData(string? Title, string Provider, string? LeadPictureUri, string? ProviderName, IEnumerable<string> UseCase, IEnumerable<OfferDescriptionData> Descriptions, IEnumerable<AgreementAssignedOfferData> Agreements, IEnumerable<string> SupportedLanguageCodes, string? Price, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber, IEnumerable<DocumentTypeData> Documents, Guid? SalesManagerId);
 
 /// <summary>
 /// Model for Offer Description

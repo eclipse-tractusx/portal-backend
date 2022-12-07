@@ -1,6 +1,6 @@
 <!--
 - Copyright (c) 2021,2022 BMW Group AG
-- Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+- Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
 - information regarding copyright ownership.
@@ -19,7 +19,7 @@
 -->
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Apps.Service</AssemblyName>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Apps.Service</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -42,7 +42,7 @@
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
-    <ProjectReference Include="..\..\notification\Notification.Library\Notification.Library.csproj" />
+    <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
     <ProjectReference Include="..\Offers.Library\Offers.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
   </ItemGroup>

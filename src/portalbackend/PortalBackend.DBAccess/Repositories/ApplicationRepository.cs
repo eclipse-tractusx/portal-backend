@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 public class ApplicationRepository : IApplicationRepository
 {
@@ -43,11 +43,10 @@ public class ApplicationRepository : IApplicationRepository
                 companyApplicationStatusId,
                 DateTimeOffset.UtcNow)).Entity;
 
-    public CompanyApplication AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication>? setOptionalParameters = null)
+    public void AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication> setOptionalParameters)
     {
         var companyApplication = _dbContext.Attach(new CompanyApplication(companyApplicationId, Guid.Empty, default, default)).Entity;
-        setOptionalParameters?.Invoke(companyApplication);
-        return companyApplication;
+        setOptionalParameters.Invoke(companyApplication);
     }
 
     public Invitation CreateInvitation(Guid applicationId, Guid companyUserId) =>
@@ -94,11 +93,10 @@ public class ApplicationRepository : IApplicationRepository
                 Application = application, 
                 CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).SingleOrDefault()
             })
-            .Select(data => new CompanyApplicationUserEmailData(data.Application)
-            {
-                CompanyUserId = data.CompanyUser!.Id,
-                Email = data.CompanyUser!.Email
-            })
+            .Select(data => new CompanyApplicationUserEmailData(
+                data.Application.ApplicationStatusId,
+                data.CompanyUser!.Id,
+                data.CompanyUser!.Email))
             .SingleOrDefaultAsync();
 
     public Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>

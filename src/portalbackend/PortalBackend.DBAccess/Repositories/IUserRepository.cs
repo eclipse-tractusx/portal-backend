@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 /// <summary>
 /// Repository for User Management on persistence layer.
@@ -31,9 +31,9 @@ namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 public interface IUserRepository
 {
     IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);
-    Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId);
+    Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes);
     CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId, Guid lastEditorId);
-    CompanyUser AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser>? setOptionalParameters = null);
+    void AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser> setOptionalParameters);
     IamUser CreateIamUser(Guid companyUserId, string iamUserId);
     IamUser DeleteIamUser(string iamUserId);
     IQueryable<CompanyUser> GetOwnCompanyUserQuery(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null, IEnumerable<CompanyUserStatusId>? statusIds = null);
@@ -81,7 +81,7 @@ public interface IUserRepository
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="salesManagerId">The id of the company user to check in the persistence layer.</param>
     /// <returns><c>true</c> if the user exists, otherwise <c>false</c></returns>
-    IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser, string CompanyShortName, Guid CompanyId)> GetCompanyUserWithIamUserCheckAndCompanyShortName(string iamUserId, Guid salesManagerId);
+    IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser, string CompanyShortName, Guid CompanyId)> GetCompanyUserWithIamUserCheckAndCompanyShortName(string iamUserId, Guid? salesManagerId);
 
     /// <summary>
     /// Gets all company user ids which have the any given user role assigned
@@ -126,4 +126,13 @@ public interface IUserRepository
     /// <param name="companyUserIdId"></param>
     /// <returns></returns>
     Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany, Guid UserCompanyId)> GetRolesAndCompanyMembershipUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid companyUserId);
+
+    /// <summary>
+    /// Retrieve BPN for applicationId and Logged In User Company
+    /// </summary>
+    /// <param name="iamUserId"></param>
+    /// <param name="applicationId"></param>
+    /// <param name="businessPartnerNumber"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<(bool IsApplicationCompany, bool IsApplicationPending, string? BusinessPartnerNumber, Guid CompanyId)> GetBpnForIamUserUntrackedAsync(Guid applicationId, string businessPartnerNumber);
 }

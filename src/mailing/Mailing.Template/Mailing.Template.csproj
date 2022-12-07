@@ -1,6 +1,6 @@
 <!--
 - Copyright (c) 2021,2022 BMW Group AG
-- Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+- Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
 - information regarding copyright ownership.
@@ -21,7 +21,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Mailing.Template</AssemblyName>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Mailing.Template</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -76,6 +76,15 @@
 	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	 </None>
 	 <None Update="EmailTemplates\serviceprovider_subscription_activation.html">
+	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	 </None>
+	 <None Update="EmailTemplates\appprovider_subscription_activation.html">
+	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	 </None>
+	 <None Update="EmailTemplates\service_request_decline.html">
+	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	 </None>
+	 <None Update="EmailTemplates\app_request_decline.html">
 	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	 </None>
   </ItemGroup>

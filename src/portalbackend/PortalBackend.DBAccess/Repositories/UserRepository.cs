@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,14 +19,14 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.RegularExpressions;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 /// Implementation of <see cref="IUserRepository"/> accessing database with EF Core.
 public class UserRepository : IUserRepository
@@ -54,7 +54,7 @@ public class UserRepository : IUserRepository
             })
             .AsAsyncEnumerable();
 
-    public Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId) =>
+    public Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes) =>
         _dbContext.IamUsers
             .AsNoTracking()
             .Where(iamUser =>
@@ -65,7 +65,7 @@ public class UserRepository : IUserRepository
                 company!.Id,
                 company.Name,
                 company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Select(document => new RegistrationDocumentNames(document.DocumentName))),
+                company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Where(document=>documentTypes.Contains(document.DocumentTypeId)).Select(document => new RegistrationDocumentNames(document.DocumentName))),
                 company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
                     .Select(consent => new AgreementConsentStatusForRegistrationData(
                         consent.AgreementId, consent.ConsentStatusId)))
@@ -98,11 +98,10 @@ public class UserRepository : IUserRepository
                 Email = email,
             }).Entity;
 
-    public CompanyUser AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser>? setOptionalParameters = null)
+    public void AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser> setOptionalParameters)
     {
         var companyUser = _dbContext.Attach(new CompanyUser(companyUserId, Guid.Empty, default, default, Guid.Empty)).Entity;
-        setOptionalParameters?.Invoke(companyUser);
-        return companyUser;
+        setOptionalParameters.Invoke(companyUser);
     }
 
     public IamUser CreateIamUser(Guid companyUserId, string iamUserId) =>
@@ -329,8 +328,8 @@ public class UserRepository : IUserRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser, string CompanyShortName, Guid CompanyId)> GetCompanyUserWithIamUserCheckAndCompanyShortName(string iamUserId, Guid salesManagerId) => 
-        _dbContext.CompanyUsers.Where(x => x.IamUser!.UserEntityId == iamUserId || x.Id == salesManagerId)
+    public IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser, string CompanyShortName, Guid CompanyId)> GetCompanyUserWithIamUserCheckAndCompanyShortName(string iamUserId, Guid? salesManagerId) => 
+        _dbContext.CompanyUsers.Where(x => x.IamUser!.UserEntityId == iamUserId || (salesManagerId.HasValue && x.Id == salesManagerId.Value))
             .Select(companyUser => new ValueTuple<Guid, bool, string, Guid>(companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId, companyUser.Company!.Shortname!, companyUser.CompanyId))
             .ToAsyncEnumerable();
 
@@ -422,7 +421,7 @@ public class UserRepository : IUserRepository
         email = email == null ? null : regex.Replace(email!, @"\"); 
         roleName = roleName == null ? null : regex.Replace(roleName!, @"\");
 
-        return (int skip, int take) => Pagination.CreateSourceQueryAsync(
+        return (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
             _dbContext.CompanyUsers.AsNoTracking()
@@ -494,4 +493,17 @@ public class UserRepository : IUserRepository
                 companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId),
                 companyUser.CompanyId))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<(bool IsApplicationCompany, bool IsApplicationPending, string? BusinessPartnerNumber, Guid CompanyId)> GetBpnForIamUserUntrackedAsync(Guid applicationId, string businessPartnerNumber) =>
+        _dbContext.Companies
+            .AsNoTracking()
+            .Where(company => company.CompanyApplications.Any(application => application.Id == applicationId) ||
+                company.BusinessPartnerNumber == businessPartnerNumber)
+            .Select(company => new ValueTuple<bool, bool, string?, Guid>(
+                company.CompanyApplications.Any(application => application.Id == applicationId),
+                company.CompanyStatusId == CompanyStatusId.PENDING,
+                company.BusinessPartnerNumber,
+                company.Id))
+            .AsAsyncEnumerable();
 }

@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,16 +22,16 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
 public class ServiceProviderBusinessLogicTest
 {
@@ -171,7 +171,7 @@ public class ServiceProviderBusinessLogicTest
         async Task Action() => await sut.GetServiceProviderCompanyDetailsAsync(Guid.NewGuid(), IamUserId).ConfigureAwait(false);
 
         //Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+        await Assert.ThrowsAsync<NotFoundException>(Action);
     }
 
     #endregion
@@ -194,23 +194,6 @@ public class ServiceProviderBusinessLogicTest
 
     [Fact]
     public async Task UpdateServiceProviderCompanyDetailsAsync_WithUnknownUser_ThrowsException()
-    {
-        //Arrange
-        var serviceProviderDetailData = new ServiceProviderDetailData("https://www.service-url.com");
-        var serviceProviderDetailDataId = Guid.NewGuid();
-        var sut = _fixture.Create<ServiceProviderBusinessLogic>();
-            
-        //Act
-        async Task Action() => await sut.UpdateServiceProviderCompanyDetailsAsync(serviceProviderDetailDataId, serviceProviderDetailData, Guid.NewGuid().ToString()).ConfigureAwait(false);
-
-        //Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"ServiceProviderDetailData {serviceProviderDetailDataId} does not exists.");
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-    }
-
-    [Fact]
-    public async Task UpdateServiceProviderCompanyDetailsAsync_WithNotExistingServiceProviderCompanyDetails_ThrowsNotFoundException()
     {
         //Arrange
         var serviceProviderDetailData = new ServiceProviderDetailData("https://www.service-url.com");

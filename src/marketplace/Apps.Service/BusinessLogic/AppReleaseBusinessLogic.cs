@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,21 +20,21 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
 /// <summary>
 /// Implementation of <see cref="IAppReleaseBusinessLogic"/>.
@@ -291,7 +291,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     /// <inheritdoc/>
     private Task<int> SubmitOfferConsentInternalAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId) =>
-        _offerService.CreaeteOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, userId, OfferTypeId.APP);
+        _offerService.CreateOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, userId, OfferTypeId.APP);
     
     /// <inheritdoc/>
     public Task<OfferProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId) =>
@@ -404,8 +404,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 appId,
                 iamUserId,
                 appRequestModel.SupportedLanguageCodes,
-                appRequestModel.UseCaseIds,
-                appRequestModel.Price)
+                appRequestModel.UseCaseIds)
             .ConfigureAwait(false);
         if (appData is null)
         {
@@ -436,12 +435,18 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
 
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        appRepository.AttachAndModifyOffer(appId, app =>
+        appRepository.AttachAndModifyOffer(
+        appId,
+        app =>
         {
             app.Name = appRequestModel.Title;
             app.ThumbnailUrl = appRequestModel.LeadPictureUri;
             app.OfferStatusId = OfferStatusId.CREATED;
+            app.Provider = appRequestModel.Provider;
             app.SalesManagerId = appRequestModel.SalesManagerId;
+        },
+        app => {
+            app.SalesManagerId = appData.SalesManagerId;
         });
 
         _offerService.UpsertRemoveOfferDescription(appId, appRequestModel.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), appData.OfferDescriptions);
@@ -466,86 +471,16 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page = 0, int size = 15)
-    {
-        var apps = _portalRepositories.GetInstance<IOfferRepository>().GetAllInReviewStatusAppsAsync();
-
-        return Pagination.CreateResponseAsync(
-            page,
-            size,
-            15,
-            (int skip, int take) => new Pagination.AsyncSource<InReviewAppData>(
-                apps.CountAsync(),
-                apps.OrderBy(app => app.Id)
-                    .Skip(skip)
-                    .Take(take)
-                    .Select(app => new InReviewAppData(
-                        app.Id,
-                        app.Name,
-                        app.ProviderCompany!.Name,
-                        app.ThumbnailUrl))
-                    .AsAsyncEnumerable()));
-    }
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting) =>
+        Pagination.CreateResponseAsync(page, size, 15,
+            _portalRepositories.GetInstance<IOfferRepository>()
+                .GetAllInReviewStatusAppsAsync(_settings.OfferStatusIds, sorting ?? OfferSorting.DateDesc));
 
     /// <inheritdoc/>
-    public async Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId)
-    {
-        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var appDetails = await offerRepository.GetOfferReleaseDataByIdAsync(appId).ConfigureAwait(false);
-        if (appDetails == null)
-        {
-            throw new NotFoundException($"App {appId} does not exist");
-        }
-        
-        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-
-        if(appDetails.name is null || appDetails.thumbnailUrl is null 
-            || appDetails.salesManagerId is null || appDetails.providerCompanyId is null
-            || appDetails.descriptionLongIsNullOrEmpty || appDetails.descriptionShortIsNullOrEmpty)
-        {
-            var nullProperties = new List<string>();
-            if (appDetails.name is null)
-            {
-                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.name)}");
-            }
-            if(appDetails.thumbnailUrl is null)
-            {
-                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.thumbnailUrl)}");
-            }
-            if(appDetails.salesManagerId is null)
-            {
-                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.salesManagerId)}");
-            }
-            if(appDetails.providerCompanyId is null)
-            {
-                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.providerCompanyId)}");
-            }
-            if(appDetails.descriptionLongIsNullOrEmpty)
-            {
-                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.descriptionLongIsNullOrEmpty)}");
-            }
-            if(appDetails.descriptionShortIsNullOrEmpty)
-            {
-                nullProperties.Add($"{nameof(Offer)}.{nameof(appDetails.descriptionShortIsNullOrEmpty)}");
-            }
-            throw new ConflictException($"Missing  : {string.Join(", ", nullProperties)}");
-        }
-        offerRepository.AttachAndModifyOffer(appId, app =>
-        {
-            app.OfferStatusId = OfferStatusId.IN_REVIEW;
-            app.DateLastChanged = DateTimeOffset.UtcNow;
-        });
-
-        var notificationContent = new
-        {
-            appId,
-            RequestorCompanyName = appDetails.companyName
-        };
-        
-        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
-        var content = _settings.NotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, requesterId, content).ConfigureAwait(false);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
+    public Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId) => 
+        _offerService.SubmitOfferAsync(appId, iamUserId, OfferTypeId.APP, _settings.NotificationTypeIds, _settings.CompanyAdminRoles);
+    
+    /// <inheritdoc/>
+    public Task ApproveAppRequestAsync(Guid appId, string iamUserId) =>
+        _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, (_settings.ApproveAppUserRoles));
 }

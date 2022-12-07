@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,20 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.Async;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using PasswordGenerator;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
 public class UserProvisioningService : IUserProvisioningService
 {
@@ -171,12 +171,14 @@ public class UserProvisioningService : IUserProvisioningService
         return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, companyUser.CompanyUserId, identityProvider.IdpAlias, identityProvider.IsSharedIdp), createdByName);
     }
 
-    public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameSharedIdpAliasData(string iamUserId)
+    public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameSharedIdpAliasData(string iamUserId, Guid? applicationId = null)
     {
-        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliaseUntrackedAsync(iamUserId, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliaseUntrackedAsync(iamUserId, applicationId, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
         if (result == default)
         {
-            throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
+            throw applicationId == null
+                ? new ControllerArgumentException($"user {iamUserId} is not associated with any company")
+                : new ControllerArgumentException($"user {iamUserId} is not associated with application {applicationId}");
         }
         var (company, companyUser, idpAliase) = result;
         if (company.CompanyName == null)

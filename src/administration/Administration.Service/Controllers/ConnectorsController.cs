@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,16 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
 /// <summary>
 /// Controller providing actions for displaying, filtering and updating connectors for companies.
@@ -35,7 +35,6 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
 [Route("api/administration/[controller]")]
 [ApiController]
 [Produces("application/json")]
-[Consumes("application/json")]
 public class ConnectorsController : ControllerBase
 {
     private readonly IConnectorsBusinessLogic _businessLogic;
@@ -99,7 +98,26 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<CreatedAtRouteResult> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
+    public Task<CreatedAtRouteResult> CreateConnectorAsync([FromBody] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken) =>
+        this.CreateConnectorWithDapsAsync(connectorInputModel, cancellationToken);
+
+    /// <summary>
+    /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
+    /// </summary>
+    /// <param name="connectorInputModel">Input model of the connector to be created.</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>View model of the created connector.</returns>
+    /// <remarks>Example: POST: /api/administration/connectors</remarks>
+    /// <response code="201">Returns a view model of the created connector.</response>
+    /// <response code="400">Input parameter are invalid.</response>
+    /// <response code="503">Access to SD factory failed with the given status code.</response>
+    [HttpPost]
+    [Route("daps")]
+    [Authorize(Roles = "add_connectors")]
+    [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<CreatedAtRouteResult> CreateConnectorWithDapsAsync([FromForm] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
         var connectorData = await this.WithIamUserAndBearerToken(auth => _businessLogic.CreateConnectorAsync(connectorInputModel, auth.bearerToken, auth.iamUserId, cancellationToken)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
@@ -121,11 +139,52 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromBody] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
+    public Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromBody] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken) =>
+        this.CreateManagedConnectorWithDapsAsync(connectorInputModel, cancellationToken);
+
+    /// <summary>
+    /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
+    /// </summary>
+    /// <param name="connectorInputModel">Input model of the connector to be created.</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>View model of the created connector.</returns>
+    /// <remarks>Example: POST: /api/administration/connectors/managed</remarks>
+    /// <response code="201">Returns a view model of the created connector.</response>
+    /// <response code="400">Input parameter are invalid.</response>
+    /// <response code="503">Access to SD factory failed with the given status code.</response>
+    [HttpPost]
+    [Route("managed-daps")]
+    [Authorize(Roles = "add_connectors")]
+    [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<CreatedAtRouteResult> CreateManagedConnectorWithDapsAsync([FromForm] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
         var connectorData = await this.WithIamUserAndBearerToken(auth => _businessLogic.CreateManagedConnectorAsync(connectorInputModel, auth.bearerToken, auth.iamUserId, cancellationToken)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
     }
+
+    /// <summary>
+    /// Triggers the daps endpoint for the given connector.
+    /// </summary>
+    /// <param name="connectorId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">Id of the connector to trigger the daps call.</param>
+    /// <param name="certificate"></param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>View model of the created connector.</returns>
+    /// <remarks>Example: POST: /api/administration/connectors/trigger-daps/5636F9B9-C3DE-4BA5-8027-00D17A2FECFB</remarks>
+    /// <response code="200">Returns true if the daps call was successful, otherwise false.</response>
+    /// <response code="400">Input parameter are invalid.</response>
+    /// <response code="404">Connector was not found.</response>
+    /// <response code="503">Access to SD factory failed with the given status code.</response>
+    [HttpPost]
+    [Route("trigger-daps/{connectorId:guid}")]
+    [Authorize(Roles = "add_connectors")]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<bool> TriggerDapsAuth([FromRoute] Guid connectorId, [FromForm] IFormFile certificate, CancellationToken cancellationToken) =>
+        await this.WithIamUserAndBearerToken(auth => _businessLogic.TriggerDapsAsync(connectorId, certificate, auth.bearerToken, auth.iamUserId, cancellationToken)).ConfigureAwait(false);
 
     /// <summary>
     /// Removes a connector from persistence layer by id.

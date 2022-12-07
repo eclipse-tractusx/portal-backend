@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,16 +22,16 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 /// <summary>
 /// Tests the functionality of the <see cref="UserRepository"/>
@@ -40,6 +40,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
     private const string ValidIamUserId = "623770c5-cf38-4b9f-9a35-f8b9ae972e2d";
+    private readonly Guid ValidCompanyUser = new ("ac1cf001-7fbc-1f2f-817f-bce058020001");
     private readonly Guid _validOfferId = new("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
 
     public UserRepositoryTests(TestDbFixture testDbFixture)
@@ -248,6 +249,76 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetRegistrationDataUntrackedAsync_WithApplicationIdAndDocumentType_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        Guid applicatiodId = new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
+        // Act
+        var result = await sut.GetRegistrationDataUntrackedAsync(applicatiodId, ValidIamUserId, new [] { DocumentTypeId.CX_FRAME_CONTRACT, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }).ConfigureAwait(false);
+        // Assert
+        
+        result.Should().NotBeNull();
+        result!.Documents.Should().NotBeNull();
+    }
+
+    #endregion
+
+    #region GetCompanyUserWithIamUserCheckAndCompanyShortName
+
+    [Fact]
+    public async Task GetCompanyUserWithIamUserCheckAndCompanyShortName_WithoutSalesManager_ReturnsOnlyOneUser()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        
+        // Act        
+        var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyShortName(ValidIamUserId, null).ToListAsync().ConfigureAwait(false);
+        
+        // Assert
+        result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GetCompanyUserWithIamUserCheckAndCompanyShortName_WithoutUserAndWithoutSalesmanager_ReturnsNoUsers()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        
+        // Act        
+        var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyShortName(string.Empty, null).ToListAsync().ConfigureAwait(false);
+        
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetCompanyUserWithIamUserCheckAndCompanyShortName_WithoutUserAndWithSalesmanager_ReturnsOneUsers()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        
+        // Act        
+        var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyShortName(string.Empty, ValidCompanyUser).ToListAsync().ConfigureAwait(false);
+        
+        // Assert
+        result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GetCompanyUserWithIamUserCheckAndCompanyShortName_WithUserAndWithSalesmanager_ReturnsTwoUsers()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        
+        // Act        
+        var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyShortName(ValidIamUserId, ValidCompanyUser).ToListAsync().ConfigureAwait(false);
+        
+        // Assert
+        result.Should().HaveCount(2);
     }
 
     #endregion

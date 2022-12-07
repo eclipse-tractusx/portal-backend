@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,11 +19,11 @@
  ********************************************************************************/
 
 using FakeItEasy;
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
 public class PartnerNetworkControllerTest
 {

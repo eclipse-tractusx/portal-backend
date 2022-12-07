@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 /// <summary>
 ///     Provides functionality to create, modify and get notifications from the persistence layer
@@ -36,11 +36,11 @@ public interface INotificationRepository
     /// <param name="receiverUserId">Mapping to the company user who should receive the message</param>
     /// <param name="notificationTypeId">id of the notification type</param>
     /// <param name="isRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
-    /// <param name="setOptionalParameter">Optional Action to set the notifications optional properties</param>
+    /// <param name="setOptionalParameters">Optional Action to set the notifications optional properties</param>
     Notification CreateNotification(Guid receiverUserId, NotificationTypeId notificationTypeId,
-        bool isRead, Action<Notification>? setOptionalParameter = null);
+        bool isRead, Action<Notification>? setOptionalParameters = null);
 
-    Notification AttachAndModifyNotification(Guid notificationId, Action<Notification>? setOptionalParameter = null);
+    void AttachAndModifyNotification(Guid notificationId, Action<Notification> setOptionalParameters);
 
     Notification DeleteNotification(Guid notificationId);
 
@@ -50,11 +50,10 @@ public interface INotificationRepository
     /// <param name="iamUserId">Id of the user</param>
     /// <param name="isRead">OPTIONAL: filter read or unread notifications</param>
     /// <param name="typeId">OPTIONAL: The type of the notifications</param>
-    /// <param name="skip"></param>
-    /// <param name="take"></param>
+    /// <param name="topicId">OPTIONAL: The topic of the notifications</param>
     /// <param name="sorting"></param>
     /// <returns>Returns a collection of NotificationDetailData</returns>
-    public Task<Pagination.Source<NotificationDetailData>?> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, int skip, int take, NotificationSorting? sorting);
+    Func<int,int,Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, NotificationSorting? sorting);
 
     /// <summary>
     ///     Returns a notification for the given id and given user if it exists in the persistence layer, otherwise null
