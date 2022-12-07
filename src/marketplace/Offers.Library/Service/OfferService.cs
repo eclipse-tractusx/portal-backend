@@ -595,27 +595,27 @@ public class OfferService : IOfferService
 
         if (declineData == default)
         {
-            throw new NotFoundException($"{offerType.ToString()} {offerId} does not exist");
+            throw new NotFoundException($"{offerType} {offerId} does not exist");
         }
 
         if (!declineData.IsUserOfProvider)
         {
-            throw new ArgumentException($"{offerType.ToString()} not found. Either not existing or no permission for change.", nameof(iamUserId));
+            throw new ControllerArgumentException($"{offerType} not found. Either not existing or no permission for change.", nameof(iamUserId));
         }
 
         if (declineData.OfferStatus != OfferStatusId.IN_REVIEW)
         {
-            throw new ConflictException($"{offerType.ToString()} must be in status {OfferStatusId.IN_REVIEW.ToString()}");
+            throw new ConflictException($"{offerType} must be in status {OfferStatusId.IN_REVIEW.ToString()}");
         }
 
         if (string.IsNullOrWhiteSpace(declineData.OfferName))
         {
-            throw new ConflictException($"{offerType.ToString()} name is not set");
+            throw new ConflictException($"{offerType} name is not set");
         }
         
         if (declineData.CompanyId == null)
         {
-            throw new ConflictException($"{offerType.ToString()} providing company is not set");
+            throw new ConflictException($"{offerType} providing company is not set");
         }
         
         offerRepository.AttachAndModifyOffer(offerId, offer =>

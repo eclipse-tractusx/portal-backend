@@ -996,7 +996,7 @@ public class OfferServiceTests
     [Theory]
     [InlineData(OfferTypeId.APP)]
     [InlineData(OfferTypeId.SERVICE)]
-    public async Task DeclineOfferAsync_WithNotAssignedUser_ThrowsArgumentException(OfferTypeId offerTypeId)
+    public async Task DeclineOfferAsync_WithNotAssignedUser_ThrowsControllerArgumentException(OfferTypeId offerTypeId)
     {
         // Arrange
         var notExistingOffer = _fixture.Create<Guid>();
@@ -1009,7 +1009,7 @@ public class OfferServiceTests
         async Task Act() => await sut.DeclineOfferAsync(notExistingOffer, _iamUserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ArgumentException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         ex.Message.Should().Be($"{offerTypeId.ToString()} not found. Either not existing or no permission for change. (Parameter 'iamUserId')");
         ex.ParamName.Should().Be("iamUserId");
     }
