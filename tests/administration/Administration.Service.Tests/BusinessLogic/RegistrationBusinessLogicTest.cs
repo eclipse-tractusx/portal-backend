@@ -409,11 +409,12 @@ public class RegistrationBusinessLogicTest
             .Returns(Task.CompletedTask);
             
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._))
-            .Invokes(x =>
+            .Invokes((
+                IDictionary<string,IEnumerable<string>> _, 
+                Guid? creatorId, 
+                IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, 
+                Guid _) =>
             {
-                var creatorId = x.Arguments.Get<Guid?>("creatorId");
-                var notifications = x.Arguments.Get<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>("notifications");
-                if (notifications is null) return;
                 foreach (var notificationData in notifications)
                 {
                     var notification = new Notification(Guid.NewGuid(), Guid.NewGuid(),
@@ -424,7 +425,6 @@ public class RegistrationBusinessLogicTest
                     };
                     _notifications.Add(notification);
                 }
-
             });
     }
 
