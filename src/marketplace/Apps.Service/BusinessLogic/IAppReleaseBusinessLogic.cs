@@ -19,9 +19,10 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -89,4 +90,59 @@ public interface IAppReleaseBusinessLogic
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<OfferProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId);
+    
+    /// <summary>
+    /// Delete User Role by appId and roleId
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="roleId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task DeleteAppRoleAsync(Guid appId, Guid roleId, string iamUserId);
+    
+    /// <summary>
+    /// Get Sales Manager Data
+    /// </summary>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(string iamUserId);
+
+    /// <summary>
+    /// Creates an application and returns its generated ID.
+    /// </summary>
+    /// <param name="appRequestModel"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns>Guid of the created app.</returns>
+    Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId);
+
+    /// <summary>
+    /// Creates an application and returns its generated ID.
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="appRequestModel"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns>Guid of the created app.</returns>
+    Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, string iamUserId);
+
+    /// <summary>
+    /// Retrieves all in review status apps in the marketplace.
+    /// </summary>
+    Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting);
+
+    /// <summary>
+    /// Update app status and create notification
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId);
+    
+    /// <summary>
+    /// Add User ROle for Active App and create notification
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="appUserRolesDescription"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task<IEnumerable<AppRoleData>>  AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, string iamUserId);
 }

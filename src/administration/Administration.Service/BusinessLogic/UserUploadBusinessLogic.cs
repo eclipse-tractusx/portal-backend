@@ -18,11 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Microsoft.Extensions.Options;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -54,7 +56,9 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var companyNameIdpAliasData = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
+
+        var validRoleData = new List<UserRoleData>();
 
         var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync(
             stream,
@@ -62,15 +66,20 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                 var csvHeaders = new [] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.ProviderUserName, CsvHeaders.ProviderUserId, CsvHeaders.Roles }.Select(h => h.ToString());
                 CsvParser.ValidateCsvHeaders(line, csvHeaders);
             },
-            line => {
+            async line => {
                 var parsed = ParseUploadOwnIdpUsersCSVLine(line, companyNameIdpAliasData.IsSharedIdp);
-                return new UserCreationInfoIdp(parsed.FirstName, parsed.LastName, parsed.Email, parsed.Roles, parsed.ProviderUserName, parsed.ProviderUserId);
+                return new UserCreationRoleDataIdpInfo(
+                    parsed.FirstName,
+                    parsed.LastName,
+                    parsed.Email,
+                    await GetUserRoleDatas(parsed.Roles, validRoleData, iamUserId).ConfigureAwait(false),
+                    parsed.ProviderUserName,
+                    parsed.ProviderUserId);
             },
             lines =>
                 _userProvisioningService
                     .CreateOwnCompanyIdpUsersAsync(
                         companyNameIdpAliasData,
-                        _settings.Portal.KeyCloakClientID,
                         lines,
                         cancellationToken)
                     .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
@@ -103,7 +112,9 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var companyNameIdpAliasData = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(iamUserId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(iamUserId).ConfigureAwait(false);
+
+        var validRoleData = new List<UserRoleData>();
 
         var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync(
             stream,
@@ -111,21 +122,42 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                 var csvHeaders = new [] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.Roles }.Select(h => h.ToString());
                 CsvParser.ValidateCsvHeaders(line, csvHeaders);
             },
-            line => {
+            async line => {
                 var parsed = ParseUploadSharedIdpUsersCSVLine(line);
-                return new UserCreationInfoIdp(parsed.FirstName, parsed.LastName, parsed.Email, parsed.Roles, parsed.Email, "");
+                return new UserCreationRoleDataIdpInfo(
+                    parsed.FirstName,
+                    parsed.LastName,
+                    parsed.Email,
+                    await GetUserRoleDatas(parsed.Roles, validRoleData, iamUserId).ConfigureAwait(false),
+                    parsed.Email,
+                    "");
             },
             lines =>
                 _userProvisioningService
                     .CreateOwnCompanyIdpUsersAsync(
                         companyNameIdpAliasData,
-                        _settings.Portal.KeyCloakClientID,
                         lines,
                         cancellationToken)
                     .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
             cancellationToken).ConfigureAwait(false);
 
         return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
+    }
+
+    private async ValueTask<IEnumerable<UserRoleData>> GetUserRoleDatas(IEnumerable<string> roles, List<UserRoleData> validRoleData, string iamUserId)
+    {
+        var unknownRoles = roles.Except(validRoleData.Select(r => r.UserRoleText));
+        if (unknownRoles.Any())
+        {
+            var roleData = await _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeyCloakClientID, unknownRoles, iamUserId)
+                .ConfigureAwait(false);
+
+            if (roleData != null)
+            {
+                validRoleData.AddRange(roleData);
+            }
+        }
+        return validRoleData.IntersectBy(roles, r => r.UserRoleText);
     }
 
     private static (string FirstName, string LastName, string Email, IEnumerable<string> Roles) ParseUploadSharedIdpUsersCSVLine(string line)

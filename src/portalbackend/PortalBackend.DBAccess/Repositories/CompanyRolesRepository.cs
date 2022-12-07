@@ -57,11 +57,11 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                 application.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<AgreementsAssignedCompanyRoleData> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds) =>
+    public IAsyncEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds) =>
         _dbContext.CompanyRoles
             .AsNoTracking()
-            .Where(companyRole => companyRoleIds.Contains(companyRole.Id))
-            .Select(companyRole => new AgreementsAssignedCompanyRoleData(
+            .Where(companyRole => companyRole.CompanyRoleRegistrationData!.IsRegistrationRole && companyRoleIds.Contains(companyRole.Id))
+            .Select(companyRole => new ValueTuple<CompanyRoleId,IEnumerable<Guid>>(
                 companyRole.Id,
                 companyRole.AgreementAssignedCompanyRoles!.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
             )).AsAsyncEnumerable();
@@ -84,6 +84,7 @@ public class CompanyRolesRepository : ICompanyRolesRepository
     {
         await foreach (var role in _dbContext.CompanyRoles
             .AsNoTracking()
+            .Where(companyRole => companyRole.CompanyRoleRegistrationData!.IsRegistrationRole)
             .Select(companyRole => new
             {
                 Id = companyRole.Id,
@@ -104,6 +105,7 @@ public class CompanyRolesRepository : ICompanyRolesRepository
     public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync(string? languageShortName = null) =>
         _dbContext.CompanyRoles
             .AsNoTracking()
+            .Where(companyRole => companyRole.CompanyRoleRegistrationData!.IsRegistrationRole)
             .Select(companyRole => new CompanyRolesDetails(
                 companyRole.Label,
                 companyRole.CompanyRoleDescriptions.SingleOrDefault(desc =>

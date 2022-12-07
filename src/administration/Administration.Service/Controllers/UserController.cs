@@ -40,6 +40,7 @@ public class UserController : ControllerBase
     private readonly ILogger<UserController> _logger;
     private readonly IUserBusinessLogic _logic;
     private readonly IUserUploadBusinessLogic _uploadLogic;
+    private readonly IUserRolesBusinessLogic _rolesLogic;
 
     /// <summary>
     /// Creates a new instance of <see cref="UserController"/>
@@ -47,11 +48,13 @@ public class UserController : ControllerBase
     /// <param name="logger">The logger</param>
     /// <param name="logic">The User Business Logic</param>
     /// <param name="uploadLogic">The User Upload Business Logic</param>
-    public UserController(ILogger<UserController> logger, IUserBusinessLogic logic, IUserUploadBusinessLogic uploadLogic)
+    /// <param name="rolesLogic">The User Roles Management Business Logic</param>
+    public UserController(ILogger<UserController> logger, IUserBusinessLogic logic, IUserUploadBusinessLogic uploadLogic, IUserRolesBusinessLogic rolesLogic)
     {
         _logger = logger;
         _logic = logic;
         _uploadLogic = uploadLogic;
+        _rolesLogic = rolesLogic;
     }
 
     /// <summary>
@@ -201,6 +204,46 @@ public class UserController : ControllerBase
         this.WithIamUserId(iamUserId => _logic.GetOwnCompanyUserDetailsAsync(companyUserId, iamUserId));
 
     /// <summary>
+    /// Updates the portal-roles for the user
+    /// </summary>
+    /// <param name="companyUserId"></param>
+    /// <param name="offerId"></param>
+    /// <param name="roles"></param>
+    /// <returns></returns>
+    /// <remarks>Example: PUT: api/administration/user/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
+    /// <response code="200">Roles got successfully updated user account.</response>
+    /// <response code="400">Invalid User roles for client</response>
+    /// <response code="404">User not found</response>
+    [HttpPut]
+    [Authorize(Roles = "modify_user_account")]
+    [Route("owncompany/users/{companyUserId}/coreoffers/{offerId}/roles")]
+    [ProducesResponseType(typeof(IEnumerable<UserRoleWithId>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<IEnumerable<UserRoleWithId>> ModifyCoreUserRolesAsync([FromRoute] Guid companyUserId, [FromRoute] Guid offerId, [FromBody] IEnumerable<string> roles) =>
+        this.WithIamUserId(iamUserId => _rolesLogic.ModifyCoreOfferUserRolesAsync(offerId, companyUserId, roles, iamUserId));
+
+    /// <summary>
+    /// Updates the app-roles for the user
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the application</param>
+    /// <param name="companyUserId"></param>
+    /// <param name="roles"></param>
+    /// <returns></returns>
+    /// <remarks>Example: PUT: api/administration/user/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
+    /// <response code="200">Roles got successfully updated user account.</response>
+    /// <response code="400">Invalid User roles for client</response>
+    /// <response code="404">User not found</response>
+    [HttpPut]
+    [Authorize(Roles = "modify_user_account")]
+    [Route("owncompany/users/{companyUserId}/apps/{appId}/roles")]
+    [ProducesResponseType(typeof(IEnumerable<UserRoleWithId>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync([FromRoute] Guid companyUserId, [FromRoute] Guid appId, [FromBody] IEnumerable<string> roles) =>
+        this.WithIamUserId(iamUserId => _rolesLogic.ModifyAppUserRolesAsync(appId, companyUserId, roles, iamUserId));
+
+    /// <summary>
     /// Adds the given business partner numbers to the user for the given id.
     /// </summary>
     /// <param name="companyUserId" example="ac1cf001-7fbc-1f2f-817f-bce0575a0011">Id of the user to add the business partner numbers to.</param>
@@ -280,6 +323,13 @@ public class UserController : ControllerBase
     public Task<bool> ResetOwnCompanyUserPassword([FromRoute] Guid companyUserId) =>
         this.WithIamUserId(adminUserId => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, adminUserId));
 
+    [HttpGet]
+    [Authorize(Roles = "view_client_roles")]
+    [Route("owncompany/roles/coreoffers")]
+    [ProducesResponseType(typeof(IEnumerable<OfferRoleInfos>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles([FromQuery] string? languageShortName = null) =>
+        this.WithIamUserId(iamUserId => _rolesLogic.GetCoreOfferRoles(iamUserId, languageShortName));
+
     /// <summary>
     /// Gets the client roles for the given app.
     /// </summary>
@@ -290,6 +340,24 @@ public class UserController : ControllerBase
     /// <response code="200">Returns the client roles.</response>
     /// <response code="400">The language does not exist.</response>
     /// <response code="404">The app was not found.</response>
+    [HttpGet]
+    [Authorize(Roles = "view_client_roles")]
+    [Route("owncompany/roles/apps/{appId}")]
+    [ProducesResponseType(typeof(OfferRoleInfos), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync([FromRoute] Guid appId, [FromQuery] string? languageShortName = null) =>
+        this.WithIamUserId(iamUserId => _rolesLogic.GetAppRolesAsync(appId, iamUserId, languageShortName));
+
+    /// <summary>
+    /// Gets the client roles for the given app.
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the app which roles should be returned.</param>
+    /// <param name="languageShortName">OPTIONAL: The language short name.</param>
+    /// <returns>Returns the client roles for the given app.</returns>
+    /// <remarks>Example: GET: api/administration/user/owncompany/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
+    /// <response code="200">Returns the client roles.</response>
+    /// <response code="400">The language does not exist.</response>
+    /// <response code="404">The app was not found.</response>
+    [Obsolete("to be replaced by endpoint /user/owncompany/roles/apps/{appid}. Remove as soon frontend is adjusted")]
     [HttpGet]
     [Authorize(Roles = "view_client_roles")]
     [Route("app/{appId}/roles")]
@@ -307,6 +375,7 @@ public class UserController : ControllerBase
     /// <response code="200">Returns the company user details.</response>
     /// <response code="404">User is not existing/found.</response>
     [HttpGet]
+    [Authorize(Roles = "view_own_user_account")]
     [Route("ownUser")]
     [ProducesResponseType(typeof(CompanyUserDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -324,6 +393,7 @@ public class UserController : ControllerBase
     /// <response code="403">Invalid companyUserId for user.</response>
     /// <response code="404">No shared realm userid found for the id in realm</response>
     [HttpPut]
+    [Authorize(Roles = "change_own_user_account")]
     [Route("ownUser/{companyUserId}")]
     [ProducesResponseType(typeof(CompanyUserDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -341,20 +411,14 @@ public class UserController : ControllerBase
     /// <response code="403">Invalid or not existing user id.</response>
     /// <response code="404">User is not existing/found.</response>
     [HttpDelete]
+    [Authorize(Roles = "delete_own_user_account")]
     [Route("ownUser/{companyUserId}")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<int> DeleteOwnUser([FromRoute] Guid companyUserId) =>
         this.WithIamUserId(iamUserId => _logic.DeleteOwnUserAsync(companyUserId, iamUserId));
 
-    [Obsolete]
-    [HttpPut]
-    [Authorize(Roles = "modify_user_account")]
-    [Route("bpn")]
-    public Task BpnAttributeAdding([FromBody] IEnumerable<UserUpdateBpn> usersToAddBpn) =>
-        _logic.AddBpnAttributeAsync(usersToAddBpn);
-
-    [Obsolete]
+    [Obsolete("to be replaced by endpoint /user/owncompany/users/{companyUserId}/resetPassword. remove as soon frontend is adjusted")]
     [HttpPut]
     [Authorize(Roles = "modify_user_account")]
     [Route("users/{companyUserId}/resetpassword")]
@@ -371,6 +435,7 @@ public class UserController : ControllerBase
     /// <param name="lastName">Last Name of User</param>
     /// <param name="email">Email Id of User</param>
     /// <param name="roleName">User role name</param>
+    /// <param name="hasRole">Defines whether the users should be filtered with a app role</param>
     /// <returns>Returns the company users with assigned role for the requested app id</returns>
     /// <remarks>Example: GET: /api/administration/user/owncompany/apps/5cf74ef8-e0b7-4984-a872-474828beb5d3/users?page=0&amp;size=15</remarks>
     /// <response code="200">Result as a Company App Users Details</response>
@@ -378,22 +443,26 @@ public class UserController : ControllerBase
     [Authorize(Roles = "view_user_management")]
     [Route("owncompany/apps/{appId}/users")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyAppUserDetails>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync([FromRoute] Guid appId,
+    public Task<Pagination.Response<CompanyAppUserDetails>> GetCompanyAppUsersAsync(
+        [FromRoute] Guid appId,
         [FromQuery] int page = 0,
         [FromQuery] int size = 15,
         [FromQuery] string? firstName = null,
         [FromQuery] string? lastName = null,
         [FromQuery] string? email = null,
-        [FromQuery] string? roleName = null) =>
+        [FromQuery] string? roleName = null,
+        [FromQuery] bool? hasRole = null) =>
         this.WithIamUserId(iamUserId => _logic.GetOwnCompanyAppUsersAsync(
             appId,
             iamUserId,
             page,
             size,
-            firstName,
-            lastName,
-            email,
-            roleName));
+            new CompanyUserFilter(
+                firstName,
+                lastName,
+                email,
+                roleName,
+                hasRole)));
 
     /// <summary>
     /// Updates the roles for the user
@@ -405,6 +474,7 @@ public class UserController : ControllerBase
     /// <response code="200">Roles got successfully updated user account.</response>
     /// <response code="400">Invalid User roles for client</response>
     /// <response code="404">User not found</response>
+    [Obsolete("to be replaced by endpoint /user/owncompany/users/{companyUserId}/apps/{appId}/roles. remove as soon frontend has been adjusted")]
     [HttpPut]
     [Authorize(Roles = "modify_user_account")]
     [Route("app/{appId}/roles")]
@@ -412,7 +482,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<IEnumerable<UserRoleWithId>> ModifyUserRolesAsync([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
-        this.WithIamUserId(adminUserId => _logic.ModifyUserRoleAsync(appId, userRoleInfo, adminUserId));
+        this.WithIamUserId(adminUserId => _rolesLogic.ModifyUserRoleAsync(appId, userRoleInfo, adminUserId));
 
     /// <summary>
     /// Delete BPN assigned to user from DB and Keycloack.

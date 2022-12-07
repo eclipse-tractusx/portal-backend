@@ -26,7 +26,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
-using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -35,9 +34,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// </summary>
 public class SdFactoryService : ISdFactoryService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly HttpClient _httpClient;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly ILogger<SdFactoryService> _logger;
     private readonly SdFactorySettings _settings;
 
     /// <summary>
@@ -46,42 +44,38 @@ public class SdFactoryService : ISdFactoryService
     /// <param name="httpClientFactory">Factory to create httpClients</param>
     /// <param name="options">The options</param>
     /// <param name="portalRepositories">Access to the portalRepositories</param>
-    /// <param name="logger"></param>
     public SdFactoryService(IOptions<SdFactorySettings> options, IHttpClientFactory httpClientFactory,
-        IPortalRepositories portalRepositories, ILogger<SdFactoryService> logger)
+        IPortalRepositories portalRepositories)
     {
         _settings = options.Value;
-        _httpClientFactory = httpClientFactory;
+        _httpClient = httpClientFactory.CreateClient(nameof(SdFactoryService));
         _portalRepositories = portalRepositories;
-        _logger = logger;
     }
 
     /// <inheritdoc />
-    public async Task<Guid> RegisterConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string businessPartnerNumber, CancellationToken cancellationToken)
+    public async Task<Guid> RegisterConnectorAsync(ConnectorRequestModel connectorRequestModel, string accessToken, string businessPartnerNumber, CancellationToken cancellationToken)
     {
-        using var httpClient =_httpClientFactory.CreateClient();
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
         var requestModel = new ConnectorSdFactoryRequestModel(
-            "ServiceOffering",
-            connectorInputModel.ConnectorUrl,
+            SdFactoryRequestModelSdType.ServiceOffering,
+            connectorRequestModel.ConnectorUrl,
             string.Empty,
             string.Empty,
             string.Empty,
             _settings.SdFactoryIssuerBpn,
             businessPartnerNumber);
 
-        var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
+        var response = await _httpClient.PostAsJsonAsync((string?)null, requestModel, cancellationToken).ConfigureAwait(false);
 
-        return await ProcessResponse(businessPartnerNumber, response, cancellationToken).ConfigureAwait(false);
+        return await ProcessResponse(SdFactoryResponseModelTitle.Connector, response, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken)
     {
-        using var httpClient =_httpClientFactory.CreateClient();
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         var requestModel = new SdFactoryRequestModel(
             applicationId.ToString(),
@@ -92,14 +86,12 @@ public class SdFactoryService : ISdFactoryService
             businessPartnerNumber,
             _settings.SdFactoryIssuerBpn);
 
-        // TODO: Please remove after testing
-        _logger.LogInformation("SdFactory RegisterSelfDescriptionAsync was called with the following url: {ServiceDetailsAutoSetupUrl} and following data: {AutoSetupData}", _settings.SdFactoryUrl, JsonSerializer.Serialize(requestModel));
-        var response = await httpClient.PostAsJsonAsync(_settings.SdFactoryUrl, requestModel, cancellationToken).ConfigureAwait(false);
+        var response = await _httpClient.PostAsJsonAsync((string?)null, requestModel, cancellationToken).ConfigureAwait(false);
 
-        return await ProcessResponse(businessPartnerNumber, response, cancellationToken).ConfigureAwait(false);
+        return await ProcessResponse(SdFactoryResponseModelTitle.LegalPerson, response, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<Guid> ProcessResponse(string businessPartnerNumber, HttpResponseMessage response, CancellationToken cancellationToken)
+    private async Task<Guid> ProcessResponse(SdFactoryResponseModelTitle docTitle, HttpResponseMessage response, CancellationToken cancellationToken)
     {
         if (!response.IsSuccessStatusCode)
         {
@@ -119,7 +111,15 @@ public class SdFactoryService : ISdFactoryService
                 $"document transmitted length {stream.Length} doesn't match actual length {ms.Length}.");
         }
 
-        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument($"SelfDescription_{businessPartnerNumber}.json", documentContent, hash, DocumentTypeId.SELF_DESCRIPTION_EDC, null);
+        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(
+            $"SelfDescription_{docTitle}.json", 
+            documentContent, 
+            hash, 
+            DocumentTypeId.APP_TECHNICAL_INFORMATION,
+            doc =>
+            {
+                doc.DocumentStatusId = DocumentStatusId.LOCKED;
+            });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return document.Id;

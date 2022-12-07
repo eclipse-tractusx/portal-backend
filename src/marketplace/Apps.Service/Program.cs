@@ -18,12 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.FileProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
-using Org.Eclipse.TractusX.Portal.Backend.Notification.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Microsoft.Extensions.FileProviders;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
@@ -40,12 +41,15 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes"
 }
 
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-                .AddMailingAndTemplateManager(builder.Configuration)
-                .AddPortalRepositories(builder.Configuration)
-                .AddProvisioningManager(builder.Configuration);
+    .AddMailingAndTemplateManager(builder.Configuration)
+    .AddPortalRepositories(builder.Configuration)
+    .AddProvisioningManager(builder.Configuration);
 
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
+                .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
                 .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
+
+builder.Services.AddOfferSetupService();
 
 builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
 

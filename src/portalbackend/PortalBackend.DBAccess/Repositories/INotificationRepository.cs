@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -35,9 +36,13 @@ public interface INotificationRepository
     /// <param name="receiverUserId">Mapping to the company user who should receive the message</param>
     /// <param name="notificationTypeId">id of the notification type</param>
     /// <param name="isRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
-    /// <param name="setOptionalParameter">Optional Action to set the notifications optional properties</param>
+    /// <param name="setOptionalParameters">Optional Action to set the notifications optional properties</param>
     Notification CreateNotification(Guid receiverUserId, NotificationTypeId notificationTypeId,
-        bool isRead, Action<Notification>? setOptionalParameter = null);
+        bool isRead, Action<Notification>? setOptionalParameters = null);
+
+    void AttachAndModifyNotification(Guid notificationId, Action<Notification> setOptionalParameters);
+
+    Notification DeleteNotification(Guid notificationId);
 
     /// <summary>
     ///     Gets all Notifications for a specific user
@@ -45,9 +50,11 @@ public interface INotificationRepository
     /// <param name="iamUserId">Id of the user</param>
     /// <param name="isRead">OPTIONAL: filter read or unread notifications</param>
     /// <param name="typeId">OPTIONAL: The type of the notifications</param>
+    /// <param name="skip"></param>
+    /// <param name="take"></param>
+    /// <param name="sorting"></param>
     /// <returns>Returns a collection of NotificationDetailData</returns>
-    IAsyncEnumerable<NotificationDetailData> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId,
-        bool? isRead, NotificationTypeId? typeId);
+    Func<int,int,Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting? sorting);
 
     /// <summary>
     ///     Returns a notification for the given id and given user if it exists in the persistence layer, otherwise null
@@ -72,4 +79,11 @@ public interface INotificationRepository
     /// <param name="isRead">OPTIONAL: filter read or unread notifications</param>
     /// <returns>Returns the count of the notifications</returns>
     Task<(bool IsUserExisting, int Count)> GetNotificationCountForIamUserAsync(string iamUserId, bool? isRead);
+
+    /// <summary>
+    /// Gets the count details of the notifications for the given user
+    /// </summary>
+    /// <param name="iamUserId">id of the iam user</param>
+    /// <returns>Returns the notification count details</returns>
+    IAsyncEnumerable<(bool IsRead, NotificationTopicId NotificationTopicId, int Count)> GetCountDetailsForUserAsync(string iamUserId);
 }

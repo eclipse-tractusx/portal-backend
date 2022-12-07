@@ -68,6 +68,14 @@ public interface IDocumentRepository
     /// <summary>
     ///Deleting document record and document file from the portal db/document storage location
     /// </summary>
-    /// <param name="document">The document that should be removed</param>
-    void Remove(Document document);
+    /// <param name="documentId">The documentId that should be removed</param>
+    void RemoveDocument(Guid documentId);
+    
+    /// <summary>
+    /// Gets the documents and User by the document id
+    /// </summary>
+    /// <param name="documentId"></param>
+    /// <param name="iamUserId"></param>
+    /// <param name="applicationStatusIds"></param>
+    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, string iamUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
 }

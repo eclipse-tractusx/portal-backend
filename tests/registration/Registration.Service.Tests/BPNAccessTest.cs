@@ -20,12 +20,12 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BPN;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BPN.Model;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using FakeItEasy;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Net;
 using System.Text.Json;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests
@@ -64,10 +64,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests
             });
 
             var httpClient = _fixture.Create<HttpClient>();
-            var sut = _fixture.Create<BPNAccess>();
+            var sut = _fixture.Create<BpnAccess>();
 
-            var result = await sut.FetchBusinessPartner("testpbn", "token");
-            Assert.Equal(resultSet.bpn, result.First().bpn);
+            var result = await sut.FetchBusinessPartner("testpbn", "token", CancellationToken.None).ToListAsync().ConfigureAwait(false);
+            Assert.Equal(resultSet.Bpn, result.First().Bpn);
             Assert.Equal("token", httpClient.DefaultRequestHeaders.Authorization?.Parameter);
         }
 
@@ -77,9 +77,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests
             ConfigureHttpClientFactoryFixture(new HttpResponseMessage { StatusCode = HttpStatusCode.InternalServerError });
 
             var httpClient = _fixture.Create<HttpClient>();
-            var sut = _fixture.Create<BPNAccess>();
+            var sut = _fixture.Create<BpnAccess>();
 
-            await Assert.ThrowsAsync<ServiceException>(async () => await sut.FetchBusinessPartner("testpbn", "token"));
+            async Task Act() => await sut.FetchBusinessPartner("testpbn", "token", CancellationToken.None).ToListAsync().ConfigureAwait(false);
+
+            await Assert.ThrowsAsync<ServiceException>(Act);
             Assert.Equal("token", httpClient.DefaultRequestHeaders.Authorization?.Parameter);
         }
     }

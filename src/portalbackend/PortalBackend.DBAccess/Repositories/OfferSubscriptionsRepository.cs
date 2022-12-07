@@ -18,11 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Linq.Expressions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -44,24 +46,6 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     public OfferSubscription CreateOfferSubscription(Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid creatorId) =>
         _context.OfferSubscriptions.Add(new OfferSubscription(Guid.NewGuid(), offerId, companyId, offerSubscriptionStatusId, requesterId, creatorId)).Entity;
 
-    public IQueryable<CompanyUser> GetOwnCompanyAppUsersUntrackedAsync(
-        Guid appId,
-        string iamUserId,
-        string? firstName = null,
-        string? lastName = null,
-        string? email = null,
-        string? roleName = null) {
-
-        char[] escapeChar = { '%', '_', '[', ']', '^' };
-        return _context.CompanyUsers.AsNoTracking()
-            .Where(companyUser => companyUser.UserRoles.Any(userRole => userRole.Offer!.Id == appId) && companyUser.IamUser!.UserEntityId == iamUserId)
-            .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
-            .Where(companyUser => firstName == null || EF.Functions.ILike(companyUser.Firstname!, $"%{firstName.Trim(escapeChar)}%")
-                && lastName == null || EF.Functions.ILike(companyUser.Lastname!, $"%{lastName!.Trim(escapeChar)}%")
-                && email == null || EF.Functions.ILike(companyUser.Email!, $"%{email!.Trim(escapeChar)}%")
-                && roleName == null || companyUser.UserRoles.Any(userRole => EF.Functions.ILike(userRole.UserRoleText, $"{roleName!.Trim(escapeChar)}%")));
-        }
-
     /// <inheritdoc />
     public IAsyncEnumerable<AppWithSubscriptionStatus> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId) =>
         _context.IamUsers.AsNoTracking()
@@ -71,17 +55,33 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AppCompanySubscriptionStatusData> GetOwnCompanyProvidedAppSubscriptionStatusesUntrackedAsync(string iamUserId) =>
-        _context.OfferSubscriptions.AsNoTracking()
-            .Where(s => s.Offer!.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
-            .GroupBy(s => s.OfferId)
-            .Select(g => new AppCompanySubscriptionStatusData
-            {
-                AppId = g.Key,
-                CompanySubscriptionStatuses = g.Select(s =>
-                    new CompanySubscriptionStatusData(s.CompanyId, s.OfferSubscriptionStatusId))
-            })
-            .ToAsyncEnumerable();
+    public Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(string iamUserId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+                skip,
+                take,
+                _context.Offers
+                    .AsNoTracking()
+                    .Where(os => 
+                        os.OfferTypeId == offerTypeId &&
+                        os.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId) &&
+                        (statusId == null || os.OfferSubscriptions.Any(x => x.OfferSubscriptionStatusId == statusId)))
+                    .GroupBy(s => s.ProviderCompanyId),
+                sorting switch
+                {
+                    SubscriptionStatusSorting.CompanyNameAsc => (IEnumerable<Offer> o) => o.OrderBy(offer => offer.ProviderCompany!.Name),
+                    SubscriptionStatusSorting.CompanyNameDesc => (IEnumerable<Offer> o) => o.OrderByDescending(offer => offer.ProviderCompany!.Name),
+                    SubscriptionStatusSorting.OfferIdAsc => (IEnumerable<Offer> o) => o.OrderBy(offer => offer.Id),
+                    SubscriptionStatusSorting.OfferIdDesc => (IEnumerable<Offer> o) => o.OrderByDescending(offer => offer.Id),
+                    _ => (Expression<Func<IEnumerable<Offer>,IOrderedEnumerable<Offer>>>?)null
+                },
+                g => new OfferCompanySubscriptionStatusData
+                {
+                    OfferId = g.Id,
+                    ServiceName = g.Name,
+                    CompanySubscriptionStatuses = g.OfferSubscriptions.Select(s =>
+                        new CompanySubscriptionStatusData(s.CompanyId, s.Company!.Name, s.Id, s.OfferSubscriptionStatusId))
+                })
+            .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public Task<(OfferSubscription? companyAssignedApp, bool isMemberOfCompanyProvidingApp, string? appName, Guid companyUserId)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
@@ -102,18 +102,6 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .Select(app => new ValueTuple<OfferSubscription?,bool>(
                 app!.OfferSubscriptions.SingleOrDefault(assignedApp => assignedApp.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)),
                 true
-            ))
-            .SingleOrDefaultAsync();
-
-    public Task<(Guid companyId, OfferSubscription? offerSubscription, string companyName, Guid companyUserId)> GetCompanyIdWithAssignedOfferForCompanyUserAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId) =>
-        _context.IamUsers
-            .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .Select(iamUser => iamUser.CompanyUser!.Company)
-            .Select(company => new ValueTuple<Guid, OfferSubscription?, string, Guid>(
-                company!.Id,
-                company.OfferSubscriptions.SingleOrDefault(os => os.OfferId == offerId && os.Offer!.OfferTypeId == offerTypeId),
-                company!.Name,
-                company.CompanyUsers.First(x => x.IamUser!.UserEntityId == iamUserId).Id
             ))
             .SingleOrDefaultAsync();
 
@@ -148,24 +136,39 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     x.RequesterId,
                     x.OfferId,
                     x.Offer!.Name!,
-                    x.Company.BusinessPartnerNumber!
+                    x.Company.BusinessPartnerNumber!,
+                    x.Requester!.Email,
+                    x.Requester!.Firstname
             ))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(OfferThirdPartyAutoSetupData AutoSetupData, bool IsUsersCompany)> GetThirdPartyAutoSetupDataAsync(Guid offerSubscriptionId, string iamUserId) =>
-        _context.OfferSubscriptions
-            .Where(x => x.Id == offerSubscriptionId)
-            .Select(x => new ValueTuple<OfferThirdPartyAutoSetupData,bool>(
-                new OfferThirdPartyAutoSetupData(
-                    new OfferThirdPartyAutoSetupCustomerData(
-                        x.Company!.Name,
-                        x.Company!.Address!.CountryAlpha2Code,
-                        x.Company.CompanyUsers.Single(cu => cu.IamUser!.UserEntityId == iamUserId).Email),
-                    new OfferThirdPartyAutoSetupPropertyData(
-                        x.Company!.BusinessPartnerNumber,
-                        offerSubscriptionId,
-                        x.OfferId)),
-                x.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
+    public Task<(Guid offerSubscriptionId, OfferSubscriptionStatusId offerSubscriptionStatusId)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId) =>
+        _context.OfferSubscriptions.AsNoTracking()
+            .Where(x => x.OfferId == offerId && x.CompanyId == companyId && x.Offer!.OfferTypeId == offerTypeId)
+            .Select(x => new ValueTuple<Guid, OfferSubscriptionStatusId>(x.Id, x.OfferSubscriptionStatusId))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public void AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters)
+    {
+        var offerSubscription = _context.Attach(new OfferSubscription(offerSubscriptionId, Guid.Empty, Guid.Empty, default, Guid.Empty, Guid.Empty)).Entity;
+        setOptionalParameters.Invoke(offerSubscription);
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<(Guid SubscriptionId, string? OfferName, string SubscriptionUrl, string? ThumbnailUrl, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId) =>
+        _context.CompanyUsers.AsNoTracking()
+            .Where(user => user.IamUser!.UserEntityId == iamUserId)
+            .SelectMany(user => user.Company!.OfferSubscriptions.Where(subscription => 
+                subscription.Offer!.UserRoles.Any(ur => ur.CompanyUsers.Any(cu => cu.Id == user.Id)) &&
+                subscription.AppSubscriptionDetail!.AppInstance != null &&
+                subscription.AppSubscriptionDetail.AppSubscriptionUrl != null))
+            .Select(offerSubscription => new ValueTuple<Guid,string?,string,string?,string>(
+                offerSubscription.Id,
+                offerSubscription.Offer!.Name,
+                offerSubscription.AppSubscriptionDetail!.AppSubscriptionUrl!,
+                offerSubscription.Offer!.ThumbnailUrl,
+                offerSubscription.Offer!.Provider
+            )).ToAsyncEnumerable();
 }

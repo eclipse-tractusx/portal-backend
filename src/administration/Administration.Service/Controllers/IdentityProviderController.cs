@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
@@ -67,6 +67,7 @@ public class IdentityProviderController : ControllerBase
     /// Create an identity provider
     /// </summary>
     /// <param name="protocol">Type of the protocol the identity provider should be created for</param>
+    /// <param name="displayName">displayName of identityprovider to be set up (optional)</param>
     /// <returns>Returns details of the created identity provider</returns>
     /// <remarks>
     /// Example: POST: api/administration/identityprovider/owncompany/identityproviders
@@ -80,9 +81,9 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(IdentityProviderDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public async ValueTask<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery]IamIdentityProviderProtocol protocol)
+    public async ValueTask<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery]IamIdentityProviderProtocol protocol, [FromQuery] string? displayName = null)
     {
-        var details = await this.WithIamUserId(iamUserId => _businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, iamUserId)).ConfigureAwait(false);
+        var details = await this.WithIamUserId(iamUserId => _businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, displayName, iamUserId)).ConfigureAwait(false);
         return (ActionResult<IdentityProviderDetails>) CreatedAtRoute(nameof(GetOwnCompanyIdentityProvider), new { identityProviderId = details.identityProviderId }, details );
     }
 
@@ -276,10 +277,11 @@ public class IdentityProviderController : ControllerBase
     /// <response code="409">identityProviderLink for identityProvider already exists for user.</response>
     /// <response code="500">companyUserId is not linked to keycloak</response>
     /// <response code="502">Bad Gateway Service Error.</response>
+    [Obsolete("use CreateOrUpdateOwnCompanyUserIdentityProviderDataAsync (PUT api/administration/identityprovider/owncompany/users/{companyUserId/identityprovider/{identityProviderId}) instead")]
     [HttpPost]
     [Authorize(Roles = "modify_user_account")]
     [Route("owncompany/users/{companyUserId}/identityprovider")]
-    [ProducesResponseType(typeof(IdentityProviderUpdateStats), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserIdentityProviderLinkData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -314,14 +316,14 @@ public class IdentityProviderController : ControllerBase
     [HttpPut]
     [Authorize(Roles = "modify_user_account")]
     [Route("owncompany/users/{companyUserId}/identityprovider/{identityProviderId}")]
-    [ProducesResponseType(typeof(IdentityProviderUpdateStats), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserIdentityProviderLinkData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public ValueTask<UserIdentityProviderLinkData> UpdateOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId, [FromBody] UserLinkData userLinkData) =>
-        this.WithIamUserId(iamUserId => _businessLogic.UpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, userLinkData, iamUserId));
+    public ValueTask<UserIdentityProviderLinkData> CreateOrUpdateOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId, [FromBody] UserLinkData userLinkData) =>
+        this.WithIamUserId(iamUserId => _businessLogic.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, userLinkData, iamUserId));
 
     /// <summary>
     /// Gets the given user for the given identity provider
@@ -341,7 +343,7 @@ public class IdentityProviderController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_user_management")]
     [Route("owncompany/users/{companyUserId}/identityprovider/{identityProviderId}", Name = nameof(GetOwnCompanyUserIdentityProviderDataAsync))]
-    [ProducesResponseType(typeof(IdentityProviderUpdateStats), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserIdentityProviderLinkData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]

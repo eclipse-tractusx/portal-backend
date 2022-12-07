@@ -36,8 +36,18 @@ public record OfferProviderResponse(
     string? ProviderUri, 
     string? ContactEmail, 
     string? ContactNumber, 
-    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents
+    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
+    Guid? SalesManagerId
 );
+
+/// <summary>
+/// Model for Agreement and Consent Status
+/// </summary>
+/// <param name="Id"></param>
+/// <param name="Name"></param>
+/// <param name="ConsentStatus"></param>
+/// <returns></returns>
+public record OfferAgreement(Guid? Id, string? Name, string? ConsentStatus);
 
 /// <summary>
 /// Model for Document
@@ -45,4 +55,3 @@ public record OfferProviderResponse(
 /// <param name="documentId"></param>
 /// <param name="documentName"></param>
 public record DocumentData(Guid documentId, string documentName);
-

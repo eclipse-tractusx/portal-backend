@@ -18,15 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers;
 
@@ -65,7 +66,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateApp([FromRoute] Guid appId, [FromBody] AppEditableDetail updateModel) 
+    public async Task<NoContentResult> UpdateApp([FromRoute] Guid appId, [FromBody] AppEditableDetail updateModel) 
     {
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppAsync(appId, updateModel, userId)).ConfigureAwait(false);
         return NoContent();
@@ -175,4 +176,130 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<OfferProviderResponse> GetAppDetailsForStatusAsync([FromRoute] Guid appId) =>
         this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppDetailsForStatusAsync(appId, iamUserId));
+    
+    /// <summary>
+    /// Removes a role from persistence layer by appId and roleId.
+    /// </summary>
+    /// <param name="appId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">ID of the app to be deleted.</param>
+    /// <param name="roleId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">ID of the role to be deleted.</param>
+    /// <remarks>Example: DELETE: /api/apps/appreleaseprocess/{appId}/role/{roleId}</remarks>
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">Record not found.</response>
+    [HttpDelete]
+    [Route("{appId}/role/{roleId}")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> DeleteAppRoleAsync([FromRoute] Guid appId, [FromRoute] Guid roleId)
+    {
+        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.DeleteAppRoleAsync(appId, roleId, iamUserId));
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// Get All Users with Role of Sales Manager
+    /// </summary>
+    /// <remarks>Example: GET: /api/apps/appreleaseprocess/ownCompany/salesManager</remarks>
+    /// <response code="200">Return the Users with Role of Sales Manager.</response>
+    [HttpGet]
+    [Route("ownCompany/salesManager")]
+    [Authorize(Roles = "add_apps")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<CompanyUserNameData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagerAsync() =>
+        this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppProviderSalesManagersAsync(iamUserId));
+
+    /// <summary>
+    /// Creates an app according to request model
+    /// </summary>
+    /// <param name="appRequestModel">Request model for app creation.</param>
+    /// <returns>ID of created application.</returns> 
+    /// <remarks>Example: POST: /api/apps/appreleaseprocess/createapp</remarks>
+    /// <response code="201">Returns created app's ID.</response>
+    /// <response code="404">Language Code or Use Case or CompanyId does not exist.</response>
+    [HttpPost]
+    [Route("createapp")]
+    [Authorize(Roles = "add_apps")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
+    public async Task<CreatedAtRouteResult> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
+    {
+        var appId = await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddAppAsync(appRequestModel, iamUserId).ConfigureAwait(false));
+        return CreatedAtRoute(nameof(AppsController.GetAppDetailsByIdAsync), new {controller = "Apps", appId = appId}, appId);
+    }
+
+    /// <summary>
+    /// Updates an app according to request model
+    /// </summary>
+    /// <param name="appId" example="15507472-dfdc-4885-b165-8d4a8970a3e2">Id of the app to update</param>
+    /// <param name="appRequestModel">Request model for app creation.</param>
+    /// <returns>ID of updated application.</returns> 
+    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/15507472-dfdc-4885-b165-8d4a8970a3e2</remarks>
+    /// <response code="201">Returns created app's ID.</response>
+    /// <response code="404">Language Code or Use Case or CompanyId does not exist.</response>
+    [HttpPut]
+    [Route("{appId}")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> UpdateAppRelease([FromRoute] Guid appId, [FromBody] AppRequestModel appRequestModel)
+    {
+        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.UpdateAppReleaseAsync(appId, appRequestModel, iamUserId).ConfigureAwait(false));
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retrieves all in review status apps in the marketplace .
+    /// </summary>
+    /// <param name="page">page index start from 0</param>
+    /// <param name="size">size to get number of records</param>
+    /// <param name="sorting">sort by</param>
+    /// <returns>Collection of all in review status marketplace apps.</returns>
+    /// <remarks>Example: GET: /api/apps/appreleaseprocess/inReview</remarks>
+    /// <response code="200">Returns the list of all in review status marketplace apps.</response>
+    [HttpGet]
+    [Route("inReview")]
+    [Authorize(Roles = "approve_app_release,decline_app_release")]
+    [ProducesResponseType(typeof(Pagination.Response<InReviewAppData>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null) =>
+        _appReleaseBusinessLogic.GetAllInReviewStatusAppsAsync(page, size, sorting);
+
+    /// <summary>
+    /// Submit an app for release
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app.</param>
+    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/submit</remarks>
+    /// <response code="204">The app was successfully submitted for release.</response>
+    /// <response code="400">Either the sub claim is empty/invalid, user does not exist or the subscription might not have the correct status or the companyID is incorrect.</response>
+    /// <response code="404">App does not exist.</response>
+    [HttpPut]
+    [Route("{appId}/submit")]
+    [Authorize(Roles = "add_app")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> SubmitAppReleaseRequest([FromRoute] Guid appId)
+    {
+        await this.WithIamUserId(userId => _appReleaseBusinessLogic.SubmitAppReleaseRequestAsync(appId, userId)).ConfigureAwait(false);
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// dd role and role description for Active App 
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="appAssignedDesc"></param>
+    /// <remarks>Example: POST: /api/apps/appreleaseprocess/{appId}/role/activeapp</remarks>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="404">App does not exist.</response>
+    /// <response code="200">created role and role description successfully.</response>
+    [HttpPost]
+    [Route("{appId}/role/activeapp")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(IEnumerable<AppRoleData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IEnumerable<AppRoleData>> AddActiveAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)=>
+         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddActiveAppUserRoleAsync(appId, appAssignedDesc, iamUserId)).ConfigureAwait(false);
 }

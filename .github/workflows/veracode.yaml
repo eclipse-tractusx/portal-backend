@@ -303,18 +303,18 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
-        run: dotnet restore src/notification/Notification.Service
+        run: dotnet restore src/notifications/Notifications.Service
 
       - name: Build and publish
         run: |
-          cd src/notification/Notification.Service
+          cd src/notifications/Notifications.Service
           dotnet build --no-restore
           dotnet publish -c Debug  -p:PublishDir=.\publish
 
       - name: "Bundle files to scan"
         run: >
           zip -r portal-backend-notification.zip
-          src/notification/Notification.Service/.publish
+          src/notifications/Notifications.Service/.publish
           -x
           src/notification/Notification.Service/.publish/Org.Eclipse.TractusX.Portal.Backend.Notification.Service
 

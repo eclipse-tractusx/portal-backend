@@ -45,11 +45,11 @@ public interface IOfferService
     /// Updates the existing consent offer subscriptions in the database and creates new entries for the non existing.
     /// </summary>
     /// <param name="subscriptionId">Id of the offer subscription</param>
-    /// <param name="offerAgreementConsentDatas">List of the agreement and status of the consent</param>
+    /// <param name="offerAgreementConsentData">List of the agreement and status of the consent</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     Task CreateOrUpdateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId,
-        IEnumerable<ServiceAgreementConsentData> offerAgreementConsentDatas,
+        IEnumerable<OfferAgreementConsentData> offerAgreementConsentData,
         string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
@@ -64,6 +64,7 @@ public interface IOfferService
     /// Gets the offer consent detail data
     /// </summary>
     /// <param name="consentId">Id of the offer consent</param>
+    /// <param name="offerTypeId"></param>
     /// <returns>Returns the details</returns>
     Task<ConsentDetailData> GetConsentDetailDataAsync(Guid consentId, OfferTypeId offerTypeId);
     
@@ -101,8 +102,9 @@ public interface IOfferService
     /// <param name="companyAdminRoles">Roles that will be assigned to the company admin</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="offerTypeId">OfferTypeId of offer to be created</param>
+    /// <param name="basePortalAddress">Address of the portal</param>
     /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> companyAdminRoles, string iamUserId, OfferTypeId offerTypeId);
+    Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> companyAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress);
 
     /// <summary>
     /// Creates a new service offering
@@ -111,7 +113,7 @@ public interface IOfferService
     /// <param name="iamUserId">the iamUser id</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>The id of the newly created service</returns>
-    Task<Guid> CreateServiceOfferingAsync(OfferingData data, string iamUserId, OfferTypeId offerTypeId);
+    Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId, OfferTypeId offerTypeId);
     
     /// <summary>
     /// 
@@ -121,4 +123,17 @@ public interface IOfferService
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Checks whether the sales manager has the a sales manager role assigned and is in the same company as the user
+    /// </summary>
+    /// <param name="salesManagerId">Id of the sales manager</param>
+    /// <param name="iamUserId">id of the current user</param>
+    /// <param name="salesManagerRoles">the sales manager roles</param>
+    /// <returns>Returns the company id of the user</returns>
+    Task<Guid> ValidateSalesManager(Guid salesManagerId, string iamUserId, IDictionary<string, IEnumerable<string>> salesManagerRoles);
+    
+    void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<Localization> updateDescriptions, IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)> existingDescriptions);
+
+    void CreateOrUpdateOfferLicense(Guid offerId, string licenseText, (Guid OfferLicenseId, string LicenseText, bool AssignedToMultipleOffers) offerLicense);
 }

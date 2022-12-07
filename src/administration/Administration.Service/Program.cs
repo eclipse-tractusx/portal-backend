@@ -22,7 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
-using Org.Eclipse.TractusX.Portal.Backend.Notification.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
@@ -55,6 +55,7 @@ builder.Services.AddTransient<IInvitationBusinessLogic, InvitationBusinessLogic>
 
 builder.Services.AddTransient<IUserBusinessLogic, UserBusinessLogic>()
                 .AddTransient<IUserUploadBusinessLogic, UserUploadBusinessLogic>()
+                .AddTransient<IUserRolesBusinessLogic, UserRolesBusinessLogic>()
                 .ConfigureUserSettings(builder.Configuration.GetSection("UserManagement"));
 
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
@@ -74,8 +75,9 @@ builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBu
 
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 
-builder.Services.AddTransient<ISdFactoryService, SdFactoryService>()
-    .ConfigureSdFactorySettings(builder.Configuration.GetSection("SdFactory"));
+builder.Services
+    .AddSdFactoryService(builder.Configuration.GetSection("SdFactory"))
+    .AddDapsService(builder.Configuration.GetSection("Daps"));
 
 builder.Services.AddCustodianService(builder.Configuration.GetSection("Custodian"));
 

@@ -23,4 +23,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.Endp
 public static class Paths
 {
     public static readonly string Notification = "/api/notification";
+    public static readonly string Connectors = "/api/administration/connectors";
 }

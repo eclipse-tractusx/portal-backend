@@ -25,6 +25,7 @@ using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using FakeItEasy;
 using Xunit;
@@ -36,8 +37,8 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     private readonly IFixture _fixture;
     private Guid _identityProviderId;
     private string _iamUserId;
-    private ICustomizationComposer<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, Guid CompanyUserId, string? IdpAlias, bool IsSharedIdp)> _resultComposer;
-    private ICustomizationComposer<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, Guid CompanyUserId, string? IdpAlias)> _sharedIdpComposer;
+    private ICustomizationComposer<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, (string? IdpAlias, bool IsSharedIdp) IdentityProvider)> _resultComposer;
+    private ICustomizationComposer<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, IEnumerable<string> IdpAliase)> _sharedIdpComposer;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityProviderRepository _identityProviderRepository;
 
@@ -50,12 +51,19 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
 
         _identityProviderId = _fixture.Create<Guid>();
         _iamUserId = _fixture.Create<string>();
-        _resultComposer = _fixture.Build<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, Guid CompanyUserId, string? IdpAlias, bool IsSharedIdp)>();
-        _sharedIdpComposer = _fixture.Build<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber, Guid CompanyUserId, string? IdpAlias)>();
+        _resultComposer = _fixture.Build<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, (string? IdpAlias, bool IsSharedIdp) IdentityProvider)>();
+        _sharedIdpComposer = _fixture.Build<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company, (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser, IEnumerable<string> IdpAliase)>();
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
+
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
+
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._,A<string>._)).Returns(
+            _resultComposer.Create());
+
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<Guid?>._,A<IdentityProviderCategoryId>._)).Returns(
+            _sharedIdpComposer.With(x => x.IdpAliase, new [] { _fixture.Create<string>() }).Create());
     }
 
     #region GetCompanyNameIdpAliasData
@@ -73,7 +81,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     [Fact]
     public async void TestCompanyNameIdpAliasDataNotFound()
     {
-        (Guid, string?, string?, Guid, string?, bool) notfound = default;
+        ((Guid, string?, string?), (Guid, string?, string?, string?), (string?, bool)) notfound = default;
 
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._,A<string>._))
             .Returns(notfound);
@@ -90,14 +98,19 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     public async void TestCompanyNameIdpAliasDataIdpAliasNullThrows()
     {
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._,A<string>._))
-            .Returns(_resultComposer.With(x => x.IdpAlias, (string?)null).Create());
+            .Returns(_resultComposer.With(
+                x => x.IdentityProvider,
+                    _fixture.Build<(string? IdpAlias, bool IsSharedIdp)>()
+                        .With(x => x.IdpAlias, (string?)null)
+                        .Create())
+                .Create());
 
         var sut = new UserProvisioningService(null!,_portalRepositories);
 
         Task Act() => sut.GetCompanyNameIdpAliasData(_identityProviderId,_iamUserId);
 
-        var error = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(Act);
-        error.Message.Should().Be($"Specified argument was out of the range of valid values. (Parameter 'user {_iamUserId} is not associated with own idp {_identityProviderId}')");
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        error.Message.Should().Be($"user {_iamUserId} is not associated with own idp {_identityProviderId}");
     }
 
     [Fact]
@@ -106,7 +119,13 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
         var companyId = _fixture.Create<Guid>();
 
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._,A<string>._))
-            .Returns(_resultComposer.With(x => x.CompanyName, (string?)null).With(x => x.CompanyId, companyId).Create());
+            .Returns(_resultComposer.With(
+                x => x.Company,
+                    _fixture.Build<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber)>()
+                        .With(x => x.CompanyName, (string?)null)
+                        .With(x => x.CompanyId, companyId)
+                        .Create())
+                .Create());
 
         var sut = new UserProvisioningService(null!,_portalRepositories);
 
@@ -133,9 +152,9 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     [Fact]
     public async void TestGetCompanyNameSharedIdpAliasDataNotFound()
     {
-        (Guid, string?, string?, Guid, string?) notfound = default;
+        ((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>) notfound = default;
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameSharedIdpAliasUntrackedAsync(A<string>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<Guid?>._,A<IdentityProviderCategoryId>._))
             .Returns(notfound);
 
         var sut = new UserProvisioningService(null!,_portalRepositories);
@@ -147,17 +166,49 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     }
 
     [Fact]
-    public async void TestGetCompanyNameSharedIdpAliasDataIdpAliasNullThrows()
+    public async void TestGetCompanyNameSharedIdpAliasDataForApplicationIdNotFound()
     {
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameSharedIdpAliasUntrackedAsync(A<string>._))
-            .Returns(_sharedIdpComposer.With(x => x.IdpAlias, (string?)null).Create());
+        ((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<string>) notfound = default;
+
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<Guid?>._,A<IdentityProviderCategoryId>._))
+            .Returns(notfound);
+
+        var applicationId = _fixture.Create<Guid>();
+
+        var sut = new UserProvisioningService(null!,_portalRepositories);
+
+        Task Act() => sut.GetCompanyNameSharedIdpAliasData(_iamUserId, applicationId);
+
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be($"user {_iamUserId} is not associated with application {applicationId}");
+    }
+
+    [Fact]
+    public async void TestGetCompanyNameSharedIdpAliasDataNoIdpAliasThrows()
+    {
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<Guid?>._,A<IdentityProviderCategoryId>._))
+            .Returns(_sharedIdpComposer.With(x => x.IdpAliase, Enumerable.Empty<string>()).Create());
 
         var sut = new UserProvisioningService(null!,_portalRepositories);
 
         Task Act() => sut.GetCompanyNameSharedIdpAliasData(_iamUserId);
 
-        var error = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be($"Specified argument was out of the range of valid values. (Parameter 'user {_iamUserId} is not associated with any shared idp')");
+        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be($"user {_iamUserId} is not associated with any shared idp");
+    }
+
+    [Fact]
+    public async void TestGetCompanyNameSharedIdpAliasDataMultipleIdpAliaseThrows()
+    {
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<Guid?>._,A<IdentityProviderCategoryId>._))
+            .Returns(_sharedIdpComposer.With(x => x.IdpAliase, _fixture.CreateMany<string>(2)).Create());
+
+        var sut = new UserProvisioningService(null!,_portalRepositories);
+
+        Task Act() => sut.GetCompanyNameSharedIdpAliasData(_iamUserId);
+
+        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be($"user {_iamUserId} is associated with more than one shared idp");
     }
 
     [Fact]
@@ -165,8 +216,14 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     {
         var companyId = _fixture.Create<Guid>();
 
-        A.CallTo(() => _identityProviderRepository.GetCompanyNameSharedIdpAliasUntrackedAsync(A<string>._))
-            .Returns(_sharedIdpComposer.With(x => x.CompanyName, (string?)null).With(x => x.CompanyId, companyId).Create());
+        A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<string>._,A<Guid?>._,A<IdentityProviderCategoryId>._))
+            .Returns(_sharedIdpComposer
+                .With(x => x.Company,
+                    _fixture.Build<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber)>()
+                        .With(x => x.CompanyName, (string?)null)
+                        .With(x => x.CompanyId, companyId)
+                        .Create())
+                .Create());
 
         var sut = new UserProvisioningService(null!,_portalRepositories);
 

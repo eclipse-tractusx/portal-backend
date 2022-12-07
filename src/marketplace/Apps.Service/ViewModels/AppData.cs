@@ -23,32 +23,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <summary>
 /// View model of an application's base data.
 /// </summary>
-public class AppData
-{
-    /// <summary>
-    /// Ctor.
-    /// </summary>
-    /// <param name="title">Title.</param>
-    /// <param name="shortDescription">Short description.</param>
-    /// <param name="provider">Provider.</param>
-    /// <param name="price">Price.</param>
-    /// <param name="leadPictureUri">Lead pircture URI.</param>
-    public AppData(string title, string shortDescription, string provider, string price, string leadPictureUri)
-    {
-        Title = title;
-        ShortDescription = shortDescription;
-        Provider = provider;
-        UseCases = new List<string>();
-        Price = price;
-        LeadPictureUri = leadPictureUri;
-    }
-
-    public Guid Id { get; init; }
-    public string Title { get; init; }
-    public string ShortDescription { get; init; }
-    public string Provider { get; init; }
-    public string Price { get; init; }
-    public string LeadPictureUri { get; init; }
-    public IEnumerable<string> UseCases { get; init; }
-
-}
+/// <param name="Id">Id of the App.</param>
+/// <param name="Name">Name of the app.</param>
+/// <param name="ShortDescription">Short description.</param>
+/// <param name="Provider">Provider.</param>
+/// <param name="Price">Price.</param>
+/// <param name="LeadPictureUri">Lead pircture URI.</param>
+/// <param name="UseCases">The apps use cases.</param>
+public record AppData(
+    Guid Id,
+    string Name,
+    string ShortDescription,
+    string Provider,
+    string Price,
+    string LeadPictureUri,
+    IEnumerable<string> UseCases);

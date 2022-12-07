@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.ComponentModel.DataAnnotations;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian
 {
     public class CustodianSettings
@@ -34,13 +36,28 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian
             BaseAdress = null!;
         }
 
+        [Required(AllowEmptyStrings = false)]
         public string Username { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
         public string Password { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
         public string ClientId { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
         public string GrantType { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
         public string ClientSecret { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
         public string Scope { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
         public string KeyCloakTokenAdress { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
         public string BaseAdress { get; set; }
     }
 }
