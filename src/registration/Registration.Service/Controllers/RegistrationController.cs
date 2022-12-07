@@ -132,7 +132,7 @@ namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(IAsyncEnumerable<UploadDocuments> ), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync([FromRoute] Guid applicationId,[FromRoute] DocumentTypeId documentTypeId) =>
-           this.WithIamUserId(user => _registrationBusinessLogic.GetUploadedDocumentsAsync(applicationId,documentTypeId,user));
+            _registrationBusinessLogic.GetUploadedDocumentsAsync(applicationId,documentTypeId);
 
         /// <summary>
         /// Get all composite client roles
