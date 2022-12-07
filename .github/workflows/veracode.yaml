@@ -316,7 +316,7 @@ jobs:
           zip -r portal-backend-notification.zip
           src/notifications/Notifications.Service/.publish
           -x
-          src/notification/Notification.Service/.publish/Org.Eclipse.TractusX.Portal.Backend.Notification.Service
+          src/notifications/Notifications.Service/.publish/Org.Eclipse.TractusX.Portal.Backend.Notifications.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -329,7 +329,7 @@ jobs:
           filepath: "portal-backend-notification.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.Eclipse.TractusX.Portal.Backend.Notification.Service.dll, Org.Eclipse.TractusX.Portal.Backend.Framework.Models.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.dll, Org.Eclipse.TractusX.Portal.Backend.Framework.Models.dll'
 
   analyze-services-service:
     runs-on: ubuntu-latest
