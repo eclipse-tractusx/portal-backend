@@ -147,6 +147,7 @@ public interface IOfferService
     /// <returns></returns>
     Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> approveOfferRoles);
 
+    /// <summary>
     /// Update offer status and create notification
     /// </summary>
     /// <param name="offerId">Id of the offer that should be submitted</param>
@@ -156,4 +157,16 @@ public interface IOfferService
     /// <param name="companyAdminRoles">Company Admin Roles</param>
     /// <returns></returns>
     Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> companyAdminRoles);
+
+    /// <summary>
+    /// Declines the given offer
+    /// </summary>
+    /// <param name="offerId">Id of the offer that should be declined</param>
+    /// <param name="iamUserId">Id of the iam User</param>
+    /// <param name="data">The offer decline data</param>
+    /// <param name="offerType">The offer type</param>
+    /// <param name="notificationTypeId">Id of the notification that should be send</param>
+    /// <param name="notificationRecipients">Recipients of the notifications</param>
+    /// <param name="basePortalAddress">the base portal address</param>
+    Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string,IEnumerable<string>> notificationRecipients, string basePortalAddress);
 }

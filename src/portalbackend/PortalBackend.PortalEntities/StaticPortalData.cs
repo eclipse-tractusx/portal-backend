@@ -1103,5 +1103,7 @@ public static class StaticPortalData
         new NotificationTypeAssignedTopic(NotificationTypeId.APP_RELEASE_APPROVAL, NotificationTopicId.OFFER),
         new NotificationTypeAssignedTopic(NotificationTypeId.SERVICE_RELEASE_REQUEST, NotificationTopicId.OFFER),
         new NotificationTypeAssignedTopic(NotificationTypeId.SERVICE_RELEASE_APPROVAL, NotificationTopicId.OFFER),
+        new NotificationTypeAssignedTopic(NotificationTypeId.APP_RELEASE_REJECTION, NotificationTopicId.OFFER),
+        new NotificationTypeAssignedTopic(NotificationTypeId.SERVICE_RELEASE_REJECTION, NotificationTopicId.OFFER),
     };
 }

@@ -114,4 +114,14 @@ public enum NotificationTypeId
     /// Approve Service to change status from IN_REVIEW to ACTIVE
     /// </summary>
     SERVICE_RELEASE_APPROVAL = 18,
+
+    /// <summary>
+    /// Notification when a app is rejected
+    /// </summary>
+    APP_RELEASE_REJECTION = 19,
+
+    /// <summary>
+    /// Notification when a service is rejected
+    /// </summary>
+    SERVICE_RELEASE_REJECTION = 20
 }
