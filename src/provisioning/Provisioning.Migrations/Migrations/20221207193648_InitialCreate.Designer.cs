@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,14 +25,14 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 
 #nullable disable
 
-namespace Provisioning.Migrations.Migrations
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
 {
     [DbContext(typeof(ProvisioningDbContext))]
-    [Migration("20221116214721_InitialCreate")]
+    [Migration("20221207193648_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -49,7 +49,7 @@ namespace Provisioning.Migrations.Migrations
 
             modelBuilder.HasSequence<int>("identity_provider_sequence_sequence_id_seq", "provisioning");
 
-            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities.ClientSequence", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities.ClientSequence", b =>
                 {
                     b.Property<int>("SequenceId")
                         .ValueGeneratedOnAdd()
@@ -63,7 +63,7 @@ namespace Provisioning.Migrations.Migrations
                     b.ToTable("client_sequence", "provisioning");
                 });
 
-            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities.IdentityProviderSequence", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities.IdentityProviderSequence", b =>
                 {
                     b.Property<int>("SequenceId")
                         .ValueGeneratedOnAdd()
@@ -77,7 +77,7 @@ namespace Provisioning.Migrations.Migrations
                     b.ToTable("identity_provider_sequence", "provisioning");
                 });
 
-            modelBuilder.Entity("Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities.UserPasswordReset", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities.UserPasswordReset", b =>
                 {
                     b.Property<string>("UserEntityId")
                         .HasMaxLength(36)

@@ -1,4 +1,4 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -113,6 +113,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Token", "framework\Framework.Token\Framework.Token.csproj", "{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Token.Tests", "..\tests\framework\Framework.Token.Tests\Framework.Token.Tests.csproj", "{4316375F-361B-49D6-A310-08CD96D04398}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Provisioning.DBAccess.Tests", "..\tests\provisioning\Provisioning.DBAccess.Tests\Provisioning.DBAccess.Tests.csproj", "{0C039C14-74CA-484C-B8D9-A307C97EC312}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -664,6 +666,18 @@ Global
 		{4316375F-361B-49D6-A310-08CD96D04398}.Release|x64.Build.0 = Release|Any CPU
 		{4316375F-361B-49D6-A310-08CD96D04398}.Release|x86.ActiveCfg = Release|Any CPU
 		{4316375F-361B-49D6-A310-08CD96D04398}.Release|x86.Build.0 = Release|Any CPU
+		{0C039C14-74CA-484C-B8D9-A307C97EC312}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C039C14-74CA-484C-B8D9-A307C97EC312}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C039C14-74CA-484C-B8D9-A307C97EC312}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0C039C14-74CA-484C-B8D9-A307C97EC312}.Debug|x64.Build.0 = Debug|Any CPU
+		{0C039C14-74CA-484C-B8D9-A307C97EC312}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0C039C14-74CA-484C-B8D9-A307C97EC312}.Debug|x86.Build.0 = Debug|Any CPU
+		{0C039C14-74CA-484C-B8D9-A307C97EC312}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C039C14-74CA-484C-B8D9-A307C97EC312}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C039C14-74CA-484C-B8D9-A307C97EC312}.Release|x64.ActiveCfg = Release|Any CPU
+		{0C039C14-74CA-484C-B8D9-A307C97EC312}.Release|x64.Build.0 = Release|Any CPU
+		{0C039C14-74CA-484C-B8D9-A307C97EC312}.Release|x86.ActiveCfg = Release|Any CPU
+		{0C039C14-74CA-484C-B8D9-A307C97EC312}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -672,6 +686,7 @@ Global
 		SolutionGuid = {2EB6265F-323A-4BF3-969E-003D64A14B64}
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{0C039C14-74CA-484C-B8D9-A307C97EC312} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{2E0BC264-3EB6-4EC2-B332-0F0E50180401} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{2B1218E4-E1A4-418E-A55F-16B7F30235A7} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{6C2F85D7-0443-4711-96DF-66EC46CA1A98} = {323C198D-A8C6-4EB0-8B79-72624275E35F}

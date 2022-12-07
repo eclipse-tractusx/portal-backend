@@ -26,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities
 {
     public partial class ProvisioningDbContext : DbContext
     {
-        public ProvisioningDbContext()
+        protected ProvisioningDbContext()
         {
         }
 
@@ -41,6 +41,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            optionsBuilder.UseSnakeCaseNamingConvention();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -89,10 +90,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities
                     .HasColumnName("reset_count")
                     .HasDefaultValue(0);
             });
-
-            OnModelCreatingPartial(modelBuilder);
         }
-
-        partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
     }
 }
