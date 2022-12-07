@@ -58,12 +58,29 @@ public static class BaseSeed
         });
         dbContext.CompanyApplications.AddRange(new List<CompanyApplication>
         {
-            new (new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"),
-            new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),CompanyApplicationStatusId.CONFIRMED,DateTimeOffset.UtcNow)
+            new (new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyApplicationStatusId.CONFIRMED, DateTimeOffset.UtcNow),
+            new (new Guid("1b86d973-3aac-4dcd-a9e9-0c222766202b"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"), CompanyApplicationStatusId.SUBMITTED, DateTimeOffset.UtcNow)
+        });
+        dbContext.Invitations.AddRange(new List<Invitation>
+        {
+            new (new Guid("aa6cdb72-22d8-4f4f-8a0b-5f8c4b59a407"), new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"), InvitationStatusId.ACCEPTED, DateTimeOffset.UtcNow),
+            new (new Guid("c175e0a8-14cf-49fb-918b-e878060a55da"), new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019991"), InvitationStatusId.ACCEPTED, DateTimeOffset.UtcNow),
+            new (new Guid("2c7e3faa-1df1-41a1-abb0-6f902ef38987"), new Guid("1b86d973-3aac-4dcd-a9e9-0c222766202b"), new Guid("adf37b09-53f3-48ea-b8fb-8cbb7fd79324"), InvitationStatusId.ACCEPTED, DateTimeOffset.UtcNow),
         });
         dbContext.Documents.AddRange(new List<Document>
         {
-            new (new Guid("fda6c9cb-62be-4a98-99c1-d9c5a2df4aad"),new byte[1024],new byte[1024],"test.pdf",DateTimeOffset.UtcNow,DocumentStatusId.INACTIVE,DocumentTypeId.CX_FRAME_CONTRACT)
+            new (new Guid("fda6c9cb-62be-4a98-99c1-d9c5a2df4aad"), new byte[1024], new byte[1024], "test1.pdf", DateTimeOffset.UtcNow, DocumentStatusId.INACTIVE, DocumentTypeId.CX_FRAME_CONTRACT)
+            {
+                CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990")
+            },
+            new (new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea40"), new byte[1024], new byte[1024], "test2.pdf", DateTimeOffset.UtcNow, DocumentStatusId.INACTIVE, DocumentTypeId.CX_FRAME_CONTRACT)
+            {
+                CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058019991")
+            },
+            new (new Guid("5936c0f4-d07a-4f90-b397-b00b8b30c6f4"), new byte[1024], new byte[1024], "test3.pdf", DateTimeOffset.UtcNow, DocumentStatusId.INACTIVE, DocumentTypeId.CX_FRAME_CONTRACT)
+            {
+                CompanyUserId = new Guid("adf37b09-53f3-48ea-b8fb-8cbb7fd79324")
+            },
         });
         dbContext.ProviderCompanyDetails.AddRange(new List<ProviderCompanyDetail>
         {
