@@ -41,7 +41,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
                 schema: "provisioning");
 
             migrationBuilder.CreateTable(
-                name: "client_sequence",
+                name: "client_sequences",
                 schema: "provisioning",
                 columns: table => new
                 {
@@ -49,11 +49,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("client_sequence_pkey", x => x.sequence_id);
+                    table.PrimaryKey("pk_client_sequences", x => x.sequence_id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "identity_provider_sequence",
+                name: "identity_provider_sequences",
                 schema: "provisioning",
                 columns: table => new
                 {
@@ -61,7 +61,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("identity_provider_sequence_pkey", x => x.sequence_id);
+                    table.PrimaryKey("pk_identity_provider_sequences", x => x.sequence_id);
                 });
 
             migrationBuilder.CreateTable(
@@ -70,23 +70,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
                 columns: table => new
                 {
                     user_entity_id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
-                    password_modified_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
-                    reset_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0)
+                    password_modified_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    reset_count = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_user_password_resets", x => x.user_entity_id);
+                    table.PrimaryKey("pk_user_password_resets", x => x.user_entity_id);
                 });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "client_sequence",
+                name: "client_sequences",
                 schema: "provisioning");
 
             migrationBuilder.DropTable(
-                name: "identity_provider_sequence",
+                name: "identity_provider_sequences",
                 schema: "provisioning");
 
             migrationBuilder.DropTable(

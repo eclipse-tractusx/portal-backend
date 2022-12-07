@@ -32,22 +32,23 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
 {
     [DbContext(typeof(ProvisioningDbContext))]
-    [Migration("20221207193648_InitialCreate")]
+    [Migration("20221207202641_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("provisioning")
                 .UseCollation("en_US.utf8")
                 .HasAnnotation("ProductVersion", "6.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.HasSequence<int>("client_sequence_sequence_id_seq", "provisioning");
+            modelBuilder.HasSequence<int>("client_sequence_sequence_id_seq");
 
-            modelBuilder.HasSequence<int>("identity_provider_sequence_sequence_id_seq", "provisioning");
+            modelBuilder.HasSequence<int>("identity_provider_sequence_sequence_id_seq");
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities.ClientSequence", b =>
                 {
@@ -58,9 +59,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
                         .HasDefaultValueSql("nextval('provisioning.client_sequence_sequence_id_seq'::regclass)");
 
                     b.HasKey("SequenceId")
-                        .HasName("client_sequence_pkey");
+                        .HasName("pk_client_sequences");
 
-                    b.ToTable("client_sequence", "provisioning");
+                    b.ToTable("client_sequences", "provisioning");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities.IdentityProviderSequence", b =>
@@ -72,9 +73,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
                         .HasDefaultValueSql("nextval('provisioning.identity_provider_sequence_sequence_id_seq'::regclass)");
 
                     b.HasKey("SequenceId")
-                        .HasName("identity_provider_sequence_pkey");
+                        .HasName("pk_identity_provider_sequences");
 
-                    b.ToTable("identity_provider_sequence", "provisioning");
+                    b.ToTable("identity_provider_sequences", "provisioning");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities.UserPasswordReset", b =>
@@ -85,18 +86,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
                         .HasColumnName("user_entity_id");
 
                     b.Property<DateTimeOffset>("PasswordModifiedAt")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("password_modified_at")
-                        .HasDefaultValueSql("now()");
+                        .HasColumnName("password_modified_at");
 
                     b.Property<int>("ResetCount")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
                         .HasColumnName("reset_count");
 
-                    b.HasKey("UserEntityId");
+                    b.HasKey("UserEntityId")
+                        .HasName("pk_user_password_resets");
 
                     b.ToTable("user_password_resets", "provisioning");
                 });
