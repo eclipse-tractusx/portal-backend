@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
@@ -18,17 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-public class AuthResponse
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+
+/// <summary>
+/// Service to call the BPDM endpoints
+/// </summary>
+public interface IBpdmService
 {
-    public string? access_token { get; set; }
-    public int expires_in { get; set; }
-    public int refresh_expires_in { get; set; }
-    public string? refresh_token { get; set; }
-    public string? token_type { get; set; }
-    public string? id_token { get; set; }
-    public int notbeforepolicy { get; set; }
-    public string? session_state { get; set; }
-    public string? scope { get; set; }
+    /// <summary>
+    /// Triggers the bpn data push
+    /// </summary>
+    /// <param name="data">The bpdm data</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
+    Task<bool> TriggerBpnDataPush(BpdmTransferData data, CancellationToken cancellationToken);
 }

@@ -93,11 +93,10 @@ public class ApplicationRepository : IApplicationRepository
                 Application = application, 
                 CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).SingleOrDefault()
             })
-            .Select(data => new CompanyApplicationUserEmailData(data.Application)
-            {
-                CompanyUserId = data.CompanyUser!.Id,
-                Email = data.CompanyUser!.Email
-            })
+            .Select(data => new CompanyApplicationUserEmailData(
+                data.Application.ApplicationStatusId,
+                data.CompanyUser!.Id,
+                data.CompanyUser!.Email))
             .SingleOrDefaultAsync();
 
     public Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>

@@ -63,15 +63,16 @@ public class NotificationRepository : INotificationRepository
         _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
 
     /// <inheritdoc />
-    public Func<int,int,Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationSorting? sorting) =>
+    public Func<int,int,Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, NotificationSorting? sorting) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
             _dbContext.Notifications.AsNoTracking()
                 .Where(notification =>
-                    notification.Receiver!.IamUser!.UserEntityId == iamUserId
-                    && (!isRead.HasValue || notification.IsRead == isRead.Value)
-                    && (!typeId.HasValue || notification.NotificationTypeId == typeId.Value))
+                    notification.Receiver!.IamUser!.UserEntityId == iamUserId &&
+                    (!isRead.HasValue || notification.IsRead == isRead.Value) &&
+                    (!typeId.HasValue || notification.NotificationTypeId == typeId.Value) &&
+                    (!topicId.HasValue || notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId == topicId.Value))
                 .GroupBy(notification => notification.ReceiverUserId),
             sorting switch
             {
