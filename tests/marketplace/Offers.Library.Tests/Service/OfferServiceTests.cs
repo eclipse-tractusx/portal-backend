@@ -1030,7 +1030,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be($"{offerTypeId} must be in status {OfferStatusId.IN_REVIEW.ToString()}");
+        ex.Message.Should().Be($"{offerTypeId} must be in status {OfferStatusId.IN_REVIEW}");
     }
 
     [Theory]
