@@ -2,8 +2,6 @@ nuget/nuget/-/PasswordGenerator/2.1.0
 nuget/nuget/-/EFCore.NamingConventions/6.0.0
 nuget/nuget/-/Flurl.Http.Signed/3.2.4
 nuget/nuget/-/Flurl.Signed/3.0.6
-nuget/nuget/-/Framework.Async/1.0.0
-nuget/nuget/-/Framework.BaseDependencies/1.0.0
 nuget/nuget/-/Laraue.EfCoreTriggers.Common/6.3.6
 nuget/nuget/-/Laraue.EfCoreTriggers.PostgreSql/6.3.6
 nuget/nuget/-/MailKit/2.15.0

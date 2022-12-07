@@ -1,23 +1,3 @@
-###############################################################
-# Copyright (c) 2021,2022 BMW Group AG
-## Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
-##
-## See the NOTICE file(s) distributed with this work for additional
-## information regarding copyright ownership.
-##
-## This program and the accompanying materials are made available under the
-## terms of the Apache License, Version 2.0 which is available at
-## https://www.apache.org/licenses/LICENSE-2.0.
-##
-## Unless required by applicable law or agreed to in writing, software
-## distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-## WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-## License for the specific language governing permissions and limitations
-## under the License.
-##
-## SPDX-License-Identifier: Apache-2.0
-###############################################################
-
 name: "Veracode"
 
 on:
@@ -70,7 +50,7 @@ jobs:
           zip -r portal-backend-administration-service.zip
           src/administration/Administration.Service/.publish
           -x
-          src/administration/Administration.Service/.publish/Org.CatenaX.Ng.Portal.Backend.Administration.Service
+          src/administration/Administration.Service/.publish/Org.Eclipse.TractusX.Portal.Backend.Administration.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -83,7 +63,7 @@ jobs:
           filepath: "portal-backend-administration-service.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.CatenaX.Ng.Portal.Backend.Administration.Service.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Administration.Service.dll'
 
   analyze-registration-service:
     runs-on: ubuntu-latest
@@ -115,7 +95,7 @@ jobs:
           zip -r portal-backend-registration-service.zip
           src/registration/Registration.Service/.publish
           -x
-          src/registration/Registration.Service/.publish/Org.CatenaX.Ng.Portal.Backend.Registration.Service
+          src/registration/Registration.Service/.publish/Org.Eclipse.TractusX.Portal.Backend.Registration.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -128,7 +108,7 @@ jobs:
           filepath: "portal-backend-registration-service.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.CatenaX.Ng.Portal.Backend.Registration.Service.dll, Org.CatenaX.Ng.Portal.Backend.Framework.Models.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Registration.Service.dll, Org.Eclipse.TractusX.Portal.Backend.Framework.Models.dll'
 
   analyze-provisioning-service:
     runs-on: ubuntu-latest
@@ -160,7 +140,7 @@ jobs:
           zip -r portal-backend-provisioning-service.zip
           src/provisioning/Provisioning.Service/.publish
           -x
-          src/provisioning/Provisioning.Service/.publish/Org.CatenaX.Ng.Portal.Backend.Provisioning.Service
+          src/provisioning/Provisioning.Service/.publish/Org.Eclipse.TractusX.Portal.Backend.Provisioning.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -173,7 +153,7 @@ jobs:
           filepath: "portal-backend-provisioning-service.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.CatenaX.Ng.Portal.Backend.Provisioning.Service.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Provisioning.Service.dll'
 
   analyze-marketplace-app-service:
     runs-on: ubuntu-latest
@@ -205,7 +185,7 @@ jobs:
           zip -r portal-backend-marketplace-app.zip
           src/marketplace/Apps.Service/.publish
           -x
-          src/marketplace/Apps.Service/.publish/Org.CatenaX.Ng.Portal.Backend.Apps.Service
+          src/marketplace/Apps.Service/.publish/Org.Eclipse.TractusX.Portal.Backend.Apps.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -218,7 +198,7 @@ jobs:
           filepath: "portal-backend-marketplace-app.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.CatenaX.Ng.Portal.Backend.Apps.Service.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Apps.Service.dll'
 
   analyze-portal-migrations:
     runs-on: ubuntu-latest
@@ -336,7 +316,7 @@ jobs:
           zip -r portal-backend-notification.zip
           src/notifications/Notifications.Service/.publish
           -x
-          src/notifications/Notifications.Service/.publish/Org.CatenaX.Ng.Portal.Backend.Notifications.Service
+          src/notification/Notification.Service/.publish/Org.Eclipse.TractusX.Portal.Backend.Notification.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -349,7 +329,7 @@ jobs:
           filepath: "portal-backend-notification.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.CatenaX.Ng.Portal.Backend.Notifications.Service.dll, Org.CatenaX.Ng.Portal.Backend.Framework.Models.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Notification.Service.dll, Org.Eclipse.TractusX.Portal.Backend.Framework.Models.dll'
 
   analyze-services-service:
     runs-on: ubuntu-latest
@@ -381,7 +361,7 @@ jobs:
           zip -r portal-backend-services.zip
           src/marketplace/Services.Service/.publish
           -x
-          src/marketplace/Services.Service/.publish/Org.CatenaX.Ng.Portal.Backend.Services.Service
+          src/marketplace/Services.Service/.publish/Org.Eclipse.TractusX.Portal.Backend.Services.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -394,4 +374,4 @@ jobs:
           filepath: "portal-backend-services.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.CatenaX.Ng.Portal.Backend.Services.Service.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Services.Service.dll'

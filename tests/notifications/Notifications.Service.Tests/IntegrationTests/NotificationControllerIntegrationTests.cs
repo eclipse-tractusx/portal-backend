@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,14 +19,14 @@
  ********************************************************************************/
 
 using FluentAssertions;
-using Org.CatenaX.Ng.Portal.Backend.Notifications.Service.Controllers;
-using Org.CatenaX.Ng.Portal.Backend.Notifications.Service.Tests.EnpointSetup;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.IntegrationTests;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests.EnpointSetup;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
 using System.Net;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Notifications.Service.Tests.IntegrationTests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests.IntegrationTests;
 
 public class NotificationControllerIntegrationTests : IClassFixture<IntegrationTestFactory<NotificationController>>
 {

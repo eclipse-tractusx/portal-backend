@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 public record IdentityProviderMapperModel(string Id, string Name, IdentityProviderMapperType Type, IDictionary<string, object> Config);

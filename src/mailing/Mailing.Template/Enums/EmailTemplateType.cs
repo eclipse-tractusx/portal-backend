@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Mailing.Template.Attributes;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Attributes;
 using System.Text.Json.Serialization;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Mailing.Template.Enums
+namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums
 {
     /// <summary>
     /// Base email template types for sending html emails.
@@ -95,6 +95,16 @@ namespace Org.CatenaX.Ng.Portal.Backend.Mailing.Template.Enums
         /// Email template for notifying requester of subscription activations.
         /// </summary>
         [Path("serviceprovider_subscription_activation.html")]
-        ServiceSubscriptionActivation
+        ServiceSubscriptionActivation,
+        
+        /// Email template for notifying about decline of an app.
+        /// </summary>
+        [Path("app_request_decline.html")]
+        AppRequestDecline,
+        
+        /// Email template for notifying about decline of an service.
+        /// </summary>
+        [Path("service_request_decline.html")]
+        ServiceRequestDecline,
     }
 }

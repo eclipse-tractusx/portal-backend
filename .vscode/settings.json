@@ -12,7 +12,7 @@
             "commentprefix<!->": "-",
             "cx_header_default_bmw":[
                 "* Copyright (c) 2021,2022 BMW Group AG",
-                " * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.",
+                " * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation",
                 " *",
                 " * See the NOTICE file(s) distributed with this work for additional",
                 " * information regarding copyright ownership.",
@@ -31,7 +31,7 @@
             ],
             "cx_header_with_#_bmw":[
                 "Copyright (c) 2021,2022 BMW Group AG",
-                " Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.",
+                " Copyright (c) 2021,2022 Contributors to the Eclipse Foundation",
                 "",
                 " See the NOTICE file(s) distributed with this work for additional",
                 " information regarding copyright ownership.",
@@ -50,7 +50,7 @@
             ],
             "cx_header_with_<!->_bmw":[
                 "Copyright (c) 2021,2022 BMW Group AG",
-                "- Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.",
+                "- Copyright (c) 2021,2022 Contributors to the Eclipse Foundation",
                 "-",
                 "- See the NOTICE file(s) distributed with this work for additional",
                 "- information regarding copyright ownership.",
@@ -69,7 +69,7 @@
             ],
             "cx_header_default_mercedes":[
                 "* Copyright (c) 2021,2022 Mercedes-Benz Group AG and BMW Group AG",
-                " * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.",
+                " * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation",
                 " *",
                 " * See the NOTICE file(s) distributed with this work for additional",
                 " * information regarding copyright ownership.",
@@ -88,7 +88,7 @@
             ],
             "cx_header_with_#_mercedes":[
                 "Copyright (c) 2021,2022 Mercedes-Benz Group AG and BMW Group AG",
-                " Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.",
+                " Copyright (c) 2021,2022 Contributors to the Eclipse Foundation",
                 "",
                 " See the NOTICE file(s) distributed with this work for additional",
                 " information regarding copyright ownership.",
@@ -107,7 +107,7 @@
             ],
             "cx_header_default_tsystems":[
                 "* Copyright (c) 2021,2022 T-Systems International GmbH and BMW Group AG",
-                " * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.",
+                " * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation",
                 " *",
                 " * See the NOTICE file(s) distributed with this work for additional",
                 " * information regarding copyright ownership.",
@@ -126,7 +126,7 @@
             ],
             "cx_header_with_#_tsystems":[
                 "Copyright (c) 2021,2022 T-Systems International GmbH and BMW Group AG",
-                " Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.",
+                " Copyright (c) 2021,2022 Contributors to the Eclipse Foundation",
                 "",
                 " See the NOTICE file(s) distributed with this work for additional",
                 " information regarding copyright ownership.",

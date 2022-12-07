@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
 public static class StaticPortalData
 {
@@ -1103,5 +1103,7 @@ public static class StaticPortalData
         new NotificationTypeAssignedTopic(NotificationTypeId.APP_RELEASE_APPROVAL, NotificationTopicId.OFFER),
         new NotificationTypeAssignedTopic(NotificationTypeId.SERVICE_RELEASE_REQUEST, NotificationTopicId.OFFER),
         new NotificationTypeAssignedTopic(NotificationTypeId.SERVICE_RELEASE_APPROVAL, NotificationTopicId.OFFER),
+        new NotificationTypeAssignedTopic(NotificationTypeId.APP_RELEASE_REJECTION, NotificationTopicId.OFFER),
+        new NotificationTypeAssignedTopic(NotificationTypeId.SERVICE_RELEASE_REJECTION, NotificationTopicId.OFFER),
     };
 }

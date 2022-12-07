@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 /// <summary>
 /// Possible types of a notification
@@ -114,4 +114,14 @@ public enum NotificationTypeId
     /// Approve Service to change status from IN_REVIEW to ACTIVE
     /// </summary>
     SERVICE_RELEASE_APPROVAL = 18,
+
+    /// <summary>
+    /// Notification when a app is rejected
+    /// </summary>
+    APP_RELEASE_REJECTION = 19,
+
+    /// <summary>
+    /// Notification when a service is rejected
+    /// </summary>
+    SERVICE_RELEASE_REJECTION = 20
 }
