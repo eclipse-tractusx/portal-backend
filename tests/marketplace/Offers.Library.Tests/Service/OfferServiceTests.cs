@@ -840,7 +840,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be($"{offerType.ToString()} {notExistingOffer} does not exist");
+        ex.Message.Should().Be($"{offerType} {notExistingOffer} does not exist");
     }
 
     [Theory]
@@ -977,7 +977,7 @@ public class OfferServiceTests
     [Theory]
     [InlineData(OfferTypeId.APP)]
     [InlineData(OfferTypeId.SERVICE)]
-    public async Task DeclineOfferAsync_WithNotExistingOffer_ThrowsNotFoundException(OfferTypeId offerTypeId)
+    public async Task DeclineOfferAsync_WithNotExistingOffer_ThrowsForbiddenExceptionException(OfferTypeId offerTypeId)
     {
         // Arrange
         var notExistingOffer = _fixture.Create<Guid>();
@@ -1009,9 +1009,8 @@ public class OfferServiceTests
         async Task Act() => await sut.DeclineOfferAsync(notExistingOffer, _iamUserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be($"{offerTypeId.ToString()} not found. Either not existing or no permission for change. (Parameter 'iamUserId')");
-        ex.ParamName.Should().Be("iamUserId");
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"{offerTypeId} not found. Either not existing or no permission for change.");
     }
 
     [Theory]
@@ -1031,7 +1030,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be($"{offerTypeId.ToString()} must be in status {OfferStatusId.IN_REVIEW.ToString()}");
+        ex.Message.Should().Be($"{offerTypeId} must be in status {OfferStatusId.IN_REVIEW.ToString()}");
     }
 
     [Theory]
@@ -1051,7 +1050,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be($"{offerTypeId.ToString()} name is not set");
+        ex.Message.Should().Be($"{offerTypeId} name is not set");
     }
 
     [Theory]
@@ -1071,7 +1070,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be($"{offerTypeId.ToString()} providing company is not set");
+        ex.Message.Should().Be($"{offerTypeId} providing company is not set");
     }
 
     [Theory]
