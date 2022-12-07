@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,10 +21,10 @@
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Service.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.Service.Controllers
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Service.Controllers
 {
     /// <summary>
     /// The controller provides the possibility to create a client

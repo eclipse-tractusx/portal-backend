@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,24 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models
-{
-    public class CompanyRoleAgreementConsentData
-    {
-        public CompanyRoleAgreementConsentData(Guid companyUserId, Guid companyId, CompanyApplication companyApplication, IEnumerable<CompanyAssignedRole> companyAssignedRoles, IEnumerable<Consent> consents)
-        {
-            CompanyUserId = companyUserId;
-            CompanyId = companyId;
-            CompanyApplication = companyApplication;
-            CompanyAssignedRoles = companyAssignedRoles;
-            Consents = consents;
-        }
-        public Guid CompanyUserId { get; }
-        public Guid CompanyId { get; }
-        public CompanyApplication CompanyApplication { get; }
-        public IEnumerable<CompanyAssignedRole> CompanyAssignedRoles { get; }
-        public IEnumerable<Consent> Consents { get; }
-    }
-}
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+
+public record CompanyRoleAgreementConsentData(
+    Guid CompanyUserId, 
+    Guid CompanyId,
+    CompanyApplicationStatusId CompanyApplicationStatusId,
+    IEnumerable<CompanyRoleId> CompanyAssignedRoleIds,
+    IEnumerable<ConsentData> Consents);
+    
+public record ConsentData(Guid ConsentId, ConsentStatusId ConsentStatusId, Guid AgreementId);

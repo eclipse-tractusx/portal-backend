@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 /// <summary>
 /// Input model defining all parameters for creating a connector in persistence layer.
@@ -30,11 +30,13 @@ namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
 /// <param name="ConnectorUrl"> URL of the connector..</param>
 /// <param name="Status">Connector status.</param>
 /// <param name="Location">Connector's location country code.</param>
+/// <param name="Certificate">The certificate for the daps call.</param>
 public record ConnectorInputModel(
     [MaxLength(255)] string Name,
     [MaxLength(255)] string ConnectorUrl,
     ConnectorStatusId Status,
-    [StringLength(2, MinimumLength = 2)] string Location);
+    [StringLength(2, MinimumLength = 2)] string Location,
+    IFormFile? Certificate);
 
 /// <summary>
 /// Input model defining all parameters for creating a connector in persistence layer.
@@ -44,12 +46,14 @@ public record ConnectorInputModel(
 /// <param name="Status">Connector status.</param>
 /// <param name="Location">Connector's location country code.</param>
 /// <param name="ProviderBpn">Providing company's BPN.</param>
+/// <param name="Certificate">The certificate for the daps call.</param>
 public record ManagedConnectorInputModel(
     [MaxLength(255)] string Name,
     [MaxLength(255)] string ConnectorUrl,
     ConnectorStatusId Status,
     [StringLength(2, MinimumLength = 2)] string Location,
-    string ProviderBpn);
+    string ProviderBpn,
+    IFormFile? Certificate);
 
 public record ConnectorRequestModel(
     [MaxLength(255)] string Name,

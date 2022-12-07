@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,15 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
 [ApiController]
 [Route("api/administration/registration")]
@@ -136,4 +136,52 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<CompanyApplicationWithCompanyUserDetails>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] string? companyName = null) =>
         _logic.GetAllCompanyApplicationsDetailsAsync(page, size, companyName);
+
+    /// <summary>
+    /// Update the BPN for a Company
+    /// </summary>
+    /// <param name="applicationId"></param>
+    /// <param name="bpn"></param>
+    /// <returns></returns>
+    /// <remarks>Example: POST: /api/administration/registration/application/6126fdc8-f572-4a63-a5b3-d5e52cb58136/BPNL00000003CSGV/bpn</remarks>
+    /// <response code="200">Successfully Updated the BPN.</response>
+    /// <response code="404">application Id not found</response>
+    /// <response code="400">Bpn is not 16 character long or alphanumeric or does not start with BPNL</response>
+    /// <response code="409">Bpn is already assigned or alphanumeric or application for company is not pending</response>
+    [HttpPost]
+    [Route("application/{applicationId}/{bpn}/bpn")]
+    [Authorize(Roles = "approve_new_partner")]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public Task UpdateCompanyBpn([FromRoute] Guid applicationId, [FromRoute] string bpn) =>
+        _logic.UpdateCompanyBpn(applicationId, bpn);
+
+    
+    /// <summary>
+    /// Approves the partner request
+    /// </summary>
+    /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application that should be approved</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>the result as a boolean</returns>
+    /// Example: PUT: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/approveRequest
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, the BusinessPartnerNumber (bpn) for the given CompanyApplications company is empty or no applicationId was set.</response>
+    /// <response code="404">Application ID not found.</response>
+    /// <response code="500">Internal Server Error.</response>
+    /// <response code="502">Bad Gateway Service Error.</response>
+    [HttpPut]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("application/{applicationId}/trigger-bpn")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
+    public async Task<NoContentResult> TriggerBpnDataPush([FromRoute] Guid applicationId, CancellationToken cancellationToken)
+    {
+        await this.WithIamUserId(user => _logic.TriggerBpnDataPushAsync(user, applicationId, cancellationToken)).ConfigureAwait(false);
+        return NoContent();
+    }
 }

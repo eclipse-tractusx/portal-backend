@@ -3,11 +3,11 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine AS base
 FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /
 COPY src/ src/
-WORKDIR /src/notification/Notification.Service
-RUN dotnet build "Notification.Service.csproj" -c Release -o /app/build
+WORKDIR /src/notifications/Notifications.Service
+RUN dotnet build "Notifications.Service.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Notification.Service.csproj" -c Release -o /app/publish
+RUN dotnet publish "Notifications.Service.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
@@ -16,4 +16,4 @@ ENV ASPNETCORE_URLS http://+:8080
 EXPOSE 8080
 RUN chown -R 1000:3000 /app
 USER 1000:3000
-ENTRYPOINT ["dotnet", "Org.CatenaX.Ng.Portal.Backend.Notification.Service.dll"]
+ENTRYPOINT ["dotnet", "Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.dll"]

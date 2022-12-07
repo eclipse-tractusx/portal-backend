@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,16 +21,16 @@
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 {
@@ -54,23 +54,27 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         // Arrange
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
+        var offerSubscriptionId = new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd");
+        var modifiedName = "Modified Name";
+
         // Act
-        var results = sut.AttachAndModifyOfferSubscription(new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"),
+        sut.AttachAndModifyOfferSubscription(offerSubscriptionId,
             sub =>
             {
                 sub.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
-                sub.DisplayName = "Modified Name";
+                sub.DisplayName = modifiedName;
             });
 
         // Assert
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
-        results.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.PENDING);
-        results.DisplayName.Should().Be("Modified Name");
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<OfferSubscription>().Which.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.PENDING);
+        changedEntries.Single().Entity.Should().BeOfType<OfferSubscription>().Which.Should().Match<OfferSubscription>(os =>
+            os.Id == offerSubscriptionId &&
+            os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.PENDING &&
+            os.DisplayName == modifiedName);
     }
 
     #endregion
@@ -133,7 +137,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region xy
+    #region GetOwnCompanyProvidedOfferSubscriptionStatusesUntracked
     
     [Theory]
     [InlineData(SubscriptionStatusSorting.OfferIdAsc)]
@@ -146,13 +150,13 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync("623770c5-cf38-4b9f-9a35-f8b9ae972e2e", OfferTypeId.SERVICE, sorting, null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync("623770c5-cf38-4b9f-9a35-f8b9ae972e2e", OfferTypeId.SERVICE, sorting, OfferSubscriptionStatusId.ACTIVE)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
         results!.Count.Should().Be(1);
         results.Data.Should().HaveCount(1);
-        results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>();
+        results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().HaveCount(1);
     }
     
     #endregion

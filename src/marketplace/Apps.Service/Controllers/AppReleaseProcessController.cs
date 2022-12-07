@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,16 +20,16 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers;
 
 /// <summary>
 /// Controller providing actions for updating applications.
@@ -203,7 +203,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="200">Return the Users with Role of Sales Manager.</response>
     [HttpGet]
     [Route("ownCompany/salesManager")]
-    [Authorize(Roles = "add_apps")]  
+    [Authorize(Roles = "add_apps")]
     [ProducesResponseType(typeof(IAsyncEnumerable<CompanyUserNameData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagerAsync() =>
         this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppProviderSalesManagersAsync(iamUserId));
@@ -254,6 +254,7 @@ public class AppReleaseProcessController : ControllerBase
     /// </summary>
     /// <param name="page">page index start from 0</param>
     /// <param name="size">size to get number of records</param>
+    /// <param name="sorting">sort by</param>
     /// <returns>Collection of all in review status marketplace apps.</returns>
     /// <remarks>Example: GET: /api/apps/appreleaseprocess/inReview</remarks>
     /// <response code="200">Returns the list of all in review status marketplace apps.</response>
@@ -261,8 +262,8 @@ public class AppReleaseProcessController : ControllerBase
     [Route("inReview")]
     [Authorize(Roles = "approve_app_release,decline_app_release")]
     [ProducesResponseType(typeof(Pagination.Response<InReviewAppData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0,[FromQuery] int size = 15) =>
-        _appReleaseBusinessLogic.GetAllInReviewStatusAppsAsync( page,size);
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null) =>
+        _appReleaseBusinessLogic.GetAllInReviewStatusAppsAsync(page, size, sorting);
 
     /// <summary>
     /// Submit an app for release
@@ -301,4 +302,26 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IEnumerable<AppRoleData>> AddActiveAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)=>
          await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddActiveAppUserRoleAsync(appId, appAssignedDesc, iamUserId)).ConfigureAwait(false);
+    
+    /// <summary>
+    /// Approve App to change status from IN_REVIEW to Active and create notification
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/approveApp</remarks>
+    /// <response code="204">The app was successfully submitted to Active State.</response>
+    /// <response code="409">App is in InCorrect Status</response>
+    /// <response code="403">User is not allowed to change the app.</response>
+    /// <response code="404">App does not exist.</response>
+    [HttpPut]
+    [Route("{appId}/approveApp")]
+    [Authorize(Roles = "approve_app_release")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<NoContentResult> ApproveAppRequest([FromRoute] Guid appId)
+    {
+        await this.WithIamUserId(userId => _appReleaseBusinessLogic.ApproveAppRequestAsync(appId, userId)).ConfigureAwait(false);
+        return NoContent();
+    }
 }

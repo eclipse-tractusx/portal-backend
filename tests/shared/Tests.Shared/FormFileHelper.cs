@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,7 +21,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 public static class FormFileHelper
 {
@@ -34,7 +34,7 @@ public static class FormFileHelper
         stream.Position = 0;
 
         var headers = new HeaderDictionary {{HeaderNames.ContentType, contentType}};
-        return new FormFile(stream, 0, stream.Length, "id_from_form", fileName)
+        return new FormFile(stream, 0, stream.Length, fileName.Split(".").First(), fileName)
         {
             Headers = headers 
         };

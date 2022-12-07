@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,14 +22,15 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Controllers;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+using Microsoft.AspNetCore.Mvc;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Tests.Controllers;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
 public class RegistrationControllerTest
 {
@@ -97,5 +98,21 @@ public class RegistrationControllerTest
         A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15,null)).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
         result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task TriggerBpnDataPush_ReturnsNoContent()
+    {
+        //Arrange
+        var applicationId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.TriggerBpnDataPushAsync(IamUserId, applicationId, CancellationToken.None))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.TriggerBpnDataPush(applicationId, CancellationToken.None).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.TriggerBpnDataPushAsync(IamUserId, applicationId, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
     }
 }

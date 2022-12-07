@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,16 +19,16 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Logging;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
 public class OfferSubscriptionService : IOfferSubscriptionService
 {
@@ -66,13 +66,13 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         var (companyInformation, companyUserId, userEmail) = await ValidateCompanyInformationAsync(iamUserId).ConfigureAwait(false);
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var offerSubscription = offerTypeId == OfferTypeId.APP
+        var offerSubscriptionId = offerTypeId == OfferTypeId.APP
             ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, companyUserId).ConfigureAwait(false)
-            : offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+            : offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId).Id;
 
-        CreateConsentsForSubscription(offerSubscription.Id, offerAgreementConsentData, companyInformation.CompanyId, companyUserId);
+        CreateConsentsForSubscription(offerSubscriptionId, offerAgreementConsentData, companyInformation.CompanyId, companyUserId);
         
-        var autoSetupResult = await ExecuteAutoSetupAsync(offerId, iamUserId, accessToken, offerProviderDetails, companyInformation, userEmail, offerSubscription).ConfigureAwait(false);
+        var autoSetupResult = await ExecuteAutoSetupAsync(offerId, iamUserId, accessToken, offerProviderDetails, companyInformation, userEmail, offerSubscriptionId).ConfigureAwait(false);
         var notificationContent = JsonSerializer.Serialize(new
         {
             AppName = offerProviderDetails.OfferName,
@@ -86,7 +86,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(offerProviderDetails.ProviderContactEmail)) 
-            return offerSubscription.Id;
+            return offerSubscriptionId;
         
         var mailParams = new Dictionary<string, string>
         {
@@ -95,7 +95,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             { "url", basePortalAddress },
         };
         await _mailingService.SendMails(offerProviderDetails.ProviderContactEmail!, mailParams, new List<string> { "subscription-request" }).ConfigureAwait(false);
-        return offerSubscription.Id;
+        return offerSubscriptionId;
     }
 
     private async Task<OfferProviderDetailsData> ValidateOfferProviderDetailDataAsync(Guid offerId, OfferTypeId offerTypeId)
@@ -151,37 +151,33 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         return (companyInformation, companyUserId, userEmail);
     }
 
-    private static async Task<OfferSubscription> HandleAppSubscriptionAsync(
+    private static async Task<Guid> HandleAppSubscriptionAsync(
         Guid offerId,
         IOfferSubscriptionsRepository offerSubscriptionsRepository,
         CompanyInformationData companyInformation,
         Guid companyUserId)
     {
-        OfferSubscription offerSubscription;
         var (offerSubscriptionId, offerSubscriptionStateId) = await offerSubscriptionsRepository
             .GetOfferSubscriptionStateForCompanyAsync(offerId, companyInformation.CompanyId, OfferTypeId.APP)
             .ConfigureAwait(false);
-        if (offerSubscriptionStateId == default)
+        if (offerSubscriptionId == Guid.Empty)
         {
-            offerSubscription = offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId,
-                OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
-        }
-        else
-        {
-            if (offerSubscriptionStateId is OfferSubscriptionStatusId.ACTIVE or OfferSubscriptionStatusId.PENDING)
-            {
-                throw new ConflictException(
-                    $"company {companyInformation.CompanyId} is already subscribed to {offerId}");
-            }
-
-            offerSubscription = offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscriptionId,
-                os => {
-                    os.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
-                    os.LastEditorId = companyUserId;
-                });
+            return offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId,
+                OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId).Id;
         }
 
-        return offerSubscription;
+        if (offerSubscriptionStateId is OfferSubscriptionStatusId.ACTIVE or OfferSubscriptionStatusId.PENDING)
+        {
+            throw new ConflictException(
+                $"company {companyInformation.CompanyId} is already subscribed to {offerId}");
+        }
+
+        offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscriptionId,
+            os => {
+                os.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
+                os.LastEditorId = companyUserId;
+            });
+        return offerSubscriptionId;
     }
 
     private void CreateConsentsForSubscription(Guid offerSubscriptionId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, Guid companyId, Guid companyUserId)
@@ -202,7 +198,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         OfferProviderDetailsData offerProviderDetails, 
         CompanyInformationData companyInformation, 
         string? userEmail,
-        OfferSubscription offerSubscription)
+        Guid offerSubscriptionId)
     {
         if (string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl)) return null;
         
@@ -215,7 +211,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                     userEmail),
                 new OfferThirdPartyAutoSetupPropertyData(
                     companyInformation.BusinessPartnerNumber,
-                    offerSubscription.Id,
+                    offerSubscriptionId,
                     offerId)
             );
             await _offerSetupService

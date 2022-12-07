@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,18 +25,18 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Framework.IO;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using System.Text;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic.Tests;
 
 public class IdentityProviderBusinessLogicTests
 {
@@ -100,7 +100,7 @@ public class IdentityProviderBusinessLogicTests
     #region UploadOwnCompanyUsersIdentityProviderLinkDataAsync
 
     [Fact]
-    public async void TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncAllUnchangedSuccess()
+    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncAllUnchangedSuccess()
     {
         var numUsers = 5;
 
@@ -132,7 +132,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncWrongContentTypeThrows()
+    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncWrongContentTypeThrows()
     {
         var numUsers = 1;
 
@@ -156,7 +156,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUploadOwnCompanyUsersIdentityProviderLinkDataInvalidUserThrows()
+    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataInvalidUserThrows()
     {
         var numUsers = 1;
 
@@ -180,7 +180,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncEmailChangedSuccess()
+    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncEmailChangedSuccess()
     {
         var numUsers = 5;
 
@@ -214,13 +214,16 @@ public class IdentityProviderBusinessLogicTests
         var changedEmailResult = (string?)null;
         var lastEditorId = (Guid?)null;
 
-        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._)).ReturnsLazily((Guid companyUserId, Action<CompanyUser>? setOptionalParameters) =>
+        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._))
+            .Invokes(x =>
             {
+                var companyUserId = x.Arguments.Get<Guid>("companyUserId")!;
+                var setOptionalParameters = x.Arguments.Get<Action<CompanyUser>>("setOptionalParameters");
+
                 var companyUser = new CompanyUser(companyUserId,Guid.Empty,default!,default!,Guid.Empty);
                 setOptionalParameters?.Invoke(companyUser);
                 changedEmailResult = companyUser.Email;
                 lastEditorId = companyUser.LastEditorId;
-                return companyUser;
             }
         );
 
@@ -251,7 +254,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncSharedIdpLinkChangedError()
+    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncSharedIdpLinkChangedError()
     {
         var numUsers = 5;
 
@@ -303,7 +306,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncOtherIdpLinkChangedSuccess()
+    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncOtherIdpLinkChangedSuccess()
     {
         var numUsers = 5;
 
@@ -354,7 +357,7 @@ public class IdentityProviderBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncUnknownCompanyUserIdError()
+    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataAsyncUnknownCompanyUserIdError()
     {
         var numUsers = 5;
 

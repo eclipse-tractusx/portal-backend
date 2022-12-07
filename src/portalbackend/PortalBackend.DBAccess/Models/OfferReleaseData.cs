@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,17 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// Data Object for the App Release Details
+/// Data Object for the Offer Release data
 /// </summary>
-/// <param name="name"></param>
-/// <param name="thumbnailUrl"></param>
-/// <param name="salesManagerId"></param>
-/// <param name="providerCompanyId"></param>
-/// <param name="companyName"></param>
-/// <param name="descriptionLongIsNullOrEmpty"></param>
-/// <param name="descriptionShortIsNullOrEmpty"></param>
+/// <param name="Name"></param>
+/// <param name="ThumbnailUrl"></param>
+/// <param name="SalesManagerId"></param>
+/// <param name="ProviderCompanyId"></param>
+/// <param name="CompanyName"></param>
+/// <param name="IsDescriptionLongNotSet"></param>
+/// <param name="IsDescriptionShortNotSet"></param>
 /// <returns></returns>
-public record OfferReleaseData(string? name, string? thumbnailUrl, Guid? salesManagerId, Guid? providerCompanyId, string companyName, bool descriptionLongIsNullOrEmpty, bool descriptionShortIsNullOrEmpty);
+public record OfferReleaseData(
+    string? Name,
+    string? ThumbnailUrl,
+    Guid? SalesManagerId,
+    Guid? ProviderCompanyId,
+    string CompanyName,
+    bool IsDescriptionLongNotSet,
+    bool IsDescriptionShortNotSet);

@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,9 +19,9 @@
  ********************************************************************************/
 
 using System.Collections.Immutable;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.TestSeeds;
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 
 public static class AppInstanceData
 {

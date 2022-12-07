@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 /// <inheritdoc/>
 public class IdentityProviderRepository : IIdentityProviderRepository
@@ -180,10 +180,11 @@ public class IdentityProviderRepository : IIdentityProviderRepository
     public Task<((Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber) Company,
                 (Guid CompanyUserId, string? FirstName, string? LastName, string? Email) CompanyUser,
                 IEnumerable<string> IdpAliase)>
-        GetCompanyNameIdpAliaseUntrackedAsync(string iamUserId, IdentityProviderCategoryId identityProviderCategoryId) =>
+        GetCompanyNameIdpAliaseUntrackedAsync(string iamUserId, Guid? applicationId, IdentityProviderCategoryId identityProviderCategoryId) =>
             _context.CompanyUsers
                 .AsNoTracking()
-                .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+                .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId &&
+                    (applicationId == null || companyUser.Company!.CompanyApplications.Any(application => application.Id == applicationId)))
                 .Select(companyUser => new ValueTuple<(Guid,string?,string?),(Guid,string?,string?,string?),IEnumerable<string>>(
                     new ValueTuple<Guid,string?,string?>(
                         companyUser.Company!.Id,

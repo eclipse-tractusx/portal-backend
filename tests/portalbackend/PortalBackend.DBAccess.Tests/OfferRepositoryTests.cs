@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,16 +22,16 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 /// <summary>
 /// Tests the functionality of the <see cref="OfferRepository"/>
@@ -337,7 +337,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var offerDetail = await sut.GetAppUpdateData(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "623770c5-cf38-4b9f-9a35-f8b9ae972e2e", new []{"de"}, new []{ new Guid("06b243a4-ba51-4bf3-bc40-5d79a2231b90")}, "19").ConfigureAwait(false);
+        var offerDetail = await sut.GetAppUpdateData(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "623770c5-cf38-4b9f-9a35-f8b9ae972e2e", new []{"de"}, new []{ new Guid("06b243a4-ba51-4bf3-bc40-5d79a2231b90")}).ConfigureAwait(false);
 
         // Assert
         offerDetail.Should().NotBeNull();
@@ -458,25 +458,25 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetServiceUpdateData
+    #region GetOfferDeclineDataAsync
     
     [Fact]
-    public async Task GetServiceUpdateData_ReturnsExpectedResult()
+    public async Task GetOfferDeclineDataAsync_ReturnsExpectedResult()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var offerDetail = await sut.GetServiceUpdateData(
+        var offerDetail = await sut.GetOfferDeclineDataAsync(
             new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"),
-            Enumerable.Repeat(ServiceTypeId.CONSULTANCE_SERVICE, 1),
-            "623770c5-cf38-4b9f-9a35-f8b9ae972e2e").ConfigureAwait(false);
+            "3d8142f1-860b-48aa-8c2b-1ccb18699f65",
+            OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
         offerDetail.Should().NotBeNull();
-        offerDetail!.OfferState.Should().Be(OfferStatusId.ACTIVE);
+        offerDetail.OfferStatus.Should().Be(OfferStatusId.ACTIVE);
     }
-
+    
     #endregion
 
     #region Setup

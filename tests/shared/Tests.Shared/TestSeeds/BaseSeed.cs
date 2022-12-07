@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.TestSeeds;
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 
 public static class BaseSeed
 {
@@ -56,7 +56,15 @@ public static class BaseSeed
                 Shortname = "Test",
             },
         });
-
+        dbContext.CompanyApplications.AddRange(new List<CompanyApplication>
+        {
+            new (new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"),
+            new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),CompanyApplicationStatusId.CONFIRMED,DateTimeOffset.UtcNow)
+        });
+        dbContext.Documents.AddRange(new List<Document>
+        {
+            new (new Guid("fda6c9cb-62be-4a98-99c1-d9c5a2df4aad"),new byte[1024],new byte[1024],"test.pdf",DateTimeOffset.UtcNow,DocumentStatusId.INACTIVE,DocumentTypeId.CX_FRAME_CONTRACT)
+        });
         dbContext.ProviderCompanyDetails.AddRange(new List<ProviderCompanyDetail>
         {
             new(new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), "https://www.test-service.com", DateTimeOffset.UtcNow)
@@ -222,9 +230,13 @@ public static class BaseSeed
         });
         dbContext.Consents.AddRange(new List<Consent>
         {
-            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019952"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), ConsentStatusId.INACTIVE, DateTimeOffset.UtcNow)
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019951"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), ConsentStatusId.INACTIVE, DateTimeOffset.UtcNow)
             {
                 Comment = "Just a test"
+            },
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019911"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019952"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), ConsentStatusId.INACTIVE, DateTimeOffset.UtcNow)
+            {
+                Comment = "Test"
             }
         });
         dbContext.AgreementAssignedCompanyRoles.AddRange(new List<AgreementAssignedCompanyRole>
@@ -245,6 +257,25 @@ public static class BaseSeed
             new (new Guid("9D03FE54-3581-4399-84DD-D606E9A2B3D5"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.ACTION, false),
             new (new Guid("34782A2E-7B54-4E78-85BA-419AF534837F"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.INFO, true),
             new (new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.INFO, false),
+        });
+        
+        dbContext.Connectors.AddRange(new List<Connector>
+        {
+            new(new Guid("5aea3711-cc54-47b4-b7eb-ba9f3bf1cb15"), "Tes One", "DE", "https://api.tes-one.com")
+            {
+                ProviderId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+                HostId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+                TypeId = ConnectorTypeId.COMPANY_CONNECTOR,
+                StatusId =ConnectorStatusId.ACTIVE,
+                
+            },
+            new(new Guid("f7310cff-a51d-4af8-9bc3-1525e9d1601b"), "Con on Air", "PT", "https://api.con-on-air.com")
+            {
+                ProviderId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+                HostId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+                TypeId = ConnectorTypeId.CONNECTOR_AS_A_SERVICE,
+                StatusId =ConnectorStatusId.PENDING,
+            },
         });
     };
 }

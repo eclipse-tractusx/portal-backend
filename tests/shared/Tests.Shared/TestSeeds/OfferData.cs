@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,10 +19,10 @@
  ********************************************************************************/
 
 using System.Collections.Immutable;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Tests.Shared.TestSeeds;
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 
 public static class OfferData
 {
@@ -39,6 +39,13 @@ public static class OfferData
             Name = "Newest Service",
             ContactEmail = "service-test@mail.com",
             OfferStatusId = OfferStatusId.ACTIVE,
+            ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")
+        },
+        new Offer(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA6"), "Catena X", DateTimeOffset.UtcNow, OfferTypeId.APP)
+        {
+            Name = "Latest Service",
+            ContactEmail = "service-test@mail.com",
+            OfferStatusId = OfferStatusId.IN_REVIEW,
             ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")
         }
     );

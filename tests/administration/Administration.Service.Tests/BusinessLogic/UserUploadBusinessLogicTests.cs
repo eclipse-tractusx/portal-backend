@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -24,15 +24,15 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Framework.IO;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Text;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic.Tests;
 
 public class UserUploadBusinessLogicTests
 {
@@ -75,7 +75,7 @@ public class UserUploadBusinessLogicTests
 
     #region UploadOwnCompanyIdpUsersAsync
     [Fact]
-    public async void TestSetup()
+    public async Task TestSetup()
     {
         SetupFakes(new [] { HeaderLine() });
 
@@ -92,7 +92,7 @@ public class UserUploadBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUserCreationAllSuccess()
+    public async Task TestUserCreationAllSuccess()
     {
         SetupFakes(new [] {
             HeaderLine(),
@@ -115,7 +115,7 @@ public class UserUploadBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUserCreationHeaderParsingThrows()
+    public async Task TestUserCreationHeaderParsingThrows()
     {
         var invalidHeader = _fixture.Create<string>();
 
@@ -137,7 +137,7 @@ public class UserUploadBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUserCreationCreationError()
+    public async Task TestUserCreationCreationError()
     {
         var creationInfo = _fixture.Create<UserCreationRoleDataIdpInfo>();
 
@@ -173,7 +173,7 @@ public class UserUploadBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUserCreationParsingError()
+    public async Task TestUserCreationParsingError()
     {
         SetupFakes(new [] {
             HeaderLine(),
@@ -197,7 +197,7 @@ public class UserUploadBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUserCreationCreationThrows()
+    public async Task TestUserCreationCreationThrows()
     {
         var creationInfo = _fixture.Create<UserCreationRoleDataIdpInfo>();
 
@@ -232,7 +232,7 @@ public class UserUploadBusinessLogicTests
     #region UploadOwnCompanySharedIdpUsersAsync
 
     [Fact]
-    public async void TestSetupSharedIdp()
+    public async Task TestSetupSharedIdp()
     {
         SetupFakes(new [] { HeaderLineSharedIdp() });
 
@@ -240,7 +240,7 @@ public class UserUploadBusinessLogicTests
 
         var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<string>.That.IsEqualTo(_iamUserId))).MustHaveHappened();
+        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<string>.That.IsEqualTo(_iamUserId),A<Guid?>._)).MustHaveHappened();
         result.Should().NotBeNull();
         result.Created.Should().Be(0);
         result.Error.Should().Be(0);
@@ -249,7 +249,7 @@ public class UserUploadBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUserCreationSharedIdpAllSuccess()
+    public async Task TestUserCreationSharedIdpAllSuccess()
     {
         SetupFakes(new [] {
             HeaderLineSharedIdp(),
@@ -272,7 +272,7 @@ public class UserUploadBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUserCreationSharedIdpHeaderParsingThrows()
+    public async Task TestUserCreationSharedIdpHeaderParsingThrows()
     {
         var invalidHeader = _fixture.Create<string>();
 
@@ -294,7 +294,7 @@ public class UserUploadBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUserCreationSharedIdpCreationError()
+    public async Task TestUserCreationSharedIdpCreationError()
     {
         var creationInfo = _fixture.Create<UserCreationRoleDataIdpInfo>();
 
@@ -330,7 +330,7 @@ public class UserUploadBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUserCreationSharedIdpParsingError()
+    public async Task TestUserCreationSharedIdpParsingError()
     {
         SetupFakes(new [] {
             HeaderLineSharedIdp(),
@@ -354,7 +354,7 @@ public class UserUploadBusinessLogicTests
     }
 
     [Fact]
-    public async void TestUserCreationSharedIdpCreationThrows()
+    public async Task TestUserCreationSharedIdpCreationThrows()
     {
         var creationInfo = _fixture.Create<UserCreationRoleDataIdpInfo>();
 
@@ -398,7 +398,7 @@ public class UserUploadBusinessLogicTests
         A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), A<string>.That.IsEqualTo(_iamUserId)))
             .Returns((_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, false).Create(),_fixture.Create<string>()));
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<string>.That.IsEqualTo(_iamUserId)))
+        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<string>.That.IsEqualTo(_iamUserId),A<Guid?>._))
             .Returns((_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, true).Create(),_fixture.Create<string>()));
 
         A.CallTo(() => _userProvisioningService.GetOwnCompanyPortalRoleDatas(A<string>._,A<IEnumerable<string>>._, A<string>._))

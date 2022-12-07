@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,17 +23,17 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
 
 public class AppReleaseProcessControllerTest
 {
@@ -280,14 +280,14 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var paginationResponse = new Pagination.Response<InReviewAppData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<InReviewAppData>(5));
-        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(A<int>._, A<int>._))
+        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(A<int>._, A<int>._,A<OfferSorting?>._))
             .ReturnsLazily(() => paginationResponse);
 
         //Act
         var result = await this._controller.GetAllInReviewStatusAppsAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(0, 15)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(0, 15, null)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
 
@@ -327,5 +327,21 @@ public class AppReleaseProcessControllerTest
             Assert.NotNull(item);
             Assert.IsType<AppRoleData>(item);
         }
+    }
+
+     [Fact]
+    public async Task ApproveAppRequest_ReturnsExpectedCount()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.ApproveAppRequestAsync(appId, A<string>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.ApproveAppRequest(appId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.ApproveAppRequestAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
     }
 }

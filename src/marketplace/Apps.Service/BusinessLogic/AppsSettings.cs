@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
 /// <summary>
 /// Config Settings for Apps
@@ -56,6 +56,12 @@ public class AppsSettings
     public string BasePortalAddress { get; init; } = null!;
     
     /// <summary>
+    /// AppOverview url required for the decline request email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string AppOverviewAddress { get; init; } = null!;
+
+    /// <summary>
     /// Service account roles
     /// </summary>
     [Required]
@@ -80,6 +86,12 @@ public class AppsSettings
     [Required]
     public IEnumerable<string> ContentTypeSettings { get; set; } = null!;
 
+    /// <summary>
+    /// Document Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
      /// <summary>
     /// Active App Company Admin Roles
     /// </summary>
@@ -94,6 +106,18 @@ public class AppsSettings
     [Required]
     public IEnumerable<NotificationTypeId> ActiveAppNotificationTypeIds { get; set; } = null!;
     
+    /// <summary>
+    /// Approve App Notification Type Id
+    /// </summary>
+    /// <value></value>
+    public IEnumerable<NotificationTypeId> ApproveAppNotificationTypeIds { get; set; } = null!;
+    
+    /// <summary>
+    /// Roles to notify when a new subscription was created for sales and App Manager
+    /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> ApproveAppUserRoles { get; set; } = null!;
+
     /// <summary>
     /// Max page size for pagination
     /// </summary>

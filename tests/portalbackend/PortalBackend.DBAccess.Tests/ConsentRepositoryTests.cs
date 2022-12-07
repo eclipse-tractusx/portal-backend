@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,17 +20,17 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 /// <summary>
 /// Tests the functionality of the <see cref="ConsentRepositoryTests"/>
@@ -86,7 +86,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetConsentDetailData(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"), OfferTypeId.APP);
+        var result = await sut.GetConsentDetailData(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019911"), OfferTypeId.APP);
 
         // Assert
         result.Should().NotBeNull();
@@ -145,6 +145,35 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region AttachAndModifiesConsents
+
+    [Fact]
+    public async Task AttachAndModifiesConsents_WithValidConsents_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifiesConsents(new []
+            {
+                new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"),
+                new Guid("ac1cf001-7fbc-1f2f-817f-bce058019911")
+            },
+            consent => { consent.ConsentStatusId = ConsentStatusId.ACTIVE; });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changedEntries.Should().HaveCount(2);
+        changedEntries.Should().AllSatisfy(x => x.Entity.Should().BeOfType<Consent>().Which.ConsentStatusId.Should().Be(ConsentStatusId.ACTIVE));
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(2);
+        changedEntries.Should().AllSatisfy(x => x.Entity.Should().BeOfType<Consent>().Which.ConsentStatusId.Should().Be(ConsentStatusId.ACTIVE));
+    }
+
+    #endregion
+    
     private async Task<(ConsentRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

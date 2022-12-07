@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,15 +22,15 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 /// <summary>
 /// Tests the functionality of the <see cref="DocumentRepositoryTests"/>
@@ -76,7 +76,19 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changedEntity = changedEntries.Single();
         changedEntity.State.Should().Be(EntityState.Added);
     }
-
+    
+    [Fact]
+    public async Task GetUploadedDocumentsAsync_ReturnsExpectedDocument()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var results = await sut.GetUploadedDocumentsAsync(new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"), DocumentTypeId.CX_FRAME_CONTRACT).ToListAsync().ConfigureAwait(false);
+    
+        // Assert
+        results.Should().NotBeNull();
+    }
     #endregion
 
     private async Task<(DocumentRepository, PortalDbContext)> CreateSut()

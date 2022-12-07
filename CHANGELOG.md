@@ -3,14 +3,30 @@
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
 ### Unreleased
+n/a
+
+## 0.9.0
 
 ### Change
 * Services Endpoints
    * added service types support the filtering and tagging of services (one service can have multiple service types)
    * enabled service sorting
    * enable service updates
+   * merged /subscribe and /subscribe-consent endpoints
 
-*...
+### Feature
+* App Release Process
+   * enabled Get & Post company SalesManager assigned to an app offer
+   * document upload enpoint enable jpeg and png for app image upload
+* Registration Service
+   * registration document deletion endpoint released
+   * registration data publishin endpoint document types reduced
+
+### Technical Support
+* DB Auditing for app instances enabled
+
+### Bugfix
+* Fixed new company user user invite mixups which deleted user accounts with similar or same name/email
 
 ## 0.8.0
 

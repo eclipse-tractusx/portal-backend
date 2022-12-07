@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 /// <summary>
 /// Repository for persistence layer access relating <see cref="Company"/> entities.
@@ -36,13 +36,11 @@ public interface ICompanyRepository
     /// <returns>Created company entity.</returns>
     Company CreateCompany(string companyName);
 
-    Company AttachAndModifyCompany(Guid companyId, Action<Company>? setOptionalParameters = null);
+    void AttachAndModifyCompany(Guid companyId, Action<Company> setOptionalParameters);
 
     Address CreateAddress(string city, string streetname, string countryAlpha2Code);
     
     Task<(string CompanyName, Guid CompanyId)> GetCompanyNameIdUntrackedAsync(string iamUserId);
-
-    Task<(Guid CompanyId, string CompanyName, string? Alias, Guid CompanyUserId)> GetCompanyNameIdWithSharedIdpAliasUntrackedAsync(Guid applicationId, string iamUserId);
 
     /// <summary>
     /// Checks the bpn for existence and returns the associated CompanyId
@@ -90,7 +88,7 @@ public interface ICompanyRepository
     /// <param name="providerCompanyDetailId">Id of the service provider company details</param>
     /// <param name="setOptionalParameters">sets the fields that should be updated.</param>
     /// <returns></returns>
-    ProviderCompanyDetail AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail>? setOptionalParameters = null);
+    void AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail> setOptionalParameters);
 
     /// <summary>
     /// Gets the business partner number for the given id
@@ -98,4 +96,12 @@ public interface ICompanyRepository
     /// <param name="companyId">Id of the company</param>
     /// <returns>Returns the business partner number</returns>
     Task<string?> GetCompanyBpnByIdAsync(Guid companyId);
+
+    /// <summary>
+    /// Gets the bpdm data for the given application
+    /// </summary>
+    /// <param name="iamUserId">Id of the user</param>
+    /// <param name="applicationId">Id of the application</param>
+    /// <returns>Returns the bpdm data</returns>
+    Task<BpdmData?> GetBpdmDataForApplicationAsync(string iamUserId, Guid applicationId);
 }

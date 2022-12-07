@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,14 +19,14 @@
  ********************************************************************************/
 
 using System.Linq.Expressions;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 /// Implementation of <see cref="IOfferSubscriptionsRepository"/> accessing database with EF Core.
 public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
@@ -55,7 +55,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(string iamUserId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId) =>
+    public Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(string iamUserId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId statusId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
                 skip,
                 take,
@@ -64,7 +64,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     .Where(os => 
                         os.OfferTypeId == offerTypeId &&
                         os.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId) &&
-                        (statusId == null || os.OfferSubscriptions.Any(x => x.OfferSubscriptionStatusId == statusId)))
+                        os.OfferSubscriptions.Any(x => x.OfferSubscriptionStatusId == statusId))
                     .GroupBy(s => s.ProviderCompanyId),
                 sorting switch
                 {
@@ -78,20 +78,28 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 {
                     OfferId = g.Id,
                     ServiceName = g.Name,
-                    CompanySubscriptionStatuses = g.OfferSubscriptions.Select(s =>
-                        new CompanySubscriptionStatusData(s.CompanyId, s.Company!.Name, s.Id, s.OfferSubscriptionStatusId))
+                    CompanySubscriptionStatuses = g.OfferSubscriptions
+                        .Where(os => os.OfferSubscriptionStatusId == statusId)
+                        .Select(s => new CompanySubscriptionStatusData(s.CompanyId, s.Company!.Name, s.Id, s.OfferSubscriptionStatusId))
                 })
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(OfferSubscription? companyAssignedApp, bool isMemberOfCompanyProvidingApp, string? appName, Guid companyUserId)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
+    public Task<(Guid SubscriptionId, OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, string? AppName, Guid CompanyUserId, string? Email, string? Firstname)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
         _context.Offers
             .Where(app => app.Id == appId)
-            .Select(app => new ValueTuple<OfferSubscription?, bool, string?, Guid>(
-                app.OfferSubscriptions.SingleOrDefault(assignedApp => assignedApp.CompanyId == companyId),
-                app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId),
-                app.Name,
-                app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId) ? app.ProviderCompany!.CompanyUsers.First(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).Id : Guid.Empty
+            .Select(app => new {
+                App = app,
+                OfferSubscription = app.OfferSubscriptions.SingleOrDefault(subscription => subscription.CompanyId == companyId),
+            })
+            .Select(x => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, string?, string?>(
+                x.OfferSubscription!.Id,
+                x.OfferSubscription.OfferSubscriptionStatusId,
+                x.OfferSubscription.RequesterId,
+                x.App.Name,
+                x.App.ProviderCompany!.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)!.Id,
+                x.OfferSubscription!.Requester!.Email,
+                x.OfferSubscription.Requester.Firstname
             ))
             .SingleOrDefaultAsync();
 
@@ -150,11 +158,10 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public OfferSubscription AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription>? setOptionalParameters = null)
+    public void AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters)
     {
         var offerSubscription = _context.Attach(new OfferSubscription(offerSubscriptionId, Guid.Empty, Guid.Empty, default, Guid.Empty, Guid.Empty)).Entity;
-        setOptionalParameters?.Invoke(offerSubscription);
-        return offerSubscription;
+        setOptionalParameters.Invoke(offerSubscription);
     }
 
     /// <inheritdoc />

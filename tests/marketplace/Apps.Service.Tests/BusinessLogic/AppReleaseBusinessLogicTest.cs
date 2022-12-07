@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,20 +23,20 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Notification.Library;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic.Tests;
 
 public class AppReleaseBusinessLogicTest
 {
@@ -58,7 +58,7 @@ public class AppReleaseBusinessLogicTest
     private readonly ILanguageRepository _languageRepository;
     private readonly AppsSettings _settings;
     private const string ClientId = "catenax-portal";
-    private readonly List<PortalBackend.PortalEntities.Entities.Notification> _notifications = new();
+
     public AppReleaseBusinessLogicTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -75,7 +75,6 @@ public class AppReleaseBusinessLogicTest
         _offerService = A.Fake<IOfferService>();
         _notificationService = A.Fake<INotificationService>();
         _options = A.Fake<IOptions<AppsSettings>>();
-        _settings = A.Fake<AppsSettings>();
         _companyUser = _fixture.Build<CompanyUser>()
             .Without(u => u.IamUser)
             .Create();
@@ -83,9 +82,15 @@ public class AppReleaseBusinessLogicTest
             .With(u => u.CompanyUser, _companyUser)
             .Create();
         _companyUser.IamUser = _iamUser;
+        
+        _settings = A.Fake<AppsSettings>();
         _settings.ActiveAppNotificationTypeIds = new []
         {
             NotificationTypeId.APP_ROLE_ADDED
+        };
+        _settings.NotificationTypeIds = new []
+        {
+            NotificationTypeId.APP_RELEASE_REQUEST
         };
          _settings.ActiveAppCompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
         {
@@ -318,9 +323,9 @@ public class AppReleaseBusinessLogicTest
         await sut.UpdateAppReleaseAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
         
         // Assert
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>?>._))
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerService.UpsertRemoveOfferDescription(_existingAppId, A<IEnumerable<Localization>>.That.IsSameSequenceAs(new [] { new Localization("de", "Long description", "desc") }), A<IEnumerable<(string LanguageShorName, string DescriptionLong, string DescriptionShort)>>._))
+        A.CallTo(() => _offerService.UpsertRemoveOfferDescription(_existingAppId, A<IEnumerable<Localization>>.That.IsSameSequenceAs(new Localization("de", "Long description", "desc")), A<IEnumerable<(string LanguageShorName, string DescriptionLong, string DescriptionShort)>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.AddAppLanguages(A<IEnumerable<(Guid appId, string languageShortName)>>._))
             .MustHaveHappenedOnceExactly();
@@ -410,7 +415,6 @@ public class AppReleaseBusinessLogicTest
         //Arrange
         var appId = _fixture.Create<Guid>();
         var appName = _fixture.Create<string>();
-        var userRole = _fixture.Create<UserRole>();
 
         var appUserRoleDescription = new [] {
             new AppUserRoleDescription("de","this is test1"),
@@ -443,20 +447,76 @@ public class AppReleaseBusinessLogicTest
 
     #endregion
 
+    #region SubmitAppReleaseRequestAsync
+
+    [Fact]
+    public async Task SubmitAppReleaseRequestAsync_CallsOfferService()
+    {
+        // Arrange
+        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService, null!);
+
+        // Act
+        await sut.SubmitAppReleaseRequestAsync(_existingAppId, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => 
+                _offerService.SubmitOfferAsync(
+                    _existingAppId,
+                    _iamUser.UserEntityId,
+                    OfferTypeId.APP,
+                    A<IEnumerable<NotificationTypeId>>._,
+                    A<IDictionary<string, IEnumerable<string>>>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region SubmitOfferConsentAsync
+    
+    [Fact]
+    public async Task SubmitOfferConsentAsync_WithEmptyAppId_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitOfferConsentAsync(Guid.Empty, _fixture.Create<OfferAgreementConsent>(), _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be("AppId must not be empty");
+    }
+
+    [Fact]
+    public async Task SubmitOfferConsentAsync_WithAppId_CallsOfferService()
+    {
+        // Arrange
+        var data = _fixture.Create<OfferAgreementConsent>();
+        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService, null!);
+
+        // Act
+        await sut.SubmitOfferConsentAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(_existingAppId, data, _iamUser.UserEntityId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupUpdateApp()
     {
         A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>._))
             .Returns(new List<string>() {"de", "en"}.ToAsyncEnumerable());
-        A.CallTo(() => _offerRepository.GetAppUpdateData(_notExistingAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._, A<IEnumerable<Guid>>._, A<string>._))
+        A.CallTo(() => _offerRepository.GetAppUpdateData(_notExistingAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._, A<IEnumerable<Guid>>._))
             .ReturnsLazily(() => (AppUpdateData?)null);
-        A.CallTo(() => _offerRepository.GetAppUpdateData(_activeAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._, A<IEnumerable<Guid>>._, A<string>._))
-            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>()));
-        A.CallTo(() => _offerRepository.GetAppUpdateData(_differentCompanyAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._, A<IEnumerable<Guid>>._, A<string>._))
-            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, false, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>()));
-        A.CallTo(() => _offerRepository.GetAppUpdateData(_existingAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._, A<IEnumerable<Guid>>._, A<string>._))
-            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, true, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false)));
+        A.CallTo(() => _offerRepository.GetAppUpdateData(_activeAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._, A<IEnumerable<Guid>>._))
+            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(), null));
+        A.CallTo(() => _offerRepository.GetAppUpdateData(_differentCompanyAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._, A<IEnumerable<Guid>>._))
+            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, false, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(), null));
+        A.CallTo(() => _offerRepository.GetAppUpdateData(_existingAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._, A<IEnumerable<Guid>>._))
+            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, true, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false), null));
         A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).Returns(_companyUser.CompanyId);
         
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
