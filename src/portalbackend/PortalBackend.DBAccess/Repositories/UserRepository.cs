@@ -347,10 +347,10 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<Guid> GetCompanyUserWithRoleIdForCompany(IEnumerable<Guid> userRoleIds, Guid? companyId) =>
+    public IAsyncEnumerable<Guid> GetCompanyUserWithRoleIdForCompany(IEnumerable<Guid> userRoleIds, Guid companyId) =>
         _dbContext.CompanyUsers
             .Where(x => 
-                (companyId == null || x.CompanyId == companyId) &&
+                x.CompanyId == companyId &&
                 x.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && 
                 x.UserRoles.Any(ur => userRoleIds.Contains(ur.Id)))
             .Select(x => x.Id)

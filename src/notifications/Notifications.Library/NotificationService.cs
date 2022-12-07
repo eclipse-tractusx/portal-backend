@@ -46,7 +46,7 @@ public class NotificationService : INotificationService
         IDictionary<string, IEnumerable<string>> receiverUserRoles,
         Guid? creatorId,
         IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications,
-        Guid? companyId)
+        Guid companyId)
     {
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roleData = await userRolesRepository
