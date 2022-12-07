@@ -464,7 +464,7 @@ public class OfferService : IOfferService
         var offerDetails = await offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerTypeId).ConfigureAwait(false);
         if (offerDetails == null)
         {
-            throw new NotFoundException($"{offerTypeId.ToString()} {offerId} does not exist");
+            throw new NotFoundException($"{offerTypeId} {offerId} does not exist");
         }
 
         ValidateOfferDetails(offerDetails);
@@ -585,6 +585,66 @@ public class OfferService : IOfferService
         var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
         await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string,IEnumerable<string>> notificationRecipients, string basePortalAddress)
+    {
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var declineData = await offerRepository.GetOfferDeclineDataAsync(offerId, iamUserId, offerType).ConfigureAwait(false);
+
+        if (declineData == default)
+        {
+            throw new NotFoundException($"{offerType} {offerId} does not exist");
+        }
+
+        if (!declineData.IsUserOfProvider)
+        {
+            throw new ForbiddenException($"{offerType} not found. Either not existing or no permission for change.");
+        }
+
+        if (declineData.OfferStatus != OfferStatusId.IN_REVIEW)
+        {
+            throw new ConflictException($"{offerType} must be in status {OfferStatusId.IN_REVIEW}");
+        }
+
+        if (string.IsNullOrWhiteSpace(declineData.OfferName))
+        {
+            throw new ConflictException($"{offerType} name is not set");
+        }
+        
+        if (declineData.CompanyId == null)
+        {
+            throw new ConflictException($"{offerType} providing company is not set");
+        }
+        
+        offerRepository.AttachAndModifyOffer(offerId, offer =>
+        {
+            offer.OfferStatusId = OfferStatusId.CREATED;
+            offer.DateLastChanged = DateTime.UtcNow;
+        });
+        
+        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        var notificationContent = new
+        {
+            declineData.OfferName,
+            OfferId = offerId,
+            DeclineMessage= data.Message
+        };
+        
+        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
+        var content = Enumerable.Repeat(notificationTypeId, 1).Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        await _notificationService.CreateNotifications(notificationRecipients, requesterId, content).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        
+        var mailParams = new Dictionary<string, string>
+        {
+            { "offerName", declineData.OfferName },
+            { "url", basePortalAddress },
+            { "declineMessage", data.Message }
+        };
+        await _mailingService.SendMails("test@email.com", mailParams, new List<string> { "offer-request-decline" }).ConfigureAwait(false);
     }
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)

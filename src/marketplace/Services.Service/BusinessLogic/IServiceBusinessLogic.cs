@@ -144,4 +144,12 @@ public interface IServiceBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task ApproveServiceRequestAsync(Guid appId, string iamUserId);
+
+    /// <summary>
+    /// Declines the service request
+    /// </summary>
+    /// <param name="serviceId">Id of the service</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="data">The decline request data</param>
+    Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data);
 }

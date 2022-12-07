@@ -298,4 +298,25 @@ public class ServicesController : ControllerBase
         await this.WithIamUserId(userId => _serviceBusinessLogic.ApproveServiceRequestAsync(serviceId, userId)).ConfigureAwait(false);
         return NoContent();
     }
+
+    /// <summary>
+    /// Declines the service request
+    /// </summary>
+    /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the service that should be declined</param>
+    /// <param name="data">the data of the decline request</param>
+    /// <remarks>Example: PUT: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/decline</remarks>
+    /// <response code="204">NoContent.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    /// <response code="404">If service does not exists.</response>
+    [HttpPut]
+    [Route("{serviceId:guid}/declineService")]
+    [Authorize(Roles = "decline_service_release")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> DeclineServiceRequest([FromRoute] Guid serviceId, [FromBody] OfferDeclineRequest data)
+    {
+        await this.WithIamUserId(userId => _serviceBusinessLogic.DeclineServiceRequestAsync(serviceId, userId, data)).ConfigureAwait(false);
+        return NoContent();
+    }
 }

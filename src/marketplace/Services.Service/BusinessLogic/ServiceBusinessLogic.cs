@@ -28,8 +28,6 @@ using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
-using Org.CatenaX.Ng.Portal.Backend.Notifications.Library;
-using System.Text.Json;
 
 namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
 
@@ -202,4 +200,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc/>
     public Task ApproveServiceRequestAsync(Guid appId, string iamUserId) =>
         _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.SERVICE, _settings.ApproveServiceNotificationTypeIds, _settings.ApproveServiceUserRoles);
+
+    /// <inheritdoc />
+    public Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data) => 
+        _offerService.DeclineOfferAsync(serviceId, iamUserId, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.ServiceMarketplaceAddress);
 }

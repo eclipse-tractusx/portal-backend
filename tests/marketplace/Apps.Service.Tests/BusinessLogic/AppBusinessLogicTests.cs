@@ -48,6 +48,7 @@ public class AppBusinessLogicTests
     private readonly IUserRepository _userRepository;
     private readonly INotificationRepository _notificationRepository;
     private readonly IMailingService _mailingService;
+    private readonly IOfferService _offerService;
 
     public AppBusinessLogicTests()
     {
@@ -58,6 +59,7 @@ public class AppBusinessLogicTests
 
         _mailingService = A.Fake<IMailingService>();
 
+        _offerService = A.Fake<IOfferService>();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _offerRepository = A.Fake<IOfferRepository>();
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
@@ -252,6 +254,32 @@ public class AppBusinessLogicTests
 
     #endregion
     
+    #region DeclineAppRequest
+    
+    [Fact]
+    public async Task DeclineAppRequestAsync_CallsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var data = new OfferDeclineRequest("Just a test");
+        var settings = new AppsSettings
+        {
+            ServiceManagerRoles = _fixture.Create<Dictionary<string, IEnumerable<string>>>(),
+            BasePortalAddress = "test"
+        };
+        var sut = new AppsBusinessLogic(null!,null!, _offerService, Options.Create(settings), _mailingService);
+     
+        // Act
+        await sut.DeclineAppRequestAsync(appId, IamUserId, data).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.DeclineOfferAsync(appId, IamUserId, data,
+            OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION,
+            A<IDictionary<string, IEnumerable<string>>>._, A<string>._)).MustHaveHappenedOnceExactly();
+    }
+    
+    #endregion
+    
     #region ActivateOwnCompanyProvidedAppSubscription
 
     [Fact]
@@ -351,7 +379,7 @@ public class AppBusinessLogicTests
     }
 
     #endregion
-    
+
     private (CompanyUser, IamUser) CreateTestUserPair()
     {
         var companyUser = _fixture.Build<CompanyUser>()

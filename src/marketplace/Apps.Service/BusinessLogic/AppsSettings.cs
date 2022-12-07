@@ -56,6 +56,12 @@ public class AppsSettings
     public string BasePortalAddress { get; init; } = null!;
     
     /// <summary>
+    /// AppOverview url required for the decline request email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string AppOverviewAddress { get; init; } = null!;
+
+    /// <summary>
     /// Service account roles
     /// </summary>
     [Required]
