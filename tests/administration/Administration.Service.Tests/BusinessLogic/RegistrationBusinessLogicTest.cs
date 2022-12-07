@@ -74,6 +74,7 @@ public class RegistrationBusinessLogicTest
     private readonly ISdFactoryService _sdFactory;
     private readonly ICompanyRepository _companyRepository;
     private readonly IBpdmService _bpdmService;
+    private readonly IMailingService _mailingService;
 
     public RegistrationBusinessLogicTest()
     {
@@ -93,8 +94,8 @@ public class RegistrationBusinessLogicTest
         _bpdmService = A.Fake<IBpdmService>();
 
         var userRepository = A.Fake<IUserRepository>();
-        var mailingService = A.Fake<IMailingService>();
         var options = A.Fake<IOptions<RegistrationSettings>>();
+        _mailingService = A.Fake<IMailingService>();
         _notificationService = A.Fake<INotificationService>();
         _sdFactory = A.Fake<ISdFactoryService>();
         
@@ -118,7 +119,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
             .ReturnsLazily(Guid.NewGuid);
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, mailingService, _notificationService, _sdFactory, _bpdmService);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, _mailingService, _notificationService, _sdFactory, _bpdmService);
     }
     
     #region ApprovePartnerRequest
@@ -153,6 +154,44 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
         A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
+        Assert.IsType<bool>(result);
+        Assert.True(result);
+        _notifications.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task ApprovePartnerRequest_WithFailingWalletCreation_ChangesAreSavedInDatabaseAndMailGetsSend()
+    {
+        //Arrange
+        var roles = new List<string> { "Company Admin" };
+        var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, roles.AsEnumerable() }
+        };
+        var userRoleData = new List<UserRoleData> { new(UserRoleId, ClientId, "Company Admin") };
+        
+        var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
+        var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
+
+        SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
+        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._))
+            .Throws(new ServiceException("error"));
+
+        //Act
+        var result = await _logic.ApprovePartnerRequest(IamUserId, AccessToken, Id, CancellationToken.None).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(Id)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId2, UserRoleId)).MustNotHaveHappened();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId2, BusinessPartnerNumber)).MustNotHaveHappened();
+        A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
         Assert.IsType<bool>(result);
         Assert.True(result);
         _notifications.Should().HaveCount(5);
