@@ -21,11 +21,11 @@
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -160,7 +160,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         var (offerSubscriptionId, offerSubscriptionStateId) = await offerSubscriptionsRepository
             .GetOfferSubscriptionStateForCompanyAsync(offerId, companyInformation.CompanyId, OfferTypeId.APP)
             .ConfigureAwait(false);
-        if (offerSubscriptionStateId == default)
+        if (offerSubscriptionId == Guid.Empty)
         {
             return offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId,
                 OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId).Id;
