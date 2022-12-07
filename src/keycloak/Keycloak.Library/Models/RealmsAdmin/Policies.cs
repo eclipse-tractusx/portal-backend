@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2019 Luk Vermeulen
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
  * SOFTWARE.
  ********************************************************************************/
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
 public enum Policies
 {

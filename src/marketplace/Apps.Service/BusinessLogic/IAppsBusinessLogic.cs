@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
 /// <summary>
 /// Business logic for handling app-related operations. Includes persistence layer access.
@@ -146,4 +146,11 @@ public interface IAppsBusinessLogic
     /// <returns>Returns IAsyncEnumerable of agreement data</returns>
     IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId);
 
+    /// <summary>
+    /// Declines the app request
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="data">The decline request data</param>
+    Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data);
 }

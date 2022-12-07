@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
  * Copyright (c) 2021,2022 Microsoft and BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,7 +20,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record BpdmLegalEntityData(
      [property: JsonPropertyName("externalId")] string ExternalId,

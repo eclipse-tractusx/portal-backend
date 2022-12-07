@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,16 +20,16 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.Controllers;
+namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
 
 /// <summary>
 /// Controller providing actions for displaying, filtering and updating services.
@@ -296,6 +296,27 @@ public class ServicesController : ControllerBase
     public async Task<NoContentResult> ApproveServiceRequest([FromRoute] Guid serviceId)
     {
         await this.WithIamUserId(userId => _serviceBusinessLogic.ApproveServiceRequestAsync(serviceId, userId)).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Declines the service request
+    /// </summary>
+    /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the service that should be declined</param>
+    /// <param name="data">the data of the decline request</param>
+    /// <remarks>Example: PUT: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/decline</remarks>
+    /// <response code="204">NoContent.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    /// <response code="404">If service does not exists.</response>
+    [HttpPut]
+    [Route("{serviceId:guid}/declineService")]
+    [Authorize(Roles = "decline_service_release")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> DeclineServiceRequest([FromRoute] Guid serviceId, [FromBody] OfferDeclineRequest data)
+    {
+        await this.WithIamUserId(userId => _serviceBusinessLogic.DeclineServiceRequestAsync(serviceId, userId, data)).ConfigureAwait(false);
         return NoContent();
     }
 }

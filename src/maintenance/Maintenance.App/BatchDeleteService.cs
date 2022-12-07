@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Maintenance.App;
+namespace Org.Eclipse.TractusX.Portal.Backend.Maintenance.App;
 
 /// <summary>
 /// Service to delete the pending and inactive documents as well as the depending consents from the database

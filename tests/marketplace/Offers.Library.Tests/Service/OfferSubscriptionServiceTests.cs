@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,19 +23,19 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Tests.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
 
 public class OfferSubscriptionServiceTests
 {

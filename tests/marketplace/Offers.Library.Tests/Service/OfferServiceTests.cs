@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,23 +22,23 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Notifications.Library;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
-using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Tests.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
 
 public class OfferServiceTests
 {
@@ -75,6 +75,7 @@ public class OfferServiceTests
     private readonly IUserRepository _userRepository;    
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly ILanguageRepository _languageRepository;
+    private readonly IMailingService _mailingService;
 
     public OfferServiceTests()
     {
@@ -105,6 +106,7 @@ public class OfferServiceTests
         _notificationRepository = A.Fake<INotificationRepository>();
         _serviceAccountCreation = A.Fake<IServiceAccountCreation>();
         _notificationService = A.Fake<INotificationService>();
+        _mailingService = A.Fake<IMailingService>();
 
         SetupRepositories();
         SetupServices();
@@ -508,10 +510,8 @@ public class OfferServiceTests
         var appSubscriptionDetails = new List<AppSubscriptionDetail>();
         var notifications = new List<Notification>();
         A.CallTo(() => _clientRepository.CreateClient(A<string>._))
-            .Invokes(x =>
+            .Invokes((string clientName) =>
             {
-                var clientName = x.Arguments.Get<string>("clientId");
-
                 var client = new IamClient(clientId, clientName!);
                 clients.Add(client);
             })
@@ -838,7 +838,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be($"{offerType.ToString()} {notExistingOffer} does not exist");
+        ex.Message.Should().Be($"{offerType} {notExistingOffer} does not exist");
     }
 
     [Theory]
@@ -875,11 +875,10 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerType)).ReturnsLazily(() => data);
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>._)).ReturnsLazily(() => userId);
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).Invokes(
-            x =>
+            (Guid _, 
+                Action<Offer> setOptionalParameters, 
+                Action<Offer>? initializeParemeters) =>
             {
-                var setOptionalParameters = x.Arguments.Get<Action<Offer>>("setOptionalParameters")!;
-                var initializeParemeters = x.Arguments.Get<Action<Offer>?>("initializeParemeters")!;
-
                 initializeParemeters?.Invoke(offer);
                 setOptionalParameters.Invoke(offer);
             });
@@ -912,7 +911,7 @@ public class OfferServiceTests
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId))
             .ReturnsLazily(() => (requesterId));
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offer.Id, A<Action<Offer>>._, A<Action<Offer>?>._))
-            .Invokes((Guid offerId, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) => 
+            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) => 
             {
                 initializeParemeters?.Invoke(offer);
                 setOptionalParameters(offer);
@@ -997,6 +996,139 @@ public class OfferServiceTests
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
         ex.Message.Should().Be($"Offer {offerId} providing company is not yet set.");
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    #endregion
+
+    #region DeclineOfferAsync
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task DeclineOfferAsync_WithNotExistingOffer_ThrowsForbiddenExceptionException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var notExistingOffer = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, _iamUserId, offerTypeId))
+            .ReturnsLazily(() => new ValueTuple<string? , OfferStatusId, Guid?, bool>());
+
+        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        async Task Act() => await sut.DeclineOfferAsync(notExistingOffer, _iamUserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty).ConfigureAwait(false);
+
+        // Assert
+        await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task DeclineOfferAsync_WithNotAssignedUser_ThrowsControllerArgumentException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var notExistingOffer = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, _iamUserId, offerTypeId))
+            .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?, bool>("test", OfferStatusId.IN_REVIEW, Guid.NewGuid(), false));
+
+        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        async Task Act() => await sut.DeclineOfferAsync(notExistingOffer, _iamUserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"{offerTypeId} not found. Either not existing or no permission for change.");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task DeclineOfferAsync_WithWrongStatus_ThrowsConflictException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var notExistingOffer = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, _iamUserId, offerTypeId))
+            .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?, bool>("test", OfferStatusId.CREATED, Guid.NewGuid(), true));
+
+        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        async Task Act() => await sut.DeclineOfferAsync(notExistingOffer, _iamUserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"{offerTypeId} must be in status {OfferStatusId.IN_REVIEW}");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task DeclineOfferAsync_WithOfferNameNotSet_ThrowsConflictException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var notExistingOffer = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, _iamUserId, offerTypeId))
+            .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?, bool>(null, OfferStatusId.IN_REVIEW, Guid.NewGuid(), true));
+
+        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        async Task Act() => await sut.DeclineOfferAsync(notExistingOffer, _iamUserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"{offerTypeId} name is not set");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task DeclineOfferAsync_WithProvidingCompanyNotSet_ThrowsConflictException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var notExistingOffer = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, _iamUserId, offerTypeId))
+            .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?, bool>("test", OfferStatusId.IN_REVIEW, null, true));
+
+        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        async Task Act() => await sut.DeclineOfferAsync(notExistingOffer, _iamUserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"{offerTypeId} providing company is not set");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task DeclineOfferAsync_WithValidData_CallsExpected(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var offer = _fixture.Create<Offer>();
+        var offerId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(offerId, _iamUserId, offerTypeId))
+            .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?, bool>("test", OfferStatusId.IN_REVIEW, Guid.NewGuid(), true));
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._))
+            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
+            {
+                initializeParemeters?.Invoke(offer);
+                setOptionalParameters.Invoke(offer);
+            });
+        
+        var sut = new OfferService(_portalRepositories, null!, null!, _notificationService, _mailingService);
+
+        // Act
+        await sut.DeclineOfferAsync(offerId, _iamUserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappenedOnceExactly();
+        offer.OfferStatusId.Should().Be(OfferStatusId.CREATED);
     }
 
     #endregion

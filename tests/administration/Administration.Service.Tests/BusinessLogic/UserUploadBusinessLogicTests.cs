@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -24,15 +24,15 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Framework.IO;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Text;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic.Tests;
 
 public class UserUploadBusinessLogicTests
 {

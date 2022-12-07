@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Mailing.Template.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Mailing.Template;
+namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
 
 public class TemplateSettings
 {

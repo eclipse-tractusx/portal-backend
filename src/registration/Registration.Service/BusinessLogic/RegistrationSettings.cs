@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 Microsoft and BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,9 +19,9 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
 public class RegistrationSettings
 {

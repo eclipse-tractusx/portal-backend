@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,18 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Apps.Service.ViewModels;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Apps.Service.Controllers;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers;
 
 /// <summary>
 /// Controller providing actions for displaying, filtering and updating applications and user assigned favourites.
@@ -297,6 +297,27 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(OfferAutoSetupResponseData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<OfferAutoSetupResponseData> AutoSetupService([FromBody] OfferAutoSetupData data) =>
+    public Task<OfferAutoSetupResponseData> AutoSetupApp([FromBody] OfferAutoSetupData data) =>
         this.WithIamUserId(iamUserId => _appsBusinessLogic.AutoSetupAppAsync(data, iamUserId));
+
+    /// <summary>
+    /// Declines the app request
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the app that should be declined</param>
+    /// <param name="data">the data of the decline request</param>
+    /// <remarks>Example: PUT: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/decline</remarks>
+    /// <response code="204">NoContent.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    /// <response code="404">If app does not exists.</response>
+    [HttpPut]
+    [Route("{appId:guid}/declineApp")]
+    [Authorize(Roles = "decline_app_release")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> DeclineAppRequest([FromRoute] Guid appId, [FromBody] OfferDeclineRequest data)
+    {
+        await this.WithIamUserId(userId => _appsBusinessLogic.DeclineAppRequestAsync(appId, userId, data)).ConfigureAwait(false);
+        return NoContent();
+    }
 }

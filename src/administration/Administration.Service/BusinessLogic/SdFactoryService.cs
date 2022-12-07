@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,15 +19,15 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Org.CatenaX.Ng.Portal.Backend.Administration.Service.Models;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
 /// Service to handle communication with the connectors sd factory

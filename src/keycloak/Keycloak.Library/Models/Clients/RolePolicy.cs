@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2019 Luk Vermeulen
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,11 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Common.Converters;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationPermissions;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationPermissions;
 using Newtonsoft.Json;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Clients;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public class Policy
 {

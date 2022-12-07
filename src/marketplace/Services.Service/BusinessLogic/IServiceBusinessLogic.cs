@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
 /// <summary>
 /// Business logic for handling service-related operations. Includes persistence layer access.
@@ -144,4 +144,12 @@ public interface IServiceBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task ApproveServiceRequestAsync(Guid appId, string iamUserId);
+
+    /// <summary>
+    /// Declines the service request
+    /// </summary>
+    /// <param name="serviceId">Id of the service</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="data">The decline request data</param>
+    Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data);
 }

@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 Microsoft and BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,17 +19,19 @@
  ********************************************************************************/
 
 using AutoFixture;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Controllers;
-using Org.CatenaX.Ng.Portal.Backend.Registration.Service.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Registration.Service.Tests;
+
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests;
 
 public class RegistrationControllerTest
 {
@@ -87,6 +89,26 @@ public class RegistrationControllerTest
         }
     }
 
+    [Fact]
+    public async Task GetUploadedDocumentsAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        Guid applicationId = new Guid("7eab8e16-8298-4b41-953b-515745423658");
+        var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3).ToAsyncEnumerable();
+        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT))
+            .Returns(uploadDocuments);
+
+        //Act
+        var result = this._controller.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT);
+
+        //Assert
+        await foreach (var item in result)
+        {
+            A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT)).MustHaveHappenedOnceExactly();
+            Assert.NotNull(item);
+            Assert.IsType<UploadDocuments>(item);
+        }
+    }
     [Fact]
     public async Task SubmitCompanyRoleConsentToAgreementsAsync_WithValidData_ReturnsExpected()
     {

@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,7 +22,7 @@ using Microsoft.EntityFrameworkCore;
 
 #nullable disable
 
-namespace Org.CatenaX.Ng.Portal.Backend.Provisioning.ProvisioningEntities
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities
 {
     public partial class ProvisioningDBContext : DbContext
     {

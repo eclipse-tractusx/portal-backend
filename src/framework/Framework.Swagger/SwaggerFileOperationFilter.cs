@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Framework.Swagger;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;
 
 public class SwaggerFileOperationFilter : IOperationFilter
 {

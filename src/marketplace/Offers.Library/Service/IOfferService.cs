@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
 /// <summary>
 /// Business logic for handling offer-related operations. Includes persistence layer access.
@@ -147,6 +147,7 @@ public interface IOfferService
     /// <returns></returns>
     Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> approveOfferRoles);
 
+    /// <summary>
     /// Update offer status and create notification
     /// </summary>
     /// <param name="offerId">Id of the offer that should be submitted</param>
@@ -156,4 +157,16 @@ public interface IOfferService
     /// <param name="companyAdminRoles">Company Admin Roles</param>
     /// <returns></returns>
     Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> companyAdminRoles);
+
+    /// <summary>
+    /// Declines the given offer
+    /// </summary>
+    /// <param name="offerId">Id of the offer that should be declined</param>
+    /// <param name="iamUserId">Id of the iam User</param>
+    /// <param name="data">The offer decline data</param>
+    /// <param name="offerType">The offer type</param>
+    /// <param name="notificationTypeId">Id of the notification that should be send</param>
+    /// <param name="notificationRecipients">Recipients of the notifications</param>
+    /// <param name="basePortalAddress">the base portal address</param>
+    Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string,IEnumerable<string>> notificationRecipients, string basePortalAddress);
 }

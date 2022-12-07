@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.Framework.Cors;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Swagger;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +30,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Framework.Web;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class StartupServiceExtensions
 {

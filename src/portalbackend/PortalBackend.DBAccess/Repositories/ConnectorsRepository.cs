@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
-namespace Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 /// Implementation of <see cref="IConnectorsRepository"/> accessing database with EF Core.
 public class ConnectorsRepository : IConnectorsRepository
@@ -51,7 +51,7 @@ public class ConnectorsRepository : IConnectorsRepository
             .AsNoTracking()
             .Where(connector => connector.Id == connectorId)
             .Select(connector => new ValueTuple<ConnectorData, bool>(
-                new ConnectorData(connector.Name, connector.Location!.Alpha2Code, connector.Id, connector.TypeId, connector.StatusId),
+                new ConnectorData(connector.Name, connector.Location!.Alpha2Code, connector.Id, connector.TypeId, connector.StatusId, connector.DapsRegistrationSuccessful),
                 connector.Provider!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUser)
             ))
             .SingleOrDefaultAsync();

@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,17 +22,17 @@ using AutoFixture;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using Org.CatenaX.Ng.Portal.Backend.Framework.Models;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Services.Service.BusinessLogic;
-using Org.CatenaX.Ng.Portal.Backend.Services.Service.Controllers;
-using Org.CatenaX.Ng.Portal.Backend.Services.Service.ViewModels;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Services.Service.Tests.Controllers;
+namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.Controllers;
 
 public class ServiceControllerTest
 {
@@ -259,7 +259,6 @@ public class ServiceControllerTest
         A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._))
                     .ReturnsLazily(() => pagination);
 
-
         //Act
         var result = await this._controller.GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync().ConfigureAwait(false);
 
@@ -281,5 +280,22 @@ public class ServiceControllerTest
 
         //Assert
         A.CallTo(() => _logic.SubmitServiceAsync(ServiceId, IamUserId)).MustHaveHappenedOnceExactly();
+    }
+        
+    [Fact]
+    public async Task DeclineServiceRequest_ReturnsNoContent()
+    {
+        //Arrange
+        var serviceId = _fixture.Create<Guid>();
+        var data = new OfferDeclineRequest("Just a test");
+        A.CallTo(() => _logic.DeclineServiceRequestAsync(A<Guid>._, A<string>._, A<OfferDeclineRequest>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.DeclineServiceRequest(serviceId, data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.DeclineServiceRequestAsync(serviceId, IamUserId, data)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 }

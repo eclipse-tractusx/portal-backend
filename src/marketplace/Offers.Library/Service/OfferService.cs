@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,20 +19,20 @@
  ********************************************************************************/
 
 using System.Text.Json;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Mailing.SendMail;
-using Org.CatenaX.Ng.Portal.Backend.Notifications.Library;
-using Org.CatenaX.Ng.Portal.Backend.Offers.Library.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.CatenaX.Ng.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Enums;
-using Org.CatenaX.Ng.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Offers.Library.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
 public class OfferService : IOfferService
 {
@@ -467,7 +467,7 @@ public class OfferService : IOfferService
         var offerDetails = await offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerTypeId).ConfigureAwait(false);
         if (offerDetails == null)
         {
-            throw new NotFoundException($"{offerTypeId.ToString()} {offerId} does not exist");
+            throw new NotFoundException($"{offerTypeId} {offerId} does not exist");
         }
 
         ValidateOfferDetails(offerDetails);
@@ -593,6 +593,66 @@ public class OfferService : IOfferService
         var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
         await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content, offerDetails.ProviderCompanyId.Value).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string,IEnumerable<string>> notificationRecipients, string basePortalAddress)
+    {
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var declineData = await offerRepository.GetOfferDeclineDataAsync(offerId, iamUserId, offerType).ConfigureAwait(false);
+
+        if (declineData == default)
+        {
+            throw new NotFoundException($"{offerType} {offerId} does not exist");
+        }
+
+        if (!declineData.IsUserOfProvider)
+        {
+            throw new ForbiddenException($"{offerType} not found. Either not existing or no permission for change.");
+        }
+
+        if (declineData.OfferStatus != OfferStatusId.IN_REVIEW)
+        {
+            throw new ConflictException($"{offerType} must be in status {OfferStatusId.IN_REVIEW}");
+        }
+
+        if (string.IsNullOrWhiteSpace(declineData.OfferName))
+        {
+            throw new ConflictException($"{offerType} name is not set");
+        }
+        
+        if (declineData.CompanyId == null)
+        {
+            throw new ConflictException($"{offerType} providing company is not set");
+        }
+        
+        offerRepository.AttachAndModifyOffer(offerId, offer =>
+        {
+            offer.OfferStatusId = OfferStatusId.CREATED;
+            offer.DateLastChanged = DateTime.UtcNow;
+        });
+        
+        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        var notificationContent = new
+        {
+            declineData.OfferName,
+            OfferId = offerId,
+            DeclineMessage= data.Message
+        };
+        
+        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
+        var content = Enumerable.Repeat(notificationTypeId, 1).Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        await _notificationService.CreateNotifications(notificationRecipients, requesterId, content, declineData.CompanyId.Value).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        
+        var mailParams = new Dictionary<string, string>
+        {
+            { "offerName", declineData.OfferName },
+            { "url", basePortalAddress },
+            { "declineMessage", data.Message }
+        };
+        await _mailingService.SendMails("test@email.com", mailParams, new List<string> { "offer-request-decline" }).ConfigureAwait(false);
     }
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)

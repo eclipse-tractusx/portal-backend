@@ -1,6 +1,6 @@
 /********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,14 +22,14 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
-using Org.CatenaX.Ng.Portal.Backend.Framework.ErrorHandling;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared;
-using Org.CatenaX.Ng.Portal.Backend.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
 using System.Text.Json;
 using Xunit;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Framework.Token.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Token.Tests;
 
 public class TokenServiceTests
 {

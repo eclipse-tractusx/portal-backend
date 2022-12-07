@@ -16,4 +16,4 @@ ENV ASPNETCORE_URLS http://+:8080
 EXPOSE 8080
 RUN chown -R 1000:3000 /app
 USER 1000:3000
-ENTRYPOINT ["dotnet", "Org.CatenaX.Ng.Portal.Backend.Apps.Service.dll"]
+ENTRYPOINT ["dotnet", "Org.Eclipse.TractusX.Portal.Backend.Apps.Service.dll"]

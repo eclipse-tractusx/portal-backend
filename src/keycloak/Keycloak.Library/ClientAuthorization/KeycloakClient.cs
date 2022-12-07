@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2019 Luk Vermeulen
  * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,13 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using AuthorizationResource = Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationResources.AuthorizationResource;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationPermissions;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
-using Org.CatenaX.Ng.Portal.Backend.Keycloak.Library.Models.Clients;
+using AuthorizationResource = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationResources.AuthorizationResource;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationPermissions;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Flurl.Http;
 
-namespace Org.CatenaX.Ng.Portal.Backend.Keycloak.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {
