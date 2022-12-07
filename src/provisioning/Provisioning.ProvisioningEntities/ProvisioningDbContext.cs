@@ -47,48 +47,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "en_US.utf8");
+            modelBuilder.HasDefaultSchema("provisioning");
 
             modelBuilder.HasSequence<int>("client_sequence_sequence_id_seq", "provisioning");
             modelBuilder.HasSequence<int>("identity_provider_sequence_sequence_id_seq", "provisioning");
 
             modelBuilder.Entity<ClientSequence>(entity =>
             {
-                entity.HasKey(e => e.SequenceId)
-                    .HasName("client_sequence_pkey");
-
-                entity.ToTable("client_sequence", "provisioning");
+                entity.HasKey(e => e.SequenceId);
 
                 entity.Property(e => e.SequenceId)
-                    .HasColumnName("sequence_id")
                     .HasDefaultValueSql("nextval('provisioning.client_sequence_sequence_id_seq'::regclass)");
             });
 
             modelBuilder.Entity<IdentityProviderSequence>(entity =>
             {
-                entity.HasKey(e => e.SequenceId)
-                    .HasName("identity_provider_sequence_pkey");
-
-                entity.ToTable("identity_provider_sequence", "provisioning");
+                entity.HasKey(e => e.SequenceId);
 
                 entity.Property(e => e.SequenceId)
-                    .HasColumnName("sequence_id")
                     .HasDefaultValueSql("nextval('provisioning.identity_provider_sequence_sequence_id_seq'::regclass)");
-            });
-
-            modelBuilder.Entity<UserPasswordReset>(entity =>
-            {
-                entity.ToTable("user_password_resets", "provisioning");
-
-                entity.Property(e => e.UserEntityId)
-                    .HasColumnName("user_entity_id");
-
-                entity.Property(e => e.PasswordModifiedAt)
-                    .HasColumnName("password_modified_at")
-                    .HasDefaultValueSql("now()");
-
-                entity.Property(e => e.ResetCount)
-                    .HasColumnName("reset_count")
-                    .HasDefaultValue(0);
             });
         }
     }
