@@ -42,7 +42,7 @@ public class BpdmService : IBpdmService
     /// <inheritdoc />
     public async Task<bool> TriggerBpnDataPush(BpdmTransferData data, CancellationToken cancellationToken)
     {
-        var httpClient = await GetBpdmHttpClient(cancellationToken).ConfigureAwait(false);        
+        var httpClient = await GetBpdmHttpClient(cancellationToken).ConfigureAwait(false);
 
         try
         {
