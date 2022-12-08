@@ -51,7 +51,7 @@ jobs:
         with:
           sarif_file: "trivy-results1.sarif"
 
-  analyze-product-portal-backend-provisioning-service:
+  analyze-portal-backend-provisioning-service:
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -84,7 +84,7 @@ jobs:
         with:
           sarif_file: "trivy-results2.sarif"
 
-  analyze-product-portal-backend-registration-service:
+  analyze-portal-backend-registration-service:
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -117,7 +117,7 @@ jobs:
         with:
           sarif_file: "trivy-results3.sarif"
 
-  analyze-product-portal-backend-administration-service:
+  analyze-portal-backend-administration-service:
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -150,7 +150,7 @@ jobs:
         with:
           sarif_file: "trivy-results4.sarif"
 
-  analyze-product-portal-backend_marketplace-app-service:
+  analyze-portal-backend_marketplace-app-service:
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -183,7 +183,7 @@ jobs:
         with:
           sarif_file: "trivy-results4.sarif"
 
-  analyze-product-portal-backend_maintenance-service:
+  analyze-portal-backend_maintenance-service:
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -216,7 +216,7 @@ jobs:
         with:
           sarif_file: "trivy-results5.sarif"
 
-  analyze-product-portal-backend_notification-service:
+  analyze-portal-backend_notification-service:
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -249,7 +249,7 @@ jobs:
         with:
           sarif_file: "trivy-results6.sarif"
 
-  analyze-product-portal-backend-services-service:
+  analyze-portal-backend-services-service:
     runs-on: ubuntu-latest
     permissions:
       actions: read
