@@ -108,7 +108,7 @@ jobs:
           filepath: "portal-backend-registration-service.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.Eclipse.TractusX.Portal.Backend.Registration.Service.dll, Org.Eclipse.TractusX.Portal.Backend.Framework.Models.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Registration.Service.dll'
 
   analyze-provisioning-service:
     runs-on: ubuntu-latest
@@ -241,7 +241,7 @@ jobs:
           filepath: "portal-backend-portal-migrations.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'PortalBackend.Migrations.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations.dll'
 
   analyze-maintenance-service:
     runs-on: ubuntu-latest
@@ -284,7 +284,7 @@ jobs:
           filepath: "portal-backend-maintenance-service.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Maintenance.App.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Maintenance.App.dll'
 
   analyze-notification-service:
     runs-on: ubuntu-latest
@@ -329,7 +329,7 @@ jobs:
           filepath: "portal-backend-notification.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.dll, Org.Eclipse.TractusX.Portal.Backend.Framework.Models.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.dll'
 
   analyze-services-service:
     runs-on: ubuntu-latest
