@@ -64,7 +64,7 @@ public class BatchDeleteService : BackgroundService
         {
             try
             {
-                _logger.LogInformation("Cleaning up documents and assignements older {Days} days...", _days);
+                _logger.LogInformation("Getting documents and assignments older {Days} days", _days);
                 List<(Guid DocumentId, IEnumerable<Guid> AgreementIds, IEnumerable<Guid> OfferIds)> documentData = await dbContext.Documents.Where(x =>
                     x.DateCreated < DateTimeOffset.UtcNow.AddDays(-_days) &&
                     x.DocumentStatusId == DocumentStatusId.INACTIVE)
@@ -75,11 +75,13 @@ public class BatchDeleteService : BackgroundService
                         ))
                     .ToListAsync(stoppingToken)
                     .ConfigureAwait(false);
+                _logger.LogInformation("Cleaning up {DocumentCount} Documents, {AgreementIdsCount} AgreementAssignedDocuments and {OfferIdCount} OfferAssignedDocuments", documentData.Count, documentData.SelectMany(x => x.AgreementIds).Count(), documentData.SelectMany(x => x.OfferIds).Count());
+
                 dbContext.AgreementAssignedDocuments.RemoveRange(documentData.SelectMany(data => data.AgreementIds.Select(agreementId => new AgreementAssignedDocument(agreementId, data.DocumentId))));
                 dbContext.OfferAssignedDocuments.RemoveRange(documentData.SelectMany(data => data.OfferIds.Select(offerId => new OfferAssignedDocument(offerId, data.DocumentId))));
                 dbContext.Documents.RemoveRange(documentData.Select(x => new Document(x.DocumentId, null!, null!, null!, default, default, default)));
                 await dbContext.SaveChangesAsync(stoppingToken).ConfigureAwait(false);
-                _logger.LogInformation("Documents older than {Days} days and depending consents successfully cleaned up.", _days);
+                _logger.LogInformation("Documents older than {Days} days and depending consents successfully cleaned up", _days);
             }
             catch (Exception ex)
             {
