@@ -107,13 +107,13 @@ public class AppReleaseBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var iamUserId = _fixture.Create<string>();
-        var appUserRoleDescription = new [] {
-            new AppUserRoleDescription("en","this is test1"),
-            new AppUserRoleDescription("de","this is test2"),
-            new AppUserRoleDescription("fr","this is test3")
+        var appUserRoleDescription = new AppUserRoleDescription[] {
+            new("en","this is test1"),
+            new("de","this is test2"),
+            new("fr","this is test3")
         };
-        var appUserRoles = new [] {
-            new AppUserRole("IT Admin",appUserRoleDescription)
+        var appUserRoles = new AppUserRole[] {
+            new("IT Admin",appUserRoleDescription)
         };
         A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>.That.IsEqualTo(appId), A<string>.That.IsEqualTo(iamUserId), A<OfferTypeId>.That.IsEqualTo(OfferTypeId.APP))).Returns((true,true));
         var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, null!, null!);
@@ -309,8 +309,8 @@ public class AppReleaseBusinessLogicTest
             "test", 
             null, 
             _companyUser.Id, 
-            new []{ Guid.NewGuid() },
-            new List<LocalizedDescription>
+            new [] { Guid.NewGuid() },
+            new LocalizedDescription[]
             {
                new("de", "Long description", "desc") 
             }, 
@@ -365,8 +365,8 @@ public class AppReleaseBusinessLogicTest
             });
         var settings = new AppsSettings
         {
-            ContentTypeSettings = new[] {"application/pdf"},
-            DocumentTypeIds = new[] {DocumentTypeId.APP_CONTRACT}
+            ContentTypeSettings = new[] { "application/pdf" },
+            DocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
         };
         
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
@@ -390,8 +390,8 @@ public class AppReleaseBusinessLogicTest
 
         var settings = new AppsSettings()
         {
-            ContentTypeSettings = new[] {"text/csv"},
-            DocumentTypeIds = new[] {DocumentTypeId.APP_CONTRACT}
+            ContentTypeSettings = new[] { "text/csv" },
+            DocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
         };
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -417,11 +417,11 @@ public class AppReleaseBusinessLogicTest
         var companyId = _fixture.Create<Guid>();
         var appName = _fixture.Create<string>();
 
-        var appUserRoleDescription = new [] {
-            new AppUserRoleDescription("de","this is test1"),
-            new AppUserRoleDescription("en","this is test2"),
+        var appUserRoleDescription = new AppUserRoleDescription[] {
+            new("de","this is test1"),
+            new("en","this is test2"),
         };
-        var appAssignedRoleDesc = new [] { new AppUserRole("Legal Admin", appUserRoleDescription) };
+        var appAssignedRoleDesc = new AppUserRole[] { new("Legal Admin", appUserRoleDescription) };
        
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
             .ReturnsLazily(() => (true, appName, _companyUser.Id, companyId));
@@ -453,11 +453,11 @@ public class AppReleaseBusinessLogicTest
         var appId = _fixture.Create<Guid>();
         var appName = _fixture.Create<string>();
 
-        var appUserRoleDescription = new [] {
-            new AppUserRoleDescription("de","this is test1"),
-            new AppUserRoleDescription("en","this is test2"),
+        var appUserRoleDescription = new AppUserRoleDescription[] {
+            new("de","this is test1"),
+            new("en","this is test2"),
         };
-        var appAssignedRoleDesc = new [] { new AppUserRole("Legal Admin", appUserRoleDescription) };
+        var appAssignedRoleDesc = new AppUserRole[] { new("Legal Admin", appUserRoleDescription) };
        
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
             .ReturnsLazily(() => (true, appName, Guid.Empty, null));
@@ -479,11 +479,11 @@ public class AppReleaseBusinessLogicTest
         var appId = _fixture.Create<Guid>();
         var appName = "app name";
 
-        var appUserRoleDescription = new [] {
-            new AppUserRoleDescription("de","this is test1"),
-            new AppUserRoleDescription("en","this is test2"),
+        var appUserRoleDescription = new AppUserRoleDescription[] {
+            new("de","this is test1"),
+            new("en","this is test2"),
         };
-        var appAssignedRoleDesc = new [] { new AppUserRole("Legal Admin", appUserRoleDescription) };
+        var appAssignedRoleDesc = new AppUserRole[] { new("Legal Admin", appUserRoleDescription) };
        
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
             .ReturnsLazily(() => (true, appName, _companyUser.Id, null));

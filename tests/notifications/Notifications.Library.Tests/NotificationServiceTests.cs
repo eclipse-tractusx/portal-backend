@@ -84,7 +84,7 @@ public class NotificationServiceTests
             appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
             companyName = "Shared Idp test"
         };
-        var content = new List<(string?, NotificationTypeId)>
+        var content = new (string?, NotificationTypeId)[]
         {
             new (JsonSerializer.Serialize(notificationContent), NotificationTypeId.INFO)
         };
@@ -113,7 +113,7 @@ public class NotificationServiceTests
             appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
             companyName = "Shared Idp test"
         };
-        var content = new List<(string?, NotificationTypeId)>
+        var content = new (string?, NotificationTypeId)[]
         {
             new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME),
             new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_USE_CASES),
@@ -147,7 +147,7 @@ public class NotificationServiceTests
             appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
             companyName = "Shared Idp test"
         };
-        var content = new List<(string?, NotificationTypeId)>
+        var content = new (string?, NotificationTypeId)[]
         {
             new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.INFO)
         };
@@ -177,7 +177,7 @@ public class NotificationServiceTests
             appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
             companyName = "Shared Idp test"
         };
-        var content = new List<(string?, NotificationTypeId)>
+        var content = new (string?, NotificationTypeId)[]
         {
             new (JsonSerializer.Serialize(notificationContent), NotificationTypeId.INFO)
         };
