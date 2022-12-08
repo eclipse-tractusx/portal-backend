@@ -173,7 +173,7 @@ jobs:
           # Path to Docker image
           image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_marketplace-app-service:latest"
           format: "sarif"
-          output: "trivy-results4.sarif"
+          output: "trivy-results5.sarif"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
 
@@ -181,7 +181,7 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: "trivy-results4.sarif"
+          sarif_file: "trivy-results5.sarif"
 
   analyze-portal-backend_maintenance-service:
     runs-on: ubuntu-latest
@@ -206,7 +206,7 @@ jobs:
           # Path to Docker image
           image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_maintenance-service:latest"
           format: "sarif"
-          output: "trivy-results5.sarif"
+          output: "trivy-results6.sarif"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
 
@@ -214,7 +214,7 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: "trivy-results5.sarif"
+          sarif_file: "trivy-results6.sarif"
 
   analyze-portal-backend_notification-service:
     runs-on: ubuntu-latest
@@ -239,7 +239,7 @@ jobs:
           # Path to Docker image
           image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_notification-service:latest"
           format: "sarif"
-          output: "trivy-results6.sarif"
+          output: "trivy-results7.sarif"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
 
@@ -247,7 +247,7 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: "trivy-results6.sarif"
+          sarif_file: "trivy-results7.sarif"
 
   analyze-portal-backend-services-service:
     runs-on: ubuntu-latest
@@ -272,7 +272,7 @@ jobs:
           # Path to Docker image
           image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_services-service:latest"
           format: "sarif"
-          output: "trivy-results7.sarif"
+          output: "trivy-results8.sarif"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
 
@@ -280,7 +280,7 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: "trivy-results7.sarif"
+          sarif_file: "trivy-results8.sarif"
 
   analyze-portal-backend-portal-migrations:
     runs-on: ubuntu-latest
@@ -305,7 +305,7 @@ jobs:
           # Path to Docker image
           image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_portal-migrations:latest"
           format: "sarif"
-          output: "trivy-results8.sarif"
+          output: "trivy-results9.sarif"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
 
@@ -313,7 +313,7 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: "trivy-results8.sarif"
+          sarif_file: "trivy-results9.sarif"
 
   analyze-portal-backend-provisioning-migrations:
     runs-on: ubuntu-latest
@@ -338,7 +338,7 @@ jobs:
           # Path to Docker image
           image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_provisioning-migrations:latest"
           format: "sarif"
-          output: "trivy-results9.sarif"
+          output: "trivy-results10.sarif"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
 
@@ -346,4 +346,4 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@v1
         with:
-          sarif_file: "trivy-results9.sarif"
+          sarif_file: "trivy-results10.sarif"
