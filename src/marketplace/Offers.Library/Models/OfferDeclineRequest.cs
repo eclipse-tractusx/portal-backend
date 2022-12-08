@@ -1,6 +1,6 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
 public record OfferDeclineRequest(
-    [property: JsonProperty("message")]string Message);
+    [property: JsonPropertyName("message")]string Message);
