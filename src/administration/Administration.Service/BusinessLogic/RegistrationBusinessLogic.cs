@@ -162,24 +162,25 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
             documentId = await _sdFactoryService.RegisterSelfDescriptionAsync(accessToken, applicationId, countryCode, businessPartnerNumber, cancellationToken).ConfigureAwait(false);
         }
-        finally
+        catch (Exception)
         {
-            applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca =>
-            {
-                ca.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
-                ca.DateLastChanged = DateTimeOffset.UtcNow;    
-            });
-
-            _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, c =>
-            {
-                c.CompanyStatusId = CompanyStatusId.ACTIVE;
-                c.SelfDescriptionDocumentId = documentId;
-            });
-
-            var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
-            await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, creatorId, notifications).ConfigureAwait(false);
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            // Exception is ignored since the wallet creation and self description registration should not be shown to the user 
         }
+        applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca =>
+        {
+            ca.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
+            ca.DateLastChanged = DateTimeOffset.UtcNow;    
+        });
+
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, c =>
+        {
+            c.CompanyStatusId = CompanyStatusId.ACTIVE;
+            c.SelfDescriptionDocumentId = documentId;
+        });
+
+        var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
+        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, creatorId, notifications, companyId).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         await PostRegistrationWelcomeEmailAsync(userRolesRepository, applicationRepository, applicationId).ConfigureAwait(false);
 
