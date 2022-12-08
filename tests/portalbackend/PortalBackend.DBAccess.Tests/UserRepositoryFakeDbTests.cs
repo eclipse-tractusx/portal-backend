@@ -59,7 +59,7 @@ public class UserRepositoryFakeDbTests
         {
             companyUser.Offers.Add(app);
         }
-        var iamUsersFakeDbSet = new List<IamUser>{ iamUser }.AsFakeDbSet();
+        var iamUsersFakeDbSet = new IamUser[]{ iamUser }.AsFakeDbSet();
 
         A.CallTo(() => _contextFake.IamUsers).Returns(iamUsersFakeDbSet);
         _fixture.Inject(_contextFake);
@@ -103,7 +103,7 @@ public class UserRepositoryFakeDbTests
             companyUser3
         }.AsFakeDbSet();
 
-        var userRolesDbSet = new List<CompanyUserAssignedRole>
+        var userRolesDbSet = new CompanyUserAssignedRole[]
         {
             new(companyUser1.Id, userRoles.First().Id),
             new(companyUser2.Id, userRoles.Last().Id),
@@ -119,7 +119,7 @@ public class UserRepositoryFakeDbTests
         var sut = _fixture.Create<UserRepository>();
 
         // Act
-        var result = await sut.GetCompanyUserWithRoleId(new List<Guid>{ userRoles.First().Id }).ToListAsync();
+        var result = await sut.GetCompanyUserWithRoleIdForCompany(new [] { userRoles.First().Id }, companyUser1.CompanyId).ToListAsync();
 
         // Assert
         result.Should().NotBeNullOrEmpty();

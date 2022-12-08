@@ -227,6 +227,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of app {appId}");
         }
+
+        if (result.ProviderCompanyId == null)
+        {
+            throw new ConflictException($"App {appId} providing company is not yet set.");
+        }
+
         var roleData = CreateUserRolesWithDescriptions(appId, appAssignedDesc);
         var notificationContent = new
         {
@@ -235,7 +241,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         };
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = _settings.ActiveAppNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(_settings.ActiveAppCompanyAdminRoles, result.CompanyUserId, content).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(_settings.ActiveAppCompanyAdminRoles, result.CompanyUserId, content, result.ProviderCompanyId.Value).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return roleData;
     }
