@@ -66,7 +66,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _bpdmService = bpdmService;
     }
 
-    public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
+    public Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId)
     {
         if (applicationId == Guid.Empty)
         {
@@ -75,14 +75,29 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return GetCompanyWithAddressAsyncInternal(applicationId);
     }
 
-    private async Task<CompanyWithAddress> GetCompanyWithAddressAsyncInternal(Guid applicationId)
+    private async Task<CompanyWithAddressData> GetCompanyWithAddressAsyncInternal(Guid applicationId)
     {
         var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
         if (companyWithAddress == null)
         {
             throw new NotFoundException($"no company found for applicationId {applicationId}");
         }
-        return companyWithAddress;
+        return new CompanyWithAddressData(
+            companyWithAddress.CompanyId,
+            companyWithAddress.Name,
+            companyWithAddress.City,
+            companyWithAddress.StreetName,
+            companyWithAddress.CountryAlpha2Code,
+            companyWithAddress.BusinessPartnerNumber,
+            companyWithAddress.Shortname,
+            companyWithAddress.Region,
+            companyWithAddress.Streetadditional,
+            companyWithAddress.Streetnumber,
+            companyWithAddress.Zipcode,
+            companyWithAddress.CountryDe,
+            companyWithAddress.TaxId,
+            companyWithAddress.CompanyRoles!.GroupBy(x=>x.CompanyRoleId).Select(g => new AgreementsRoleData(g.Key, g.Select(y=>new Agreements(y.AgreementId,y.ConsentStatusId))))
+        );
     }
 
     public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null)
