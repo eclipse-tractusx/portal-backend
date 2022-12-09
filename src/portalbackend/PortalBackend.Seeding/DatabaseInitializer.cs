@@ -17,10 +17,7 @@ public class DatabaseInitializer<TDbContext> : IDatabaseInitializer where TDbCon
         _logger = logger;
     }
 
-    public Task InitializeDatabasesAsync(CancellationToken cancellationToken) => 
-        InitializeDbAsync(cancellationToken);
-
-    private async Task InitializeDbAsync(CancellationToken cancellationToken)
+    public async Task InitializeDatabasesAsync(CancellationToken cancellationToken)
     {
         if ((await _dbContext.Database.GetPendingMigrationsAsync(cancellationToken).ConfigureAwait(false)).Any())
         {

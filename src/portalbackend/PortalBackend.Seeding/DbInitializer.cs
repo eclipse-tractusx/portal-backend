@@ -15,7 +15,7 @@ internal class DbInitializer<TDbContext> where TDbContext : DbContext
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        if (_dbContext.Database.GetMigrations().Any() && await _dbContext.Database.CanConnectAsync(cancellationToken))
+        if (await _dbContext.Database.CanConnectAsync(cancellationToken))
         {
             await _dbSeeder.SeedDatabaseAsync(cancellationToken);
         }
