@@ -24,14 +24,11 @@ public class AddressSeeder : ICustomSeeder
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (!await _context.Addresses.AnyAsync(cancellationToken))
         {
             _logger.LogInformation("Started to Seed Addresses");
-            
-            var addressData = await File.ReadAllTextAsync(path + "/Seeder/address.json", cancellationToken);
-            var addresses = JsonSerializer.Deserialize<List<Address>>(addressData);
 
+            var addresses = await SeederHelper.GetSeedData<Address>(cancellationToken).ConfigureAwait(false);
             if (addresses != null)
             {
                 foreach (var address in addresses)
