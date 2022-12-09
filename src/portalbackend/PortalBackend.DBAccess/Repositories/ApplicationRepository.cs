@@ -118,7 +118,8 @@ public class ApplicationRepository : IApplicationRepository
                     Zipcode = companyApplication.Company.Address.Zipcode,
                     CountryDe = companyApplication.Company.Address.Country!.CountryNameDe, // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
                     TaxId = companyApplication.Company.TaxId,
-                    CompanyRoles = companyApplication.Company.CompanyAssignedRoles.SelectMany(companyAssignedRole => companyAssignedRole.CompanyRole!.AgreementAssignedCompanyRoles.Select(x => new AgreementsData(x.CompanyRoleId, x.AgreementId, x.Agreement!.Consents.SingleOrDefault()!.ConsentStatusId.ToString())))
+                    CompanyRoles = companyApplication.Company.CompanyAssignedRoles.SelectMany(companyAssignedRole => companyAssignedRole.CompanyRole!.AgreementAssignedCompanyRoles.Select(x => new AgreementsData(x.CompanyRoleId, x.AgreementId, x.Agreement!.Consents.SingleOrDefault()!.ConsentStatusId.ToString()))),
+                    CompanyUser = companyApplication.Invitations.Select(x=>new InvitedCompanyUser(x.CompanyUserId,x.CompanyUser!.Firstname!,x.CompanyUser!.Lastname!,x.CompanyUser!.Email!))
                 })
             .AsNoTracking()
             .SingleOrDefaultAsync();

@@ -54,8 +54,13 @@ public record CompanyWithAddress(
     [JsonPropertyName("taxId")]
     public string? TaxId { get; set; }
 
-    [JsonPropertyName("CompanyRoles")]
+    [JsonPropertyName("companyRoles")]
     public IEnumerable<AgreementsData>? CompanyRoles { get; set; }
+
+    [JsonPropertyName("companyUser")]
+    public IEnumerable<InvitedCompanyUser>? CompanyUser { get; set; }
 }
 
 public record AgreementsData(CompanyRoleId CompanyRoleId, Guid AgreementId, string? ConsentStatusId);
+
+public record InvitedCompanyUser(Guid UserId, string? FirstName, string? LastName, string? Email);

@@ -39,6 +39,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 /// <param name="CountryDe"></param>
 /// <param name="TaxId"></param>
 /// <param name="CompanyRoles"></param>
+/// <param name="CompanyUser"></param>
 /// <returns></returns>
 
 public record CompanyWithAddressData(Guid CompanyId,
@@ -54,7 +55,8 @@ public record CompanyWithAddressData(Guid CompanyId,
     string? ZipCode,
     string? CountryDe,
     string? TaxId,
-    IEnumerable<AgreementsRoleData>? CompanyRoles
+    IEnumerable<AgreementsRoleData>? CompanyRoles,
+    IEnumerable<CompanyUser>? CompanyUser
     );
     /// <summary>
     /// 
@@ -71,4 +73,14 @@ public record CompanyWithAddressData(Guid CompanyId,
     /// <param name="ConsentStatusId"></param>
     /// <returns></returns>
     public record Agreements(Guid AgreementId, string ConsentStatusId);
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="UserId"></param>
+    /// <param name="FirstName"></param>
+    /// <param name="LastName"></param>
+    /// <param name="Email"></param>
+    /// <returns></returns>
+    public record CompanyUser(Guid UserId, string? FirstName, string? LastName, string? Email);
 
