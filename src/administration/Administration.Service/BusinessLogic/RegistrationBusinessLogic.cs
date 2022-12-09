@@ -97,7 +97,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             companyWithAddress.CountryDe,
             companyWithAddress.TaxId,
             companyWithAddress.CompanyRoles!.GroupBy(x=>x.CompanyRoleId).Select(g => new AgreementsRoleData(g.Key, g.Select(y=>new Agreements(y.AgreementId,y.ConsentStatusId!)))),
-            companyWithAddress.CompanyUser!.Select(x=>new CompanyUser(x.UserId,x.FirstName,x.LastName,x.Email))
+            companyWithAddress.CompanyUser!.Select(x=>new CompanyUsers(x.UserId,x.FirstName,x.LastName,x.Email))
         );
     }
 

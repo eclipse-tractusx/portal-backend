@@ -56,7 +56,7 @@ public record CompanyWithAddressData(Guid CompanyId,
     string? CountryDe,
     string? TaxId,
     IEnumerable<AgreementsRoleData>? CompanyRoles,
-    IEnumerable<CompanyUser>? CompanyUser
+    IEnumerable<CompanyUsers>? CompanyUser
     );
     /// <summary>
     /// 
@@ -82,5 +82,5 @@ public record CompanyWithAddressData(Guid CompanyId,
     /// <param name="LastName"></param>
     /// <param name="Email"></param>
     /// <returns></returns>
-    public record CompanyUser(Guid UserId, string? FirstName, string? LastName, string? Email);
+    public record CompanyUsers(Guid UserId, string? FirstName, string? LastName, string? Email);
 
