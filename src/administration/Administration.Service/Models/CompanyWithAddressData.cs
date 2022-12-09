@@ -22,6 +22,25 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="CompanyId"></param>
+/// <param name="Name"></param>
+/// <param name="City"></param>
+/// <param name="StreetName"></param>
+/// <param name="CountryAlpha2Code"></param>
+/// <param name="Bpn"></param>
+/// <param name="ShortName"></param>
+/// <param name="Region"></param>
+/// <param name="StreetAdditional"></param>
+/// <param name="StreetNumber"></param>
+/// <param name="ZipCode"></param>
+/// <param name="CountryDe"></param>
+/// <param name="TaxId"></param>
+/// <param name="CompanyRoles"></param>
+/// <returns></returns>
+
 public record CompanyWithAddressData(Guid CompanyId,
     string Name,
     string City,
@@ -37,6 +56,19 @@ public record CompanyWithAddressData(Guid CompanyId,
     string? TaxId,
     IEnumerable<AgreementsRoleData>? CompanyRoles
     );
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="CompanyRole"></param>
+    /// <param name="Agreements"></param>
+    /// <returns></returns>
     public record AgreementsRoleData(CompanyRoleId CompanyRole, IEnumerable<Agreements> Agreements);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="AgreementId"></param>
+    /// <param name="ConsentStatusId"></param>
+    /// <returns></returns>
     public record Agreements(Guid AgreementId, string ConsentStatusId);
 
