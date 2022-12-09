@@ -39,7 +39,7 @@ public static class ProvisioningManagerStartupServiceExtensions
             .AddTransient<IServiceAccountCreation, ServiceAccountCreation>();
 
         var connectionString = configuration.GetConnectionString("ProvisioningDB");
-        if (connectionString != null)
+        if (!string.IsNullOrWhiteSpace(connectionString))
         {
             services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>()
                 .AddDbContext<ProvisioningDBContext>(options =>
