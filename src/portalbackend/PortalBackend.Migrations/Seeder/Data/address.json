@@ -166,17 +166,5 @@
     "Streetnumber": "9",
     "Zipcode": "00001",
     "CountryAlpha2Code": "DE"
-  },
-  {
-    "Id": "dc39c583-384a-44fa-b578-ad63e372a196",
-    "DateCreated": "2022-03-24 18:01:33.428000 +00:00",
-    "DateLastChanged": "2022-03-24 18:01:33.428000 +00:00",
-    "City": "Cologne",
-    "Region": null,
-    "Streetadditional": null,
-    "Streetname": "Dagobertstr",
-    "Streetnumber": "9",
-    "Zipcode": "50668",
-    "CountryAlpha2Code": "DE"
   }
 ]
