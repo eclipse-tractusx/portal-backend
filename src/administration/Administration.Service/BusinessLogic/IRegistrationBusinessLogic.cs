@@ -20,12 +20,13 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 public interface IRegistrationBusinessLogic
 {
-    Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
+    Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId);
     Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null);
     Task<bool> ApprovePartnerRequest(string iamUserId, string accessToken, Guid applicationId,
         CancellationToken cancellationToken);

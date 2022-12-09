@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.Text.Json.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -52,4 +53,9 @@ public record CompanyWithAddress(
 
     [JsonPropertyName("taxId")]
     public string? TaxId { get; set; }
+
+    [JsonPropertyName("CompanyRoles")]
+    public IEnumerable<AgreementsData>? CompanyRoles { get; set; }
 }
+
+public record AgreementsData(CompanyRoleId CompanyRoleId, Guid AgreementId, string? ConsentStatusId);
