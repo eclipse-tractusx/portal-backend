@@ -112,6 +112,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Token", "framewor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Token.Tests", "..\tests\framework\Framework.Token.Tests\Framework.Token.Tests.csproj", "{4316375F-361B-49D6-A310-08CD96D04398}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortalBackend.Seeding", "portalbackend\PortalBackend.Seeding\PortalBackend.Seeding.csproj", "{24A4921B-0B80-46D0-BB40-DAC929377A5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -650,6 +652,18 @@ Global
 		{4316375F-361B-49D6-A310-08CD96D04398}.Release|x64.Build.0 = Release|Any CPU
 		{4316375F-361B-49D6-A310-08CD96D04398}.Release|x86.ActiveCfg = Release|Any CPU
 		{4316375F-361B-49D6-A310-08CD96D04398}.Release|x86.Build.0 = Release|Any CPU
+		{24A4921B-0B80-46D0-BB40-DAC929377A5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24A4921B-0B80-46D0-BB40-DAC929377A5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24A4921B-0B80-46D0-BB40-DAC929377A5D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{24A4921B-0B80-46D0-BB40-DAC929377A5D}.Debug|x64.Build.0 = Debug|Any CPU
+		{24A4921B-0B80-46D0-BB40-DAC929377A5D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{24A4921B-0B80-46D0-BB40-DAC929377A5D}.Debug|x86.Build.0 = Debug|Any CPU
+		{24A4921B-0B80-46D0-BB40-DAC929377A5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24A4921B-0B80-46D0-BB40-DAC929377A5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24A4921B-0B80-46D0-BB40-DAC929377A5D}.Release|x64.ActiveCfg = Release|Any CPU
+		{24A4921B-0B80-46D0-BB40-DAC929377A5D}.Release|x64.Build.0 = Release|Any CPU
+		{24A4921B-0B80-46D0-BB40-DAC929377A5D}.Release|x86.ActiveCfg = Release|Any CPU
+		{24A4921B-0B80-46D0-BB40-DAC929377A5D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -702,5 +716,6 @@ Global
 		{A1862697-AB25-4D79-B601-02733A3490B2} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 		{CF221BA2-1CC2-4E7A-9F8E-4D14975E572E} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
+		{24A4921B-0B80-46D0-BB40-DAC929377A5D} = {774A1FBD-53C1-43A8-82ED-C8001AC9967C}
 	EndGlobalSection
 EndGlobal
