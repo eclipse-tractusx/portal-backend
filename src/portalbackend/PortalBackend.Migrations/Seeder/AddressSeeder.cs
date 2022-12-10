@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -39,18 +38,16 @@ public class AddressSeeder : ICustomSeeder
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        if (!await _context.Addresses.AnyAsync(cancellationToken))
+        var addresses = await SeederHelper.GetSeedData<Address>(cancellationToken).ConfigureAwait(false);
+        if (addresses != null)
         {
             _logger.LogInformation("Started to Seed Addresses");
-
-            var addresses = await SeederHelper.GetSeedData<Address>(cancellationToken).ConfigureAwait(false);
-            if (addresses != null)
-            {
-                foreach (var address in addresses)
-                {
-                    await _context.Addresses.AddAsync(address, cancellationToken);
-                }
-            }
+            addresses = (from a in addresses
+                join dba in _context.Addresses on a.Id equals dba.Id into t
+                from ad in t.DefaultIfEmpty()
+                where ad == null
+                select a).ToList();
+            await _context.Addresses.AddRangeAsync(addresses, cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Seeded Addresses");
