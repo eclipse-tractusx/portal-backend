@@ -22,14 +22,26 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-/// <summary>
-/// Settings used in business logic concerning daps.
-/// </summary>
-public class DapsSettings : KeyVaultAuthSettings
+public class KeyVaultAuthSettings
 {
-    /// <summary>
-    /// Daps endpoint.
-    /// </summary>
-    [Required]
-    public string DapsUrl { get; set; } = null!;
+    [Required(AllowEmptyStrings = false)]
+    public string Username { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)] 
+    public string Password { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)] 
+    public string ClientId { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string GrantType { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string ClientSecret { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string Scope { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string KeyCloakTokenAdress { get; set; } = null!;
 }

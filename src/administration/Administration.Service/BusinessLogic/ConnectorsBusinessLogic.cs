@@ -214,7 +214,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             try
             {
                 dapsCallSuccessful = await _dapsService
-                    .EnableDapsAuthAsync(name, accessToken, connectorUrl, businessPartnerNumber, file, cancellationToken)
+                    .EnableDapsAuthAsync(name, connectorUrl, businessPartnerNumber, file, cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (ServiceException)
@@ -269,7 +269,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         var connectorData = connector.ConnectorInformationData;
         var dapsCallSuccessful = await _dapsService
-            .EnableDapsAuthAsync(connectorData.Name, accessToken, connectorData.Url, connectorData.Bpn, certificate, cancellationToken)
+            .EnableDapsAuthAsync(connectorData.Name, connectorData.Url, connectorData.Bpn, certificate, cancellationToken)
             .ConfigureAwait(false);
         connectorsRepository.AttachAndModifyConnector(connectorId, con =>
         {
