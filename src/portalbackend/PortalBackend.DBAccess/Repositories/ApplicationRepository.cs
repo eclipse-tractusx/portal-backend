@@ -117,9 +117,7 @@ public class ApplicationRepository : IApplicationRepository
                     Streetnumber = companyApplication.Company.Address.Streetnumber,
                     Zipcode = companyApplication.Company.Address.Zipcode,
                     CountryDe = companyApplication.Company.Address.Country!.CountryNameDe, // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
-                    TaxId = companyApplication.Company.TaxId,
-                    CompanyRoles = companyApplication.Company.CompanyAssignedRoles.SelectMany(companyAssignedRole => companyAssignedRole.CompanyRole!.AgreementAssignedCompanyRoles.Select(x => new AgreementsData(x.CompanyRoleId, x.AgreementId, x.Agreement!.Consents.SingleOrDefault()!.ConsentStatusId.ToString()))),
-                    CompanyUser = companyApplication.Invitations.Select(x=>new InvitedCompanyUser(x.CompanyUserId,x.CompanyUser!.Firstname!,x.CompanyUser!.Lastname!,x.CompanyUser!.Email!))
+                    TaxId = companyApplication.Company.TaxId
                 })
             .AsNoTracking()
             .SingleOrDefaultAsync();
@@ -213,4 +211,30 @@ public class ApplicationRepository : IApplicationRepository
          _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => companyName != null ? EF.Functions.ILike(application.Company!.Name, $"%{companyName}%") : true);
+
+    public Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAdressUntrackedAsync(Guid companyApplicationId) =>
+        _dbContext.CompanyApplications
+            .AsSplitQuery()
+            .Where(companyApplication => companyApplication.Id == companyApplicationId)
+            .Select(
+                companyApplication => new CompanyUserRoleWithAddress(
+                    companyApplication.CompanyId,
+                    companyApplication.Company!.Name,
+                    companyApplication.Company.Address!.City ?? "",
+                    companyApplication.Company.Address.Streetname ?? "",
+                    companyApplication.Company.Address.CountryAlpha2Code ?? "",
+                    companyApplication.Company.CompanyAssignedRoles.SelectMany(companyAssignedRole => companyAssignedRole.CompanyRole!.AgreementAssignedCompanyRoles.Select(x => new AgreementsData(x.CompanyRoleId, x.AgreementId, x.Agreement!.Consents.SingleOrDefault(consent => consent.CompanyId == companyApplication.CompanyId)!.ConsentStatusId!))),
+                    companyApplication.Invitations.Select(x=>new InvitedCompanyUser(x.CompanyUserId,x.CompanyUser!.Firstname!,x.CompanyUser!.Lastname!,x.CompanyUser!.Email!)))
+                {
+                    BusinessPartnerNumber = companyApplication.Company!.BusinessPartnerNumber,
+                    Shortname = companyApplication.Company.Shortname,
+                    Region = companyApplication.Company.Address.Region,
+                    Streetadditional = companyApplication.Company.Address.Streetadditional,
+                    Streetnumber = companyApplication.Company.Address.Streetnumber,
+                    Zipcode = companyApplication.Company.Address.Zipcode,
+                    CountryDe = companyApplication.Company.Address.Country!.CountryNameDe, // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
+                    TaxId = companyApplication.Company.TaxId
+                })
+            .AsNoTracking()
+            .SingleOrDefaultAsync();
 }
