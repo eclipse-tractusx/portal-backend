@@ -72,7 +72,7 @@ public record CompanyWithAddressData(Guid CompanyId,
     /// <param name="AgreementId"></param>
     /// <param name="ConsentStatusId"></param>
     /// <returns></returns>
-    public record Agreements(Guid AgreementId, string ConsentStatusId);
+    public record Agreements(Guid AgreementId, ConsentStatusId? ConsentStatusId);
     
     /// <summary>
     /// 

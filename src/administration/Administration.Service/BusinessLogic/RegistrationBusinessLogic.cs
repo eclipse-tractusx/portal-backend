@@ -77,7 +77,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private async Task<CompanyWithAddressData> GetCompanyWithAddressAsyncInternal(Guid applicationId)
     {
-        var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
+        var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyUserRoleWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
         if (companyWithAddress == null)
         {
             throw new NotFoundException($"no company found for applicationId {applicationId}");
@@ -97,7 +97,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             companyWithAddress.CountryDe,
             companyWithAddress.TaxId,
             companyWithAddress.CompanyRoles!.GroupBy(x=>x.CompanyRoleId).Select(g => new AgreementsRoleData(g.Key, g.Select(y=>new Agreements(y.AgreementId,y.ConsentStatusId!)))),
-            companyWithAddress.CompanyUser!.Select(x=>new CompanyUsers(x.UserId,x.FirstName,x.LastName,x.Email))
+            companyWithAddress.CompanyUser!.Select(x=>new CompanyUsers(x.UserId,x.FirstName!,x.LastName!,x.Email!))
         );
     }
 
