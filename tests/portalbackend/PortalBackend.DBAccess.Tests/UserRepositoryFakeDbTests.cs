@@ -76,57 +76,6 @@ public class UserRepositoryFakeDbTests
         results.Should().BeEquivalentTo(favouriteAppIds);
     }
     
-    [Fact]
-    public async Task GetCompanyUserWithRoleId_ReturnsExpectedCompanyUsers()
-    {
-        // Arrange
-        var userRoles = _fixture.CreateMany<UserRole>(5);
-        userRoles.First().UserRoleText = "CX Admin";
-
-        var companyUser1 = _fixture.Build<CompanyUser>()
-            .With(x => x.CompanyUserStatusId, CompanyUserStatusId.ACTIVE)
-            .Create();
-        companyUser1.UserRoles.Add(userRoles.First());
-        var companyUser2 = _fixture.Build<CompanyUser>()
-            .With(x => x.CompanyUserStatusId, CompanyUserStatusId.ACTIVE)
-            .Create();
-        companyUser2.UserRoles.Add(userRoles.Last());
-        var companyUser3 = _fixture.Build<CompanyUser>()
-            .With(x => x.CompanyUserStatusId, CompanyUserStatusId.ACTIVE)
-            .Create();
-        companyUser3.UserRoles.Add(userRoles.Last());
-
-        var companyUsersDbSet = new List<CompanyUser>
-        {
-            companyUser1,
-            companyUser2,
-            companyUser3
-        }.AsFakeDbSet();
-
-        var userRolesDbSet = new CompanyUserAssignedRole[]
-        {
-            new(companyUser1.Id, userRoles.First().Id),
-            new(companyUser2.Id, userRoles.Last().Id),
-            new(companyUser3.Id, userRoles.Last().Id),
-        }.AsFakeDbSet();
-        
-        A.CallTo(() => _contextFake.UserRoles).Returns(userRoles.AsFakeDbSet());
-        A.CallTo(() => _contextFake.CompanyUsers).Returns(companyUsersDbSet);
-        A.CallTo(() => _contextFake.CompanyUserAssignedRoles).Returns(userRolesDbSet);
-        
-        _fixture.Inject(_contextFake);
-
-        var sut = _fixture.Create<UserRepository>();
-
-        // Act
-        var result = await sut.GetCompanyUserWithRoleIdForCompany(new [] { userRoles.First().Id }, companyUser1.CompanyId).ToListAsync();
-
-        // Assert
-        result.Should().NotBeNullOrEmpty();
-        result.Should().HaveCount(1);
-        result.Single().Should().Be(companyUser1.Id);
-    }
-
     #region Setup
 
     private (CompanyUser, IamUser) CreateTestUserPair()
