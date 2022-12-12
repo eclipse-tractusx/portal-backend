@@ -71,8 +71,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             throw new NotFoundException($"user {iamAdminId} is not associated with any company");
         }
 
-        var (name, description, iamClientAuthMethod, userRoleIds) = serviceAccountCreationInfos;
-        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(name, description, iamClientAuthMethod, userRoleIds, result.CompanyId, Enumerable.Repeat(result.Bpn, 1)).ConfigureAwait(false);
+        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, result.CompanyId, Enumerable.Repeat(result.Bpn, 1), CompanyServiceAccountTypeId.OWN).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return new ServiceAccountDetails(
@@ -213,7 +212,9 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
                     .Select(serviceAccount => new CompanyServiceAccountData(
                         serviceAccount.Id,
                         serviceAccount.IamServiceAccount!.ClientClientId,
-                        serviceAccount.Name))
+                        serviceAccount.Name,
+                        serviceAccount.CompanyServiceAccountTypeId,
+                        serviceAccount.OfferSubscriptionId))
                     .AsAsyncEnumerable()));
     }
 

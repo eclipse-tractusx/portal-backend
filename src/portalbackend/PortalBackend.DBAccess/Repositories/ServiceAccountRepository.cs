@@ -35,15 +35,26 @@ public class ServiceAccountRepository : IServiceAccountRepository
         _dbContext = portalDbContext;
     }
 
-    public CompanyServiceAccount CreateCompanyServiceAccount(Guid companyId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description) =>
-        _dbContext.CompanyServiceAccounts.Add(
+    public CompanyServiceAccount CreateCompanyServiceAccount(
+        Guid companyId,
+        CompanyServiceAccountStatusId companyServiceAccountStatusId,
+        string name,
+        string description,
+        CompanyServiceAccountTypeId companyServiceAccountTypeId,
+        Action<CompanyServiceAccount>? setOptionalParameter)
+    {
+        var serviceAccount = _dbContext.CompanyServiceAccounts.Add(
             new CompanyServiceAccount(
                 Guid.NewGuid(),
                 companyId,
                 companyServiceAccountStatusId,
                 name,
                 description,
-                DateTimeOffset.UtcNow)).Entity;
+                DateTimeOffset.UtcNow,
+                companyServiceAccountTypeId)).Entity;
+        setOptionalParameter?.Invoke(serviceAccount);
+        return serviceAccount;
+    }
 
     public IamServiceAccount CreateIamServiceAccount(string clientId, string clientClientId, string userEntityId, Guid companyServiceAccountId) =>
         _dbContext.IamServiceAccounts.Add(
@@ -70,7 +81,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
                 && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
-                && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                && serviceAccount.ServiceAccountOwner!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
             .Select(serviceAccount =>
                 new CompanyServiceAccountWithRoleDataClientId(
                     serviceAccount,
@@ -89,7 +100,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
                 && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
-                && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                && serviceAccount.ServiceAccountOwner!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
             .Include(serviceAccount => serviceAccount.IamServiceAccount)
             .Include(serviceAccount => serviceAccount.CompanyServiceAccountAssignedRoles)
             .SingleOrDefaultAsync();
@@ -100,7 +111,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
                 && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
-                && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                && serviceAccount.ServiceAccountOwner!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
             .Select(serviceAccount => new CompanyServiceAccountDetailedData(
                     serviceAccount.Id,
                     serviceAccount.IamServiceAccount!.ClientId,

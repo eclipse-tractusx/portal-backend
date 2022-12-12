@@ -26,7 +26,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public interface IServiceAccountRepository
 {
-    CompanyServiceAccount CreateCompanyServiceAccount(Guid companyId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description);
+    CompanyServiceAccount CreateCompanyServiceAccount(Guid companyId,
+        CompanyServiceAccountStatusId companyServiceAccountStatusId,
+        string name,
+        string description,
+        CompanyServiceAccountTypeId companyServiceAccountTypeId,
+        Action<CompanyServiceAccount>? setOptionalParameter);
+
     IamServiceAccount CreateIamServiceAccount(string clientId, string clientClientId, string userEntityId, Guid companyServiceAccountId);
     CompanyServiceAccountAssignedRole CreateCompanyServiceAccountAssignedRole(Guid companyServiceAccountId, Guid userRoleId);
     IamServiceAccount RemoveIamServiceAccount(IamServiceAccount iamServiceAccount);

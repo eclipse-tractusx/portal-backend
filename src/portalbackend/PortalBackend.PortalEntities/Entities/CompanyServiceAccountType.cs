@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
@@ -18,14 +18,31 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public record CompanyServiceAccountData(
-    [property: JsonPropertyName("serviceAccountId")] Guid ServiceAccountId,
-    [property: JsonPropertyName("clientId")] string ClientId,
-    [property: JsonPropertyName("name")] string Name,
-    [property: JsonPropertyName("serviceAccountType")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
-    [property: JsonPropertyName("offerSubscriptionId")] Guid? OfferSubscriptionId);
+public class CompanyServiceAccountType
+{
+ private CompanyServiceAccountType()
+ {
+  Label = null!;
+  CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
+ }
+
+ public CompanyServiceAccountType(CompanyServiceAccountTypeId companyServiceAccountTypeId) : this()
+ {
+  Id = companyServiceAccountTypeId;
+  Label = companyServiceAccountTypeId.ToString();
+ }
+
+ [Key]
+ public CompanyServiceAccountTypeId Id { get; private set; }
+
+ [MaxLength(255)]
+ public string Label { get; private set; }
+
+ // Navigation properties
+ public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
+}
