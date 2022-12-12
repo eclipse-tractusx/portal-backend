@@ -21,39 +21,22 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using System.Text.Json.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-public class ServiceAccountDetails
+public record ServiceAccountDetails(
+    [property: JsonPropertyName("serviceAccountId")]Guid ServiceAccountId,
+    [property: JsonPropertyName("clientId")] string ClientId,
+    [property: JsonPropertyName("name")]string Name,
+    [property: JsonPropertyName("description")]string Description,
+    [property: JsonPropertyName("authenticationType")] IamClientAuthMethod IamClientAuthMethod,
+    [property: JsonPropertyName("roles")] IEnumerable<UserRoleData> UserRoleDatas,
+    [property: JsonPropertyName("companyServiceAccountTypeId")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId)
 {
-    public ServiceAccountDetails(Guid serviceAccountId, string clientId, string name, string description, IamClientAuthMethod iamClientAuthMethod, IEnumerable<UserRoleData> userRoleDatas)
-    {
-        ServiceAccountId = serviceAccountId;
-        ClientId = clientId;
-        Name = name;
-        Description = description;
-        IamClientAuthMethod = iamClientAuthMethod;
-        UserRoleDatas = userRoleDatas;
-    }
-
-    [JsonPropertyName("serviceAccountId")]
-    public Guid ServiceAccountId { get; set; }
-
-    [JsonPropertyName("clientId")]
-    public string ClientId { get; set; }
-
-    [JsonPropertyName("name")]
-    public string Name { get; set; }
-
-    [JsonPropertyName("description")]
-    public string Description { get; set; }
-
-    [JsonPropertyName("authenticationType")]
-    public IamClientAuthMethod IamClientAuthMethod { get; set; }
-
     [JsonPropertyName("secret")]
     public string? Secret { get; set; }
-
-    [JsonPropertyName("roles")]
-    public IEnumerable<UserRoleData> UserRoleDatas { get; set; }
+    
+    [JsonPropertyName("subscriptionId")]
+    public Guid? SubscriptionId { get; set; }
 }
