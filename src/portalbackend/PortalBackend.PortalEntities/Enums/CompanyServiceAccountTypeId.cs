@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
@@ -18,14 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
-public record CompanyServiceAccountData(
-    [property: JsonPropertyName("serviceAccountId")] Guid ServiceAccountId,
-    [property: JsonPropertyName("clientId")] string ClientId,
-    [property: JsonPropertyName("name")] string Name,
-    [property: JsonPropertyName("serviceAccountType")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
-    [property: JsonPropertyName("offerSubscriptionId")] Guid? OfferSubscriptionId);
+public enum CompanyServiceAccountTypeId
+{
+    MANAGED = 1,
+    OWN = 2
+}
