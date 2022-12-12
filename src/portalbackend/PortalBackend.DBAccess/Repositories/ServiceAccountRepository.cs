@@ -124,7 +124,9 @@ public class ServiceAccountRepository : IServiceAccountRepository
                         .Select(userRole => new UserRoleData(
                             userRole!.Id,
                             userRole.Offer!.AppInstances.First().IamClient!.ClientClientId,
-                            userRole.UserRoleText))))
+                            userRole.UserRoleText)),
+                    serviceAccount.CompanyServiceAccountTypeId,
+                    serviceAccount.OfferSubscriptionId))
             .SingleOrDefaultAsync();
 
     public IQueryable<CompanyServiceAccount> GetOwnCompanyServiceAccountsUntracked(string adminUserId) =>

@@ -71,7 +71,8 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             throw new NotFoundException($"user {iamAdminId} is not associated with any company");
         }
 
-        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, result.CompanyId, Enumerable.Repeat(result.Bpn, 1), CompanyServiceAccountTypeId.OWN).ConfigureAwait(false);
+        var companyServiceAccountTypeId = CompanyServiceAccountTypeId.OWN;
+        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, result.CompanyId, Enumerable.Repeat(result.Bpn, 1), companyServiceAccountTypeId).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return new ServiceAccountDetails(
@@ -80,7 +81,8 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             serviceAccountCreationInfos.Name,
             serviceAccountCreationInfos.Description,
             serviceAccountCreationInfos.IamClientAuthMethod,
-            userRoleData)
+            userRoleData,
+            companyServiceAccountTypeId)
         {
             Secret = serviceAccountData.AuthData.Secret
         };
@@ -122,9 +124,11 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.Name,
             result.Description,
             authData.IamClientAuthMethod,
-            result.UserRoleDatas)
+            result.UserRoleDatas,
+            result.CompanyServiceAccountTypeId)
             {
-                Secret = authData.Secret
+                Secret = authData.Secret,
+                SubscriptionId = result.SubscriptionId
             };
     }
 
@@ -143,9 +147,11 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.Name,
             result.Description,
             authData.IamClientAuthMethod,
-            result.UserRoleDatas)
+            result.UserRoleDatas,
+            result.CompanyServiceAccountTypeId)
             {
-                Secret = authData.Secret
+                Secret = authData.Secret,
+                SubscriptionId = result.SubscriptionId
             };
     }
 
@@ -190,9 +196,12 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             serviceAccount.Name,
             serviceAccount.Description,
             authData.IamClientAuthMethod,
-            result.UserRoleDatas)
+            result.UserRoleDatas,
+            serviceAccount.CompanyServiceAccountTypeId
+            )
         {
-            Secret = authData.Secret
+            Secret = authData.Secret,
+            SubscriptionId = serviceAccount.OfferSubscriptionId
         };
     }
 
@@ -200,7 +209,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
     {
         var serviceAccounts = _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountsUntracked(iamAdminId);
 
-        return Pagination.CreateResponseAsync<CompanyServiceAccountData>(
+        return Pagination.CreateResponseAsync(
             page,
             size,
             15,
