@@ -516,11 +516,6 @@ public class OfferService : IOfferService
             nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.ThumbnailUrl)}");
         }
 
-        if (offerDetails.SalesManagerId is null)
-        {
-            nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.SalesManagerId)}");
-        }
-
         if (offerDetails.ProviderCompanyId is null)
         {
             nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.ProviderCompanyId)}");
@@ -647,13 +642,35 @@ public class OfferService : IOfferService
         await _notificationService.CreateNotifications(notificationRecipients, requesterId, content, declineData.CompanyId.Value).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         
+        await SendMail(notificationRecipients, declineData.OfferName, basePortalAddress, data.Message, declineData.CompanyId.Value);
+    }
+
+    private async Task SendMail(IDictionary<string,IEnumerable<string>> receiverUserRoles, string offerName, string basePortalAddress, string message, Guid companyId)
+    {
         var mailParams = new Dictionary<string, string>
         {
-            { "offerName", declineData.OfferName },
+            { "offerName", offerName },
             { "url", basePortalAddress },
-            { "declineMessage", data.Message }
+            { "declineMessage", message }
         };
-        await _mailingService.SendMails("test@email.com", mailParams, new List<string> { "offer-request-decline" }).ConfigureAwait(false);
+
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var roleData = await userRolesRepository
+            .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        if (roleData.Count < receiverUserRoles.Sum(clientRoles => clientRoles.Value.Count()))
+        {
+            throw new ConfigurationException(
+                $"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+        }
+
+        var companyUserWithRoleIdForCompany = _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserEmailForCompanyAndRoleId(roleData, companyId);
+        await foreach (var receiver in companyUserWithRoleIdForCompany)
+        {
+            await _mailingService.SendMails(receiver, mailParams, new List<string> { "offer-request-decline" }).ConfigureAwait(false);
+        }
     }
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
