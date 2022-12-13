@@ -123,10 +123,10 @@ public class ServicesController : ControllerBase
         this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetSubscriptionDetailAsync(subscriptionId, iamUserId));
 
     /// <summary>
-    /// Adds a new service subscription.
+    /// Retrieves service offer details for the respective service id.
     /// </summary>
     /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service the wants to retrieve.</param>
-    /// <param name="lang" example="de">OPTIONAL: Short code for the language the translatable text should be returned in.</param>
+    /// <param name="lang" example="de">OPTIONAL: Optional two character language specifier for the service description. Default response is set to english.</param>
     /// <remarks>Example: Get: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
     /// <response code="200">Returns the service details.</response>
     /// <response code="404">Service was not found.</response>
