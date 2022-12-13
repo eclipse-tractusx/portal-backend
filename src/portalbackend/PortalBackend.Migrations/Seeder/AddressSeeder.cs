@@ -47,6 +47,7 @@ public class AddressSeeder : ICustomSeeder
                 from ad in t.DefaultIfEmpty()
                 where ad == null
                 select a).ToList();
+            _logger.LogInformation("Seeding {AddressCount} addresses", addresses.Count());
             await _context.Addresses.AddRangeAsync(addresses, cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
