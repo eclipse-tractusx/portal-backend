@@ -30,7 +30,7 @@ public class ProvisioningDbContextFactory : IDesignTimeDbContextFactory<Provisio
     public ProvisioningDbContext CreateDbContext(string[] args)
     {
         var config = new ConfigurationBuilder()
-            .AddJsonFile("secrets/appsettings.json", true) // Only used in k8s deployment
+            .AddJsonFile("secrets/appsettings.json", true)
             .AddEnvironmentVariables()
             .AddUserSecrets(Assembly.GetExecutingAssembly())
             .Build();
