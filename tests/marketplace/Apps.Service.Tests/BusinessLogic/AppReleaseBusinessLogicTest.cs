@@ -88,7 +88,7 @@ public class AppReleaseBusinessLogicTest
         {
             NotificationTypeId.APP_ROLE_ADDED
         };
-        _settings.SubmitServiceNotificationTypeIds = new []
+        _settings.SubmitAppNotificationTypeIds = new []
         {
             NotificationTypeId.APP_RELEASE_REQUEST
         };
