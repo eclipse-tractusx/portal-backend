@@ -169,7 +169,7 @@ public class OfferService : IOfferService
         return result.OfferAgreementConsent;
     }
 
-    public async Task<int> CreaeteOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId)
+    public async Task<int> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId)
     {
         var consentRepository = _portalRepositories.GetInstance<IConsentRepository>();
 
@@ -241,7 +241,7 @@ public class OfferService : IOfferService
         
         var appInstance = _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstance(offerDetails.OfferId, iamClient.Id);
         _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()
-            .CreateAppSubscriptionDetail(data.RequestId, (appSubscriptionDetail) =>
+            .CreateAppSubscriptionDetail(data.RequestId, appSubscriptionDetail =>
             {
                 appSubscriptionDetail.AppInstanceId = appInstance.Id;
                 appSubscriptionDetail.AppSubscriptionUrl = data.OfferUrl;
@@ -286,7 +286,9 @@ public class OfferService : IOfferService
             new ClientInfoData(clientId));
     }
 
-    private async Task CreateNotifications(IDictionary<string, IEnumerable<string>> companyAdminRoles, OfferTypeId offerTypeId,
+    private async Task CreateNotifications(
+        IDictionary<string, IEnumerable<string>> companyAdminRoles,
+        OfferTypeId offerTypeId,
         OfferSubscriptionTransferData offerDetails)
     {
         var appSubscriptionActivation = offerTypeId == OfferTypeId.APP
@@ -305,7 +307,8 @@ public class OfferService : IOfferService
             {
                 (null, NotificationTypeId.TECHNICAL_USER_CREATION),
                 (notificationContent, appSubscriptionActivation)
-            }).ConfigureAwait(false);
+            },
+            offerDetails.CompanyId).ConfigureAwait(false);
 
         _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId, appSubscriptionActivation, false, notification =>
             {
@@ -326,7 +329,7 @@ public class OfferService : IOfferService
         if (string.IsNullOrWhiteSpace(results.Single(x => x.IsIamUser).CompanyShortName))
             throw new ControllerArgumentException($"No matching company found for user {iamUserId}", nameof(iamUserId));
 
-        if (results.All(x => x.CompanyUserId != data.SalesManager))
+        if (data.SalesManager.HasValue && results.All(x => x.CompanyUserId != data.SalesManager))
             throw new ControllerArgumentException("SalesManager does not exist", nameof(data.SalesManager));
 
         await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode)).ConfigureAwait(false);
@@ -346,7 +349,8 @@ public class OfferService : IOfferService
         offerRepository.CreateOfferAssignedLicense(service.Id, licenseId);
         
         offerRepository.AddServiceAssignedServiceTypes(data.ServiceTypeIds.Select(id => (service.Id, id)));
-        offerRepository.AddOfferDescriptions(data.Descriptions.Select(d => (service.Id, d.LanguageCode, string.Empty, d.Description)));
+        offerRepository.AddOfferDescriptions(data.Descriptions.Select(d =>
+            new ValueTuple<Guid, string, string, string>(service.Id, d.LanguageCode, d.LongDescription, d.ShortDescription)));
 
         await _portalRepositories.SaveAsync();
         return service.Id;
@@ -454,6 +458,218 @@ public class OfferService : IOfferService
             offerRepository.RemoveOfferAssignedLicense(offerId, offerLicense.OfferLicenseId);
             var licenseId = offerRepository.CreateOfferLicenses(licenseText).Id;
             offerRepository.CreateOfferAssignedLicense(offerId, licenseId);
+        }
+    }
+    
+    /// <inheritdoc/>
+    public async Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> companyAdminRoles)
+    {
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var offerDetails = await offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerTypeId).ConfigureAwait(false);
+        if (offerDetails == null)
+        {
+            throw new NotFoundException($"{offerTypeId} {offerId} does not exist");
+        }
+
+        ValidateOfferDetails(offerDetails);
+
+        offerRepository.AttachAndModifyOffer(offerId, offer =>
+        {
+            offer.OfferStatusId = OfferStatusId.IN_REVIEW;
+            offer.DateLastChanged = DateTimeOffset.UtcNow;
+        });
+
+        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        if (requesterId == Guid.Empty)
+        {
+            throw new ConflictException($"keycloak user ${iamUserId} is not associated with any portal user");
+        }            
+
+        var notificationContent = new
+        {
+            offerId,
+            RequestorCompanyName = offerDetails.CompanyName
+        };
+        
+        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
+        var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        await _notificationService.CreateNotifications(companyAdminRoles, requesterId, content, offerDetails.ProviderCompanyId!.Value).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    private static void ValidateOfferDetails(OfferReleaseData offerDetails)
+    {
+        if (offerDetails.Name is not null && offerDetails.ThumbnailUrl is not null &&
+            offerDetails.SalesManagerId is not null &&
+            offerDetails.ProviderCompanyId is not null &&
+            offerDetails is { IsDescriptionLongNotSet: false, IsDescriptionShortNotSet: false }) return;
+        
+        var nullProperties = new List<string>();
+        if (offerDetails.Name is null)
+        {
+            nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.Name)}");
+        }
+
+        if (offerDetails.ThumbnailUrl is null)
+        {
+            nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.ThumbnailUrl)}");
+        }
+
+        if (offerDetails.ProviderCompanyId is null)
+        {
+            nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.ProviderCompanyId)}");
+        }
+
+        if (offerDetails.IsDescriptionLongNotSet)
+        {
+            nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.IsDescriptionLongNotSet)}");
+        }
+
+        if (offerDetails.IsDescriptionShortNotSet)
+        {
+            nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.IsDescriptionShortNotSet)}");
+        }
+
+        throw new ConflictException($"Missing  : {string.Join(", ", nullProperties)}");
+    }
+
+    /// <inheritdoc/>
+    public async Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> approveOfferRoles)
+    {
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var offerDetails = await offerRepository.GetOfferStatusDataByIdAsync(offerId, offerTypeId).ConfigureAwait(false);
+        if (offerDetails == default)
+        {
+            throw new NotFoundException($"Offer {offerId} not found. Either Not Existing or incorrect offer type");
+        }
+        
+        if (!offerDetails.IsStatusInReview)
+        {
+            throw new ConflictException($"Offer {offerId} is in InCorrect Status");
+        }
+
+        if (offerDetails.OfferName is null)
+        {
+            throw new ConflictException($"Offer {offerId} Name is not yet set.");
+        }
+
+        if (offerDetails.ProviderCompanyId == null)
+        {
+            throw new ConflictException($"Offer {offerId} providing company is not yet set.");
+        }
+
+        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        if (requesterId == Guid.Empty)
+        {
+            throw new ConflictException($"keycloak user ${iamUserId} is not associated with any portal user");
+        }
+
+        offerRepository.AttachAndModifyOffer(offerId, offer =>
+        {
+            offer.OfferStatusId = OfferStatusId.ACTIVE;
+        });
+        object notificationContent = offerTypeId switch
+        {
+            OfferTypeId.SERVICE => new
+            {
+                OfferId = offerId,
+                ServiceName = offerDetails.OfferName
+            },
+            OfferTypeId.APP => new
+                {
+                    OfferId = offerId,
+                    AppName = offerDetails.OfferName
+                },
+            _ => throw new UnexpectedConditionException($"offerTypeId {offerTypeId} is not implemented yet")
+        };
+        
+        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
+        var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content, offerDetails.ProviderCompanyId.Value).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string,IEnumerable<string>> notificationRecipients, string basePortalAddress)
+    {
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var declineData = await offerRepository.GetOfferDeclineDataAsync(offerId, iamUserId, offerType).ConfigureAwait(false);
+
+        if (declineData == default)
+        {
+            throw new NotFoundException($"{offerType} {offerId} does not exist");
+        }
+
+        if (!declineData.IsUserOfProvider)
+        {
+            throw new ForbiddenException($"{offerType} not found. Either not existing or no permission for change.");
+        }
+
+        if (declineData.OfferStatus != OfferStatusId.IN_REVIEW)
+        {
+            throw new ConflictException($"{offerType} must be in status {OfferStatusId.IN_REVIEW}");
+        }
+
+        if (string.IsNullOrWhiteSpace(declineData.OfferName))
+        {
+            throw new ConflictException($"{offerType} name is not set");
+        }
+        
+        if (declineData.CompanyId == null)
+        {
+            throw new ConflictException($"{offerType} providing company is not set");
+        }
+        
+        offerRepository.AttachAndModifyOffer(offerId, offer =>
+        {
+            offer.OfferStatusId = OfferStatusId.CREATED;
+            offer.DateLastChanged = DateTime.UtcNow;
+        });
+        
+        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        var notificationContent = new
+        {
+            declineData.OfferName,
+            OfferId = offerId,
+            DeclineMessage= data.Message
+        };
+        
+        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
+        var content = Enumerable.Repeat(notificationTypeId, 1).Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        await _notificationService.CreateNotifications(notificationRecipients, requesterId, content, declineData.CompanyId.Value).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        
+        await SendMail(notificationRecipients, declineData.OfferName, basePortalAddress, data.Message, declineData.CompanyId.Value);
+    }
+
+    private async Task SendMail(IDictionary<string,IEnumerable<string>> receiverUserRoles, string offerName, string basePortalAddress, string message, Guid companyId)
+    {
+        var mailParams = new Dictionary<string, string>
+        {
+            { "offerName", offerName },
+            { "url", basePortalAddress },
+            { "declineMessage", message }
+        };
+
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var roleData = await userRolesRepository
+            .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        if (roleData.Count < receiverUserRoles.Sum(clientRoles => clientRoles.Value.Count()))
+        {
+            throw new ConfigurationException(
+                $"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+        }
+
+        var companyUserWithRoleIdForCompany = _portalRepositories.GetInstance<IUserRepository>()
+            .GetCompanyUserEmailForCompanyAndRoleId(roleData, companyId);
+        await foreach (var receiver in companyUserWithRoleIdForCompany)
+        {
+            await _mailingService.SendMails(receiver, mailParams, new List<string> { "offer-request-decline" }).ConfigureAwait(false);
         }
     }
 

@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// <summary>
 /// Settings used in business logic concerning daps.
 /// </summary>
-public class DapsSettings
+public class DapsSettings : KeyVaultAuthSettings
 {
     /// <summary>
     /// Daps endpoint.

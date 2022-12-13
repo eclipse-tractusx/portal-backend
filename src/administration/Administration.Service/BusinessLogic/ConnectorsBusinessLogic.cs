@@ -70,7 +70,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                     .Skip(skip)
                     .Take(take)
                     .Select(c =>
-                        new ConnectorData(c.Name, c.Location!.Alpha2Code, c.Id, c.TypeId, c.StatusId)
+                        new ConnectorData(c.Name, c.Location!.Alpha2Code, c.Id, c.TypeId, c.StatusId, c.DapsRegistrationSuccessful)
                     ).AsAsyncEnumerable()
             )
         );
@@ -136,8 +136,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             providerBpn,
             certificate,
             cancellationToken).ConfigureAwait(false);
-        return new ConnectorData(createdConnector.Name, createdConnector.LocationId, createdConnector.Id,
-            createdConnector.TypeId, createdConnector.StatusId);
+        return new ConnectorData(createdConnector.Name, createdConnector.LocationId, createdConnector.Id, createdConnector.TypeId, createdConnector.StatusId, createdConnector.DapsRegistrationSuccessful);
     }
 
     private async Task<ConnectorData> CreateManagedConnectorInternalAsync(ManagedConnectorInputModel connectorInputModel, string accessToken, string iamUserId, CancellationToken cancellationToken)
@@ -164,8 +163,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             providerBpn,
             certificate,
             cancellationToken).ConfigureAwait(false);
-        return new ConnectorData(createdConnector.Name, createdConnector.LocationId, createdConnector.Id,
-            createdConnector.TypeId, createdConnector.StatusId);
+        return new ConnectorData(createdConnector.Name, createdConnector.LocationId, createdConnector.Id, createdConnector.TypeId, createdConnector.StatusId, createdConnector.DapsRegistrationSuccessful);
     }
 
     private async Task<Guid> GetCompanyOfUserOrTechnicalUser(string iamUserId)
@@ -216,7 +214,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             try
             {
                 dapsCallSuccessful = await _dapsService
-                    .EnableDapsAuthAsync(name, accessToken, connectorUrl, businessPartnerNumber, file, cancellationToken)
+                    .EnableDapsAuthAsync(name, connectorUrl, businessPartnerNumber, file, cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (ServiceException)
@@ -271,7 +269,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         var connectorData = connector.ConnectorInformationData;
         var dapsCallSuccessful = await _dapsService
-            .EnableDapsAuthAsync(connectorData.Name, accessToken, connectorData.Url, connectorData.Bpn, certificate, cancellationToken)
+            .EnableDapsAuthAsync(connectorData.Name, connectorData.Url, connectorData.Bpn, certificate, cancellationToken)
             .ConfigureAwait(false);
         connectorsRepository.AttachAndModifyConnector(connectorId, con =>
         {
