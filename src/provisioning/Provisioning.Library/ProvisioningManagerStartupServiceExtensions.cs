@@ -42,7 +42,7 @@ public static class ProvisioningManagerStartupServiceExtensions
         if (connectionString != null)
         {
             services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>()
-                .AddDbContext<ProvisioningDBContext>(options =>
+                .AddDbContext<ProvisioningDbContext>(options =>
                     options.UseNpgsql(connectionString));
         }
         return services;
