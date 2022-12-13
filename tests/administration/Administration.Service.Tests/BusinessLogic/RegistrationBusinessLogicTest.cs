@@ -268,7 +268,23 @@ public class RegistrationBusinessLogicTest
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
         result.Content.Should().HaveCount(5);
     }
+    
+    [Fact]
+    public async Task GetCompanyWithAddressAsync_WithDefaultRequest_GetsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var data = _fixture.Create<CompanyUserRoleWithAddress?>();
+        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAdressUntrackedAsync(applicationId))
+            .Returns(data);
 
+        // Act
+        var result = await _logic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAdressUntrackedAsync(applicationId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<CompanyWithAddressData>(result);
+    }
     #region Trigger bpn data push
     
     [Fact]

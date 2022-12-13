@@ -223,8 +223,8 @@ public class ApplicationRepository : IApplicationRepository
                     companyApplication.Company.Address!.City ?? "",
                     companyApplication.Company.Address.Streetname ?? "",
                     companyApplication.Company.Address.CountryAlpha2Code ?? "",
-                    companyApplication.Company.CompanyAssignedRoles.SelectMany(companyAssignedRole => companyAssignedRole.CompanyRole!.AgreementAssignedCompanyRoles.Select(x => new AgreementsData(x.CompanyRoleId, x.AgreementId, x.Agreement!.Consents.SingleOrDefault(consent => consent.CompanyId == companyApplication.CompanyId)!.ConsentStatusId!))),
-                    companyApplication.Invitations.Select(x=>new InvitedCompanyUser(x.CompanyUserId,x.CompanyUser!.Firstname!,x.CompanyUser!.Lastname!,x.CompanyUser!.Email!)))
+                    companyApplication.Company.CompanyAssignedRoles.SelectMany(companyAssignedRole => companyAssignedRole.CompanyRole!.AgreementAssignedCompanyRoles.Select(x => new AgreementsData(x.CompanyRoleId, x.AgreementId, x.Agreement!.Consents.SingleOrDefault(consent => consent.CompanyId == companyApplication.CompanyId)!.ConsentStatusId))),
+                    companyApplication.Invitations.Select(x => new InvitedCompanyUser(x.CompanyUserId, x.CompanyUser!.Firstname, x.CompanyUser!.Lastname, x.CompanyUser!.Email)))
                 {
                     BusinessPartnerNumber = companyApplication.Company!.BusinessPartnerNumber,
                     Shortname = companyApplication.Company.Shortname,
