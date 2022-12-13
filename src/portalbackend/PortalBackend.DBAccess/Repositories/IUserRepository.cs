@@ -81,15 +81,24 @@ public interface IUserRepository
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="salesManagerId">The id of the company user to check in the persistence layer.</param>
     /// <returns><c>true</c> if the user exists, otherwise <c>false</c></returns>
-    IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser, string CompanyShortName, Guid CompanyId)> GetCompanyUserWithIamUserCheckAndCompanyShortName(string iamUserId, Guid salesManagerId);
+    IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser, string CompanyShortName, Guid CompanyId)> GetCompanyUserWithIamUserCheckAndCompanyShortName(string iamUserId, Guid? salesManagerId);
 
     /// <summary>
     /// Gets all company user ids which have the any given user role assigned
     /// </summary>
     /// <param name="userRoleIds">User role ids</param>
+    /// <param name="companyId">Id of the company for the users to select</param>
     /// <returns>Returns a list of the company user ids</returns>
-    IAsyncEnumerable<Guid> GetCompanyUserWithRoleId(IEnumerable<Guid> userRoleIds);
+    IAsyncEnumerable<Guid> GetCompanyUserWithRoleIdForCompany(IEnumerable<Guid> userRoleIds, Guid companyId);
 
+    /// <summary>
+    /// Gets all company user emails which have the given user role assigned
+    /// </summary>
+    /// <param name="userRoleIds">User role ids</param>
+    /// <param name="companyId">Id of the company for the users to select</param>
+    /// <returns>Returns a list of the company user emails</returns>
+    IAsyncEnumerable<string> GetCompanyUserEmailForCompanyAndRoleId(IEnumerable<Guid> userRoleIds, Guid companyId);
+    
     /// <summary>
     /// Gets a company Id for the given service account
     /// </summary>

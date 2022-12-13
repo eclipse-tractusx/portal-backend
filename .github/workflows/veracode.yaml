@@ -19,10 +19,8 @@
 name: "Veracode"
 
 on:
-  push:
-    branches: [main]
   #  push:
-  #    branches: [ feature/CPLP-1134-db-notification ]
+  #    branches: [main]
   # pull_request:
   # The branches below must be a subset of the branches above
   # branches: [ main ]
@@ -33,7 +31,7 @@ on:
   workflow_dispatch:
   # Triggered once a week
   schedule:
-   - cron: "0 0 * * *"
+   - cron: "0 0 * * 0"
 
 
 env:
@@ -128,7 +126,7 @@ jobs:
           filepath: "portal-backend-registration-service.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.Eclipse.TractusX.Portal.Backend.Registration.Service.dll, Org.Eclipse.TractusX.Portal.Backend.Framework.Models.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Registration.Service.dll'
 
   analyze-provisioning-service:
     runs-on: ubuntu-latest
@@ -261,7 +259,7 @@ jobs:
           filepath: "portal-backend-portal-migrations.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'PortalBackend.Migrations.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations.dll'
 
   analyze-maintenance-service:
     runs-on: ubuntu-latest
@@ -304,7 +302,7 @@ jobs:
           filepath: "portal-backend-maintenance-service.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Maintenance.App.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Maintenance.App.dll'
 
   analyze-notification-service:
     runs-on: ubuntu-latest
@@ -336,7 +334,7 @@ jobs:
           zip -r portal-backend-notification.zip
           src/notifications/Notifications.Service/.publish
           -x
-          src/notification/Notification.Service/.publish/Org.Eclipse.TractusX.Portal.Backend.Notification.Service
+          src/notifications/Notifications.Service/.publish/Org.Eclipse.TractusX.Portal.Backend.Notifications.Service
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -349,7 +347,7 @@ jobs:
           filepath: "portal-backend-notification.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.Eclipse.TractusX.Portal.Backend.Notification.Service.dll, Org.Eclipse.TractusX.Portal.Backend.Framework.Models.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.dll'
 
   analyze-services-service:
     runs-on: ubuntu-latest
@@ -395,3 +393,46 @@ jobs:
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
           include: 'Org.Eclipse.TractusX.Portal.Backend.Services.Service.dll'
+
+  analyze-provisioning-migrations:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install dependencies
+        run: dotnet restore src/provisioning/Provisioning.Migrations
+
+      - name: Build and publish
+        run: |
+          cd src/provisioning/Provisioning.Migrations
+          dotnet build --no-restore
+          dotnet publish -c Debug  -p:PublishDir=.\publish
+
+      - name: "Bundle files to scan"
+        run: >
+          zip -r portal-backend-provisioning-migrations.zip
+          src/provisioning/Provisioning.Migrations/.publish
+
+      - name: Run Veracode Upload And Scan
+        uses: veracode/veracode-uploadandscan-action@0.2.1
+        with:
+          # Specify Veracode application name
+          appname: "Portal-Backend_Provisioning-Migrations-Service"
+          createprofile: true
+          teams: 'portal'
+          # Specify path to upload
+          filepath: "portal-backend-provisioning-migrations.zip"
+          vid: "${{ secrets.ORG_VERACODE_API_ID }}"
+          vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
+          include: 'Org.CatenaX.Ng.Portal.Backend.Provisioning.Migrations.Migrations.dll'

@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "a3a57829-0e58-44f0-9414-57d34842f5df",
+		"_postman_id": "a127d567-6397-41fa-97f9-5a5e6dc1849d",
 		"name": "CatenaX Portal Service-local",
 		"description": "# Setup Service Collection\n\n1. Create a environment\n2. Add the following variables to the newly created environment\n\n- apiUrl: https://localhost:5001/api/\n- keyCloakUrl: https://devhost:8443/",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -59,11 +59,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{keyCloakUrl}}iamcentral/auth/realms/CX-Central/protocol/openid-connect/token",
+					"raw": "https://devhost:8443/iamcentral/auth/realms/CX-Central/protocol/openid-connect/token",
+					"protocol": "https",
 					"host": [
-						"{{keyCloakUrl}}iamcentral"
+						"devhost"
 					],
+					"port": "8443",
 					"path": [
+						"iamcentral",
 						"auth",
 						"realms",
 						"CX-Central",
@@ -91,7 +94,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{apiUrl}}services/active?page=0&size=4",
+					"raw": "{{apiUrl}}services/active?page=0&size=4&sorting=ProviderDesc",
 					"host": [
 						"{{apiUrl}}services"
 					],
@@ -106,6 +109,10 @@
 						{
 							"key": "size",
 							"value": "4"
+						},
+						{
+							"key": "sorting",
+							"value": "ProviderDesc"
 						}
 					]
 				}
@@ -113,7 +120,7 @@
 			"response": []
 		},
 		{
-			"name": "Subscribe to App",
+			"name": "Subscribe to Service",
 			"event": [
 				{
 					"listen": "test",
@@ -140,6 +147,57 @@
 				},
 				"method": "POST",
 				"header": [],
+				"url": {
+					"raw": "{{apiUrl}}services/{{serviceId}}/subscribe/",
+					"host": [
+						"{{apiUrl}}services"
+					],
+					"path": [
+						"{{serviceId}}",
+						"subscribe",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Subscribe to Service With Agreement Consent",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"var offerSubscriptionId = responseJson;\r",
+							"pm.collectionVariables.set(\"offerSubscriptionId\", offerSubscriptionId)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    {\r\n        \"agreementId\": \"{{agreementId}}\",\r\n        \"consentStatusId\": \"ACTIVE\"\r\n    }\r\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
 					"raw": "{{apiUrl}}services/{{serviceId}}/subscribe",
 					"host": [
@@ -290,7 +348,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\": \"Test Service\",\r\n    \"thumbnailUrl\": \"dasisteintest\",\r\n    \"price\": \"42\",\r\n    \"contactEmail\": \"info@tester.de\",\r\n    \"salesManager\": \"ac1cf001-7fbc-1f2f-817f-bce058020001\",\r\n    \"descriptions\": [\r\n        {\r\n            \"languageCode\": \"de\",\r\n            \"description\" : \"Das ist ein neuer service\"\r\n        },\r\n        {\r\n            \"languageCode\": \"en\",\r\n            \"description\" : \"Thats a new service\"\r\n        }\r\n    ]\r\n}",
+					"raw": "{\r\n    \"title\": \"Test Service\",\r\n    \"thumbnailUrl\": \"dasisteintest\",\r\n    \"price\": \"42\",\r\n    \"contactEmail\": \"info@tester.de\",\r\n    \"salesManagerId\": null,\r\n    \"descriptions\": [\r\n        {\r\n            \"languageCode\": \"de\",\r\n            \"longDescription\" : \"Das ist ein neuer service\",\r\n            \"shortDescription\": \"Test\"\r\n        },\r\n        {\r\n            \"languageCode\": \"en\",\r\n            \"longDescription\" : \"Thats a new service\",\r\n            \"shortDescription\": \"Test\"\r\n        }\r\n    ],\r\n    \"ServiceTypeIds\": [\r\n        \"CONSULTANCE_SERVICE\"\r\n    ]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -323,16 +381,6 @@
 				}
 			],
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{keycloakToken}}",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -382,8 +430,99 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Get Service Subscription Status",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{apiUrl}}services/provided/subscription-status?sorting=CompanyNameAsc",
+					"host": [
+						"{{apiUrl}}services"
+					],
+					"path": [
+						"provided",
+						"subscription-status"
+					],
+					"query": [
+						{
+							"key": "sorting",
+							"value": "CompanyNameAsc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Service",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{keycloakToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Test Service\",\r\n    \"thumbnailUrl\": \"dasisteintest\",\r\n    \"price\": \"42\",\r\n    \"contactEmail\": \"info@tester.de\",\r\n    \"salesManager\": null,\r\n    \"descriptions\": [\r\n        {\r\n            \"languageCode\": \"de\",\r\n            \"longDescription\" : \"Das ist ein neuer service\",\r\n            \"shortDescription\": \"Test\"\r\n        },\r\n        {\r\n            \"languageCode\": \"en\",\r\n            \"longDescription\" : \"Thats a new service\",\r\n            \"shortDescription\": \"Test\"\r\n        }\r\n    ],\r\n    \"ServiceTypeIds\": [\r\n        \"DATASPACE_SERVICE\"\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{apiUrl}}services/5a9bc6ec-6107-471b-b044-9655f2d4e196",
+					"host": [
+						"{{apiUrl}}services"
+					],
+					"path": [
+						"5a9bc6ec-6107-471b-b044-9655f2d4e196"
+					]
+				}
+			},
+			"response": []
 		}
 	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{keycloakToken}}",
+				"type": "string"
+			}
+		]
+	},
 	"event": [
 		{
 			"listen": "prerequest",
@@ -414,11 +553,17 @@
 			"value": ""
 		},
 		{
-			"key": "agreementId",
-			"value": ""
+			"key": "offerSubscriptionId",
+			"value": "",
+			"type": "default"
 		},
 		{
-			"key": "offerSubscriptionId",
+			"key": "apiUrl",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "agreementId",
 			"value": "",
 			"type": "default"
 		}

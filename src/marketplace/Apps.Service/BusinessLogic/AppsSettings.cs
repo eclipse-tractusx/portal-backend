@@ -40,7 +40,7 @@ public class AppsSettings
     /// </summary>
     /// <value></value>
     [Required]
-    public IEnumerable<NotificationTypeId> NotificationTypeIds { get; set; } = null!;
+    public IEnumerable<NotificationTypeId> SubmitAppNotificationTypeIds { get; set; } = null!;
     
     /// <summary>
     /// Document Type Id
@@ -55,6 +55,12 @@ public class AppsSettings
     [Required(AllowEmptyStrings = false)]
     public string BasePortalAddress { get; init; } = null!;
     
+    /// <summary>
+    /// AppOverview url required for the decline request email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string AppOverviewAddress { get; init; } = null!;
+
     /// <summary>
     /// Service account roles
     /// </summary>
@@ -100,6 +106,18 @@ public class AppsSettings
     [Required]
     public IEnumerable<NotificationTypeId> ActiveAppNotificationTypeIds { get; set; } = null!;
     
+    /// <summary>
+    /// Approve App Notification Type Id
+    /// </summary>
+    /// <value></value>
+    public IEnumerable<NotificationTypeId> ApproveAppNotificationTypeIds { get; set; } = null!;
+    
+    /// <summary>
+    /// Roles to notify when a new subscription was created for sales and App Manager
+    /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> ApproveAppUserRoles { get; set; } = null!;
+
     /// <summary>
     /// Max page size for pagination
     /// </summary>

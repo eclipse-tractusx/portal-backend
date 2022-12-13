@@ -40,6 +40,13 @@ public static class OfferData
             ContactEmail = "service-test@mail.com",
             OfferStatusId = OfferStatusId.ACTIVE,
             ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")
+        },
+        new Offer(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA6"), "Catena X", DateTimeOffset.UtcNow, OfferTypeId.APP)
+        {
+            Name = "Latest Service",
+            ContactEmail = "service-test@mail.com",
+            OfferStatusId = OfferStatusId.IN_REVIEW,
+            ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")
         }
     );
 }

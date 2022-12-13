@@ -458,25 +458,25 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetServiceUpdateData
+    #region GetOfferDeclineDataAsync
     
     [Fact]
-    public async Task GetServiceUpdateData_ReturnsExpectedResult()
+    public async Task GetOfferDeclineDataAsync_ReturnsExpectedResult()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var offerDetail = await sut.GetServiceUpdateData(
+        var offerDetail = await sut.GetOfferDeclineDataAsync(
             new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"),
-            Enumerable.Repeat(ServiceTypeId.CONSULTANCE_SERVICE, 1),
-            "623770c5-cf38-4b9f-9a35-f8b9ae972e2e").ConfigureAwait(false);
+            "3d8142f1-860b-48aa-8c2b-1ccb18699f65",
+            OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
         offerDetail.Should().NotBeNull();
-        offerDetail!.OfferState.Should().Be(OfferStatusId.ACTIVE);
+        offerDetail.OfferStatus.Should().Be(OfferStatusId.ACTIVE);
     }
-
+    
     #endregion
 
     #region Setup

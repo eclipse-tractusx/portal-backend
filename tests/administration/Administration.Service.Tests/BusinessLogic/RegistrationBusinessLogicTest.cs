@@ -25,6 +25,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -46,6 +47,7 @@ public class RegistrationBusinessLogicTest
     private static readonly Guid IdWithoutBpn = new("d90995fe-1241-4b8d-9f5c-f3909acc6399");
     private static readonly string AccessToken = "THISISTHEACCESSTOKEN";
     private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
+    private static readonly Guid ApplicationId = new("6084d6e0-0e01-413c-850d-9f944a6c494c");
     private static readonly Guid CompanyUserId1 = new("857b93b1-8fcb-4141-81b0-ae81950d489e");
     private static readonly Guid CompanyUserId2 = new("857b93b1-8fcb-4141-81b0-ae81950d489f");
     private static readonly Guid CompanyUserId3 = new("857b93b1-8fcb-4141-81b0-ae81950d48af");
@@ -65,12 +67,14 @@ public class RegistrationBusinessLogicTest
     private readonly IUserRolesRepository _rolesRepository;
     private readonly ICustodianService _custodianService;
     private readonly IFixture _fixture;
-    private readonly IRegistrationBusinessLogic _logic;
+    private readonly RegistrationBusinessLogic _logic;
     private readonly RegistrationSettings _settings;
     private readonly List<Notification> _notifications = new();
     private readonly INotificationService _notificationService;
     private readonly ISdFactoryService _sdFactory;
     private readonly ICompanyRepository _companyRepository;
+    private readonly IBpdmService _bpdmService;
+    private readonly IMailingService _mailingService;
 
     public RegistrationBusinessLogicTest()
     {
@@ -87,10 +91,11 @@ public class RegistrationBusinessLogicTest
         _custodianService = A.Fake<ICustodianService>();
         _settings = A.Fake<RegistrationSettings>();
         _companyRepository = A.Fake<ICompanyRepository>();
-        
+        _bpdmService = A.Fake<IBpdmService>();
+
         var userRepository = A.Fake<IUserRepository>();
-        var mailingService = A.Fake<IMailingService>();
         var options = A.Fake<IOptions<RegistrationSettings>>();
+        _mailingService = A.Fake<IMailingService>();
         _notificationService = A.Fake<INotificationService>();
         _sdFactory = A.Fake<ISdFactoryService>();
         
@@ -114,7 +119,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
             .ReturnsLazily(Guid.NewGuid);
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, mailingService, _notificationService, _sdFactory);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, _mailingService, _notificationService, _sdFactory, _bpdmService);
     }
     
     #region ApprovePartnerRequest
@@ -149,6 +154,44 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
         A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
+        Assert.IsType<bool>(result);
+        Assert.True(result);
+        _notifications.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task ApprovePartnerRequest_WithFailingWalletCreation_ChangesAreSavedInDatabaseAndMailGetsSend()
+    {
+        //Arrange
+        var roles = new List<string> { "Company Admin" };
+        var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, roles.AsEnumerable() }
+        };
+        var userRoleData = new List<UserRoleData> { new(UserRoleId, ClientId, "Company Admin") };
+        
+        var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
+        var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
+
+        SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
+        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._))
+            .Throws(new ServiceException("error"));
+
+        //Act
+        var result = await _logic.ApprovePartnerRequest(IamUserId, AccessToken, Id, CancellationToken.None).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(Id)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId2, UserRoleId)).MustNotHaveHappened();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId2, BusinessPartnerNumber)).MustNotHaveHappened();
+        A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
         Assert.IsType<bool>(result);
         Assert.True(result);
         _notifications.Should().HaveCount(5);
@@ -226,6 +269,98 @@ public class RegistrationBusinessLogicTest
         result.Content.Should().HaveCount(5);
     }
 
+    #region Trigger bpn data push
+    
+    [Fact]
+    public async Task TriggerBpnDataPush_WithValidData_CallsService()
+    {
+        // Act
+        var data = _fixture
+            .Build<BpdmData>()
+            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
+            .With(x => x.IsUserInCompany, true)
+            .Create();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, ApplicationId))
+            .ReturnsLazily(() => data);
+
+        await _logic.TriggerBpnDataPushAsync(IamUserId, ApplicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _bpdmService.TriggerBpnDataPush(A<BpdmTransferData>._, CancellationToken.None)).MustHaveHappenedOnceExactly();
+    }
+    
+    [Fact]
+    public async Task TriggerBpnDataPush_WithNotExistingApplication_ThrowsNotFoundException()
+    {
+        // Arrange
+        var notExistingApplicationId = Guid.NewGuid();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, notExistingApplicationId))
+            .ReturnsLazily(() => (BpdmData?)null);
+
+        // Act
+        async Task Act() => await _logic.TriggerBpnDataPushAsync(IamUserId, notExistingApplicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Application {notExistingApplicationId} does not exists.");
+    }
+
+    [Fact]
+    public async Task TriggerBpnDataPush_WithNotSubmittedApplication_ThrowsArgumentException()
+    {
+        // Arrange
+        var createdApplicationId = Guid.NewGuid();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, createdApplicationId))
+            .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.CREATED, null!, null!, null!, null!, null!, true));
+
+        // Act
+        async Task Act() => await _logic.TriggerBpnDataPushAsync(IamUserId, createdApplicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
+        ex.ParamName.Should().Be("applicationId");
+    }
+
+    [Fact]
+    public async Task TriggerBpnDataPush_WithNotExistingUser_ThrowsArgumentException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var wrongUserId = Guid.NewGuid().ToString();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(wrongUserId, applicationId))
+            .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.SUBMITTED, null!, null!, null!, null!, null!, false));
+
+        // Act
+        async Task Act() => await _logic.TriggerBpnDataPushAsync(wrongUserId, applicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.ParamName.Should().Be("iamUserId");
+    }
+
+    [Fact]
+    public async Task TriggerBpnDataPush_WithEmptyZipCode_ThrowsConflictException()
+    {
+        // Arrange
+        var createdApplicationId = _fixture.Create<Guid>();
+        var data = _fixture.Build<BpdmData>()
+            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
+            .With(x => x.IsUserInCompany, true)
+            .With(x => x.ZipCode, (string?)null)
+            .Create();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, createdApplicationId))
+            .ReturnsLazily(() => data);
+
+        // Act
+        async Task Act() => await _logic.TriggerBpnDataPushAsync(IamUserId, createdApplicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("ZipCode must not be empty");
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupFakes(
@@ -312,12 +447,13 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._))
             .Returns(Task.CompletedTask);
             
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._))
-            .Invokes(x =>
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._))
+            .Invokes((
+                IDictionary<string,IEnumerable<string>> _, 
+                Guid? creatorId, 
+                IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, 
+                Guid _) =>
             {
-                var creatorId = x.Arguments.Get<Guid?>("creatorId");
-                var notifications = x.Arguments.Get<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>("notifications");
-                if (notifications is null) return;
                 foreach (var notificationData in notifications)
                 {
                     var notification = new Notification(Guid.NewGuid(), Guid.NewGuid(),
@@ -328,7 +464,6 @@ public class RegistrationBusinessLogicTest
                     };
                     _notifications.Add(notification);
                 }
-
             });
     }
 
