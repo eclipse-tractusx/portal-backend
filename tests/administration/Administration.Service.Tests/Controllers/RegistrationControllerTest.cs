@@ -25,6 +25,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -114,5 +115,22 @@ public class RegistrationControllerTest
         //Assert
         A.CallTo(() => _logic.TriggerBpnDataPushAsync(IamUserId, applicationId, CancellationToken.None)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task GetCompanyWithAddressAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var applicationId = _fixture.Create<Guid>();
+         var data = _fixture.Create<CompanyWithAddressData>();
+        A.CallTo(() => _logic.GetCompanyWithAddressAsync(applicationId))
+            .ReturnsLazily(() => data);
+
+        //Act
+        var result = await this._controller.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetCompanyWithAddressAsync(applicationId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<CompanyWithAddressData>(result);
     }
 }

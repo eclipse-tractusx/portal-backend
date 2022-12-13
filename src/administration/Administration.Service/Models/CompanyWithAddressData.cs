@@ -56,7 +56,7 @@ public record CompanyWithAddressData(Guid CompanyId,
     string? CountryDe,
     string? TaxId,
     IEnumerable<AgreementsRoleData>? CompanyRoles,
-    IEnumerable<CompanyUsers>? CompanyUser
+    IEnumerable<InvitedCompanyUserData>? CompanyUser
     );
     /// <summary>
     /// 
@@ -64,7 +64,7 @@ public record CompanyWithAddressData(Guid CompanyId,
     /// <param name="CompanyRole"></param>
     /// <param name="Agreements"></param>
     /// <returns></returns>
-    public record AgreementsRoleData(CompanyRoleId CompanyRole, IEnumerable<Agreements> Agreements);
+    public record AgreementsRoleData(CompanyRoleId CompanyRole, IEnumerable<AgreementConsentData> Agreements);
 
     /// <summary>
     /// 
@@ -72,7 +72,7 @@ public record CompanyWithAddressData(Guid CompanyId,
     /// <param name="AgreementId"></param>
     /// <param name="ConsentStatusId"></param>
     /// <returns></returns>
-    public record Agreements(Guid AgreementId, ConsentStatusId? ConsentStatusId);
+    public record AgreementConsentData(Guid AgreementId, ConsentStatusId? ConsentStatusId);
     
     /// <summary>
     /// 
@@ -82,5 +82,5 @@ public record CompanyWithAddressData(Guid CompanyId,
     /// <param name="LastName"></param>
     /// <param name="Email"></param>
     /// <returns></returns>
-    public record CompanyUsers(Guid UserId, string? FirstName, string? LastName, string? Email);
+    public record InvitedCompanyUserData(Guid UserId, string? FirstName, string? LastName, string? Email);
 
