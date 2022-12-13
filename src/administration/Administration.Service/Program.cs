@@ -89,7 +89,7 @@ builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>
 
 builder.Services.AddTransient<IServiceProviderBusinessLogic, ServiceProviderBusinessLogic>();
 
-builder.Services.AddDbContext<ProvisioningDBContext>(options =>
+builder.Services.AddDbContext<ProvisioningDbContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("ProvisioningDB")));
 
 builder.Build()
