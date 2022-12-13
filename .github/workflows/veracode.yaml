@@ -31,7 +31,7 @@ on:
   workflow_dispatch:
   # Triggered once a week
   schedule:
-   - cron: "0 0 * * *"
+   - cron: "0 0 * * 0"
 
 
 env:
