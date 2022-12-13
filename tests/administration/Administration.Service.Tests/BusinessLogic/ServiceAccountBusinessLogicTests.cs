@@ -316,6 +316,8 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         SetupUpdateOwnCompanyServiceAccountDetails();
         var invalidServiceAccountId = Guid.NewGuid();
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(invalidServiceAccountId, A<string>.That.Matches(x => x == ValidAdminId)))
+            .ReturnsLazily(() => (CompanyServiceAccountWithRoleDataClientId?)null);
         var data = new ServiceAccountEditableDetails(invalidServiceAccountId, "new name", "changed description", IamClientAuthMethod.SECRET); 
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
@@ -384,12 +386,11 @@ public class ServiceAccountBusinessLogicTests
             .ReturnsLazily(() => new ValueTuple<Guid, string>(ValidCompanyId, ValidBpn));
         A.CallTo(() => _userRepository.GetCompanyIdAndBpnForIamUserUntrackedAsync(A<string>.That.Not.Matches(x => x == ValidAdminId)))
             .ReturnsLazily(() => new ValueTuple<Guid, string>());
-
         
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>.That.Matches(x => x == ValidCompanyId), A<IEnumerable<string>>._, CompanyServiceAccountTypeId.OWN, null))
             .ReturnsLazily(() => new ValueTuple<string, ServiceAccountData, Guid, List<UserRoleData>>(ClientId, new ServiceAccountData(ClientId, Guid.NewGuid().ToString(), new ClientAuthData(IamClientAuthMethod.SECRET)), Guid.NewGuid(), new List<UserRoleData>()));
-        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>.That.Matches(x => x == ValidCompanyId), A<IEnumerable<string>>._, CompanyServiceAccountTypeId.OWN, null))
-            .ReturnsLazily(() => new ValueTuple<string, ServiceAccountData, Guid, List<UserRoleData>>());
+        // A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>.That.Matches(x => x == ValidCompanyId), A<IEnumerable<string>>._, CompanyServiceAccountTypeId.OWN, null))
+        //     .ReturnsLazily(() => new ValueTuple<string, ServiceAccountData, Guid, List<UserRoleData>>());
 
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
     }
