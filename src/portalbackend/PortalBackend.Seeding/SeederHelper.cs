@@ -20,13 +20,15 @@
 
 using System.Reflection;
 using System.Text.Json;
+using Newtonsoft.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Seeding.JsonHelper;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Seeding;
 
 public static class SeederHelper
 {
-    public static async Task<IList<T>?> GetSeedData<T>(CancellationToken cancellationToken, string? env = null) where T : class
+    public static async Task<IList<T>> GetSeedData<T>(string fileName, CancellationToken cancellationToken, params string[] additionalEnvironments) where T : class
     {
         var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (location == null)
@@ -34,17 +36,35 @@ public static class SeederHelper
             throw new ConflictException($"No location found for assembly {Assembly.GetExecutingAssembly()}");
         }
 
-        env = env != null ? $".{env}" : env;
-        var path = Path.Combine(location, @"Seeder\Data", $"{typeof(T).Name.ToLower()}{env}.json");
-        if (!File.Exists(path))
+        var data = new List<T>();
+        data.AddRange(await GetDataFromFile<T>(fileName, location, cancellationToken).ConfigureAwait(false));
+        ParallelOptions parallelOptions = new()
         {
-            return null;
-        }
+            MaxDegreeOfParallelism = 3
+        };
+        await Parallel.ForEachAsync(additionalEnvironments, parallelOptions, async (env, ct) =>
+        {
+            data.AddRange(await GetDataFromFile<T>(fileName, location, ct, env));
+        }).ConfigureAwait(false);
 
-        var options = new JsonSerializerOptions();
+        return data;
+    }
+
+    private static async Task<List<T>> GetDataFromFile<T>(string fileName, string location, CancellationToken cancellationToken, string? env = null) where T : class
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = new SnakeCaseNamingPolicy()
+        };
         options.Converters.Add(new JsonDateTimeOffsetConverter());
 
-        var data = await File.ReadAllTextAsync(path, cancellationToken);
-        return JsonSerializer.Deserialize<List<T>>(data, options);
+        var envPath = env == null ? null : $".{env}";
+        // var fileName = typeof(T).Name.ToLower(); for now - out because of snake_case and custom portal db names
+        var path = Path.Combine(location, @"Seeder\Data", $"{fileName}{envPath}.json");
+        if (!File.Exists(path)) return new List<T>();
+
+        var data = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+        var list = JsonSerializer.Deserialize<List<T>>(data, options);
+        return list ?? new List<T>();
     }
 }
