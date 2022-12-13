@@ -232,7 +232,7 @@ public class ApplicationRepository : IApplicationRepository
                     Streetadditional = companyApplication.Company.Address.Streetadditional,
                     Streetnumber = companyApplication.Company.Address.Streetnumber,
                     Zipcode = companyApplication.Company.Address.Zipcode,
-                    CountryDe = companyApplication.Company.Address.Country!.CountryNameDe, // TODO internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
+                    CountryDe = companyApplication.Company.Address.Country!.CountryNameDe,
                     TaxId = companyApplication.Company.TaxId
                 })
             .AsNoTracking()
