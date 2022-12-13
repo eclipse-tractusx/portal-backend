@@ -38,6 +38,10 @@ public static class DapsServiceCollectionExtension
         {
             c.BaseAddress = new Uri(settings.Value.DapsUrl);
         }).AddHttpMessageHandler<LoggingHandler<DapsService>>();
+        services.AddHttpClient($"{nameof(DapsService)}Auth", c =>
+        {
+            c.BaseAddress = new Uri(settings.Value.KeyCloakTokenAdress);
+        }).AddHttpMessageHandler<LoggingHandler<DapsService>>();
         services.AddTransient<IDapsService, DapsService>();
 
         return services;

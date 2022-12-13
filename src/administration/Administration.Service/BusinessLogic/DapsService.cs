@@ -21,36 +21,43 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 public class DapsService : IDapsService
 {
     private const string BaseSecurityProfile = "BASE_SECURITY_PROFILE";
-    private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ITokenService _tokenService;
+    private readonly DapsSettings _settings;
 
     /// <summary>
     /// Creates a new instance of <see cref="DapsService"/>
     /// </summary>
     /// <param name="httpClientFactory">Factory to create httpClients</param>
-    public DapsService(IHttpClientFactory httpClientFactory)
+    /// <param name="tokenService"></param>
+    /// <param name="options"></param>
+    public DapsService(IHttpClientFactory httpClientFactory, ITokenService tokenService, IOptions<DapsSettings> options)
     {
-        _httpClient = httpClientFactory.CreateClient(nameof(DapsService));
+        _httpClientFactory = httpClientFactory;
+        _tokenService = tokenService;
+        _settings = options.Value;
     }
 
     /// <inheritdoc />
-    public Task<bool> EnableDapsAuthAsync(string clientName, string accessToken, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken)
+    public Task<bool> EnableDapsAuthAsync(string clientName, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken)
     {
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
         UrlHelper.ValidateHttpUrl(connectorUrl, () => nameof(connectorUrl));
-
         return HandleRequest(clientName, connectorUrl, businessPartnerNumber, formFile, cancellationToken);
     }
 
     private async Task<bool> HandleRequest(string clientName, string connectorUrl, string businessPartnerNumber,
         IFormFile formFile, CancellationToken cancellationToken)
     {
+        var httpClient = await GetDapsHttpClient(cancellationToken).ConfigureAwait(false);
+
         try
         {
             using var stream = formFile.OpenReadStream();
@@ -61,7 +68,7 @@ public class DapsService : IDapsService
             multiPartStream.Add(new StringContent(BaseSecurityProfile), "securityProfile");
             multiPartStream.Add(new StringContent(UrlHelper.AppendToPathEncoded(connectorUrl, businessPartnerNumber)), "referringConnector");
 
-            var response = await _httpClient.PostAsync(string.Empty, multiPartStream, cancellationToken)
+            var response = await httpClient.PostAsync(string.Empty, multiPartStream, cancellationToken)
                 .ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
@@ -74,5 +81,23 @@ public class DapsService : IDapsService
         {
             throw new ServiceException("Daps Service Call failed", ex);
         }
+    }
+    
+    private async Task<HttpClient> GetDapsHttpClient(CancellationToken cancellationToken)
+    {
+        var tokenParameters = new GetTokenSettings(
+            $"{nameof(DapsService)}Auth",
+            _settings.Username,
+            _settings.Password,
+            _settings.ClientId,
+            _settings.GrantType,
+            _settings.ClientSecret,
+            _settings.Scope);
+
+        var token = await _tokenService.GetTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(false);
+
+        var httpClient = _httpClientFactory.CreateClient(nameof(DapsService));
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return httpClient;
     }
 }
