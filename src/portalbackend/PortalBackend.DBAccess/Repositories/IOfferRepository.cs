@@ -302,7 +302,7 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(bool OfferExists, string? AppName, Guid CompanyUserId)> GetOfferNameProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+    Task<(bool OfferExists, string? AppName, Guid CompanyUserId, Guid? ProviderCompanyId)> GetOfferNameProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Retireve and Validate Offer Status for App
@@ -310,7 +310,7 @@ public interface IOfferRepository
     /// <param name="appId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(bool IsStatusInReview, string? OfferName)> GetOfferStatusDataByIdAsync(Guid appId, OfferTypeId offerTypeId);
+    Task<(bool IsStatusInReview, string? OfferName, Guid? ProviderCompanyId)> GetOfferStatusDataByIdAsync(Guid appId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the data needed for declining an offer
