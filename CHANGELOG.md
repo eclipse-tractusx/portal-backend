@@ -2,13 +2,45 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-### Unreleased
-n/a
+## 0.10.0
+
+### Change
+* App Service
+   * Get all provided apps: exclude apps with status "CREATED" and "IN REVIEW"
+   * App subscription autosetup endpoint enhanced by email notification to the customer/requester
+   * App subscription activation endpoint enhanced by email notification to the customer/requester
+   * Add service endpoint request body enhancement by adding short and long description key values
+* Administration Service
+   * Updated endpoint for get application/documents to fetch all documents uploaded under the same application ID
+
+### Feature
+* Services Service
+   * Implemented endpoint to enable service provider to submit service for review (incl. notification)
+   * Implemented endpoint to enable operator/CX admin to decline a service release request with message (notification & email)
+   * Implemented endpoint to enable operator/CX admin to approve a service release request (incl. notification)
+* Administration Service
+   * Added new endpoint to submit registration details of an company to BPDM gateway for BPN creation 
+   * IdP creation: updated config of the new idp login flow from "First Login Flow" (keycloak default) to "Login without auto user creation" (new custom flow)
+* App Service
+   * Implemented endpoint to enable operator/CX admin to decline an app release request with message (notification & email)
+   * Implemented endpoint to enable operator/CX admin to approve an app release request (incl. notification)
+
+### Technical Support
+* Portal to DAPS interface communication change to technical user / service account
+* Migrations DB EF Core Enabling for provisioning service
+
+### Bugfix
+* Updated deletion logic of the Maintenance App Batch Delete Service by validating app assigned document foreign key relation before running the deletion of a "Inactive" document and ignore "Pending" documents
+* Welcome email business logic updated. "Send email" logic was connected to SD and Wallet api call success; the relation got disconnected. Email will get send always as long as the application is put to the status "APPROVED"
+* Notification Service: filter by notification_topic got added
+* Registration Service: Application consent status storage logic got corrected to overwrite existing consent for given agreement
+* Service activation notification logic update: only send notification to the requester company user with the role "IT Admin"
+* App subscription/autosetup logic corrected
 
 ## 0.9.0
 
 ### Change
-* Services Endpoints
+* Services Service
    * added service types support the filtering and tagging of services (one service can have multiple service types)
    * enabled service sorting
    * enable service updates
