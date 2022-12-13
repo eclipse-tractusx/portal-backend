@@ -56,7 +56,7 @@ public interface IDocumentRepository
     /// <param name="documentTypeId">Id of the document type</param>
     /// <param name="iamUserId">Id of the user</param>
     /// <returns>A collection of documents</returns>
-    IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId);
+    Task<(bool IsApplicationAssignedUser, IEnumerable<UploadDocuments> Documents)> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId);
     
     /// <summary>
     /// Gets the documents userid by the document id
