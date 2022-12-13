@@ -20,14 +20,13 @@
 // See https://aka.ms/new-console-template for more information
 
 using System.Reflection;
-using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Seeding.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 
 Console.WriteLine("Starting process");
 try
@@ -51,12 +50,11 @@ try
         })
         .ConfigureServices((hostContext, services) =>
         {
-            services.AddDbContext<PortalDbContext>(o =>
-                    o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"),
-                        x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)
-                            .MigrationsHistoryTable("__efmigrations_history_portal"))
-                        .UsePostgreSqlTriggers())
-                .AddDatabaseInitializer<PortalDbContext>();
+            services.AddDbContext<ProvisioningDbContext>(o =>
+                    o.UseNpgsql(hostContext.Configuration.GetConnectionString("ProvisioningDb"),
+            x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)
+                    .MigrationsHistoryTable("__efmigrations_history_provisioning", "public")))
+                .AddDatabaseInitializer<ProvisioningDbContext>();
         });
     
     var host = builder.Build();

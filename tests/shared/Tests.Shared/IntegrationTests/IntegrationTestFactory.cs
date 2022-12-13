@@ -29,6 +29,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
@@ -69,7 +70,7 @@ public class IntegrationTestFactory<TTestClass> : WebApplicationFactory<TTestCla
             services.AddDbContext<PortalDbContext>(options =>
             {
                 options.UseNpgsql(_container.ConnectionString,
-                    x => x.MigrationsAssembly(typeof(PortalDbContextFactory).Assembly.GetName().Name)
+                    x => x.MigrationsAssembly(typeof(AddressSeeder).Assembly.GetName().Name)
                         .MigrationsHistoryTable("__efmigrations_history_portal"));
             });
             services.EnsureDbCreated(SetupDbActions);
