@@ -24,16 +24,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyUserAssignedBusinessPartner
 {
+    public CompanyUserAssignedBusinessPartner()
+    {
+    }
+
     public CompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber)
     {
         CompanyUserId = companyUserId;
         BusinessPartnerNumber = businessPartnerNumber;
     }
 
-    public Guid CompanyUserId;
+    public Guid CompanyUserId { get; set; }
 
     [MaxLength(20)]
-    public string BusinessPartnerNumber;
+    public string BusinessPartnerNumber { get; set; }
 
     // Navigation properties
     public virtual CompanyUser? CompanyUser { get; set; }

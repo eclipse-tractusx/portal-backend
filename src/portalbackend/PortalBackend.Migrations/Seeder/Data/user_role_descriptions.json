@@ -1,0 +1,412 @@
+[
+  {
+    "user_role_id": "7410693c-c893-409e-852f-9ee886ce94a6",
+    "language_short_name": "de",
+    "description": "Unternehmensadministrator"
+  },
+  {
+    "user_role_id": "7410693c-c893-409e-852f-9ee886ce94a6",
+    "language_short_name": "en",
+    "description": "Company Admin"
+  },
+  {
+    "user_role_id": "7410693c-c893-409e-852f-9ee886ce94a7",
+    "language_short_name": "de",
+    "description": "Legal Admin"
+  },
+  {
+    "user_role_id": "7410693c-c893-409e-852f-9ee886ce94a7",
+    "language_short_name": "en",
+    "description": "Legal Admin"
+  },
+  {
+    "user_role_id": "58f897ec-0aad-4588-8ffa-5f45d6638632",
+    "language_short_name": "de",
+    "description": "CX Admin"
+  },
+  {
+    "user_role_id": "58f897ec-0aad-4588-8ffa-5f45d6638632",
+    "language_short_name": "en",
+    "description": "CX Admin"
+  },
+  {
+    "user_role_id": "58f897ec-0aad-4588-8ffa-5f45d6638633",
+    "language_short_name": "de",
+    "description": "CX User"
+  },
+  {
+    "user_role_id": "58f897ec-0aad-4588-8ffa-5f45d6638633",
+    "language_short_name": "en",
+    "description": "CX User"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51154",
+    "language_short_name": "de",
+    "description": "IT Administrator"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51154",
+    "language_short_name": "en",
+    "description": "IT Admin"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51180",
+    "language_short_name": "de",
+    "description": "Unternehmensadministrator"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51180",
+    "language_short_name": "en",
+    "description": "Company Admin"
+  },
+  {
+    "user_role_id": "ceec23fd-6b26-485c-a4bb-90571a29e148",
+    "language_short_name": "de",
+    "description": "Signing Manager"
+  },
+  {
+    "user_role_id": "ceec23fd-6b26-485c-a4bb-90571a29e148",
+    "language_short_name": "en",
+    "description": "Signing Manager"
+  },
+  {
+    "user_role_id": "95fe4014-4d1b-47af-a22e-72a12f9470db",
+    "language_short_name": "de",
+    "description": "App Developer"
+  },
+  {
+    "user_role_id": "95fe4014-4d1b-47af-a22e-72a12f9470db",
+    "language_short_name": "en",
+    "description": "App Developer"
+  },
+  {
+    "user_role_id": "95fe4014-4d1b-47af-a22e-72a12f9470dc",
+    "language_short_name": "de",
+    "description": "Sales Manager"
+  },
+  {
+    "user_role_id": "95fe4014-4d1b-47af-a22e-72a12f9470dc",
+    "language_short_name": "en",
+    "description": "Sales Manager"
+  },
+  {
+    "user_role_id": "04231a30-df50-4d14-bb00-71ff012ae0cf",
+    "language_short_name": "de",
+    "description": "Einkäufer"
+  },
+  {
+    "user_role_id": "04231a30-df50-4d14-bb00-71ff012ae0cf",
+    "language_short_name": "en",
+    "description": "Purchaser"
+  },
+  {
+    "user_role_id": "916e4be9-0ff7-48fb-bb80-97d2e93fca14",
+    "language_short_name": "de",
+    "description": "Service Manager"
+  },
+  {
+    "user_role_id": "916e4be9-0ff7-48fb-bb80-97d2e93fca14",
+    "language_short_name": "en",
+    "description": "Service Manager"
+  },
+  {
+    "user_role_id": "3ff68c40-6581-4e48-a03a-2a6c1c5aac89",
+    "language_short_name": "de",
+    "description": "App Manager"
+  },
+  {
+    "user_role_id": "3ff68c40-6581-4e48-a03a-2a6c1c5aac89",
+    "language_short_name": "en",
+    "description": "App Manager"
+  },
+  {
+    "user_role_id": "efc20368-9e82-46ff-b88f-6495b9810253",
+    "language_short_name": "de",
+    "description": "Vehicle Purchaser"
+  },
+  {
+    "user_role_id": "efc20368-9e82-46ff-b88f-6495b9810253",
+    "language_short_name": "en",
+    "description": "Vehicle Purchaser"
+  },
+  {
+    "user_role_id": "aabcdfeb-6669-4c74-89f0-19cda090873f",
+    "language_short_name": "de",
+    "description": "Dismantling Lead"
+  },
+  {
+    "user_role_id": "aabcdfeb-6669-4c74-89f0-19cda090873f",
+    "language_short_name": "en",
+    "description": "Dismantling Lead"
+  },
+  {
+    "user_role_id": "efc20368-9e82-46ff-b88f-6495b9810250",
+    "language_short_name": "de",
+    "description": "Einkäufer"
+  },
+  {
+    "user_role_id": "efc20368-9e82-46ff-b88f-6495b9810250",
+    "language_short_name": "en",
+    "description": "Buyer"
+  },
+  {
+    "user_role_id": "aabcdfeb-6669-4c74-89f0-19cda0908730",
+    "language_short_name": "de",
+    "description": "Advanced Buyer"
+  },
+  {
+    "user_role_id": "aabcdfeb-6669-4c74-89f0-19cda0908730",
+    "language_short_name": "en",
+    "description": "Advanced Buyer"
+  },
+  {
+    "user_role_id": "b05d86e1-6c98-4619-85fa-9a425e0800b6",
+    "language_short_name": "de",
+    "description": "Unternehmensadministrator"
+  },
+  {
+    "user_role_id": "b05d86e1-6c98-4619-85fa-9a425e0800b6",
+    "language_short_name": "en",
+    "description": "Business Admin"
+  },
+  {
+    "user_role_id": "b05d86e1-6c98-4619-85fa-9a425e080000",
+    "language_short_name": "de",
+    "description": "Betrugsmanager"
+  },
+  {
+    "user_role_id": "b05d86e1-6c98-4619-85fa-9a425e080000",
+    "language_short_name": "en",
+    "description": "Fraud Manager"
+  },
+  {
+    "user_role_id": "b05d86e1-6c98-4619-85fa-9a425e080001",
+    "language_short_name": "de",
+    "description": "Betrugsreporter"
+  },
+  {
+    "user_role_id": "b05d86e1-6c98-4619-85fa-9a425e080001",
+    "language_short_name": "en",
+    "description": "Fraud User"
+  },
+  {
+    "user_role_id": "855eeefb-a2ef-4d74-ac10-34a87afcb865",
+    "language_short_name": "de",
+    "description": "Administrator"
+  },
+  {
+    "user_role_id": "855eeefb-a2ef-4d74-ac10-34a87afcb865",
+    "language_short_name": "en",
+    "description": "Administrator"
+  },
+  {
+    "user_role_id": "545c2616-2fce-4f52-b881-331db2fc1e35",
+    "language_short_name": "de",
+    "description": "Kunde"
+  },
+  {
+    "user_role_id": "545c2616-2fce-4f52-b881-331db2fc1e35",
+    "language_short_name": "en",
+    "description": "Customer"
+  },
+  {
+    "user_role_id": "7a9e0777-2b13-4463-a7c4-f699afff3527",
+    "language_short_name": "de",
+    "description": "Erstausrüster"
+  },
+  {
+    "user_role_id": "7a9e0777-2b13-4463-a7c4-f699afff3527",
+    "language_short_name": "en",
+    "description": "Original Equipment Manufacturer"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51155",
+    "language_short_name": "de",
+    "description": "Hinzufügen, Ändern und Löschen von eigenen Digitalen Zwillingen"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51155",
+    "language_short_name": "en",
+    "description": "Add, Change and Delete own Digital Twins"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51156",
+    "language_short_name": "de",
+    "description": "Hinzufügen, Ändern und Löschen von Semantic Models"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51156",
+    "language_short_name": "en",
+    "description": "Add, Change and Delete Semnatic Models"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51157",
+    "language_short_name": "de",
+    "description": "Anzeigen und Ändern des Unternehmens-Wallets"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51157",
+    "language_short_name": "en",
+    "description": "View and modify own company wallet"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51164",
+    "language_short_name": "de",
+    "description": "Erstellen von DAPS Zertifikaten"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51164",
+    "language_short_name": "en",
+    "description": "Enables Service Providers to create DAPS certificates"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51165",
+    "language_short_name": "de",
+    "description": "Discovery Funktion EDC Endpoints"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51165",
+    "language_short_name": "en",
+    "description": "Discovery Function EDC Endpoints"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51166",
+    "language_short_name": "de",
+    "description": "tbd"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51166",
+    "language_short_name": "en",
+    "description": "tbd"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51167",
+    "language_short_name": "de",
+    "description": "tbd"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51167",
+    "language_short_name": "en",
+    "description": "tbd"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51168",
+    "language_short_name": "de",
+    "description": "Service Management for Service Providers"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51168",
+    "language_short_name": "en",
+    "description": "Service Management for Service Providers"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51169",
+    "language_short_name": "de",
+    "description": "Access to the SDE with data upload rights."
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51169",
+    "language_short_name": "en",
+    "description": "Access to the SDE with data upload rights."
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51170",
+    "language_short_name": "de",
+    "description": "Access to the SDE."
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51170",
+    "language_short_name": "en",
+    "description": "Access to the SDE."
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51171",
+    "language_short_name": "de",
+    "description": "Access as well as delete rights for the SDE."
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51171",
+    "language_short_name": "en",
+    "description": "Access as well as delete rights for the SDE."
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51172",
+    "language_short_name": "de",
+    "description": "Buyer Capacity Manager"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51172",
+    "language_short_name": "en",
+    "description": "Buyer Capacity Manager"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51173",
+    "language_short_name": "de",
+    "description": "Supplier Capacity Manager"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51173",
+    "language_short_name": "en",
+    "description": "Supplier Capacity Manager"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51174",
+    "language_short_name": "de",
+    "description": "Can view and use the app"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51174",
+    "language_short_name": "en",
+    "description": "Can view and use the app"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51175",
+    "language_short_name": "de",
+    "description": "Can configure the app"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51175",
+    "language_short_name": "en",
+    "description": "Can configure the app"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51176",
+    "language_short_name": "de",
+    "description": "Can access the app"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51176",
+    "language_short_name": "en",
+    "description": "Can access the app"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51183",
+    "language_short_name": "de",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51183",
+    "language_short_name": "en",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51181",
+    "language_short_name": "de",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51181",
+    "language_short_name": "en",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51182",
+    "language_short_name": "de",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51182",
+    "language_short_name": "en",
+    "description": "The user has access"
+  }
+]

@@ -47,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\portalbackend\PortalBackend.Seeding\PortalBackend.Seeding.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Seeding\Framework.Seeding.csproj" />
     <ProjectReference Include="..\Provisioning.ProvisioningEntities\Provisioning.ProvisioningEntities.csproj" />
     <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
   </ItemGroup>

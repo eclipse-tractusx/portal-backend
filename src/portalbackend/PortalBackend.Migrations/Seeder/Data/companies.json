@@ -13,7 +13,7 @@
   {
     "id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88",
     "date_created": "2022-03-24 18:01:33.306000 +00:00",
-    "BusinessPartnerNumber": "BPNL00000003CRHL",
+    "business_partner_number": "BPNL00000003CRHL",
     "tax_id": "0000000000",
     "name": "CX-Test-Access",
     "shortname": "CX-Test-Access",
@@ -24,7 +24,7 @@
   {
     "id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
     "date_created": "2022-03-24 18:01:33.341000 +00:00",
-    "BusinessPartnerNumber": "BPNL00000003AYRE",
+    "business_partner_number": "BPNL00000003AYRE",
     "tax_id": "0000000000",
     "name": "Bayerische Motorenwerke AG",
     "shortname": "BMW AG",
@@ -35,7 +35,7 @@
   {
     "id": "0dcd8209-85e2-4073-b130-ac094fb47106",
     "date_created": "2022-03-24 18:01:33.344000 +00:00",
-    "BusinessPartnerNumber": "BPNL00000003LLHA",
+    "business_partner_number": "BPNL00000003LLHA",
     "tax_id": "0000000000",
     "name": "SAP AG",
     "shortname": "SAP",
@@ -46,7 +46,7 @@
   {
     "id": "220330ac-170d-4e22-8d72-9467ed042149",
     "date_created": "2022-03-24 18:01:33.393000 +00:00",
-    "BusinessPartnerNumber": "BPNL00000001LLHA",
+    "business_partner_number": "BPNL00000001LLHA",
     "tax_id": "0000000000",
     "name": "Car Factory 1",
     "shortname": "Car Factory 1",
@@ -57,7 +57,7 @@
   {
     "id": "bdac6865-2a8d-4bfd-9373-9dfce8190895",
     "date_created": "2022-03-24 18:01:33.430000 +00:00",
-    "BusinessPartnerNumber": "BPNL00000002LLHA",
+    "business_partner_number": "BPNL00000002LLHA",
     "tax_id": "0000000000",
     "name": "Car Factory 2",
     "shortname": "Car Factory 2",
@@ -68,7 +68,7 @@
   {
     "id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
     "date_created": "2022-03-24 18:01:33.438000 +00:00",
-    "BusinessPartnerNumber": "BPNL00000003LLHA",
+    "business_partner_number": "BPNL00000003LLHA",
     "tax_id": "0000000000",
     "name": "Security Company",
     "shortname": "Security Company",
@@ -79,7 +79,7 @@
   {
     "id": "d14eba77-0b18-4e41-9d84-49ef875c0763",
     "date_created": "2022-03-24 18:01:33.442000 +00:00",
-    "BusinessPartnerNumber": "BPNL00000003LLHB",
+    "business_partner_number": "BPNL00000003LLHB",
     "tax_id": "0000000000",
     "name": "Dummy Corp. 1",
     "shortname": "Dummy Corp. 1",
@@ -90,7 +90,7 @@
   {
     "id": "9d049598-0dac-4d26-8a21-8f5b64c799cf",
     "date_created": "2022-03-24 18:01:33.442000 +00:00",
-    "BusinessPartnerNumber": "BPNL00000003LLHC",
+    "business_partner_number": "BPNL00000003LLHC",
     "tax_id": "0000000000",
     "name": "Palantir",
     "shortname": "Palantir",
@@ -101,7 +101,7 @@
   {
     "id": "cac8fa6a-9db7-4bad-9cbd-56298b74bac2",
     "date_created": "2022-03-24 18:01:33.442000 +00:00",
-    "BusinessPartnerNumber": "CAXLBOSCHZZ",
+    "business_partner_number": "CAXLBOSCHZZ",
     "tax_id": "0000000000",
     "name": "BOSCH",
     "shortname": "BOSCH",
@@ -112,7 +112,7 @@
   {
     "id": "dfd90abe-b20e-4aff-87c6-f30f2bf9b104",
     "date_created": "2022-08-08 18:01:33.442000 +00:00",
-    "BusinessPartnerNumber": "BPNL000000000009",
+    "business_partner_number": "BPNL000000000009",
     "tax_id": "0000000000",
     "name": "Siemens",
     "shortname": "Siemens",
@@ -123,7 +123,7 @@
   {
     "id": "fe55fe20-5f19-401e-91a2-dfa37b44a0be",
     "date_created": "2022-08-08 18:01:33.442000 +00:00",
-    "BusinessPartnerNumber": "BPNL00000003CSGV",
+    "business_partner_number": "BPNL00000003CSGV",
     "tax_id": "0000000000",
     "name": "German Edge Cloud GmbH & Co. KG",
     "shortname": "GEC",
@@ -134,7 +134,7 @@
   {
     "id": "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd",
     "date_created": "2022-10-01 00:00:00.000000 +00:00",
-    "BusinessPartnerNumber": "BPNL07800HZ01643",
+    "business_partner_number": "BPNL07800HZ01643",
     "tax_id": "0000000000",
     "name": "Service Provider",
     "shortname": "SP",
@@ -145,23 +145,12 @@
   {
     "id": "3390c2d7-75c1-4169-aa27-6ce00e1f3cde",
     "date_created": "2022-10-01 00:00:00.000000 +00:00",
-    "BusinessPartnerNumber": "BPNL00000003CSLL",
+    "business_partner_number": "BPNL00000003CSLL",
     "tax_id": "0000000000",
     "name": "App Provider",
     "shortname": "SP",
     "company_status_id": 2,
     "address_id": "081c8bfd-c6d1-4119-a5f8-a69726dfc11f",
-    "self_description_document_id": null
-  },
-  {
-    "id": "41fa982a-f100-444b-bc9c-4478ebac8f9f",
-    "date_created": "2022-12-12 07:32:29.119349 +00:00",
-    "BusinessPartnerNumber": "BPNL00000001PSIN",
-    "tax_id": "0000000000",
-    "name": "PSIN",
-    "shortname": "PS",
-    "company_status_id": 2,
-    "address_id": "ce6f169b-d3b8-47e0-840c-4242f4ec602b",
     "self_description_document_id": null
   }
 ]

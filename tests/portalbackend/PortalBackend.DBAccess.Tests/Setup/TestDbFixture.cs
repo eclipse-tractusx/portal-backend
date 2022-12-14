@@ -25,7 +25,6 @@ using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Seeding;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -66,7 +65,7 @@ public class TestDbFixture : IAsyncLifetime
         
         optionsBuilder.UseNpgsql(
             _container.ConnectionString,
-            x => x.MigrationsAssembly(typeof(BaseEntitySeeder).Assembly.GetName().Name)
+            x => x.MigrationsAssembly(typeof(BaseEntityBatchSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
         var context = new PortalDbContext(optionsBuilder.Options);
@@ -92,7 +91,7 @@ public class TestDbFixture : IAsyncLifetime
         
         optionsBuilder.UseNpgsql(
             _container.ConnectionString,
-            x => x.MigrationsAssembly(typeof(BaseEntitySeeder).Assembly.GetName().Name)
+            x => x.MigrationsAssembly(typeof(BaseEntityBatchSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
         var context = new PortalDbContext(optionsBuilder.Options);
