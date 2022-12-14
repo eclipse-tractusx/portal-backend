@@ -40,7 +40,7 @@ try
             // Build a config object, using env vars and JSON providers.
             if (environmentName == "Kubernetes")
             {
-                var provider = new PhysicalFileProvider("/app/secrets");
+                var provider = new PhysicalFileProvider("/migrations/secrets");
                 cfg.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: true);
             }
 

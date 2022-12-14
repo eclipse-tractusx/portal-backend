@@ -60,7 +60,7 @@ public class BaseEntityBatchSeeder : ICustomSeeder
         await SeedTable<Company>("companies", cancellationToken).ConfigureAwait(false);
         await SeedTable<Agreement>("agreements", cancellationToken).ConfigureAwait(false);
         await SeedTable<CompanyUser>("company_users", cancellationToken).ConfigureAwait(false);
-        // await SeedTable<Document>("documents", cancellationToken).ConfigureAwait(false);
+        await SeedTable<Document>("documents", cancellationToken).ConfigureAwait(false);
         await SeedTable<Offer>("offers", cancellationToken).ConfigureAwait(false);
         await SeedTable<IamClient>("iam_clients", cancellationToken).ConfigureAwait(false);
         await SeedTable<CompanyApplication>("company_applications", cancellationToken).ConfigureAwait(false);
