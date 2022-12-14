@@ -1,0 +1,18 @@
+[
+  {
+    "company_role_id": 1,
+    "user_role_collection_id": "8cb12ea2-aed4-4d75-b041-ba297df3d2f2"
+  },
+  {
+    "company_role_id": 2,
+    "user_role_collection_id": "ec428950-8b64-4646-b336-28af869b5d73"
+  },
+  {
+    "company_role_id": 3,
+    "user_role_collection_id": "a5b8b1de-7759-4620-9c87-6b6d74fb4fbc"
+  },
+  {
+    "company_role_id": 4,
+    "user_role_collection_id": "1a24eca5-901f-4191-84a7-4ef09a894575"
+  }
+]

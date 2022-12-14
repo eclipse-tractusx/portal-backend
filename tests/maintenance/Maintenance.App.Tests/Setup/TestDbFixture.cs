@@ -64,7 +64,7 @@ public class TestDbFixture : IAsyncLifetime
         
         optionsBuilder.UseNpgsql(
             _container.ConnectionString,
-            x => x.MigrationsAssembly(typeof(BaseEntitySeeder).Assembly.GetName().Name)
+            x => x.MigrationsAssembly(typeof(BaseEntityBatchSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
         var context = new PortalDbContext(optionsBuilder.Options);
@@ -90,7 +90,7 @@ public class TestDbFixture : IAsyncLifetime
         
         optionsBuilder.UseNpgsql(
             _container.ConnectionString,
-            x => x.MigrationsAssembly(typeof(BaseEntitySeeder).Assembly.GetName().Name)
+            x => x.MigrationsAssembly(typeof(BaseEntityBatchSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
         var context = new PortalDbContext(optionsBuilder.Options);

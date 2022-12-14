@@ -1,0 +1,90 @@
+[
+  {
+    "id": "0c9051d0-d032-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl2-CX-Portal"
+  },
+  {
+    "id": "f032a034-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl1-CX-Registration"
+  },
+  {
+    "id": "f032a035-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl3-CX-Semantic"
+  },
+  {
+    "id": "f032a036-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl4-CX-DigitalTwin"
+  },
+  {
+    "id": "f032a037-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl5-CX-Custodian"
+  },
+  {
+    "id": "f032a038-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl6-CX-xx"
+  },
+  {
+    "id": "f032a039-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl7-CX-BPDM"
+  },
+  {
+    "id": "f032a040-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl9-CDQ-Fraud"
+  },
+  {
+    "id": "f032a042-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl10-CX-xx"
+  },
+  {
+    "id": "f032a043-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl11-ADAC-Fleet"
+  },
+  {
+    "id": "f032a044-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl12-CX-TestManager"
+  },
+  {
+    "id": "f032a045-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "not yet known-1"
+  },
+  {
+    "id": "f032a046-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "not yet known-2"
+  },
+  {
+    "id": "f032a047-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "not yet known-3"
+  },
+  {
+    "id": "f032a048-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "not yet known-4"
+  },
+  {
+    "id": "f032a049-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "technical_roles_management"
+  },
+  {
+    "id": "f032a050-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "not yet known-5"
+  },
+  {
+    "id": "f032a051-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "not yet known-6"
+  },
+  {
+    "id": "789e31ee-0fdb-4e42-a819-23e0cfb1179b",
+    "client_client_id": "https://catenax-dt-rec.authentication.eu10.hana.ondemand.com"
+  },
+  {
+    "id": "cf207afb-d213-4c33-becc-0cabeef174a7",
+    "client_client_id": "https://catenax-int-dismantler-s66pftcc.authentication.eu10.hana.ondemand.com"
+  },
+  {
+    "id": "f032a052-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl16-CX-CRisk"
+  },
+  {
+    "id": "f032a053-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl18-CX-Pal"
+  }
+]

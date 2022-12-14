@@ -44,6 +44,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
-    <ProjectReference Include="..\PortalBackend.Seeding\PortalBackend.Seeding.csproj" />
   </ItemGroup>
 </Project>

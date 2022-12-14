@@ -27,7 +27,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Seeding.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.DependencyInjection;
 
 Console.WriteLine("Starting process");
 try
@@ -56,7 +56,7 @@ try
                         x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)
                             .MigrationsHistoryTable("__efmigrations_history_portal"))
                         .UsePostgreSqlTriggers())
-                .AddDatabaseInitializer<PortalDbContext>();
+                .AddDatabaseInitializer<PortalDbContext>(hostContext.Configuration.GetSection("Seeding"));
         });
     
     var host = builder.Build();

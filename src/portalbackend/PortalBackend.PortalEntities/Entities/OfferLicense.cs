@@ -19,10 +19,11 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class OfferLicense
+public class OfferLicense : IBaseEntity
 {
     private OfferLicense()
     {

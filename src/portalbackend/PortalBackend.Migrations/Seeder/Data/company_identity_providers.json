@@ -1,0 +1,34 @@
+[
+  {
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce0571b0004"
+  },
+  {
+    "company_id": "220330ac-170d-4e22-8d72-9467ed042149",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce057230006"
+  },
+  {
+    "company_id": "bdac6865-2a8d-4bfd-9373-9dfce8190895",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce057230007"
+  },
+  {
+    "company_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce057230008"
+  },
+  {
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce057770015"
+  },
+  {
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce057770016"
+  },
+  {
+    "company_id": "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce057770017"
+  },
+  {
+    "company_id": "3390c2d7-75c1-4169-aa27-6ce00e1f3cde",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce057770018"
+  }
+]

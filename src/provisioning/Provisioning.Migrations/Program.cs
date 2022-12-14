@@ -25,7 +25,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Seeding.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 
 Console.WriteLine("Starting process");
@@ -54,7 +54,7 @@ try
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("ProvisioningDb"),
             x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)
                     .MigrationsHistoryTable("__efmigrations_history_provisioning", "public")))
-                .AddDatabaseInitializer<ProvisioningDbContext>();
+                .AddDatabaseInitializer<ProvisioningDbContext>(hostContext.Configuration.GetSection("Seeding"));
         });
     
     var host = builder.Build();
