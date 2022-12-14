@@ -5,7 +5,7 @@ WORKDIR /
 COPY /src/portalbackend /src/portalbackend
 COPY /src/framework/Framework.ErrorHandling /src/framework/Framework.ErrorHandling
 COPY /src/framework/Framework.BaseDependencies /src/framework/Framework.BaseDependencies
-COPY /src/framework/Framework.Seeding /src/framework/Framework-Seeding
+COPY /src/framework/Framework.Seeding /src/framework/Framework.Seeding
 WORKDIR /src/portalbackend/PortalBackend.Migrations
 RUN dotnet build "PortalBackend.Migrations.csproj" -c Release -o /migrations/build
 
