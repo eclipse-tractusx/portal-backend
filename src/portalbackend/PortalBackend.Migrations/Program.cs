@@ -35,17 +35,8 @@ try
     var builder = Host.CreateDefaultBuilder(args)
         .ConfigureAppConfiguration(cfg =>
         {
-            // Read configuration for configuring logger.
-            var environmentName = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
-
-            // Build a config object, using env vars and JSON providers.
-            if (environmentName == "Kubernetes")
-            {
-                var provider = new PhysicalFileProvider("/migrations/secrets");
-                cfg.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: true);
-            }
-
             cfg
+                .AddJsonFile("secrets/appsettings.json", true)
                 .AddEnvironmentVariables()
                 .AddUserSecrets(Assembly.GetExecutingAssembly());
         })
