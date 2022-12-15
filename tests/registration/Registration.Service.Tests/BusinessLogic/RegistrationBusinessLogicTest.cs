@@ -1154,7 +1154,10 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var applicationid = _fixture.Create<Guid>();
         var notExistingCompanyUserId = _fixture.Create<Guid>();
-        A.CallTo(() => _documentRepository.GetDocumentStatuseIdAsync(notExistingCompanyUserId, _iamUserId))
+        var record = new CompanyApplicationUserEmailData(CompanyApplicationStatusId.SUBMITTED,notExistingCompanyUserId,null);
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationid, _iamUserId))
+            .ReturnsLazily(() => (record));
+        A.CallTo(() => _documentRepository.GetDocumentStatuseIdAsync(notExistingCompanyUserId,_iamUserId))
             .Returns((Guid.Empty,null,DocumentStatusId.INACTIVE,false));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories);
 
