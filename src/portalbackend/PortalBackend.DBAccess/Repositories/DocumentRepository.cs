@@ -121,14 +121,14 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
     
     /// <inheritdoc />
-    public Task<(Guid Id,Guid? CompanyUserId,DocumentStatusId DocumentStatusId,bool IsSameApplicationUser)> GetDocumentStatuseIdAsync(Guid CompanyUserId,string iamUserId)=>
+    public Task<DocumentStatusIdData?> GetDocumentStatusIdAsync(Guid CompanyUserId,string iamUserId)=>
         _dbContext.Documents
             .Where(x => x.CompanyUserId == CompanyUserId)
             .Select(document => new {
                 Document = document,
                 Applications = document.CompanyUser!.Company!.CompanyApplications
             })
-            .Select(X=> new ValueTuple<Guid,Guid?,DocumentStatusId,bool>(
+            .Select(X=> new DocumentStatusIdData(
                 X.Document.Id,
                 X.Document.CompanyUserId,
                 X.Document.DocumentStatusId,

@@ -423,8 +423,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
         }
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var document = await documentRepository.GetDocumentStatuseIdAsync(applicationUserData.CompanyUserId,iamUserId).ConfigureAwait(false);
-        if (document.Id == Guid.Empty)
+        var document = await documentRepository.GetDocumentStatusIdAsync(applicationUserData.CompanyUserId,iamUserId).ConfigureAwait(false);
+        if (document!.Id == Guid.Empty)
         {
             throw new NotFoundException($"document for this application {applicationId} does not exist");
         }
