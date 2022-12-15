@@ -56,6 +56,7 @@ public class BaseEntityBatchSeeder : ICustomSeeder
     /// <inheritdoc />
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Start BaseEntityBatch Seeder");
         await SeedTable<Address>("addresses", cancellationToken).ConfigureAwait(false);
         await SeedTable<Company>("companies", cancellationToken).ConfigureAwait(false);
         await SeedTable<Agreement>("agreements", cancellationToken).ConfigureAwait(false);
@@ -79,11 +80,14 @@ public class BaseEntityBatchSeeder : ICustomSeeder
         await SeedTable<AppSubscriptionDetail>("app_subscription_details", cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferDetailImage>("offer_detail_images", cancellationToken).ConfigureAwait(false);
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        _logger.LogInformation("Finished BaseEntityBatch Seeder");
     }
 
     private async Task SeedTable<T>(string fileName, CancellationToken cancellationToken) where T : class, IBaseEntity
     {
-        var data = await SeederHelper.GetSeedData<T>(fileName, cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
+        _logger.LogInformation("Start seeding {Filename}", fileName);
+        var data = await SeederHelper.GetSeedData<T>(_logger, fileName, cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
+        _logger.LogInformation("Found {ElementCount} data", data.Count);
         if (data.Any())
         {
             var typeName = typeof(T).Name;

@@ -56,7 +56,7 @@ public class LanguageSeeder : ICustomSeeder
     /// <inheritdoc />
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
-        var data = await SeederHelper.GetSeedData<Language>("languages", cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
+        var data = await SeederHelper.GetSeedData<Language>(_logger, "languages", cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
         if (data.Any())
         {
             const string typeName = nameof(Language);
