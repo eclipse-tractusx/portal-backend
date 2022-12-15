@@ -66,150 +66,6 @@
     <None Update="Seeder\Data\consortia.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Seeder\Data\addresses.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\agreement_assigned_company_roles.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\agreement_assigned_documents.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\agreement_assigned_offer_types.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\agreement_assigned_offers.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\agreements.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\app_assigned_use_cases.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\app_instances.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\app_languages.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\app_subscription_details.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\companies.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\company_applications.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\company_assigned_roles.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\company_assigned_use_cases.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\company_identity_providers.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\company_role_assigned_role_collections.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\company_service_account_assigned_roles.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\company_service_accounts.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\company_user_assigned_app_favourites.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\company_user_assigned_business_partners.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\company_user_assigned_roles.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\company_users.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\connectors.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\consent_assigned_offer_subscriptions.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\consent_assigned_offers.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\consents.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\documents.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\iam_clients.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\iam_identity_providers.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\iam_service_accounts.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\iam_users.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\identity_providers.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\invitations.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\languages.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\notifications.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\offer_assigned_documents.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\offer_assigned_licenses.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\offer_descriptions.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\offer_detail_images.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\offer_licenses.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\offer_subscriptions.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\offer_tags.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\offers.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\provider_company_details.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\service_assigned_service_types.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\user_role_assigned_collections.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\user_role_collection_descriptions.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Seeder\Data\user_role_collections.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="Seeder\Data\user_role_descriptions.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -223,6 +79,198 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <None Remove="Seeder\Data\addresses.json" />
+    <Content Include="Seeder\Data\addresses.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\agreement_assigned_company_roles.json" />
+    <Content Include="Seeder\Data\agreement_assigned_company_roles.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\agreement_assigned_documents.json" />
+    <Content Include="Seeder\Data\agreement_assigned_documents.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\agreement_assigned_offer_types.json" />
+    <Content Include="Seeder\Data\agreement_assigned_offer_types.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\agreement_assigned_offers.json" />
+    <Content Include="Seeder\Data\agreement_assigned_offers.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\agreements.json" />
+    <Content Include="Seeder\Data\agreements.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\app_assigned_use_cases.json" />
+    <Content Include="Seeder\Data\app_assigned_use_cases.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\app_instances.json" />
+    <Content Include="Seeder\Data\app_instances.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\app_languages.json" />
+    <Content Include="Seeder\Data\app_languages.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\app_subscription_details.json" />
+    <Content Include="Seeder\Data\app_subscription_details.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\companies.json" />
+    <Content Include="Seeder\Data\companies.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_applications.json" />
+    <Content Include="Seeder\Data\company_applications.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_assigned_roles.json" />
+    <Content Include="Seeder\Data\company_assigned_roles.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_assigned_use_cases.json" />
+    <Content Include="Seeder\Data\company_assigned_use_cases.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_identity_providers.json" />
+    <Content Include="Seeder\Data\company_identity_providers.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_role_assigned_role_collections.json" />
+    <Content Include="Seeder\Data\company_role_assigned_role_collections.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_service_account_assigned_roles.json" />
+    <Content Include="Seeder\Data\company_service_account_assigned_roles.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_service_accounts.json" />
+    <Content Include="Seeder\Data\company_service_accounts.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_user_assigned_app_favourites.json" />
+    <Content Include="Seeder\Data\company_user_assigned_app_favourites.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_user_assigned_business_partners.json" />
+    <Content Include="Seeder\Data\company_user_assigned_business_partners.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_user_assigned_roles.json" />
+    <Content Include="Seeder\Data\company_user_assigned_roles.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_users.json" />
+    <Content Include="Seeder\Data\company_users.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\connectors.json" />
+    <Content Include="Seeder\Data\connectors.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\consent_assigned_offer_subscriptions.json" />
+    <Content Include="Seeder\Data\consent_assigned_offer_subscriptions.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\consent_assigned_offers.json" />
+    <Content Include="Seeder\Data\consent_assigned_offers.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\consents.json" />
+    <Content Include="Seeder\Data\consents.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\documents.json" />
+    <Content Include="Seeder\Data\documents.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\iam_clients.json" />
+    <Content Include="Seeder\Data\iam_clients.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\iam_identity_providers.json" />
+    <Content Include="Seeder\Data\iam_identity_providers.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\iam_service_accounts.json" />
+    <Content Include="Seeder\Data\iam_service_accounts.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\iam_users.json" />
+    <Content Include="Seeder\Data\iam_users.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\identity_providers.json" />
+    <Content Include="Seeder\Data\identity_providers.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\invitations.json" />
+    <Content Include="Seeder\Data\invitations.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\languages.json" />
+    <Content Include="Seeder\Data\languages.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\notifications.json" />
+    <Content Include="Seeder\Data\notifications.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offer_assigned_documents.json" />
+    <Content Include="Seeder\Data\offer_assigned_documents.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offer_assigned_licenses.json" />
+    <Content Include="Seeder\Data\offer_assigned_licenses.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offer_descriptions.json" />
+    <Content Include="Seeder\Data\offer_descriptions.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offer_detail_images.json" />
+    <Content Include="Seeder\Data\offer_detail_images.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offer_licenses.json" />
+    <Content Include="Seeder\Data\offer_licenses.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offer_subscriptions.json" />
+    <Content Include="Seeder\Data\offer_subscriptions.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offer_tags.json" />
+    <Content Include="Seeder\Data\offer_tags.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offers.json" />
+    <Content Include="Seeder\Data\offers.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\provider_company_details.json" />
+    <Content Include="Seeder\Data\provider_company_details.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\service_assigned_service_types.json" />
+    <Content Include="Seeder\Data\service_assigned_service_types.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\user_role_assigned_collections.json" />
+    <Content Include="Seeder\Data\user_role_assigned_collections.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\user_role_collection_descriptions.json" />
+    <Content Include="Seeder\Data\user_role_collection_descriptions.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\user_role_collections.json" />
+    <Content Include="Seeder\Data\user_role_collections.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
