@@ -5,15 +5,15 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /
 RUN dotnet tool install dotnet-ef -g
 ENV PATH $PATH:/root/.dotnet/tools
-COPY /src/portalbackend /src/portalbackend
+COPY /src/provisioning /src/provisioning
 COPY /src/framework/Framework.ErrorHandling /src/framework/Framework.ErrorHandling
 COPY /src/framework/Framework.BaseDependencies /src/framework/Framework.BaseDependencies
-WORKDIR /src/portalbackend/PortalBackend.Migrations
+WORKDIR /src/provisioning/Provisioning.Migrations
 RUN dotnet-ef migrations bundle -r linux-x64
 
 FROM base AS final
 WORKDIR /migrations
-COPY --from=build /src/portalbackend/PortalBackend.Migrations/efbundle .
+COPY --from=build /src/provisioning/Provisioning.Migrations/efbundle .
 ENV ASPNETCORE_URLS http://+:8080
 EXPOSE 8080
 RUN chown -R 1000:3000 /migrations

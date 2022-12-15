@@ -18,12 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-#nullable disable
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess.Tests.TestSeeds;
+
+public static class BaseSeed
 {
-    public class IdentityProviderSequence
+    public static Action<ProvisioningDbContext> SeedBasedata() => dbContext =>
     {
-        public int SequenceId { get; set; }
-    }
+        dbContext.UserPasswordResets.AddRange(new List<UserPasswordReset>
+        {
+            new ("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", DateTimeOffset.UtcNow, 1),
+            new ("3d8142f1-860b-48aa-8c2b-1ccb18699f65", DateTimeOffset.UtcNow, 2),
+        });
+    };
 }
