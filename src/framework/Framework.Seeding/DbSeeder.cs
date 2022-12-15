@@ -35,8 +35,8 @@ internal class DbSeeder
 
     public async Task SeedDatabaseAsync(CancellationToken cancellationToken)
     {
-        // Theoretically we could run not generic code in here, that would mean we have to adjust the code from generic to custom code
         _logger.LogInformation("Run custom seeder");
         await _seederRunner.RunSeedersAsync(cancellationToken);
+        _logger.LogInformation("Custom seeding finished");
     }
 }
