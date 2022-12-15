@@ -61,7 +61,7 @@ public static class SeederHelper
 
         var envPath = env == null ? null : $".{env}";
         // var fileName = typeof(T).Name.ToLower(); for now - out because of snake_case and custom portal db names
-        var path = Path.Combine(location, @"Seeder\Data", $"{fileName}{envPath}.json");
+        var path = Path.Combine(location, @"Seeder/Data", $"{fileName}{envPath}.json");
         logger.LogInformation("Looking for file {Path}", path);
         if (!File.Exists(path)) return new List<T>();
 
