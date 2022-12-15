@@ -424,7 +424,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
         var document = await documentRepository.GetDocumentStatuseIdAsync(applicationUserData.CompanyUserId,iamUserId).ConfigureAwait(false);
-        if (document.Id == null)
+        if (document.Id == Guid.Empty)
         {
             throw new NotFoundException($"document for this application {applicationId} does not exist");
         }
