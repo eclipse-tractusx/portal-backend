@@ -19,18 +19,21 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
 internal class CustomSeederRunner
 {
     private readonly ICustomSeeder[] _seeders;
+    private readonly ILogger<CustomSeederRunner> _logger;
 
-    public CustomSeederRunner(IServiceProvider serviceProvider) =>
-        _seeders = serviceProvider.GetServices<ICustomSeeder>().ToArray();
+    public CustomSeederRunner(IServiceProvider serviceProvider, ILogger<CustomSeederRunner> logger) =>
+        (_seeders, _logger) = (serviceProvider.GetServices<ICustomSeeder>().ToArray(), logger);
 
     public async Task RunSeedersAsync(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Found {SeederCount} custom seeder", _seeders.Length);
         foreach (var seeder in _seeders.OrderBy(x => x.Order))
         {
             await seeder.InitializeAsync(cancellationToken);
