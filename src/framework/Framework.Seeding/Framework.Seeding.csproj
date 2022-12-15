@@ -7,6 +7,8 @@
         <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding</AssemblyName>
         <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding</RootNamespace>
         <UserSecretsId>cb89657c-d60e-4f48-aa84-fb03d69dfa78</UserSecretsId>
+        <!-- Exclude the project from analysis -->
+        <SonarQubeExclude>true</SonarQubeExclude>
     </PropertyGroup>
 
     <ItemGroup>
