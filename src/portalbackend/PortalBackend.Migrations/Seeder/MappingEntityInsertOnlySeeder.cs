@@ -84,7 +84,7 @@ public class MappingEntityInsertOnlySeeder : ICustomSeeder
 
     private async Task SeedData<T>(string filename, CancellationToken cancellationToken) where T : class
     {
-        var data = await SeederHelper.GetSeedData<T>(filename, cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
+        var data = await SeederHelper.GetSeedData<T>(_logger, filename, cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
         if (data.Any())
         {
             var typeName = typeof(T).Name;

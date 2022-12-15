@@ -20,6 +20,7 @@
 
 using System.Reflection;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.JsonHelper;
 
@@ -27,29 +28,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
 public static class SeederHelper
 {
-    public static async Task<IList<T>> GetSeedData<T>(string fileName, CancellationToken cancellationToken, params string[] additionalEnvironments) where T : class
+    public static async Task<IList<T>> GetSeedData<T>(ILogger logger, string fileName, CancellationToken cancellationToken, params string[] additionalEnvironments) where T : class
     {
         var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        logger.LogInformation("Looking for files at {Location}", location);
         if (location == null)
         {
             throw new ConflictException($"No location found for assembly {Assembly.GetExecutingAssembly()}");
         }
 
         var data = new List<T>();
-        data.AddRange(await GetDataFromFile<T>(fileName, location, cancellationToken).ConfigureAwait(false));
+        data.AddRange(await GetDataFromFile<T>(logger, fileName, location, cancellationToken).ConfigureAwait(false));
         ParallelOptions parallelOptions = new()
         {
             MaxDegreeOfParallelism = 3
         };
         await Parallel.ForEachAsync(additionalEnvironments, parallelOptions, async (env, ct) =>
         {
-            data.AddRange(await GetDataFromFile<T>(fileName, location, ct, env));
+            data.AddRange(await GetDataFromFile<T>(logger, fileName, location, ct, env));
         }).ConfigureAwait(false);
 
         return data;
     }
 
-    private static async Task<List<T>> GetDataFromFile<T>(string fileName, string location, CancellationToken cancellationToken, string? env = null) where T : class
+    private static async Task<List<T>> GetDataFromFile<T>(ILogger logger, string fileName, string location, CancellationToken cancellationToken, string? env = null) where T : class
     {
         var options = new JsonSerializerOptions
         {
@@ -60,6 +62,7 @@ public static class SeederHelper
         var envPath = env == null ? null : $".{env}";
         // var fileName = typeof(T).Name.ToLower(); for now - out because of snake_case and custom portal db names
         var path = Path.Combine(location, @"Seeder\Data", $"{fileName}{envPath}.json");
+        logger.LogInformation("Looking for file {Path}", path);
         if (!File.Exists(path)) return new List<T>();
 
         var data = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
