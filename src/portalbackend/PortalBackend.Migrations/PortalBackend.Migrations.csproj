@@ -65,8 +65,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <None Remove="Seeder\Data\addresses.json" />
-    <Content Include="Seeder\Data\addresses.json">
+    <None Remove="Seeder\Data\addresses.consortia.json" />
+    <Content Include="Seeder\Data\addresses.consortia.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Remove="Seeder\Data\agreement_assigned_company_roles.json" />
