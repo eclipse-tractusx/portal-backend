@@ -257,6 +257,10 @@
     <Content Include="Seeder\Data\user_role_collections.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Remove="Seeder\Data\user_roles.json" />
+    <Content Include="Seeder\Data\user_roles.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
