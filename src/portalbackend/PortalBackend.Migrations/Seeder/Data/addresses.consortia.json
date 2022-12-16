@@ -1,17 +1,5 @@
 [
   {
-    "id": "b4db3945-19a7-4a50-97d6-e66e8dfd04fb",
-    "date_created": "2022-03-24 18:01:33.306000 +00:00",
-    "date_last_changed": "2022-03-24 18:01:33.306000 +00:00",
-    "city": "Munich",
-    "region": null,
-    "streetadditional": null,
-    "streetname": "Street",
-    "streetnumber": "1",
-    "zipcode": "00001",
-    "country_alpha2code": "DE"
-  },
-  {
     "id": "b4db3945-19a7-4a50-97d6-e66e8dfd04fc",
     "date_created": "2022-03-24 18:01:33.306000 +00:00",
     "date_last_changed": "2022-03-24 18:01:33.306000 +00:00",

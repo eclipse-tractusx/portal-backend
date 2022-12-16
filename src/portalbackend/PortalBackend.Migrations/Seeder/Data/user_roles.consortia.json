@@ -1,77 +1,5 @@
 [
   {
-    "id": "7410693c-c893-409e-852f-9ee886ce94a6",
-    "user_role": "Company Admin",
-    "offer_id": "9ef01c20-6d9d-41ef-b336-fa64e1e2e4c2",
-    "last_editor_id": null
-  },
-  {
-    "id": "7410693c-c893-409e-852f-9ee886ce94a7",
-    "user_role": "Legal Admin",
-    "offer_id": "9ef01c20-6d9d-41ef-b336-fa64e1e2e4c2",
-    "last_editor_id": null
-  },
-  {
-    "id": "58f897ec-0aad-4588-8ffa-5f45d6638632",
-    "user_role": "CX Admin",
-    "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
-  },
-  {
-    "id": "58f897ec-0aad-4588-8ffa-5f45d6638633",
-    "user_role": "CX User",
-    "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
-  },
-  {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51154",
-    "user_role": "IT Admin",
-    "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
-  },
-  {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51180",
-    "user_role": "Company Admin",
-    "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
-  },
-  {
-    "id": "ceec23fd-6b26-485c-a4bb-90571a29e148",
-    "user_role": "Signing Manager",
-    "offer_id": "9ef01c20-6d9d-41ef-b336-fa64e1e2e4c2",
-    "last_editor_id": null
-  },
-  {
-    "id": "95fe4014-4d1b-47af-a22e-72a12f9470db",
-    "user_role": "App Developer",
-    "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
-  },
-  {
-    "id": "95fe4014-4d1b-47af-a22e-72a12f9470dc",
-    "user_role": "Sales Manager",
-    "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
-  },
-  {
-    "id": "04231a30-df50-4d14-bb00-71ff012ae0cf",
-    "user_role": "Purchaser",
-    "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
-  },
-  {
-    "id": "916e4be9-0ff7-48fb-bb80-97d2e93fca14",
-    "user_role": "Service Manager",
-    "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
-  },
-  {
-    "id": "3ff68c40-6581-4e48-a03a-2a6c1c5aac89",
-    "user_role": "App Manager",
-    "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
-  },
-  {
     "id": "efc20368-9e82-46ff-b88f-6495b9810253",
     "user_role": "EarthCommerce.AdministratorRC_QAS2",
     "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05744000b",
@@ -99,12 +27,6 @@
     "id": "aabcdfeb-6669-4c74-89f0-19cda0908731",
     "user_role": "EarthCommerce.UserRC_QAS2",
     "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05744000b",
-    "last_editor_id": null
-  },
-  {
-    "id": "b05d86e1-6c98-4619-85fa-9a425e0800b6",
-    "user_role": "Business Admin",
-    "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
     "last_editor_id": null
   },
   {
@@ -204,24 +126,6 @@
     "last_editor_id": null
   },
   {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51155",
-    "user_role": "Digital Twin Management",
-    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
-  },
-  {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51156",
-    "user_role": "Semantic Model Management",
-    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
-  },
-  {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51157",
-    "user_role": "Wallet Management",
-    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
-  },
-  {
     "id": "607818be-4978-41f4-bf63-fa8d2de51158",
     "user_role": "Buyer",
     "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d8",
@@ -246,30 +150,6 @@
     "last_editor_id": null
   },
   {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51162",
-    "user_role": "BPDM Management",
-    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
-  },
-  {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51163",
-    "user_role": "BPDM Partner Gate",
-    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
-  },
-  {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51164",
-    "user_role": "DAPS Certificate Management",
-    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
-  },
-  {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51165",
-    "user_role": "Dataspace Discovery",
-    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
-  },
-  {
     "id": "607818be-4978-41f4-bf63-fa8d2de51166",
     "user_role": "Company Admin",
     "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb510",
@@ -279,12 +159,6 @@
     "id": "607818be-4978-41f4-bf63-fa8d2de51167",
     "user_role": "User",
     "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb510",
-    "last_editor_id": null
-  },
-  {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51168",
-    "user_role": "Service Management",
-    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   },
   {
