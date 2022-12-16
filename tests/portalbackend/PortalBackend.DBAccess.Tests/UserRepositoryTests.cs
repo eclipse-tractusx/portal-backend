@@ -358,7 +358,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Assert
         result.Should().HaveCount(1);
-        result.First().Should().Be("tester.user4@test.de");
+        result.FirstOrDefault().Email.Should().Be("tester.user4@test.de");
     }
 
     #endregion
