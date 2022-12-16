@@ -60,6 +60,7 @@ catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", Str
     Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine("Unhandled exception: {0}", ex);
     Console.ResetColor();
+    throw;
 }
 finally
 {
