@@ -647,13 +647,6 @@ public class OfferService : IOfferService
 
     private async Task SendMail(IDictionary<string,IEnumerable<string>> receiverUserRoles, string offerName, string basePortalAddress, string message, Guid companyId)
     {
-        var mailParams = new Dictionary<string, string>
-        {
-            { "offerName", offerName },
-            { "url", basePortalAddress },
-            { "declineMessage", message }
-        };
-
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roleData = await userRolesRepository
             .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
@@ -667,8 +660,15 @@ public class OfferService : IOfferService
 
         var companyUserWithRoleIdForCompany = _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserEmailForCompanyAndRoleId(roleData, companyId);
-        await foreach (var receiver in companyUserWithRoleIdForCompany)
+        await foreach (var (receiver,FirstName,LastName) in companyUserWithRoleIdForCompany)
         {
+            var mailParams = new Dictionary<string, string>
+            {
+                { "offerName", offerName },
+                { "url", basePortalAddress },
+                { "declineMessage", message },
+                { "offerProviderName", string.Concat(FirstName, LastName)??"Service Manager" },
+            };
             await _mailingService.SendMails(receiver, mailParams, new List<string> { "offer-request-decline" }).ConfigureAwait(false);
         }
     }
