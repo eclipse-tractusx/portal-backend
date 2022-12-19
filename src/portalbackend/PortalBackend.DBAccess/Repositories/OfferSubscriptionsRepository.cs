@@ -165,18 +165,18 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid SubscriptionId, string? OfferName, string SubscriptionUrl, string? ThumbnailUrl, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId) =>
+    public IAsyncEnumerable<(Guid SubscriptionId, string? OfferName, string SubscriptionUrl, IEnumerable<Guid> LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId) =>
         _context.CompanyUsers.AsNoTracking()
             .Where(user => user.IamUser!.UserEntityId == iamUserId)
             .SelectMany(user => user.Company!.OfferSubscriptions.Where(subscription => 
                 subscription.Offer!.UserRoles.Any(ur => ur.CompanyUsers.Any(cu => cu.Id == user.Id)) &&
                 subscription.AppSubscriptionDetail!.AppInstance != null &&
                 subscription.AppSubscriptionDetail.AppSubscriptionUrl != null))
-            .Select(offerSubscription => new ValueTuple<Guid,string?,string,string?,string>(
+            .Select(offerSubscription => new ValueTuple<Guid,string?,string,IEnumerable<Guid>,string>(
                 offerSubscription.Id,
                 offerSubscription.Offer!.Name,
                 offerSubscription.AppSubscriptionDetail!.AppSubscriptionUrl!,
-                offerSubscription.Offer!.ThumbnailUrl,
+                offerSubscription.Offer!.Documents.Where(document=>document.DocumentTypeId ==DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document=>document.Id),
                 offerSubscription.Offer!.Provider
             )).ToAsyncEnumerable();
 }

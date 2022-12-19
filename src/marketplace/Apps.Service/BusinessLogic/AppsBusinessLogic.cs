@@ -84,7 +84,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     x.SubscriptionId,
                     x.OfferName ?? Constants.ErrorString,
                     x.SubscriptionUrl,
-                    x.ThumbnailUrl ?? Constants.ErrorString,
+                    x.LeadPictureId,
                     x.Provider));
 
     /// <inheritdoc/>
