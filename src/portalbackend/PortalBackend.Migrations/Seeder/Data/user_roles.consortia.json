@@ -1,0 +1,230 @@
+[
+  {
+    "id": "efc20368-9e82-46ff-b88f-6495b9810253",
+    "user_role": "EarthCommerce.AdministratorRC_QAS2",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05744000b",
+    "last_editor_id": null
+  },
+  {
+    "id": "aabcdfeb-6669-4c74-89f0-19cda090873f",
+    "user_role": "EarthCommerce.Advanced.BuyerRC_QAS2",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05744000b",
+    "last_editor_id": null
+  },
+  {
+    "id": "efc20368-9e82-46ff-b88f-6495b9810250",
+    "user_role": "EarthCommerce.BuyerRC_QAS2",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05744000b",
+    "last_editor_id": null
+  },
+  {
+    "id": "aabcdfeb-6669-4c74-89f0-19cda0908730",
+    "user_role": "EarthCommerce.Content.ManagerRC_QAS2",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05744000b",
+    "last_editor_id": null
+  },
+  {
+    "id": "aabcdfeb-6669-4c74-89f0-19cda0908731",
+    "user_role": "EarthCommerce.UserRC_QAS2",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05744000b",
+    "last_editor_id": null
+  },
+  {
+    "id": "b05d86e1-6c98-4619-85fa-9a425e080000",
+    "user_role": "fraud_app_manager",
+    "offer_id": "f9cad59d-84b3-4880-a550-4072c26a6b93",
+    "last_editor_id": null
+  },
+  {
+    "id": "b05d86e1-6c98-4619-85fa-9a425e080001",
+    "user_role": "fraud_app_user",
+    "offer_id": "f9cad59d-84b3-4880-a550-4072c26a6b93",
+    "last_editor_id": null
+  },
+  {
+    "id": "855eeefb-a2ef-4d74-ac10-34a87afcb865",
+    "user_role": "admin",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d3",
+    "last_editor_id": null
+  },
+  {
+    "id": "545c2616-2fce-4f52-b881-331db2fc1e35",
+    "user_role": "customer",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d3",
+    "last_editor_id": null
+  },
+  {
+    "id": "7a9e0777-2b13-4463-a7c4-f699afff3527",
+    "user_role": "oem",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d3",
+    "last_editor_id": null
+  },
+  {
+    "id": "b05d86e1-6c98-4619-85fa-9a425e080004",
+    "user_role": "Buyer",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d5",
+    "last_editor_id": null
+  },
+  {
+    "id": "b05d86e1-6c98-4619-85fa-9a425e080005",
+    "user_role": "Supplier",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d5",
+    "last_editor_id": null
+  },
+  {
+    "id": "b05d86e1-6c98-4619-85fa-9a425e080006",
+    "user_role": "Buyer",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d6",
+    "last_editor_id": null
+  },
+  {
+    "id": "b05d86e1-6c98-4619-85fa-9a425e080007",
+    "user_role": "Supplier",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d6",
+    "last_editor_id": null
+  },
+  {
+    "id": "b05d86e1-6c98-4619-85fa-9a425e080008",
+    "user_role": "Administrator",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d4",
+    "last_editor_id": null
+  },
+  {
+    "id": "b05d86e1-6c98-4619-85fa-9a425e080009",
+    "user_role": "User",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d4",
+    "last_editor_id": null
+  },
+  {
+    "id": "b05d86e1-6c98-4619-85fa-9a425e080010",
+    "user_role": "Viewer",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d4",
+    "last_editor_id": null
+  },
+  {
+    "id": "b05d86e1-6c98-4619-85fa-9a425e080011",
+    "user_role": "Modifier",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d4",
+    "last_editor_id": null
+  },
+  {
+    "id": "b05d86e1-6c98-4619-85fa-9a425e080012",
+    "user_role": "Network Owner",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d7",
+    "last_editor_id": null
+  },
+  {
+    "id": "b05d86e1-6c98-4619-85fa-9a425e080013",
+    "user_role": "Network Participant",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d7",
+    "last_editor_id": null
+  },
+  {
+    "id": "b05d86e1-6c98-4619-85fa-9a425e080014",
+    "user_role": "Data Contributor",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d7",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51158",
+    "user_role": "Buyer",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d8",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51159",
+    "user_role": "Supplier",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d8",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51160",
+    "user_role": "Buyer",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d9",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51161",
+    "user_role": "Supplier",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d9",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51166",
+    "user_role": "Company Admin",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb510",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51167",
+    "user_role": "User",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb510",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51169",
+    "user_role": "User",
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfea",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51170",
+    "user_role": "Viewer",
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfea",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51171",
+    "user_role": "Admin",
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfea",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51172",
+    "user_role": "Buyer Capacity Manager",
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfeb",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51173",
+    "user_role": "Supplier Capacity Manager",
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfeb",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51174",
+    "user_role": "User",
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfec",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51175",
+    "user_role": "Admin",
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfec",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51176",
+    "user_role": "Viewer",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0574c000f",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51183",
+    "user_role": "User",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0572c0007",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51181",
+    "user_role": "Supervisor",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0572c0007",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51182",
+    "user_role": "Admin",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0572c0007",
+    "last_editor_id": null
+  }
+]
