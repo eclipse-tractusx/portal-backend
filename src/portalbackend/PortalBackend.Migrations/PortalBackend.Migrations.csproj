@@ -26,6 +26,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>    
     <UserSecretsId>6d6eeaac-f0c8-4f2e-a5f3-3eafdc2dd8d9</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>..\..\..</DockerfileContext>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <OutputType>Exe</OutputType>
     <!-- Exclude the project from analysis -->
     <SonarQubeExclude>true</SonarQubeExclude>
   </PropertyGroup>
@@ -39,9 +43,11 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\framework\Framework.Seeding\Framework.Seeding.csproj" />
     <ProjectReference Include="..\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
     <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
   </ItemGroup>
@@ -51,5 +57,285 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Remove="efbundle.exe" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <None Remove="Seeder\Data\addresses.json" />
+    <Content Include="Seeder\Data\addresses.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\addresses.consortia.json" />
+    <Content Include="Seeder\Data\addresses.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\agreement_assigned_company_roles.consortia.json" />
+    <Content Include="Seeder\Data\agreement_assigned_company_roles.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\agreement_assigned_documents.consortia.json" />
+    <Content Include="Seeder\Data\agreement_assigned_documents.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\agreement_assigned_offer_types.consortia.json" />
+    <Content Include="Seeder\Data\agreement_assigned_offer_types.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\agreement_assigned_offers.json" />
+    <Content Include="Seeder\Data\agreement_assigned_offers.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\agreement_assigned_offers.consortia.json" />
+    <Content Include="Seeder\Data\agreement_assigned_offers.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\agreements.json" />
+    <Content Include="Seeder\Data\agreements.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\agreements.consortia.json" />
+    <Content Include="Seeder\Data\agreements.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\app_assigned_use_cases.consortia.json" />
+    <Content Include="Seeder\Data\app_assigned_use_cases.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\app_instances.consortia.json" />
+    <Content Include="Seeder\Data\app_instances.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\app_languages.consortia.json" />
+    <Content Include="Seeder\Data\app_languages.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\app_subscription_details.consortia.json" />
+    <Content Include="Seeder\Data\app_subscription_details.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\companies.json" />
+    <Content Include="Seeder\Data\companies.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\companies.consortia.json" />
+    <Content Include="Seeder\Data\companies.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_applications.consortia.json" />
+    <Content Include="Seeder\Data\company_applications.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_assigned_roles.json" />
+    <Content Include="Seeder\Data\company_assigned_roles.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_assigned_roles.consortia.json" />
+    <Content Include="Seeder\Data\company_assigned_roles.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_assigned_use_cases.consortia.json" />
+    <Content Include="Seeder\Data\company_assigned_use_cases.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_identity_providers.json" />
+    <Content Include="Seeder\Data\company_identity_providers.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_identity_providers.consortia.json" />
+    <Content Include="Seeder\Data\company_identity_providers.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_role_assigned_role_collections.json" />
+    <Content Include="Seeder\Data\company_role_assigned_role_collections.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_service_account_assigned_roles.json" />
+    <Content Include="Seeder\Data\company_service_account_assigned_roles.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_service_account_assigned_roles.consortia.json" />
+    <Content Include="Seeder\Data\company_service_account_assigned_roles.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_service_accounts.json" />
+    <Content Include="Seeder\Data\company_service_accounts.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_service_accounts.consortia.json" />
+    <Content Include="Seeder\Data\company_service_accounts.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_user_assigned_app_favourites.consortia.json" />
+    <Content Include="Seeder\Data\company_user_assigned_app_favourites.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_user_assigned_business_partners.consortia.json" />
+    <Content Include="Seeder\Data\company_user_assigned_business_partners.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_user_assigned_roles.json" />
+    <Content Include="Seeder\Data\company_user_assigned_roles.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_user_assigned_roles.consortia.json" />
+    <Content Include="Seeder\Data\company_user_assigned_roles.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_users.consortia.json" />
+    <Content Include="Seeder\Data\company_users.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_users.json" />
+    <Content Include="Seeder\Data\company_users.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\connectors.consortia.json" />
+    <Content Include="Seeder\Data\connectors.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\consent_assigned_offer_subscriptions.consortia.json" />
+    <Content Include="Seeder\Data\consent_assigned_offer_subscriptions.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\consent_assigned_offers.consortia.json" />
+    <Content Include="Seeder\Data\consent_assigned_offers.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\consents.json" />
+    <Content Include="Seeder\Data\consents.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\consents.consortia.json" />
+    <Content Include="Seeder\Data\consents.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\documents.consortia.json" />
+    <Content Include="Seeder\Data\documents.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\iam_clients.json" />
+    <Content Include="Seeder\Data\iam_clients.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\iam_clients.consortia.json" />
+    <Content Include="Seeder\Data\iam_clients.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\iam_identity_providers.json" />
+    <Content Include="Seeder\Data\iam_identity_providers.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\iam_identity_providers.consortia.json" />
+    <Content Include="Seeder\Data\iam_identity_providers.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\iam_service_accounts.consortia.json" />
+    <Content Include="Seeder\Data\iam_service_accounts.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\iam_users.json" />
+    <Content Include="Seeder\Data\iam_users.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\iam_users.consortia.json" />
+    <Content Include="Seeder\Data\iam_users.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\identity_providers.json" />
+    <Content Include="Seeder\Data\identity_providers.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\identity_providers.consortia.json" />
+    <Content Include="Seeder\Data\identity_providers.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\invitations.consortia.json" />
+    <Content Include="Seeder\Data\invitations.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\languages.json" />
+    <Content Include="Seeder\Data\languages.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\notifications.consortia.json" />
+    <Content Include="Seeder\Data\notifications.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offer_assigned_documents.consortia.json" />
+    <Content Include="Seeder\Data\offer_assigned_documents.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offer_assigned_licenses.consortia.json" />
+    <Content Include="Seeder\Data\offer_assigned_licenses.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offer_descriptions.consortia.json" />
+    <Content Include="Seeder\Data\offer_descriptions.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offer_subscriptions.consortia.json" />
+    <Content Include="Seeder\Data\offer_subscriptions.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\user_roles.json" />
+    <Content Include="Seeder\Data\user_roles.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\user_roles.consortia.json" />
+    <Content Include="Seeder\Data\user_roles.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\user_role_descriptions.json" />
+    <Content Include="Seeder\Data\user_role_descriptions.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\user_role_descriptions.consortia.json" />
+    <Content Include="Seeder\Data\user_role_descriptions.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\user_role_collections.json" />
+    <Content Include="Seeder\Data\user_role_collections.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\user_role_collection_descriptions.json" />
+    <Content Include="Seeder\Data\user_role_collection_descriptions.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\user_role_assigned_collections.json" />
+    <Content Include="Seeder\Data\user_role_assigned_collections.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\service_assigned_service_types.consortia.json" />
+    <Content Include="Seeder\Data\service_assigned_service_types.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\provider_company_details.consortia.json" />
+    <Content Include="Seeder\Data\provider_company_details.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offers.json" />
+    <Content Include="Seeder\Data\offers.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offers.consortia.json" />
+    <Content Include="Seeder\Data\offers.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offer_tags.consortia.json" />
+    <Content Include="Seeder\Data\offer_tags.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offer_licenses.consortia.json" />
+    <Content Include="Seeder\Data\offer_licenses.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\offer_detail_images.consortia.json" />
+    <Content Include="Seeder\Data\offer_detail_images.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

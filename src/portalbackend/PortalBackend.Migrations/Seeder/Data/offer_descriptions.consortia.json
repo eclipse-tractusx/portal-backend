@@ -1,0 +1,212 @@
+[
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0572c0007",
+    "language_short_name": "en",
+    "description_long": "Seamless part traceability through the n.tier supply chain\n\nknowledge you get detailed information about the components of your direct suppliers as well as your direct customers. This lets your answer questions such as:\n\n\n\nWhat's the exact lead time between the produciton of a subcomponent an your own components?\nTo wehre in the world are my components distributed and where are my suppliers located?\nWhat's the exact composition of my component on a unique ID level?\n\n\nBecause all of that is important information. PartChain keeps a storng one-up, one-down visibilty rule. You and the other parties in the network always see - only their suppliers customers data well as own ata. Your competitors won't be able to get any sensitive information about your production data.",
+    "description_short": "CX App Part Chain Details"
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0573f0009",
+    "language_short_name": "en",
+    "description_long": "The Dismantler Cockpit provides decision support for Vehicle Purchaser and Dismantling lead. At a dismantling company, these are responsible for the procurement of end-of-life vehicles and the decisions on reuse, remanufacture or recycling of the whole vehicle, or of parts and components. The Dismantler Cockpit support these decisions by fetching data about a specific vehicle from the Catena-X-network and presenting the most relevant information about the potential of the vehicle and its components: The structure of the vehicle and the parts it contains are presented by visualizing the \"Digital Twins\" available from the OEM and the suppliers of the components (e.g. gearbox, high voltage battery). KPIs such as the material composition of the vehicle further serve to analyze the commercial potential in a circular value chain.",
+    "description_short": "Dismantler buy decision and 3R strategy decision support"
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05744000b",
+    "language_short_name": "en",
+    "description_long": "Cross-industry trading platform for buying and selling secondary components and materials, opening new opportunities for collaborating across the value chain and closing the loop on component and material level.",
+    "description_short": "platform for buying and selling secondary components and materials"
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05748000d",
+    "language_short_name": "en",
+    "description_long": "Description\n\nCreate an Intelligent Enterprise with Advanced Logistic collabration and Insights. SAP Logistics Business Network, material traceability options connect partners for inter-company collaboration and transparency. It supports a comprehensive set capabilities, allowing to manage freight more efficiently, benefit form situational awareness through track and trace, and create a trust chain for up- and downstream product genealogy.",
+    "description_short": "SAP App Material Traceability Details"
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0574c000f",
+    "language_short_name": "en",
+    "description_long": "The Component Performance Monitor is a point-and-click analysis tooling that enables OEMs and Tier-1 suppliers to better manage quality risk and significantly reduce the costs incurred from faulty parts by leveraging near-live connected vehicle data, empowering quality experts to: Identify failure patterns and root-cause quality issues proactively; Monitor the effectiveness of remediation measures in the fleet using connected vehicle data and proactively request faulty parts from the OEM in a data-driven way for further root-cause analysis. ...all in a single collaborative interface that supercharges the supplier to OEM feedback cycle, leading to faster proactive issue resolution, a reduction in claims, and better customer experiences. Leading automotive suppliers are collaborating with their OEM counterparts using the Component Performance Monitor today powered by a shared data fabric using Palantir’s Foundry technology. Find out more how these suppliers and OEMs pioneer the future of quality by uncovering new opportunities to generate value through data by reading the CPM Whitepaper. More information including the Whitepaper and Demo Video can be found on the CPM Landing Page: https://www.palantir.com/explore/cpm/",
+    "description_short": "Component Performance Monitor Quality App"
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0574c000f",
+    "language_short_name": "de",
+    "description_long": "Automotive suppliers must constantly monitor product performance and resolve quality issues quickly to ensure they do not face costly claims. For quality analysts and engineers this involves a long, manual process of analyzing claims and failed parts that lacks vital information - including live vehicle data(such as Diagnostic Trouble Codes). Identifying root-cause issues is complex, issue resolution is slow, and costs quickly escalate. Component Performance Monitor (CPM) enables suppliers to better manage quality risk and significantly reduce the costs incurred from faulty parts by leveraging near-live vehicle data, empowering quality experts to:\n\nIdentify failure patterns and root- cause quality issues in real time\nMonitor the effectiveness of remediation measures in the fleet using live vehicle data\nand proactively request faulty parts for further analysis.\n\n...all in a single collaborative interface that supercharges the supplier to OEM feedback cycle, leading to faster proactive issue resolution, a reduction in claims, and better customer experiences.",
+    "description_short": "BMW App Component Performance Monitor Details"
+  },
+  {
+    "offer_id": "f9cad59d-84b3-4880-a550-4072c26a6b93",
+    "language_short_name": "en",
+    "description_long": "The service provides information about new bank account fraud cases (e.g. invoices with fake bank details) reported by companies to the community.",
+    "description_short": "Dashboard to manage and monitor fraud cases"
+  },
+  {
+    "offer_id": "8488044e-b8df-403a-9cbd-16dad7e4a08c",
+    "language_short_name": "en",
+    "description_long": "Automatic monitoring (Early Warning System) of diagnostic data",
+    "description_short": "Automatic monitoring (Early Warning System) of diagnostic data"
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "language_short_name": "en",
+    "description_long": "smart MOM (Manufacturing Operations Management) consolidates all production processes and systems for managing manufacturing processes in order to increase efficiency. The smart MOM solution from German Edge Cloud includes various services and enables a holistic production management. This includes, for example, the management of production processes including specific production rules, bill of materials (BOM), recipient data, resource/asset management and much more.",
+    "description_short": "smart MOM can be operated as part of our scalable Edge Cloud data center “GEC Digital Production System”, which can combine various MES (Manufacturing Execution System), MOM functionalities and integration services. Thus, smart MOM can use integrated dat"
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+    "language_short_name": "en",
+    "description_long": "This is only a test text",
+    "description_short": "This is only a test text"
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+    "language_short_name": "de",
+    "description_long": "This is only a test text",
+    "description_short": "This is only a test text"
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d3",
+    "language_short_name": "en",
+    "description_long": "This is only a test text",
+    "description_short": "This is only a test text"
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d3",
+    "language_short_name": "de",
+    "description_long": "This is only a test text",
+    "description_short": "This is only a test text"
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05744000b",
+    "language_short_name": "de",
+    "description_long": "This is only a test text",
+    "description_short": "This is only a test text"
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0573f0009",
+    "language_short_name": "de",
+    "description_long": "This is only a test text",
+    "description_short": "This is only a test text"
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d7",
+    "language_short_name": "en",
+    "description_long": "The \"SAP Logistics Business Network, Material Traceability (LBN-MT)\" is a solution for cross-company supply chain transparency and material traceability. The network-based solution approach creates a data basis for automotive manufacturers and suppliers alike to shorten response times in case of anomalies and to execute recalls along the supply chain more precisely. The analysis and capture of the entire batch and serial number genealogy is simple, structured, and user-friendly by using Fiori UI. Furthermore, these can be displayed graphically via a network graph. The existing standard integration with S/4HANA and ECC enables seamless data provision from the backend system in the network. Other systems can be integrated, and data provided via corresponding interfaces. With LBN-MT, customers can operate according to the principles of data interoperability and sovereignty in the Catena-X network with all relevant business partners and establish new business models along the value chain.",
+    "description_short": "This is only a test text"
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d4",
+    "language_short_name": "de",
+    "description_long": "AI-based software solutions enable manufacturing companies to digitalize the entire process chain in production and therefor a real increase in efficiency and competitiveness. The self-learning algorithm is the centerpiece of up2parts. It combines component information from 3D models with existing processes with the individual manufacturing expertise. As up2parts is used, the company-specific artificial intelligence is continuously trained and optimized. Production companies use up2parts to automate their work scheduling and quotation with the assistance of their own company specific artificial intelligence. The result: Automatic calculation proposals only take a few seconds, the quotation takes just 2 clicks and acceleration of the processes in production planning to the maximum. Thanks to the permanently self-training AI, the human expert knowledge in the company can be utilized optimally and is preserved in the long term. up2parts GmbH is a software company specialist in the development of efficiency-enhancing solutions for the digitalization of production processes. The company was founded in 2019, as the former software department of the contract manufacturer BAM GmbH. The experience and daily work of today's sister company BAM are used by up2parts as a basis for the development of innovative software solutions.",
+    "description_short": "Enable manufacturing companies to digitalize the entire process chain in production."
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d8",
+    "language_short_name": "en",
+    "description_long": "Siemens’ AM Network is an online order-to-delivery collaboration platform for the industrial additive manufacturing community. We connect the AM ecosystem, simplify the collaboration process, and streamline the AM production process. Siemens’ AM Network digitalizes and consistently improves your processes and ultimately accelerates the value in using Additive Manufacturing.",
+    "description_short": "Online order-to-delivery collaboration platform for the industrial additive manufacturing community."
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d4",
+    "language_short_name": "en",
+    "description_long": "AI-based software solutions enable manufacturing companies to digitalize the entire process chain in production and therefor a real increase in efficiency and competitiveness. The self-learning algorithm is the centerpiece of up2parts. It combines component information from 3D models with existing processes with the individual manufacturing expertise. As up2parts is used, the company-specific artificial intelligence is continuously trained and optimized. Production companies use up2parts to automate their work scheduling and quotation with the assistance of their own company specific artificial intelligence. The result: Automatic calculation proposals only take a few seconds, the quotation takes just 2 clicks and acceleration of the processes in production planning to the maximum. Thanks to the permanently self-training AI, the human expert knowledge in the company can be utilized optimally and is preserved in the long term. up2parts GmbH is a software company specialist in the development of efficiency-enhancing solutions for the digitalization of production processes. The company was founded in 2019, as the former software department of the contract manufacturer BAM GmbH. The experience and daily work of today's sister company BAM are used by up2parts as a basis for the development of innovative software solutions.",
+    "description_short": "Enable manufacturing companies to digitalize the entire process chain in production."
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d5",
+    "language_short_name": "de",
+    "description_long": "The Smart Factory Web Portal is a web-based application to allow suppliers and MaaS platforms to offer production capabilities and capacities. At the same time, the Smart Factory Web Portal offers a search environment where a buyer can upload engineering files and configure procurement requirements which the Smart Factory Web Search Engine the portal exploits uses to calculate all possible supply chain alternatives by matching it to the registered supplier information. This matching is able to use up-to-date information about the capabilities and status of assets in the factory, as well as characteristics of the products - availability, quality, price, carbon emissions and so on - which provides a basis for possible negotiation between competing offers.",
+    "description_short": "Das ist nur ein Test"
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d5",
+    "language_short_name": "en",
+    "description_long": "The Smart Factory Web Portal is a web-based application to allow suppliers and MaaS platforms to offer production capabilities and capacities. At the same time, the Smart Factory Web Portal offers a search environment where a buyer can upload engineering files and configure procurement requirements which the Smart Factory Web Search Engine the portal exploits uses to calculate all possible supply chain alternatives by matching it to the registered supplier information. This matching is able to use up-to-date information about the capabilities and status of assets in the factory, as well as characteristics of the products - availability, quality, price, carbon emissions and so on - which provides a basis for possible negotiation between competing offers.",
+    "description_short": "This is only a test text"
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d6",
+    "language_short_name": "en",
+    "description_long": "PRODUCTION PLANNING & CONTROL consists of the three coordinated applications PLANNING BOARD, PRODUCTION FEEDBACK and PRODUCTION COCKPIT. As a web-based solution from the cloud, it provides an easy entry into the optimization of production planning and control. PLANNING BOARD is intuitive tool for manual production planning with assistance functions. The software is suitable for easy replacement of EXCEL or paper and takes limited resources into account, such as workstations, machines and employees.PRODUCTION FEEDBACK provides real-time feedback from the shop floor, gives the machine operator an overview of all current production tasks and is directly connected to PLANNING BOARD. PRODUCTION COCKPIT is a simply structured dashboard that visualizes all manufacturing information. Depending on whether delivery reliability, order figures or the status of relevant. It can be configured individually.",
+    "description_short": "This is only a test text"
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d6",
+    "language_short_name": "de",
+    "description_long": "PRODUCTION PLANNING & CONTROL consists of the three coordinated applications PLANNING BOARD, PRODUCTION FEEDBACK and PRODUCTION COCKPIT. As a web-based solution from the cloud, it provides an easy entry into the optimization of production planning and control. PLANNING BOARD is intuitive tool for manual production planning with assistance functions. The software is suitable for easy replacement of EXCEL or paper and takes limited resources into account, such as workstations, machines and employees. PRODUCTION FEEDBACK provides real-time feedback from the shop floor, gives the machine operator an overview of all current production tasks and is directly connected to PLANNING BOARD. PRODUCTION COCKPIT is a simply structured dashboard that visualizes all manufacturing information. Depending on whether delivery reliability, order figures or the status of relevant. It can be configured individually.",
+    "description_short": "This is only a test text"
+  },
+  {
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfeb",
+    "language_short_name": "de",
+    "description_long": "SupplyOn Capacity Management supports suppliers to collect production capacity data in a simple and intuitive way and enables buyer and supplier users to compare it with demand data. This comparison is mainly done on a tactical and strategical level, in order to identify potential mismatches as early as possible.  The data is available in a consistent format and can be downloaded for further internal processing. In addition, the application supports an integrated collaboration between suppliers and buyers via commenting and built-in task management features.",
+    "description_short": "Supports suppliers to collect production capacity data"
+  },
+  {
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfec",
+    "language_short_name": "en",
+    "description_long": "Provided connectivity to Siemens Xcelerator Share product",
+    "description_short": "Provided connectivity to Siemens Xcelerator Share product"
+  },
+  {
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfec",
+    "language_short_name": "de",
+    "description_long": "This is only a test text",
+    "description_short": "This is only a test text"
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d7",
+    "language_short_name": "de",
+    "description_long": "Das „SAP Logistics Business Network, Material Traceability (LBN-MT)“ stellt eine Lösung zur unternehmensübergreifenden Lieferkettentransparenz und Material Rückverfolgbarkeit dar. Der netzwerkbasierte Lösungsansatz schafft eine Datengrundlage für Automobilhersteller und Zulieferer gleichermaßen, um Reaktionszeiten bei Anomalien zu verkürzen und Rückrufe entlang der Lieferkette präziser auszuführen. Die Analyse und Erfassung der gesamten Chargen- und Serialnummerngeneralogie ist mittels Fiori UI einfach, strukturiert und anwenderfreundlich. Ebenso lässt sich diese über einen Netzwerkgrafen graphisch darstellen. Durch die vorhandene Standardintegration mit S/4HANA und ECC ist eine nahtlose Datenbereitstellung aus dem Backendsystem im Netzwerk möglich. Andere Systeme können über entsprechende Schnittstellen integriert und Daten bereitgestellt werden. Mit LBN-MT können Kunden nach den Prinzipien der Dateninteroperabilität und Souveränität im Catena-X Netzwerk mit allen relevanten Geschäftspartnern agieren und neue Geschäftsfelder entlang der Wertschöpfungskette etablieren.",
+    "description_short": "This is only a test text"
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d8",
+    "language_short_name": "de",
+    "description_long": "Siemens’ AM Network is an online order-to-delivery collaboration platform for the industrial additive manufacturing community. We connect the AM ecosystem, simplify the collaboration process, and streamline the AM production process. Siemens’ AM Network digitalizes and consistently improves your processes and ultimately accelerates the value in using Additive Manufacturing.",
+    "description_short": "Online order-to-delivery collaboration platform for the industrial additive manufacturing community."
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d9",
+    "language_short_name": "de",
+    "description_long": "mipart is an on-demand manufacturing platform for the digital procurement of components. B2B and B2C customers can simply upload their CAD model, configure it online and order their component. The centerpiece of the mipart MaaS solution is an AI-based algorithm that analyzes and calculates the CAD models uploaded to the configurator in real time and generates a quotation within seconds. The customer can then order his component directly. What takes several days in the traditional way via paper correspondence, e-mail data exchange, and 2D component drawings, happens on mipart in just a few seconds. The manufacturing companies connected to mipart can use this new digital business model without investment costs and generate orders. Customers benefit from transparent processes and very short order times. miparts portfolio includes turned and milled parts, sheet metal processing and 3D printing. Individual parts and prototypes are just as possible as small series.",
+    "description_short": "On demand manufacturing platform."
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d9",
+    "language_short_name": "en",
+    "description_long": "mipart is an on-demand manufacturing platform for the digital procurement of components. B2B and B2C customers can simply upload their CAD model, configure it online and order their component. The centerpiece of the mipart MaaS solution is an AI-based algorithm that analyzes and calculates the CAD models uploaded to the configurator in real time and generates a quotation within seconds. The customer can then order his component directly. What takes several days in the traditional way via paper correspondence, e-mail data exchange, and 2D component drawings, happens on mipart in just a few seconds. The manufacturing companies connected to mipart can use this new digital business model without investment costs and generate orders. Customers benefit from transparent processes and very short order times. miparts portfolio includes turned and milled parts, sheet metal processing and 3D printing. Individual parts and prototypes are just as possible as small series.",
+    "description_short": "On demand manufacturing platform."
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb510",
+    "language_short_name": "de",
+    "description_long": "The value added service solution Country Risk Score gives different users additional information regarding their business partners. This is part of the Know Your Business Partner approach and enables the user to make better decisions based on aggregated information. The main part of the country risk dashboard are information per country regarding corruption, political stability, economic risk and social and structural figures. There are official sources connected like CPI or Basel but the service offers the possibility to upload company/user specific ratings.",
+    "description_short": "The country risk dashboard - country information regarding corruption, political stability, economic risk and social and structural figures."
+  },
+  {
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb510",
+    "language_short_name": "en",
+    "description_long": "The value added service solution Country Risk Score gives different users additional information regarding their business partners. This is part of the Know Your Business Partner approach and enables the user to make better decisions based on aggregated information. The main part of the country risk dashboard are information per country regarding corruption, political stability, economic risk and social and structural figures. There are official sources connected like CPI or Basel but the service offers the possibility to upload company/user specific ratings.",
+    "description_short": "The country risk dashboard - country information regarding corruption, political stability, economic risk and social and structural figures."
+  },
+  {
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfea",
+    "language_short_name": "en",
+    "description_long": "In order to allow Data Providers and Data Consumers to easily participate in relevant Use Cases, a service for low-effort data sharing was needed. The service would add a convenience layer around already established CX components, such as EDC and Digital Twin Registry, simplifying their use. It is a standalone service which can be self-hosted, it enables companies to provide their data in the Catena-X network via an EDC, Ddata is uploaded via CSV-files/Manual Entry/Json format, the DFT registers the data in the Digital Twin Registry and makes it accessible via an EDC, DFT also act as a Data Consumer, it is show the data offers from data provider.",
+    "description_short": "Component for Digital Twins registration"
+  },
+  {
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfea",
+    "language_short_name": "de",
+    "description_long": "In order to allow Data Providers and Data Consumers to easily participate in relevant Use Cases, a service for low-effort data sharing was needed. The service would add a convenience layer around already established CX components, such as EDC and Digital Twin Registry, simplifying their use. It is a standalone service which can be self-hosted, it enables companies to provide their data in the Catena-X network via an EDC, Ddata is uploaded via CSV-files/Manual Entry/Json format, the DFT registers the data in the Digital Twin Registry and makes it accessible via an EDC, DFT also act as a Data Consumer, it is show the data offers from data provider.",
+    "description_short": "Component for Digital Twins registration"
+  },
+  {
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfeb",
+    "language_short_name": "en",
+    "description_long": "SupplyOn Capacity Management supports suppliers to collect production capacity data in a simple and intuitive way and enables buyer and supplier users to compare it with demand data. This comparison is mainly done on a tactical and strategical level, in order to identify potential mismatches as early as possible.  The data is available in a consistent format and can be downloaded for further internal processing. In addition, the application supports an integrated collaboration between suppliers and buyers via commenting and built-in task management features.",
+    "description_short": "Supports suppliers to collect production capacity data"
+  }
+]

@@ -19,10 +19,12 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class Address
+public class Address : IBaseEntity
 {
     private Address()
     {
@@ -66,6 +68,7 @@ public class Address
     public string? Zipcode { get; set; }
 
     [StringLength(2, MinimumLength = 2)]
+    [JsonPropertyName("country_alpha2code")]
     public string CountryAlpha2Code { get; set; }
 
     // Navigation properties
