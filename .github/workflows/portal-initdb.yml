@@ -11,7 +11,7 @@ on:
       - 'import/**'
 
     branches:
-      - 'feature/CPLP-1042-seeding'
+      - 'main'
   workflow_dispatch:
 
 jobs:
