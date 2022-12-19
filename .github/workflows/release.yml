@@ -7,6 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  IMAGE_NAME_INITDB: ${{ github.repository }}_initdb
   IMAGE_NAME_ADMINISTRATION: ${{ github.repository }}_administration-service
   IMAGE_NAME_REGISTRATION: ${{ github.repository }}_registration-service
   IMAGE_NAME_PROVISIONING: ${{ github.repository }}_provisioning-service
@@ -18,6 +19,43 @@ env:
   IMAGE_NAME_PROVISIONING_MIGRATIONS: ${{ github.repository }}_provisioning-migrations
 
 jobs:
+  initdb-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Get tag name
+        id: git-tag
+        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_INITDB }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: docker/Dockerfile-initdb
+          pull: true
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_INITDB }}:${{ steps.git-tag.outputs.git-version }}
+          labels: ${{ steps.meta.outputs.labels }}
+
   administration-service-release:
     runs-on: ubuntu-latest
     permissions:
