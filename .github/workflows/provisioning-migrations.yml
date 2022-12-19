@@ -73,8 +73,8 @@ jobs:
         run: |
           curl -v \
             --request POST \
-            --url https://api.github.com/repos/catenax-ng/product-portal-cd/actions/workflows/provisioning-migrations-image-update.yml/dispatches \
+            --url https://api.github.com/repos/catenax-ng/tx-portal-cd/actions/workflows/provisioning-migrations-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --data '{"ref":"main", "inputs": { "new-image":"${{ env.COMMIT_SHA }}" }}' \
+            --data '{"ref":"helm-environments", "inputs": { "new-image":"${{ env.COMMIT_SHA }}" }}' \
             --fail
