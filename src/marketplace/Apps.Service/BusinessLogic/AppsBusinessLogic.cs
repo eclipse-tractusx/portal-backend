@@ -72,7 +72,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     app.ShortDescription ?? Constants.ErrorString,
                     app.VendorCompanyName,
                     app.LicenseText ?? Constants.ErrorString,
-                    app.ThumbnailUrl ?? Constants.ErrorString,
+                    app.LeadPictureId,
                     app.UseCaseNames));
 
     /// <inheritdoc/>
