@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text;
 using System.Text.Json;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -667,10 +668,25 @@ public class OfferService : IOfferService
                 { "offerName", offerName },
                 { "url", basePortalAddress },
                 { "declineMessage", message },
-                { "offerProviderName", string.Concat(FirstName, LastName)??"Service Manager" },
+                { "offerProviderName", CreateNameString(FirstName, LastName)},
             };
-            await _mailingService.SendMails(receiver, mailParams, new List<string> { "offer-request-decline" }).ConfigureAwait(false);
+            await _mailingService.SendMails(receiver!, mailParams, new List<string> { "offer-request-decline" }).ConfigureAwait(false);
         }
+    }
+    
+    private static string CreateNameString(string? firstName, string? lastName)
+    {
+        StringBuilder sb = new StringBuilder();
+        if (firstName != null)
+        {
+            sb.Append(firstName);
+        }
+        if (lastName != null)
+        {
+            sb.AppendFormat((firstName == null ? "{0}" : ", {0}"), lastName);
+        }
+        
+        return firstName == null && lastName == null ? "Service Manager" : sb.ToString();
     }
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
