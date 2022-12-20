@@ -91,12 +91,15 @@ public class ApplicationRepository : IApplicationRepository
             .Where(application => application.Id == applicationId)
             .Select(application => new {
                 Application = application, 
-                CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).SingleOrDefault()
+                CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).SingleOrDefault(),
+                Documents = application.Company!.CompanyUsers.Select(document => document.Documents).SingleOrDefault()
             })
             .Select(data => new CompanyApplicationUserEmailData(
                 data.Application.ApplicationStatusId,
                 data.CompanyUser!.Id,
-                data.CompanyUser!.Email))
+                data.CompanyUser!.Email,
+                data.Documents!
+                ))
             .SingleOrDefaultAsync();
 
     public Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>
