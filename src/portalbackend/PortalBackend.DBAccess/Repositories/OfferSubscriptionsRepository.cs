@@ -165,7 +165,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid SubscriptionId, string? OfferName, string SubscriptionUrl, IEnumerable<Guid> LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId) =>
+    public IAsyncEnumerable<(Guid SubscriptionId, string? OfferName, string SubscriptionUrl, IEnumerable<Guid> LeadPictureIds, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId) =>
         _context.CompanyUsers.AsNoTracking()
             .Where(user => user.IamUser!.UserEntityId == iamUserId)
             .SelectMany(user => user.Company!.OfferSubscriptions.Where(subscription => 
@@ -176,7 +176,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 offerSubscription.Id,
                 offerSubscription.Offer!.Name,
                 offerSubscription.AppSubscriptionDetail!.AppSubscriptionUrl!,
-                offerSubscription.Offer!.Documents.Where(document=>document.DocumentTypeId ==DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document=>document.Id),
+                offerSubscription.Offer!.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id),
                 offerSubscription.Offer!.Provider
             )).ToAsyncEnumerable();
 }

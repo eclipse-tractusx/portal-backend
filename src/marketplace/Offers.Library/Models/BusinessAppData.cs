@@ -23,4 +23,4 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 /// <summary>
 /// Basic model for data needed in business application display.
 /// </summary>
-public record BusinessAppData(Guid Id, string Name, string Uri, IEnumerable<Guid> LeadPictureId, string Provider);
+public record BusinessAppData(Guid Id, string Name, string Uri, IEnumerable<Guid> LeadPictureIds, string Provider);
