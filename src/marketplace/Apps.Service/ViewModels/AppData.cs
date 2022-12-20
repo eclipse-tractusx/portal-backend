@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="ShortDescription">Short description.</param>
 /// <param name="Provider">Provider.</param>
 /// <param name="Price">Price.</param>
-/// <param name="LeadPictureId">Lead pircture Id.</param>
+/// <param name="LeadPictureIds">Lead pircture Id.</param>
 /// <param name="UseCases">The apps use cases.</param>
 public record AppData(
     Guid Id,
@@ -36,5 +36,5 @@ public record AppData(
     string ShortDescription,
     string Provider,
     string Price,
-    IEnumerable<Guid> LeadPictureId,
+    IEnumerable<Guid> LeadPictureIds,
     IEnumerable<string> UseCases);
