@@ -96,8 +96,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             companyWithAddress.Zipcode,
             companyWithAddress.CountryDe,
             companyWithAddress.TaxId,
-            companyWithAddress.CompanyRoles!.GroupBy(x => x.CompanyRoleId).Select(g => new AgreementsRoleData(g.Key, g.Select(y => new AgreementConsentData(y.AgreementId, y.ConsentStatusId)))),
-            companyWithAddress.CompanyUser!.Select(x => new InvitedCompanyUserData(x.UserId, x.FirstName, x.LastName, x.Email))
+            companyWithAddress.CompanyRoles.GroupBy(x => x.CompanyRoleId).Select(g => new AgreementsRoleData(g.Key, g.Select(y => new AgreementConsentData(y.AgreementId, y.ConsentStatusId)))),
+            companyWithAddress.CompanyUser.Select(x => new InvitedUserData(x.UserId, x.FirstName, x.LastName, x.Email))
         );
     }
 

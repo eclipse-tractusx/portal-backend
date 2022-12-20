@@ -99,7 +99,6 @@ public static class BaseSeed
             new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyRoleId.ACTIVE_PARTICIPANT),
             new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"), CompanyRoleId.ACTIVE_PARTICIPANT)
         });
-        
 
         dbContext.CompanyUsers.AddRange(new List<CompanyUser>
         {

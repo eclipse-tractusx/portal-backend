@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
@@ -38,8 +39,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 /// <param name="ZipCode"></param>
 /// <param name="CountryDe"></param>
 /// <param name="TaxId"></param>
-/// <param name="CompanyRoles"></param>
-/// <param name="CompanyUser"></param>
+/// <param name="AgreementsRoleData"></param>
+/// <param name="InvitedUserData"></param>
 /// <returns></returns>
 
 public record CompanyWithAddressData(Guid CompanyId,
@@ -55,8 +56,8 @@ public record CompanyWithAddressData(Guid CompanyId,
     string? ZipCode,
     string? CountryDe,
     string? TaxId,
-    IEnumerable<AgreementsRoleData>? CompanyRoles,
-    IEnumerable<InvitedCompanyUserData>? CompanyUser
+    [property: JsonPropertyName("CompanyRoles")] IEnumerable<AgreementsRoleData>? AgreementsRoleData,
+    [property: JsonPropertyName("CompanyUser")] IEnumerable<InvitedUserData>? InvitedUserData
     );
     /// <summary>
     /// 
@@ -82,5 +83,5 @@ public record CompanyWithAddressData(Guid CompanyId,
     /// <param name="LastName"></param>
     /// <param name="Email"></param>
     /// <returns></returns>
-    public record InvitedCompanyUserData(Guid UserId, string? FirstName, string? LastName, string? Email);
+    public record InvitedUserData(Guid UserId, string? FirstName, string? LastName, string? Email);
 
