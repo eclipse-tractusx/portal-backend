@@ -56,8 +56,8 @@ public record CompanyWithAddressData(Guid CompanyId,
     string? ZipCode,
     string? CountryDe,
     string? TaxId,
-    [property: JsonPropertyName("CompanyRoles")] IEnumerable<AgreementsRoleData>? AgreementsRoleData,
-    [property: JsonPropertyName("CompanyUser")] IEnumerable<InvitedUserData>? InvitedUserData
+    [property: JsonPropertyName("CompanyRoles")] IEnumerable<AgreementsRoleData> AgreementsRoleData,
+    [property: JsonPropertyName("CompanyUser")] IEnumerable<InvitedUserData> InvitedUserData
     );
     /// <summary>
     /// 
