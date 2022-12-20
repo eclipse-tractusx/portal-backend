@@ -69,8 +69,12 @@ public class MappingEntityInsertOnlySeeder : ICustomSeeder
         await SeedData<CompanyUserAssignedAppFavourite>("company_user_assigned_app_favourites", cancellationToken).ConfigureAwait(false);
         await SeedData<CompanyUserAssignedBusinessPartner>("company_user_assigned_business_partners", cancellationToken).ConfigureAwait(false);
         await SeedData<CompanyUserAssignedRole>("company_user_assigned_roles", cancellationToken).ConfigureAwait(false);
+        await SeedData<CompanyServiceAccountAssignedRole>("company_service_account_assigned_roles", cancellationToken).ConfigureAwait(false);
+        await SeedData<ConsentAssignedOffer>("consent_assigned_offers", cancellationToken).ConfigureAwait(false);
         await SeedData<ConsentAssignedOfferSubscription>("consent_assigned_offer_subscriptions", cancellationToken).ConfigureAwait(false);
         await SeedData<OfferAssignedDocument>("offer_assigned_documents", cancellationToken).ConfigureAwait(false);
+        await SeedData<IamIdentityProvider>("iam_identity_providers", cancellationToken).ConfigureAwait(false);
+        await SeedData<IamServiceAccount>("iam_service_accounts", cancellationToken).ConfigureAwait(false);
         await SeedData<IamUser>("iam_users", cancellationToken).ConfigureAwait(false);
         await SeedData<OfferAssignedLicense>("offer_assigned_licenses", cancellationToken).ConfigureAwait(false);
         await SeedData<OfferDescription>("offer_descriptions", cancellationToken).ConfigureAwait(false);
