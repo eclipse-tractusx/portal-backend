@@ -1197,7 +1197,7 @@ public class RegistrationBusinessLogicTest
                 null!,
                 null!,
                 DateTimeOffset.Now,
-                DocumentStatusId.LOCKED,
+                DocumentStatusId.INACTIVE,
                 DocumentTypeId.APP_CONTRACT
             )};
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _iamUserId))
@@ -1225,7 +1225,7 @@ public class RegistrationBusinessLogicTest
                 null!,
                 null!,
                 DateTimeOffset.Now,
-                DocumentStatusId.LOCKED,
+                DocumentStatusId.INACTIVE,
                 DocumentTypeId.APP_CONTRACT
             )};
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _iamUserId))
