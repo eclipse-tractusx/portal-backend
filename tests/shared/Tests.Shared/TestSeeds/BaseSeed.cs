@@ -85,6 +85,10 @@ public static class BaseSeed
             {
                 CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992")
             },
+            new (new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"), new byte[1024], new byte[1024], "test5.pdf", DateTimeOffset.UtcNow, DocumentStatusId.PENDING, DocumentTypeId.APP_LEADIMAGE)
+            {
+                CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")
+            },
         });
         
         dbContext.ProviderCompanyDetails.AddRange(new List<ProviderCompanyDetail>
@@ -216,6 +220,7 @@ public static class BaseSeed
         dbContext.OfferAssignedDocuments.AddRange(new List<OfferAssignedDocument>
         {
             new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("7fc2fb78-8dc2-4f5f-b1d1-91c9c2f4506f")),
+            new (new Guid("99c5fd12-8085-4de2-abfd-215e1ee4baa4"), new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41")),
         });
         
         dbContext.UserRoles.AddRange(new List<UserRole>
