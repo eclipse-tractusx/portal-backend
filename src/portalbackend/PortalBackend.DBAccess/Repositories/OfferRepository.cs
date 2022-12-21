@@ -102,7 +102,7 @@ public class OfferRepository : IOfferRepository
             .Select(offer => new OfferDetailsData(
                 offer.Id,
                 offer.Name,
-                offer.ThumbnailUrl,
+                offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id),
                 offer.OfferDetailImages.Select(adi => adi.ImageUrl),
                 offer.MarketingUrl,
                 offer.Provider,
