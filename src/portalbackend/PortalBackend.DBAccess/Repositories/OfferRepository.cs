@@ -361,7 +361,7 @@ public class OfferRepository : IOfferRepository
                 new OfferProviderData(
                     offer.Name,
                     offer.Provider,
-                    offer.ThumbnailUrl,
+                    offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id),
                     offer.ProviderCompany!.Name,
                     offer.UseCases.Select(uc => uc.Name),
                     offer.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
