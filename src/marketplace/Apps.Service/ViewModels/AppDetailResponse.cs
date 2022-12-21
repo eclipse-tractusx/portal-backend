@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// </summary>
 /// <param name="Id">ID of the app.</param>
 /// <param name="Title">Title or name of the app.</param>
-/// <param name="LeadPictureUri">Uri to app's lead picture.</param>
+/// <param name="LeadPictureIds">Uri to app's lead picture.</param>
 /// <param name="DetailPictureUris">List of URIs to app's secondary pictures.</param>
 /// <param name="ProviderUri">Uri to provider's marketing presence.</param>
 /// <param name="Provider">Provider of the app.</param>
@@ -44,7 +44,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 public record AppDetailResponse(
     Guid Id,
     string Title,
-    string LeadPictureUri,
+    IEnumerable<Guid> LeadPictureIds,
     IEnumerable<string> DetailPictureUris,
     string ProviderUri,
     string Provider,
