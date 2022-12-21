@@ -57,6 +57,10 @@ public class ApplicationRepositoryTest : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
+        results!.CompanyRoles.FirstOrDefault()!.ConsentStatusId.Should().Be(ConsentStatusId.ACTIVE);
+        results!.CompanyUser.FirstOrDefault()!.FirstName.Should().Be("Test User 1");
+        results!.CompanyUser.FirstOrDefault()!.LastName.Should().Be("cx-user-2");
+        results!.CompanyUser.FirstOrDefault()!.Email.Should().Be("tester.user1@test.de");
     }
 
     private async Task<(ApplicationRepository, PortalDbContext)> CreateSut()
