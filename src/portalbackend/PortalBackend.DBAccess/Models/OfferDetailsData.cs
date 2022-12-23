@@ -40,7 +40,7 @@ public record OfferDetailsData(
     /// <summary>
     /// Id of the Lead Image.
     /// </summary>
-    IEnumerable<Guid> LeadPictureIds,
+    Guid LeadPictureId,
 
     /// <summary>
     /// List of URIs to app's secondary pictures.
