@@ -488,8 +488,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         providerAppData.Should().NotBeNull();
-        providerAppData.FirstOrDefault()!.LeadPictureIds.Should().NotBeNull();
-        providerAppData.FirstOrDefault()!.LeadPictureIds.FirstOrDefault().Should().Be(new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"));
+        providerAppData.FirstOrDefault()!.LeadPictureId.Should().NotBeEmpty();
+        providerAppData.FirstOrDefault()!.LeadPictureId.Should().Be(new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"));
     }
 
     #endregion
