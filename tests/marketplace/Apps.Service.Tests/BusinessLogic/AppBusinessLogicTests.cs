@@ -138,7 +138,7 @@ public class AppBusinessLogicTests
     public async Task GetAllUserUserBusinessAppsAsync_WithValidData_ReturnsExpectedData()
     {
         // Arrange
-        var appData = _fixture.CreateMany<(Guid, string?, string, IEnumerable<Guid>, string)>(5);
+        var appData = _fixture.CreateMany<(Guid, string?, string, Guid, string)>(5);
         A.CallTo(() => _offerSubscriptionRepository.GetAllBusinessAppDataForUserIdAsync(A<string>._)).Returns(appData.ToAsyncEnumerable());
         var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(new AppsSettings()), A.Fake<MailingService>());
 
