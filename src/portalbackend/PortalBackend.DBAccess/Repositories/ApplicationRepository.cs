@@ -131,6 +131,7 @@ public class ApplicationRepository : IApplicationRepository
 
     public Task<CompanyApplicationWithCompanyAddressUserData?> GetCompanyApplicationWithCompanyAdressUserDataAsync (Guid applicationId, Guid companyId, string iamUserId) =>
         _dbContext.CompanyApplications
+            .AsNoTracking()
             .Where(application => application.Id == applicationId
                 && application.CompanyId == companyId)
             .Include(application => application.Company)
