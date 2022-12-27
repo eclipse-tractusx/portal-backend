@@ -92,13 +92,14 @@ public class ApplicationRepository : IApplicationRepository
             .Select(application => new {
                 Application = application, 
                 CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).SingleOrDefault(),
-                Documents = application.Company!.CompanyUsers.Select(document => document.Documents).SingleOrDefault()
+                Documents = application.Company!.CompanyUsers.SelectMany(companyUser => companyUser.Documents)
+                    .Select(document => new { document.Id, document.DocumentStatusId })
             })
             .Select(data => new CompanyApplicationUserEmailData(
                 data.Application.ApplicationStatusId,
                 data.CompanyUser!.Id,
                 data.CompanyUser!.Email,
-                data.Documents!
+                data.Documents!.Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId))
                 ))
             .SingleOrDefaultAsync();
 
