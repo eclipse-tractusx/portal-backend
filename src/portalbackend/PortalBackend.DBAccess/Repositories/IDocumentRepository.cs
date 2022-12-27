@@ -78,13 +78,4 @@ public interface IDocumentRepository
     /// <param name="iamUserId"></param>
     /// <param name="applicationStatusIds"></param>
     Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, string iamUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
-
-    /// <summary>
-    /// Gets the document by the CompanyUserId.
-    /// </summary>
-    /// <param name="CompanyUserId">CompanyUserId of the document</param>
-    /// <returns>Returns the document</returns>
-    public Task<(Guid Id,Guid? CompanyUserId,DocumentStatusId DocumentStatusId,bool IsSameApplicationUser)> GetDocumentStatuseIdAsync(Guid CompanyUserId,string iamUserId);
-
-    void AttachAndModifyDocument(Guid documentId, Action<Document> setOptionalParameters);
 }
