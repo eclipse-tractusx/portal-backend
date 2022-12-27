@@ -437,8 +437,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         else
         {
             throw new NotFoundException($"document for this application {applicationId} does not exist");
-        }
-        
+        } 
         UpdateApplicationStatus(applicationId, applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration, applicationRepository);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
