@@ -1153,9 +1153,8 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var applicationid = _fixture.Create<Guid>();
-        //var notExistingCompanyUserId = _fixture.Create<Guid>();
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationid, _iamUserId))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.SUBMITTED,Guid.NewGuid(),null,null));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.SUBMITTED,Guid.NewGuid(),null,null!));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories);
 
         // Act
@@ -1190,15 +1189,9 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var applicationId = _fixture.Create<Guid>();
-        IEnumerable<Document> document =  new Document[]{
-            new Document(
-                Guid.NewGuid(),
-                null!,
-                null!,
-                null!,
-                DateTimeOffset.Now,
-                DocumentStatusId.INACTIVE,
-                DocumentTypeId.APP_CONTRACT
+        IEnumerable<DocumentStatusData> document =  new DocumentStatusData[]{
+            new DocumentStatusData(
+                Guid.NewGuid(),DocumentStatusId.INACTIVE
             )};
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _iamUserId))
             .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), "test@mail.de",document));
@@ -1218,15 +1211,9 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var applicationId = _fixture.Create<Guid>();
-        IEnumerable<Document> document =  new Document[]{
-            new Document(
-                Guid.NewGuid(),
-                null!,
-                null!,
-                null!,
-                DateTimeOffset.Now,
-                DocumentStatusId.INACTIVE,
-                DocumentTypeId.APP_CONTRACT
+        IEnumerable<DocumentStatusData> document =  new DocumentStatusData[]{
+            new DocumentStatusData(
+                Guid.NewGuid(),DocumentStatusId.PENDING
             )};
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _iamUserId))
             .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), null, document));
