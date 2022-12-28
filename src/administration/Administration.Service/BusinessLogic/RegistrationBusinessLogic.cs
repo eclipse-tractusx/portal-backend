@@ -118,7 +118,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                                 && companyUser.Email != null)
                             .Select(companyUser => companyUser!.Email)
                             .FirstOrDefault(),
-                        BusinessPartnerNumber = application.Company.BusinessPartnerNumber
+                        BusinessPartnerNumber = application.Company.BusinessPartnerNumber,
+                        CompanyRoles = application.Company!.CompanyAssignedRoles
+                            .Select(companyAssignedRoles => companyAssignedRoles.CompanyRole!.Label)
                     })
                     .AsAsyncEnumerable()));
     }

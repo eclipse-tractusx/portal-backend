@@ -48,6 +48,8 @@ public class CompanyApplicationDetails
     public string? BusinessPartnerNumber { get; set; }
     [JsonPropertyName("documents")]
     public IEnumerable<DocumentDetails> Documents { get; set; }
+    [JsonPropertyName("companyRoles")]
+    public IEnumerable<string>? CompanyRoles { get; set; }
 }
 
 public class DocumentDetails
