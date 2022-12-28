@@ -1149,21 +1149,22 @@ public class RegistrationBusinessLogicTest
 
     
     [Fact]
-    public async Task SubmitRegistrationAsync_WithNotExistingDocumentStatusId_ThrowsNotFoundException()
+    public async Task SubmitRegistrationAsync_WithDocumentId()
     {
         // Arrange
         var applicationid = _fixture.Create<Guid>();
+        IEnumerable<DocumentStatusData> document = new DocumentStatusData[]{
+            new DocumentStatusData(Guid.NewGuid(),DocumentStatusId.PENDING),
+            new DocumentStatusData(Guid.NewGuid(),DocumentStatusId.INACTIVE)
+        };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationid, _iamUserId))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.SUBMITTED,Guid.NewGuid(),null,null!));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY,Guid.NewGuid(),"test@mail.de",document));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories);
 
         // Act
-        async Task Act() => await sut.SubmitRegistrationAsync(applicationid, _iamUserId)
-            .ConfigureAwait(false);
-
+        await sut.SubmitRegistrationAsync(applicationid, _iamUserId);
         // Arrange
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"document for this application {applicationid} does not exist");
+        A.CallTo(() => _documentRepository.AttachandModifyDocuments(A<Guid>._, A<Action<Document>>._)).MustHaveHappened();
     }
     
     [Fact]
@@ -1172,7 +1173,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var applicationId = _fixture.Create<Guid>();
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.Empty, null,null));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.Empty, null,null!));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories);
 
         // Act
