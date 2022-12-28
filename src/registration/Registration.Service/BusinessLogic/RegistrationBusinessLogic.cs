@@ -421,8 +421,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         if (applicationUserData.CompanyUserId == Guid.Empty)
         {
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
-        }       
-        if (applicationUserData.DocumentDatas != null)
+        }      
+        if (applicationUserData.DocumentDatas.Any())
         {
             var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
             foreach(var document in applicationUserData.DocumentDatas)
@@ -433,10 +433,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         doc.DocumentStatusId = DocumentStatusId.LOCKED);
                 }
             }
-        }
-        else
-        {
-            throw new NotFoundException($"document for this application {applicationId} does not exist");
         } 
         UpdateApplicationStatus(applicationId, applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration, applicationRepository);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
