@@ -60,9 +60,6 @@ public class Company : IBaseEntity
     [MaxLength(20)]
     public string? BusinessPartnerNumber { get; set; }
 
-    [MaxLength(20)]
-    public string? TaxId { get; set; }
-
     [MaxLength(255)]
     public string Name { get; set; }
 
