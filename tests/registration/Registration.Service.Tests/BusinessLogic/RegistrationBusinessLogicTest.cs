@@ -1146,26 +1146,6 @@ public class RegistrationBusinessLogicTest
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"application {notExistingId} does not exist");
     }
-
-    
-    [Fact]
-    public async Task SubmitRegistrationAsync_WithNotExistingDocumentStatusId_ThrowsNotFoundException()
-    {
-        // Arrange
-        var applicationid = _fixture.Create<Guid>();
-        var notExistingCompanyUserId = _fixture.Create<Guid>();
-        A.CallTo(() => _documentRepository.GetDocumentStatuseIdAsync(notExistingCompanyUserId, _iamUserId))
-            .Returns((Guid.Empty,null,DocumentStatusId.INACTIVE,false));
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories);
-
-        // Act
-        async Task Act() => await sut.SubmitRegistrationAsync(applicationid, _iamUserId)
-            .ConfigureAwait(false);
-
-        // Arrange
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"document for this application {applicationid} does not exist");
-    }
     
     [Fact]
     public async Task SubmitRegistrationAsync_WithNotExistingCompanyUser_ThrowsForbiddenException()
