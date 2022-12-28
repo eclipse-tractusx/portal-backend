@@ -120,23 +120,4 @@ public class DocumentRepository : IDocumentRepository
                 x.Applications.Any(companyApplication => applicationStatusIds.Contains(companyApplication.ApplicationStatusId))))
             .SingleOrDefaultAsync();
     
-    /// <inheritdoc />
-    public Task<(Guid Id,Guid? CompanyUserId,DocumentStatusId DocumentStatusId,bool IsSameApplicationUser)> GetDocumentStatuseIdAsync(Guid CompanyUserId,string iamUserId)=>
-        _dbContext.Documents
-            .Where(x => x.CompanyUserId == CompanyUserId)
-            .Select(document => new {
-                Document = document,
-                Applications = document.CompanyUser!.Company!.CompanyApplications
-            })
-            .Select(X=> new ValueTuple<Guid,Guid?,DocumentStatusId,bool>(
-                X.Document.Id,
-                X.Document.CompanyUserId,
-                X.Document.DocumentStatusId,
-                X.Applications.Any(companyApplication => companyApplication.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
-            )).SingleOrDefaultAsync();
-    public void AttachAndModifyDocument(Guid documentId, Action<Document> setOptionalParameters)
-    {
-        var document = _dbContext.Attach(new Document(documentId,default!, default!, default!,default,default,default)).Entity;
-        setOptionalParameters.Invoke(document);
-    }
 }
