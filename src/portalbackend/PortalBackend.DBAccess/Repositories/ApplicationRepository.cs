@@ -116,8 +116,7 @@ public class ApplicationRepository : IApplicationRepository
                     Streetadditional = companyApplication.Company.Address.Streetadditional,
                     Streetnumber = companyApplication.Company.Address.Streetnumber,
                     Zipcode = companyApplication.Company.Address.Zipcode,
-                    CountryDe = companyApplication.Company.Address.Country!.CountryNameDe, // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
-                    TaxId = companyApplication.Company.TaxId
+                    CountryDe = companyApplication.Company.Address.Country!.CountryNameDe // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
                 })
             .AsNoTracking()
             .SingleOrDefaultAsync();
