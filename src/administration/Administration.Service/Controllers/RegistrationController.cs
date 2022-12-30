@@ -71,7 +71,7 @@ public class RegistrationController : ControllerBase
     /// <param name="companyName">search by company name</param>
     /// <returns>Company Application Details</returns>
     /// <remarks>
-    /// Example: GET: api/administration/registration/applications?companyName=Car&amp;page=0&amp;size=4&amp;companyApplicationStatus=Closed <br />
+    /// Example: GET: api/administration/registration/applications?companyName=Car&amp;page=0&amp;size=4<br />
     /// Example: GET: api/administration/registration/applications?page=0&amp;size=4
     /// </remarks>
     /// <response code="200">Result as a Company Application Details</response>
