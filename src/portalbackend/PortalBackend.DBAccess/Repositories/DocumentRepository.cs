@@ -118,6 +118,5 @@ public class DocumentRepository : IDocumentRepository
                 x.Applications.Any(companyApplication => companyApplication.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)),
                 x.Document.DocumentTypeId,
                 x.Applications.Any(companyApplication => applicationStatusIds.Contains(companyApplication.ApplicationStatusId))))
-            .SingleOrDefaultAsync();
-    
+            .SingleOrDefaultAsync();    
 }
