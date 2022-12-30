@@ -380,6 +380,29 @@ public class AppBusinessLogicTests
 
     #endregion
 
+    #region  DeactivateOfferStatusbyAppId
+
+    [Fact]
+    public async Task DeactivateOfferStatusbyAppIdAsync_CallsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var settings = new AppsSettings
+        {
+            ServiceManagerRoles = _fixture.Create<Dictionary<string, IEnumerable<string>>>(),
+            BasePortalAddress = "test"
+        };
+        var sut = new AppsBusinessLogic(null!,null!, _offerService, Options.Create(settings), _mailingService);
+        
+        // Act
+        await sut.DeactivateOfferStatusbyAppIdAsync(appId, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.DeactivateOfferStatusIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
     private (CompanyUser, IamUser) CreateTestUserPair()
     {
         var companyUser = _fixture.Build<CompanyUser>()

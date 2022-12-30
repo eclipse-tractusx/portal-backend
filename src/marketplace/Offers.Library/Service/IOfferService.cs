@@ -169,4 +169,11 @@ public interface IOfferService
     /// <param name="notificationRecipients">Recipients of the notifications</param>
     /// <param name="basePortalAddress">the base portal address</param>
     Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string,IEnumerable<string>> notificationRecipients, string basePortalAddress);
+ 
+    /// <summary>
+    /// Deactivate the given offerStatus by appsId
+    /// </summary>
+    /// <param name="appId">Id of the offer that should be Deactivate</param>
+    /// <param name="iamUserId">Id of the iam User</param>
+    Task DeactivateOfferStatusIdAsync(Guid appId, string iamUserId);
 }

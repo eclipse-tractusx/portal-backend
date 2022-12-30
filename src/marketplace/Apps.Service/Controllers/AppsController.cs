@@ -320,4 +320,24 @@ public class AppsController : ControllerBase
         await this.WithIamUserId(userId => _appsBusinessLogic.DeclineAppRequestAsync(appId, userId, data)).ConfigureAwait(false);
         return NoContent();
     }
+    /// <summary>
+    /// Deactivate the OfferStatus By appId
+    /// </summary>
+    /// <param name="appId" example="3c77a395-a7e7-40f2-a519-ac16498e0a79">Id of the app that should be deactive</param>
+    /// <remarks>Example: PUT: /api/apps/3c77a395-a7e7-40f2-a519-ac16498e0a79/deactivate</remarks>
+    /// <response code="204">The App Successfully Deactivated</response>
+    /// <response code="400">invalid or user does not exist.</response>
+    /// <response code="404">If app does not exists.</response>
+    [HttpPut]
+    [Route("{appId:guid}/deactivate")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
+    {
+        await this.WithIamUserId(userId => _appsBusinessLogic.DeactivateOfferStatusbyAppIdAsync(appId,userId)).ConfigureAwait(false);
+        return NoContent();
+    }
+
 }

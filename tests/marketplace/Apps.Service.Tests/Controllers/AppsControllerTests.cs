@@ -324,4 +324,20 @@ public class AppsControllerTests
         A.CallTo(() => _logic.DeclineAppRequestAsync(appId, IamUserId, data)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
+
+    [Fact]
+    public async Task DeactivateApp_ReturnsNoContent()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.DeactivateOfferStatusbyAppIdAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+        
+        //Act
+        var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);
+        
+        //Assert
+        A.CallTo(() => _logic.DeactivateOfferStatusbyAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>(); 
+    }
 }
