@@ -49,7 +49,7 @@ public class CompanyApplicationDetails
     [JsonPropertyName("documents")]
     public IEnumerable<DocumentDetails> Documents { get; set; }
     [JsonPropertyName("companyRoles")]
-    public IEnumerable<string>? CompanyRoles { get; set; }
+    public IEnumerable<string> CompanyRoles { get; set; }
 }
 
 public class DocumentDetails
