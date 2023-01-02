@@ -22,7 +22,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
 public class CompanyApplicationDetails
 {
     public CompanyApplicationDetails(Guid applicationId, CompanyApplicationStatusId companyApplicationStatusId, DateTimeOffset dateCreated, string companyName, IEnumerable<DocumentDetails> documents)
