@@ -380,7 +380,7 @@ public class AppBusinessLogicTests
 
     #endregion
 
-    #region  DeactivateOfferStatusbyAppId
+    #region  DeactivateOfferbyAppId
 
     [Fact]
     public async Task DeactivateOfferStatusbyAppIdAsync_CallsExpected()
@@ -395,10 +395,10 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(null!,null!, _offerService, Options.Create(settings), _mailingService);
         
         // Act
-        await sut.DeactivateOfferStatusbyAppIdAsync(appId, IamUserId).ConfigureAwait(false);
+        await sut.DeactivateOfferbyAppIdAsync(appId, IamUserId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.DeactivateOfferStatusIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.DeactivateOfferIdAsync(appId, IamUserId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

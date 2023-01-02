@@ -330,14 +330,14 @@ public class AppsControllerTests
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.DeactivateOfferStatusbyAppIdAsync(A<Guid>._, A<string>._))
+        A.CallTo(() => _logic.DeactivateOfferbyAppIdAsync(A<Guid>._, A<string>._))
             .ReturnsLazily(() => Task.CompletedTask);
         
         //Act
         var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);
         
         //Assert
-        A.CallTo(() => _logic.DeactivateOfferStatusbyAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeactivateOfferbyAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>(); 
     }
 }
