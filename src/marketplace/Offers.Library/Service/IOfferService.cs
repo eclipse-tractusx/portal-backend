@@ -175,5 +175,6 @@ public interface IOfferService
     /// </summary>
     /// <param name="appId">Id of the offer that should be Deactivate</param>
     /// <param name="iamUserId">Id of the iam User</param>
+    /// <param name="offerTypeId">Type of the offer</param>
     Task DeactivateOfferIdAsync(Guid appId, string iamUserId, OfferTypeId offerTypeId);
 }
