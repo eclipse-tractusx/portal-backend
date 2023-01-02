@@ -207,7 +207,7 @@ public class OfferRepository : IOfferRepository
             .Select(app => new AllAppData(
                 app.Id,
                 app.Name,
-                app.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).SingleOrDefault(),
+                app.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 app.Provider,
                 app.OfferStatusId,
                 app.DateLastChanged
