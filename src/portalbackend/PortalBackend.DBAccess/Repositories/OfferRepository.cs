@@ -485,12 +485,11 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
 
     ///<inheritdoc/>
-    public Task<(bool IsStatusActive,OfferStatusId OfferStatus, bool IsUserCompanyProvider)> GetOfferActiveStatusDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId) =>
+    public Task<(bool IsStatusActive, bool IsUserCompanyProvider)> GetOfferActiveStatusDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId) =>
         _context.Offers
             .Where(offer => offer.Id == appId && offer.OfferTypeId == offerTypeId)
-            .Select(offer => new ValueTuple<bool,OfferStatusId, bool>(
+            .Select(offer => new ValueTuple<bool, bool>(
                 offer.OfferStatusId == OfferStatusId.ACTIVE,
-                offer.OfferStatusId,
                 offer.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
 }

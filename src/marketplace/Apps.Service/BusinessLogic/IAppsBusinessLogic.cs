@@ -159,5 +159,5 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="appId">Id of the app</param>
     /// <param name="iamUserId">Id of the iamUser</param>
-    public Task DeactivateOfferStatusbyAppIdAsync(Guid appId, string iamUserId);
+    public Task DeactivateOfferbyAppIdAsync(Guid appId, string iamUserId);
 }

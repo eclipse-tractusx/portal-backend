@@ -1111,12 +1111,12 @@ public class OfferServiceTests
         // Arrange
         var notExistingId = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(notExistingId, offerTypeId, _iamUserId))
-            .ReturnsLazily(() => new ValueTuple<bool, OfferStatusId, bool>());
+            .ReturnsLazily(() => new ValueTuple<bool, bool>());
     
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
         // Act
-        async Task Act() => await sut.DeactivateOfferStatusIdAsync(notExistingId,_iamUserId).ConfigureAwait(false);
+        async Task Act() => await sut.DeactivateOfferIdAsync(notExistingId,_iamUserId, offerTypeId).ConfigureAwait(false);
 
         // Assert
         await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -1129,12 +1129,12 @@ public class OfferServiceTests
         // Arrange
         var appid = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(appid, offerTypeId, _iamUserId))
-            .ReturnsLazily(() => new ValueTuple<bool, OfferStatusId, bool>(false,OfferStatusId.IN_REVIEW, false));
+            .ReturnsLazily(() => new ValueTuple<bool, bool>(true, false));
     
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
         // Act
-        async Task Act() => await sut.DeactivateOfferStatusIdAsync(appid,_iamUserId).ConfigureAwait(false);
+        async Task Act() => await sut.DeactivateOfferIdAsync(appid, _iamUserId, offerTypeId).ConfigureAwait(false);
         
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
@@ -1149,12 +1149,12 @@ public class OfferServiceTests
         // Arrange
         var appid = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(appid, offerTypeId, _iamUserId))
-            .ReturnsLazily(() => new ValueTuple<bool, OfferStatusId, bool>(false,OfferStatusId.IN_REVIEW, true));
+            .ReturnsLazily(() => new ValueTuple<bool, bool>(false, true));
     
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
         // Act
-        async Task Act() => await sut.DeactivateOfferStatusIdAsync(appid,_iamUserId).ConfigureAwait(false);
+        async Task Act() => await sut.DeactivateOfferIdAsync(appid,_iamUserId, offerTypeId).ConfigureAwait(false);
         
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -1170,7 +1170,7 @@ public class OfferServiceTests
         var offer = _fixture.Create<Offer>();
         var appid = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(appid, offerTypeId, _iamUserId))
-            .ReturnsLazily(() => new ValueTuple<bool, OfferStatusId, bool>(true,OfferStatusId.ACTIVE, true));
+            .ReturnsLazily(() => new ValueTuple<bool, bool>(true, true));
         
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(appid, A<Action<Offer>>._, A<Action<Offer>?>._))
             .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
@@ -1181,7 +1181,7 @@ public class OfferServiceTests
                 var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
         // Act
-        await sut.DeactivateOfferStatusIdAsync(appid,_iamUserId).ConfigureAwait(false);
+        await sut.DeactivateOfferIdAsync(appid,_iamUserId, offerTypeId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(appid, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();

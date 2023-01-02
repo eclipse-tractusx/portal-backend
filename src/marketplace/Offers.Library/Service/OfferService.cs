@@ -665,10 +665,10 @@ public class OfferService : IOfferService
         }
     }
 
-    public async Task DeactivateOfferStatusIdAsync(Guid appId, string iamUserId)
+    public async Task DeactivateOfferIdAsync(Guid appId, string iamUserId, OfferTypeId offerTypeId)
     {
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var appdata =  await appRepository.GetOfferActiveStatusDataByIdAsync(appId, OfferTypeId.APP, iamUserId).ConfigureAwait(false);
+        var appdata =  await appRepository.GetOfferActiveStatusDataByIdAsync(appId, offerTypeId, iamUserId).ConfigureAwait(false);
         if(appdata == default)
         {
             throw new NotFoundException($"App {appId} does not exist.");
