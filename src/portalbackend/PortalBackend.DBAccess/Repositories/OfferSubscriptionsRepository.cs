@@ -176,7 +176,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 offerSubscription.Id,
                 offerSubscription.Offer!.Name,
                 offerSubscription.AppSubscriptionDetail!.AppSubscriptionUrl!,
-                offerSubscription.Offer!.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).SingleOrDefault(),
+                offerSubscription.Offer!.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 offerSubscription.Offer!.Provider
             )).ToAsyncEnumerable();
 }
