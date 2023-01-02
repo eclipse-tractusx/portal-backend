@@ -100,7 +100,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         return new AppDetailResponse(
             result.Id,
             result.Title ?? Constants.ErrorString,
-            result.LeadPictureUri ?? Constants.ErrorString,
+            result.LeadPictureId,
             result.DetailPictureUris,
             result.ProviderUri ?? Constants.ErrorString,
             result.Provider,
