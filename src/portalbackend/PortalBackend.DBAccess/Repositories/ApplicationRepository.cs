@@ -92,7 +92,7 @@ public class ApplicationRepository : IApplicationRepository
             .Select(application => new {
                 Application = application, 
                 CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).SingleOrDefault(),
-                Documents = application.Company!.CompanyUsers.SelectMany(companyUser => companyUser.Documents)
+                Documents = application.Company!.CompanyUsers.SelectMany(companyUser => companyUser.Documents).Where(Doc => Doc.DocumentStatusId != DocumentStatusId.LOCKED)
                     .Select(document => new { document.Id, document.DocumentStatusId })
             })
             .Select(data => new CompanyApplicationUserEmailData(

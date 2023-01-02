@@ -130,16 +130,16 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region AttachandModifyDocument
+    #region AttachAndModifyDocument
 
     [Fact]
-    public async Task AttachandModifyDocument_ReturnsExpectedResult()
+    public async Task AttachAndModifyDocument_ReturnsExpectedResult()
     {
         // Arrange
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        sut.AttachandModifyDocuments(Guid.NewGuid(),
+        sut.AttachAndModifyDocument(Guid.NewGuid(),
             docstatusId =>{ docstatusId.DocumentStatusId = DocumentStatusId.LOCKED; });
 
         // Assert

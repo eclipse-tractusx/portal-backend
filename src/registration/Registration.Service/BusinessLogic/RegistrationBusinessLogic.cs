@@ -427,13 +427,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
             foreach(var document in applicationUserData.DocumentDatas)
             {
-                if(document.StatusId != DocumentStatusId.LOCKED)
-                {
-                    documentRepository.AttachandModifyDocuments(document.documentId, doc =>
-                        doc.DocumentStatusId = DocumentStatusId.LOCKED);
-                }
+                documentRepository.AttachAndModifyDocument(document.documentId, doc =>
+                    doc.DocumentStatusId = DocumentStatusId.LOCKED);
             }
-        } 
+        }
+        
         UpdateApplicationStatus(applicationId, applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration, applicationRepository);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 

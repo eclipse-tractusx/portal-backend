@@ -119,10 +119,11 @@ public class DocumentRepository : IDocumentRepository
                 x.Document.DocumentTypeId,
                 x.Applications.Any(companyApplication => applicationStatusIds.Contains(companyApplication.ApplicationStatusId))))
             .SingleOrDefaultAsync();
-    public void AttachandModifyDocuments(Guid documnetId, Action<Document> setOptionalParameters)
+
+    /// <inheritdoc />
+    public void AttachAndModifyDocument(Guid documnetId, Action<Document> setOptionalParameters)
     {
         var document = _dbContext.Attach(new Document(documnetId, default!, default!, default!, default,default, default)).Entity;
         setOptionalParameters.Invoke(document);
     }
-    
 }
