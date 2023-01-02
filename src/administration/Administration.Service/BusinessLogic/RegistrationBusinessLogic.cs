@@ -433,20 +433,21 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     }
 
     private static IEnumerable<CompanyApplicationStatusId> GetCompanyApplicationStatusId(CompanyApplicationStatusFilter? companyApplicationStatusFilter = null)
-    {
-        IEnumerable<CompanyApplicationStatusId> companyApplicationStatusId = default!;
-        if (companyApplicationStatusFilter == null)
+     {
+        switch(companyApplicationStatusFilter)
         {
-            companyApplicationStatusId = new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
-        }
-        else if (companyApplicationStatusFilter!.Equals(CompanyApplicationStatusFilter.Closed))
-        {
-            companyApplicationStatusId = new []{ CompanyApplicationStatusId.SUBMITTED };
-        }
-        else if (companyApplicationStatusFilter!.Equals(CompanyApplicationStatusFilter.InReview))
-        {
-            companyApplicationStatusId = new []{ CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
-        }
-        return companyApplicationStatusId;        
+            case CompanyApplicationStatusFilter.Closed :
+            {
+                return new []{ CompanyApplicationStatusId.SUBMITTED };
+            }
+            case CompanyApplicationStatusFilter.InReview :
+            {
+                return new []{ CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };  
+            }
+            default :
+            {
+              return new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };                 
+            }
+        }  
     }
 }
