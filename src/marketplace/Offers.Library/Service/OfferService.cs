@@ -374,7 +374,7 @@ public class OfferService : IOfferService
         return new OfferProviderResponse(
             data.Title,
             data.Provider,
-            data.LeadPictureUri,
+            data.LeadPictureId,
             data.ProviderName,
             data.UseCase,
             data.Descriptions,
