@@ -85,10 +85,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return companyWithAddress;
     }
 
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size,CompanyApplicationStatusFilter? companyApplicationStatus = null, string? companyName = null)
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size,CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null)
     {
         var applications = _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationsFilteredQuery(
-            companyName?.Length >= 3 ? companyName : null,UpdateCompanyApplicationStatusId(companyApplicationStatus));
+            companyName?.Length >= 3 ? companyName : null,GetCompanyApplicationStatusId(companyApplicationStatusFilter));
 
         return Pagination.CreateResponseAsync(
             page,
@@ -432,10 +432,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return roleData;
     }
 
-    private static IEnumerable<CompanyApplicationStatusId> UpdateCompanyApplicationStatusId(CompanyApplicationStatusFilter? companyApplicationStatusFilter = null)
+    private static IEnumerable<CompanyApplicationStatusId> GetCompanyApplicationStatusId(CompanyApplicationStatusFilter? companyApplicationStatusFilter = null)
     {
-        IEnumerable<CompanyApplicationStatusId>? companyApplicationStatusId =new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
-        if (companyApplicationStatusFilter!.Equals(CompanyApplicationStatusFilter.Closed))
+        IEnumerable<CompanyApplicationStatusId> companyApplicationStatusId = default!;
+        if (companyApplicationStatusFilter == null)
+        {
+            companyApplicationStatusId = new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
+        }
+        else if (companyApplicationStatusFilter!.Equals(CompanyApplicationStatusFilter.Closed))
         {
             companyApplicationStatusId = new []{ CompanyApplicationStatusId.SUBMITTED };
         }
