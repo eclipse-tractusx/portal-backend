@@ -202,10 +202,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         var company = companyApplicationData.CompanyApplication.Company!;
-
-        company.BusinessPartnerNumber = companyWithAddress.BusinessPartnerNumber;
-        company.Name = companyWithAddress.Name;
-        company.Shortname = companyWithAddress.Shortname;
+        
         if (company.Address == null)
         {
             company.Address = _portalRepositories.GetInstance<ICompanyRepository>().CreateAddress(
@@ -225,10 +222,20 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         company.Address.Region = companyWithAddress.Region;
         company.Address.Streetadditional = companyWithAddress.Streetadditional;
         company.Address.Streetnumber = companyWithAddress.Streetnumber;
-        company.CompanyStatusId = CompanyStatusId.PENDING;
+
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(company.Id, c =>
+       {
+           c.BusinessPartnerNumber = companyWithAddress.BusinessPartnerNumber;
+           c.Name = companyWithAddress.Name;
+           c.Shortname = companyWithAddress.Shortname;
+           c.CompanyStatusId = CompanyStatusId.PENDING;
+           if (c.AddressId == null)
+           {
+               c.AddressId = company.Address.Id;
+           }
+       });
 
         UpdateApplicationStatus(applicationId, companyApplicationData.CompanyApplication.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository);
-
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
