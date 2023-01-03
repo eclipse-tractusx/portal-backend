@@ -80,6 +80,13 @@ public interface IDocumentRepository
     Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, string iamUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
 
     /// <summary>
+    /// Attaches the document and sets the optional parameters
+    /// </summary>
+    /// <param name="documentId">Id of the document</param>
+    /// <param name="setOptionalParameters">Action to set the optional parameters</param>
+    void AttachAndModifyDocument(Guid documentId, Action<Document> setOptionalParameters);
+
+    /// <summary>
     /// Gets the document seed data for the given id
     /// </summary>
     /// <param name="documentId">Id of the document</param>
