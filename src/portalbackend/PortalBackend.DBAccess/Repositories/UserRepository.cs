@@ -79,8 +79,7 @@ public class UserRepository : IUserRepository
                 Streetadditional = company.Address.Streetadditional,
                 Streetnumber = company.Address.Streetnumber,
                 Zipcode = company.Address.Zipcode,
-                CountryDe = company.Address.Country!.CountryNameDe,
-                TaxId = company.TaxId
+                CountryDe = company.Address.Country!.CountryNameDe
             }).SingleOrDefaultAsync();
 
     public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId,
@@ -347,12 +346,24 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<Guid> GetCompanyUserWithRoleId(IEnumerable<Guid> userRoleIds) =>
+    public IAsyncEnumerable<Guid> GetCompanyUserWithRoleIdForCompany(IEnumerable<Guid> userRoleIds, Guid companyId) =>
         _dbContext.CompanyUsers
             .Where(x => 
+                x.CompanyId == companyId &&
                 x.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && 
                 x.UserRoles.Any(ur => userRoleIds.Contains(ur.Id)))
             .Select(x => x.Id)
+            .ToAsyncEnumerable();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<string> GetCompanyUserEmailForCompanyAndRoleId(IEnumerable<Guid> userRoleIds, Guid companyId) =>
+        _dbContext.CompanyUsers
+            .Where(x => 
+                x.CompanyId == companyId &&
+                x.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && 
+                x.UserRoles.Any(ur => userRoleIds.Contains(ur.Id)) &&
+                x.Email != null)
+            .Select(x => x.Email!)
             .ToAsyncEnumerable();
 
     /// <inheritdoc />

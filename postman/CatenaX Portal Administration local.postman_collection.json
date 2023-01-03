@@ -659,29 +659,29 @@
 					"mode": "formdata",
 					"formdata": [
 						{
-							"key": "name",
-							"value": " Connector23",
+							"key": "Name",
+							"value": "Connector23",
 							"type": "text"
 						},
 						{
-							"key": "connectorUrl",
-							"value": " www.google.de",
+							"key": "ConnectorUrl",
+							"value": "http://www.google.de",
 							"type": "text"
 						},
 						{
-							"key": "status",
-							"value": " PENDING",
+							"key": "Status",
+							"value": "PENDING",
 							"type": "text"
 						},
 						{
-							"key": "location",
-							"value": " DE",
+							"key": "Location",
+							"value": "DE",
 							"type": "text"
 						},
 						{
-							"key": "certificate",
+							"key": "Certificate",
 							"type": "file",
-							"src": []
+							"src": "/C:/Users/pisn/projects/BMW/test.cert"
 						}
 					],
 					"options": {
@@ -691,7 +691,7 @@
 					}
 				},
 				"url": {
-					"raw": "https://localhost:5001/api/administration/connectors-daps/",
+					"raw": "https://localhost:5001/api/administration/connectors/daps/",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -700,7 +700,8 @@
 					"path": [
 						"api",
 						"administration",
-						"connectors-daps",
+						"connectors",
+						"daps",
 						""
 					]
 				}
@@ -780,54 +781,6 @@
 			"response": []
 		},
 		{
-			"name": "Create Managed Connector - DAPS Copy",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJvTGI2ZDRTaWRUZXFQM1N5Y0EzeVpacFRkQm5FQnlTUGI3blRoWGkxQ0dZIn0.eyJleHAiOjE2NjQ0NTYzNDQsImlhdCI6MTY2NDQ1NjA0NCwianRpIjoiZjA1NmQ4ZDctN2U5MS00MzgxLTlhNzktYzYxMjFmN2E5NjQzIiwiaXNzIjoiaHR0cHM6Ly9kZXZob3N0Ojg0NDMvaWFtY2VudHJhbC9hdXRoL3JlYWxtcy9DWC1DZW50cmFsIiwiYXVkIjpbIkNsMS1DWC1SZWdpc3RyYXRpb24iLCJDbDItQ1gtUG9ydGFsIl0sInN1YiI6IjM1ZjYxOTg3LTg0MzAtNDIwMS1iY2YxLTQ1OWRiYTQxNjU4NyIsInR5cCI6IkJlYXJlciIsImF6cCI6InNhMSIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cHM6Ly9udWxsIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsImRlZmF1bHQtcm9sZXMtY2F0ZW5hLXggcmVhbG0iLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7IkNsMS1DWC1SZWdpc3RyYXRpb24iOnsicm9sZXMiOlsiaW52aXRlX3VzZXIiLCJnZXRfZG9jdW1lbnRzIiwidXBsb2FkX2RvY3VtZW50cyIsImFkZF9jb21wYW55X2RhdGEiLCJzdWJtaXRfcmVnaXN0cmF0aW9uIiwic2lnbl9jb25zZW50Iiwidmlld19yZWdpc3RyYXRpb24iLCJDb21wYW55IEFkbWluIiwidmlld19jb21wYW55X3JvbGVzIl19LCJDbDItQ1gtUG9ydGFsIjp7InJvbGVzIjpbInZpZXdfc2VydmljZV9tYXJrZXRwbGFjZSIsImZpbHRlcl9hcHBzIiwidmlld19hcHBzIiwiRGV2ZWxvcGVyIiwiYWRkX2FwcCJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsIkJQTiI6IlBTSU4wMDAwMDAwMUFCQ0QiLCJjbGllbnRIb3N0IjoiMTAuMC4wLjIiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImNsaWVudElkIjoic2ExIiwicHJlZmVycmVkX3VzZXJuYW1lIjoic2VydmljZS1hY2NvdW50LXNhMSIsImNsaWVudEFkZHJlc3MiOiIxMC4wLjAuMiJ9.cyyYgPogcmn2OffMQiljhYyuKpYcuKqGSdXCR6ufSA78vMzBxehY04FY3pG2Gcv8Xp8O0VitPy57PTUs6PX3UiyMKKMkflaFFBkzg5dNOTtLmwHymHrGbtJF7xg30Kxlvwy2mqErl76O_2mJZZ42G5Kddm3AkoFpRIFoInmTERB8K0UsBmyCvXxVmsr3TtoBeI78T9sqLLvnMR5Pawe2a-DNJDBYe5WTUR22Li_SZj2k-1gvMHE2mB4FSZp6XUCRgM29yqlkhy__1cSskPGKPMisZHwQwoSTKTkIjoracs5Xd5owEDtgAzY1aT5Kp35dni06o_Mesr3q-7P3pTyLwA",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "certificate",
-							"type": "file",
-							"src": []
-						}
-					],
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "https://localhost:5001/api/administration/connectors/trigger-daps/{{connectorId}}",
-					"protocol": "https",
-					"host": [
-						"localhost"
-					],
-					"port": "5001",
-					"path": [
-						"api",
-						"administration",
-						"connectors",
-						"trigger-daps",
-						"{{connectorId}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "Trigger Bpn Data Push",
 			"request": {
 				"auth": {
@@ -835,15 +788,15 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "{{keycloakToken}}",
+							"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJvTGI2ZDRTaWRUZXFQM1N5Y0EzeVpacFRkQm5FQnlTUGI3blRoWGkxQ0dZIn0.eyJleHAiOjE2NTY0MDQxOTMsImlhdCI6MTY1NjQwMzg5MywiYXV0aF90aW1lIjoxNjU2NDAxMzg1LCJqdGkiOiIyMTMyOWJkMi01MWY3LTRmYzctYTAwYS00ZmFlYWNmZDBkOTgiLCJpc3MiOiJodHRwczovL2Rldmhvc3Q6ODQ0My9pYW1jZW50cmFsL2F1dGgvcmVhbG1zL0NYLUNlbnRyYWwiLCJhdWQiOlsiQ2wyLUNYLVBvcnRhbCIsIkNsMS1DWC1SZWdpc3RyYXRpb24iXSwic3ViIjoiZTliMWMwZTQtOTUzZC00NTM5LWI3MDMtZGNhOWU5MTFlYWI1IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiQ2wyLUNYLVBvcnRhbCIsIm5vbmNlIjoiZTg1NzIwYjEtYTE2Ni00Mjk0LWIyZjItNjdhZTI2ZTE1MDQyIiwic2Vzc2lvbl9zdGF0ZSI6IjVkZmQwZTdmLTk4ZDktNDVhNS1hY2RjLTA1YzdkODQzODdjZSIsImFjciI6IjAiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cHM6Ly9jYXRlbmF4aW50YWtzc3J2Lmdlcm1hbnl3ZXN0Y2VudHJhbC5jbG91ZGFwcC5henVyZS5jb20iLCJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJodHRwczovL2NhdGVuYXhpbnRha3Nwb3J0YWwuZ2VybWFueXdlc3RjZW50cmFsLmNsb3VkYXBwLmF6dXJlLmNvbSJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJkZWZhdWx0LXJvbGVzLWNhdGVuYS14IHJlYWxtIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJDbDEtQ1gtUmVnaXN0cmF0aW9uIjp7InJvbGVzIjpbImludml0ZV91c2VyIiwiQ1ggQWRtaW4iLCJ1cGxvYWRfZG9jdW1lbnRzIiwiYWRkX2NvbXBhbnlfZGF0YSIsInN1Ym1pdF9yZWdpc3RyYXRpb24iLCJzaWduX2NvbnNlbnQiLCJDb21wYW55IEFkbWluIiwidmlld19yZWdpc3RyYXRpb24iXX0sIkNsMi1DWC1Qb3J0YWwiOnsicm9sZXMiOlsidmlld19zdWJtaXR0ZWRfYXBwbGljYXRpb25zIiwidmlld19jbGllbnRfcm9sZXMiLCJkZWxldGVfZG9jdW1lbnRzIiwiYWRkX3NlbWFudGljX21vZGVsIiwidmlld19kb2N1bWVudHMiLCJhZGRfZGlnaXRpYWxfdHdpbiIsInNldHVwX2Nvbm5lY3RvciIsInZpZXdfdGVjaF91c2VyX21hbmFnZW1lbnQiLCJhZGRfdXNlcl9hY2NvdW50IiwiYXBwcm92ZV9uZXdfcGFydG5lciIsImRlbGV0ZV91c2VyX2FjY291bnQiLCJhZGRfYXBwIiwiZGVsZXRlX3RlY2hfdXNlcl9tYW5hZ2VtZW50IiwiYWRkX3RlY2hfdXNlcl9tYW5hZ2VtZW50Iiwidmlld19zZW1hbnRpY19odWIiLCJDWCBBZG1pbiIsImZpbHRlcl9hcHBzIiwic2V0dXBfaWRwIiwiaW52aXRlX25ld19wYXJ0bmVyIiwidmlld191c2VyX21hbmFnZW1lbnQiLCJ2aWV3X2RpZ2l0YWxfdHdpbnMiLCJ2aWV3X2FwcHMiLCJlZGl0X2FwcHMiLCJkZWxldGVfYXBwcyJdfX0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJzaWQiOiI1ZGZkMGU3Zi05OGQ5LTQ1YTUtYWNkYy0wNWM3ZDg0Mzg3Y2UiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6IlRlc3R1c2VyIERldmhvc3QiLCJvcmdhbmlzYXRpb24iOiJEZXZob3N0IFNoYXJlZCBJZHAiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJpZHAxLjZlYzQ2Y2Q0LTVhZWMtNDZjMy04OGRjLTJhMjgzOTk0YWI5MiIsImdpdmVuX25hbWUiOiJUZXN0dXNlciIsImZhbWlseV9uYW1lIjoiRGV2aG9zdCIsImVtYWlsIjoibm8uZW1haWxAY2F0ZW5hLm5ldCIsInRlbmFudCI6ImlkcDEifQ.bt5uzFIHXgoeiiKTSYMv5x4ukuvY7VYg0HZCrAFiDAHwvTPxgVZEuhH-kj0ZpEI-A2BO5dVdKr6282gqSUov8QlLOq3xHzBAFHkVc8oH-255IlCWSr2D2UR3XGd7cVQdQyHvYihqSzxqXMdiRHR6O2CTmFi67YURIJ5m0d834benFOJloWVL9Uj3043-m_AjPAJBT83wn6ng0fHDQSNxgtFqnmoMIq4U2uU7haEtj6Jp8N_wdrAnjdfRlk7FTWUDF9fZk6xk6mebR-sZrclSGJllK7rKy0n1NwJKEViJlQjNdBnPsyje4QB_z6gY8xRwOrTUpKV2CjLpffiRBhwDRA",
 							"type": "string"
 						}
 					]
 				},
-				"method": "PUT",
+				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5001/api/administration/registration/application/ba8dfc9d-1445-436d-922c-8a7c976d2e12/trigger-bpn",
+					"raw": "https://localhost:5001/api/administration/registration/application/34cec189-cdd8-4507-9dfc-54b26d418982/trigger-bpn",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -854,8 +807,40 @@
 						"administration",
 						"registration",
 						"application",
-						"ba8dfc9d-1445-436d-922c-8a7c976d2e12",
+						"34cec189-cdd8-4507-9dfc-54b26d418982",
 						"trigger-bpn"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Connector",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJvTGI2ZDRTaWRUZXFQM1N5Y0EzeVpacFRkQm5FQnlTUGI3blRoWGkxQ0dZIn0.eyJleHAiOjE2NTY0MDQxOTMsImlhdCI6MTY1NjQwMzg5MywiYXV0aF90aW1lIjoxNjU2NDAxMzg1LCJqdGkiOiIyMTMyOWJkMi01MWY3LTRmYzctYTAwYS00ZmFlYWNmZDBkOTgiLCJpc3MiOiJodHRwczovL2Rldmhvc3Q6ODQ0My9pYW1jZW50cmFsL2F1dGgvcmVhbG1zL0NYLUNlbnRyYWwiLCJhdWQiOlsiQ2wyLUNYLVBvcnRhbCIsIkNsMS1DWC1SZWdpc3RyYXRpb24iXSwic3ViIjoiZTliMWMwZTQtOTUzZC00NTM5LWI3MDMtZGNhOWU5MTFlYWI1IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiQ2wyLUNYLVBvcnRhbCIsIm5vbmNlIjoiZTg1NzIwYjEtYTE2Ni00Mjk0LWIyZjItNjdhZTI2ZTE1MDQyIiwic2Vzc2lvbl9zdGF0ZSI6IjVkZmQwZTdmLTk4ZDktNDVhNS1hY2RjLTA1YzdkODQzODdjZSIsImFjciI6IjAiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cHM6Ly9jYXRlbmF4aW50YWtzc3J2Lmdlcm1hbnl3ZXN0Y2VudHJhbC5jbG91ZGFwcC5henVyZS5jb20iLCJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJodHRwczovL2NhdGVuYXhpbnRha3Nwb3J0YWwuZ2VybWFueXdlc3RjZW50cmFsLmNsb3VkYXBwLmF6dXJlLmNvbSJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJkZWZhdWx0LXJvbGVzLWNhdGVuYS14IHJlYWxtIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJDbDEtQ1gtUmVnaXN0cmF0aW9uIjp7InJvbGVzIjpbImludml0ZV91c2VyIiwiQ1ggQWRtaW4iLCJ1cGxvYWRfZG9jdW1lbnRzIiwiYWRkX2NvbXBhbnlfZGF0YSIsInN1Ym1pdF9yZWdpc3RyYXRpb24iLCJzaWduX2NvbnNlbnQiLCJDb21wYW55IEFkbWluIiwidmlld19yZWdpc3RyYXRpb24iXX0sIkNsMi1DWC1Qb3J0YWwiOnsicm9sZXMiOlsidmlld19zdWJtaXR0ZWRfYXBwbGljYXRpb25zIiwidmlld19jbGllbnRfcm9sZXMiLCJkZWxldGVfZG9jdW1lbnRzIiwiYWRkX3NlbWFudGljX21vZGVsIiwidmlld19kb2N1bWVudHMiLCJhZGRfZGlnaXRpYWxfdHdpbiIsInNldHVwX2Nvbm5lY3RvciIsInZpZXdfdGVjaF91c2VyX21hbmFnZW1lbnQiLCJhZGRfdXNlcl9hY2NvdW50IiwiYXBwcm92ZV9uZXdfcGFydG5lciIsImRlbGV0ZV91c2VyX2FjY291bnQiLCJhZGRfYXBwIiwiZGVsZXRlX3RlY2hfdXNlcl9tYW5hZ2VtZW50IiwiYWRkX3RlY2hfdXNlcl9tYW5hZ2VtZW50Iiwidmlld19zZW1hbnRpY19odWIiLCJDWCBBZG1pbiIsImZpbHRlcl9hcHBzIiwic2V0dXBfaWRwIiwiaW52aXRlX25ld19wYXJ0bmVyIiwidmlld191c2VyX21hbmFnZW1lbnQiLCJ2aWV3X2RpZ2l0YWxfdHdpbnMiLCJ2aWV3X2FwcHMiLCJlZGl0X2FwcHMiLCJkZWxldGVfYXBwcyJdfX0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJzaWQiOiI1ZGZkMGU3Zi05OGQ5LTQ1YTUtYWNkYy0wNWM3ZDg0Mzg3Y2UiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6IlRlc3R1c2VyIERldmhvc3QiLCJvcmdhbmlzYXRpb24iOiJEZXZob3N0IFNoYXJlZCBJZHAiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJpZHAxLjZlYzQ2Y2Q0LTVhZWMtNDZjMy04OGRjLTJhMjgzOTk0YWI5MiIsImdpdmVuX25hbWUiOiJUZXN0dXNlciIsImZhbWlseV9uYW1lIjoiRGV2aG9zdCIsImVtYWlsIjoibm8uZW1haWxAY2F0ZW5hLm5ldCIsInRlbmFudCI6ImlkcDEifQ.bt5uzFIHXgoeiiKTSYMv5x4ukuvY7VYg0HZCrAFiDAHwvTPxgVZEuhH-kj0ZpEI-A2BO5dVdKr6282gqSUov8QlLOq3xHzBAFHkVc8oH-255IlCWSr2D2UR3XGd7cVQdQyHvYihqSzxqXMdiRHR6O2CTmFi67YURIJ5m0d834benFOJloWVL9Uj3043-m_AjPAJBT83wn6ng0fHDQSNxgtFqnmoMIq4U2uU7haEtj6Jp8N_wdrAnjdfRlk7FTWUDF9fZk6xk6mebR-sZrclSGJllK7rKy0n1NwJKEViJlQjNdBnPsyje4QB_z6gY8xRwOrTUpKV2CjLpffiRBhwDRA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/api/administration/connectors/",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"administration",
+						"connectors",
+						""
 					]
 				}
 			},
