@@ -301,7 +301,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// Submits a registration
         /// </summary>
         /// <returns>Returns ok</returns>
-        /// <remarks>Example: Post: /api/registration/submitregistration</remarks>
+        /// <remarks>Example: Post: /api/registration/submitRegistration</remarks>
         /// <response code="200">Successfully submitted the registration</response>
         [HttpPost]
         [Authorize(Roles = "submit_registration")]

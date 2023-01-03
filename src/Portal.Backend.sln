@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -117,6 +117,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Provisioning.DBAccess.Tests", "..\tests\provisioning\Provisioning.DBAccess.Tests\Provisioning.DBAccess.Tests.csproj", "{0C039C14-74CA-484C-B8D9-A307C97EC312}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maintenance.App.Tests", "..\tests\maintenance\Maintenance.App.Tests\Maintenance.App.Tests.csproj", "{3828FF08-4CD7-4FF8-B94A-ED5D5FFA0382}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Seeding", "framework\Framework.Seeding\Framework.Seeding.csproj", "{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -692,6 +694,18 @@ Global
 		{3828FF08-4CD7-4FF8-B94A-ED5D5FFA0382}.Release|x64.Build.0 = Release|Any CPU
 		{3828FF08-4CD7-4FF8-B94A-ED5D5FFA0382}.Release|x86.ActiveCfg = Release|Any CPU
 		{3828FF08-4CD7-4FF8-B94A-ED5D5FFA0382}.Release|x86.Build.0 = Release|Any CPU
+		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Debug|x64.Build.0 = Debug|Any CPU
+		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Debug|x86.Build.0 = Debug|Any CPU
+		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Release|x64.ActiveCfg = Release|Any CPU
+		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Release|x64.Build.0 = Release|Any CPU
+		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Release|x86.ActiveCfg = Release|Any CPU
+		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -747,5 +761,6 @@ Global
 		{3F7A02D4-073C-40FE-B228-8E1BA96B1946} = {AE4A5C54-72F3-4B55-BB86-09DFA3AA3D7B}
 		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 		{3828FF08-4CD7-4FF8-B94A-ED5D5FFA0382} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
+		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 	EndGlobalSection
 EndGlobal

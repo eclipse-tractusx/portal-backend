@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -35,16 +36,16 @@ public class Language
         SupportingApps = new HashSet<Offer>();
     }
 
-    public Language(string languageShortName, string longNameDe, string longNameEn) : this()
+    public Language(string shortName, string longNameDe, string longNameEn) : this()
     {
-        ShortName = languageShortName;
+        ShortName = shortName;
         LongNameDe = longNameDe;
         LongNameEn = longNameEn;
     }
 
     [Key]
     [StringLength(2, MinimumLength = 2)]
-    public string ShortName { get; private set; }
+    public string ShortName { get; set; }
 
     [MaxLength(255)]
     public string LongNameDe { get; set; }

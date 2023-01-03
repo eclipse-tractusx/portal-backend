@@ -476,6 +476,21 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         offerDetail.Should().NotBeNull();
         offerDetail.OfferStatus.Should().Be(OfferStatusId.ACTIVE);
     }
+
+    [Fact]
+    public async Task GetProviderOfferDataWithConsentStatusAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetProviderOfferDataWithConsentStatusAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"),"3d8142f1-860b-48aa-8c2b-1ccb18699f65",OfferTypeId.APP).ConfigureAwait(false);
+        
+        // Assert
+        result.OfferProviderData.Should().NotBeNull();
+        result.OfferProviderData.LeadPictureId.Should().NotBeEmpty();
+        result.OfferProviderData.LeadPictureId.Should().Be(new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"));
+    }
     
     [Fact]
     public async Task GetProvidedAppsData_ReturnsExpectedResult()
