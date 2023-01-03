@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
@@ -18,43 +18,40 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditCompanyApplication20221005))]
-public class CompanyApplication : IAuditableV1, IBaseEntity
+public class ApplicationChecklistEntry : IBaseEntity
 {
-    protected CompanyApplication()
-    {
-        Invitations = new HashSet<Invitation>();
-    }
-
-    public CompanyApplication(Guid id, Guid companyId, CompanyApplicationStatusId applicationStatusId, DateTimeOffset dateCreated) : this()
+    public ApplicationChecklistEntry(Guid id, Guid applicationId, ChecklistEntryTypeId checklistEntryTypeId, ChecklistEntryStatusId statusId, DateTimeOffset dateCreated)
     {
         Id = id;
-        CompanyId = companyId;
-        ApplicationStatusId = applicationStatusId;
+        ApplicationId = applicationId;
+        ChecklistEntryTypeId = checklistEntryTypeId;
+        StatusId = statusId;
         DateCreated = dateCreated;
     }
-
+    
     public Guid Id { get; set; }
+
+    public Guid ApplicationId { get; private set; }
 
     public DateTimeOffset DateCreated { get; private set; }
 
     public DateTimeOffset? DateLastChanged { get; set; }
 
-    public CompanyApplicationStatusId ApplicationStatusId { get; set; }
-    public Guid CompanyId { get; private set; }
+    public ChecklistEntryTypeId ChecklistEntryTypeId { get; private set; }
 
-    [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
+    public ChecklistEntryStatusId StatusId { get; set; }
+
+    public string? Comment { get; set; }
+
     // Navigation properties
-    public virtual CompanyApplicationStatus? ApplicationStatus { get; set; }
-    public virtual Company? Company { get;  set; }
-    public virtual ICollection<Invitation> Invitations { get; private set; }
-    public virtual ICollection<ApplicationChecklistEntry> ApplicationChecklist { get; private set; }
+    public virtual ChecklistEntryStatus? Status { get; set; }
+
+    public virtual ChecklistEntryType? ChecklistEntryType { get; set; }
+
+    public virtual CompanyApplication? Application { get;  set; }
 }

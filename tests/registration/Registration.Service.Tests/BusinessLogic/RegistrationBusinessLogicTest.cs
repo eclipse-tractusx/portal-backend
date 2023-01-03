@@ -56,6 +56,7 @@ public class RegistrationBusinessLogicTest
     private readonly IPortalRepositories _portalRepositories;
     private readonly ICompanyRolesRepository _companyRolesRepository;
     private readonly IConsentRepository _consentRepository;
+    private readonly IApplicationChecklistRepository _applicationChecklistRepository;
     private readonly string _iamUserId;
     private readonly Guid _companyUserId;
     private readonly Guid _existingApplicationId;
@@ -84,6 +85,7 @@ public class RegistrationBusinessLogicTest
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
         _applicationRepository = A.Fake<IApplicationRepository>();
         _consentRepository = A.Fake<IConsentRepository>();
+        _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
 
         var options = Options.Create(new RegistrationSettings
         {
@@ -1179,6 +1181,10 @@ public class RegistrationBusinessLogicTest
             .ConfigureAwait(false);
 
         // Arrange
+        A.CallTo(() =>
+                _applicationChecklistRepository.CreateChecklistForApplication(applicationId,
+                    ChecklistEntryStatusId.TO_DO))
+            .MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened();
         result.Should().BeTrue();
     }
@@ -1197,6 +1203,10 @@ public class RegistrationBusinessLogicTest
             .ConfigureAwait(false);
 
         // Arrange
+        A.CallTo(() =>
+                _applicationChecklistRepository.CreateChecklistForApplication(applicationId,
+                    ChecklistEntryStatusId.TO_DO))
+            .MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
         result.Should().BeTrue();
     }
@@ -1245,6 +1255,8 @@ public class RegistrationBusinessLogicTest
             .Returns(_applicationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>())
             .Returns(_consentRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>())
+            .Returns(_applicationChecklistRepository);
     }
 
     private void SetupFakesForInvitation()

@@ -54,8 +54,9 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AppInstance> AppInstances { get; set; } = default!;
     public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
     public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
-    public virtual DbSet<AuditAppSubscriptionDetail20221118> AuditAppSubscriptionDetail20221118 { get; set; } = default!;
+    public virtual DbSet<ApplicationChecklistEntry> ApplicationChecklist { get; set; } = default!;
     public virtual DbSet<AppSubscriptionDetail> AppSubscriptionDetails { get; set; } = default!;
+    public virtual DbSet<AuditAppSubscriptionDetail20221118> AuditAppSubscriptionDetail20221118 { get; set; } = default!;
     public virtual DbSet<AuditOffer20221013> AuditOffer20221013 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
@@ -555,6 +556,28 @@ public class PortalDbContext : DbContext
                 Enum.GetValues(typeof(CompanyApplicationStatusId))
                     .Cast<CompanyApplicationStatusId>()
                     .Select(e => new CompanyApplicationStatus(e))
+            );
+
+        modelBuilder.Entity<ApplicationChecklistEntry>(entity =>
+        {
+            entity.HasOne(ace => ace.Application)
+                .WithMany(a => a.ApplicationChecklist)
+                .HasForeignKey(ace => ace.ApplicationId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<ChecklistEntryStatus>()
+            .HasData(
+                Enum.GetValues(typeof(ChecklistEntryStatusId))
+                    .Cast<ChecklistEntryStatusId>()
+                    .Select(e => new ChecklistEntryStatus(e))
+            );
+
+        modelBuilder.Entity<ChecklistEntryType>()
+            .HasData(
+                Enum.GetValues(typeof(ChecklistEntryTypeId))
+                    .Cast<ChecklistEntryTypeId>()
+                    .Select(e => new ChecklistEntryType(e))
             );
 
         modelBuilder.Entity<CompanyIdentityProvider>()
