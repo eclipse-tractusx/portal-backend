@@ -492,6 +492,21 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.OfferProviderData.LeadPictureId.Should().Be(new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"));
     }
     
+    [Fact]
+    public async Task GetProvidedAppsData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var providerAppData = await sut.GetProvidedAppsData("3d8142f1-860b-48aa-8c2b-1ccb18699f65").ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        providerAppData.Should().NotBeNull();
+        providerAppData.FirstOrDefault()!.LeadPictureId.Should().NotBeEmpty();
+        providerAppData.FirstOrDefault()!.LeadPictureId.Should().Be(new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"));
+    }
+
     #endregion
 
     #region Setup
