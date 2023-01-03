@@ -102,7 +102,7 @@ public class OfferRepository : IOfferRepository
             .Select(offer => new OfferDetailsData(
                 offer.Id,
                 offer.Name,
-                offer.ThumbnailUrl,
+                offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 offer.OfferDetailImages.Select(adi => adi.ImageUrl),
                 offer.MarketingUrl,
                 offer.Provider,
@@ -361,7 +361,7 @@ public class OfferRepository : IOfferRepository
                 new OfferProviderData(
                     offer.Name,
                     offer.Provider,
-                    offer.ThumbnailUrl,
+                    offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                     offer.ProviderCompany!.Name,
                     offer.UseCases.Select(uc => uc.Name),
                     offer.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
@@ -483,6 +483,15 @@ public class OfferRepository : IOfferRepository
                 offer.Name, 
                 offer.OfferStatusId,
                 offer.ProviderCompanyId,
+                offer.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
+            .SingleOrDefaultAsync();
+
+    ///<inheritdoc/>
+    public Task<(bool IsStatusActive, bool IsUserCompanyProvider)> GetOfferActiveStatusDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId) =>
+        _context.Offers
+            .Where(offer => offer.Id == appId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new ValueTuple<bool, bool>(
+                offer.OfferStatusId == OfferStatusId.ACTIVE,
                 offer.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
 }

@@ -374,7 +374,7 @@ public class OfferService : IOfferService
         return new OfferProviderResponse(
             data.Title,
             data.Provider,
-            data.LeadPictureUri,
+            data.LeadPictureId,
             data.ProviderName,
             data.UseCase,
             data.Descriptions,
@@ -689,5 +689,26 @@ public class OfferService : IOfferService
                     nameof(languageCodes));
             }
         }
+    }
+
+    public async Task DeactivateOfferIdAsync(Guid appId, string iamUserId, OfferTypeId offerTypeId)
+    {
+        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var appdata =  await appRepository.GetOfferActiveStatusDataByIdAsync(appId, offerTypeId, iamUserId).ConfigureAwait(false);
+        if(appdata == default)
+        {
+            throw new NotFoundException($"App {appId} does not exist.");
+        }
+        if(!appdata.IsUserCompanyProvider)
+        {
+            throw new ForbiddenException("Missing permission: The user's company does not provide the requested app so they cannot deactivate it.");
+        }
+        if(!appdata.IsStatusActive)
+        {
+            throw new ConflictException($"offerStatus is in Incorrect State");
+        }
+        appRepository.AttachAndModifyOffer(appId, offer => 
+            offer.OfferStatusId = OfferStatusId.INACTIVE );
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
