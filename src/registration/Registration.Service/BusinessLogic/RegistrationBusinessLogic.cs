@@ -206,7 +206,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         company.BusinessPartnerNumber = companyWithAddress.BusinessPartnerNumber;
         company.Name = companyWithAddress.Name;
         company.Shortname = companyWithAddress.Shortname;
-        company.TaxId = companyWithAddress.TaxId;
         if (company.Address == null)
         {
             company.Address = _portalRepositories.GetInstance<ICompanyRepository>().CreateAddress(

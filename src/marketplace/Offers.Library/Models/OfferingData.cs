@@ -30,7 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 /// <param name="ThumbnailUrl">url of the thumbnail</param>
 /// <param name="ContactEmail">contact email address</param>
 /// <param name="SalesManager">the sales manager of the service</param>
-/// <param name="Descriptions">the service descriptions</param>
+/// <param name="Descriptions">Descriptions of the app in different languages.s</param>
 /// <param name="ServiceTypeIds">service type ids</param>
 public record ServiceOfferingData(
     string Title,
@@ -38,7 +38,7 @@ public record ServiceOfferingData(
     string? ThumbnailUrl,
     string? ContactEmail,
     Guid? SalesManager,
-    IEnumerable<OfferingDescription> Descriptions,
+    ICollection<LocalizedDescription> Descriptions,
     IEnumerable<ServiceTypeId> ServiceTypeIds);
 
 /// <summary>

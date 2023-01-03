@@ -153,4 +153,11 @@ public interface IAppsBusinessLogic
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="data">The decline request data</param>
     Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data);
+
+    /// <summary>
+    /// Deactivate Offer Status by appId
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    public Task DeactivateOfferbyAppIdAsync(Guid appId, string iamUserId);
 }

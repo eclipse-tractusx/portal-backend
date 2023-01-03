@@ -18,9 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class UserRoleCollection
+public class UserRoleCollection : IBaseEntity
 {
     private UserRoleCollection()
     {
@@ -29,10 +31,10 @@ public class UserRoleCollection
         UserRoleCollectionDescriptions = new HashSet<UserRoleCollectionDescription>();
     }
 
-    public UserRoleCollection(Guid id, string label) : this()
+    public UserRoleCollection(Guid id, string name) : this()
     {
         Id = id;
-        Name = label;
+        Name = name;
     }
 
     public Guid Id { get; set; }
