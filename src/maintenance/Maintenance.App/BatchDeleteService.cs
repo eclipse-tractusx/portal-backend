@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Maintenance.App;
 
@@ -63,9 +64,24 @@ public class BatchDeleteService : BackgroundService
         {
             try
             {
-                _logger.LogInformation("Cleaning up documents and consents older {Days} days...", _days);
-                await dbContext.Database.ExecuteSqlInterpolatedAsync($"WITH documentids AS (DELETE FROM portal.documents WHERE date_created < {DateTimeOffset.UtcNow.AddDays(-_days)} AND (document_status_id = {(int)DocumentStatusId.PENDING} OR document_status_id = {(int) DocumentStatusId.INACTIVE}) RETURNING id) DELETE FROM portal.consents WHERE document_id IN (SELECT id FROM documentids);", stoppingToken).ConfigureAwait(false);
-                _logger.LogInformation("Documents older than {Days} days and depending consents successfully cleaned up.", _days);
+                _logger.LogInformation("Getting documents and assignments older {Days} days", _days);
+                List<(Guid DocumentId, IEnumerable<Guid> AgreementIds, IEnumerable<Guid> OfferIds)> documentData = await dbContext.Documents.Where(x =>
+                    x.DateCreated < DateTimeOffset.UtcNow.AddDays(-_days) &&
+                    x.DocumentStatusId == DocumentStatusId.INACTIVE)
+                    .Select(doc => new ValueTuple<Guid, IEnumerable<Guid>, IEnumerable<Guid>>(
+                        doc.Id,
+                        doc.Agreements.Select(x => x.Id),
+                        doc.Offers.Select(x => x.Id)
+                        ))
+                    .ToListAsync(stoppingToken)
+                    .ConfigureAwait(false);
+                _logger.LogInformation("Cleaning up {DocumentCount} Documents, {AgreementIdsCount} AgreementAssignedDocuments and {OfferIdCount} OfferAssignedDocuments", documentData.Count, documentData.SelectMany(x => x.AgreementIds).Count(), documentData.SelectMany(x => x.OfferIds).Count());
+
+                dbContext.AgreementAssignedDocuments.RemoveRange(documentData.SelectMany(data => data.AgreementIds.Select(agreementId => new AgreementAssignedDocument(agreementId, data.DocumentId))));
+                dbContext.OfferAssignedDocuments.RemoveRange(documentData.SelectMany(data => data.OfferIds.Select(offerId => new OfferAssignedDocument(offerId, data.DocumentId))));
+                dbContext.Documents.RemoveRange(documentData.Select(x => new Document(x.DocumentId, null!, null!, null!, default, default, default)));
+                await dbContext.SaveChangesAsync(stoppingToken).ConfigureAwait(false);
+                _logger.LogInformation("Documents older than {Days} days and depending consents successfully cleaned up", _days);
             }
             catch (Exception ex)
             {

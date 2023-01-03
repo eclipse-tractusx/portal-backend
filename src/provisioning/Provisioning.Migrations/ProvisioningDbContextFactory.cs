@@ -22,25 +22,23 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
-using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 
-public class PortalDbContextFactory : IDesignTimeDbContextFactory<PortalDbContext>
+public class ProvisioningDbContextFactory : IDesignTimeDbContextFactory<ProvisioningDbContext>
 {
-    public PortalDbContext CreateDbContext(string[] args)
+    public ProvisioningDbContext CreateDbContext(string[] args)
     {
         var config = new ConfigurationBuilder()
-            .AddJsonFile("secrets/appsettings.json", true) // Only used in k8s deployment
+            .AddJsonFile("secrets/appsettings.json", true)
             .AddUserSecrets(Assembly.GetExecutingAssembly())
             .Build();
-        var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<ProvisioningDbContext>();
         optionsBuilder.UseNpgsql(
-            config.GetConnectionString("PortalDb"),
-            x => x.MigrationsAssembly(typeof(PortalDbContextFactory).Assembly.GetName().Name)
-                  .MigrationsHistoryTable("__efmigrations_history_portal")
-        ).UsePostgreSqlTriggers();
+            config.GetConnectionString("ProvisioningDb"),
+            x => x.MigrationsAssembly(typeof(ProvisioningDbContextFactory).Assembly.GetName().Name)
+                  .MigrationsHistoryTable("__efmigrations_history_provisioning", "public"));
 
-        return new PortalDbContext(optionsBuilder.Options);
+        return new ProvisioningDbContext(optionsBuilder.Options);
     }
 }

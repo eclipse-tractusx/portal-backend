@@ -24,13 +24,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities
 {
     public class UserPasswordReset
     {
-        private UserPasswordReset()
-        {
-            UserEntityId = default!;
-            PasswordModifiedAt = default!;
-            ResetCount = default!;
-        }
-
         public UserPasswordReset(string UserEntityId, DateTimeOffset PasswordModifiedAt, int ResetCount)
         {
             this.UserEntityId = UserEntityId;
