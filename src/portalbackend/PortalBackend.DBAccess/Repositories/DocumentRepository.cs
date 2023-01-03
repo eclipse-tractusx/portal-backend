@@ -121,9 +121,9 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public void AttachAndModifyDocument(Guid documnetId, Action<Document> setOptionalParameters)
+    public void AttachAndModifyDocument(Guid DocumnetId, Action<Document> setOptionalParameters)
     {
-        var document = _dbContext.Attach(new Document(documnetId, default!, default!, default!, default,default, default)).Entity;
+        var document = _dbContext.Attach(new Document(DocumnetId, default!, default!, default!, default,default, default)).Entity;
         setOptionalParameters.Invoke(document);
     }
 }
