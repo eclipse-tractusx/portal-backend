@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -32,14 +33,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class DocumentsBusinessLogic : IDocumentsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IHostEnvironment _env;
 
     /// <summary>
     /// Creates a new instance <see cref="DocumentsBusinessLogic"/>
     /// </summary>
-    public DocumentsBusinessLogic(IPortalRepositories portalRepositories)
+    public DocumentsBusinessLogic(IPortalRepositories portalRepositories, IHostEnvironment env)
     {
-    
         _portalRepositories = portalRepositories;
+        _env = env;
     }
 
     /// <inheritdoc />
@@ -83,5 +85,24 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
 
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         return true;
+    }
+
+    /// <inheritdoc />
+    public async Task<DocumentSeedData> GetSeedData(Guid documentId)
+    {
+        if (!_env.IsDevelopment())
+        {
+            throw new ForbiddenException("Endpoint can only be used on dev environment");
+        }
+
+        var document = await _portalRepositories.GetInstance<IDocumentRepository>()
+            .GetDocumentSeedDataByIdAsync(documentId)
+            .ConfigureAwait(false);
+        if (document == null)
+        {
+            throw new NotFoundException($"Document {documentId} does not exists.");
+        }
+
+        return document;
     }
 }

@@ -155,6 +155,39 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region Seed Data
+
+    [Fact]
+    public async Task GetDocumentSeedDataByIdAsync_ReturnsExpectedDocuments()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var results = await sut.GetDocumentSeedDataByIdAsync(new Guid("fda6c9cb-62be-4a98-99c1-d9c5a2df4aad")).ConfigureAwait(false);
+    
+        // Assert
+        results.Should().NotBeNull();
+        results!.DocumentStatusId.Should().Be(3);
+        results.DocumentTypeId.Should().Be(1);
+        results.DocumentName.Should().Be("test1.pdf");
+    }
+
+    [Fact]
+    public async Task GetDocumentSeedDataByIdAsync_NotExistingId_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetDocumentSeedDataByIdAsync(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+    
     private async Task<(DocumentRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

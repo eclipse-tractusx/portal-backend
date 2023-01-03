@@ -85,4 +85,11 @@ public interface IDocumentRepository
     /// <param name="documentId">Id of the document</param>
     /// <param name="setOptionalParameters">Action to set the optional parameters</param>
     void AttachAndModifyDocument(Guid documentId, Action<Document> setOptionalParameters);
+
+    /// <summary>
+    /// Gets the document seed data for the given id
+    /// </summary>
+    /// <param name="documentId">Id of the document</param>
+    /// <returns>The document seed data</returns>
+    Task<DocumentSeedData?> GetDocumentSeedDataByIdAsync(Guid documentId);
 }
