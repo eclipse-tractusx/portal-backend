@@ -26,4 +26,4 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyApplicationUserEmailData(CompanyApplicationStatusId CompanyApplicationStatusId, Guid CompanyUserId, string? Email, IEnumerable<DocumentStatusData> DocumentDatas);
 
-public record DocumentStatusData(Guid documentId,DocumentStatusId StatusId);
+public record DocumentStatusData(Guid DocumentId, DocumentStatusId StatusId);
