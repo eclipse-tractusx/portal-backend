@@ -1,0 +1,42 @@
+[
+  {
+    "user_role_collection_id": "1a24eca5-901f-4191-84a7-4ef09a894575",
+    "language_short_name": "de",
+    "description": "Betreiber"
+  },
+  {
+    "user_role_collection_id": "1a24eca5-901f-4191-84a7-4ef09a894575",
+    "language_short_name": "en",
+    "description": "Operator"
+  },
+  {
+    "user_role_collection_id": "8cb12ea2-aed4-4d75-b041-ba297df3d2f2",
+    "language_short_name": "de",
+    "description": "CX Netzwerkteilnehmer"
+  },
+  {
+    "user_role_collection_id": "8cb12ea2-aed4-4d75-b041-ba297df3d2f2",
+    "language_short_name": "en",
+    "description": "CX Participant"
+  },
+  {
+    "user_role_collection_id": "a5b8b1de-7759-4620-9c87-6b6d74fb4fbc",
+    "language_short_name": "de",
+    "description": "Dienstanbieter"
+  },
+  {
+    "user_role_collection_id": "a5b8b1de-7759-4620-9c87-6b6d74fb4fbc",
+    "language_short_name": "en",
+    "description": "Service Provider"
+  },
+  {
+    "user_role_collection_id": "ec428950-8b64-4646-b336-28af869b5d73",
+    "language_short_name": "de",
+    "description": "Softwareanbieter"
+  },
+  {
+    "user_role_collection_id": "ec428950-8b64-4646-b336-28af869b5d73",
+    "language_short_name": "en",
+    "description": "App Provider"
+  }
+]

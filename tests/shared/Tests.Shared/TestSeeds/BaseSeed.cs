@@ -81,7 +81,16 @@ public static class BaseSeed
             {
                 CompanyUserId = new Guid("adf37b09-53f3-48ea-b8fb-8cbb7fd79324")
             },
+            new (new Guid("7fc2fb78-8dc2-4f5f-b1d1-91c9c2f4506f"), new byte[1024], new byte[1024], "fake.pdf", DateTimeOffset.UtcNow.AddYears(-1), DocumentStatusId.INACTIVE, DocumentTypeId.CX_FRAME_CONTRACT)
+            {
+                CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992")
+            },
+            new (new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"), new byte[1024], new byte[1024], "test5.pdf", DateTimeOffset.UtcNow, DocumentStatusId.PENDING, DocumentTypeId.APP_LEADIMAGE)
+            {
+                CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")
+            }
         });
+        
         dbContext.ProviderCompanyDetails.AddRange(new List<ProviderCompanyDetail>
         {
             new(new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), "https://www.test-service.com", DateTimeOffset.UtcNow)
@@ -208,6 +217,12 @@ public static class BaseSeed
             new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.CONSULTANCE_SERVICE)
         });
         
+        dbContext.OfferAssignedDocuments.AddRange(new List<OfferAssignedDocument>
+        {
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("7fc2fb78-8dc2-4f5f-b1d1-91c9c2f4506f")),
+            new (new Guid("99c5fd12-8085-4de2-abfd-215e1ee4baa4"), new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"))
+        });
+        
         dbContext.UserRoles.AddRange(new List<UserRole>
         {
             new (new Guid("58f897ec-0aad-4588-8ffa-5f45d6638633"), "CX User", new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")),
@@ -266,6 +281,11 @@ public static class BaseSeed
             new (new Guid("979a29b1-40c2-4169-979c-43c3156dbf64"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"))
         });
         
+        dbContext.AgreementAssignedDocuments.AddRange(new List<AgreementAssignedDocument>
+        {
+            new (new Guid("f6d3148b-2e2b-4688-a382-326d4232ee6e"), new Guid("7fc2fb78-8dc2-4f5f-b1d1-91c9c2f4506f")),
+        });
+
         dbContext.Notifications.AddRange(new List<Notification>
         {
             new (new Guid("94F22922-04F6-4A4E-B976-1BF2FF3DE973"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.ACTION, false),

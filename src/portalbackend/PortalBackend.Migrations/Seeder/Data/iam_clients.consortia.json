@@ -1,0 +1,58 @@
+[
+  {
+    "id": "f032a040-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl9-CDQ-Fraud"
+  },
+  {
+    "id": "f032a042-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl10-CX-xx"
+  },
+  {
+    "id": "f032a043-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl11-ADAC-Fleet"
+  },
+  {
+    "id": "f032a044-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl12-CX-TestManager"
+  },
+  {
+    "id": "789e31ee-0fdb-4e42-a819-23e0cfb1179b",
+    "client_client_id": "https://catenax-dt-rec.authentication.eu10.hana.ondemand.com"
+  },
+  {
+    "id": "cf207afb-d213-4c33-becc-0cabeef174a7",
+    "client_client_id": "https://catenax-int-dismantler-s66pftcc.authentication.eu10.hana.ondemand.com"
+  },
+  {
+    "id": "f032a052-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl16-CX-CRisk"
+  },
+  {
+    "id": "f032a053-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl18-CX-Pal"
+  },
+  {
+    "id": "f032a045-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "not yet known-1"
+  },
+  {
+    "id": "f032a046-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "not yet known-2"
+  },
+  {
+    "id": "f032a047-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "not yet known-3"
+  },
+  {
+    "id": "f032a048-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "not yet known-4"
+  },
+  {
+    "id": "f032a050-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "not yet known-5"
+  },
+  {
+    "id": "f032a051-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "not yet known-6"
+  }
+]

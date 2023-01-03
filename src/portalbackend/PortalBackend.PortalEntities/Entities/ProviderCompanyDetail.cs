@@ -18,9 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class ProviderCompanyDetail
+public class ProviderCompanyDetail : IBaseEntity
 {
     private ProviderCompanyDetail()
     {
