@@ -64,8 +64,9 @@ builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLo
 
 builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>()
                 .ConfigureServiceAccountSettings(builder.Configuration.GetSection("ServiceAccount"));
-                
-builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>();
+
+builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>()
+    .ConfigureDocumentSettings(builder.Configuration.GetSection("Document"));
 builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
 builder.Services.AddTransient<IPartnerNetworkBusinessLogic, PartnerNetworkBusinessLogic>();
 builder.Services.AddTransient<INotificationService, NotificationService>();
