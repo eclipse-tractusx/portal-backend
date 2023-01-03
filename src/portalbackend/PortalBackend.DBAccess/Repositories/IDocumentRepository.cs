@@ -78,4 +78,11 @@ public interface IDocumentRepository
     /// <param name="iamUserId"></param>
     /// <param name="applicationStatusIds"></param>
     Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, string iamUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
+
+    /// <summary>
+    /// Gets the document seed data for the given id
+    /// </summary>
+    /// <param name="documentId">Id of the document</param>
+    /// <returns>The document seed data</returns>
+    Task<DocumentSeedData?> GetDocumentSeedDataByIdAsync(Guid documentId);
 }
