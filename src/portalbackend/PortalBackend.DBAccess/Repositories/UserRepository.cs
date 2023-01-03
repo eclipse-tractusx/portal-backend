@@ -79,8 +79,7 @@ public class UserRepository : IUserRepository
                 Streetadditional = company.Address.Streetadditional,
                 Streetnumber = company.Address.Streetnumber,
                 Zipcode = company.Address.Zipcode,
-                CountryDe = company.Address.Country!.CountryNameDe,
-                TaxId = company.TaxId
+                CountryDe = company.Address.Country!.CountryNameDe
             }).SingleOrDefaultAsync();
 
     public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId,
