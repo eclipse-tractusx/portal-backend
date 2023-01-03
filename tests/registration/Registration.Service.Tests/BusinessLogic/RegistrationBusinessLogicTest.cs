@@ -1154,8 +1154,8 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var applicationid = _fixture.Create<Guid>();
         IEnumerable<DocumentStatusData> document = new DocumentStatusData[]{
-            new DocumentStatusData(Guid.NewGuid(),DocumentStatusId.PENDING),
-            new DocumentStatusData(Guid.NewGuid(),DocumentStatusId.INACTIVE)
+            new(Guid.NewGuid(),DocumentStatusId.PENDING),
+            new(Guid.NewGuid(),DocumentStatusId.INACTIVE)
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationid, _iamUserId))
             .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY,Guid.NewGuid(),"test@mail.de",document));
@@ -1164,7 +1164,7 @@ public class RegistrationBusinessLogicTest
         // Act
         await sut.SubmitRegistrationAsync(applicationid, _iamUserId);
         // Arrange
-        A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._)).MustHaveHappened();
+        A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._)).MustHaveHappened(2, Times.Exactly);
     }
     
     [Fact]
