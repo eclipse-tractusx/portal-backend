@@ -31,6 +31,7 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
     protected CompanyApplication()
     {
         Invitations = new HashSet<Invitation>();
+        ApplicationChecklist = new HashSet<ApplicationChecklistEntry>();
     }
 
     public CompanyApplication(Guid id, Guid companyId, CompanyApplicationStatusId applicationStatusId, DateTimeOffset dateCreated) : this()
