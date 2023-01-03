@@ -300,8 +300,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <summary>
         /// Submits a registration
         /// </summary>
+        /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application to submit registration</param>
         /// <returns>Returns ok</returns>
-        /// <remarks>Example: Post: /api/registration/submitRegistration</remarks>
+        /// <remarks>Example: Post: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/submitRegistration</remarks>
         /// <response code="200">Successfully submitted the registration</response>
         [HttpPost]
         [Authorize(Roles = "submit_registration")]

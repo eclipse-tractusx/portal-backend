@@ -130,6 +130,31 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region AttachAndModifyDocument
+
+    [Fact]
+    public async Task AttachAndModifyDocument_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyDocument(Guid.NewGuid(),
+            docstatusId =>{ docstatusId.DocumentStatusId = DocumentStatusId.LOCKED; });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should()
+            .BeOfType<PortalEntities.Entities.Document>()
+                .Which.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
+    }
+
+    #endregion
+
     private async Task<(DocumentRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
