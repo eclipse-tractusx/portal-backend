@@ -228,7 +228,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         company.Address.Streetnumber = companyWithAddress.Streetnumber;
         company.CompanyStatusId = CompanyStatusId.PENDING;
 
-        UpdateApplicationStatus(applicationId, companyApplicationData.CompanyApplication.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository, _portalRepositories.GetInstance<IApplicationChecklistRepository>());
+        UpdateApplicationStatus(applicationId, companyApplicationData.CompanyApplication.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -389,7 +389,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         HandleConsent(consents, agreementConsentsToSet, consentRepository, companyId, companyUserId);
 
-        UpdateApplicationStatus(applicationId, applicationStatusId, UpdateApplicationSteps.CompanyRoleAgreementConsents, _portalRepositories.GetInstance<IApplicationRepository>(), _portalRepositories.GetInstance<IApplicationChecklistRepository>());
+        UpdateApplicationStatus(applicationId, applicationStatusId, UpdateApplicationSteps.CompanyRoleAgreementConsents, _portalRepositories.GetInstance<IApplicationRepository>());
 
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -423,7 +423,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
         }
 
-        UpdateApplicationStatus(applicationId, applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration, applicationRepository, _portalRepositories.GetInstance<IApplicationChecklistRepository>());
+        UpdateApplicationStatus(applicationId, applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration, applicationRepository);
+        _portalRepositories.GetInstance<IApplicationChecklistRepository>().CreateChecklistForApplication(applicationId, ChecklistEntryStatusId.TO_DO);
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         var mailParameters = new Dictionary<string, string>
@@ -561,7 +563,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         application.ApplicationStatusId = status;
     }
 
-    private static void UpdateApplicationStatus(Guid applicationId, CompanyApplicationStatusId applicationStatusId, UpdateApplicationSteps type, IApplicationRepository applicationRepository, IApplicationChecklistRepository applicationChecklistRepository)
+    private static void UpdateApplicationStatus(Guid applicationId, CompanyApplicationStatusId applicationStatusId, UpdateApplicationSteps type, IApplicationRepository applicationRepository)
     {
         if (applicationStatusId == CompanyApplicationStatusId.SUBMITTED
             || applicationStatusId == CompanyApplicationStatusId.CONFIRMED
@@ -614,8 +616,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 {
                     ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
                 });
-
-                applicationChecklistRepository.CreateChecklistForApplication(applicationId, ChecklistEntryStatusId.TO_DO);
 
                 break;
             }
