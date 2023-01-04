@@ -64,5 +64,4 @@ public class ChecklistService : IChecklistService
                 : ChecklistEntryStatusId.DONE,
             _ => ChecklistEntryStatusId.TO_DO
         };
-
 }
