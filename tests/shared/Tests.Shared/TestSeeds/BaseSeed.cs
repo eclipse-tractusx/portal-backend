@@ -61,6 +61,16 @@ public static class BaseSeed
             new (new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyApplicationStatusId.CONFIRMED, DateTimeOffset.UtcNow),
             new (new Guid("1b86d973-3aac-4dcd-a9e9-0c222766202b"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"), CompanyApplicationStatusId.SUBMITTED, DateTimeOffset.UtcNow)
         });
+
+        dbContext.ApplicationChecklist.AddRange(new List<ApplicationChecklistEntry>
+        {
+            new (new Guid("1b86d973-3aac-4dcd-a9e9-0c222766202b"), ChecklistEntryTypeId.REGISTRATION_VERIFICATION, ChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+            new (new Guid("1b86d973-3aac-4dcd-a9e9-0c222766202b"), ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+            new (new Guid("1b86d973-3aac-4dcd-a9e9-0c222766202b"), ChecklistEntryTypeId.SELF_DESCRIPTION_LP, ChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+            new (new Guid("1b86d973-3aac-4dcd-a9e9-0c222766202b"), ChecklistEntryTypeId.IDENTITY_WALLET, ChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+            new (new Guid("1b86d973-3aac-4dcd-a9e9-0c222766202b"), ChecklistEntryTypeId.CLEARING_HOUSE, ChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+        });
+        
         dbContext.Invitations.AddRange(new List<Invitation>
         {
             new (new Guid("aa6cdb72-22d8-4f4f-8a0b-5f8c4b59a407"), new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"), InvitationStatusId.ACCEPTED, DateTimeOffset.UtcNow),

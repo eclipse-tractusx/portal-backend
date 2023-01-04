@@ -217,7 +217,7 @@ public class ApplicationRepository : IApplicationRepository
             .Where(application => companyName != null ? EF.Functions.ILike(application.Company!.Name, $"%{companyName}%") : true);
 
      /// <inheritdoc />
-     public Task<string?> HasBpnAlreadySet(Guid applicationId) => 
+     public Task<string?> GetBpnForApplicationIdAsync(Guid applicationId) => 
          _dbContext.CompanyApplications
              .AsNoTracking()
              .Where(a => a.Id == applicationId)

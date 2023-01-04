@@ -36,7 +36,7 @@ public class ChecklistService : IChecklistService
     /// <inheritdoc />
     public async Task CreateInitialChecklistAsync(Guid applicationId)
     {
-        var bpn =  await _portalRepositories.GetInstance<IApplicationRepository>().HasBpnAlreadySet(applicationId).ConfigureAwait(false);
+        var bpn =  await _portalRepositories.GetInstance<IApplicationRepository>().GetBpnForApplicationIdAsync(applicationId).ConfigureAwait(false);
         var checklistEntries = Enum.GetValues<ChecklistEntryTypeId>()
             .Select(x => 
                 new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(x, GetChecklistStatus(x, bpn))
@@ -52,7 +52,6 @@ public class ChecklistService : IChecklistService
             .AttachAndModifyApplicationChecklist(checklistEntryId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, checklist =>
             {
                 checklist.StatusId = statusId;
-                checklist.DateLastChanged = DateTimeOffset.UtcNow;
             });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
