@@ -41,7 +41,7 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
     public void CreateChecklistForApplication(Guid applicationId, ChecklistEntryStatusId statusId)
     {
         var entries = Enum.GetValues<ChecklistEntryTypeId>().Select(x =>
-            new ApplicationChecklistEntry(Guid.NewGuid(), applicationId, x, statusId,
+            new ApplicationChecklistEntry(applicationId, x, statusId,
                 DateTimeOffset.UtcNow));
         _portalDbContext.ApplicationChecklist.AddRange(entries);
     }

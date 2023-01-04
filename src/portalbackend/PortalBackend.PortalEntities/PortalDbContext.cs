@@ -560,6 +560,8 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<ApplicationChecklistEntry>(entity =>
         {
+            entity.HasKey(x => new { x.ApplicationId, x.ChecklistEntryTypeId });
+                
             entity.HasOne(ace => ace.Application)
                 .WithMany(a => a.ApplicationChecklist)
                 .HasForeignKey(ace => ace.ApplicationId)
