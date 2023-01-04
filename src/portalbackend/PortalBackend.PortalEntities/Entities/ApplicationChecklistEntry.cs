@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -46,9 +45,9 @@ public class ApplicationChecklistEntry
     public string? Comment { get; set; }
 
     // Navigation properties
-    public virtual ChecklistEntryStatus? Status { get; set; }
+    public virtual ChecklistEntryStatus? Status { get; private set; }
 
-    public virtual ChecklistEntryType? ChecklistEntryType { get; set; }
+    public virtual ChecklistEntryType? ChecklistEntryType { get; private set; }
 
-    public virtual CompanyApplication? Application { get;  set; }
+    public virtual CompanyApplication? Application { get; private set; }
 }
