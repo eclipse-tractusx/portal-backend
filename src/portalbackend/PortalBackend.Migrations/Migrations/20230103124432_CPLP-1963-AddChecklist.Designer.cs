@@ -950,7 +950,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 1,
-                            Label = "RREGISTRATION_VERIFICATION"
+                            Label = "REGISTRATION_VERIFICATION"
                         },
                         new
                         {

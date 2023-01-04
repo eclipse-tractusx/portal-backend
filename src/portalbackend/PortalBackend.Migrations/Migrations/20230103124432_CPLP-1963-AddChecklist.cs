@@ -111,7 +111,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 columns: new[] { "id", "label" },
                 values: new object[,]
                 {
-                    { 1, "RREGISTRATION_VERIFICATION" },
+                    { 1, "REGISTRATION_VERIFICATION" },
                     { 2, "BUSINESS_PARTNER_NUMBER" },
                     { 3, "IDENTITY_WALLET" },
                     { 4, "CLEARING_HOUSE" },
