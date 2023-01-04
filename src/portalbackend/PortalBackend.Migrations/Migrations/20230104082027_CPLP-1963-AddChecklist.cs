@@ -60,17 +60,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
                     application_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    checklist_entry_type_id = table.Column<int>(type: "integer", nullable: false),
                     date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    checklist_entry_type_id = table.Column<int>(type: "integer", nullable: false),
                     status_id = table.Column<int>(type: "integer", nullable: false),
                     comment = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_application_checklist", x => x.id);
+                    table.PrimaryKey("pk_application_checklist", x => new { x.application_id, x.checklist_entry_type_id });
                     table.ForeignKey(
                         name: "fk_application_checklist_checklist_entry_status_status_id",
                         column: x => x.status_id,
@@ -119,12 +118,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_application_checklist_application_id",
-                schema: "portal",
-                table: "application_checklist",
-                column: "application_id");
-
-            migrationBuilder.CreateIndex(
                 name: "ix_application_checklist_checklist_entry_type_id",
                 schema: "portal",
                 table: "application_checklist",
@@ -134,12 +127,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "ix_application_checklist_status_id",
                 schema: "portal",
                 table: "application_checklist",
-                column: "status_id");
-        }
+                column: "status_id");}
 
         protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
+        {migrationBuilder.DropTable(
                 name: "application_checklist",
                 schema: "portal");
 

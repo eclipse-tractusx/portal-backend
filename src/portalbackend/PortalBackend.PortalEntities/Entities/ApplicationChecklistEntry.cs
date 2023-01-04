@@ -23,19 +23,16 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class ApplicationChecklistEntry : IBaseEntity
+public class ApplicationChecklistEntry
 {
-    public ApplicationChecklistEntry(Guid id, Guid applicationId, ChecklistEntryTypeId checklistEntryTypeId, ChecklistEntryStatusId statusId, DateTimeOffset dateCreated)
+    public ApplicationChecklistEntry(Guid applicationId, ChecklistEntryTypeId checklistEntryTypeId, ChecklistEntryStatusId statusId, DateTimeOffset dateCreated)
     {
-        Id = id;
         ApplicationId = applicationId;
         ChecklistEntryTypeId = checklistEntryTypeId;
         StatusId = statusId;
         DateCreated = dateCreated;
     }
     
-    public Guid Id { get; set; }
-
     public Guid ApplicationId { get; private set; }
 
     public DateTimeOffset DateCreated { get; private set; }
