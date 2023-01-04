@@ -32,8 +32,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230104103138_CPLP-1899-AddUniqueIdentifierTable")]
-    partial class CPLP1899AddUniqueIdentifierTable
+    [Migration("20230104114328_CPLP-1899-AddUniqueIdentifierTables")]
+    partial class CPLP1899AddUniqueIdentifierTables
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

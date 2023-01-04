@@ -29,7 +29,7 @@ public class CompanyIdentifier
         Value = null!;
     }
 
-    private  CompanyIdentifier(Guid companyId , UniqueIdentifierId uniqueIdentifierId, string value)
+    public CompanyIdentifier(Guid companyId, UniqueIdentifierId uniqueIdentifierId, string value)
     {
         CompanyId = companyId;
         UniqueIdentifierId = uniqueIdentifierId;
