@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 
 public enum ChecklistEntryTypeId
 {
-    RREGISTRATION_VERIFICATION = 1,
+    REGISTRATION_VERIFICATION = 1,
     BUSINESS_PARTNER_NUMBER = 2,
     IDENTITY_WALLET = 3,
     CLEARING_HOUSE = 4,
