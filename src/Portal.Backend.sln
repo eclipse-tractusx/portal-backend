@@ -120,6 +120,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maintenance.App.Tests", "..
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Seeding", "framework\Framework.Seeding\Framework.Seeding.csproj", "{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Checklist", "framework\Framework.Checklist\Framework.Checklist.csproj", "{DECBE888-EC3E-41F1-8052-844C346121B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -706,6 +708,18 @@ Global
 		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Release|x64.Build.0 = Release|Any CPU
 		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Release|x86.ActiveCfg = Release|Any CPU
 		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}.Release|x86.Build.0 = Release|Any CPU
+		{DECBE888-EC3E-41F1-8052-844C346121B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DECBE888-EC3E-41F1-8052-844C346121B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DECBE888-EC3E-41F1-8052-844C346121B2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DECBE888-EC3E-41F1-8052-844C346121B2}.Debug|x64.Build.0 = Debug|Any CPU
+		{DECBE888-EC3E-41F1-8052-844C346121B2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DECBE888-EC3E-41F1-8052-844C346121B2}.Debug|x86.Build.0 = Debug|Any CPU
+		{DECBE888-EC3E-41F1-8052-844C346121B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DECBE888-EC3E-41F1-8052-844C346121B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DECBE888-EC3E-41F1-8052-844C346121B2}.Release|x64.ActiveCfg = Release|Any CPU
+		{DECBE888-EC3E-41F1-8052-844C346121B2}.Release|x64.Build.0 = Release|Any CPU
+		{DECBE888-EC3E-41F1-8052-844C346121B2}.Release|x86.ActiveCfg = Release|Any CPU
+		{DECBE888-EC3E-41F1-8052-844C346121B2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -762,5 +776,6 @@ Global
 		{E45BD4EC-69DD-4890-96E7-E1F3FEFE625F} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 		{3828FF08-4CD7-4FF8-B94A-ED5D5FFA0382} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
+		{DECBE888-EC3E-41F1-8052-844C346121B2} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 	EndGlobalSection
 EndGlobal

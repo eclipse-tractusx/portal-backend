@@ -26,6 +26,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Checklist;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -75,6 +76,7 @@ public class RegistrationBusinessLogicTest
     private readonly ICompanyRepository _companyRepository;
     private readonly IBpdmService _bpdmService;
     private readonly IMailingService _mailingService;
+    private readonly IChecklistService _checklistService;
 
     public RegistrationBusinessLogicTest()
     {
@@ -98,6 +100,7 @@ public class RegistrationBusinessLogicTest
         _mailingService = A.Fake<IMailingService>();
         _notificationService = A.Fake<INotificationService>();
         _sdFactory = A.Fake<ISdFactoryService>();
+        _checklistService = A.Fake<IChecklistService>();
         
         _settings.WelcomeNotificationTypeIds = new List<NotificationTypeId>
         {
@@ -119,7 +122,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
             .ReturnsLazily(Guid.NewGuid);
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, _mailingService, _notificationService, _sdFactory, _bpdmService);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, _mailingService, _notificationService, _sdFactory, _bpdmService, _checklistService);
     }
     
     #region ApprovePartnerRequest
@@ -251,6 +254,8 @@ public class RegistrationBusinessLogicTest
 
     #endregion
 
+    #region GetCompanyApplicationDetailsAsync
+    
     [Fact]
     public async Task GetCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries()
     {
@@ -301,6 +306,9 @@ public class RegistrationBusinessLogicTest
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
         result.Content.Should().HaveCount(5);       
     }
+
+    #endregion
+    
     #region Trigger bpn data push
     
     [Fact]
@@ -319,6 +327,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         A.CallTo(() => _bpdmService.TriggerBpnDataPush(A<BpdmTransferData>._, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _checklistService.UpdateBpnStatus(ApplicationId, ChecklistEntryStatusId.IN_PROGRESS)).MustHaveHappenedOnceExactly();
     }
     
     [Fact]
@@ -335,6 +344,7 @@ public class RegistrationBusinessLogicTest
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"Application {notExistingApplicationId} does not exists.");
+        A.CallTo(() => _checklistService.UpdateBpnStatus(ApplicationId, ChecklistEntryStatusId.IN_PROGRESS)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -351,6 +361,7 @@ public class RegistrationBusinessLogicTest
         // Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
         ex.ParamName.Should().Be("applicationId");
+        A.CallTo(() => _checklistService.UpdateBpnStatus(ApplicationId, ChecklistEntryStatusId.IN_PROGRESS)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -368,6 +379,7 @@ public class RegistrationBusinessLogicTest
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.ParamName.Should().Be("iamUserId");
+        A.CallTo(() => _checklistService.UpdateBpnStatus(ApplicationId, ChecklistEntryStatusId.IN_PROGRESS)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -389,6 +401,7 @@ public class RegistrationBusinessLogicTest
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("ZipCode must not be empty");
+        A.CallTo(() => _checklistService.UpdateBpnStatus(ApplicationId, ChecklistEntryStatusId.IN_PROGRESS)).MustNotHaveHappened();
     }
 
     #endregion

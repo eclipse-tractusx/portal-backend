@@ -38,11 +38,22 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
     }
 
     /// <inheritdoc />
-    public void CreateChecklistForApplication(Guid applicationId, ChecklistEntryStatusId statusId)
+    public void CreateChecklistForApplication(Guid applicationId, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)> checklistEntries)
     {
-        var entries = Enum.GetValues<ChecklistEntryTypeId>().Select(x =>
-            new ApplicationChecklistEntry(applicationId, x, statusId,
+        var entries = checklistEntries
+            .Select(x => new ApplicationChecklistEntry(
+                applicationId,
+                x.TypeId,
+                x.StatusId,
                 DateTimeOffset.UtcNow));
         _portalDbContext.ApplicationChecklist.AddRange(entries);
+    }
+
+    /// <inheritdoc />
+    public void AttachAndModifyApplicationChecklist(Guid applicationId, ChecklistEntryTypeId checklistTypeId, Action<ApplicationChecklistEntry> setFields)
+    {
+        var entity = new ApplicationChecklistEntry(applicationId, checklistTypeId, default, default);
+        _portalDbContext.ApplicationChecklist.Attach(entity);
+        setFields.Invoke(entity);
     }
 }
