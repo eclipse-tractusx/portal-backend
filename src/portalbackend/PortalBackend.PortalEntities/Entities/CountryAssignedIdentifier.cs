@@ -31,7 +31,7 @@ public class CountryAssignedIdentifier
         CountryAlpha2Code = null!;
     }
 
-    private  CountryAssignedIdentifier(string countryAlpha2Code , UniqueIdentifierId uniqueIdentifierId)
+    public CountryAssignedIdentifier(string countryAlpha2Code, UniqueIdentifierId uniqueIdentifierId)
     {
         CountryAlpha2Code = countryAlpha2Code;
         UniqueIdentifierId = uniqueIdentifierId;
