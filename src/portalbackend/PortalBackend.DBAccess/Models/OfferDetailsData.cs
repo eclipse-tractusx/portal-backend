@@ -38,9 +38,9 @@ public record OfferDetailsData(
     string? Title,
 
     /// <summary>
-    /// Uri to app's lead picture.
+    /// Id of the Lead Image.
     /// </summary>
-    string? LeadPictureUri,
+    Guid LeadPictureId,
 
     /// <summary>
     /// List of URIs to app's secondary pictures.
