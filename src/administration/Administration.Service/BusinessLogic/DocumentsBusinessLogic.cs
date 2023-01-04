@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -33,15 +34,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class DocumentsBusinessLogic : IDocumentsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IHostEnvironment _env;
+    private readonly DocumentSettings _settings;
 
     /// <summary>
     /// Creates a new instance <see cref="DocumentsBusinessLogic"/>
     /// </summary>
-    public DocumentsBusinessLogic(IPortalRepositories portalRepositories, IHostEnvironment env)
+    public DocumentsBusinessLogic(IPortalRepositories portalRepositories, IOptions<DocumentSettings> options)
     {
         _portalRepositories = portalRepositories;
-        _env = env;
+        _settings = options.Value;
     }
 
     /// <inheritdoc />
@@ -90,7 +91,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     /// <inheritdoc />
     public async Task<DocumentSeedData> GetSeedData(Guid documentId)
     {
-        if (!_env.IsDevelopment())
+        if (!_settings.EnableSeedEndpoint)
         {
             throw new ForbiddenException("Endpoint can only be used on dev environment");
         }

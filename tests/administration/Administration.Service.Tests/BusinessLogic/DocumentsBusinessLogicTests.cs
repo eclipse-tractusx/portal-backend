@@ -44,7 +44,7 @@ public class DocumentsBusinessLogicTests
     private readonly IFixture _fixture;
     private readonly IDocumentRepository _documentRepository;
     private IPortalRepositories _portalRepositories;
-    private IHostEnvironment _hostingEnvironment;
+    private readonly IOptions<DocumentSettings> _options;
 
     public DocumentsBusinessLogicTests()
     {
@@ -55,8 +55,10 @@ public class DocumentsBusinessLogicTests
 
         _documentRepository = A.Fake<IDocumentRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
-        _hostingEnvironment = A.Fake<IHostEnvironment>();
-        _hostingEnvironment.EnvironmentName = "Development";
+        _options = Options.Create(new DocumentSettings
+        {
+            EnableSeedEndpoint = true
+        });
     }
 
     #region GetSeedData
@@ -66,7 +68,7 @@ public class DocumentsBusinessLogicTests
     {
         // Arrange
         SetupFakesForGetSeedData();
-        var sut = new DocumentsBusinessLogic(_portalRepositories, _hostingEnvironment);
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
         
         // Act
         var result = await sut.GetSeedData(ValidDocumentId).ConfigureAwait(false);
@@ -81,7 +83,7 @@ public class DocumentsBusinessLogicTests
         // Arrange
         var invalidId = Guid.NewGuid();
         SetupFakesForGetSeedData();
-        var sut = new DocumentsBusinessLogic(_portalRepositories, _hostingEnvironment);
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
         
         // Act
         async Task Act() => await sut.GetSeedData(invalidId).ConfigureAwait(false);
@@ -96,8 +98,8 @@ public class DocumentsBusinessLogicTests
     {
         // Arrange
         SetupFakesForGetSeedData();
-        _hostingEnvironment.EnvironmentName = "Test";
-        var sut = new DocumentsBusinessLogic(_portalRepositories, _hostingEnvironment);
+        _options.Value.EnableSeedEndpoint = false;
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
         
         // Act
         async Task Act() => await sut.GetSeedData(ValidDocumentId).ConfigureAwait(false);
