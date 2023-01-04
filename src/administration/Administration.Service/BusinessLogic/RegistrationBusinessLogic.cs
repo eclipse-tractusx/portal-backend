@@ -439,11 +439,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             case CompanyApplicationStatusFilter.Closed :
             {
-                return new []{ CompanyApplicationStatusId.SUBMITTED };
+                return new []{ CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
             }
             case CompanyApplicationStatusFilter.InReview :
             {
-                return new []{ CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };  
+                return new []{ CompanyApplicationStatusId.SUBMITTED };  
             }
             default :
             {
