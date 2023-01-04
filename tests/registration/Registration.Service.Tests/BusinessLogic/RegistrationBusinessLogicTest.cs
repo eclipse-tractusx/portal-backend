@@ -1148,6 +1148,26 @@ public class RegistrationBusinessLogicTest
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"application {notExistingId} does not exist");
     }
+
+    
+    [Fact]
+    public async Task SubmitRegistrationAsync_WithDocumentId()
+    {
+        // Arrange
+        var applicationid = _fixture.Create<Guid>();
+        IEnumerable<DocumentStatusData> document = new DocumentStatusData[]{
+            new(Guid.NewGuid(),DocumentStatusId.PENDING),
+            new(Guid.NewGuid(),DocumentStatusId.INACTIVE)
+        };
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationid, _iamUserId))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY,Guid.NewGuid(),"test@mail.de",document));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories);
+
+        // Act
+        await sut.SubmitRegistrationAsync(applicationid, _iamUserId);
+        // Arrange
+        A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._)).MustHaveHappened(2, Times.Exactly);
+    }
     
     [Fact]
     public async Task SubmitRegistrationAsync_WithNotExistingCompanyUser_ThrowsForbiddenException()
@@ -1155,7 +1175,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var applicationId = _fixture.Create<Guid>();
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.Empty, null));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.Empty, null,null!));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories);
 
         // Act
@@ -1172,8 +1192,12 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var applicationId = _fixture.Create<Guid>();
+        IEnumerable<DocumentStatusData> document =  new DocumentStatusData[]{
+            new DocumentStatusData(
+                Guid.NewGuid(),DocumentStatusId.INACTIVE
+            )};
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _iamUserId))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), "test@mail.de"));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), "test@mail.de",document));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories);
 
         // Act
@@ -1194,8 +1218,12 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var applicationId = _fixture.Create<Guid>();
+        IEnumerable<DocumentStatusData> document =  new DocumentStatusData[]{
+            new DocumentStatusData(
+                Guid.NewGuid(),DocumentStatusId.PENDING
+            )};
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _iamUserId))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), null));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), null, document));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, A.Fake<ILogger<RegistrationBusinessLogic>>(), _portalRepositories);
 
         // Act

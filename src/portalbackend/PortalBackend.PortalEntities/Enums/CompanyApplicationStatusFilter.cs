@@ -18,12 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
+/// <summary>
+/// Filter operations for the CompanyApplicationStatus
+/// </summary>
+public enum CompanyApplicationStatusFilter
+{
+    /// <summary>
+    /// Closed Status for the CompanyApplication
+    /// </summary>
+    Closed =1,
 
-
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
-public record CompanyApplicationUserEmailData(CompanyApplicationStatusId CompanyApplicationStatusId, Guid CompanyUserId, string? Email, IEnumerable<DocumentStatusData> DocumentDatas);
-
-public record DocumentStatusData(Guid DocumentId, DocumentStatusId StatusId);
+    /// <summary>
+    /// InReview Status for the CompanyApplication
+    /// </summary>
+    InReview=2
+}

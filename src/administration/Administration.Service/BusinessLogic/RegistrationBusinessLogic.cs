@@ -85,11 +85,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return companyWithAddress;
     }
 
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null)
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size,CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null)
     {
         var applications = _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationsFilteredQuery(
-            companyName?.Length >= 3 ? companyName : null,
-            new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED });
+            companyName?.Length >= 3 ? companyName : null,GetCompanyApplicationStatusId(companyApplicationStatusFilter));
 
         return Pagination.CreateResponseAsync(
             page,
@@ -432,5 +431,24 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         return roleData;
+    }
+
+    private static IEnumerable<CompanyApplicationStatusId> GetCompanyApplicationStatusId(CompanyApplicationStatusFilter? companyApplicationStatusFilter = null)
+     {
+        switch(companyApplicationStatusFilter)
+        {
+            case CompanyApplicationStatusFilter.Closed :
+            {
+                return new []{ CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
+            }
+            case CompanyApplicationStatusFilter.InReview :
+            {
+                return new []{ CompanyApplicationStatusId.SUBMITTED };  
+            }
+            default :
+            {
+              return new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };                 
+            }
+        }  
     }
 }

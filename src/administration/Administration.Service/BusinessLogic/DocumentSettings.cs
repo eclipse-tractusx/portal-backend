@@ -18,12 +18,26 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
+public class DocumentSettings
+{
+    [Required(AllowEmptyStrings = false)]
+    public bool EnableSeedEndpoint { get; set; }
+}
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
-public record CompanyApplicationUserEmailData(CompanyApplicationStatusId CompanyApplicationStatusId, Guid CompanyUserId, string? Email, IEnumerable<DocumentStatusData> DocumentDatas);
-
-public record DocumentStatusData(Guid DocumentId, DocumentStatusId StatusId);
+public static class DocumentSettingsExtension
+{
+    public static IServiceCollection ConfigureDocumentSettings(
+        this IServiceCollection services,
+        IConfigurationSection section)
+    {
+        services.AddOptions<DocumentSettings>()
+            .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        return services;
+    }
+}

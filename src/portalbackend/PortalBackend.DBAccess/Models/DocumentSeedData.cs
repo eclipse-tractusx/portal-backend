@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
@@ -18,12 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-
-
+using System.Text.Json.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record CompanyApplicationUserEmailData(CompanyApplicationStatusId CompanyApplicationStatusId, Guid CompanyUserId, string? Email, IEnumerable<DocumentStatusData> DocumentDatas);
-
-public record DocumentStatusData(Guid DocumentId, DocumentStatusId StatusId);
+public record DocumentSeedData(
+    [property: JsonPropertyName("id")] Guid Id,
+    [property: JsonPropertyName("date_created"), Newtonsoft.Json.JsonConverter(typeof(JsonDateTimeOffsetConverter))] DateTimeOffset DateCreated,
+    [property: JsonPropertyName("document_name")] string DocumentName,
+    [property: JsonPropertyName("document_type_id")] int DocumentTypeId,
+    [property: JsonPropertyName("company_user_id")] Guid? CompanyUserId,
+    [property: JsonPropertyName("document_hash")] byte[] DocumentHash,
+    [property: JsonPropertyName("document_content")] byte[] DocumentContent,
+    [property: JsonPropertyName("document_status_id")] int DocumentStatusId
+);
