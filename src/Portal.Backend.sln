@@ -122,6 +122,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Seeding", "framew
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Checklist", "framework\Framework.Checklist\Framework.Checklist.csproj", "{DECBE888-EC3E-41F1-8052-844C346121B2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Checklist.Tests", "..\tests\framework\Framework.Checklist.Tests\Framework.Checklist.Tests.csproj", "{8B7D8210-05A4-4C0A-AB19-D695E6E97281}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -720,6 +722,18 @@ Global
 		{DECBE888-EC3E-41F1-8052-844C346121B2}.Release|x64.Build.0 = Release|Any CPU
 		{DECBE888-EC3E-41F1-8052-844C346121B2}.Release|x86.ActiveCfg = Release|Any CPU
 		{DECBE888-EC3E-41F1-8052-844C346121B2}.Release|x86.Build.0 = Release|Any CPU
+		{8B7D8210-05A4-4C0A-AB19-D695E6E97281}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B7D8210-05A4-4C0A-AB19-D695E6E97281}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B7D8210-05A4-4C0A-AB19-D695E6E97281}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8B7D8210-05A4-4C0A-AB19-D695E6E97281}.Debug|x64.Build.0 = Debug|Any CPU
+		{8B7D8210-05A4-4C0A-AB19-D695E6E97281}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8B7D8210-05A4-4C0A-AB19-D695E6E97281}.Debug|x86.Build.0 = Debug|Any CPU
+		{8B7D8210-05A4-4C0A-AB19-D695E6E97281}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B7D8210-05A4-4C0A-AB19-D695E6E97281}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B7D8210-05A4-4C0A-AB19-D695E6E97281}.Release|x64.ActiveCfg = Release|Any CPU
+		{8B7D8210-05A4-4C0A-AB19-D695E6E97281}.Release|x64.Build.0 = Release|Any CPU
+		{8B7D8210-05A4-4C0A-AB19-D695E6E97281}.Release|x86.ActiveCfg = Release|Any CPU
+		{8B7D8210-05A4-4C0A-AB19-D695E6E97281}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -777,5 +791,6 @@ Global
 		{3828FF08-4CD7-4FF8-B94A-ED5D5FFA0382} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 		{DECBE888-EC3E-41F1-8052-844C346121B2} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
+		{8B7D8210-05A4-4C0A-AB19-D695E6E97281} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 	EndGlobalSection
 EndGlobal
