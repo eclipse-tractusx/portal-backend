@@ -569,20 +569,14 @@ public class PortalDbContext : DbContext
                     .Select(e => new CompanyRole(e))
             );
 
-        modelBuilder.Entity<CompanyRoleAssignedRoleCollection>(entity =>
-        {
-            entity.HasData(StaticPortalData.CompanyRoleAssignedRoleCollections);
-        });
+        modelBuilder.Entity<CompanyRoleAssignedRoleCollection>();
 
         modelBuilder.Entity<CompanyRoleDescription>(entity =>
         {
             entity.HasKey(e => new { e.CompanyRoleId, e.LanguageShortName });
-
-            entity.HasData(StaticPortalData.CompanyRoleDescriptions);
         });
 
-        modelBuilder.Entity<CompanyRoleRegistrationData>()
-            .HasData(StaticPortalData.CompanyRoleRegistrationDatas);
+        modelBuilder.Entity<CompanyRoleRegistrationData>();
 
         modelBuilder.Entity<CompanyServiceAccount>(entity =>
         {
@@ -639,14 +633,11 @@ public class PortalDbContext : DbContext
                     {
                         j.HasKey(e => new { e.UserRoleId, e.UserRoleCollectionId });
                     });
-
-            entity.HasData(StaticPortalData.UserRoleCollections);
         });
 
         modelBuilder.Entity<UserRoleCollectionDescription>(entity =>
         {
             entity.HasKey(e => new { e.UserRoleCollectionId, e.LanguageShortName });
-            entity.HasData(StaticPortalData.UserRoleCollectionDescriptions);
         });
 
         modelBuilder.Entity<UserRoleDescription>().HasKey(e => new { e.UserRoleId, e.LanguageShortName });
@@ -781,8 +772,6 @@ public class PortalDbContext : DbContext
 
             entity.Property(e => e.Alpha3Code)
                 .IsFixedLength();
-
-            entity.HasData(StaticPortalData.Countries);
         });
 
         modelBuilder.Entity<DocumentType>()
@@ -902,8 +891,6 @@ public class PortalDbContext : DbContext
         {
             entity.Property(e => e.ShortName)
                 .IsFixedLength();
-
-            entity.HasData(StaticPortalData.Languages);
         });
 
         modelBuilder.Entity<Notification>(entity =>
@@ -954,11 +941,9 @@ public class PortalDbContext : DbContext
                 .WithOne(x => x.NotificationTypeAssignedTopic)
                 .HasForeignKey<NotificationTypeAssignedTopic>(d => d.NotificationTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasData(StaticPortalData.NotificationTypeAssignedTopics);
         });
 
-        modelBuilder.Entity<UseCase>().HasData(StaticPortalData.UseCases);
+        modelBuilder.Entity<UseCase>();
 
         modelBuilder.Entity<OfferSubscriptionStatus>()
             .HasData(

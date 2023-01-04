@@ -78,6 +78,7 @@ public class BaseEntityBatchSeeder : ICustomSeeder
         await SeedTable<AppInstance>("app_instances", cancellationToken).ConfigureAwait(false);
         await SeedTable<AppSubscriptionDetail>("app_subscription_details", cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferDetailImage>("offer_detail_images", cancellationToken).ConfigureAwait(false);
+        await SeedTable<UseCase>("use_cases", cancellationToken).ConfigureAwait(false);
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
     }

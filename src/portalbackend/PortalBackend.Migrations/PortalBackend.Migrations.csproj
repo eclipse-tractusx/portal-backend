@@ -337,5 +337,25 @@
     <Content Include="Seeder\Data\offer_detail_images.consortia.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Remove="Seeder\Data\company_role_registration_data.json" />
+    <Content Include="Seeder\Data\company_role_registration_data.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_role_descriptions.json" />
+    <Content Include="Seeder\Data\company_role_descriptions.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\use_cases.json" />
+    <Content Include="Seeder\Data\use_cases.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\countries.json" />
+    <Content Include="Seeder\Data\countries.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\notification_type_assigned_topic.json" />
+    <Content Include="Seeder\Data\notification_type_assigned_topic.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>
