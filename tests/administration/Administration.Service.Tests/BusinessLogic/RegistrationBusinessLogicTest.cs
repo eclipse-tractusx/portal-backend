@@ -46,6 +46,8 @@ public class RegistrationBusinessLogicTest
 {
     private static readonly Guid Id = new("d90995fe-1241-4b8d-9f5c-f3909acc6383");
     private static readonly Guid IdWithoutBpn = new("d90995fe-1241-4b8d-9f5c-f3909acc6399");
+    private static readonly Guid NotExistingApplicationId = new("4b95bdb0-6850-42ec-92e0-74f8e2e7e2b5");
+    private static readonly Guid ActiveApplicationCompanyId = new("66c765dd-872d-46e0-aac1-f79330b55406");
     private static readonly string AccessToken = "THISISTHEACCESSTOKEN";
     private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
     private static readonly Guid ApplicationId = new("6084d6e0-0e01-413c-850d-9f944a6c494c");
@@ -57,6 +59,9 @@ public class RegistrationBusinessLogicTest
     private static readonly Guid CentralUserId2 = new("6bc51706-9a30-4eb9-9e60-77fdd6d9cd70");
     private static readonly Guid CentralUserId3 = new("6bc51706-9a30-4eb9-9e60-77fdd6d9cd71");
     private static readonly Guid UserRoleId = new("607818be-4978-41f4-bf63-fa8d2de51154");
+    private static readonly Guid CompanyId = new("95c4339e-e087-4cd2-a5b8-44d385e64630");
+    private const string ValidBpn = "BPNL123698762345";
+    private const string AlreadyTakenBpn = "BPNL123698762666";
     private const string BusinessPartnerNumber = "CAXLSHAREDIDPZZ";
     private const string CompanyName = "Shared Idp Test";
     private const string ClientId = "catenax-portal";
@@ -65,6 +70,7 @@ public class RegistrationBusinessLogicTest
     private readonly IPortalRepositories _portalRepositories;
     private readonly IApplicationRepository _applicationRepository;
     private readonly IUserBusinessPartnerRepository _businessPartnerRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _rolesRepository;
     private readonly ICustodianService _custodianService;
     private readonly IFixture _fixture;
@@ -89,13 +95,13 @@ public class RegistrationBusinessLogicTest
         _portalRepositories = A.Fake<IPortalRepositories>();
         _applicationRepository = A.Fake<IApplicationRepository>();
         _businessPartnerRepository = A.Fake<IUserBusinessPartnerRepository>();
+        _userRepository = A.Fake<IUserRepository>();
         _rolesRepository = A.Fake<IUserRolesRepository>();
         _custodianService = A.Fake<ICustodianService>();
         _settings = A.Fake<RegistrationSettings>();
         _companyRepository = A.Fake<ICompanyRepository>();
         _bpdmService = A.Fake<IBpdmService>();
 
-        var userRepository = A.Fake<IUserRepository>();
         var options = A.Fake<IOptions<RegistrationSettings>>();
         _mailingService = A.Fake<IMailingService>();
         _notificationService = A.Fake<INotificationService>();
@@ -115,11 +121,11 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_rolesRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => options.Value).Returns(_settings);
 
-        A.CallTo(() => userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
+        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
             .ReturnsLazily(Guid.NewGuid);
 
         _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, _mailingService, _notificationService, _sdFactory, _bpdmService, _checklistService);
@@ -406,6 +412,115 @@ public class RegistrationBusinessLogicTest
 
     #endregion
     
+    #region UpdateCompanyBpn
+    
+    [Fact]
+    public async Task UpdateCompanyBpn_WithInvalidBpn_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var bpn = "123";
+
+        // Act
+        async Task Act() => await _logic.UpdateCompanyBpn(ApplicationId, bpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.ParamName.Should().Be("bpn");
+        ex.Message.Should().Be("BPN must contain exactly 16 characters long. (Parameter 'bpn')");
+    }
+    
+    [Fact]
+    public async Task UpdateCompanyBpn_WithInvalidBpnPrefix_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var bpn = "BPXX123698762345";
+
+        // Act
+        async Task Act() => await _logic.UpdateCompanyBpn(ApplicationId, bpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.ParamName.Should().Be("bpn");
+        ex.Message.Should().Be("businessPartnerNumbers must prefixed with BPNL (Parameter 'bpn')");
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpn_WithNotExistingApplication_ThrowsNotFoundException()
+    {
+        // Arrange
+        SetupForUpdateCompanyBpn();
+        
+        // Act
+        async Task Act() => await _logic.UpdateCompanyBpn(NotExistingApplicationId, ValidBpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"application {NotExistingApplicationId} not found");
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpn_WithAlreadyTakenBpn_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForUpdateCompanyBpn();
+
+        // Act
+        async Task Act() => await _logic.UpdateCompanyBpn(IdWithoutBpn, AlreadyTakenBpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("BusinessPartnerNumber is already assigned to a different company");
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpn_WithActiveCompanyForApplication_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForUpdateCompanyBpn();
+
+        // Act
+        async Task Act() => await _logic.UpdateCompanyBpn(ActiveApplicationCompanyId, ValidBpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"application {ActiveApplicationCompanyId} for company {CompanyId} is not pending");
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpn_WithBpnAlreadySet_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForUpdateCompanyBpn();
+
+        // Act
+        async Task Act() => await _logic.UpdateCompanyBpn(ApplicationId, ValidBpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"BusinessPartnerNumber of company {CompanyId} has already been set.");
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpn_WithValidData_CallsExpected()
+    {
+        // Arrange
+        SetupForUpdateCompanyBpn();
+
+        // Act
+        await _logic.UpdateCompanyBpn(IdWithoutBpn, ValidBpn).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(CompanyId, A<Action<Company>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync())
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _checklistService.UpdateBpnStatus(IdWithoutBpn, ChecklistEntryStatusId.DONE))
+            .MustHaveHappenedOnceExactly();
+    }
+
+
+    #endregion
+    
     #region Setup
 
     private void SetupFakes(
@@ -510,6 +625,36 @@ public class RegistrationBusinessLogicTest
                     _notifications.Add(notification);
                 }
             });
+    }
+
+    private void SetupForUpdateCompanyBpn()
+    {
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(IdWithoutBpn, ValidBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+                {
+                    new (true, true, null, CompanyId)
+                }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(NotExistingApplicationId, ValidBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            {
+                new (false, true, ValidBpn, CompanyId)
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(IdWithoutBpn, AlreadyTakenBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            {
+                new (true, true, ValidBpn, CompanyId),
+                new (false, true, AlreadyTakenBpn, Guid.NewGuid())
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(ActiveApplicationCompanyId, ValidBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            {
+                new (true, false, ValidBpn, CompanyId)
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(ApplicationId, ValidBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            {
+                new (true, true, ValidBpn, CompanyId)
+            }.ToAsyncEnumerable());
     }
 
     #endregion

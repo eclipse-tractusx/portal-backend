@@ -375,7 +375,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         if (result.Any(item => !item.IsApplicationCompany))
         {
-            throw new ConflictException($"BusinessPartnerNumber is already assigned to a different company");
+            throw new ConflictException("BusinessPartnerNumber is already assigned to a different company");
         }
         var applicationCompanyData = result.Single(item => item.IsApplicationCompany);
         if (!applicationCompanyData.IsApplicationPending)
