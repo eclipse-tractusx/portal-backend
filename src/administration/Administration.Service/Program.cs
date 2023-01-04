@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Checklist.DependencyInjection;
 
 var VERSION = "v2";
 
@@ -83,7 +84,8 @@ builder.Services
     .AddSdFactoryService(builder.Configuration.GetSection("SdFactory"))
     .AddDapsService(builder.Configuration.GetSection("Daps"))
     .AddCustodianService(builder.Configuration.GetSection("Custodian"))
-    .AddBpdmService(builder.Configuration.GetSection("Bpdm"));
+    .AddBpdmService(builder.Configuration.GetSection("Bpdm"))
+    .AddChecklist();
 
 builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));

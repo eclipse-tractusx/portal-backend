@@ -32,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using System.Text.RegularExpressions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Checklist;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -45,6 +46,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly INotificationService _notificationService;
     private readonly ISdFactoryService _sdFactoryService;
     private readonly IBpdmService _bpdmService;
+    private readonly IChecklistService _checklistService;
 
     public RegistrationBusinessLogic(
         IPortalRepositories portalRepositories, 
@@ -54,7 +56,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IMailingService mailingService,
         INotificationService notificationService,
         ISdFactoryService sdFactoryService,
-        IBpdmService bpdmService)
+        IBpdmService bpdmService,
+        IChecklistService checklistService)
     {
         _portalRepositories = portalRepositories;
         _settings = configuration.Value;
@@ -64,6 +67,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _notificationService = notificationService;
         _sdFactoryService = sdFactoryService;
         _bpdmService = bpdmService;
+        _checklistService = checklistService;
     }
 
     public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
@@ -388,6 +392,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             c.BusinessPartnerNumber = bpn;
         });
 
+        await _checklistService.UpdateBpnStatus(applicationId, ChecklistEntryStatusId.DONE).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -416,7 +421,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         var bpdmTransferData = new BpdmTransferData(data.CompanyName, data.AlphaCode2, data.ZipCode, data.City, data.Street);
-        await _bpdmService.TriggerBpnDataPush(bpdmTransferData, cancellationToken);
+        await _bpdmService.TriggerBpnDataPush(bpdmTransferData, cancellationToken).ConfigureAwait(false);
+        await _checklistService.UpdateBpnStatus(applicationId, ChecklistEntryStatusId.IN_PROGRESS);
     }
 
     private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IDictionary<string, IEnumerable<string>> roles)

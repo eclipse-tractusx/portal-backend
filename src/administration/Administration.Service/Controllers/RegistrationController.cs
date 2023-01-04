@@ -160,7 +160,6 @@ public class RegistrationController : ControllerBase
     public Task UpdateCompanyBpn([FromRoute] Guid applicationId, [FromRoute] string bpn) =>
         _logic.UpdateCompanyBpn(applicationId, bpn);
 
-    
     /// <summary>
     /// Approves the partner request
     /// </summary>

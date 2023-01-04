@@ -33,10 +33,18 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task CreateChecklistForApplication_CreatesExpected()
     {
         // Arrange
+        var checklistEntries = new[]
+        {
+            new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(ChecklistEntryTypeId.CLEARING_HOUSE, ChecklistEntryStatusId.TO_DO),
+            new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(ChecklistEntryTypeId.IDENTITY_WALLET, ChecklistEntryStatusId.TO_DO),
+            new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(ChecklistEntryTypeId.SELF_DESCRIPTION_LP, ChecklistEntryStatusId.TO_DO),
+            new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ChecklistEntryStatusId.IN_PROGRESS),
+            new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(ChecklistEntryTypeId.REGISTRATION_VERIFICATION, ChecklistEntryStatusId.TO_DO),
+        };
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        sut.CreateChecklistForApplication(ApplicationId, ChecklistEntryStatusId.TO_DO);
+        sut.CreateChecklistForApplication(ApplicationId, checklistEntries);
 
         // Assert
         var changeTracker = context.ChangeTracker;
@@ -44,7 +52,11 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(5);
-        changedEntries.First().Entity.Should().BeOfType<ApplicationChecklistEntry>().Which.ApplicationId.Should().Be(ApplicationId);
+        changedEntries.Select(x => x.Entity).Should().AllBeOfType<ApplicationChecklistEntry>();
+        var entries = changedEntries.Select(x => (ApplicationChecklistEntry)x.Entity);
+        entries.Should().AllSatisfy(x => x.ApplicationId.Should().Be(ApplicationId));
+        entries.Where(x => x.StatusId == ChecklistEntryStatusId.TO_DO).Should().HaveCount(4);
+        entries.Where(x => x.StatusId == ChecklistEntryStatusId.IN_PROGRESS).Should().ContainSingle();
     }
 
     #endregion

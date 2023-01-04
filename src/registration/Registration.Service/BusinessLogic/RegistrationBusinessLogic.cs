@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Checklist;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
@@ -46,6 +47,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
+    private readonly IChecklistService _checklistService;
 
     public RegistrationBusinessLogic(
         IOptions<RegistrationSettings> settings,
@@ -54,7 +56,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IProvisioningManager provisioningManager,
         IUserProvisioningService userProvisioningService,
         ILogger<RegistrationBusinessLogic> logger,
-        IPortalRepositories portalRepositories)
+        IPortalRepositories portalRepositories,
+        IChecklistService checklistService)
     {
         _settings = settings.Value;
         _mailingService = mailingService;
@@ -63,6 +66,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _userProvisioningService = userProvisioningService;
         _logger = logger;
         _portalRepositories = portalRepositories;
+        _checklistService = checklistService;
     }
 
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
@@ -441,7 +445,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         UpdateApplicationStatus(applicationId, applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration, applicationRepository);
-        _portalRepositories.GetInstance<IApplicationChecklistRepository>().CreateChecklistForApplication(applicationId, ChecklistEntryStatusId.TO_DO);
+        await _checklistService.CreateInitialChecklistAsync(applicationId);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 

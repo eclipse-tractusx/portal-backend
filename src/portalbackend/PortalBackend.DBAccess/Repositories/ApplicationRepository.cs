@@ -215,4 +215,12 @@ public class ApplicationRepository : IApplicationRepository
          _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => companyName != null ? EF.Functions.ILike(application.Company!.Name, $"%{companyName}%") : true);
+
+     /// <inheritdoc />
+     public Task<string?> HasBpnAlreadySet(Guid applicationId) => 
+         _dbContext.CompanyApplications
+             .AsNoTracking()
+             .Where(a => a.Id == applicationId)
+             .Select(x => x.Company!.BusinessPartnerNumber)
+             .SingleOrDefaultAsync();
 }
