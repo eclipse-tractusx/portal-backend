@@ -66,12 +66,15 @@ public class MappingEntityInsertOnlySeeder : ICustomSeeder
         await SeedData<CompanyIdentityProvider>("company_identity_providers", cancellationToken).ConfigureAwait(false);
         await SeedData<IamIdentityProvider>("IamIdentityProvider", cancellationToken).ConfigureAwait(false);
         await SeedData<CompanyRoleAssignedRoleCollection>("company_role_assigned_role_collections", cancellationToken).ConfigureAwait(false);
+        await SeedData<CompanyRoleRegistrationData>("company_role_registration_data", cancellationToken).ConfigureAwait(false);
+        await SeedData<CompanyRoleDescription>("company_role_descriptions", cancellationToken).ConfigureAwait(false);
         await SeedData<CompanyUserAssignedAppFavourite>("company_user_assigned_app_favourites", cancellationToken).ConfigureAwait(false);
         await SeedData<CompanyUserAssignedBusinessPartner>("company_user_assigned_business_partners", cancellationToken).ConfigureAwait(false);
         await SeedData<CompanyUserAssignedRole>("company_user_assigned_roles", cancellationToken).ConfigureAwait(false);
         await SeedData<CompanyServiceAccountAssignedRole>("company_service_account_assigned_roles", cancellationToken).ConfigureAwait(false);
         await SeedData<ConsentAssignedOffer>("consent_assigned_offers", cancellationToken).ConfigureAwait(false);
         await SeedData<ConsentAssignedOfferSubscription>("consent_assigned_offer_subscriptions", cancellationToken).ConfigureAwait(false);
+        await SeedData<Country>("countries", cancellationToken).ConfigureAwait(false);
         await SeedData<OfferAssignedDocument>("offer_assigned_documents", cancellationToken).ConfigureAwait(false);
         await SeedData<IamIdentityProvider>("iam_identity_providers", cancellationToken).ConfigureAwait(false);
         await SeedData<IamServiceAccount>("iam_service_accounts", cancellationToken).ConfigureAwait(false);
@@ -83,6 +86,7 @@ public class MappingEntityInsertOnlySeeder : ICustomSeeder
         await SeedData<UserRoleAssignedCollection>("user_role_assigned_collections", cancellationToken).ConfigureAwait(false);
         await SeedData<UserRoleCollectionDescription>("user_role_collection_descriptions", cancellationToken).ConfigureAwait(false);
         await SeedData<UserRoleDescription>("user_role_descriptions", cancellationToken).ConfigureAwait(false);
+        await SeedData<NotificationTypeAssignedTopic>("notification_type_assigned_topic", cancellationToken).ConfigureAwait(false);
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
