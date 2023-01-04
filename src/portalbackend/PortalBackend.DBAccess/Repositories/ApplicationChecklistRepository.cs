@@ -54,6 +54,7 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
     {
         var entity = new ApplicationChecklistEntry(applicationId, checklistTypeId, default, default);
         _portalDbContext.ApplicationChecklist.Attach(entity);
+        entity.DateLastChanged = DateTimeOffset.UtcNow;
         setFields.Invoke(entity);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -16,6 +17,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
     private readonly TestDbFixture _dbTestDbFixture;
     
     private readonly static Guid ApplicationId = new("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
+    private readonly static Guid ApplicationWithExistingChecklistId = new("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
 
     public ApplicationChecklistRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -52,6 +54,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(5);
+        changedEntries.Should().AllSatisfy(x => x.State.Should().Be(EntityState.Added));
         changedEntries.Select(x => x.Entity).Should().AllBeOfType<ApplicationChecklistEntry>();
         var entries = changedEntries.Select(x => (ApplicationChecklistEntry)x.Entity);
         entries.Should().AllSatisfy(x => x.ApplicationId.Should().Be(ApplicationId));
@@ -61,6 +64,37 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
 
     #endregion
 
+    #region AttachAndModifyApplicationChecklist
+
+    
+    [Fact]
+    public async Task AttachAndModifyApplicationChecklist_UpdatesEntry()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyApplicationChecklist(ApplicationWithExistingChecklistId, ChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            entry =>
+            {
+                entry.StatusId = ChecklistEntryStatusId.IN_PROGRESS;
+            });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().ContainSingle();
+        changedEntries.Should().AllSatisfy(x => x.State.Should().Be(EntityState.Modified));
+        changedEntries.Select(x => x.Entity).Should().AllBeOfType<ApplicationChecklistEntry>();
+        var entry = (ApplicationChecklistEntry)changedEntries.First().Entity;
+        entry.DateLastChanged.Should().NotBeNull();
+        entry.StatusId.Should().Be(ChecklistEntryStatusId.IN_PROGRESS);
+    }
+
+    #endregion
+    
     private async Task<(ApplicationChecklistRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
