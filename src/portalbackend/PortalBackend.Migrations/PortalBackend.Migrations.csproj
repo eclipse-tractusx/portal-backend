@@ -357,5 +357,13 @@
     <Content Include="Seeder\Data\notification_type_assigned_topic.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Remove="Seeder\Data\agreement_assigned_documents.json" />
+    <Content Include="Seeder\Data\agreement_assigned_documents.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\documents.json" />
+    <Content Include="Seeder\Data\documents.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>
