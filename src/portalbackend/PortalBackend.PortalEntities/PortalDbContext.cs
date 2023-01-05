@@ -104,6 +104,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<InvitationStatus> InvitationStatuses { get; set; } = default!;
     public virtual DbSet<Language> Languages { get; set; } = default!;
     public virtual DbSet<Notification> Notifications { get; set; } = default!;
+    public virtual DbSet<NotificationTypeAssignedTopic> NotificationTypeAssignedTopics { get; set; } = default!;
     public virtual DbSet<Offer> Offers { get; set; } = default!;
     public virtual DbSet<OfferAssignedDocument> OfferAssignedDocuments { get; set; } = default!;
     public virtual DbSet<OfferAssignedLicense> OfferAssignedLicenses { get; set; } = default!;

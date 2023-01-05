@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230105114738_1.0.0-RC1")]
+    [Migration("20230105122941_1.0.0-RC1")]
     partial class _100RC1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2442,16 +2442,16 @@ namespace PortalBackend.Migrations.Migrations
                         .HasColumnName("notification_topic_id");
 
                     b.HasKey("NotificationTypeId", "NotificationTopicId")
-                        .HasName("pk_notification_type_assigned_topic");
+                        .HasName("pk_notification_type_assigned_topics");
 
                     b.HasIndex("NotificationTopicId")
-                        .HasDatabaseName("ix_notification_type_assigned_topic_notification_topic_id");
+                        .HasDatabaseName("ix_notification_type_assigned_topics_notification_topic_id");
 
                     b.HasIndex("NotificationTypeId")
                         .IsUnique()
-                        .HasDatabaseName("ix_notification_type_assigned_topic_notification_type_id");
+                        .HasDatabaseName("ix_notification_type_assigned_topics_notification_type_id");
 
-                    b.ToTable("notification_type_assigned_topic", "portal");
+                    b.ToTable("notification_type_assigned_topics", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer", b =>
@@ -3882,13 +3882,13 @@ namespace PortalBackend.Migrations.Migrations
                         .WithMany("NotificationTypeAssignedTopics")
                         .HasForeignKey("NotificationTopicId")
                         .IsRequired()
-                        .HasConstraintName("fk_notification_type_assigned_topic_notification_topic_notific");
+                        .HasConstraintName("fk_notification_type_assigned_topics_notification_topic_notifi");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationType", "NotificationType")
                         .WithOne("NotificationTypeAssignedTopic")
                         .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTypeAssignedTopic", "NotificationTypeId")
                         .IsRequired()
-                        .HasConstraintName("fk_notification_type_assigned_topic_notification_type_notifica");
+                        .HasConstraintName("fk_notification_type_assigned_topics_notification_type_notific");
 
                     b.Navigation("NotificationTopic");
 
