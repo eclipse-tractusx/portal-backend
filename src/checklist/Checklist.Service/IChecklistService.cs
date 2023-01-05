@@ -1,6 +1,7 @@
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Checklist;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Service;
 
 public interface IChecklistService
 {
@@ -13,7 +14,9 @@ public interface IChecklistService
     /// <summary>
     /// Updates the status of the checklist entry for the given id
     /// </summary>
-    /// <param name="checklistEntryId">ID of the checklist entry</param>
+    /// <param name="applicationId">ID of the checklist entry</param>
     /// <param name="statusId">Id of the new status</param>
-    Task UpdateBpnStatus(Guid checklistEntryId, ChecklistEntryStatusId statusId);
+    Task UpdateBpnStatusAsync(Guid applicationId, ChecklistEntryStatusId statusId);
+
+    Task TriggerBpnDataPush(Guid applicationId, BpdmData data, CancellationToken cancellationToken);
 }

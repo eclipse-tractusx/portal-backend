@@ -20,7 +20,6 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Checklist.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -32,6 +31,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.DependencyInjection;
 
 var VERSION = "v2";
 
@@ -84,8 +85,8 @@ builder.Services
     .AddSdFactoryService(builder.Configuration.GetSection("SdFactory"))
     .AddDapsService(builder.Configuration.GetSection("Daps"))
     .AddCustodianService(builder.Configuration.GetSection("Custodian"))
-    .AddBpdmService(builder.Configuration.GetSection("Bpdm"))
-    .AddChecklist();
+    .AddChecklist()
+    .AddBpdmService(builder.Configuration.GetSection("Bpdm"));
 
 builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));

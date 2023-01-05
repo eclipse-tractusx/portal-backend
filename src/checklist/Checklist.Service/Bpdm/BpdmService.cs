@@ -18,13 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
-using System.Net.Http.Headers;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
 
 public class BpdmService : IBpdmService
 {

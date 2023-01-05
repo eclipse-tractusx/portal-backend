@@ -18,7 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Checklist;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -32,6 +33,7 @@ public class ChecklistServiceTests
     private static readonly Guid ApplicationWithBpnId = new ("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IBpdmService _bpdmService;
     private readonly IApplicationRepository _applicationRepository;
     private readonly IApplicationChecklistRepository _applicationChecklistRepository;
     private readonly ChecklistService _service;
@@ -44,11 +46,12 @@ public class ChecklistServiceTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _portalRepositories = A.Fake<IPortalRepositories>();
+        _bpdmService = A.Fake<IBpdmService>();
         
         _applicationRepository = A.Fake<IApplicationRepository>();
         _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
 
-        _service = new ChecklistService(_portalRepositories);
+        _service = new ChecklistService(_portalRepositories, _bpdmService);
     }
     
     #region CreateInitialChecklistAsync
@@ -105,7 +108,7 @@ public class ChecklistServiceTests
         SetupFakesForUpdate(entry);
         
         // Act
-        await _service.UpdateBpnStatus(ApplicationWithoutBpnId, statusId).ConfigureAwait(false);
+        await _service.UpdateBpnStatusAsync(ApplicationWithoutBpnId, statusId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();

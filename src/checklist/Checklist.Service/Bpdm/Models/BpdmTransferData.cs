@@ -18,15 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Checklist.DependencyInjection;
-
-public static class ChecklistExtensions
-{
-    public static IServiceCollection AddChecklist(this IServiceCollection services)
-    {
-        return services
-            .AddScoped<IChecklistService, ChecklistService>();
-    }
-}
+/// <summary>
+/// View model of an application's detailed data for the bpdm.
+/// </summary>
+/// <param name="CompanyName">Name of the company.</param>
+/// <param name="AlphaCode2">AlphaCode 2 of the company.</param>
+/// <param name="ZipCode">Zipcode of the company's address.</param>
+/// <param name="City">City of the company's address.</param>
+/// <param name="Street">Street of the company's address.</param>
+public record BpdmTransferData(string CompanyName, string AlphaCode2, string ZipCode, string City, string Street);

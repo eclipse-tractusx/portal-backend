@@ -21,14 +21,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.Checklist</AssemblyName>
+        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Checklist.Service</AssemblyName>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.Checklist</RootNamespace>
+        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Checklist.Service</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\framework\Framework.Token\Framework.Token.csproj" />
+      <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     </ItemGroup>
 

@@ -18,19 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Checklist;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Service;
 
 public class ChecklistService : IChecklistService
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IBpdmService _bpdmService;
 
-    public ChecklistService(IPortalRepositories portalRepositories)
+    public ChecklistService(IPortalRepositories portalRepositories, IBpdmService bpdmService)
     {
         _portalRepositories = portalRepositories;
+        _bpdmService = bpdmService;
     }
 
     /// <inheritdoc />
@@ -46,10 +51,18 @@ public class ChecklistService : IChecklistService
     }
 
     /// <inheritdoc />
-    public async Task UpdateBpnStatus(Guid checklistEntryId, ChecklistEntryStatusId statusId)
+    public async Task TriggerBpnDataPush(Guid applicationId, BpdmData data, CancellationToken cancellationToken)
+    {
+        var bpdmTransferData = new BpdmTransferData(data.CompanyName, data.AlphaCode2, data.ZipCode, data.City, data.Street);
+        await _bpdmService.TriggerBpnDataPush(bpdmTransferData, cancellationToken).ConfigureAwait(false);
+        await this.UpdateBpnStatusAsync(applicationId, ChecklistEntryStatusId.IN_PROGRESS).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task UpdateBpnStatusAsync(Guid applicationId, ChecklistEntryStatusId statusId)
     {
         _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .AttachAndModifyApplicationChecklist(checklistEntryId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, checklist =>
+            .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, checklist =>
             {
                 checklist.StatusId = statusId;
             });
