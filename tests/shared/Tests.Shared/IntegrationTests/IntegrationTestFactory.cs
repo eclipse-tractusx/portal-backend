@@ -70,7 +70,7 @@ public class IntegrationTestFactory<TTestClass> : WebApplicationFactory<TTestCla
             services.AddDbContext<PortalDbContext>(options =>
             {
                 options.UseNpgsql(_container.ConnectionString,
-                    x => x.MigrationsAssembly(typeof(BaseEntityBatchSeeder).Assembly.GetName().Name)
+                    x => x.MigrationsAssembly(typeof(BatchSeeder).Assembly.GetName().Name)
                         .MigrationsHistoryTable("__efmigrations_history_portal"));
             });
             services.EnsureDbCreated(SetupDbActions);
