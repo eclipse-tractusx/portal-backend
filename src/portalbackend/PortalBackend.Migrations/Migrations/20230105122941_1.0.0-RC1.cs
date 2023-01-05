@@ -659,7 +659,7 @@ namespace PortalBackend.Migrations.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "notification_type_assigned_topic",
+                name: "notification_type_assigned_topics",
                 schema: "portal",
                 columns: table => new
                 {
@@ -668,15 +668,15 @@ namespace PortalBackend.Migrations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_notification_type_assigned_topic", x => new { x.notification_type_id, x.notification_topic_id });
+                    table.PrimaryKey("pk_notification_type_assigned_topics", x => new { x.notification_type_id, x.notification_topic_id });
                     table.ForeignKey(
-                        name: "fk_notification_type_assigned_topic_notification_topic_notific",
+                        name: "fk_notification_type_assigned_topics_notification_topic_notifi",
                         column: x => x.notification_topic_id,
                         principalSchema: "portal",
                         principalTable: "notification_topic",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_notification_type_assigned_topic_notification_type_notifica",
+                        name: "fk_notification_type_assigned_topics_notification_type_notific",
                         column: x => x.notification_type_id,
                         principalSchema: "portal",
                         principalTable: "notification_type",
@@ -2550,15 +2550,15 @@ namespace PortalBackend.Migrations.Migrations
                 column: "invitation_status_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_notification_type_assigned_topic_notification_topic_id",
+                name: "ix_notification_type_assigned_topics_notification_topic_id",
                 schema: "portal",
-                table: "notification_type_assigned_topic",
+                table: "notification_type_assigned_topics",
                 column: "notification_topic_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_notification_type_assigned_topic_notification_type_id",
+                name: "ix_notification_type_assigned_topics_notification_type_id",
                 schema: "portal",
-                table: "notification_type_assigned_topic",
+                table: "notification_type_assigned_topics",
                 column: "notification_type_id",
                 unique: true);
 
@@ -3036,7 +3036,7 @@ namespace PortalBackend.Migrations.Migrations
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "notification_type_assigned_topic",
+                name: "notification_type_assigned_topics",
                 schema: "portal");
 
             migrationBuilder.DropTable(
