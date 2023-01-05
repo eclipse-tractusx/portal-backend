@@ -345,5 +345,17 @@
     <Content Include="Seeder\Data\documents.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Remove="Seeder\Data\company_identifiers.consortia.json" />
+    <Content Include="Seeder\Data\company_identifiers.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_identifiers.json" />
+    <Content Include="Seeder\Data\company_identifiers.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\country_assigned_identifiers.json" />
+    <Content Include="Seeder\Data\country_assigned_identifiers.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>
