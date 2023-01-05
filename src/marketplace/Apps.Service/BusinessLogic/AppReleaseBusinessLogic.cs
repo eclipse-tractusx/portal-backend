@@ -490,11 +490,11 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             case OfferStatusIdFilter.InReview :
             {
-               return _settings.OfferStatusIds = new []{ OfferStatusId.IN_REVIEW };
+               return new []{ OfferStatusId.IN_REVIEW };
             }
             default :
             {
-                return _settings.OfferStatusIds = new []{ OfferStatusId.IN_REVIEW, OfferStatusId.ACTIVE };
+                return new []{ OfferStatusId.IN_REVIEW, OfferStatusId.ACTIVE };
             }
         }       
     }
