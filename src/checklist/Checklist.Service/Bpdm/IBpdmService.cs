@@ -18,14 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm.Models;
+
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
 
 /// <summary>
-/// View model of an application's detailed data for the bpdm.
+/// Service to call the BPDM endpoints
 /// </summary>
-/// <param name="CompanyName">Name of the company.</param>
-/// <param name="AlphaCode2">AlphaCode 2 of the company.</param>
-/// <param name="ZipCode">Zipcode of the company's address.</param>
-/// <param name="City">City of the company's address.</param>
-/// <param name="Street">Street of the company's address.</param>
-public record BpdmTransferData(string CompanyName, string AlphaCode2, string ZipCode, string City, string Street);
+public interface IBpdmService
+{
+    /// <summary>
+    /// Triggers the bpn data push
+    /// </summary>
+    /// <param name="data">The bpdm data</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
+    Task<bool> TriggerBpnDataPush(BpdmTransferData data, CancellationToken cancellationToken);
+}

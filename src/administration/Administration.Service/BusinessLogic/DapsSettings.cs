@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 

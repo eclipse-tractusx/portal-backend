@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
@@ -18,15 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.DependencyInjection;
 
-/// <summary>
-/// Settings used in business logic concerning connectors.
-/// </summary>
-public class BpdmServiceSettings : KeyVaultAuthSettings
+public static class ChecklistExtensions
 {
-    [Required(AllowEmptyStrings = false)]
-    public string BaseAdress { get; set; } = null!;
+    public static IServiceCollection AddChecklist(this IServiceCollection services)
+    {
+        return services
+            .AddScoped<IChecklistService, ChecklistService>();
+    }
 }

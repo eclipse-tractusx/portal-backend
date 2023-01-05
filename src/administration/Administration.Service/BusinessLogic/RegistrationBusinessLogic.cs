@@ -21,8 +21,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Checklist;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -33,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using System.Text.RegularExpressions;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -45,7 +44,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IMailingService _mailingService;
     private readonly INotificationService _notificationService;
     private readonly ISdFactoryService _sdFactoryService;
-    private readonly IBpdmService _bpdmService;
     private readonly IChecklistService _checklistService;
 
     public RegistrationBusinessLogic(
@@ -56,7 +54,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IMailingService mailingService,
         INotificationService notificationService,
         ISdFactoryService sdFactoryService,
-        IBpdmService bpdmService,
         IChecklistService checklistService)
     {
         _portalRepositories = portalRepositories;
@@ -66,7 +63,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _mailingService = mailingService;
         _notificationService = notificationService;
         _sdFactoryService = sdFactoryService;
-        _bpdmService = bpdmService;
         _checklistService = checklistService;
     }
 
@@ -392,7 +388,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             c.BusinessPartnerNumber = bpn;
         });
 
-        await _checklistService.UpdateBpnStatus(applicationId, ChecklistEntryStatusId.DONE).ConfigureAwait(false);
+        await _checklistService.UpdateBpnStatusAsync(applicationId, ChecklistEntryStatusId.DONE).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -420,9 +416,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ConflictException("ZipCode must not be empty");
         }
 
-        var bpdmTransferData = new BpdmTransferData(data.CompanyName, data.AlphaCode2, data.ZipCode, data.City, data.Street);
-        await _bpdmService.TriggerBpnDataPush(bpdmTransferData, cancellationToken).ConfigureAwait(false);
-        await _checklistService.UpdateBpnStatus(applicationId, ChecklistEntryStatusId.IN_PROGRESS);
+        await _checklistService.TriggerBpnDataPush(applicationId, data, cancellationToken);
     }
 
     private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IDictionary<string, IEnumerable<string>> roles)
