@@ -83,6 +83,8 @@ public class MappingEntityInsertOnlySeeder : ICustomSeeder
         await SeedData<UserRoleAssignedCollection>("user_role_assigned_collections", cancellationToken).ConfigureAwait(false);
         await SeedData<UserRoleCollectionDescription>("user_role_collection_descriptions", cancellationToken).ConfigureAwait(false);
         await SeedData<UserRoleDescription>("user_role_descriptions", cancellationToken).ConfigureAwait(false);
+        await SeedData<CompanyIdentifier>("company_identifiers", cancellationToken).ConfigureAwait(false);
+        await SeedData<CountryAssignedIdentifier>("country_assigned_identifiers", cancellationToken).ConfigureAwait(false);
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
