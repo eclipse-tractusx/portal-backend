@@ -484,7 +484,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     public Task ApproveAppRequestAsync(Guid appId, string iamUserId) =>
         _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, (_settings.ApproveAppUserRoles));
     
-    private IEnumerable<OfferStatusId> GetOfferStatusIds(OfferStatusIdFilter? offerStatusIdFilter)
+    private static IEnumerable<OfferStatusId> GetOfferStatusIds(OfferStatusIdFilter? offerStatusIdFilter)
     {
         switch(offerStatusIdFilter)
         {

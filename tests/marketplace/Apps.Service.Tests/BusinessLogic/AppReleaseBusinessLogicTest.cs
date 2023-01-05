@@ -518,7 +518,7 @@ public class AppReleaseBusinessLogicTest
             new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.ACTIVE),
             new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.ACTIVE)
         };
-        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(InReviewData.Count(), InReviewData.Skip(skip).Take(take)));
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, InReviewData.Skip(skip).Take(take)));
         A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._,A<OfferSorting>._))
             .Returns(paginationResult);
         var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, _notificationService);
@@ -547,7 +547,7 @@ public class AppReleaseBusinessLogicTest
             new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
             new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW)
         };
-        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(InReviewData.Count(), InReviewData.Skip(skip).Take(take)));
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, InReviewData.Skip(skip).Take(take)));
         A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._,A<OfferSorting>._))
             .Returns(paginationResult);
         var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, _notificationService);
