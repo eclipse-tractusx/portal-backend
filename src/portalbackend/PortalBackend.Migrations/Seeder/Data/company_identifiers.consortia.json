@@ -1,0 +1,27 @@
+[
+    {
+      "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88",
+      "unique_identifier_id": 1,
+      "value": "COMMERCIAL_REG_NUMBER",
+    },
+    {
+      "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+      "unique_identifier_id": 2,
+      "business_partner_number": "VAT_ID",
+    },
+    {
+      "company_id": "0dcd8209-85e2-4073-b130-ac094fb47106",
+      "unique_identifier_id": 3,
+      "business_partner_number": "LEI_CODE",
+    },
+    {
+      "company_id": "220330ac-170d-4e22-8d72-9467ed042149",
+      "unique_identifier_id": 4,
+      "business_partner_number": "VIES",
+    },
+    {
+      "company_id": "bdac6865-2a8d-4bfd-9373-9dfce8190895",
+      "unique_identifier_id": 5,
+      "business_partner_number": "EORI",
+    }
+  ]
