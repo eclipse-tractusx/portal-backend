@@ -337,5 +337,9 @@
     <Content Include="Seeder\Data\offer_detail_images.consortia.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Remove="Seeder\Data\documents.json" />
+    <Content Include="Seeder\Data\documents.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>
