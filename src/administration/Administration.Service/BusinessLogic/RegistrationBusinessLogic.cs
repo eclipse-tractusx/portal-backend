@@ -109,7 +109,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                                 new DocumentDetails(document.Id)
                                 {
                                     DocumentTypeId = document.DocumentTypeId
-                                })))
+                                })),
+                        application.Company!.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId))
                     {
                         Email = application.Invitations
                             .Select(invitation => invitation.CompanyUser)
