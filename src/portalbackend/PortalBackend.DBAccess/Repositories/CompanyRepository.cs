@@ -118,12 +118,10 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsValidServicProviderDetailsId, bool IsSameCompany)> CheckProviderCompanyDetailsExistsForUser(string iamUserId, Guid providerCompanyDetailsId) =>
+    public Task<Guid> CheckProviderCompanyDetailsExistsForUser(string iamUserId) =>
         _context.ProviderCompanyDetails.AsNoTracking()
-            .Where(details => details.Id == providerCompanyDetailsId)
-            .Select(details => new ValueTuple<bool,bool>(
-                true,
-                details.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId)))
+            .Where(details => details.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
+            .Select(details => details.Id)
             .SingleOrDefaultAsync();
     
     /// <inheritdoc />
@@ -131,14 +129,12 @@ public class CompanyRepository : ICompanyRepository
         _context.ProviderCompanyDetails.Add(new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow)).Entity;
 
     /// <inheritdoc />
-    public Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany, bool IsCompanyUser)> GetProviderCompanyDetailAsync(Guid providerDetailDataId, CompanyRoleId companyRoleId, string iamUserId) =>
+    public Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, string iamUserId) =>
         _context.ProviderCompanyDetails
-            .Where(x => 
-                x.Id == providerDetailDataId)
-            .Select(x => new ValueTuple<ProviderDetailReturnData,bool,bool>(
+            .Where(x => x.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
+            .Select(x => new ValueTuple<ProviderDetailReturnData,bool>(
                 new ProviderDetailReturnData(x.Id, x.CompanyId, x.AutoSetupUrl),
-                x.Company!.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId),
-                x.Company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId)))
+                x.Company!.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
