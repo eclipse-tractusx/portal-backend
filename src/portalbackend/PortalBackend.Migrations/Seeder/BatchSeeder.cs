@@ -91,6 +91,8 @@ public class BatchSeeder : ICustomSeeder
         await SeedTable<UserRoleCollectionDescription>("user_role_collection_descriptions", x => new { x.UserRoleCollectionId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedTable<UserRoleDescription>("user_role_descriptions", x => new { x.UserRoleId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedTable<NotificationTypeAssignedTopic>("notification_type_assigned_topic", x => new { x.NotificationTypeId, x.NotificationTopicId}, cancellationToken).ConfigureAwait(false);
+        await SeedTable<CompanyIdentifier>("company_identifiers", x=>  new { x.CompanyId, x.UniqueIdentifierId }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<CountryAssignedIdentifier>("country_assigned_identifiers", x => new { x.CountryAlpha2Code, x.UniqueIdentifierId }, cancellationToken).ConfigureAwait(false);
         
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
