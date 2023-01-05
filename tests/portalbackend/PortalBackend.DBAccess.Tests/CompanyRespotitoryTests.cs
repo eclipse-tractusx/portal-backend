@@ -79,20 +79,19 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region Create ServiceProviderCompanyDetail
 
     [Fact]
-    public async Task GetServiceProviderCompanyDetailAsync_WithNotExistingUser_ReturnsExpectedResult()
+    public async Task GetServiceProviderCompanyDetailAsync_WithExistingUser_ReturnsExpectedResult()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProviderCompanyDetailAsync(_validDetailId, CompanyRoleId.SERVICE_PROVIDER, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, IamUserId).ConfigureAwait(false);
         
         // Assert
         result.Should().NotBe(default);
         result.ProviderDetailReturnData.Should().NotBeNull();
         result.ProviderDetailReturnData.Id.Should().Be(_validDetailId);
         result.IsProviderCompany.Should().BeTrue();
-        result.IsCompanyUser.Should().BeTrue();
     }
 
     [Fact]
@@ -102,25 +101,24 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProviderCompanyDetailAsync(Guid.NewGuid(), CompanyRoleId.SERVICE_PROVIDER, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(default);
     }
 
     [Fact]
-    public async Task GetServiceProviderCompanyDetailAsync_WithNotExistingUser_ReturnsIsCompanyUserFalse()
+    public async Task GetServiceProviderCompanyDetailAsync_WithExistingUserAndNotProvider_ReturnsIsCompanyUserFalse()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProviderCompanyDetailAsync(_validDetailId, CompanyRoleId.SERVICE_PROVIDER, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.OPERATOR, IamUserId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
-        result.IsProviderCompany.Should().BeTrue();
-        result.IsCompanyUser.Should().BeFalse();
+        result.IsProviderCompany.Should().BeFalse();
     }
 
     #endregion
@@ -248,44 +246,29 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region AttachAndModifyServiceProviderDetails
 
     [Fact]
-    public async Task CheckServiceProviderDetailsExistsForUser_WithValidIamUserAndDetailId_ReturnsTrue()
+    public async Task CheckServiceProviderDetailsExistsForUser_WithValidIamUser_ReturnsDetailId()
     {
         // Arrange
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.CheckProviderCompanyDetailsExistsForUser("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122")).ConfigureAwait(false);
+        var result = await sut.CheckProviderCompanyDetailsExistsForUser("623770c5-cf38-4b9f-9a35-f8b9ae972e2d").ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBe(default);
-        result.IsSameCompany.Should().BeTrue();
+        result.Should().NotBeEmpty();
     }
 
     [Fact]
-    public async Task CheckServiceProviderDetailsExistsForUser_WithNotExistingIamUserAndExistingDetailId_ReturnsFalse()
+    public async Task CheckServiceProviderDetailsExistsForUser_WithNotExistingIamUser_ReturnsEmpty()
     {
         // Arrange
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.CheckProviderCompanyDetailsExistsForUser(Guid.NewGuid().ToString(), new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122")).ConfigureAwait(false);
+        var result = await sut.CheckProviderCompanyDetailsExistsForUser(Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBe(default);
-        result.IsSameCompany.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CheckServiceProviderDetailsExistsForUser_WithExistingIamUserAndNotExistingDetailId_ReturnsFalse()
-    {
-        // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.CheckProviderCompanyDetailsExistsForUser("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", Guid.NewGuid()).ConfigureAwait(false);
-
-        // Assert
-        result.Should().Be(default);
+        result.Should().BeEmpty();
     }
 
     #endregion

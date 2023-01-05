@@ -30,10 +30,9 @@ public interface IServiceProviderBusinessLogic
     /// <summary>
     /// Gets the service provider company details
     /// </summary>
-    /// <param name="serviceProviderDetailDataId">Id of the service provider details</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>The detail data</returns>
-    Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, string iamUserId);
+    Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(string iamUserId);
 
     /// <summary>
     /// Creates service provider company details
@@ -42,5 +41,5 @@ public interface IServiceProviderBusinessLogic
     /// <param name="iamUserId">Id of the iam user</param>
     Task<Guid> CreateServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId);
 
-    Task UpdateServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, ServiceProviderDetailData data, string iamUserId);
+    Task UpdateServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId);
 }

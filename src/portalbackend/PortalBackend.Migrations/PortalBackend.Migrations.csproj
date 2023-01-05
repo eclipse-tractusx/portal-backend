@@ -337,6 +337,14 @@
     <Content Include="Seeder\Data\offer_detail_images.consortia.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Remove="Seeder\Data\agreement_assigned_documents.json" />
+    <Content Include="Seeder\Data\agreement_assigned_documents.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\documents.json" />
+    <Content Include="Seeder\Data\documents.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Remove="Seeder\Data\company_identifiers.consortia.json" />
     <Content Include="Seeder\Data\company_identifiers.consortia.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
