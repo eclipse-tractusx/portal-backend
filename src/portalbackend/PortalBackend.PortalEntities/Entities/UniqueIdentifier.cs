@@ -19,46 +19,29 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class Country
+public class UniqueIdentifier
 {
-    private Country()
+    private UniqueIdentifier()
     {
-        Alpha2Code = null!;
-        CountryNameDe = null!;
-        CountryNameEn = null!;
-        Addresses = new HashSet<Address>();
-        Connectors = new HashSet<Connector>();
+        Label = null!;
         CountryAssignedIdentifiers = new HashSet<CountryAssignedIdentifier>();
+        CompanyIdentifiers = new HashSet<CompanyIdentifier>();
     }
 
-    public Country(string alpha2Code, string countryNameDe, string countryNameEn) : this()
+    public UniqueIdentifier(UniqueIdentifierId uniqueIdentifierId) : this()
     {
-        Alpha2Code = alpha2Code;
-        CountryNameDe = countryNameDe;
-        CountryNameEn = countryNameEn;
+        Id = uniqueIdentifierId;
+        Label = uniqueIdentifierId.ToString();
     }
 
-    [Key]
-    [StringLength(2,MinimumLength = 2)]
-    [JsonPropertyName("alpha2code")]
-    public string Alpha2Code { get; private set; }
-
-    [StringLength(3, MinimumLength = 3)]
-    [JsonPropertyName("alpha3code")]
-    public string? Alpha3Code { get; set; }
+    public UniqueIdentifierId Id { get; private set; }
 
     [MaxLength(255)]
-    public string CountryNameDe { get; set; }
-
-    [MaxLength(255)]
-    public string CountryNameEn { get; set; }
-
-    // Navigation properties
-    public virtual ICollection<Address> Addresses { get; private set; }
-    public virtual ICollection<Connector> Connectors { get; private set; }
+    public string Label { get; private set; }
     public virtual ICollection<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; private set; }
+    public virtual ICollection<CompanyIdentifier> CompanyIdentifiers { get; private set; }
 }

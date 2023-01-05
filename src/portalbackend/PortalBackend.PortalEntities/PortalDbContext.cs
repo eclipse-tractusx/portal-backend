@@ -68,6 +68,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
     public virtual DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; } = default!;
     public virtual DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; } = default!;
+    public virtual DbSet<CompanyIdentifier> CompanyIdentifiers { get; set; } = default!;
     public virtual DbSet<CompanyIdentityProvider> CompanyIdentityProviders { get; set; } = default!;
     public virtual DbSet<CompanyRoleAssignedRoleCollection> CompanyRoleAssignedRoleCollections { get; set; } = default!;
     public virtual DbSet<CompanyRoleDescription> CompanyRoleDescriptions { get; set; } = default!;
@@ -89,6 +90,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; set; } = default!;
     public virtual DbSet<ConsentStatus> ConsentStatuses { get; set; } = default!;
     public virtual DbSet<Country> Countries { get; set; } = default!;
+    public virtual DbSet<CountryAssignedIdentifier> CountryAssignedIdentifier { get; set; } = default!;
     public virtual DbSet<Document> Documents { get; set; } = default!;
     public virtual DbSet<DocumentType> DocumentTypes { get; set; } = default!;
     public virtual DbSet<DocumentStatus> DocumentStatus { get; set; } = default!;
@@ -116,6 +118,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<ProviderCompanyDetail> ProviderCompanyDetails { get; set; } = default!;
     public virtual DbSet<ServiceAssignedServiceType> ServiceAssignedServiceTypes { get; set; } = default!;
     public virtual DbSet<ServiceType> ServiceTypes { get; set; } = default!;
+    public virtual DbSet<UniqueIdentifier> UniqueIdentifiers { get; set; } = default!;
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
     public virtual DbSet<UserRole> UserRoles { get; set; } = default!;
     public virtual DbSet<UserRoleAssignedCollection> UserRoleAssignedCollections { get; set; } = default!;
@@ -784,7 +787,22 @@ public class PortalDbContext : DbContext
 
             entity.HasData(StaticPortalData.Countries);
         });
+        
+        modelBuilder.Entity<CountryAssignedIdentifier>(entity =>
+        {
+            entity.HasKey(e => new { e.CountryAlpha2Code, e.UniqueIdentifierId });
 
+            entity.HasOne(d => d.Country)
+                .WithMany(p => p!.CountryAssignedIdentifiers)
+                .HasForeignKey(d => d.CountryAlpha2Code)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.UniqueIdentifier)
+                .WithMany(p => p!.CountryAssignedIdentifiers)
+                .HasForeignKey(d => d.UniqueIdentifierId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+        
         modelBuilder.Entity<DocumentType>()
             .HasData(
                 Enum.GetValues(typeof(DocumentTypeId))
@@ -960,11 +978,33 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<UseCase>().HasData(StaticPortalData.UseCases);
 
+        modelBuilder.Entity<UniqueIdentifier>()
+            .HasData(
+                Enum.GetValues(typeof(UniqueIdentifierId))
+                    .Cast<UniqueIdentifierId>()
+                    .Select(e => new UniqueIdentifier(e))
+            );
+
         modelBuilder.Entity<OfferSubscriptionStatus>()
             .HasData(
                 Enum.GetValues(typeof(OfferSubscriptionStatusId))
                     .Cast<OfferSubscriptionStatusId>()
                     .Select(e => new OfferSubscriptionStatus(e))
             );
+        
+        modelBuilder.Entity<CompanyIdentifier>(entity =>
+        {
+            entity.HasKey(e => new { e.CompanyId, e.UniqueIdentifierId });
+
+            entity.HasOne(d => d.Company)
+                .WithMany(p => p!.CompanyIdentifiers)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.UniqueIdentifier)
+                .WithMany(p => p!.CompanyIdentifiers)
+                .HasForeignKey(d => d.UniqueIdentifierId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
     }
 }
