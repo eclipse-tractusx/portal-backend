@@ -105,7 +105,7 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
         var serviceProviderDetailDataId = await _portalRepositories.GetInstance<ICompanyRepository>()
             .CheckProviderCompanyDetailsExistsForUser(iamUserId)
             .ConfigureAwait(false);
-        if (serviceProviderDetailDataId == default)
+        if (serviceProviderDetailDataId == Guid.Empty)
         {
             throw new NotFoundException($"ServiceProviderDetailData does not exists.");
         }
