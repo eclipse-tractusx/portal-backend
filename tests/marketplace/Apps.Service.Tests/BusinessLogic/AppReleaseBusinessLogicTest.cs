@@ -502,7 +502,39 @@ public class AppReleaseBusinessLogicTest
     }
 
     #endregion
-    
+
+    #region GetAllInReviewStatusApps
+
+    [Fact]
+    public async Task GetAllInReviewStatusAppsAsync_DefaultRequest()
+    {
+        // Arrange
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, _notificationService);
+
+        // Act
+        await sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, null);
+        
+        // Assert
+        A.CallTo(() => _offerRepository
+            .GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._,A<OfferSorting>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetAllInReviewStatusAppsAsync_InReviewRequest()
+    {
+        // Arrange
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, null!);
+
+        // Act
+        await sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateDesc, OfferStatusIdFilter.InReview).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerRepository
+            .GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._,A<OfferSorting>._)).MustHaveHappenedOnceExactly();       
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupUpdateApp()
