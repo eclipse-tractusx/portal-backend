@@ -109,7 +109,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                                 new DocumentDetails(document.Id)
                                 {
                                     DocumentTypeId = document.DocumentTypeId
-                                })))
+                                })),
+                        application.Company!.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRole!.Label))
                     {
                         Email = application.Invitations
                             .Select(invitation => invitation.CompanyUser)
@@ -117,9 +118,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                                 && companyUser.Email != null)
                             .Select(companyUser => companyUser!.Email)
                             .FirstOrDefault(),
-                        BusinessPartnerNumber = application.Company.BusinessPartnerNumber,
-                        CompanyRoles = application.Company!.CompanyAssignedRoles
-                            .Select(companyAssignedRoles => companyAssignedRoles.CompanyRole!.Label)
+                        BusinessPartnerNumber = application.Company.BusinessPartnerNumber
                     })
                     .AsAsyncEnumerable()));
     }
