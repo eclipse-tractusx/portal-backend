@@ -30,6 +30,7 @@ public class CompanyIdentifier
     }
 
     public CompanyIdentifier(Guid companyId, UniqueIdentifierId uniqueIdentifierId, string value)
+        : this()
     {
         CompanyId = companyId;
         UniqueIdentifierId = uniqueIdentifierId;
@@ -37,7 +38,9 @@ public class CompanyIdentifier
     }
 
     public Guid CompanyId { get; private set; }
+
     public UniqueIdentifierId UniqueIdentifierId { get; private set; }
+
     public string Value { get; private set; }
 
     // Navigation properties

@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -43,9 +44,11 @@ public class Country
 
     [Key]
     [StringLength(2,MinimumLength = 2)]
+    [JsonPropertyName("alpha2code")]
     public string Alpha2Code { get; private set; }
 
     [StringLength(3, MinimumLength = 3)]
+    [JsonPropertyName("alpha3code")]
     public string? Alpha3Code { get; set; }
 
     [MaxLength(255)]

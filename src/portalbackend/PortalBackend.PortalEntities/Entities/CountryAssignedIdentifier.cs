@@ -32,6 +32,7 @@ public class CountryAssignedIdentifier
     }
 
     public CountryAssignedIdentifier(string countryAlpha2Code, UniqueIdentifierId uniqueIdentifierId)
+     : this()
     {
         CountryAlpha2Code = countryAlpha2Code;
         UniqueIdentifierId = uniqueIdentifierId;
