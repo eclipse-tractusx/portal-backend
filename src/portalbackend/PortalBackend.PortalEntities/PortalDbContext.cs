@@ -790,7 +790,7 @@ public class PortalDbContext : DbContext
         
         modelBuilder.Entity<CountryAssignedIdentifier>(entity =>
         {
-            entity.HasKey(e => new { e.CountryAlpha2Code, e.UniqueIdentifierId});
+            entity.HasKey(e => new { e.CountryAlpha2Code, e.UniqueIdentifierId });
 
             entity.HasOne(d => d.Country)
                 .WithMany(p => p!.CountryAssignedIdentifiers)
@@ -994,7 +994,7 @@ public class PortalDbContext : DbContext
         
         modelBuilder.Entity<CompanyIdentifier>(entity =>
         {
-            entity.HasKey(e => new { e.CompanyId, e.UniqueIdentifierId});
+            entity.HasKey(e => new { e.CompanyId, e.UniqueIdentifierId });
 
             entity.HasOne(d => d.Company)
                 .WithMany(p => p!.CompanyIdentifiers)
