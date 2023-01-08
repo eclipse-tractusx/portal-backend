@@ -395,5 +395,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
             await this.WithIamUserId(iamUserId => _registrationBusinessLogic.DeleteRegistrationDocumentAsync(documentId, iamUserId));
             return NoContent();
         }
+        
+        /// <summary>
+        ///  Gets the company Identifier for Country Alpha2Code
+        /// </summary>
+        /// <param name="alpha2Code"></param>
+        /// <remarks>Example: Get: /api/registration/company/country/{alpha2Code}/uniqueidentifiers</remarks>
+        /// <response code="200">Returns the Company Identifier data</response>
+        /// <response code="404">The Unique Identifier for Country was not found.</response>
+        /// <returns></returns>
+        [HttpGet]
+        [Authorize(Roles = "view_registration")]
+        [Route("company/country/{alpha2Code}/uniqueidentifiers")]
+        [ProducesResponseType(typeof(IEnumerable<UniqueIdentifierData>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public  Task<IEnumerable<UniqueIdentifierData>> GetCompanyIdentifiers([FromRoute] string alpha2Code) =>
+            _registrationBusinessLogic.GetCompanyIdentifiers(alpha2Code);
+        
     }
 }

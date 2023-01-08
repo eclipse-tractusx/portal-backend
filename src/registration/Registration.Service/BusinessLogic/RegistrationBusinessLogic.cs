@@ -670,4 +670,19 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         return true;
     }
+
+    public async Task<IEnumerable<UniqueIdentifierData>> GetCompanyIdentifiers(string alpha2Code)
+    {
+        var uniqueIdentifierData = await _portalRepositories.GetInstance<IStaticDataRepository>().GetCompanyIdentifiers(alpha2Code).ToListAsync().ConfigureAwait(false);
+        
+        if(!uniqueIdentifierData.Select(x=>x.IsCountryCodeExist).Any())
+        {
+            throw new NotFoundException($"Unique Ids for requested country not found");
+        }
+        if(!uniqueIdentifierData.Select(x=>x.IdentifierData).Select(x=>x.Id).Any())
+        {
+            return Enumerable.Empty<UniqueIdentifierData>();
+        }
+        return uniqueIdentifierData.Select(x=>x.IdentifierData);
+    }
 }
