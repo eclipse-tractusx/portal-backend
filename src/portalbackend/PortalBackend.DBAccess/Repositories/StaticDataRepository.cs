@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -59,4 +60,17 @@ public class StaticDataRepository : IStaticDataRepository
                     )
                 ))
             .AsAsyncEnumerable();
+    
+    ///<inheritdoc />
+    public IAsyncEnumerable<(UniqueIdentifierData IdentifierData, bool IsCountryCodeExist)> GetCompanyIdentifiers(string alpha2Code) =>
+        _dbContext.UniqueIdentifiers
+            .AsNoTracking()
+            .Where(uniqueIdentifier => uniqueIdentifier.CountryAssignedIdentifiers.Any(countryAssignedIdentifier => countryAssignedIdentifier.CountryAlpha2Code == alpha2Code))
+            .Select(uniqueIdentifier => new ValueTuple<UniqueIdentifierData, bool>
+                (
+                    new UniqueIdentifierData((int)uniqueIdentifier.Id,uniqueIdentifier.Label),
+                    true
+                ))
+            .AsAsyncEnumerable();
+    
 }

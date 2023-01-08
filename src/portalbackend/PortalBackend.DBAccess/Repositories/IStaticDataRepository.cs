@@ -38,4 +38,11 @@ public interface IStaticDataRepository
     /// </summary>
     /// <returns>Returns a async enumerable of <see cref="LanguageData"/></returns>
     IAsyncEnumerable<LanguageData> GetAllLanguage();
+    
+    /// <summary>
+    /// Retrieve Unique Identifier Data for Country Alpha2Code
+    /// </summary>
+    /// <param name="alpha2Code"></param>
+    /// <returns>Returns a async enumerable of <see cref="UniqueIdentifierData"/> and IsCountryCodeExist</returns>
+    IAsyncEnumerable<(UniqueIdentifierData IdentifierData, bool IsCountryCodeExist)> GetCompanyIdentifiers(string alpha2Code);
 }
