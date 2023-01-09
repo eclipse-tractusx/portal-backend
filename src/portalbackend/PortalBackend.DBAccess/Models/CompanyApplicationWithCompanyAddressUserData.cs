@@ -18,16 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public class CompanyApplicationWithCompanyAddressUserData
-{
-    public CompanyApplicationWithCompanyAddressUserData(CompanyApplication companyApplication)
-    {
-        CompanyApplication = companyApplication;
-    }
-    public CompanyApplication CompanyApplication { get; }
-    public Guid CompanyUserId { get; set; }
-}
+public record CompanyApplicationWithCompanyAddressUserData(
+    CompanyApplicationStatusId ApplicationStatusId,
+    string Name,
+    string? ShortName,
+    string? BusinessPartnerNumber,
+    CompanyStatusId CompanyStatusId,
+    Guid? AddressId,
+    string? Streetname,
+    string? Streetadditional,
+    string? Streetnumber,
+    string? Zipcode,
+    string? City,
+    string? Region,
+    string? CountryAlpha2Code,
+    string? CountryNameDe,
+    Guid CompanyUserId);
