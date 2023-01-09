@@ -19,14 +19,14 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
 using System.Text.Json;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Custodian;
 

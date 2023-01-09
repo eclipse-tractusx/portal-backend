@@ -20,7 +20,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian
 {
     public class CustodianSettings
     {

@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian;
 
 public interface ICustodianService
 {
     public IAsyncEnumerable<GetWallets> GetWalletsAsync(CancellationToken cancellationToken);
 
-    public Task CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken);
+    public Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken);
 }

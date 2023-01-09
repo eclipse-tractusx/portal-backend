@@ -21,6 +21,7 @@
 using System.Text.RegularExpressions;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -32,11 +33,13 @@ public class ChecklistService : IChecklistService
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IBpdmService _bpdmService;
+    private readonly ICustodianService _custodianService;
 
-    public ChecklistService(IPortalRepositories portalRepositories, IBpdmService bpdmService)
+    public ChecklistService(IPortalRepositories portalRepositories, IBpdmService bpdmService, ICustodianService custodianService)
     {
         _portalRepositories = portalRepositories;
         _bpdmService = bpdmService;
+        _custodianService = custodianService;
     }
 
     /// <inheritdoc />
@@ -73,6 +76,49 @@ public class ChecklistService : IChecklistService
                 checklist.StatusId = ChecklistEntryStatusId.IN_PROGRESS;
             });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    public async Task<bool> CreateWalletAsync(Guid applicationId, CancellationToken cancellationToken)
+    {
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(applicationId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"CompanyApplication {applicationId} is not in status SUBMITTED");
+        }
+        var (companyId, companyName, businessPartnerNumber, _) = result;
+
+        if (string.IsNullOrWhiteSpace(businessPartnerNumber))
+        {
+            throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty", "bpn");
+        }
+
+        var createdWallet = true;
+        try
+        {
+            var message = await _custodianService.CreateWalletAsync(businessPartnerNumber, companyName, cancellationToken).ConfigureAwait(false);
+            _portalRepositories.GetInstance<IApplicationChecklistRepository>()
+                .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
+                    checklist =>
+                    {
+                        checklist.StatusId = ChecklistEntryStatusId.DONE;
+                        checklist.Comment = message;
+                    });
+        }
+        catch (ServiceException ex)
+        {
+            _portalRepositories.GetInstance<IApplicationChecklistRepository>()
+                .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
+                    checklist =>
+                    {
+                        checklist.StatusId = ChecklistEntryStatusId.FAILED;
+                        checklist.Comment = ex.ToString();
+                    });
+            createdWallet = false;
+        }
+        
+        
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return createdWallet;
     }
 
     /// <inheritdoc />

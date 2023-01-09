@@ -16,4 +16,12 @@ public interface IChecklistService
     /// <param name="applicationId">Id of the application to update the bpn</param>
     /// <param name="bpn">the bpn to set</param>
     Task UpdateCompanyBpn(Guid applicationId, string bpn);
+
+    /// <summary>
+    /// Creates the wallet for the company of the given application
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    /// <param name="cancellationToken">CanellationToken</param>
+    /// <returns>true if the wallet creation was successful, otherwise false.</returns>
+    Task<bool> CreateWalletAsync(Guid applicationId, CancellationToken cancellationToken);
 }

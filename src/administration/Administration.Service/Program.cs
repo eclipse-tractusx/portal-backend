@@ -19,17 +19,13 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.DependencyInjection;
 
@@ -76,23 +72,17 @@ builder.Services.AddTransient<ICompanyDataBusinessLogic, CompanyDataBusinessLogi
 builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
                 .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
-builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
-
 builder.Services.AddTransient<ITokenService, TokenService>();
 
 builder.Services
     .AddSdFactoryService(builder.Configuration.GetSection("SdFactory"))
     .AddDapsService(builder.Configuration.GetSection("Daps"))
-    .AddCustodianService(builder.Configuration.GetSection("Custodian"))
-    .AddChecklist(builder.Configuration.GetSection("Bpdm"));
+    .AddChecklist(builder.Configuration.GetSection("Bpdm"), builder.Configuration.GetSection("Custodian"));
 
 builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
 builder.Services.AddTransient<IServiceProviderBusinessLogic, ServiceProviderBusinessLogic>();
-
-builder.Services.AddDbContext<ProvisioningDbContext>(options =>
-                    options.UseNpgsql(builder.Configuration.GetConnectionString("ProvisioningDB")));
 
 builder.Build()
     .CreateApp<Program>("administration", VERSION)

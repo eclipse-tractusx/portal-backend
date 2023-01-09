@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
@@ -18,18 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
-
-using Microsoft.Extensions.Options;
-
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian;
 
 public class CustodianService : ICustodianService
 {
@@ -44,7 +42,7 @@ public class CustodianService : ICustodianService
         _settings = settings.Value;
     }
 
-    public async Task CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken)
+    public async Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken)
     {
         var httpClient = await GetCustodianHttpClient(cancellationToken).ConfigureAwait(false);
 
@@ -59,6 +57,8 @@ public class CustodianService : ICustodianService
         {
             throw new ServiceException("Access to Custodian Failed with Status Code {StatusCode}", result.StatusCode);
         }
+
+        return await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async IAsyncEnumerable<GetWallets> GetWalletsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
