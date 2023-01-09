@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -57,4 +58,11 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
         entity.DateLastChanged = DateTimeOffset.UtcNow;
         setFields.Invoke(entity);
     }
+
+    /// <inheritdoc />
+    public Task<Dictionary<ChecklistEntryTypeId, ChecklistEntryStatusId>> GetChecklistDataAsync(Guid applicationId) =>
+        _portalDbContext.ApplicationChecklist
+            .Where(x => x.ApplicationId == applicationId)
+            .Select(x => new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(x.ChecklistEntryTypeId, x.StatusId))
+            .ToDictionaryAsync(x => x.Item1, x => x.Item2);
 }

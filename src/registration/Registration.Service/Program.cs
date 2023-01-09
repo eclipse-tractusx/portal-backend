@@ -50,7 +50,7 @@ builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
-builder.Services.AddChecklist();
+builder.Services.AddChecklist(builder.Configuration.GetSection("Bpdm"));
 builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address"));
 
 builder.Build()

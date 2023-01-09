@@ -44,7 +44,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\checklist\Checklist.Service\Checklist.Service.csproj" />
     <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Checklist\Framework.Checklist.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
     <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
     <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
