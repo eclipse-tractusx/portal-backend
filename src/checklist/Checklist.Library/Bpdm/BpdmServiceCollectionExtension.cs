@@ -23,7 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
 
 public static class BpdmServiceCollectionExtension
 {

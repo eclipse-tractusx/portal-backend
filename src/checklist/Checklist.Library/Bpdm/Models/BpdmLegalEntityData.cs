@@ -20,7 +20,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
 
 public record BpdmLegalEntityData(
      [property: JsonPropertyName("externalId")] string ExternalId,

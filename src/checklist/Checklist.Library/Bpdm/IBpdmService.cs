@@ -18,24 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
 
-public static class ChecklistExtensions
+/// <summary>
+/// Service to call the BPDM endpoints
+/// </summary>
+public interface IBpdmService
 {
-    public static IServiceCollection AddChecklist(this IServiceCollection services, IConfigurationSection bpdmSection)
-    {
-        return services
-            .AddScoped<IChecklistService, ChecklistService>()
-            .AddBpdmService(bpdmSection);
-    }
-    
-    public static IServiceCollection AddChecklistCreation(this IServiceCollection services)
-    {
-        return services
-            .AddScoped<IChecklistService, ChecklistService>();
-    }
+    /// <summary>
+    /// Triggers the bpn data push
+    /// </summary>
+    /// <param name="data">The bpdm data</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
+    Task<bool> TriggerBpnDataPush(BpdmTransferData data, CancellationToken cancellationToken);
 }

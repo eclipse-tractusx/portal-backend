@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.FileProviders;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;

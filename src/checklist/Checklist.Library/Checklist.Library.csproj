@@ -21,11 +21,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Checklist.Service</AssemblyName>
+        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Checklist.Library</AssemblyName>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Checklist.Service</RootNamespace>
+        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Checklist.Library</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

@@ -31,8 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.DependencyInjection;
 
 var VERSION = "v2";
 
