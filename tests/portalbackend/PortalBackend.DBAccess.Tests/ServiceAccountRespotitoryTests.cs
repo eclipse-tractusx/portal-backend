@@ -20,11 +20,10 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Xunit;
@@ -99,7 +98,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.CompanyServiceAccount.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
+        result!.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
     }
 
     [Fact]
@@ -181,19 +180,25 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #region GetOwnCompanyServiceAccountDetailedDataUntrackedAsync
 
-    [Fact]
-    public async Task GetOwnCompanyServiceAccountsUntracked_ReturnsExpectedResult()
+    [Theory]
+    [InlineData(1,0,10,1)]
+    [InlineData(1,1,10,0)]
+    public async Task GetOwnCompanyServiceAccountsUntracked_ReturnsExpectedResult(int count, int page, int size, int expected)
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(IamUserId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountsUntracked(IamUserId)(page, size).ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().HaveCount(1);
-        result.First().CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
+        result.Should().NotBeNull();
+        result!.Count.Should().Be(count);
+        result.Data.Should().HaveCount(expected);
+        if (expected > 0)
+        {
+            result.Data.First().CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
+        }
     }
 
     #endregion

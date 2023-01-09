@@ -23,19 +23,18 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -326,7 +325,7 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
-        exception.Message.Should().Be($"serviceAccount {invalidServiceAccountId} not found in company of user {ValidAdminId}");
+        exception.Message.Should().Be($"serviceAccount {invalidServiceAccountId} not found in company of {ValidAdminId}");
     }
 
     [Fact]
@@ -334,11 +333,8 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange
         SetupUpdateOwnCompanyServiceAccountDetails();
-        var companyServiceAccount = _fixture.Build<CompanyServiceAccount>()
-            .With(x => x.CompanyServiceAccountStatusId, CompanyServiceAccountStatusId.INACTIVE)
-            .Create();
         var inactive = _fixture.Build<CompanyServiceAccountWithRoleDataClientId>()
-            .With(x => x.CompanyServiceAccount, companyServiceAccount)
+            .With(x => x.CompanyServiceAccountStatusId, CompanyServiceAccountStatusId.INACTIVE)
             .Create();
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(InactiveServiceAccount, A<string>.That.Matches(x => x == ValidAdminId)))
             .ReturnsLazily(() => inactive);
@@ -361,15 +357,15 @@ public class ServiceAccountBusinessLogicTests
     public async Task GetOwnCompanyServiceAccountsDataAsync_GetsExpectedData()
     {
         // Arrange
-        var data = new AsyncEnumerableStub<CompanyServiceAccount>(_fixture.CreateMany<CompanyServiceAccount>(5));
+        var data = _fixture.CreateMany<CompanyServiceAccountData>(15);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(A<string>.That.Matches(x => x == ValidAdminId)))
-            .Returns(data.AsQueryable());
+            .ReturnsLazily(() => (int skip, int take) => Task.FromResult((Pagination.Source<CompanyServiceAccountData>?)new Pagination.Source<CompanyServiceAccountData>(data.Count(), data.Skip(skip).Take(take))));
         
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(0, 10, ValidAdminId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, ValidAdminId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -418,11 +414,13 @@ public class ServiceAccountBusinessLogicTests
     private void SetupUpdateOwnCompanyServiceAccountDetails()
     {
         var authData = new ClientAuthData(IamClientAuthMethod.SECRET) { Secret = "topsecret" };
-        var data = _fixture.Create<CompanyServiceAccountWithRoleDataClientId>();
+        var data = _fixture.Build<CompanyServiceAccountWithRoleDataClientId>()
+            .With(x => x.CompanyServiceAccountStatusId, CompanyServiceAccountStatusId.ACTIVE)
+            .Create();
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(ValidServiceAccountId, A<string>.That.Matches(x => x == ValidAdminId)))
             .ReturnsLazily(() => data);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(ValidServiceAccountId, A<string>.That.Not.Matches(x => x == ValidAdminId)))
-            .ReturnsLazily(() => (CompanyServiceAccountWithRoleDataClientId?) null);
+            .ReturnsLazily(() => (CompanyServiceAccountWithRoleDataClientId?)null);
 
         A.CallTo(() => _provisioningManager.ResetCentralClientAuthDataAsync(A<string>._))
             .ReturnsLazily(() => authData);
