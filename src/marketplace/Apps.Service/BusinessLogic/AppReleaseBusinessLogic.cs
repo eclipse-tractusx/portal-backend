@@ -484,7 +484,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     public Task ApproveAppRequestAsync(Guid appId, string iamUserId) =>
         _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, (_settings.ApproveAppUserRoles));
     
-    private static IEnumerable<OfferStatusId> GetOfferStatusIds(OfferStatusIdFilter? offerStatusIdFilter)
+    private IEnumerable<OfferStatusId> GetOfferStatusIds(OfferStatusIdFilter? offerStatusIdFilter)
     {
         switch(offerStatusIdFilter)
         {
@@ -494,7 +494,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             }
             default :
             {
-                return new []{ OfferStatusId.IN_REVIEW, OfferStatusId.ACTIVE };
+                return _settings.OfferStatusIds;
             }
         }       
     }

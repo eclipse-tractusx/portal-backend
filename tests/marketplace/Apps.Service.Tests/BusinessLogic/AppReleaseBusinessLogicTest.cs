@@ -85,6 +85,11 @@ public class AppReleaseBusinessLogicTest
         _companyUser.IamUser = _iamUser;
         
         _settings = A.Fake<AppsSettings>();
+        _settings.OfferStatusIds = new [] 
+        {
+            OfferStatusId.IN_REVIEW,
+            OfferStatusId.ACTIVE
+        };
         _settings.ActiveAppNotificationTypeIds = new []
         {
             NotificationTypeId.APP_ROLE_ADDED
@@ -521,7 +526,7 @@ public class AppReleaseBusinessLogicTest
         var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, InReviewData.Skip(skip).Take(take)));
         A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._,A<OfferSorting>._))
             .Returns(paginationResult);
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
 
         // Act
         var result = await sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, null).ConfigureAwait(false);
@@ -550,7 +555,7 @@ public class AppReleaseBusinessLogicTest
         var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, InReviewData.Skip(skip).Take(take)));
         A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._,A<OfferSorting>._))
             .Returns(paginationResult);
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
 
         // Act
         var result = await sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, OfferStatusIdFilter.InReview).ConfigureAwait(false);
