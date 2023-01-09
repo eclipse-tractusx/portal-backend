@@ -162,16 +162,16 @@ public class ServiceProviderBusinessLogicTest
     }
 
     [Fact]
-    public async Task GetServiceProviderCompanyDetailsAsync_WithInvalidUser_ThrowsException()
+    public async Task GetServiceProviderCompanyDetailsAsync_WithInvalidUser_ReturnsNull()
     {
         //Arrange
         var sut = _fixture.Create<ServiceProviderBusinessLogic>();
             
         //Act
-        async Task Action() => await sut.GetServiceProviderCompanyDetailsAsync(Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetServiceProviderCompanyDetailsAsync(Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         //Assert
-        await Assert.ThrowsAsync<ConflictException>(Action);
+        result.Should().BeNull();
     }
 
     [Fact]
