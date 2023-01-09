@@ -399,7 +399,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <summary>
         ///  Gets the company Identifier for Country Alpha2Code
         /// </summary>
-        /// <param name="alpha2Code"></param>
+        /// <param name="alpha2Code">Country Alpha2Code</param>
         /// <remarks>Example: Get: /api/registration/company/country/{alpha2Code}/uniqueidentifiers</remarks>
         /// <response code="200">Returns the Company Identifier data</response>
         /// <response code="404">The Unique Identifier for Country was not found.</response>
