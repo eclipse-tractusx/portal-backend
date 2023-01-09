@@ -25,6 +25,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -84,6 +85,11 @@ public class AppReleaseBusinessLogicTest
         _companyUser.IamUser = _iamUser;
         
         _settings = A.Fake<AppsSettings>();
+        _settings.OfferStatusIds = new [] 
+        {
+            OfferStatusId.IN_REVIEW,
+            OfferStatusId.ACTIVE
+        };
         _settings.ActiveAppNotificationTypeIds = new []
         {
             NotificationTypeId.APP_ROLE_ADDED
@@ -555,7 +561,69 @@ public class AppReleaseBusinessLogicTest
     }
 
     #endregion
-    
+
+    #region GetAllInReviewStatusApps
+
+    [Fact]
+    public async Task GetAllInReviewStatusAppsAsync_DefaultRequest()
+    {
+        // Arrange
+        var offerStatus = new[] { OfferStatusId.ACTIVE , OfferStatusId.IN_REVIEW };
+        var InReviewData = new[] {
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.ACTIVE),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.ACTIVE),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.ACTIVE)
+        };
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, InReviewData.Skip(skip).Take(take)));
+        A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._,A<OfferSorting>._))
+            .Returns(paginationResult);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+
+        // Act
+        var result = await sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, null).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>
+            .That.Matches(x => x.Count() == 2 && x.All(y => offerStatus.Contains(y))),A<OfferSorting>._)).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<InReviewAppData>>(result);
+        result.Content.Should().HaveCount(5);
+        result.Content.Should().Contain(x => x.Status == OfferStatusId.ACTIVE);
+        result.Content.Should().Contain(x => x.Status == OfferStatusId.IN_REVIEW);
+    }
+
+    [Fact]
+    public async Task GetAllInReviewStatusAppsAsync_InReviewRequest()
+    { 
+        // Arrange
+        var offerStatus = new[] { OfferStatusId.IN_REVIEW };
+        var InReviewData = new[]{
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW)
+        };
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, InReviewData.Skip(skip).Take(take)));
+        A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._,A<OfferSorting>._))
+            .Returns(paginationResult);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+
+        // Act
+        var result = await sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, OfferStatusIdFilter.InReview).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>
+            .That.Matches(x => x.Count() == 1 && x.All(y => offerStatus.Contains(y))),A<OfferSorting>._)).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<InReviewAppData>>(result);
+        result.Content.Should().HaveCount(5);
+        result.Content.Should().NotContain(x => x.Status == OfferStatusId.ACTIVE);
+        result.Content.Should().Contain(x => x.Status == OfferStatusId.IN_REVIEW);
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupUpdateApp()
