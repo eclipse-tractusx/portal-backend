@@ -43,6 +43,5 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\..\src\checklist\Checklist.Service\Checklist.Service.csproj" />
-      <ProjectReference Include="..\..\..\src\framework\Framework.Checklist\Framework.Checklist.csproj" />
     </ItemGroup>
 </Project>

@@ -313,7 +313,7 @@ public class RegistrationBusinessLogicTest
     #region Trigger bpn data push
     
     [Fact]
-    public async Task TriggerBpnDataPush_WithValidData_CallsService()
+    public async Task TriggerBpnDataPush_CallsChecklistService()
     {
         // Act
         var data = _fixture
@@ -327,83 +327,9 @@ public class RegistrationBusinessLogicTest
         await _logic.TriggerBpnDataPushAsync(IamUserId, ApplicationId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _checklistService.TriggerBpnDataPush(ApplicationId, data, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _checklistService.TriggerBpnDataPush(ApplicationId, IamUserId, CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
     
-    [Fact]
-    public async Task TriggerBpnDataPush_WithNotExistingApplication_ThrowsNotFoundException()
-    {
-        // Arrange
-        var notExistingApplicationId = Guid.NewGuid();
-        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, notExistingApplicationId))
-            .ReturnsLazily(() => (BpdmData?)null);
-
-        // Act
-        async Task Act() => await _logic.TriggerBpnDataPushAsync(IamUserId, notExistingApplicationId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Application {notExistingApplicationId} does not exists.");
-        A.CallTo(() => _checklistService.UpdateBpnStatusAsync(ApplicationId, ChecklistEntryStatusId.IN_PROGRESS)).MustNotHaveHappened();
-    }
-
-    [Fact]
-    public async Task TriggerBpnDataPush_WithNotSubmittedApplication_ThrowsArgumentException()
-    {
-        // Arrange
-        var createdApplicationId = Guid.NewGuid();
-        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, createdApplicationId))
-            .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.CREATED, null!, null!, null!, null!, null!, true));
-
-        // Act
-        async Task Act() => await _logic.TriggerBpnDataPushAsync(IamUserId, createdApplicationId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
-        ex.ParamName.Should().Be("applicationId");
-        A.CallTo(() => _checklistService.UpdateBpnStatusAsync(ApplicationId, ChecklistEntryStatusId.IN_PROGRESS)).MustNotHaveHappened();
-    }
-
-    [Fact]
-    public async Task TriggerBpnDataPush_WithNotExistingUser_ThrowsArgumentException()
-    {
-        // Arrange
-        var applicationId = Guid.NewGuid();
-        var wrongUserId = Guid.NewGuid().ToString();
-        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(wrongUserId, applicationId))
-            .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.SUBMITTED, null!, null!, null!, null!, null!, false));
-
-        // Act
-        async Task Act() => await _logic.TriggerBpnDataPushAsync(wrongUserId, applicationId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.ParamName.Should().Be("iamUserId");
-        A.CallTo(() => _checklistService.UpdateBpnStatusAsync(ApplicationId, ChecklistEntryStatusId.IN_PROGRESS)).MustNotHaveHappened();
-    }
-
-    [Fact]
-    public async Task TriggerBpnDataPush_WithEmptyZipCode_ThrowsConflictException()
-    {
-        // Arrange
-        var createdApplicationId = _fixture.Create<Guid>();
-        var data = _fixture.Build<BpdmData>()
-            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
-            .With(x => x.IsUserInCompany, true)
-            .With(x => x.ZipCode, (string?)null)
-            .Create();
-        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, createdApplicationId))
-            .ReturnsLazily(() => data);
-
-        // Act
-        async Task Act() => await _logic.TriggerBpnDataPushAsync(IamUserId, createdApplicationId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("ZipCode must not be empty");
-        A.CallTo(() => _checklistService.UpdateBpnStatusAsync(ApplicationId, ChecklistEntryStatusId.IN_PROGRESS)).MustNotHaveHappened();
-    }
-
     #endregion
     
     #region UpdateCompanyBpn

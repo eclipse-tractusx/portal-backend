@@ -18,15 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.DependencyInjection;
 
 public static class ChecklistExtensions
 {
-    public static IServiceCollection AddChecklist(this IServiceCollection services)
+    public static IServiceCollection AddChecklist(this IServiceCollection services, IConfigurationSection bpdmSection)
     {
         return services
-            .AddScoped<IChecklistService, ChecklistService>();
+            .AddScoped<IChecklistService, ChecklistService>()
+            .AddBpdmService(bpdmSection);
     }
 }

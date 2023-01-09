@@ -40,4 +40,11 @@ public interface IApplicationChecklistRepository
     /// <param name="checklistTypeId">Id of the checklistType to modify</param>
     /// <param name="setFields">Action to sets the fields</param>
     void AttachAndModifyApplicationChecklist(Guid applicationId, ChecklistEntryTypeId checklistTypeId, Action<ApplicationChecklistEntry> setFields);
+
+    /// <summary>
+    /// Gets the combination of the checklist type and status
+    /// </summary>
+    /// <param name="applicationId">Id of the application to get the checklist for</param>
+    /// <returns>Returns the data of the checklist for the specific application</returns>
+    Task<Dictionary<ChecklistEntryTypeId, ChecklistEntryStatusId>> GetChecklistDataAsync(Guid applicationId);
 }

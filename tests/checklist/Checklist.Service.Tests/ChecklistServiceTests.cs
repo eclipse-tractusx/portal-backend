@@ -18,9 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -31,10 +35,12 @@ public class ChecklistServiceTests
 {
     private static readonly Guid ApplicationWithoutBpnId = new ("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
     private static readonly Guid ApplicationWithBpnId = new ("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
+    private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IBpdmService _bpdmService;
     private readonly IApplicationRepository _applicationRepository;
+    private readonly ICompanyRepository _companyRepository;
     private readonly IApplicationChecklistRepository _applicationChecklistRepository;
     private readonly ChecklistService _service;
 
@@ -49,6 +55,7 @@ public class ChecklistServiceTests
         _bpdmService = A.Fake<IBpdmService>();
         
         _applicationRepository = A.Fake<IApplicationRepository>();
+        _companyRepository = A.Fake<ICompanyRepository>();
         _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
 
         _service = new ChecklistService(_portalRepositories, _bpdmService);
@@ -117,6 +124,84 @@ public class ChecklistServiceTests
     
     #endregion
 
+    #region TriggerBpnDataPush
+    
+    [Fact]
+    public async Task TriggerBpnDataPush_WithNotExistingApplication_ThrowsNotFoundException()
+    {
+        // Arrange
+        var notExistingApplicationId = Guid.NewGuid();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, notExistingApplicationId))
+            .ReturnsLazily(() => (BpdmData?)null);
+
+        // Act
+        async Task Act() => await _service.TriggerBpnDataPush(ApplicationWithoutBpnId, IamUserId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Application {notExistingApplicationId} does not exists.");
+        A.CallTo(() => _bpdmService.TriggerBpnDataPush(A<BpdmTransferData>._, A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task TriggerBpnDataPush_WithNotSubmittedApplication_ThrowsArgumentException()
+    {
+        // Arrange
+        var createdApplicationId = Guid.NewGuid();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, createdApplicationId))
+            .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.CREATED, null!, null!, null!, null!, null!, true));
+
+        // Act
+        async Task Act() => await _service.TriggerBpnDataPush(ApplicationWithoutBpnId, IamUserId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
+        ex.ParamName.Should().Be("applicationId");
+        A.CallTo(() => _bpdmService.TriggerBpnDataPush(A<BpdmTransferData>._, A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task TriggerBpnDataPush_WithNotExistingUser_ThrowsArgumentException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var wrongUserId = Guid.NewGuid().ToString();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(wrongUserId, applicationId))
+            .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.SUBMITTED, null!, null!, null!, null!, null!, false));
+
+        // Act
+        async Task Act() => await _service.TriggerBpnDataPush(applicationId, wrongUserId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.ParamName.Should().Be("iamUserId");
+        A.CallTo(() => _bpdmService.TriggerBpnDataPush(A<BpdmTransferData>._, A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task TriggerBpnDataPush_WithEmptyZipCode_ThrowsConflictException()
+    {
+        // Arrange
+        var createdApplicationId = _fixture.Create<Guid>();
+        var data = _fixture.Build<BpdmData>()
+            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
+            .With(x => x.IsUserInCompany, true)
+            .With(x => x.ZipCode, (string?)null)
+            .Create();
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, createdApplicationId))
+            .ReturnsLazily(() => data);
+
+        // Act
+        async Task Act() => await _service.TriggerBpnDataPush(createdApplicationId, IamUserId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("ZipCode must not be empty");
+        A.CallTo(() => _bpdmService.TriggerBpnDataPush(A<BpdmTransferData>._, A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupFakesForCreate()

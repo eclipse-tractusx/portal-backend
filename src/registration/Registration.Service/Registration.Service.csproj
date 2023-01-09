@@ -44,7 +44,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\checklist\Checklist.Service\Checklist.Service.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Checklist\Framework.Checklist.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
     <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />

@@ -18,5 +18,5 @@ public interface IChecklistService
     /// <param name="statusId">Id of the new status</param>
     Task UpdateBpnStatusAsync(Guid applicationId, ChecklistEntryStatusId statusId);
 
-    Task TriggerBpnDataPush(Guid applicationId, BpdmData data, CancellationToken cancellationToken);
+    Task TriggerBpnDataPush(Guid applicationId, string iamUserId, CancellationToken cancellationToken);
 }

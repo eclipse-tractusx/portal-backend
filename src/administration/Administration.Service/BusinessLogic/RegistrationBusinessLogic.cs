@@ -394,31 +394,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken)
-    {
-        var data = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpdmDataForApplicationAsync(iamUserId, applicationId).ConfigureAwait(false);
-        if (data is null)
-        {
-            throw new NotFoundException($"Application {applicationId} does not exists.");
-        }
-
-        if (data.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
-        {
-            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
-        }
-
-        if (!data.IsUserInCompany)
-        {
-            throw new ControllerArgumentException("User is not assigned to company", nameof(iamUserId));
-        }
-
-        if (string.IsNullOrWhiteSpace(data.ZipCode))
-        {
-            throw new ConflictException("ZipCode must not be empty");
-        }
-
-        await _checklistService.TriggerBpnDataPush(applicationId, data, cancellationToken);
-    }
+    public Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken) =>
+        _checklistService.TriggerBpnDataPush(applicationId, iamUserId, cancellationToken);
 
     private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IDictionary<string, IEnumerable<string>> roles)
     {

@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -51,8 +52,30 @@ public class ChecklistService : IChecklistService
     }
 
     /// <inheritdoc />
-    public async Task TriggerBpnDataPush(Guid applicationId, BpdmData data, CancellationToken cancellationToken)
+    public async Task TriggerBpnDataPush(Guid applicationId, string iamUserId, CancellationToken cancellationToken)
     {
+        var data = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpdmDataForApplicationAsync(iamUserId, applicationId).ConfigureAwait(false);
+        if (data is null)
+        {
+            throw new NotFoundException($"Application {applicationId} does not exists.");
+        }
+
+        if (data.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
+        {
+            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
+        }
+
+        if (!data.IsUserInCompany)
+        {
+            throw new ControllerArgumentException("User is not assigned to company", nameof(iamUserId));
+        }
+
+        if (string.IsNullOrWhiteSpace(data.ZipCode))
+        {
+            throw new ConflictException("ZipCode must not be empty");
+        }
+
+        await CheckCanRunStepAsync(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER).ConfigureAwait(false);
         var bpdmTransferData = new BpdmTransferData(data.CompanyName, data.AlphaCode2, data.ZipCode, data.City, data.Street);
         await _bpdmService.TriggerBpnDataPush(bpdmTransferData, cancellationToken).ConfigureAwait(false);
         await this.UpdateBpnStatusAsync(applicationId, ChecklistEntryStatusId.IN_PROGRESS).ConfigureAwait(false);
@@ -67,6 +90,57 @@ public class ChecklistService : IChecklistService
                 checklist.StatusId = statusId;
             });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Checks whether the given step can be executed
+    /// </summary>
+    /// <param name="applicationId">id of the application</param>
+    /// <param name="step">the step that should be executed</param>
+    /// <returns></returns>
+    private async Task CheckCanRunStepAsync(Guid applicationId, ChecklistEntryTypeId step)
+    {
+        var checklistData = await _portalRepositories.GetInstance<IApplicationChecklistRepository>()
+            .GetChecklistDataAsync(applicationId).ConfigureAwait(false);
+
+        var possibleSteps = GetNextPossibleTypes(checklistData);
+        if (possibleSteps.Contains(step))
+        {
+            throw new ConflictException($"{ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER} is not available as next step");
+        }
+    }
+
+    private static IEnumerable<ChecklistEntryTypeId> GetNextPossibleTypes(IDictionary<ChecklistEntryTypeId, ChecklistEntryStatusId> currentStatus)
+    {
+        currentStatus.TryGetValue(ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, out var bpnStatus);
+        currentStatus.TryGetValue(ChecklistEntryTypeId.REGISTRATION_VERIFICATION, out var registrationStatus);
+        currentStatus.TryGetValue(ChecklistEntryTypeId.IDENTITY_WALLET, out var identityStatus);
+        currentStatus.TryGetValue(ChecklistEntryTypeId.CLEARING_HOUSE, out var clearingHouseStatus);
+        currentStatus.TryGetValue(ChecklistEntryTypeId.SELF_DESCRIPTION_LP, out var selfDescriptionStatus);
+
+        var possibleTypes = new List<ChecklistEntryTypeId>();
+        if (bpnStatus == ChecklistEntryStatusId.TO_DO)
+        {
+            possibleTypes.Add(ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER);
+        }
+        if (registrationStatus == ChecklistEntryStatusId.TO_DO)
+        {
+            possibleTypes.Add(ChecklistEntryTypeId.REGISTRATION_VERIFICATION);
+        }
+        if (identityStatus == ChecklistEntryStatusId.TO_DO && bpnStatus == ChecklistEntryStatusId.DONE && registrationStatus == ChecklistEntryStatusId.DONE)
+        {
+            possibleTypes.Add(ChecklistEntryTypeId.IDENTITY_WALLET);
+        }
+        if (clearingHouseStatus == ChecklistEntryStatusId.TO_DO && identityStatus == ChecklistEntryStatusId.DONE)
+        {
+            possibleTypes.Add(ChecklistEntryTypeId.CLEARING_HOUSE);
+        }
+        if (selfDescriptionStatus == ChecklistEntryStatusId.TO_DO && clearingHouseStatus == ChecklistEntryStatusId.DONE)
+        {
+            possibleTypes.Add(ChecklistEntryTypeId.SELF_DESCRIPTION_LP);
+        }
+
+        return possibleTypes;
     }
 
     private static ChecklistEntryStatusId GetChecklistStatus(ChecklistEntryTypeId checklistEntryTypeId, string? bpn) =>
