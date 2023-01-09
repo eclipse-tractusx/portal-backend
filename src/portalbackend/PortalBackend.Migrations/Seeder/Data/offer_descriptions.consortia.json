@@ -204,6 +204,54 @@
     "description_short": "Component for Digital Twins registration"
   },
   {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0001",
+    "language_short_name": "de",
+    "description_long": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "description_short": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0001",
+    "language_short_name": "en",
+    "description_long": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "description_short": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0002",
+    "language_short_name": "de",
+    "description_long": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "description_short": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0002",
+    "language_short_name": "en",
+    "description_long": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "description_short": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0003",
+    "language_short_name": "de",
+    "description_long": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "description_short": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0003",
+    "language_short_name": "en",
+    "description_long": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "description_short": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0004",
+    "language_short_name": "de",
+    "description_long": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "description_short": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0004",
+    "language_short_name": "en",
+    "description_long": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "description_short": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
     "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfeb",
     "language_short_name": "en",
     "description_long": "SupplyOn Capacity Management supports suppliers to collect production capacity data in a simple and intuitive way and enables buyer and supplier users to compare it with demand data. This comparison is mainly done on a tactical and strategical level, in order to identify potential mismatches as early as possible.  The data is available in a consistent format and can be downloaded for further internal processing. In addition, the application supports an integrated collaboration between suppliers and buyers via commenting and built-in task management features.",
