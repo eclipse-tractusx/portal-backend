@@ -19,9 +19,9 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using System.Text.Json.Serialization;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
@@ -32,11 +32,7 @@ public record ServiceAccountDetails(
     [property: JsonPropertyName("description")]string Description,
     [property: JsonPropertyName("authenticationType")] IamClientAuthMethod IamClientAuthMethod,
     [property: JsonPropertyName("roles")] IEnumerable<UserRoleData> UserRoleDatas,
-    [property: JsonPropertyName("companyServiceAccountTypeId")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId)
-{
-    [JsonPropertyName("secret")]
-    public string? Secret { get; set; }
-    
-    [JsonPropertyName("subscriptionId")]
-    public Guid? SubscriptionId { get; set; }
-}
+    [property: JsonPropertyName("companyServiceAccountTypeId")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
+    [property: JsonPropertyName("secret")] string? Secret,
+    [property: JsonPropertyName("subscriptionId")] Guid? SubscriptionId = null
+);
