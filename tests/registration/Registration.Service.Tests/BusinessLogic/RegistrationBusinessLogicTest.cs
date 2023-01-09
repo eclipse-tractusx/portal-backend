@@ -57,7 +57,7 @@ public class RegistrationBusinessLogicTest
     private readonly IPortalRepositories _portalRepositories;
     private readonly ICompanyRolesRepository _companyRolesRepository;
     private readonly IConsentRepository _consentRepository;
-    private readonly IChecklistService _checklistService;
+    private readonly IChecklistCreationService _checklistService;
     private readonly string _iamUserId;
     private readonly Guid _companyUserId;
     private readonly Guid _existingApplicationId;
@@ -86,7 +86,7 @@ public class RegistrationBusinessLogicTest
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
         _applicationRepository = A.Fake<IApplicationRepository>();
         _consentRepository = A.Fake<IConsentRepository>();
-        _checklistService = A.Fake<IChecklistService>();
+        _checklistService = A.Fake<IChecklistCreationService>();
 
         var options = Options.Create(new RegistrationSettings
         {

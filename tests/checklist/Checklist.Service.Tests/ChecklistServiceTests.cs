@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm.Models;
@@ -40,7 +39,6 @@ public class ChecklistServiceTests
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IBpdmService _bpdmService;
-    private readonly IApplicationRepository _applicationRepository;
     private readonly ICompanyRepository _companyRepository;
     private readonly IApplicationChecklistRepository _applicationChecklistRepository;
     private readonly ChecklistService _service;
@@ -54,54 +52,12 @@ public class ChecklistServiceTests
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _bpdmService = A.Fake<IBpdmService>();
-        
-        _applicationRepository = A.Fake<IApplicationRepository>();
+
         _companyRepository = A.Fake<ICompanyRepository>();
         _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
 
         _service = new ChecklistService(_portalRepositories, _bpdmService);
     }
-    
-    #region CreateInitialChecklistAsync
-
-    [Fact]
-    public async Task CreateInitialChecklistAsync_WithBpnSet_CreatesExpectedResult()
-    {
-        // Arrange
-        SetupFakesForCreate();
-        
-        // Act
-        await _service.CreateInitialChecklistAsync(ApplicationWithBpnId).ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
-            ApplicationWithBpnId,
-            A<IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)>>
-                .That
-                .Matches(x => 
-                    x.Count(y => y.TypeId == ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ChecklistEntryStatusId.DONE) == 1)))
-            .MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task CreateInitialChecklistAsync_WithoutBpnSet_CreatesExpectedResult()
-    {
-        // Arrange
-        SetupFakesForCreate();
-        
-        // Act
-        await _service.CreateInitialChecklistAsync(ApplicationWithoutBpnId).ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
-                ApplicationWithoutBpnId,
-                A<IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)>>
-                    .That
-                    .Matches(x => x.All(y => y.StatusId == ChecklistEntryStatusId.TO_DO))))
-            .MustHaveHappenedOnceExactly();
-    }
-
-    #endregion
     
     #region UpdateBpnStatus
     
@@ -254,15 +210,6 @@ public class ChecklistServiceTests
     #endregion
     
     #region Setup
-
-    private void SetupFakesForCreate()
-    {
-        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(ApplicationWithBpnId)).ReturnsLazily(() => "testbpn");
-        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(ApplicationWithoutBpnId)).ReturnsLazily(() => (string?)null);
-
-        A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_applicationChecklistRepository);
-    }
 
     private void SetupFakesForUpdate(ApplicationChecklistEntry applicationChecklistEntry)
     {

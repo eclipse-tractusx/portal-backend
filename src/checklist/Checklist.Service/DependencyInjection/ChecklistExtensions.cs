@@ -32,4 +32,10 @@ public static class ChecklistExtensions
             .AddScoped<IChecklistService, ChecklistService>()
             .AddBpdmService(bpdmSection);
     }
+    
+    public static IServiceCollection AddChecklistCreation(this IServiceCollection services)
+    {
+        return services
+            .AddScoped<IChecklistService, ChecklistService>();
+    }
 }
