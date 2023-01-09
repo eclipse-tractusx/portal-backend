@@ -46,7 +46,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
-    private readonly IChecklistService _checklistService;
+    private readonly IChecklistCreationService _checklistService;
 
     public RegistrationBusinessLogic(
         IOptions<RegistrationSettings> settings,
@@ -56,7 +56,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IUserProvisioningService userProvisioningService,
         ILogger<RegistrationBusinessLogic> logger,
         IPortalRepositories portalRepositories,
-        IChecklistService checklistService)
+        IChecklistCreationService checklistService)
     {
         _settings = settings.Value;
         _mailingService = mailingService;

@@ -39,18 +39,6 @@ public class ChecklistService : IChecklistService
     }
 
     /// <inheritdoc />
-    public async Task CreateInitialChecklistAsync(Guid applicationId)
-    {
-        var bpn =  await _portalRepositories.GetInstance<IApplicationRepository>().GetBpnForApplicationIdAsync(applicationId).ConfigureAwait(false);
-        var checklistEntries = Enum.GetValues<ChecklistEntryTypeId>()
-            .Select(x => 
-                new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(x, GetChecklistStatus(x, bpn))
-            );
-        _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .CreateChecklistForApplication(applicationId, checklistEntries);
-    }
-
-    /// <inheritdoc />
     public async Task TriggerBpnDataPush(Guid applicationId, string iamUserId, CancellationToken cancellationToken)
     {
         var data = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpdmDataForApplicationAsync(iamUserId, applicationId).ConfigureAwait(false);
@@ -142,13 +130,4 @@ public class ChecklistService : IChecklistService
 
         return possibleTypes;
     }
-
-    private static ChecklistEntryStatusId GetChecklistStatus(ChecklistEntryTypeId checklistEntryTypeId, string? bpn) =>
-        checklistEntryTypeId switch
-        {
-            ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER => string.IsNullOrWhiteSpace(bpn)
-                ? ChecklistEntryStatusId.TO_DO
-                : ChecklistEntryStatusId.DONE,
-            _ => ChecklistEntryStatusId.TO_DO
-        };
 }
