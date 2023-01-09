@@ -78,7 +78,7 @@ public class ChecklistService : IChecklistService
     /// <inheritdoc />
     public Task UpdateCompanyBpn(Guid applicationId, string bpn)
     {
-        var regex = new Regex(@"(\w|\d){16}");
+        var regex = new Regex(@"(\w|\d){16}", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
         if (!regex.IsMatch(bpn))
         {
             throw new ControllerArgumentException("BPN must contain exactly 16 characters long.", nameof(bpn));
