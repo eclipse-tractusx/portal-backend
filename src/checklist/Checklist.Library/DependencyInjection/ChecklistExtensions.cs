@@ -21,16 +21,18 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.DependencyInjection;
 
 public static class ChecklistExtensions
 {
-    public static IServiceCollection AddChecklist(this IServiceCollection services, IConfigurationSection bpdmSection)
+    public static IServiceCollection AddChecklist(this IServiceCollection services, IConfigurationSection bpdmSection, IConfigurationSection custodianSection)
     {
         return services
             .AddScoped<IChecklistService, ChecklistService>()
-            .AddBpdmService(bpdmSection);
+            .AddBpdmService(bpdmSection)
+            .AddCustodianService(custodianSection);
     }
     
     public static IServiceCollection AddChecklistCreation(this IServiceCollection services)

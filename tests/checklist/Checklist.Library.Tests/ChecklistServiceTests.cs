@@ -18,8 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -46,6 +48,7 @@ public class ChecklistServiceTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IUserRepository _userRepository;
     private readonly ChecklistService _service;
+    private readonly ICustodianService _custodianService;
 
     public ChecklistServiceTests()
     {
@@ -56,7 +59,8 @@ public class ChecklistServiceTests
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _bpdmService = A.Fake<IBpdmService>();
-
+        _custodianService = A.Fake<ICustodianService>();
+        
         _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
         _userRepository = A.Fake<IUserRepository>();
@@ -65,7 +69,7 @@ public class ChecklistServiceTests
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
 
-        _service = new ChecklistService(_portalRepositories, _bpdmService);
+        _service = new ChecklistService(_portalRepositories, _bpdmService, _custodianService);
     }
     
     #region TriggerBpnDataPush

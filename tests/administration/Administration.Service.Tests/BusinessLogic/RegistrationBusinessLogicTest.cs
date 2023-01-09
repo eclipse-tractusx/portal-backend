@@ -20,9 +20,11 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -62,7 +64,6 @@ public class RegistrationBusinessLogicTest
     private readonly IApplicationRepository _applicationRepository;
     private readonly IUserBusinessPartnerRepository _businessPartnerRepository;
     private readonly IUserRolesRepository _rolesRepository;
-    private readonly ICustodianService _custodianService;
     private readonly IFixture _fixture;
     private readonly RegistrationBusinessLogic _logic;
     private readonly RegistrationSettings _settings;
@@ -85,7 +86,6 @@ public class RegistrationBusinessLogicTest
         _businessPartnerRepository = A.Fake<IUserBusinessPartnerRepository>();
         var userRepository = A.Fake<IUserRepository>();
         _rolesRepository = A.Fake<IUserRolesRepository>();
-        _custodianService = A.Fake<ICustodianService>();
         _settings = A.Fake<RegistrationSettings>();
         _companyRepository = A.Fake<ICompanyRepository>();
 
@@ -115,7 +115,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
             .ReturnsLazily(Guid.NewGuid);
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, _mailingService, _notificationService, sdFactory, _checklistService);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _mailingService, _notificationService, sdFactory, _checklistService);
     }
     
     #region ApprovePartnerRequest
@@ -149,7 +149,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
-        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _checklistService.CreateWalletAsync(Id, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
         Assert.IsType<bool>(result);
         Assert.True(result);
         _notifications.Should().HaveCount(5);
@@ -170,7 +170,7 @@ public class RegistrationBusinessLogicTest
         var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
 
         SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
-        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._))
+        A.CallTo(() => _checklistService.CreateWalletAsync(Id, A<CancellationToken>._))
             .Throws(new ServiceException("error"));
 
         //Act
@@ -186,7 +186,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
-        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _checklistService.CreateWalletAsync(Id, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
         Assert.IsType<bool>(result);
         Assert.True(result);
@@ -366,7 +366,6 @@ public class RegistrationBusinessLogicTest
             { ClientId, new List<string> { "Company Admin" }.AsEnumerable() }
         };
 
-        
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(A<Guid>.That.Matches(x => x == Id)))
             .ReturnsLazily(() => new ValueTuple<Guid, string, string?, string>(company.Id, company.Name, company.BusinessPartnerNumber!, "de"));
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
@@ -422,9 +421,6 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.SaveAsync())
             .Returns(1);
 
-        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._))
-            .Returns(Task.CompletedTask);
-            
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._))
             .Invokes((
                 IDictionary<string,IEnumerable<string>> _, 

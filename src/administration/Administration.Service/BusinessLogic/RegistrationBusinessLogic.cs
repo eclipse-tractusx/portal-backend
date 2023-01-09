@@ -20,7 +20,6 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -30,7 +29,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
-using System.Text.RegularExpressions;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -40,7 +38,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly RegistrationSettings _settings;
     private readonly IProvisioningManager _provisioningManager;
-    private readonly ICustodianService _custodianService;
     private readonly IMailingService _mailingService;
     private readonly INotificationService _notificationService;
     private readonly ISdFactoryService _sdFactoryService;
@@ -50,7 +47,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IPortalRepositories portalRepositories, 
         IOptions<RegistrationSettings> configuration, 
         IProvisioningManager provisioningManager, 
-        ICustodianService custodianService, 
         IMailingService mailingService,
         INotificationService notificationService,
         ISdFactoryService sdFactoryService,
@@ -59,7 +55,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _portalRepositories = portalRepositories;
         _settings = configuration.Value;
         _provisioningManager = provisioningManager;
-        _custodianService = custodianService;
         _mailingService = mailingService;
         _notificationService = notificationService;
         _sdFactoryService = sdFactoryService;
@@ -145,7 +140,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new NotFoundException($"CompanyApplication {applicationId} is not in status SUBMITTED");
         }
-        var (companyId, companyName, businessPartnerNumber, countryCode) = result;
+        var (companyId, _, businessPartnerNumber, countryCode) = result;
 
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
@@ -158,8 +153,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         Guid? documentId = null;
         try
         {
-            await _custodianService.CreateWalletAsync(businessPartnerNumber, companyName, cancellationToken).ConfigureAwait(false);
-
+            await _checklistService.CreateWalletAsync(applicationId, cancellationToken).ConfigureAwait(false);
             documentId = await _sdFactoryService.RegisterSelfDescriptionAsync(accessToken, applicationId, countryCode, businessPartnerNumber, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception)
