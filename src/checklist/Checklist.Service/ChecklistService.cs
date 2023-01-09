@@ -22,7 +22,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
@@ -75,7 +74,7 @@ public class ChecklistService : IChecklistService
             throw new ConflictException("ZipCode must not be empty");
         }
 
-        await CheckCanRunStepAsync(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER).ConfigureAwait(false);
+        await CheckCanRunStepAsync(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, new []{ ChecklistEntryStatusId.TO_DO, ChecklistEntryStatusId.FAILED }).ConfigureAwait(false);
         var bpdmTransferData = new BpdmTransferData(data.CompanyName, data.AlphaCode2, data.ZipCode, data.City, data.Street);
         await _bpdmService.TriggerBpnDataPush(bpdmTransferData, cancellationToken).ConfigureAwait(false);
         await this.UpdateBpnStatusAsync(applicationId, ChecklistEntryStatusId.IN_PROGRESS).ConfigureAwait(false);
@@ -97,20 +96,21 @@ public class ChecklistService : IChecklistService
     /// </summary>
     /// <param name="applicationId">id of the application</param>
     /// <param name="step">the step that should be executed</param>
-    /// <returns></returns>
-    private async Task CheckCanRunStepAsync(Guid applicationId, ChecklistEntryTypeId step)
+    /// <param name="allowedStatus"></param>
+    /// <exception cref="ConflictException">Exception will be thrown if the possible steps don't contain the requested step.</exception>
+    private async Task CheckCanRunStepAsync(Guid applicationId, ChecklistEntryTypeId step, ChecklistEntryStatusId[] allowedStatus)
     {
         var checklistData = await _portalRepositories.GetInstance<IApplicationChecklistRepository>()
             .GetChecklistDataAsync(applicationId).ConfigureAwait(false);
 
-        var possibleSteps = GetNextPossibleTypes(checklistData);
-        if (possibleSteps.Contains(step))
+        var possibleSteps = GetNextPossibleTypesWithMatchingStatus(checklistData, allowedStatus);
+        if (!possibleSteps.Contains(step))
         {
             throw new ConflictException($"{ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER} is not available as next step");
         }
     }
 
-    private static IEnumerable<ChecklistEntryTypeId> GetNextPossibleTypes(IDictionary<ChecklistEntryTypeId, ChecklistEntryStatusId> currentStatus)
+    private static IEnumerable<ChecklistEntryTypeId> GetNextPossibleTypesWithMatchingStatus(IDictionary<ChecklistEntryTypeId, ChecklistEntryStatusId> currentStatus, ChecklistEntryStatusId[] checklistEntryStatusIds)
     {
         currentStatus.TryGetValue(ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, out var bpnStatus);
         currentStatus.TryGetValue(ChecklistEntryTypeId.REGISTRATION_VERIFICATION, out var registrationStatus);
@@ -119,23 +119,23 @@ public class ChecklistService : IChecklistService
         currentStatus.TryGetValue(ChecklistEntryTypeId.SELF_DESCRIPTION_LP, out var selfDescriptionStatus);
 
         var possibleTypes = new List<ChecklistEntryTypeId>();
-        if (bpnStatus == ChecklistEntryStatusId.TO_DO)
+        if (checklistEntryStatusIds.Contains(bpnStatus))
         {
             possibleTypes.Add(ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER);
         }
-        if (registrationStatus == ChecklistEntryStatusId.TO_DO)
+        if (checklistEntryStatusIds.Contains(registrationStatus))
         {
             possibleTypes.Add(ChecklistEntryTypeId.REGISTRATION_VERIFICATION);
         }
-        if (identityStatus == ChecklistEntryStatusId.TO_DO && bpnStatus == ChecklistEntryStatusId.DONE && registrationStatus == ChecklistEntryStatusId.DONE)
+        if (checklistEntryStatusIds.Contains(identityStatus) && bpnStatus == ChecklistEntryStatusId.DONE && registrationStatus == ChecklistEntryStatusId.DONE)
         {
             possibleTypes.Add(ChecklistEntryTypeId.IDENTITY_WALLET);
         }
-        if (clearingHouseStatus == ChecklistEntryStatusId.TO_DO && identityStatus == ChecklistEntryStatusId.DONE)
+        if (checklistEntryStatusIds.Contains(clearingHouseStatus) && identityStatus == ChecklistEntryStatusId.DONE)
         {
             possibleTypes.Add(ChecklistEntryTypeId.CLEARING_HOUSE);
         }
-        if (selfDescriptionStatus == ChecklistEntryStatusId.TO_DO && clearingHouseStatus == ChecklistEntryStatusId.DONE)
+        if (checklistEntryStatusIds.Contains(selfDescriptionStatus) && clearingHouseStatus == ChecklistEntryStatusId.DONE)
         {
             possibleTypes.Add(ChecklistEntryTypeId.SELF_DESCRIPTION_LP);
         }
