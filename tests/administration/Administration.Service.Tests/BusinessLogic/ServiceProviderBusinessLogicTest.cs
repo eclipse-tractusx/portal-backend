@@ -168,10 +168,10 @@ public class ServiceProviderBusinessLogicTest
         var sut = _fixture.Create<ServiceProviderBusinessLogic>();
             
         //Act
-        var result = await sut.GetServiceProviderCompanyDetailsAsync(Guid.NewGuid().ToString()).ConfigureAwait(false);
+        async Task Action() => await sut.GetServiceProviderCompanyDetailsAsync(Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         //Assert
-        result.Should().BeNull();
+        await Assert.ThrowsAsync<ConflictException>(Action);
     }
 
     [Fact]
