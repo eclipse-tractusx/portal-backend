@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.RegularExpressions;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -65,17 +66,64 @@ public class ChecklistService : IChecklistService
         await CheckCanRunStepAsync(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, new []{ ChecklistEntryStatusId.TO_DO, ChecklistEntryStatusId.FAILED }).ConfigureAwait(false);
         var bpdmTransferData = new BpdmTransferData(data.CompanyName, data.AlphaCode2, data.ZipCode, data.City, data.Street);
         await _bpdmService.TriggerBpnDataPush(bpdmTransferData, cancellationToken).ConfigureAwait(false);
-        await this.UpdateBpnStatusAsync(applicationId, ChecklistEntryStatusId.IN_PROGRESS).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public async Task UpdateBpnStatusAsync(Guid applicationId, ChecklistEntryStatusId statusId)
-    {
+        
         _portalRepositories.GetInstance<IApplicationChecklistRepository>()
             .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, checklist =>
             {
-                checklist.StatusId = statusId;
+                checklist.StatusId = ChecklistEntryStatusId.IN_PROGRESS;
             });
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public Task UpdateCompanyBpn(Guid applicationId, string bpn)
+    {
+        var regex = new Regex(@"(\w|\d){16}");
+        if (!regex.IsMatch(bpn))
+        {
+            throw new ControllerArgumentException("BPN must contain exactly 16 characters long.", nameof(bpn));
+        }
+        if (!bpn.StartsWith("BPNL", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ControllerArgumentException("businessPartnerNumbers must prefixed with BPNL", nameof(bpn));
+        }
+        
+        return UpdateCompanyBpnAsync(applicationId, bpn);
+    }
+
+    private async Task UpdateCompanyBpnAsync(Guid applicationId, string bpn)
+    {
+        var result = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetBpnForIamUserUntrackedAsync(applicationId, bpn).ToListAsync().ConfigureAwait(false);
+        if (!result.Any(item => item.IsApplicationCompany))
+        {
+            throw new NotFoundException($"application {applicationId} not found");
+        }
+
+        if (result.Any(item => !item.IsApplicationCompany))
+        {
+            throw new ConflictException("BusinessPartnerNumber is already assigned to a different company");
+        }
+
+        var applicationCompanyData = result.Single(item => item.IsApplicationCompany);
+        if (!applicationCompanyData.IsApplicationPending)
+        {
+            throw new ConflictException(
+                $"application {applicationId} for company {applicationCompanyData.CompanyId} is not pending");
+        }
+
+        if (!string.IsNullOrWhiteSpace(applicationCompanyData.BusinessPartnerNumber))
+        {
+            throw new ConflictException(
+                $"BusinessPartnerNumber of company {applicationCompanyData.CompanyId} has already been set.");
+        }
+
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId,
+            c => { c.BusinessPartnerNumber = bpn; });
+
+        _portalRepositories.GetInstance<IApplicationChecklistRepository>()
+            .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
+                checklist => { checklist.StatusId = ChecklistEntryStatusId.DONE; });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

@@ -32,15 +32,20 @@ namespace Framework.Checklist.Tests;
 
 public class ChecklistServiceTests
 {
-    private static readonly Guid ApplicationWithoutBpnId = new ("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
-    private static readonly Guid ApplicationWithBpnId = new ("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
+    private static readonly Guid IdWithoutBpn = new ("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
+    private static readonly Guid IdWithBpn = new ("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
     private static readonly Guid NotExistingApplicationId = new ("1942e8d3-b545-4fbc-842c-01a694f84390");
+    private static readonly Guid ActiveApplicationCompanyId = new("66c765dd-872d-46e0-aac1-f79330b55406");
     private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
+    private static readonly Guid CompanyId = new("95c4339e-e087-4cd2-a5b8-44d385e64630");
+    private const string ValidBpn = "BPNL123698762345";
+    private const string AlreadyTakenBpn = "BPNL123698762666";
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IBpdmService _bpdmService;
-    private readonly ICompanyRepository _companyRepository;
     private readonly IApplicationChecklistRepository _applicationChecklistRepository;
+    private readonly ICompanyRepository _companyRepository;
+    private readonly IUserRepository _userRepository;
     private readonly ChecklistService _service;
 
     public ChecklistServiceTests()
@@ -53,49 +58,32 @@ public class ChecklistServiceTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _bpdmService = A.Fake<IBpdmService>();
 
-        _companyRepository = A.Fake<ICompanyRepository>();
         _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
+        _companyRepository = A.Fake<ICompanyRepository>();
+        _userRepository = A.Fake<IUserRepository>();
+
+        A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_applicationChecklistRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
 
         _service = new ChecklistService(_portalRepositories, _bpdmService);
     }
     
-    #region UpdateBpnStatus
-    
-    [Theory]
-    [InlineData(ChecklistEntryStatusId.IN_PROGRESS)]
-    [InlineData(ChecklistEntryStatusId.DONE)]
-    [InlineData(ChecklistEntryStatusId.FAILED)]
-    public async Task UpdateBpnStatus_WithStatus_SetsExpectedStatus(ChecklistEntryStatusId statusId)
-    {
-        // Arrange
-        var entry = new ApplicationChecklistEntry(ApplicationWithoutBpnId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
-        SetupFakesForUpdate(entry);
-        
-        // Act
-        await _service.UpdateBpnStatusAsync(ApplicationWithoutBpnId, statusId).ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        entry.StatusId = statusId;
-    }
-    
-    #endregion
-
     #region TriggerBpnDataPush
     
     [Fact]
     public async Task TriggerBpnDataPush_WithValidData_CallsExpected()
     {
         // Arrange
-        var entry = new ApplicationChecklistEntry(ApplicationWithoutBpnId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        var entry = new ApplicationChecklistEntry(IdWithoutBpn, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         SetupFakesForTrigger(entry);
 
         // Act
-        await _service.TriggerBpnDataPush(ApplicationWithoutBpnId, IamUserId, CancellationToken.None).ConfigureAwait(false);
+        await _service.TriggerBpnDataPush(IdWithoutBpn, IamUserId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _bpdmService.TriggerBpnDataPush(A<BpdmTransferData>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(ApplicationWithoutBpnId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(IdWithoutBpn, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         entry.StatusId.Should().Be(ChecklistEntryStatusId.IN_PROGRESS);
     }
@@ -104,19 +92,19 @@ public class ChecklistServiceTests
     public async Task TriggerBpnDataPush_WithValidDataAndFailingBpdmServiceCall_ThrowsExceptionAndDoesntUpdateEntry()
     {
         // Arrange
-        var entry = new ApplicationChecklistEntry(ApplicationWithoutBpnId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        var entry = new ApplicationChecklistEntry(IdWithoutBpn, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         A.CallTo(() => _bpdmService.TriggerBpnDataPush(A<BpdmTransferData>._, CancellationToken.None))
             .Throws(new ServiceException("Bpdm Service Call failed."));
         
         SetupFakesForTrigger(entry);
 
         // Act
-        async Task Act() => await _service.TriggerBpnDataPush(ApplicationWithoutBpnId, IamUserId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _service.TriggerBpnDataPush(IdWithoutBpn, IamUserId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         await Assert.ThrowsAsync<ServiceException>(Act);
         A.CallTo(() => _bpdmService.TriggerBpnDataPush(A<BpdmTransferData>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(ApplicationWithoutBpnId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._)).MustNotHaveHappened();
+        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(IdWithoutBpn, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         entry.StatusId.Should().Be(ChecklistEntryStatusId.TO_DO);
     }
@@ -161,7 +149,7 @@ public class ChecklistServiceTests
         SetupFakesForTrigger();
 
         // Act
-        async Task Act() => await _service.TriggerBpnDataPush(ApplicationWithoutBpnId, Guid.NewGuid().ToString(), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _service.TriggerBpnDataPush(IdWithoutBpn, Guid.NewGuid().ToString(), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -199,7 +187,7 @@ public class ChecklistServiceTests
         SetupFakesForTrigger();
 
         // Act
-        async Task Act() => await _service.TriggerBpnDataPush(ApplicationWithBpnId, IamUserId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _service.TriggerBpnDataPush(IdWithBpn, IamUserId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -209,25 +197,121 @@ public class ChecklistServiceTests
 
     #endregion
     
-    #region Setup
-
-    private void SetupFakesForUpdate(ApplicationChecklistEntry applicationChecklistEntry)
+    #region UpdateCompanyBpn
+    
+    [Fact]
+    public async Task UpdateCompanyBpnAsync_WithInvalidBpn_ThrowsControllerArgumentException()
     {
-        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._))
-            .Invokes((Guid _, ChecklistEntryTypeId _, Action<ApplicationChecklistEntry> setFields) =>
-                {
-                    applicationChecklistEntry.DateLastChanged = DateTimeOffset.UtcNow;
-                    setFields.Invoke(applicationChecklistEntry);
-                });
+        // Arrange
+        var bpn = "123";
 
-        A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_applicationChecklistRepository);
+        // Act
+        async Task Act() => await _service.UpdateCompanyBpn(IdWithBpn, bpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.ParamName.Should().Be("bpn");
+        ex.Message.Should().Be("BPN must contain exactly 16 characters long. (Parameter 'bpn')");
     }
+    
+    [Fact]
+    public async Task UpdateCompanyBpnAsync_WithInvalidBpnPrefix_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var bpn = "BPXX123698762345";
+
+        // Act
+        async Task Act() => await _service.UpdateCompanyBpn(IdWithBpn, bpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.ParamName.Should().Be("bpn");
+        ex.Message.Should().Be("businessPartnerNumbers must prefixed with BPNL (Parameter 'bpn')");
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpnAsync_WithNotExistingApplication_ThrowsNotFoundException()
+    {
+        // Arrange
+        SetupForUpdateCompanyBpn();
+        
+        // Act
+        async Task Act() => await _service.UpdateCompanyBpn(NotExistingApplicationId, ValidBpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"application {NotExistingApplicationId} not found");
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpnAsync_WithAlreadyTakenBpn_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForUpdateCompanyBpn();
+
+        // Act
+        async Task Act() => await _service.UpdateCompanyBpn(IdWithoutBpn, AlreadyTakenBpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("BusinessPartnerNumber is already assigned to a different company");
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpnAsync_WithActiveCompanyForApplication_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForUpdateCompanyBpn();
+
+        // Act
+        async Task Act() => await _service.UpdateCompanyBpn(ActiveApplicationCompanyId, ValidBpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"application {ActiveApplicationCompanyId} for company {CompanyId} is not pending");
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpnAsync_WithBpnAlreadySet_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForUpdateCompanyBpn();
+
+        // Act
+        async Task Act() => await _service.UpdateCompanyBpn(IdWithBpn, ValidBpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"BusinessPartnerNumber of company {CompanyId} has already been set.");
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpnAsync_WithValidData_CallsExpected()
+    {
+        // Arrange
+        var entry = new ApplicationChecklistEntry(IdWithoutBpn, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        SetupForUpdateCompanyBpn(entry);
+
+        // Act
+        await _service.UpdateCompanyBpn(IdWithoutBpn, ValidBpn).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(CompanyId, A<Action<Company>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(IdWithoutBpn, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        entry.StatusId.Should().Be(ChecklistEntryStatusId.DONE);
+    }
+
+    #endregion
+    
+    #region Setup
 
     private void SetupFakesForTrigger(ApplicationChecklistEntry? applicationChecklistEntry = null)
     {
         if (applicationChecklistEntry != null)
         {
-            SetupFakesForUpdate(applicationChecklistEntry);
+            SetupForUpdate(applicationChecklistEntry);
         }
 
         var validData = _fixture.Build<BpdmData>()
@@ -238,21 +322,65 @@ public class ChecklistServiceTests
         A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, NotExistingApplicationId))
             .ReturnsLazily(() => (BpdmData?)null);
 
-        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(A<string>.That.Not.Matches(x => x == IamUserId), ApplicationWithoutBpnId))
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(A<string>.That.Not.Matches(x => x == IamUserId), IdWithoutBpn))
             .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.SUBMITTED, null!, null!, null!, null!, null!, false));
-        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, A<Guid>.That.Matches(x => x == ApplicationWithoutBpnId || x == ApplicationWithBpnId)))
+        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, A<Guid>.That.Matches(x => x == IdWithoutBpn || x == IdWithBpn)))
             .ReturnsLazily(() => validData);
 
-        A.CallTo(() => _applicationChecklistRepository.GetChecklistDataAsync(ApplicationWithoutBpnId))
+        A.CallTo(() => _applicationChecklistRepository.GetChecklistDataAsync(IdWithoutBpn))
             .ReturnsLazily(() => new Dictionary<ChecklistEntryTypeId, ChecklistEntryStatusId>
             {
                 {ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ChecklistEntryStatusId.TO_DO},
             });
 
-        A.CallTo(() => _applicationChecklistRepository.GetChecklistDataAsync(ApplicationWithBpnId))
+        A.CallTo(() => _applicationChecklistRepository.GetChecklistDataAsync(IdWithBpn))
             .ReturnsLazily(() => new Dictionary<ChecklistEntryTypeId, ChecklistEntryStatusId>());
+    }
 
-        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
+    private void SetupForUpdateCompanyBpn(ApplicationChecklistEntry? applicationChecklistEntry = null)
+    {
+        if (applicationChecklistEntry != null)
+        {
+            SetupForUpdate(applicationChecklistEntry);
+        }
+
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(IdWithoutBpn, ValidBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            {
+                new (true, true, null, CompanyId)
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(NotExistingApplicationId, ValidBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            {
+                new (false, true, ValidBpn, CompanyId)
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(IdWithoutBpn, AlreadyTakenBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            {
+                new (true, true, ValidBpn, CompanyId),
+                new (false, true, AlreadyTakenBpn, Guid.NewGuid())
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(ActiveApplicationCompanyId, ValidBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            {
+                new (true, false, ValidBpn, CompanyId)
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(IdWithBpn, ValidBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            {
+                new (true, true, ValidBpn, CompanyId)
+            }.ToAsyncEnumerable());
+    }
+
+    private void SetupForUpdate(ApplicationChecklistEntry applicationChecklistEntry)
+    {
+        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._))
+            .Invokes((Guid _, ChecklistEntryTypeId _, Action<ApplicationChecklistEntry> setFields) =>
+            {
+                applicationChecklistEntry.DateLastChanged = DateTimeOffset.UtcNow;
+                setFields.Invoke(applicationChecklistEntry);
+            });
+
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_applicationChecklistRepository);
     }
 
