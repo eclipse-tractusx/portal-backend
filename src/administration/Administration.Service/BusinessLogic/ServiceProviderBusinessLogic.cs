@@ -46,7 +46,11 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
         var result = await _portalRepositories.GetInstance<ICompanyRepository>()
             .GetProviderCompanyDetailAsync( CompanyRoleId.SERVICE_PROVIDER, iamUserId)
             .ConfigureAwait(false);
-        if (result != default && !result.IsProviderCompany)
+        if (result == default)
+        {
+            throw new ConflictException($"IAmUser {iamUserId} is not assigned to company");
+        }
+        if (!result.IsProviderCompany)
         {
             throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
         }
