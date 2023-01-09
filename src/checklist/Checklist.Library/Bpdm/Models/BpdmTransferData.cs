@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
 
 /// <summary>
 /// View model of an application's detailed data for the bpdm.

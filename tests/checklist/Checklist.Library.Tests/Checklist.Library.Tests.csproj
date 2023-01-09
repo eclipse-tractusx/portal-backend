@@ -24,7 +24,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Framework.Checklist.Tests</RootNamespace>
+        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Tests</RootNamespace>
+        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Tests</AssemblyName>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="AutoFixture.AutoFakeItEasy" Version="4.17.0" />
@@ -42,6 +43,6 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\..\..\src\checklist\Checklist.Service\Checklist.Service.csproj" />
+      <ProjectReference Include="..\..\..\src\checklist\Checklist.Library\Checklist.Library.csproj" />
     </ItemGroup>
 </Project>

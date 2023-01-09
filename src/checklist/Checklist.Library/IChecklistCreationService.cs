@@ -1,4 +1,4 @@
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 
 public interface IChecklistCreationService
 {

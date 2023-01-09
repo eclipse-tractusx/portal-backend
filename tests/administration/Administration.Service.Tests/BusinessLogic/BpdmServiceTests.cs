@@ -25,8 +25,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using System.Net;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 

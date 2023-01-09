@@ -120,11 +120,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maintenance.App.Tests", "..
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Seeding", "framework\Framework.Seeding\Framework.Seeding.csproj", "{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checklist.Service.Tests", "..\tests\checklist\Checklist.Service.Tests\Checklist.Service.Tests.csproj", "{8B7D8210-05A4-4C0A-AB19-D695E6E97281}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checklist.Library.Tests", "..\tests\checklist\Checklist.Library.Tests\Checklist.Library.Tests.csproj", "{8B7D8210-05A4-4C0A-AB19-D695E6E97281}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "checklist", "checklist", "{282CEF03-292F-4A49-83C6-997567D0FF5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checklist.Service", "checklist\Checklist.Service\Checklist.Service.csproj", "{CF80BBB1-C07D-425C-9A5B-54C5E2890CC4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checklist.Library", "checklist\Checklist.Library\Checklist.Library.csproj", "{CF80BBB1-C07D-425C-9A5B-54C5E2890CC4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

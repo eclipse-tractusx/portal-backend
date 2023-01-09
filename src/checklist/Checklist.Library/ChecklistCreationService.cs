@@ -18,14 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Service.Bpdm.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 
 public class ChecklistCreationService : IChecklistCreationService
 {
