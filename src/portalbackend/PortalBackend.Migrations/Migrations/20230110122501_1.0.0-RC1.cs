@@ -17,6 +17,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
+// See https://aka.ms/new-console-template for more information
 
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -84,25 +85,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_audit_company_application20221005", x => x.audit_v1id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "audit_company_user_assigned_role20221005",
-                schema: "portal",
-                columns: table => new
-                {
-                    audit_v1id = table.Column<Guid>(type: "uuid", nullable: false),
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    company_user_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    user_role_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    audit_v1last_editor_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    audit_v1operation_id = table.Column<int>(type: "integer", nullable: false),
-                    audit_v1date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_audit_company_user_assigned_role20221005", x => x.audit_v1id);
                 });
 
             migrationBuilder.CreateTable(
@@ -2979,10 +2961,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.DropTable(
                 name: "audit_company_application20221005",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "audit_company_user_assigned_role20221005",
                 schema: "portal");
 
             migrationBuilder.DropTable(
