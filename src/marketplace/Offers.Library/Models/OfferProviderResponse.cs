@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 public record OfferProviderResponse(
     string? Title, 
     string Provider, 
-    string? LeadPictureUri, 
+    Guid LeadPictureId, 
     string? ProviderName, 
     IEnumerable<string> UseCase, 
     IEnumerable<OfferDescriptionData> Descriptions, 

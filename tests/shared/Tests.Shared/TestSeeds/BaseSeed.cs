@@ -85,6 +85,10 @@ public static class BaseSeed
             {
                 CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992")
             },
+            new (new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"), new byte[1024], new byte[1024], "test5.pdf", DateTimeOffset.UtcNow, DocumentStatusId.PENDING, DocumentTypeId.APP_LEADIMAGE)
+            {
+                CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")
+            }
         });
         
         dbContext.ProviderCompanyDetails.AddRange(new List<ProviderCompanyDetail>
@@ -168,6 +172,14 @@ public static class BaseSeed
             new ("4b8f156e-5dfc-4a58-9384-1efb195c1c34", new Guid("adf37b09-53f3-48ea-b8fb-8cbb7fd79324"))
         });
 
+        dbContext.CompanyServiceAccounts.AddRange(new List<CompanyServiceAccount>
+        {
+            new (new Guid("7259744a-2ab0-49bf-9fe3-fcb88f6ad332"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyServiceAccountStatusId.ACTIVE, "Test SA", "Only a test sa", DateTimeOffset.UtcNow, CompanyServiceAccountTypeId.MANAGED)
+            {
+                OfferSubscriptionId = new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd")
+            }
+        });
+        
         dbContext.IamClients.AddRange(new List<IamClient>
         {
             new (new Guid("0c9051d0-d032-11ec-9d64-0242ac120002"), "Cl2-CX-Portal"),
@@ -216,6 +228,7 @@ public static class BaseSeed
         dbContext.OfferAssignedDocuments.AddRange(new List<OfferAssignedDocument>
         {
             new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("7fc2fb78-8dc2-4f5f-b1d1-91c9c2f4506f")),
+            new (new Guid("99c5fd12-8085-4de2-abfd-215e1ee4baa4"), new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"))
         });
         
         dbContext.UserRoles.AddRange(new List<UserRole>

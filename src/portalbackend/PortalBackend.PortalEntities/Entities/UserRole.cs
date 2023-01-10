@@ -20,13 +20,15 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 [AuditEntityV1(typeof(AuditUserRole20221017))]
-public class UserRole : IAuditableV1
+public class UserRole : IAuditableV1, IBaseEntity
 {
     private UserRole()
     {
@@ -48,6 +50,7 @@ public class UserRole : IAuditableV1
 
     [MaxLength(255)]
     [Column("user_role")]
+    [JsonPropertyName("user_role")]
     public string UserRoleText { get; set; }
 
     public Guid OfferId { get; set; }

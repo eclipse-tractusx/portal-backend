@@ -21,6 +21,7 @@
 using Laraue.EfCoreTriggers.Common.Extensions;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
@@ -43,7 +44,13 @@ public static class EntityTypeBuilderV1Extension
         {
             throw new ConfigurationException($"{typeof(TEntity).Name} attribute {typeof(AuditEntityV1Attribute).Name} configured AuditEntityType {auditEntityType.Name} doesn't match {typeof(TAuditEntity).Name}");
         }
-        var sourceProperties = typeof(TEntity).GetProperties().Where(p => !(p.GetGetMethod()?.IsVirtual ?? false));
+        
+        var sourceProperties = new List<PropertyInfo>();
+        if (typeof(IBaseEntity).IsAssignableFrom(typeof(TEntity)))
+        {
+            sourceProperties.AddRange(typeof(IBaseEntity).GetProperties());
+        }
+        sourceProperties.AddRange(typeof(TEntity).GetProperties().Where(p => !(p.GetGetMethod()?.IsVirtual ?? false)));
         var auditProperties = typeof(IAuditEntityV1).GetProperties();
         var targetProperties = auditEntityType.GetProperties().ExceptBy(auditProperties.Select(x => x.Name), p => p.Name);
 
@@ -52,7 +59,6 @@ public static class EntityTypeBuilderV1Extension
         {
             throw new ConfigurationException($"{typeof(TEntity).Name} is must not declare any of the following properties: {string.Join(", ", illegalProperties.Select(x => x.Name))}");
         }
-
 
         var missingProperties = sourceProperties.ExceptBy(targetProperties.Select(x => x.Name), p => p.Name);
         if (missingProperties.Any())

@@ -39,7 +39,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder
                 .HasDefaultSchema("portal")
                 .UseCollation("en_US.utf8")
-                .HasAnnotation("ProductVersion", "6.0.4")
+                .HasAnnotation("ProductVersion", "6.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -880,11 +880,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("character varying(255)")
                         .HasColumnName("shortname");
 
-                    b.Property<string>("TaxId")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("tax_id");
-
                     b.HasKey("Id")
                         .HasName("pk_companies");
 
@@ -1045,6 +1040,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasDatabaseName("ix_company_assigned_use_cases_use_case_id");
 
                     b.ToTable("company_assigned_use_cases", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyIdentifier", b =>
+                {
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<int>("UniqueIdentifierId")
+                        .HasColumnType("integer")
+                        .HasColumnName("unique_identifier_id");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("value");
+
+                    b.HasKey("CompanyId", "UniqueIdentifierId")
+                        .HasName("pk_company_identifiers");
+
+                    b.HasIndex("UniqueIdentifierId")
+                        .HasDatabaseName("ix_company_identifiers_unique_identifier_id");
+
+                    b.ToTable("company_identifiers", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyIdentityProvider", b =>
@@ -1269,13 +1288,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("company_id");
-
                     b.Property<int>("CompanyServiceAccountStatusId")
                         .HasColumnType("integer")
                         .HasColumnName("company_service_account_status_id");
+
+                    b.Property<int>("CompanyServiceAccountTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_service_account_type_id");
 
                     b.Property<DateTimeOffset>("DateCreated")
                         .HasColumnType("timestamp with time zone")
@@ -1292,14 +1311,28 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
+                    b.Property<Guid?>("OfferSubscriptionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offer_subscription_id");
+
+                    b.Property<Guid>("ServiceAccountOwnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_account_owner_id");
+
                     b.HasKey("Id")
                         .HasName("pk_company_service_accounts");
 
-                    b.HasIndex("CompanyId")
-                        .HasDatabaseName("ix_company_service_accounts_company_id");
-
                     b.HasIndex("CompanyServiceAccountStatusId")
                         .HasDatabaseName("ix_company_service_accounts_company_service_account_status_id");
+
+                    b.HasIndex("CompanyServiceAccountTypeId")
+                        .HasDatabaseName("ix_company_service_accounts_company_service_account_type_id");
+
+                    b.HasIndex("OfferSubscriptionId")
+                        .HasDatabaseName("ix_company_service_accounts_offer_subscription_id");
+
+                    b.HasIndex("ServiceAccountOwnerId")
+                        .HasDatabaseName("ix_company_service_accounts_service_account_owner_id");
 
                     b.ToTable("company_service_accounts", "portal");
                 });
@@ -1350,6 +1383,36 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 2,
                             Label = "INACTIVE"
+                        });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountType", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_company_service_account_types");
+
+                    b.ToTable("company_service_account_types", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "MANAGED"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "OWN"
                         });
                 });
 
@@ -3587,6 +3650,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CountryAssignedIdentifier", b =>
+                {
+                    b.Property<string>("CountryAlpha2Code")
+                        .HasMaxLength(2)
+                        .HasColumnType("character(2)")
+                        .HasColumnName("country_alpha2code");
+
+                    b.Property<int>("UniqueIdentifierId")
+                        .HasColumnType("integer")
+                        .HasColumnName("unique_identifier_id");
+
+                    b.HasKey("CountryAlpha2Code", "UniqueIdentifierId")
+                        .HasName("pk_country_assigned_identifier");
+
+                    b.HasIndex("UniqueIdentifierId")
+                        .HasDatabaseName("ix_country_assigned_identifier_unique_identifier_id");
+
+                    b.ToTable("country_assigned_identifier", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4830,6 +4913,51 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UniqueIdentifier", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_unique_identifiers");
+
+                    b.ToTable("unique_identifiers", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "COMMERCIAL_REG_NUMBER"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "VAT_ID"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "LEI_CODE"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Label = "VIES"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "EORI"
+                        });
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UseCase", b =>
                 {
                     b.Property<Guid>("Id")
@@ -5388,6 +5516,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("UseCase");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyIdentifier", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
+                        .WithMany("CompanyIdentifiers")
+                        .HasForeignKey("CompanyId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_identifiers_companies_company_id");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UniqueIdentifier", "UniqueIdentifier")
+                        .WithMany("CompanyIdentifiers")
+                        .HasForeignKey("UniqueIdentifierId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_identifiers_unique_identifiers_unique_identifier_id");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("UniqueIdentifier");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyIdentityProvider", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
@@ -5463,12 +5610,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", b =>
                 {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
-                        .WithMany("CompanyServiceAccounts")
-                        .HasForeignKey("CompanyId")
-                        .IsRequired()
-                        .HasConstraintName("fk_company_service_accounts_companies_company_id");
-
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountStatus", "CompanyServiceAccountStatus")
                         .WithMany("CompanyServiceAccounts")
                         .HasForeignKey("CompanyServiceAccountStatusId")
@@ -5476,9 +5617,31 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_company_service_accounts_company_service_account_statuses_c");
 
-                    b.Navigation("Company");
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountType", "CompanyServiceAccountType")
+                        .WithMany("CompanyServiceAccounts")
+                        .HasForeignKey("CompanyServiceAccountTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_service_accounts_company_service_account_types_comp");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferSubscription", "OfferSubscription")
+                        .WithMany("CompanyServiceAccounts")
+                        .HasForeignKey("OfferSubscriptionId")
+                        .HasConstraintName("fk_company_service_accounts_offer_subscriptions_offer_subscrip");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "ServiceAccountOwner")
+                        .WithMany("CompanyServiceAccounts")
+                        .HasForeignKey("ServiceAccountOwnerId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_service_accounts_companies_service_account_owner_id");
 
                     b.Navigation("CompanyServiceAccountStatus");
+
+                    b.Navigation("CompanyServiceAccountType");
+
+                    b.Navigation("OfferSubscription");
+
+                    b.Navigation("ServiceAccountOwner");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountAssignedRole", b =>
@@ -5699,6 +5862,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Consent");
 
                     b.Navigation("OfferSubscription");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CountryAssignedIdentifier", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Country", "Country")
+                        .WithMany("CountryAssignedIdentifiers")
+                        .HasForeignKey("CountryAlpha2Code")
+                        .IsRequired()
+                        .HasConstraintName("fk_country_assigned_identifier_countries_country_alpha2code");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UniqueIdentifier", "UniqueIdentifier")
+                        .WithMany("CountryAssignedIdentifiers")
+                        .HasForeignKey("UniqueIdentifierId")
+                        .IsRequired()
+                        .HasConstraintName("fk_country_assigned_identifier_unique_identifiers_unique_ident");
+
+                    b.Navigation("Country");
+
+                    b.Navigation("UniqueIdentifier");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
@@ -6132,6 +6314,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("CompanyAssignedRoles");
 
+                    b.Navigation("CompanyIdentifiers");
+
                     b.Navigation("CompanyServiceAccounts");
 
                     b.Navigation("CompanyUsers");
@@ -6178,6 +6362,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountStatus", b =>
+                {
+                    b.Navigation("CompanyServiceAccounts");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountType", b =>
                 {
                     b.Navigation("CompanyServiceAccounts");
                 });
@@ -6242,6 +6431,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Addresses");
 
                     b.Navigation("Connectors");
+
+                    b.Navigation("CountryAssignedIdentifiers");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
@@ -6334,6 +6525,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 {
                     b.Navigation("AppSubscriptionDetail");
 
+                    b.Navigation("CompanyServiceAccounts");
+
                     b.Navigation("ConsentAssignedOfferSubscriptions");
                 });
 
@@ -6347,6 +6540,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("AgreementAssignedOfferTypes");
 
                     b.Navigation("Offers");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UniqueIdentifier", b =>
+                {
+                    b.Navigation("CompanyIdentifiers");
+
+                    b.Navigation("CountryAssignedIdentifiers");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UseCase", b =>

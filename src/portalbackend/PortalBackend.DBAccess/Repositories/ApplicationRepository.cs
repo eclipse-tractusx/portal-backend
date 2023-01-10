@@ -91,12 +91,16 @@ public class ApplicationRepository : IApplicationRepository
             .Where(application => application.Id == applicationId)
             .Select(application => new {
                 Application = application, 
-                CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).SingleOrDefault()
+                CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).SingleOrDefault(),
+                Documents = application.Company!.CompanyUsers.SelectMany(companyUser => companyUser.Documents).Where(Doc => Doc.DocumentStatusId != DocumentStatusId.LOCKED)
+                    .Select(document => new { document.Id, document.DocumentStatusId })
             })
             .Select(data => new CompanyApplicationUserEmailData(
                 data.Application.ApplicationStatusId,
                 data.CompanyUser!.Id,
-                data.CompanyUser!.Email))
+                data.CompanyUser!.Email,
+                data.Documents!.Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId))
+                ))
             .SingleOrDefaultAsync();
 
     public Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>
@@ -116,8 +120,7 @@ public class ApplicationRepository : IApplicationRepository
                     Streetadditional = companyApplication.Company.Address.Streetadditional,
                     Streetnumber = companyApplication.Company.Address.Streetnumber,
                     Zipcode = companyApplication.Company.Address.Zipcode,
-                    CountryDe = companyApplication.Company.Address.Country!.CountryNameDe, // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
-                    TaxId = companyApplication.Company.TaxId
+                    CountryDe = companyApplication.Company.Address.Country!.CountryNameDe // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
                 })
             .AsNoTracking()
             .SingleOrDefaultAsync();
@@ -131,18 +134,28 @@ public class ApplicationRepository : IApplicationRepository
 
     public Task<CompanyApplicationWithCompanyAddressUserData?> GetCompanyApplicationWithCompanyAdressUserDataAsync (Guid applicationId, Guid companyId, string iamUserId) =>
         _dbContext.CompanyApplications
+            .AsNoTracking()
             .Where(application => application.Id == applicationId
                 && application.CompanyId == companyId)
-            .Include(application => application.Company)
-            .Include(application => application.Company!.Address)
             .Select(application => new CompanyApplicationWithCompanyAddressUserData(
-                application)
-            {
-                CompanyUserId = application.Company!.CompanyUsers
+                application.ApplicationStatusId,
+                application.Company!.Name,
+                application.Company.Shortname,
+                application.Company.BusinessPartnerNumber,
+                application.Company.CompanyStatusId,
+                application.Company.AddressId,
+                application.Company.Address!.Streetname,
+                application.Company.Address.Streetadditional,
+                application.Company.Address.Streetnumber,
+                application.Company.Address.Zipcode,
+                application.Company.Address.City,
+                application.Company.Address.Region,
+                application.Company.Address.CountryAlpha2Code,
+                application.Company.Address.Country!.CountryNameDe,
+                application.Company.CompanyUsers
                     .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
                     .Select(companyUser => companyUser.Id)
-                    .SingleOrDefault()
-            })
+                    .SingleOrDefault()))
             .SingleOrDefaultAsync();
 
     public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>

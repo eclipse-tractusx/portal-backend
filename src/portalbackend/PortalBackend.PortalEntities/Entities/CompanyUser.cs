@@ -22,13 +22,14 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 [AuditEntityV1(typeof(AuditCompanyUser20221005))]
-public class CompanyUser : IAuditableV1
+public class CompanyUser : IAuditableV1, IBaseEntity
 {
-    private CompanyUser()
+    public CompanyUser()
     {
         Consents = new HashSet<Consent>();
         Documents = new HashSet<Document>();
@@ -42,7 +43,7 @@ public class CompanyUser : IAuditableV1
         CreatedNotifications = new HashSet<Notification>();
         RequestedSubscriptions = new HashSet<OfferSubscription>();
     }
-    
+
     public CompanyUser(Guid id, Guid companyId, CompanyUserStatusId companyUserStatusId, DateTimeOffset dateCreated, Guid lastEditorId) 
         : this()
     {

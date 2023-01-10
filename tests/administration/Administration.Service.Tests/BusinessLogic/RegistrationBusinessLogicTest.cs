@@ -251,6 +251,8 @@ public class RegistrationBusinessLogicTest
 
     #endregion
 
+    #region GetCompanyApplicationDetailsAsync
+
     [Fact]
     public async Task GetCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries()
     {
@@ -261,13 +263,48 @@ public class RegistrationBusinessLogicTest
             .Returns(companyApplicationData.AsQueryable());
 
         // Act
-        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5,null).ConfigureAwait(false);
-
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5,null,null).ConfigureAwait(false);
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 3 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
         result.Content.Should().HaveCount(5);
     }
+
+    [Fact]
+    public async Task GetCompanyApplicationDetailsAsync_WithInReviewRequest_GetsExpectedEntries()
+    {
+        // Arrange
+        var companyAppStatus = new[] { CompanyApplicationStatusId.SUBMITTED };
+        var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.CreateMany<CompanyApplication>(5));
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
+            .Returns(companyApplicationData.AsQueryable());
+
+        // Act
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5,CompanyApplicationStatusFilter.InReview,null).ConfigureAwait(false);
+        // Assert
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 1 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
+        result.Content.Should().HaveCount(5);       
+    }    
+
+    [Fact]
+    public async Task GetCompanyApplicationDetailsAsync_WithClosedRequest_GetsExpectedEntries()
+    {
+        // Arrange
+        var companyAppStatus = new[] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
+        var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.CreateMany<CompanyApplication>(5));
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
+            .Returns(companyApplicationData.AsQueryable());
+
+        // Act
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5,CompanyApplicationStatusFilter.Closed,null).ConfigureAwait(false);
+        // Assert
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 2 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
+        result.Content.Should().HaveCount(5);       
+    }
+
+    #endregion
 
     #region GetCompanyWithAddressAsync
 
