@@ -235,7 +235,6 @@ public class ApplicationRepository : IApplicationRepository
                     companyApplication.Company!.Name,
                     companyApplication.Company.Shortname,
                     companyApplication.Company.BusinessPartnerNumber,
-                    companyApplication.Company.TaxId,
                     companyApplication.Company.Address!.City,
                     companyApplication.Company.Address.Streetname,
                     companyApplication.Company.Address.CountryAlpha2Code,

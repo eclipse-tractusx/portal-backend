@@ -30,7 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 /// <param name="Name"></param>
 /// <param name="ShortName"></param>
 /// <param name="BusinessPartnerNumber"></param>
-/// <param name="TaxId"></param>
 /// <param name="City"></param>
 /// <param name="StreetName"></param>
 /// <param name="CountryAlpha2Code"></param>
@@ -48,7 +47,6 @@ public record CompanyWithAddressData(
     string Name,
     string ShortName,
     [property: JsonPropertyName("bpn")] string BusinessPartnerNumber,
-    string TaxId,
     string City,
     string StreetName,
     string CountryAlpha2Code,

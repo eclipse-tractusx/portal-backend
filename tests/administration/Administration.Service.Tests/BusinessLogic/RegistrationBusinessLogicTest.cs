@@ -330,7 +330,6 @@ public class RegistrationBusinessLogicTest
             r.Name == data.Name &&
             r.ShortName == data.Shortname &&
             r.BusinessPartnerNumber == data.BusinessPartnerNumber &&
-            r.TaxId == data.TaxId &&
             r.City == data.City &&
             r.StreetName == data.StreetName &&
             r.CountryAlpha2Code == data.CountryAlpha2Code &&
@@ -352,7 +351,6 @@ public class RegistrationBusinessLogicTest
         var data = _fixture.Build<CompanyUserRoleWithAddress>()
             .With(x => x.Shortname, (string?)null)
             .With(x => x.BusinessPartnerNumber, (string?)null)
-            .With(x => x.TaxId, (string?)null)
             .With(x => x.City, (string?)null)
             .With(x => x.StreetName, (string?)null)
             .With(x => x.CountryAlpha2Code, (string?)null)
@@ -377,7 +375,6 @@ public class RegistrationBusinessLogicTest
             r.Name == data.Name &&
             r.ShortName == "" &&
             r.BusinessPartnerNumber == "" &&
-            r.TaxId == "" &&
             r.City == "" &&
             r.StreetName == "" &&
             r.CountryAlpha2Code == "" &&

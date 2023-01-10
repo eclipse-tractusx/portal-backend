@@ -27,7 +27,6 @@ public record CompanyUserRoleWithAddress(
     string Name,
     string? Shortname,
     string? BusinessPartnerNumber,
-    string? TaxId,
     string? City,
     string? StreetName,
     string? CountryAlpha2Code,
