@@ -3,10 +3,26 @@
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
 ## Unreleased
-* Technical Support: DB seeding ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
-* Bugfix: Registration store address
-* Feature: App deactivation for marketplace
+
+## 1.0.0 RC-1
+
+### Change
+* Change: Service Provider Detail Endpoints - ID deleted from path url; information fetched from user token
+* Change: GET company application filters enabled
 * Change: App LeadPicture (GET /api/apps/{appId} & GET /api/apps/appreleaseprocess/{appId}/appStatus) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+
+### Feature
+* App Service
+  * enable filtering for app approval management function GET /inReview - (marketplace service; controller: appreleaseprocess)
+  * app deactivation enpoint created to enable marketplace deactivations - (marketplace service; controller: apps)
+
+### Technical Support
+* Migration: DB Seeding enabled with initital base image files for all db tables ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat). The DB seeding enables delta migrations.
+* DB tales for unique identifier handling of companies added (portal.unique_identifiers; portal.country_assigned_identifiers; portal.company_identifiers)
+
+### Bugfix
+* Email template layout fixed for /nextsteps.html & /appprovider_subscription_request.html
+* Registration service POST /application/{applicationId}/companyDetailsWithAddress address storing and overwrite logic fixed
 
 ## 0.10.0
 
