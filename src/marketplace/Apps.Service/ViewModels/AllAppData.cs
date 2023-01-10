@@ -20,9 +20,9 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
 /// <summary>
-/// Model for app data.
+/// Model for offer data.
 /// </summary>
 public record AllAppData(Guid Id, string? Name, Guid LeadPictureId, string Provider, OfferStatusId Status, DateTimeOffset? LastChanged);

@@ -199,18 +199,19 @@ public class OfferRepository : IOfferRepository
     public void RemoveOfferDetailImages(IEnumerable<Guid> imageIds) =>
         _context.RemoveRange(imageIds.Select(imageId => new OfferDetailImage(imageId, Guid.Empty, null!)));
 
-    /// <inheritdoc />
-    public IAsyncEnumerable<AllAppData> GetProvidedAppsData(string iamUserId) =>
+    public IAsyncEnumerable<AllOfferData> GetProvidedOffersData(OfferTypeId offerTypeId, string iamUserId) =>
         _context.Offers
             .AsNoTracking()
-            .Where(app=>app.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
-            .Select(app => new AllAppData(
-                app.Id,
-                app.Name,
-                app.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
-                app.Provider,
-                app.OfferStatusId,
-                app.DateLastChanged
+            .Where(offer =>
+                offer.OfferTypeId == offerTypeId &&
+                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
+            .Select(offer => new AllOfferData(
+                offer.Id,
+                offer.Name,
+                offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id),
+                offer.Provider,
+                offer.OfferStatusId,
+                offer.DateLastChanged
             ))
             .AsAsyncEnumerable();
 

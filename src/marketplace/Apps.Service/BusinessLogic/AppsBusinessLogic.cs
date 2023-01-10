@@ -278,8 +278,24 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<AllAppData> GetCompanyProvidedAppsDataForUserAsync(string userId)=>
-        _portalRepositories.GetInstance<IOfferRepository>().GetProvidedAppsData(userId);
+    public async IAsyncEnumerable<AllAppData> GetCompanyProvidedAppsDataForUserAsync(string userId)
+    {
+        await foreach (var data in _portalRepositories.GetInstance<IOfferRepository>().GetProvidedOffersData(OfferTypeId.APP, userId))
+        {
+            if (data.LeadPictureIds.Count() > 1)
+            {
+                throw new ConflictException($"app {data.Id} has more than a single LeadPictureId: ${string.Join(", ",data.LeadPictureIds)}");
+            }
+            yield return new AllAppData(
+                data.Id,
+                data.Name,
+                data.LeadPictureIds.FirstOrDefault(),
+                data.Provider,
+                data.Status,
+                data.LastChanged
+            );
+        }
+    }
     
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId) =>

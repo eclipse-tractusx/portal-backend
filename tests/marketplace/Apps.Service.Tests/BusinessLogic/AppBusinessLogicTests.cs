@@ -23,7 +23,6 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -34,6 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic.Tests;
@@ -399,6 +399,52 @@ public class AppBusinessLogicTests
 
         // Assert
         A.CallTo(() => _offerService.DeactivateOfferIdAsync(appId, IamUserId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region GetCompanyProvidedAppsDataForUserAsync
+
+    [Fact]
+    public async Task GetCompanyProvidedAppsDataForUserAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = new AsyncEnumerableStub<AllOfferData>(_fixture.CreateMany<Guid>(5).Select(id =>
+                _fixture.Build<AllOfferData>()
+                    .With(x => x.Id, id)
+                    .With(x => x.LeadPictureIds, _fixture.CreateMany<Guid>(1))
+                    .Create()));
+
+        A.CallTo(() => _offerRepository.GetProvidedOffersData(A<OfferTypeId>._, A<string>._))
+            .Returns(data.AsAsyncEnumerable());
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), _mailingService);
+
+        //Act
+        var result = await sut.GetCompanyProvidedAppsDataForUserAsync(IamUserId).ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetCompanyProvidedAppsDataForUserAsync_MultipleLeadPictureIds_Throws()
+    {
+        //Arrange
+        var data = new AsyncEnumerableStub<AllOfferData>(_fixture.CreateMany<AllOfferData>(5));
+
+        A.CallTo(() => _offerRepository.GetProvidedOffersData(A<OfferTypeId>._, A<string>._))
+            .Returns(data.AsAsyncEnumerable());
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), _mailingService);
+
+        var Act = async () => await sut.GetCompanyProvidedAppsDataForUserAsync(IamUserId).ToListAsync().ConfigureAwait(false);
+
+        //Act
+        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        result.Should().NotBeNull();
+        result.Message.Should().StartWith("app");
     }
 
     #endregion
