@@ -356,14 +356,14 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<string> GetCompanyUserEmailForCompanyAndRoleId(IEnumerable<Guid> userRoleIds, Guid companyId) =>
+    public IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForCompanyAndRoleId(IEnumerable<Guid> userRoleIds, Guid companyId) =>
         _dbContext.CompanyUsers
-            .Where(x => 
+            .Where(x =>
                 x.CompanyId == companyId &&
-                x.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && 
+                x.CompanyUserStatusId == CompanyUserStatusId.ACTIVE &&
                 x.UserRoles.Any(ur => userRoleIds.Contains(ur.Id)) &&
                 x.Email != null)
-            .Select(x => x.Email!)
+            .Select(x => new ValueTuple<string, string?, string?>(x.Email!, x.Firstname, x.Lastname))
             .ToAsyncEnumerable();
 
     /// <inheritdoc />

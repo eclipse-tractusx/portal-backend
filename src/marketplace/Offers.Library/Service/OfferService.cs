@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text;
 using System.Text.Json;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -655,13 +656,6 @@ public class OfferService : IOfferService
 
     private async Task SendMail(IDictionary<string,IEnumerable<string>> receiverUserRoles, string offerName, string basePortalAddress, string message, Guid companyId)
     {
-        var mailParams = new Dictionary<string, string>
-        {
-            { "offerName", offerName },
-            { "url", basePortalAddress },
-            { "declineMessage", message }
-        };
-
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roleData = await userRolesRepository
             .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
@@ -675,8 +669,17 @@ public class OfferService : IOfferService
 
         var companyUserWithRoleIdForCompany = _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserEmailForCompanyAndRoleId(roleData, companyId);
-        await foreach (var receiver in companyUserWithRoleIdForCompany)
+        await foreach (var (receiver, firstName, lastName) in companyUserWithRoleIdForCompany)
         {
+            var userName = string.Join(" ", new[] { firstName, lastName }.Where(item => !string.IsNullOrWhiteSpace(item)));            
+
+            var mailParams = new Dictionary<string, string>
+            {
+                { "offerName", offerName },
+                { "url", basePortalAddress },
+                { "declineMessage", message },
+                { "offerProviderName", !string.IsNullOrWhiteSpace(userName) ? userName : "Service Manager"},
+            };
             await _mailingService.SendMails(receiver, mailParams, new List<string> { "offer-request-decline" }).ConfigureAwait(false);
         }
     }
