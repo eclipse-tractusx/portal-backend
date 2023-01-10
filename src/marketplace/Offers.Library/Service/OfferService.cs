@@ -669,32 +669,19 @@ public class OfferService : IOfferService
 
         var companyUserWithRoleIdForCompany = _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserEmailForCompanyAndRoleId(roleData, companyId);
-        await foreach (var (receiver,FirstName,LastName) in companyUserWithRoleIdForCompany)
+        await foreach (var (receiver, firstName, lastName) in companyUserWithRoleIdForCompany)
         {
+            var userName = string.Join(" ", new[] { firstName, lastName }.Where(item => !string.IsNullOrWhiteSpace(item)));            
+
             var mailParams = new Dictionary<string, string>
             {
                 { "offerName", offerName },
                 { "url", basePortalAddress },
                 { "declineMessage", message },
-                { "offerProviderName", CreateNameString(FirstName, LastName)},
+                { "offerProviderName", !string.IsNullOrWhiteSpace(userName) ? userName : "Service Manager"},
             };
-            await _mailingService.SendMails(receiver!, mailParams, new List<string> { "offer-request-decline" }).ConfigureAwait(false);
+            await _mailingService.SendMails(receiver, mailParams, new List<string> { "offer-request-decline" }).ConfigureAwait(false);
         }
-    }
-    
-    private static string CreateNameString(string? firstName, string? lastName)
-    {
-        StringBuilder sb = new StringBuilder();
-        if (firstName != null)
-        {
-            sb.Append(firstName);
-        }
-        if (lastName != null)
-        {
-            sb.AppendFormat((firstName == null ? "{0}" : ", {0}"), lastName);
-        }
-        
-        return firstName == null && lastName == null ? "Service Manager" : sb.ToString();
     }
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
