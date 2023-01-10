@@ -477,6 +477,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         offerDetail.OfferStatus.Should().Be(OfferStatusId.ACTIVE);
     }
 
+    #endregion
+
+    #region GetProviderOfferDataWithConsentStatusAsync
+
     [Fact]
     public async Task GetProviderOfferDataWithConsentStatusAsync_ReturnsExpectedResult()
     {
@@ -491,20 +495,27 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.OfferProviderData.LeadPictureId.Should().NotBeEmpty();
         result.OfferProviderData.LeadPictureId.Should().Be(new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"));
     }
-    
-    [Fact]
-    public async Task GetProvidedAppsData_ReturnsExpectedResult()
+
+    #endregion
+
+    #region GetProvidedOffersData
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, "3d8142f1-860b-48aa-8c2b-1ccb18699f65", new [] { "90a24c6d-1092-4590-ae89-a9d2bff1ea41", "00000000-0000-0000-0000-000000000000" })]
+    [InlineData(OfferTypeId.SERVICE, "3d8142f1-860b-48aa-8c2b-1ccb18699f65", new [] { "00000000-0000-0000-0000-000000000000" })]
+    [InlineData(OfferTypeId.CORE_COMPONENT, "3d8142f1-860b-48aa-8c2b-1ccb18699f65", new string[] {})]
+    [InlineData(OfferTypeId.APP, "no such user", new string[] { })]
+    public async Task GetProvidedOffersData_ReturnsExpectedResult(OfferTypeId offerTypeId, string iamUserId, IEnumerable<string> leadPictureIds)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var providerAppData = await sut.GetProvidedAppsData("3d8142f1-860b-48aa-8c2b-1ccb18699f65").ToListAsync().ConfigureAwait(false);
+        var providerAppData = await sut.GetProvidedOffersData(offerTypeId, iamUserId).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        providerAppData.Should().NotBeNull();
-        providerAppData.FirstOrDefault()!.LeadPictureId.Should().NotBeEmpty();
-        providerAppData.FirstOrDefault()!.LeadPictureId.Should().Be(new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"));
+        providerAppData.Should().HaveSameCount(leadPictureIds);
+        providerAppData.OrderBy(item => item.LeadPictureId).Select(item => item.LeadPictureId).Should().ContainInOrder(leadPictureIds.Select(item => new Guid(item)).OrderBy(item => item));
     }
 
     #endregion
