@@ -83,8 +83,9 @@ public interface IDocumentRepository
     /// Attaches the document and sets the optional parameters
     /// </summary>
     /// <param name="documentId">Id of the document</param>
-    /// <param name="setOptionalParameters">Action to set the optional parameters</param>
-    void AttachAndModifyDocument(Guid documentId, Action<Document> setOptionalParameters);
+    /// <param name="initialize">Action to initialize the entity with values before the change</param>
+    /// <param name="modify">Action to set the values that are subject to change</param>
+    void AttachAndModifyDocument(Guid documentId, Action<Document>? initialize, Action<Document> modify);
 
     /// <summary>
     /// Gets the document seed data for the given id
