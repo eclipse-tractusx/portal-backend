@@ -63,14 +63,14 @@ public class ChecklistService : IChecklistService
             throw new ConflictException("ZipCode must not be empty");
         }
 
-        await CheckCanRunStepAsync(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, new []{ ChecklistEntryStatusId.TO_DO, ChecklistEntryStatusId.FAILED }).ConfigureAwait(false);
+        await CheckCanRunStepAsync(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, new []{ ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.FAILED }).ConfigureAwait(false);
         var bpdmTransferData = new BpdmTransferData(data.CompanyName, data.AlphaCode2, data.ZipCode, data.City, data.Street);
         await _bpdmService.TriggerBpnDataPush(bpdmTransferData, cancellationToken).ConfigureAwait(false);
         
         _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, checklist =>
+            .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, checklist =>
             {
-                checklist.StatusId = ChecklistEntryStatusId.IN_PROGRESS;
+                checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
             });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -118,12 +118,12 @@ public class ChecklistService : IChecklistService
                 $"BusinessPartnerNumber of company {applicationCompanyData.CompanyId} has already been set.");
         }
 
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId,
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null,
             c => { c.BusinessPartnerNumber = bpn; });
 
         _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
-                checklist => { checklist.StatusId = ChecklistEntryStatusId.DONE; });
+            .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
+                checklist => { checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE; });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -134,7 +134,7 @@ public class ChecklistService : IChecklistService
     /// <param name="step">the step that should be executed</param>
     /// <param name="allowedStatus"></param>
     /// <exception cref="ConflictException">Exception will be thrown if the possible steps don't contain the requested step.</exception>
-    private async Task CheckCanRunStepAsync(Guid applicationId, ChecklistEntryTypeId step, ChecklistEntryStatusId[] allowedStatus)
+    private async Task CheckCanRunStepAsync(Guid applicationId, ApplicationChecklistEntryTypeId step, ApplicationChecklistEntryStatusId[] allowedStatus)
     {
         var checklistData = await _portalRepositories.GetInstance<IApplicationChecklistRepository>()
             .GetChecklistDataAsync(applicationId).ConfigureAwait(false);
@@ -142,38 +142,38 @@ public class ChecklistService : IChecklistService
         var possibleSteps = GetNextPossibleTypesWithMatchingStatus(checklistData, allowedStatus);
         if (!possibleSteps.Contains(step))
         {
-            throw new ConflictException($"{ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER} is not available as next step");
+            throw new ConflictException($"{ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER} is not available as next step");
         }
     }
 
-    private static IEnumerable<ChecklistEntryTypeId> GetNextPossibleTypesWithMatchingStatus(IDictionary<ChecklistEntryTypeId, ChecklistEntryStatusId> currentStatus, ChecklistEntryStatusId[] checklistEntryStatusIds)
+    private static IEnumerable<ApplicationChecklistEntryTypeId> GetNextPossibleTypesWithMatchingStatus(IDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId> currentStatus, ApplicationChecklistEntryStatusId[] checklistEntryStatusIds)
     {
-        currentStatus.TryGetValue(ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, out var bpnStatus);
-        currentStatus.TryGetValue(ChecklistEntryTypeId.REGISTRATION_VERIFICATION, out var registrationStatus);
-        currentStatus.TryGetValue(ChecklistEntryTypeId.IDENTITY_WALLET, out var identityStatus);
-        currentStatus.TryGetValue(ChecklistEntryTypeId.CLEARING_HOUSE, out var clearingHouseStatus);
-        currentStatus.TryGetValue(ChecklistEntryTypeId.SELF_DESCRIPTION_LP, out var selfDescriptionStatus);
+        currentStatus.TryGetValue(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, out var bpnStatus);
+        currentStatus.TryGetValue(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, out var registrationStatus);
+        currentStatus.TryGetValue(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, out var identityStatus);
+        currentStatus.TryGetValue(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, out var clearingHouseStatus);
+        currentStatus.TryGetValue(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, out var selfDescriptionStatus);
 
-        var possibleTypes = new List<ChecklistEntryTypeId>();
+        var possibleTypes = new List<ApplicationChecklistEntryTypeId>();
         if (checklistEntryStatusIds.Contains(bpnStatus))
         {
-            possibleTypes.Add(ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER);
+            possibleTypes.Add(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER);
         }
         if (checklistEntryStatusIds.Contains(registrationStatus))
         {
-            possibleTypes.Add(ChecklistEntryTypeId.REGISTRATION_VERIFICATION);
+            possibleTypes.Add(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION);
         }
-        if (checklistEntryStatusIds.Contains(identityStatus) && bpnStatus == ChecklistEntryStatusId.DONE && registrationStatus == ChecklistEntryStatusId.DONE)
+        if (checklistEntryStatusIds.Contains(identityStatus) && bpnStatus == ApplicationChecklistEntryStatusId.DONE && registrationStatus == ApplicationChecklistEntryStatusId.DONE)
         {
-            possibleTypes.Add(ChecklistEntryTypeId.IDENTITY_WALLET);
+            possibleTypes.Add(ApplicationChecklistEntryTypeId.IDENTITY_WALLET);
         }
-        if (checklistEntryStatusIds.Contains(clearingHouseStatus) && identityStatus == ChecklistEntryStatusId.DONE)
+        if (checklistEntryStatusIds.Contains(clearingHouseStatus) && identityStatus == ApplicationChecklistEntryStatusId.DONE)
         {
-            possibleTypes.Add(ChecklistEntryTypeId.CLEARING_HOUSE);
+            possibleTypes.Add(ApplicationChecklistEntryTypeId.CLEARING_HOUSE);
         }
-        if (checklistEntryStatusIds.Contains(selfDescriptionStatus) && clearingHouseStatus == ChecklistEntryStatusId.DONE)
+        if (checklistEntryStatusIds.Contains(selfDescriptionStatus) && clearingHouseStatus == ApplicationChecklistEntryStatusId.DONE)
         {
-            possibleTypes.Add(ChecklistEntryTypeId.SELF_DESCRIPTION_LP);
+            possibleTypes.Add(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP);
         }
 
         return possibleTypes;

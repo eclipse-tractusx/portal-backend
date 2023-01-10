@@ -24,11 +24,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ApplicationChecklistEntry
 {
-    public ApplicationChecklistEntry(Guid applicationId, ChecklistEntryTypeId checklistEntryTypeId, ChecklistEntryStatusId statusId, DateTimeOffset dateCreated)
+    public ApplicationChecklistEntry(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId applicationChecklistEntryStatusId, DateTimeOffset dateCreated)
     {
         ApplicationId = applicationId;
-        ChecklistEntryTypeId = checklistEntryTypeId;
-        StatusId = statusId;
+        ApplicationChecklistEntryTypeId = applicationChecklistEntryTypeId;
+        ApplicationChecklistEntryStatusId = applicationChecklistEntryStatusId;
         DateCreated = dateCreated;
     }
     
@@ -38,16 +38,16 @@ public class ApplicationChecklistEntry
 
     public DateTimeOffset? DateLastChanged { get; set; }
 
-    public ChecklistEntryTypeId ChecklistEntryTypeId { get; private set; }
+    public ApplicationChecklistEntryTypeId ApplicationChecklistEntryTypeId { get; private set; }
 
-    public ChecklistEntryStatusId StatusId { get; set; }
+    public ApplicationChecklistEntryStatusId ApplicationChecklistEntryStatusId { get; set; }
 
     public string? Comment { get; set; }
 
     // Navigation properties
-    public virtual ChecklistEntryStatus? Status { get; private set; }
+    public virtual ApplicationChecklistEntryStatus? ApplicationChecklistEntryStatus { get; private set; }
 
-    public virtual ChecklistEntryType? ChecklistEntryType { get; private set; }
+    public virtual ApplicationChecklistEntryType? ApplicationChecklistEntryType { get; private set; }
 
     public virtual CompanyApplication? Application { get; private set; }
 }

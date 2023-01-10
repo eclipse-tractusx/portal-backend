@@ -37,20 +37,20 @@ public class ChecklistCreationService : IChecklistCreationService
     public async Task CreateInitialChecklistAsync(Guid applicationId)
     {
         var bpn =  await _portalRepositories.GetInstance<IApplicationRepository>().GetBpnForApplicationIdAsync(applicationId).ConfigureAwait(false);
-        var checklistEntries = Enum.GetValues<ChecklistEntryTypeId>()
+        var checklistEntries = Enum.GetValues<ApplicationChecklistEntryTypeId>()
             .Select(x => 
-                new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(x, GetChecklistStatus(x, bpn))
+                new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(x, GetChecklistStatus(x, bpn))
             );
         _portalRepositories.GetInstance<IApplicationChecklistRepository>()
             .CreateChecklistForApplication(applicationId, checklistEntries);
     }
 
-    private static ChecklistEntryStatusId GetChecklistStatus(ChecklistEntryTypeId checklistEntryTypeId, string? bpn) =>
-        checklistEntryTypeId switch
+    private static ApplicationChecklistEntryStatusId GetChecklistStatus(ApplicationChecklistEntryTypeId applicationChecklistEntryTypeId, string? bpn) =>
+        applicationChecklistEntryTypeId switch
         {
-            ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER => string.IsNullOrWhiteSpace(bpn)
-                ? ChecklistEntryStatusId.TO_DO
-                : ChecklistEntryStatusId.DONE,
-            _ => ChecklistEntryStatusId.TO_DO
+            ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER => string.IsNullOrWhiteSpace(bpn)
+                ? ApplicationChecklistEntryStatusId.TO_DO
+                : ApplicationChecklistEntryStatusId.DONE,
+            _ => ApplicationChecklistEntryStatusId.TO_DO
         };
 }

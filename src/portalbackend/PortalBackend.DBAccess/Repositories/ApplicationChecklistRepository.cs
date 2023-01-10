@@ -39,7 +39,7 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
     }
 
     /// <inheritdoc />
-    public void CreateChecklistForApplication(Guid applicationId, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)> checklistEntries)
+    public void CreateChecklistForApplication(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> checklistEntries)
     {
         var entries = checklistEntries
             .Select(x => new ApplicationChecklistEntry(
@@ -51,18 +51,18 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
     }
 
     /// <inheritdoc />
-    public void AttachAndModifyApplicationChecklist(Guid applicationId, ChecklistEntryTypeId checklistTypeId, Action<ApplicationChecklistEntry> setFields)
+    public void AttachAndModifyApplicationChecklist(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistTypeId, Action<ApplicationChecklistEntry> setFields)
     {
-        var entity = new ApplicationChecklistEntry(applicationId, checklistTypeId, default, default);
+        var entity = new ApplicationChecklistEntry(applicationId, applicationChecklistTypeId, default, default);
         _portalDbContext.ApplicationChecklist.Attach(entity);
         entity.DateLastChanged = DateTimeOffset.UtcNow;
         setFields.Invoke(entity);
     }
 
     /// <inheritdoc />
-    public Task<Dictionary<ChecklistEntryTypeId, ChecklistEntryStatusId>> GetChecklistDataAsync(Guid applicationId) =>
+    public Task<Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>> GetChecklistDataAsync(Guid applicationId) =>
         _portalDbContext.ApplicationChecklist
             .Where(x => x.ApplicationId == applicationId)
-            .Select(x => new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(x.ChecklistEntryTypeId, x.StatusId))
+            .Select(x => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId))
             .ToDictionaryAsync(x => x.Item1, x => x.Item2);
 }

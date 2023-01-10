@@ -25,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
@@ -357,7 +356,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Assert
         result.Should().HaveCount(1);
-        result.First().Should().Be("tester.user4@test.de");
+        result.First().Email.Should().Be("tester.user4@test.de");
     }
 
     #endregion
