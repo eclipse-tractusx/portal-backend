@@ -47,4 +47,10 @@ public interface IApplicationChecklistRepository
     /// <param name="applicationId">Id of the application to get the checklist for</param>
     /// <returns>Returns the data of the checklist for the specific application</returns>
     Task<Dictionary<ChecklistEntryTypeId, ChecklistEntryStatusId>> GetChecklistDataAsync(Guid applicationId);
+
+    /// <summary>
+    /// Gets all checklist entries where at least one item is in TO_DO state grouped by the application id
+    /// </summary>
+    /// <returns>Returns a dictionary with the checklist data</returns>
+    Task<Dictionary<Guid, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)>>> GetChecklistDataGroupedByApplicationId();
 }

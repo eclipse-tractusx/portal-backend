@@ -126,6 +126,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "checklist", "checklist", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checklist.Library", "checklist\Checklist.Library\Checklist.Library.csproj", "{CF80BBB1-C07D-425C-9A5B-54C5E2890CC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checklist.Worker", "checklist\Checklist.Worker\Checklist.Worker.csproj", "{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -736,6 +738,18 @@ Global
 		{CF80BBB1-C07D-425C-9A5B-54C5E2890CC4}.Release|x64.Build.0 = Release|Any CPU
 		{CF80BBB1-C07D-425C-9A5B-54C5E2890CC4}.Release|x86.ActiveCfg = Release|Any CPU
 		{CF80BBB1-C07D-425C-9A5B-54C5E2890CC4}.Release|x86.Build.0 = Release|Any CPU
+		{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}.Debug|x64.Build.0 = Debug|Any CPU
+		{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}.Debug|x86.Build.0 = Debug|Any CPU
+		{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}.Release|x64.ActiveCfg = Release|Any CPU
+		{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}.Release|x64.Build.0 = Release|Any CPU
+		{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}.Release|x86.ActiveCfg = Release|Any CPU
+		{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -794,5 +808,6 @@ Global
 		{C42A3C0F-21CD-4498-A48F-C1D6BBEAD00A} = {23500169-FC01-4D2B-A997-E7FAE2169FC0}
 		{8B7D8210-05A4-4C0A-AB19-D695E6E97281} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{CF80BBB1-C07D-425C-9A5B-54C5E2890CC4} = {282CEF03-292F-4A49-83C6-997567D0FF5F}
+		{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39} = {282CEF03-292F-4A49-83C6-997567D0FF5F}
 	EndGlobalSection
 EndGlobal

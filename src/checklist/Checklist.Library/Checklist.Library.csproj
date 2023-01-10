@@ -22,10 +22,10 @@
 
     <PropertyGroup>
         <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Checklist.Library</AssemblyName>
+        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Checklist.Library</RootNamespace>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Checklist.Library</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

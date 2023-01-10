@@ -77,7 +77,7 @@ builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services
     .AddSdFactoryService(builder.Configuration.GetSection("SdFactory"))
     .AddDapsService(builder.Configuration.GetSection("Daps"))
-    .AddChecklist(builder.Configuration.GetSection("Bpdm"), builder.Configuration.GetSection("Custodian"));
+    .AddChecklist(builder.Configuration.GetSection("Checklist"));
 
 builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
