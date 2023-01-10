@@ -25,7 +25,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.DependencyInjection;
 

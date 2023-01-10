@@ -25,7 +25,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class _100RC1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

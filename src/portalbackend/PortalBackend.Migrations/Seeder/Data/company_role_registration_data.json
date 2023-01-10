@@ -1,0 +1,18 @@
+[
+  {
+    "company_role_id": 1,
+    "is_registration_role": true
+  },
+  {
+    "company_role_id": 2,
+    "is_registration_role": true
+  },
+  {
+    "company_role_id": 3,
+    "is_registration_role": true
+  },
+  {
+    "company_role_id": 4,
+    "is_registration_role": false
+  }
+]
