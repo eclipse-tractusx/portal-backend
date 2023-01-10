@@ -273,6 +273,19 @@ namespace PortalBackend.Migrations.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "company_service_account_types",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_company_service_account_types", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "company_statuses",
                 schema: "portal",
                 columns: table => new
@@ -1122,36 +1135,6 @@ namespace PortalBackend.Migrations.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "company_service_accounts",
-                schema: "portal",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    company_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    description = table.Column<string>(type: "text", nullable: false),
-                    company_service_account_status_id = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_company_service_accounts", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_company_service_accounts_companies_company_id",
-                        column: x => x.company_id,
-                        principalSchema: "portal",
-                        principalTable: "companies",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_company_service_accounts_company_service_account_statuses_c",
-                        column: x => x.company_service_account_status_id,
-                        principalSchema: "portal",
-                        principalTable: "company_service_account_statuses",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "company_users",
                 schema: "portal",
                 columns: table => new
@@ -1203,27 +1186,6 @@ namespace PortalBackend.Migrations.Migrations
                         column: x => x.company_id,
                         principalSchema: "portal",
                         principalTable: "companies",
-                        principalColumn: "id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "iam_service_accounts",
-                schema: "portal",
-                columns: table => new
-                {
-                    client_id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
-                    client_client_id = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    user_entity_id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
-                    company_service_account_id = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_iam_service_accounts", x => x.client_id);
-                    table.ForeignKey(
-                        name: "fk_iam_service_accounts_company_service_accounts_company_servi",
-                        column: x => x.company_service_account_id,
-                        principalSchema: "portal",
-                        principalTable: "company_service_accounts",
                         principalColumn: "id");
                 });
 
@@ -1795,6 +1757,51 @@ namespace PortalBackend.Migrations.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "company_service_accounts",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    service_account_owner_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    description = table.Column<string>(type: "text", nullable: false),
+                    company_service_account_type_id = table.Column<int>(type: "integer", nullable: false),
+                    company_service_account_status_id = table.Column<int>(type: "integer", nullable: false),
+                    offer_subscription_id = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_company_service_accounts", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_company_service_accounts_companies_service_account_owner_id",
+                        column: x => x.service_account_owner_id,
+                        principalSchema: "portal",
+                        principalTable: "companies",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_company_service_accounts_company_service_account_statuses_c",
+                        column: x => x.company_service_account_status_id,
+                        principalSchema: "portal",
+                        principalTable: "company_service_account_statuses",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_company_service_accounts_company_service_account_types_comp",
+                        column: x => x.company_service_account_type_id,
+                        principalSchema: "portal",
+                        principalTable: "company_service_account_types",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_company_service_accounts_offer_subscriptions_offer_subscrip",
+                        column: x => x.offer_subscription_id,
+                        principalSchema: "portal",
+                        principalTable: "offer_subscriptions",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "consent_assigned_offer_subscriptions",
                 schema: "portal",
                 columns: table => new
@@ -1816,31 +1823,6 @@ namespace PortalBackend.Migrations.Migrations
                         column: x => x.offer_subscription_id,
                         principalSchema: "portal",
                         principalTable: "offer_subscriptions",
-                        principalColumn: "id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "company_service_account_assigned_roles",
-                schema: "portal",
-                columns: table => new
-                {
-                    company_service_account_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    user_role_id = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_company_service_account_assigned_roles", x => new { x.company_service_account_id, x.user_role_id });
-                    table.ForeignKey(
-                        name: "fk_company_service_account_assigned_roles_company_service_acco",
-                        column: x => x.company_service_account_id,
-                        principalSchema: "portal",
-                        principalTable: "company_service_accounts",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_company_service_account_assigned_roles_user_roles_user_role",
-                        column: x => x.user_role_id,
-                        principalSchema: "portal",
-                        principalTable: "user_roles",
                         principalColumn: "id");
                 });
 
@@ -1923,6 +1905,52 @@ namespace PortalBackend.Migrations.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "company_service_account_assigned_roles",
+                schema: "portal",
+                columns: table => new
+                {
+                    company_service_account_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    user_role_id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_company_service_account_assigned_roles", x => new { x.company_service_account_id, x.user_role_id });
+                    table.ForeignKey(
+                        name: "fk_company_service_account_assigned_roles_company_service_acco",
+                        column: x => x.company_service_account_id,
+                        principalSchema: "portal",
+                        principalTable: "company_service_accounts",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_company_service_account_assigned_roles_user_roles_user_role",
+                        column: x => x.user_role_id,
+                        principalSchema: "portal",
+                        principalTable: "user_roles",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "iam_service_accounts",
+                schema: "portal",
+                columns: table => new
+                {
+                    client_id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    client_client_id = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    user_entity_id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    company_service_account_id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_iam_service_accounts", x => x.client_id);
+                    table.ForeignKey(
+                        name: "fk_iam_service_accounts_company_service_accounts_company_servi",
+                        column: x => x.company_service_account_id,
+                        principalSchema: "portal",
+                        principalTable: "company_service_accounts",
+                        principalColumn: "id");
+                });
+
             migrationBuilder.InsertData(
                 schema: "portal",
                 table: "agreement_categories",
@@ -1983,6 +2011,16 @@ namespace PortalBackend.Migrations.Migrations
                 {
                     { 1, "ACTIVE" },
                     { 2, "INACTIVE" }
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "company_service_account_types",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 1, "MANAGED" },
+                    { 2, "OWN" }
                 });
 
             migrationBuilder.InsertData(
@@ -2345,16 +2383,28 @@ namespace PortalBackend.Migrations.Migrations
                 column: "user_role_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_company_service_accounts_company_id",
-                schema: "portal",
-                table: "company_service_accounts",
-                column: "company_id");
-
-            migrationBuilder.CreateIndex(
                 name: "ix_company_service_accounts_company_service_account_status_id",
                 schema: "portal",
                 table: "company_service_accounts",
                 column: "company_service_account_status_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_company_service_accounts_company_service_account_type_id",
+                schema: "portal",
+                table: "company_service_accounts",
+                column: "company_service_account_type_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_company_service_accounts_offer_subscription_id",
+                schema: "portal",
+                table: "company_service_accounts",
+                column: "offer_subscription_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_company_service_accounts_service_account_owner_id",
+                schema: "portal",
+                table: "company_service_accounts",
+                column: "service_account_owner_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_company_user_assigned_app_favourites_app_id",
@@ -3100,10 +3150,6 @@ namespace PortalBackend.Migrations.Migrations
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "offer_subscriptions",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
                 name: "consents",
                 schema: "portal");
 
@@ -3160,10 +3206,6 @@ namespace PortalBackend.Migrations.Migrations
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "offer_subscription_statuses",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
                 name: "agreements",
                 schema: "portal");
 
@@ -3180,11 +3222,15 @@ namespace PortalBackend.Migrations.Migrations
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "company_application_statuses",
+                name: "company_service_account_types",
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "offers",
+                name: "offer_subscriptions",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "company_application_statuses",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -3193,6 +3239,14 @@ namespace PortalBackend.Migrations.Migrations
 
             migrationBuilder.DropTable(
                 name: "use_cases",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "offer_subscription_statuses",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "offers",
                 schema: "portal");
 
             migrationBuilder.DropTable(
