@@ -21,7 +21,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations</AssemblyName>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>    
@@ -32,6 +32,7 @@
     <OutputType>Exe</OutputType>
     <!-- Exclude the project from analysis -->
     <SonarQubeExclude>true</SonarQubeExclude>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -23,7 +23,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace PortalBackend.Migrations.Migrations
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     public partial class _100RC1 : Migration
     {
