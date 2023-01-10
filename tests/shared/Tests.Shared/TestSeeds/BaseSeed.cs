@@ -28,6 +28,29 @@ public static class BaseSeed
 {
     public static Action<PortalDbContext> SeedBasedata() => dbContext =>
     {
+        dbContext.Languages.AddRange(new List<Language>
+        {
+            new ("de", "deutsch", "german"),
+            new ("en", "englisch", "english")
+        });
+
+        dbContext.Countries.AddRange(new List<Country>
+        {
+            new("DE", "Deutschland", "Germany")
+            {
+                Alpha3Code = "DEU"
+            },
+            new("PT", "Portugal", "Portugal")
+            {
+                Alpha3Code = "PRT"
+            }
+        });
+        
+        dbContext.UseCases.AddRange(new List<UseCase>
+        {
+            new(new Guid("06b243a4-ba51-4bf3-bc40-5d79a2231b90"), "Modular Production", "MP")
+        });
+        
         dbContext.Addresses.AddRange(new List<Address>
         {
             new(new Guid("b4db3945-19a7-4a50-97d6-e66e8dfd04fb"), "Munich", "Street", "DE", DateTimeOffset.UtcNow)
@@ -294,6 +317,30 @@ public static class BaseSeed
             new (new Guid("f6d3148b-2e2b-4688-a382-326d4232ee6e"), new Guid("7fc2fb78-8dc2-4f5f-b1d1-91c9c2f4506f")),
         });
 
+        dbContext.NotificationTypeAssignedTopics.AddRange(new List<NotificationTypeAssignedTopic>()
+        {
+            new(NotificationTypeId.INFO, NotificationTopicId.INFO),
+            new(NotificationTypeId.TECHNICAL_USER_CREATION, NotificationTopicId.INFO),
+            new(NotificationTypeId.CONNECTOR_REGISTERED, NotificationTopicId.INFO),
+            new(NotificationTypeId.WELCOME_SERVICE_PROVIDER, NotificationTopicId.INFO),
+            new(NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION, NotificationTopicId.INFO),
+            new(NotificationTypeId.WELCOME, NotificationTopicId.INFO),
+            new(NotificationTypeId.WELCOME_USE_CASES, NotificationTopicId.INFO),
+            new(NotificationTypeId.WELCOME_APP_MARKETPLACE, NotificationTopicId.INFO),
+            new(NotificationTypeId.ACTION, NotificationTopicId.ACTION),
+            new(NotificationTypeId.APP_SUBSCRIPTION_REQUEST, NotificationTopicId.ACTION),
+            new(NotificationTypeId.SERVICE_REQUEST, NotificationTopicId.ACTION),
+            new(NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, NotificationTopicId.OFFER),
+            new(NotificationTypeId.APP_RELEASE_REQUEST, NotificationTopicId.OFFER),
+            new(NotificationTypeId.SERVICE_ACTIVATION, NotificationTopicId.OFFER),
+            new(NotificationTypeId.APP_ROLE_ADDED, NotificationTopicId.OFFER),
+            new(NotificationTypeId.APP_RELEASE_APPROVAL, NotificationTopicId.OFFER),
+            new(NotificationTypeId.SERVICE_RELEASE_REQUEST, NotificationTopicId.OFFER),
+            new(NotificationTypeId.SERVICE_RELEASE_APPROVAL, NotificationTopicId.OFFER),
+            new(NotificationTypeId.APP_RELEASE_REJECTION, NotificationTopicId.OFFER),
+            new(NotificationTypeId.SERVICE_RELEASE_REJECTION, NotificationTopicId.OFFER)
+        });
+        
         dbContext.Notifications.AddRange(new List<Notification>
         {
             new (new Guid("94F22922-04F6-4A4E-B976-1BF2FF3DE973"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.ACTION, false),
