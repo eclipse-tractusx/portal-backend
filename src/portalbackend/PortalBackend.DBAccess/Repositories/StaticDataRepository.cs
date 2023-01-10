@@ -62,15 +62,15 @@ public class StaticDataRepository : IStaticDataRepository
             .AsAsyncEnumerable();
     
     ///<inheritdoc />
-    public IAsyncEnumerable<(UniqueIdentifierData IdentifierData, bool IsCountryCodeExist)> GetCompanyIdentifiers(string alpha2Code) =>
-        _dbContext.UniqueIdentifiers
+    public Task<(IEnumerable<UniqueIdentifierData> IdentifierData, bool IsCountryCodeExist)> GetCompanyIdentifiers(string alpha2Code) =>
+        _dbContext.Countries
             .AsNoTracking()
-            .Where(uniqueIdentifier => uniqueIdentifier.CountryAssignedIdentifiers.Any(countryAssignedIdentifier => countryAssignedIdentifier.CountryAlpha2Code == alpha2Code))
-            .Select(uniqueIdentifier => new ValueTuple<UniqueIdentifierData, bool>
+            .Where(country => country.Alpha2Code == alpha2Code)
+            .Select(country => new ValueTuple<IEnumerable<UniqueIdentifierData>, bool>
                 (
-                    new UniqueIdentifierData((int)uniqueIdentifier.Id,uniqueIdentifier.Label),
-                    true
+                   country.CountryAssignedIdentifiers.Select(countryAssignedIdentifier => new UniqueIdentifierData((int)countryAssignedIdentifier.UniqueIdentifier!.Id, countryAssignedIdentifier.UniqueIdentifier!.Label)),
+                   true
                 ))
-            .AsAsyncEnumerable();
+            .SingleOrDefaultAsync();
     
 }

@@ -51,10 +51,10 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCompanyIdentifiers("DE").ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCompanyIdentifiers("DE").ConfigureAwait(false);
 
         // Assert
-        result.Select(x=>x.IdentifierData).Select(x=>x.Id).FirstOrDefault().Should().Be((int)UniqueIdentifierId.COMMERCIAL_REG_NUMBER);
+        result.IdentifierData.Select(x=>x.Id).FirstOrDefault().Should().Be((int)UniqueIdentifierId.COMMERCIAL_REG_NUMBER);
     }
 
     private async Task<StaticDataRepository> CreateSut()

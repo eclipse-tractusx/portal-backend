@@ -1236,10 +1236,10 @@ public class RegistrationBusinessLogicTest
     public async Task GetCompanyIdentifiers_ReturnsExpectedOutput()
     {
         // Arrange
-        var uniqueIdentifierData = new List<(UniqueIdentifierData, bool )> { new ValueTuple<UniqueIdentifierData, bool>(new UniqueIdentifierData(1 ,"DE"),true)}.ToAsyncEnumerable();
+        var uniqueIdentifierData = _fixture.CreateMany<UniqueIdentifierData>();
 
         A.CallTo(() => _staticDataRepository.GetCompanyIdentifiers(A<string>._))
-            .Returns(uniqueIdentifierData);
+            .Returns((uniqueIdentifierData,true));
  
         var sut = new RegistrationBusinessLogic(
             _options,
