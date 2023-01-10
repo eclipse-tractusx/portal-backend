@@ -63,6 +63,7 @@ public class RegistrationBusinessLogicTest
     private readonly TestException _error;
     private readonly IOptions<RegistrationSettings> _options;
     private readonly IMailingService _mailingService;
+    private readonly IStaticDataRepository _staticDataRepository;
     private readonly Func<UserCreationRoleDataIdpInfo,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
 
     public RegistrationBusinessLogicTest()
@@ -84,7 +85,7 @@ public class RegistrationBusinessLogicTest
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
         _applicationRepository = A.Fake<IApplicationRepository>();
         _consentRepository = A.Fake<IConsentRepository>();
-
+        _staticDataRepository = A.Fake<IStaticDataRepository>();
         var options = Options.Create(new RegistrationSettings
         {
             BasePortalAddress = "just a test",
@@ -1230,8 +1231,38 @@ public class RegistrationBusinessLogicTest
     }
 
     #endregion
+    
+    [Fact]
+    public async Task GetCompanyIdentifiers_ReturnsExpectedOutput()
+    {
+        // Arrange
+        var uniqueIdentifierData = new List<(UniqueIdentifierData, bool )> { new ValueTuple<UniqueIdentifierData, bool>(new UniqueIdentifierData(1 ,"DE"),true)}.ToAsyncEnumerable();
 
-    #region Setup
+        A.CallTo(() => _staticDataRepository.GetCompanyIdentifiers(A<string>._))
+            .Returns(uniqueIdentifierData);
+ 
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories);
+        // Act
+        var result = await sut.GetCompanyIdentifiers("DE").ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        foreach (var item in result)
+        {
+            A.CallTo(() => _staticDataRepository.GetCompanyIdentifiers(A<string>._)).MustHaveHappenedOnceExactly();
+            Assert.NotNull(item);
+            Assert.IsType<UniqueIdentifierData?>(item);
+        }
+    }
+
+    #region Setup  
 
     private void SetupRepositories()
     {
@@ -1273,6 +1304,8 @@ public class RegistrationBusinessLogicTest
             .Returns(_applicationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>())
             .Returns(_consentRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IStaticDataRepository>())
+            .Returns(_staticDataRepository);
     }
 
     private void SetupFakesForInvitation()

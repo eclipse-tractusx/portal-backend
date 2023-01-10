@@ -314,5 +314,11 @@ public static class BaseSeed
                 StatusId =ConnectorStatusId.PENDING,
             },
         });
+
+        dbContext.CountryAssignedIdentifier.AddRange(new List<CountryAssignedIdentifier>
+        {
+            new ("DE",UniqueIdentifierId.COMMERCIAL_REG_NUMBER)
+    
+        });
     };
 }
