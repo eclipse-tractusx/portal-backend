@@ -172,7 +172,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             ca.DateLastChanged = DateTimeOffset.UtcNow;    
         });
 
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, c =>
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null, c =>
         {
             c.CompanyStatusId = CompanyStatusId.ACTIVE;
             c.SelfDescriptionDocumentId = documentId;
@@ -384,7 +384,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ConflictException($"BusinessPartnerNumber of company {applicationCompanyData.CompanyId} has already been set.");
         }
 
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, c =>
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null, c =>
         {
             c.BusinessPartnerNumber = bpn;
         });

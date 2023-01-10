@@ -49,14 +49,17 @@ public class CompanyRepository : ICompanyRepository
                 CompanyStatusId.PENDING,
                 DateTimeOffset.UtcNow)).Entity;
 
-    public void AttachAndModifyCompany(Guid companyId, Action<Company> setOptionalParameters)
+    public void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify)
     {
-        var company = _context.Attach(new Company(companyId, null!, default, default)).Entity;
-        setOptionalParameters.Invoke(company);
+        var company = new Company(companyId, null!, default, default);
+        initialize?.Invoke(company);
+        _context.Attach(company);
+        modify(company);
     }
 
-    public Address CreateAddress(string city, string streetname, string countryAlpha2Code) =>
-        _context.Addresses.Add(
+    public Address CreateAddress(string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters = null)
+    {
+        var address = _context.Addresses.Add(
             new Address(
                 Guid.NewGuid(),
                 city,
@@ -64,6 +67,17 @@ public class CompanyRepository : ICompanyRepository
                 countryAlpha2Code,
                 DateTimeOffset.UtcNow
             )).Entity;
+        setOptionalParameters?.Invoke(address);
+        return address;
+    }
+
+    public void AttachAndModifyAddress(Guid AddressId, Action<Address>? initialize, Action<Address> modify)
+    {
+        var address = new Address(AddressId, null!, null!, null!, default);
+        initialize?.Invoke(address);
+        _context.Attach(address);
+        modify(address);
+    }
 
     public Task<(string CompanyName, Guid CompanyId)> GetCompanyNameIdUntrackedAsync(string iamUserId) =>
         _context.IamUsers
