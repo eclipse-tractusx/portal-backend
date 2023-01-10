@@ -120,16 +120,6 @@
     "description": "tbd"
   },
   {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51169",
-    "language_short_name": "de",
-    "description": "Access to the SDE with data upload rights."
-  },
-  {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51169",
-    "language_short_name": "en",
-    "description": "Access to the SDE with data upload rights."
-  },
-  {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51170",
     "language_short_name": "de",
     "description": "Access to the SDE."
