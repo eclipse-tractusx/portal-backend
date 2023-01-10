@@ -4,6 +4,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+
 ## 1.0.0 RC-1
 
 ### Change
@@ -19,6 +20,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 ### Technical Support
 * Migration: DB Seeding enabled with initital base image files for all db tables ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat). The DB seeding enables delta migrations.
 * DB tales for unique identifier handling of companies added (portal.unique_identifiers; portal.country_assigned_identifiers; portal.company_identifiers)
+* Remove migration dev history by merging migration files to set initial release 1.0.0 db migration
 
 ### Bugfix
 * Email template layout fixed for /nextsteps.html & /appprovider_subscription_request.html
