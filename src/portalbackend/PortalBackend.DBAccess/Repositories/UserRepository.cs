@@ -79,8 +79,7 @@ public class UserRepository : IUserRepository
                 Streetadditional = company.Address.Streetadditional,
                 Streetnumber = company.Address.Streetnumber,
                 Zipcode = company.Address.Zipcode,
-                CountryDe = company.Address.Country!.CountryNameDe,
-                TaxId = company.TaxId
+                CountryDe = company.Address.Country!.CountryNameDe
             }).SingleOrDefaultAsync();
 
     public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId,
@@ -371,7 +370,7 @@ public class UserRepository : IUserRepository
     public Task<Guid> GetServiceAccountCompany(string iamUserId) =>
         _dbContext.IamServiceAccounts
             .Where(x => x.UserEntityId == iamUserId)
-            .Select(x => x.CompanyServiceAccount!.CompanyId)
+            .Select(x => x.CompanyServiceAccount!.ServiceAccountOwnerId)
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

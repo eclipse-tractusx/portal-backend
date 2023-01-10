@@ -127,7 +127,7 @@ public interface IAppReleaseBusinessLogic
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.
     /// </summary>
-    Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting);
+    Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting, OfferStatusIdFilter? offerStatusIdFilter);
 
     /// <summary>
     /// Update app status and create notification

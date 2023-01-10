@@ -66,7 +66,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _bpdmService = bpdmService;
     }
 
-    public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
+    public Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId)
     {
         if (applicationId == Guid.Empty)
         {
@@ -75,21 +75,46 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return GetCompanyWithAddressAsyncInternal(applicationId);
     }
 
-    private async Task<CompanyWithAddress> GetCompanyWithAddressAsyncInternal(Guid applicationId)
+    private async Task<CompanyWithAddressData> GetCompanyWithAddressAsyncInternal(Guid applicationId)
     {
-        var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
+        var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyUserRoleWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
         if (companyWithAddress == null)
         {
-            throw new NotFoundException($"no company found for applicationId {applicationId}");
+            throw new NotFoundException($"applicationId {applicationId} not found");
         }
-        return companyWithAddress;
+        return new CompanyWithAddressData(
+            companyWithAddress.CompanyId,
+            companyWithAddress.Name,
+            companyWithAddress.Shortname ?? "",
+            companyWithAddress.BusinessPartnerNumber ?? "",
+            companyWithAddress.City ?? "",
+            companyWithAddress.StreetName ?? "",
+            companyWithAddress.CountryAlpha2Code ?? "",
+            companyWithAddress.Region ?? "",
+            companyWithAddress.Streetadditional ?? "",
+            companyWithAddress.Streetnumber ?? "",
+            companyWithAddress.Zipcode ?? "",
+            companyWithAddress.CountryDe ?? "",
+            companyWithAddress.AgreementsData
+                .GroupBy(x => x.CompanyRoleId)
+                .Select(g => new AgreementsRoleData(
+                    g.Key,
+                    g.Select(y => new AgreementConsentData(
+                        y.AgreementId,
+                        y.ConsentStatusId ?? ConsentStatusId.INACTIVE)))),
+            companyWithAddress.InvitedCompanyUserData
+                .Select(x => new InvitedUserData(
+                    x.UserId,
+                    x.FirstName ?? "",
+                    x.LastName ?? "",
+                    x.Email ?? ""))
+        );
     }
 
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, string? companyName = null)
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size,CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null)
     {
         var applications = _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationsFilteredQuery(
-            companyName?.Length >= 3 ? companyName : null,
-            new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED });
+            companyName?.Length >= 3 ? companyName : null,GetCompanyApplicationStatusId(companyApplicationStatusFilter));
 
         return Pagination.CreateResponseAsync(
             page,
@@ -110,7 +135,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                                 new DocumentDetails(document.Id)
                                 {
                                     DocumentTypeId = document.DocumentTypeId
-                                })))
+                                })),
+                        application.Company!.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId))
                     {
                         Email = application.Invitations
                             .Select(invitation => invitation.CompanyUser)
@@ -172,7 +198,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             ca.DateLastChanged = DateTimeOffset.UtcNow;    
         });
 
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, c =>
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null, c =>
         {
             c.CompanyStatusId = CompanyStatusId.ACTIVE;
             c.SelfDescriptionDocumentId = documentId;
@@ -384,7 +410,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ConflictException($"BusinessPartnerNumber of company {applicationCompanyData.CompanyId} has already been set.");
         }
 
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, c =>
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null, c =>
         {
             c.BusinessPartnerNumber = bpn;
         });
@@ -432,5 +458,24 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         return roleData;
+    }
+
+    private static IEnumerable<CompanyApplicationStatusId> GetCompanyApplicationStatusId(CompanyApplicationStatusFilter? companyApplicationStatusFilter = null)
+     {
+        switch(companyApplicationStatusFilter)
+        {
+            case CompanyApplicationStatusFilter.Closed :
+            {
+                return new []{ CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
+            }
+            case CompanyApplicationStatusFilter.InReview :
+            {
+                return new []{ CompanyApplicationStatusId.SUBMITTED };  
+            }
+            default :
+            {
+              return new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };                 
+            }
+        }  
     }
 }

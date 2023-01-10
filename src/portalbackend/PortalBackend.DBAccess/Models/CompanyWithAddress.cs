@@ -49,7 +49,5 @@ public record CompanyWithAddress(
 
     [JsonPropertyName("countryDe")]
     public string? CountryDe { get; set; }
-
-    [JsonPropertyName("taxId")]
-    public string? TaxId { get; set; }
+    
 }

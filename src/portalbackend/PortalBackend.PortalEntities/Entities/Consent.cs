@@ -20,12 +20,13 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class Consent
+public class Consent : IBaseEntity
 {
-    private Consent()
+    public Consent()
     {
         ConsentAssignedOffers = new HashSet<ConsentAssignedOffer>();
         ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
@@ -51,9 +52,9 @@ public class Consent
         DateCreated = dateCreated;
     }
 
-    public Guid Id { get; private set; }
+    public Guid Id { get; set; }
 
-    public DateTimeOffset DateCreated { get; private set; }
+    public DateTimeOffset DateCreated { get; set; }
 
     [MaxLength(255)]
     public string? Comment { get; set; }
@@ -63,10 +64,10 @@ public class Consent
     [MaxLength(255)]
     public string? Target { get; set; }
 
-    public Guid AgreementId { get; private set; }
-    public Guid CompanyId { get; private set; }
+    public Guid AgreementId { get; set; }
+    public Guid CompanyId { get; set; }
     public Guid? DocumentId { get; set; }
-    public Guid CompanyUserId { get; private set; }
+    public Guid CompanyUserId { get; set; }
 
     // Navigation properties
     public virtual Agreement? Agreement { get; private set; }
