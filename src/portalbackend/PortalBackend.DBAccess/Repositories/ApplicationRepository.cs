@@ -137,16 +137,25 @@ public class ApplicationRepository : IApplicationRepository
             .AsNoTracking()
             .Where(application => application.Id == applicationId
                 && application.CompanyId == companyId)
-            .Include(application => application.Company)
-            .Include(application => application.Company!.Address)
             .Select(application => new CompanyApplicationWithCompanyAddressUserData(
-                application)
-            {
-                CompanyUserId = application.Company!.CompanyUsers
+                application.ApplicationStatusId,
+                application.Company!.Name,
+                application.Company.Shortname,
+                application.Company.BusinessPartnerNumber,
+                application.Company.CompanyStatusId,
+                application.Company.AddressId,
+                application.Company.Address!.Streetname,
+                application.Company.Address.Streetadditional,
+                application.Company.Address.Streetnumber,
+                application.Company.Address.Zipcode,
+                application.Company.Address.City,
+                application.Company.Address.Region,
+                application.Company.Address.CountryAlpha2Code,
+                application.Company.Address.Country!.CountryNameDe,
+                application.Company.CompanyUsers
                     .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
                     .Select(companyUser => companyUser.Id)
-                    .SingleOrDefault()
-            })
+                    .SingleOrDefault()))
             .SingleOrDefaultAsync();
 
     public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>
@@ -211,10 +220,33 @@ public class ApplicationRepository : IApplicationRepository
                         companyUser.Company!.Name)))
             .AsAsyncEnumerable();
 
-     public IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null) =>
+    public IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null) =>
          _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => companyName != null ? EF.Functions.ILike(application.Company!.Name, $"%{companyName}%") : true);
+
+    public Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAdressUntrackedAsync(Guid companyApplicationId) =>
+        _dbContext.CompanyApplications
+            .AsSplitQuery()
+            .Where(companyApplication => companyApplication.Id == companyApplicationId)
+            .Select(
+                companyApplication => new CompanyUserRoleWithAddress(
+                    companyApplication.CompanyId,
+                    companyApplication.Company!.Name,
+                    companyApplication.Company.Shortname,
+                    companyApplication.Company.BusinessPartnerNumber,
+                    companyApplication.Company.Address!.City,
+                    companyApplication.Company.Address.Streetname,
+                    companyApplication.Company.Address.CountryAlpha2Code,
+                    companyApplication.Company.Address.Region,
+                    companyApplication.Company.Address.Streetadditional,
+                    companyApplication.Company.Address.Streetnumber,
+                    companyApplication.Company.Address.Zipcode,
+                    companyApplication.Company.Address.Country!.CountryNameDe,
+                    companyApplication.Company.CompanyRoles.SelectMany(companyRole => companyRole.AgreementAssignedCompanyRoles.Select(x => new AgreementsData(x.CompanyRoleId, x.AgreementId, x.Agreement!.Consents.SingleOrDefault(consent => consent.CompanyId == companyApplication.CompanyId)!.ConsentStatusId))),
+                    companyApplication.Invitations.Select(x => new InvitedCompanyUserData(x.CompanyUserId, x.CompanyUser!.Firstname, x.CompanyUser.Lastname, x.CompanyUser.Email))))
+            .AsNoTracking()
+            .SingleOrDefaultAsync();
 
      /// <inheritdoc />
      public Task<string?> GetBpnForApplicationIdAsync(Guid applicationId) => 

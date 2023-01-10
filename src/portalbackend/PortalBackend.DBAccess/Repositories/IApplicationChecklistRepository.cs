@@ -31,20 +31,20 @@ public interface IApplicationChecklistRepository
     /// <param name="applicationId">Id of the application to create the checklist for</param>
     /// <param name="checklistEntries">Combination of type and it's status</param>
     /// <returns>Returns the created entries</returns>
-    void CreateChecklistForApplication(Guid applicationId, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)> checklistEntries);
+    void CreateChecklistForApplication(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> checklistEntries);
     
     /// <summary>
     /// Attaches a checklist entry with the given id and modifies it with the action.
     /// </summary>
     /// <param name="applicationId">Id of the application to modify</param>
-    /// <param name="checklistTypeId">Id of the checklistType to modify</param>
+    /// <param name="applicationChecklistTypeId">Id of the checklistType to modify</param>
     /// <param name="setFields">Action to sets the fields</param>
-    void AttachAndModifyApplicationChecklist(Guid applicationId, ChecklistEntryTypeId checklistTypeId, Action<ApplicationChecklistEntry> setFields);
+    void AttachAndModifyApplicationChecklist(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistTypeId, Action<ApplicationChecklistEntry> setFields);
 
     /// <summary>
     /// Gets the combination of the checklist type and status
     /// </summary>
     /// <param name="applicationId">Id of the application to get the checklist for</param>
     /// <returns>Returns the data of the checklist for the specific application</returns>
-    Task<Dictionary<ChecklistEntryTypeId, ChecklistEntryStatusId>> GetChecklistDataAsync(Guid applicationId);
+    Task<Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>> GetChecklistDataAsync(Guid applicationId);
 }

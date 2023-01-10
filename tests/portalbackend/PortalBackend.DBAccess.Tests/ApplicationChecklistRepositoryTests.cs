@@ -57,11 +57,11 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         // Arrange
         var checklistEntries = new[]
         {
-            new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(ChecklistEntryTypeId.CLEARING_HOUSE, ChecklistEntryStatusId.TO_DO),
-            new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(ChecklistEntryTypeId.IDENTITY_WALLET, ChecklistEntryStatusId.TO_DO),
-            new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(ChecklistEntryTypeId.SELF_DESCRIPTION_LP, ChecklistEntryStatusId.TO_DO),
-            new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ChecklistEntryStatusId.IN_PROGRESS),
-            new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(ChecklistEntryTypeId.REGISTRATION_VERIFICATION, ChecklistEntryStatusId.TO_DO),
+            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
+            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
+            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO),
+            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS),
+            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO),
         };
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
@@ -78,8 +78,8 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         changedEntries.Select(x => x.Entity).Should().AllBeOfType<ApplicationChecklistEntry>();
         var entries = changedEntries.Select(x => (ApplicationChecklistEntry)x.Entity);
         entries.Should().AllSatisfy(x => x.ApplicationId.Should().Be(ApplicationId));
-        entries.Where(x => x.StatusId == ChecklistEntryStatusId.TO_DO).Should().HaveCount(4);
-        entries.Where(x => x.StatusId == ChecklistEntryStatusId.IN_PROGRESS).Should().ContainSingle();
+        entries.Where(x => x.ApplicationChecklistEntryStatusId == ApplicationChecklistEntryStatusId.TO_DO).Should().HaveCount(4);
+        entries.Where(x => x.ApplicationChecklistEntryStatusId == ApplicationChecklistEntryStatusId.IN_PROGRESS).Should().ContainSingle();
     }
 
     #endregion
@@ -94,10 +94,10 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        sut.AttachAndModifyApplicationChecklist(ApplicationWithExistingChecklistId, ChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+        sut.AttachAndModifyApplicationChecklist(ApplicationWithExistingChecklistId, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
             entry =>
             {
-                entry.StatusId = ChecklistEntryStatusId.IN_PROGRESS;
+                entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
                 entry.Comment = "This is just a test";
             });
 
@@ -111,7 +111,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         changedEntries.Select(x => x.Entity).Should().AllBeOfType<ApplicationChecklistEntry>();
         var entry = (ApplicationChecklistEntry)changedEntries.First().Entity;
         entry.DateLastChanged.Should().NotBeNull();
-        entry.StatusId.Should().Be(ChecklistEntryStatusId.IN_PROGRESS);
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.IN_PROGRESS);
         entry.Comment.Should().Be("This is just a test");
     }
 

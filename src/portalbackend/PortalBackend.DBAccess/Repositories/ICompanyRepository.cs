@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -36,9 +36,11 @@ public interface ICompanyRepository
     /// <returns>Created company entity.</returns>
     Company CreateCompany(string companyName);
 
-    void AttachAndModifyCompany(Guid companyId, Action<Company> setOptionalParameters);
+    public void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify);
 
-    Address CreateAddress(string city, string streetname, string countryAlpha2Code);
+    Address CreateAddress(string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters = null);
+
+    public void AttachAndModifyAddress(Guid AddressId, Action<Address>? initialize, Action<Address> modify);
     
     Task<(string CompanyName, Guid CompanyId)> GetCompanyNameIdUntrackedAsync(string iamUserId);
 

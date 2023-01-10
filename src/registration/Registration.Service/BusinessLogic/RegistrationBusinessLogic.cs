@@ -204,41 +204,67 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
         }
 
-        var company = companyApplicationData.CompanyApplication.Company!;
-        
-        if (company.Address == null)
+        var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+        Guid addressId;
+
+        if (companyApplicationData.AddressId.HasValue)
         {
-            company.Address = _portalRepositories.GetInstance<ICompanyRepository>().CreateAddress(
-                companyWithAddress.City,
-                companyWithAddress.StreetName,
-                companyWithAddress.CountryAlpha2Code
+            addressId = companyApplicationData.AddressId.Value;
+            companyRepository.AttachAndModifyAddress(
+                addressId,
+                a => {
+                    a.City = companyApplicationData.City!;
+                    a.Streetname = companyApplicationData.Streetname!;
+                    a.CountryAlpha2Code = companyApplicationData.CountryAlpha2Code!;
+                    a.Zipcode = companyApplicationData.Zipcode;
+                    a.Region = companyApplicationData.Region;
+                    a.Streetadditional = companyApplicationData.Streetadditional;
+                    a.Streetnumber = companyApplicationData.Streetnumber;
+                },
+                a => {
+                    a.City = companyWithAddress.City;
+                    a.Streetname = companyWithAddress.StreetName;
+                    a.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
+                    a.Zipcode = companyWithAddress.Zipcode;
+                    a.Region = companyWithAddress.Region;
+                    a.Streetadditional = companyWithAddress.Streetadditional;
+                    a.Streetnumber = companyWithAddress.Streetnumber;
+                }
             );
         }
         else
         {
-            company.Address.City = companyWithAddress.City;
-            company.Address.Streetname = companyWithAddress.StreetName;
-            company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
+            addressId = companyRepository.CreateAddress(
+                companyWithAddress.City,
+                companyWithAddress.StreetName,
+                companyWithAddress.CountryAlpha2Code,
+                a => {
+                    a.Zipcode = companyWithAddress.Zipcode;
+                    a.Region = companyWithAddress.Region;
+                    a.Streetadditional = companyWithAddress.Streetadditional;
+                    a.Streetnumber = companyWithAddress.Streetnumber;
+                }
+            ).Id;
         }
 
-        company.Address.Zipcode = companyWithAddress.Zipcode;
-        company.Address.Region = companyWithAddress.Region;
-        company.Address.Streetadditional = companyWithAddress.Streetadditional;
-        company.Address.Streetnumber = companyWithAddress.Streetnumber;
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(
+            companyWithAddress.CompanyId,
+            c => {
+                c.BusinessPartnerNumber = companyApplicationData.BusinessPartnerNumber;
+                c.Name = companyApplicationData.Name;
+                c.Shortname = companyApplicationData.ShortName;
+                c.CompanyStatusId = companyApplicationData.CompanyStatusId;
+                c.AddressId = companyApplicationData.AddressId;
+            },
+            c => {
+                c.BusinessPartnerNumber = companyWithAddress.BusinessPartnerNumber;
+                c.Name = companyWithAddress.Name;
+                c.Shortname = companyWithAddress.Shortname;
+                c.CompanyStatusId = CompanyStatusId.PENDING;
+                c.AddressId = addressId;
+            });
 
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(company.Id, c =>
-       {
-           c.BusinessPartnerNumber = companyWithAddress.BusinessPartnerNumber;
-           c.Name = companyWithAddress.Name;
-           c.Shortname = companyWithAddress.Shortname;
-           c.CompanyStatusId = CompanyStatusId.PENDING;
-           if (c.AddressId == null)
-           {
-               c.AddressId = company.Address.Id;
-           }
-       });
-
-        UpdateApplicationStatus(applicationId, companyApplicationData.CompanyApplication.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository);
+        UpdateApplicationStatus(applicationId, companyApplicationData.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

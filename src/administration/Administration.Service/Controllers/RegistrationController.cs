@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -58,10 +59,10 @@ public class RegistrationController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_submitted_applications")]
     [Route("application/{applicationId}/companyDetailsWithAddress")]
-    [ProducesResponseType(typeof(CompanyWithAddress), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CompanyWithAddressData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<CompanyWithAddress> GetCompanyWithAddressAsync([FromRoute] Guid applicationId) =>
+    public Task<CompanyWithAddressData> GetCompanyWithAddressAsync([FromRoute] Guid applicationId) =>
         _logic.GetCompanyWithAddressAsync(applicationId);
     
     /// <summary>
