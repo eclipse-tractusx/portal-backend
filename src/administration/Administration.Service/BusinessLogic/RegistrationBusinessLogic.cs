@@ -87,7 +87,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             companyWithAddress.Name,
             companyWithAddress.Shortname ?? "",
             companyWithAddress.BusinessPartnerNumber ?? "",
-            companyWithAddress.TaxId ?? "",
             companyWithAddress.City ?? "",
             companyWithAddress.StreetName ?? "",
             companyWithAddress.CountryAlpha2Code ?? "",
