@@ -43,6 +43,6 @@ public interface IStaticDataRepository
     /// Retrieve Unique Identifier Data for Country Alpha2Code
     /// </summary>
     /// <param name="alpha2Code"></param>
-    /// <returns>Returns a async enumerable of <see cref="UniqueIdentifierData"/> and IsCountryCodeExist</returns>
-    IAsyncEnumerable<(UniqueIdentifierData IdentifierData, bool IsCountryCodeExist)> GetCompanyIdentifiers(string alpha2Code);
+    /// <returns>Returns  enumerable of <see cref="UniqueIdentifierData"/> and IsCountryCodeExist</returns>
+    Task<(IEnumerable<UniqueIdentifierData> IdentifierData, bool IsCountryCodeExist)> GetCompanyIdentifiers(string alpha2Code);
 }
