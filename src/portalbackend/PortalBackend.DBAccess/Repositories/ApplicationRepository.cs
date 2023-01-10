@@ -220,8 +220,31 @@ public class ApplicationRepository : IApplicationRepository
                         companyUser.Company!.Name)))
             .AsAsyncEnumerable();
 
-     public IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null) =>
+    public IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null) =>
          _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => companyName != null ? EF.Functions.ILike(application.Company!.Name, $"%{companyName}%") : true);
+
+    public Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAdressUntrackedAsync(Guid companyApplicationId) =>
+        _dbContext.CompanyApplications
+            .AsSplitQuery()
+            .Where(companyApplication => companyApplication.Id == companyApplicationId)
+            .Select(
+                companyApplication => new CompanyUserRoleWithAddress(
+                    companyApplication.CompanyId,
+                    companyApplication.Company!.Name,
+                    companyApplication.Company.Shortname,
+                    companyApplication.Company.BusinessPartnerNumber,
+                    companyApplication.Company.Address!.City,
+                    companyApplication.Company.Address.Streetname,
+                    companyApplication.Company.Address.CountryAlpha2Code,
+                    companyApplication.Company.Address.Region,
+                    companyApplication.Company.Address.Streetadditional,
+                    companyApplication.Company.Address.Streetnumber,
+                    companyApplication.Company.Address.Zipcode,
+                    companyApplication.Company.Address.Country!.CountryNameDe,
+                    companyApplication.Company.CompanyRoles.SelectMany(companyRole => companyRole.AgreementAssignedCompanyRoles.Select(x => new AgreementsData(x.CompanyRoleId, x.AgreementId, x.Agreement!.Consents.SingleOrDefault(consent => consent.CompanyId == companyApplication.CompanyId)!.ConsentStatusId))),
+                    companyApplication.Invitations.Select(x => new InvitedCompanyUserData(x.CompanyUserId, x.CompanyUser!.Firstname, x.CompanyUser.Lastname, x.CompanyUser.Email))))
+            .AsNoTracking()
+            .SingleOrDefaultAsync();
 }
