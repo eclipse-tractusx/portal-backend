@@ -41,18 +41,14 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, string iamUserId)
+    public async Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(string iamUserId)
     {
         var result = await _portalRepositories.GetInstance<ICompanyRepository>()
-            .GetProviderCompanyDetailAsync(serviceProviderDetailDataId, CompanyRoleId.SERVICE_PROVIDER, iamUserId)
+            .GetProviderCompanyDetailAsync( CompanyRoleId.SERVICE_PROVIDER, iamUserId)
             .ConfigureAwait(false);
         if (result == default)
         {
-            throw new NotFoundException($"serviceProviderDetail {serviceProviderDetailDataId} does not exist");
-        }
-        if (!result.IsCompanyUser)
-        {
-            throw new ForbiddenException($"User {iamUserId} is not allowed to request the service provider detail data.");
+            throw new ConflictException($"IAmUser {iamUserId} is not assigned to company");
         }
         if (!result.IsProviderCompany)
         {
@@ -90,10 +86,10 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task UpdateServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, ServiceProviderDetailData data, string iamUserId)
+    public Task UpdateServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
     {
         ValidateServiceProviderDetailData(data);
-        return UpdateServiceProviderCompanyDetailsInternalAsync(serviceProviderDetailDataId, data, iamUserId);
+        return UpdateServiceProviderCompanyDetailsInternalAsync(data, iamUserId);
     }
 
     private static void ValidateServiceProviderDetailData(ServiceProviderDetailData data)
@@ -104,19 +100,14 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
         }
     }
     
-    private async Task UpdateServiceProviderCompanyDetailsInternalAsync(Guid serviceProviderDetailDataId,
-        ServiceProviderDetailData data, string iamUserId)
+    private async Task UpdateServiceProviderCompanyDetailsInternalAsync(ServiceProviderDetailData data, string iamUserId)
     {
-        var result = await _portalRepositories.GetInstance<ICompanyRepository>()
-            .CheckProviderCompanyDetailsExistsForUser(iamUserId, serviceProviderDetailDataId)
+        var serviceProviderDetailDataId = await _portalRepositories.GetInstance<ICompanyRepository>()
+            .CheckProviderCompanyDetailsExistsForUser(iamUserId)
             .ConfigureAwait(false);
-        if (result == default)
+        if (serviceProviderDetailDataId == Guid.Empty)
         {
-            throw new NotFoundException($"ServiceProviderDetailData {serviceProviderDetailDataId} does not exists.");
-        }
-        if (!result.IsSameCompany)
-        {
-            throw new ForbiddenException($"users {iamUserId} is not associated with service-provider company");
+            throw new NotFoundException($"ServiceProviderDetailData does not exists.");
         }
 
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyProviderCompanyDetails(

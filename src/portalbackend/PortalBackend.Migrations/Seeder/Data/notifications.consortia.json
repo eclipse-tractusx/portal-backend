@@ -1,0 +1,102 @@
+[
+  {
+    "id": "b753cd7f-24c7-44a7-a88e-08ed00c31600",
+    "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "date_created": "2022-08-10 18:01:33.570000 +00:00",
+    "content": null,
+    "notification_type_id": 3,
+    "is_read": false,
+    "due_date": "2022-09-10 18:01:33.570000 +00:00",
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
+  },
+  {
+    "id": "b753cd7f-24c7-44a7-a88e-08ed00c31601",
+    "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "date_created": "2022-08-10 18:01:33.570000 +00:00",
+    "content": null,
+    "notification_type_id": 4,
+    "is_read": false,
+    "due_date": "2022-09-10 18:01:33.570000 +00:00",
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
+  },
+  {
+    "id": "b753cd7f-24c7-44a7-a88e-08ed00c31602",
+    "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "date_created": "2022-08-10 18:01:33.570000 +00:00",
+    "content": null,
+    "notification_type_id": 5,
+    "is_read": false,
+    "due_date": "2022-09-10 18:01:33.570000 +00:00",
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
+  },
+  {
+    "id": "b753cd7f-24c7-44a7-a88e-08ed00c31603",
+    "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "date_created": "2022-08-10 18:01:33.570000 +00:00",
+    "content": null,
+    "notification_type_id": 6,
+    "is_read": false,
+    "due_date": "2022-09-10 18:01:33.570000 +00:00",
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
+  },
+  {
+    "id": "b753cd7f-24c7-44a7-a88e-08ed00c31604",
+    "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "date_created": "2022-08-10 18:01:33.570000 +00:00",
+    "content": null,
+    "notification_type_id": 7,
+    "is_read": false,
+    "due_date": "2022-09-10 18:01:33.570000 +00:00",
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
+  },
+  {
+    "id": "b753cd7f-24c7-44a7-a88e-08ed00c31605",
+    "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
+    "date_created": "2022-08-10 18:01:33.570000 +00:00",
+    "content": null,
+    "notification_type_id": 3,
+    "is_read": false,
+    "due_date": "2022-09-10 18:01:33.570000 +00:00",
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006"
+  },
+  {
+    "id": "b753cd7f-24c7-44a7-a88e-08ed00c31606",
+    "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
+    "date_created": "2022-08-10 18:01:33.570000 +00:00",
+    "content": null,
+    "notification_type_id": 4,
+    "is_read": false,
+    "due_date": "2022-09-10 18:01:33.570000 +00:00",
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006"
+  },
+  {
+    "id": "b753cd7f-24c7-44a7-a88e-08ed00c31607",
+    "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
+    "date_created": "2022-08-10 18:01:33.570000 +00:00",
+    "content": null,
+    "notification_type_id": 5,
+    "is_read": false,
+    "due_date": "2022-09-10 18:01:33.570000 +00:00",
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006"
+  },
+  {
+    "id": "b753cd7f-24c7-44a7-a88e-08ed00c31608",
+    "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
+    "date_created": "2022-08-10 18:01:33.570000 +00:00",
+    "content": null,
+    "notification_type_id": 6,
+    "is_read": false,
+    "due_date": "2022-09-10 18:01:33.570000 +00:00",
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006"
+  },
+  {
+    "id": "b753cd7f-24c7-44a7-a88e-08ed00c31609",
+    "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
+    "date_created": "2022-08-10 18:01:33.570000 +00:00",
+    "content": null,
+    "notification_type_id": 7,
+    "is_read": false,
+    "due_date": "2022-09-10 18:01:33.570000 +00:00",
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020006"
+  }
+]

@@ -1,0 +1,222 @@
+[
+  {
+    "user_role_id": "efc20368-9e82-46ff-b88f-6495b9810253",
+    "language_short_name": "de",
+    "description": "Vehicle Purchaser"
+  },
+  {
+    "user_role_id": "efc20368-9e82-46ff-b88f-6495b9810253",
+    "language_short_name": "en",
+    "description": "Vehicle Purchaser"
+  },
+  {
+    "user_role_id": "aabcdfeb-6669-4c74-89f0-19cda090873f",
+    "language_short_name": "de",
+    "description": "Dismantling Lead"
+  },
+  {
+    "user_role_id": "aabcdfeb-6669-4c74-89f0-19cda090873f",
+    "language_short_name": "en",
+    "description": "Dismantling Lead"
+  },
+  {
+    "user_role_id": "efc20368-9e82-46ff-b88f-6495b9810250",
+    "language_short_name": "de",
+    "description": "Einkäufer"
+  },
+  {
+    "user_role_id": "efc20368-9e82-46ff-b88f-6495b9810250",
+    "language_short_name": "en",
+    "description": "Buyer"
+  },
+  {
+    "user_role_id": "aabcdfeb-6669-4c74-89f0-19cda0908730",
+    "language_short_name": "de",
+    "description": "Advanced Buyer"
+  },
+  {
+    "user_role_id": "aabcdfeb-6669-4c74-89f0-19cda0908730",
+    "language_short_name": "en",
+    "description": "Advanced Buyer"
+  },
+  {
+    "user_role_id": "b05d86e1-6c98-4619-85fa-9a425e0800b6",
+    "language_short_name": "de",
+    "description": "Unternehmensadministrator"
+  },
+  {
+    "user_role_id": "b05d86e1-6c98-4619-85fa-9a425e0800b6",
+    "language_short_name": "en",
+    "description": "Business Admin"
+  },
+  {
+    "user_role_id": "b05d86e1-6c98-4619-85fa-9a425e080000",
+    "language_short_name": "de",
+    "description": "Betrugsmanager"
+  },
+  {
+    "user_role_id": "b05d86e1-6c98-4619-85fa-9a425e080000",
+    "language_short_name": "en",
+    "description": "Fraud Manager"
+  },
+  {
+    "user_role_id": "b05d86e1-6c98-4619-85fa-9a425e080001",
+    "language_short_name": "de",
+    "description": "Betrugsreporter"
+  },
+  {
+    "user_role_id": "b05d86e1-6c98-4619-85fa-9a425e080001",
+    "language_short_name": "en",
+    "description": "Fraud User"
+  },
+  {
+    "user_role_id": "855eeefb-a2ef-4d74-ac10-34a87afcb865",
+    "language_short_name": "de",
+    "description": "Administrator"
+  },
+  {
+    "user_role_id": "855eeefb-a2ef-4d74-ac10-34a87afcb865",
+    "language_short_name": "en",
+    "description": "Administrator"
+  },
+  {
+    "user_role_id": "545c2616-2fce-4f52-b881-331db2fc1e35",
+    "language_short_name": "de",
+    "description": "Kunde"
+  },
+  {
+    "user_role_id": "545c2616-2fce-4f52-b881-331db2fc1e35",
+    "language_short_name": "en",
+    "description": "Customer"
+  },
+  {
+    "user_role_id": "7a9e0777-2b13-4463-a7c4-f699afff3527",
+    "language_short_name": "de",
+    "description": "Erstausrüster"
+  },
+  {
+    "user_role_id": "7a9e0777-2b13-4463-a7c4-f699afff3527",
+    "language_short_name": "en",
+    "description": "Original Equipment Manufacturer"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51166",
+    "language_short_name": "de",
+    "description": "tbd"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51166",
+    "language_short_name": "en",
+    "description": "tbd"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51167",
+    "language_short_name": "de",
+    "description": "tbd"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51167",
+    "language_short_name": "en",
+    "description": "tbd"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51170",
+    "language_short_name": "de",
+    "description": "Access to the SDE."
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51170",
+    "language_short_name": "en",
+    "description": "Access to the SDE."
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51171",
+    "language_short_name": "de",
+    "description": "Access as well as delete rights for the SDE."
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51171",
+    "language_short_name": "en",
+    "description": "Access as well as delete rights for the SDE."
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51172",
+    "language_short_name": "de",
+    "description": "Buyer Capacity Manager"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51172",
+    "language_short_name": "en",
+    "description": "Buyer Capacity Manager"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51173",
+    "language_short_name": "de",
+    "description": "Supplier Capacity Manager"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51173",
+    "language_short_name": "en",
+    "description": "Supplier Capacity Manager"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51174",
+    "language_short_name": "de",
+    "description": "Can view and use the app"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51174",
+    "language_short_name": "en",
+    "description": "Can view and use the app"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51175",
+    "language_short_name": "de",
+    "description": "Can configure the app"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51175",
+    "language_short_name": "en",
+    "description": "Can configure the app"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51176",
+    "language_short_name": "de",
+    "description": "Can access the app"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51176",
+    "language_short_name": "en",
+    "description": "Can access the app"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51183",
+    "language_short_name": "de",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51183",
+    "language_short_name": "en",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51181",
+    "language_short_name": "de",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51181",
+    "language_short_name": "en",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51182",
+    "language_short_name": "de",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51182",
+    "language_short_name": "en",
+    "description": "The user has access"
+  }
+]

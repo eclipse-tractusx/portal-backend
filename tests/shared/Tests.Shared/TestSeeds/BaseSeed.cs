@@ -28,6 +28,29 @@ public static class BaseSeed
 {
     public static Action<PortalDbContext> SeedBasedata() => dbContext =>
     {
+        dbContext.Languages.AddRange(new List<Language>
+        {
+            new ("de", "deutsch", "german"),
+            new ("en", "englisch", "english")
+        });
+
+        dbContext.Countries.AddRange(new List<Country>
+        {
+            new("DE", "Deutschland", "Germany")
+            {
+                Alpha3Code = "DEU"
+            },
+            new("PT", "Portugal", "Portugal")
+            {
+                Alpha3Code = "PRT"
+            }
+        });
+        
+        dbContext.UseCases.AddRange(new List<UseCase>
+        {
+            new(new Guid("06b243a4-ba51-4bf3-bc40-5d79a2231b90"), "Modular Production", "MP")
+        });
+        
         dbContext.Addresses.AddRange(new List<Address>
         {
             new(new Guid("b4db3945-19a7-4a50-97d6-e66e8dfd04fb"), "Munich", "Street", "DE", DateTimeOffset.UtcNow)
@@ -85,6 +108,10 @@ public static class BaseSeed
             {
                 CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992")
             },
+            new (new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"), new byte[1024], new byte[1024], "test5.pdf", DateTimeOffset.UtcNow, DocumentStatusId.PENDING, DocumentTypeId.APP_LEADIMAGE)
+            {
+                CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")
+            }
         });
         
         dbContext.ProviderCompanyDetails.AddRange(new List<ProviderCompanyDetail>
@@ -168,6 +195,14 @@ public static class BaseSeed
             new ("4b8f156e-5dfc-4a58-9384-1efb195c1c34", new Guid("adf37b09-53f3-48ea-b8fb-8cbb7fd79324"))
         });
 
+        dbContext.CompanyServiceAccounts.AddRange(new List<CompanyServiceAccount>
+        {
+            new (new Guid("7259744a-2ab0-49bf-9fe3-fcb88f6ad332"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyServiceAccountStatusId.ACTIVE, "Test SA", "Only a test sa", DateTimeOffset.UtcNow, CompanyServiceAccountTypeId.MANAGED)
+            {
+                OfferSubscriptionId = new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd")
+            }
+        });
+        
         dbContext.IamClients.AddRange(new List<IamClient>
         {
             new (new Guid("0c9051d0-d032-11ec-9d64-0242ac120002"), "Cl2-CX-Portal"),
@@ -216,6 +251,7 @@ public static class BaseSeed
         dbContext.OfferAssignedDocuments.AddRange(new List<OfferAssignedDocument>
         {
             new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("7fc2fb78-8dc2-4f5f-b1d1-91c9c2f4506f")),
+            new (new Guid("99c5fd12-8085-4de2-abfd-215e1ee4baa4"), new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"))
         });
         
         dbContext.UserRoles.AddRange(new List<UserRole>
@@ -264,6 +300,10 @@ public static class BaseSeed
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019911"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019952"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), ConsentStatusId.INACTIVE, DateTimeOffset.UtcNow)
             {
                 Comment = "Test"
+            },
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019912"), new Guid("f6d3148b-2e2b-4688-a382-326d4232ee6e"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), ConsentStatusId.ACTIVE, DateTimeOffset.UtcNow)
+            {
+                Comment = "Test"
             }
         });
         dbContext.AgreementAssignedCompanyRoles.AddRange(new List<AgreementAssignedCompanyRole>
@@ -281,6 +321,30 @@ public static class BaseSeed
             new (new Guid("f6d3148b-2e2b-4688-a382-326d4232ee6e"), new Guid("7fc2fb78-8dc2-4f5f-b1d1-91c9c2f4506f")),
         });
 
+        dbContext.NotificationTypeAssignedTopics.AddRange(new List<NotificationTypeAssignedTopic>()
+        {
+            new(NotificationTypeId.INFO, NotificationTopicId.INFO),
+            new(NotificationTypeId.TECHNICAL_USER_CREATION, NotificationTopicId.INFO),
+            new(NotificationTypeId.CONNECTOR_REGISTERED, NotificationTopicId.INFO),
+            new(NotificationTypeId.WELCOME_SERVICE_PROVIDER, NotificationTopicId.INFO),
+            new(NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION, NotificationTopicId.INFO),
+            new(NotificationTypeId.WELCOME, NotificationTopicId.INFO),
+            new(NotificationTypeId.WELCOME_USE_CASES, NotificationTopicId.INFO),
+            new(NotificationTypeId.WELCOME_APP_MARKETPLACE, NotificationTopicId.INFO),
+            new(NotificationTypeId.ACTION, NotificationTopicId.ACTION),
+            new(NotificationTypeId.APP_SUBSCRIPTION_REQUEST, NotificationTopicId.ACTION),
+            new(NotificationTypeId.SERVICE_REQUEST, NotificationTopicId.ACTION),
+            new(NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, NotificationTopicId.OFFER),
+            new(NotificationTypeId.APP_RELEASE_REQUEST, NotificationTopicId.OFFER),
+            new(NotificationTypeId.SERVICE_ACTIVATION, NotificationTopicId.OFFER),
+            new(NotificationTypeId.APP_ROLE_ADDED, NotificationTopicId.OFFER),
+            new(NotificationTypeId.APP_RELEASE_APPROVAL, NotificationTopicId.OFFER),
+            new(NotificationTypeId.SERVICE_RELEASE_REQUEST, NotificationTopicId.OFFER),
+            new(NotificationTypeId.SERVICE_RELEASE_APPROVAL, NotificationTopicId.OFFER),
+            new(NotificationTypeId.APP_RELEASE_REJECTION, NotificationTopicId.OFFER),
+            new(NotificationTypeId.SERVICE_RELEASE_REJECTION, NotificationTopicId.OFFER)
+        });
+        
         dbContext.Notifications.AddRange(new List<Notification>
         {
             new (new Guid("94F22922-04F6-4A4E-B976-1BF2FF3DE973"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.ACTION, false),
@@ -309,5 +373,6 @@ public static class BaseSeed
                 StatusId =ConnectorStatusId.PENDING,
             },
         });
+       
     };
 }

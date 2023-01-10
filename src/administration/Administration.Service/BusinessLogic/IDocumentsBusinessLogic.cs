@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 /// <summary>
@@ -34,4 +36,11 @@ public interface IDocumentsBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns>Returns <c>true</c> if the document and corresponding consent were deleted successfully. Otherwise a specific error is thrown.</returns>
     Task<bool> DeleteDocumentAsync(Guid documentId, string iamUserId);
+
+    /// <summary>
+    /// Gets the document as json for the seeding data
+    /// </summary>
+    /// <param name="documentId">Id of the document</param>
+    /// <returns>The document as json</returns>
+    Task<DocumentSeedData> GetSeedData(Guid documentId);
 }
