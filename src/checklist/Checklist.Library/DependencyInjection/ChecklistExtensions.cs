@@ -36,6 +36,6 @@ public static class ChecklistExtensions
     public static IServiceCollection AddChecklistCreation(this IServiceCollection services)
     {
         return services
-            .AddScoped<IChecklistService, ChecklistService>();
+            .AddScoped<IChecklistCreationService, ChecklistCreationService>();
     }
 }
