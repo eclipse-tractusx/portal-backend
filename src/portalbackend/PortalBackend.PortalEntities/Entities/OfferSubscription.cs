@@ -38,6 +38,7 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     public OfferSubscription()
     {
         this.ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
+        this.CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
     }
 
     /// <summary>
@@ -122,4 +123,5 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     public virtual AppSubscriptionDetail? AppSubscriptionDetail { get; private set; }
 
     public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
+    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
 }

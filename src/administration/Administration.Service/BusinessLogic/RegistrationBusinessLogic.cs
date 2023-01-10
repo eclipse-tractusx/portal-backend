@@ -166,7 +166,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             ca.DateLastChanged = DateTimeOffset.UtcNow;    
         });
 
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, c =>
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null, c =>
         {
             c.CompanyStatusId = CompanyStatusId.ACTIVE;
             c.SelfDescriptionDocumentId = documentId;

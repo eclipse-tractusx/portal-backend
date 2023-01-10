@@ -137,16 +137,25 @@ public class ApplicationRepository : IApplicationRepository
             .AsNoTracking()
             .Where(application => application.Id == applicationId
                 && application.CompanyId == companyId)
-            .Include(application => application.Company)
-            .Include(application => application.Company!.Address)
             .Select(application => new CompanyApplicationWithCompanyAddressUserData(
-                application)
-            {
-                CompanyUserId = application.Company!.CompanyUsers
+                application.ApplicationStatusId,
+                application.Company!.Name,
+                application.Company.Shortname,
+                application.Company.BusinessPartnerNumber,
+                application.Company.CompanyStatusId,
+                application.Company.AddressId,
+                application.Company.Address!.Streetname,
+                application.Company.Address.Streetadditional,
+                application.Company.Address.Streetnumber,
+                application.Company.Address.Zipcode,
+                application.Company.Address.City,
+                application.Company.Address.Region,
+                application.Company.Address.CountryAlpha2Code,
+                application.Company.Address.Country!.CountryNameDe,
+                application.Company.CompanyUsers
                     .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
                     .Select(companyUser => companyUser.Id)
-                    .SingleOrDefault()
-            })
+                    .SingleOrDefault()))
             .SingleOrDefaultAsync();
 
     public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>

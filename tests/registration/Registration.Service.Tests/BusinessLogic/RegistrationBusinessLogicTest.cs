@@ -358,7 +358,7 @@ public class RegistrationBusinessLogicTest
         var companyData = new CompanyWithAddress(companyId, "name", "munich", "main street", "de");
 
         A.CallTo(() => _applicationRepository.GetCompanyApplicationWithCompanyAdressUserDataAsync(applicationId, companyId, A<string>._))
-            .ReturnsLazily(() => new CompanyApplicationWithCompanyAddressUserData(A.Fake<CompanyApplication>()));
+            .ReturnsLazily(() => _fixture.Build<CompanyApplicationWithCompanyAddressUserData>().With(x => x.CompanyUserId, Guid.Empty).Create());
         
         // Act
         async Task Act() => await sut.SetCompanyWithAddressAsync(applicationId, companyData, string.Empty).ConfigureAwait(false);
@@ -389,16 +389,17 @@ public class RegistrationBusinessLogicTest
         var companyData = new CompanyWithAddress(companyId, "name", "munich", "main street", "de");
 
         A.CallTo(() => _applicationRepository.GetCompanyApplicationWithCompanyAdressUserDataAsync(applicationId, companyId, A<string>._))
-            .ReturnsLazily(() => new CompanyApplicationWithCompanyAddressUserData(companyApplication)
-            {
-                CompanyUserId = _fixture.Create<Guid>()
-            });
+            .ReturnsLazily(() =>
+                _fixture.Build<CompanyApplicationWithCompanyAddressUserData>()
+                    .With(x => x.CompanyUserId, _fixture.Create<Guid>())
+                    .With(x => x.AddressId, (Guid?)null)
+                    .Create());
         
         // Act
         await sut.SetCompanyWithAddressAsync(applicationId, companyData, string.Empty).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._))
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>?>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -422,16 +423,13 @@ public class RegistrationBusinessLogicTest
         var companyData = new CompanyWithAddress(companyId, "name", "munich", "main street", "de");
 
         A.CallTo(() => _applicationRepository.GetCompanyApplicationWithCompanyAdressUserDataAsync(applicationId, companyId, A<string>._))
-            .ReturnsLazily(() => new CompanyApplicationWithCompanyAddressUserData(companyApplication)
-            {
-                CompanyUserId = _fixture.Create<Guid>()
-            });
+            .ReturnsLazily(() => _fixture.Build<CompanyApplicationWithCompanyAddressUserData>().With(x => x.CompanyUserId, _fixture.Create<Guid>()).Create());
         
         // Act
         await sut.SetCompanyWithAddressAsync(applicationId, companyData, string.Empty).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._))
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>?>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
