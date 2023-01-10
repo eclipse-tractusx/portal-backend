@@ -220,21 +220,19 @@ public class ApplicationRepository : IApplicationRepository
                 companyApplication => new CompanyUserRoleWithAddress(
                     companyApplication.CompanyId,
                     companyApplication.Company!.Name,
-                    companyApplication.Company.Address!.City ?? "",
-                    companyApplication.Company.Address.Streetname ?? "",
-                    companyApplication.Company.Address.CountryAlpha2Code ?? "",
-                    companyApplication.Company.CompanyAssignedRoles.SelectMany(companyAssignedRole => companyAssignedRole.CompanyRole!.AgreementAssignedCompanyRoles.Select(x => new AgreementsData(x.CompanyRoleId, x.AgreementId, x.Agreement!.Consents.SingleOrDefault(consent => consent.CompanyId == companyApplication.CompanyId)!.ConsentStatusId))),
-                    companyApplication.Invitations.Select(x => new InvitedCompanyUser(x.CompanyUserId, x.CompanyUser!.Firstname, x.CompanyUser!.Lastname, x.CompanyUser!.Email)))
-                {
-                    BusinessPartnerNumber = companyApplication.Company!.BusinessPartnerNumber,
-                    Shortname = companyApplication.Company.Shortname,
-                    Region = companyApplication.Company.Address.Region,
-                    Streetadditional = companyApplication.Company.Address.Streetadditional,
-                    Streetnumber = companyApplication.Company.Address.Streetnumber,
-                    Zipcode = companyApplication.Company.Address.Zipcode,
-                    CountryDe = companyApplication.Company.Address.Country!.CountryNameDe,
-                    TaxId = companyApplication.Company.TaxId
-                })
+                    companyApplication.Company.Shortname,
+                    companyApplication.Company.BusinessPartnerNumber,
+                    companyApplication.Company.TaxId,
+                    companyApplication.Company.Address!.City,
+                    companyApplication.Company.Address.Streetname,
+                    companyApplication.Company.Address.CountryAlpha2Code,
+                    companyApplication.Company.Address.Region,
+                    companyApplication.Company.Address.Streetadditional,
+                    companyApplication.Company.Address.Streetnumber,
+                    companyApplication.Company.Address.Zipcode,
+                    companyApplication.Company.Address.Country!.CountryNameDe,
+                    companyApplication.Company.CompanyRoles.SelectMany(companyRole => companyRole.AgreementAssignedCompanyRoles.Select(x => new AgreementsData(x.CompanyRoleId, x.AgreementId, x.Agreement!.Consents.SingleOrDefault(consent => consent.CompanyId == companyApplication.CompanyId)!.ConsentStatusId))),
+                    companyApplication.Invitations.Select(x => new InvitedCompanyUserData(x.CompanyUserId, x.CompanyUser!.Firstname, x.CompanyUser.Lastname, x.CompanyUser.Email))))
             .AsNoTracking()
             .SingleOrDefaultAsync();
 }

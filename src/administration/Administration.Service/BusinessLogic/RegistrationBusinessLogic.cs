@@ -80,24 +80,35 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyUserRoleWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
         if (companyWithAddress == null)
         {
-            throw new NotFoundException($"no company found for applicationId {applicationId}");
+            throw new NotFoundException($"applicationId {applicationId} not found");
         }
         return new CompanyWithAddressData(
             companyWithAddress.CompanyId,
             companyWithAddress.Name,
-            companyWithAddress.City,
-            companyWithAddress.StreetName,
-            companyWithAddress.CountryAlpha2Code,
-            companyWithAddress.BusinessPartnerNumber,
-            companyWithAddress.Shortname,
-            companyWithAddress.Region,
-            companyWithAddress.Streetadditional,
-            companyWithAddress.Streetnumber,
-            companyWithAddress.Zipcode,
-            companyWithAddress.CountryDe,
-            companyWithAddress.TaxId,
-            companyWithAddress.CompanyRoles.GroupBy(x => x.CompanyRoleId).Select(g => new AgreementsRoleData(g.Key, g.Select(y => new AgreementConsentData(y.AgreementId, y.ConsentStatusId)))),
-            companyWithAddress.CompanyUser.Select(x => new InvitedUserData(x.UserId, x.FirstName, x.LastName, x.Email))
+            companyWithAddress.Shortname ?? "",
+            companyWithAddress.BusinessPartnerNumber ?? "",
+            companyWithAddress.TaxId ?? "",
+            companyWithAddress.City ?? "",
+            companyWithAddress.StreetName ?? "",
+            companyWithAddress.CountryAlpha2Code ?? "",
+            companyWithAddress.Region ?? "",
+            companyWithAddress.Streetadditional ?? "",
+            companyWithAddress.Streetnumber ?? "",
+            companyWithAddress.Zipcode ?? "",
+            companyWithAddress.CountryDe ?? "",
+            companyWithAddress.AgreementsData
+                .GroupBy(x => x.CompanyRoleId)
+                .Select(g => new AgreementsRoleData(
+                    g.Key,
+                    g.Select(y => new AgreementConsentData(
+                        y.AgreementId,
+                        y.ConsentStatusId ?? ConsentStatusId.INACTIVE)))),
+            companyWithAddress.InvitedCompanyUserData
+                .Select(x => new InvitedUserData(
+                    x.UserId,
+                    x.FirstName ?? "",
+                    x.LastName ?? "",
+                    x.Email ?? ""))
         );
     }
 

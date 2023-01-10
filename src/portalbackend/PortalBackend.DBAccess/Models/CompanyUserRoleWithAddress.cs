@@ -25,30 +25,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 public record CompanyUserRoleWithAddress(
     Guid CompanyId,
     string Name,
-    string City,
-    string StreetName,
-    string CountryAlpha2Code,
-    IEnumerable<AgreementsData> CompanyRoles,
-    IEnumerable<InvitedCompanyUser> CompanyUser)
-{
-    public string? BusinessPartnerNumber { get; set; }
-    
-    public string? Shortname { get; set; }
-    
-    public string? Region { get; set; }
-    
-    public string? Streetadditional { get; set; }
-    
-    public string? Streetnumber { get; set; }
-    
-    public string? Zipcode { get; set; }
-    
-    public string? CountryDe { get; set; }
-    
-    public string? TaxId { get; set; }
-}
+    string? Shortname,
+    string? BusinessPartnerNumber,
+    string? TaxId,
+    string? City,
+    string? StreetName,
+    string? CountryAlpha2Code,
+    string? Region,
+    string? Streetadditional,
+    string? Streetnumber,
+    string? Zipcode,
+    string? CountryDe,
+    IEnumerable<AgreementsData> AgreementsData,
+    IEnumerable<InvitedCompanyUserData> InvitedCompanyUserData
+);
 
 public record AgreementsData(CompanyRoleId CompanyRoleId, Guid AgreementId, ConsentStatusId? ConsentStatusId);
 
-public record InvitedCompanyUser(Guid UserId, string? FirstName, string? LastName, string? Email);
-
+public record InvitedCompanyUserData(Guid UserId, string? FirstName, string? LastName, string? Email);
