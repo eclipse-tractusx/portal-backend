@@ -299,7 +299,7 @@ public class ChecklistServiceTests
         await _service.UpdateCompanyBpn(IdWithoutBpn, ValidBpn).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _companyRepository.AttachAndModifyCompany(CompanyId, A<Action<Company>>._))
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(CompanyId, A<Action<Company>?>._,A<Action<Company>>._!))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(IdWithoutBpn, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();

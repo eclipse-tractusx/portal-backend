@@ -17,13 +17,14 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-// See https://aka.ms/new-console-template for more information
 
 using System.Reflection;
-using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 
 var host = Host.CreateDefaultBuilder(args)
     .UseSystemd()
@@ -39,13 +40,15 @@ var host = Host.CreateDefaultBuilder(args)
             cfg.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: true);
         }
 
-        cfg.AddUserSecrets(Assembly.GetExecutingAssembly());
+        cfg
+            .AddUserSecrets(Assembly.GetExecutingAssembly())
+            .AddEnvironmentVariables();
     })
     .ConfigureServices((hostContext, services) =>
     {
-        services.AddDbContext<PortalDbContext>(o =>
-            o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb")));
-        services.AddHostedService<BatchDeleteService>();
+        services.AddPortalRepositories(hostContext.Configuration);
+        services.AddChecklist(hostContext.Configuration.GetSection("Checklist"));
+        services.AddHostedService<ChecklistExecutionService>();
     }).Build();
 
 host.Run();

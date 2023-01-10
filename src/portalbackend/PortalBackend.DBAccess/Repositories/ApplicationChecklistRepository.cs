@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Collections;
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -64,5 +65,13 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
         _portalDbContext.ApplicationChecklist
             .Where(x => x.ApplicationId == applicationId)
             .Select(x => new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(x.ChecklistEntryTypeId, x.StatusId))
+            .ToDictionaryAsync(x => x.Item1, x => x.Item2);
+
+    /// <inheritdoc />
+    public Task<Dictionary<Guid, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)>>> GetChecklistDataGroupedByApplicationId() =>
+        _portalDbContext.ApplicationChecklist
+            .GroupBy(x => x.ApplicationId)
+            .Where(x => x.Any(e => e.StatusId == ChecklistEntryStatusId.TO_DO))
+            .Select(x => new ValueTuple<Guid, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)>>(x.Key, x.Select(e => new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(e.ChecklistEntryTypeId, e.StatusId))))
             .ToDictionaryAsync(x => x.Item1, x => x.Item2);
 }

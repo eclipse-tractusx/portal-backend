@@ -27,17 +27,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.DependencyInject
 
 public static class ChecklistExtensions
 {
-    public static IServiceCollection AddChecklist(this IServiceCollection services, IConfigurationSection bpdmSection, IConfigurationSection custodianSection)
+    public static IServiceCollection AddChecklist(this IServiceCollection services, IConfigurationSection section)
     {
         return services
             .AddScoped<IChecklistService, ChecklistService>()
-            .AddBpdmService(bpdmSection)
-            .AddCustodianService(custodianSection);
+            .AddBpdmService(section.GetSection("Bpdm"))
+            .AddCustodianService(section.GetSection("Custodian"));
     }
     
     public static IServiceCollection AddChecklistCreation(this IServiceCollection services)
     {
         return services
-            .AddScoped<IChecklistService, ChecklistService>();
+            .AddScoped<IChecklistCreationService, ChecklistCreationService>();
     }
 }

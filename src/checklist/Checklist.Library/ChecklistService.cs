@@ -42,42 +42,6 @@ public class ChecklistService : IChecklistService
         _custodianService = custodianService;
     }
 
-    /// <inheritdoc />
-    public async Task TriggerBpnDataPush(Guid applicationId, string iamUserId, CancellationToken cancellationToken)
-    {
-        var data = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpdmDataForApplicationAsync(iamUserId, applicationId).ConfigureAwait(false);
-        if (data is null)
-        {
-            throw new NotFoundException($"Application {applicationId} does not exists.");
-        }
-
-        if (data.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
-        {
-            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
-        }
-
-        if (!data.IsUserInCompany)
-        {
-            throw new ControllerArgumentException("User is not assigned to company", nameof(iamUserId));
-        }
-
-        if (string.IsNullOrWhiteSpace(data.ZipCode))
-        {
-            throw new ConflictException("ZipCode must not be empty");
-        }
-
-        await CheckCanRunStepAsync(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, new []{ ChecklistEntryStatusId.TO_DO, ChecklistEntryStatusId.FAILED }).ConfigureAwait(false);
-        var bpdmTransferData = new BpdmTransferData(data.CompanyName, data.AlphaCode2, data.ZipCode, data.City, data.Street);
-        await _bpdmService.TriggerBpnDataPush(bpdmTransferData, cancellationToken).ConfigureAwait(false);
-        
-        _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, checklist =>
-            {
-                checklist.StatusId = ChecklistEntryStatusId.IN_PROGRESS;
-            });
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
-
     public async Task<bool> CreateWalletAsync(Guid applicationId, CancellationToken cancellationToken)
     {
         var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(applicationId).ConfigureAwait(false);
@@ -119,6 +83,52 @@ public class ChecklistService : IChecklistService
         
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return createdWallet;
+    }
+
+    /// <inheritdoc />
+    public async Task TriggerBpnDataPush(Guid applicationId, string iamUserId, CancellationToken cancellationToken)
+    {
+        var data = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpdmDataForApplicationAsync(iamUserId, applicationId).ConfigureAwait(false);
+        if (data is null)
+        {
+            throw new NotFoundException($"Application {applicationId} does not exists.");
+        }
+
+        if (data.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
+        {
+            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
+        }
+
+        if (!data.IsUserInCompany)
+        {
+            throw new ControllerArgumentException("User is not assigned to company", nameof(iamUserId));
+        }
+
+        if (string.IsNullOrWhiteSpace(data.ZipCode))
+        {
+            throw new ConflictException("ZipCode must not be empty");
+        }
+
+        await CheckCanRunStepAsync(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, new []{ ChecklistEntryStatusId.TO_DO, ChecklistEntryStatusId.FAILED }).ConfigureAwait(false);
+        var bpdmTransferData = new BpdmTransferData(data.CompanyName, data.AlphaCode2, data.ZipCode, data.City, data.Street);
+        await _bpdmService.TriggerBpnDataPush(bpdmTransferData, cancellationToken).ConfigureAwait(false);
+        
+        _portalRepositories.GetInstance<IApplicationChecklistRepository>()
+            .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, checklist =>
+            {
+                checklist.StatusId = ChecklistEntryStatusId.IN_PROGRESS;
+            });
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task ProcessChecklist(Guid applicationId, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)> checklistEntries, CancellationToken stoppingToken)
+    {
+        var possibleSteps = GetNextPossibleTypesWithMatchingStatus(checklistEntries.ToDictionary(x => x.TypeId, x => x.StatusId), new[] { ChecklistEntryStatusId.TO_DO });
+        if (possibleSteps.Contains(ChecklistEntryTypeId.IDENTITY_WALLET))
+        {
+            await CreateWalletAsync(applicationId, stoppingToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
@@ -164,7 +174,7 @@ public class ChecklistService : IChecklistService
                 $"BusinessPartnerNumber of company {applicationCompanyData.CompanyId} has already been set.");
         }
 
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId,
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null, 
             c => { c.BusinessPartnerNumber = bpn; });
 
         _portalRepositories.GetInstance<IApplicationChecklistRepository>()

@@ -21,8 +21,8 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
     <PropertyGroup>
-        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Checklist.App</AssemblyName>
-        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Checklist.App</RootNamespace>
+        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker</AssemblyName>
+        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker</RootNamespace>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
