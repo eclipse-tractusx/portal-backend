@@ -32,14 +32,15 @@ public interface IApplicationChecklistRepository
     /// <param name="checklistEntries">Combination of type and it's status</param>
     /// <returns>Returns the created entries</returns>
     void CreateChecklistForApplication(Guid applicationId, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)> checklistEntries);
-    
+
     /// <summary>
     /// Attaches a checklist entry with the given id and modifies it with the action.
     /// </summary>
     /// <param name="applicationId">Id of the application to modify</param>
     /// <param name="checklistTypeId">Id of the checklistType to modify</param>
     /// <param name="setFields">Action to sets the fields</param>
-    void AttachAndModifyApplicationChecklist(Guid applicationId, ChecklistEntryTypeId checklistTypeId, Action<ApplicationChecklistEntry> setFields);
+    void AttachAndModifyApplicationChecklist(Guid applicationId,
+        ChecklistEntryTypeId checklistTypeId, Action<ApplicationChecklistEntry> setFields);
 
     /// <summary>
     /// Gets the combination of the checklist type and status
@@ -51,6 +52,8 @@ public interface IApplicationChecklistRepository
     /// <summary>
     /// Gets all checklist entries where at least one item is in TO_DO state grouped by the application id
     /// </summary>
-    /// <returns>Returns a dictionary with the checklist data</returns>
-    Task<Dictionary<Guid, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)>>> GetChecklistDataGroupedByApplicationId();
+    /// <param name="workerBatchSize"></param>
+    /// <returns>Returns an async enumerable with the checklist data</returns>
+    IAsyncEnumerable<(Guid ApplicationId, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)> ChecklistEntries)>
+        GetChecklistDataGroupedByApplicationId(int workerBatchSize);
 }

@@ -72,8 +72,6 @@ builder.Services.AddTransient<ICompanyDataBusinessLogic, CompanyDataBusinessLogi
 builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
                 .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
-builder.Services.AddTransient<ITokenService, TokenService>();
-
 builder.Services
     .AddSdFactoryService(builder.Configuration.GetSection("SdFactory"))
     .AddDapsService(builder.Configuration.GetSection("Daps"))

@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian;
@@ -34,12 +35,14 @@ public class ChecklistService : IChecklistService
     private readonly IPortalRepositories _portalRepositories;
     private readonly IBpdmService _bpdmService;
     private readonly ICustodianService _custodianService;
+    private readonly ILogger<IChecklistService> _logger;
 
-    public ChecklistService(IPortalRepositories portalRepositories, IBpdmService bpdmService, ICustodianService custodianService)
+    public ChecklistService(IPortalRepositories portalRepositories, IBpdmService bpdmService, ICustodianService custodianService, ILogger<IChecklistService> logger)
     {
         _portalRepositories = portalRepositories;
         _bpdmService = bpdmService;
         _custodianService = custodianService;
+        _logger = logger;
     }
 
     public async Task<bool> CreateWalletAsync(Guid applicationId, CancellationToken cancellationToken)
@@ -61,7 +64,7 @@ public class ChecklistService : IChecklistService
         {
             var message = await _custodianService.CreateWalletAsync(businessPartnerNumber, companyName, cancellationToken).ConfigureAwait(false);
             _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-                .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
+                .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.IDENTITY_WALLET,
                     checklist =>
                     {
                         checklist.StatusId = ChecklistEntryStatusId.DONE;
@@ -71,7 +74,7 @@ public class ChecklistService : IChecklistService
         catch (ServiceException ex)
         {
             _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-                .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
+                .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.IDENTITY_WALLET,
                     checklist =>
                     {
                         checklist.StatusId = ChecklistEntryStatusId.FAILED;
@@ -114,20 +117,34 @@ public class ChecklistService : IChecklistService
         await _bpdmService.TriggerBpnDataPush(bpdmTransferData, cancellationToken).ConfigureAwait(false);
         
         _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, checklist =>
-            {
-                checklist.StatusId = ChecklistEntryStatusId.IN_PROGRESS;
-            });
+            .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
+                checklist => { checklist.StatusId = ChecklistEntryStatusId.IN_PROGRESS; });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task ProcessChecklist(Guid applicationId, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)> checklistEntries, CancellationToken stoppingToken)
+    public async Task ProcessChecklist(Guid applicationId, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)> checklistEntries, CancellationToken cancellationToken)
     {
         var possibleSteps = GetNextPossibleTypesWithMatchingStatus(checklistEntries.ToDictionary(x => x.TypeId, x => x.StatusId), new[] { ChecklistEntryStatusId.TO_DO });
+        _logger.LogInformation("Found {StepsCount} possible steps for application {ApplicationId}", possibleSteps.Count(), applicationId);
         if (possibleSteps.Contains(ChecklistEntryTypeId.IDENTITY_WALLET))
         {
-            await CreateWalletAsync(applicationId, stoppingToken).ConfigureAwait(false);
+            try
+            {
+                _logger.LogInformation("Executing wallet creation for application {ApplicationId}", applicationId);
+                await CreateWalletAsync(applicationId, cancellationToken).ConfigureAwait(false);
+                _logger.LogInformation("Wallet successfully created for application {ApplicationId}", applicationId);
+            }
+            catch (Exception ex)
+            {
+                _portalRepositories.GetInstance<IApplicationChecklistRepository>()
+                    .AttachAndModifyApplicationChecklist(applicationId, ChecklistEntryTypeId.IDENTITY_WALLET,
+                        item => { 
+                            item.StatusId = ChecklistEntryStatusId.FAILED;
+                            item.Comment = ex.ToString(); 
+                        });
+                await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            }
         }
     }
 
