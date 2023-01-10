@@ -370,7 +370,7 @@ public class UserRepository : IUserRepository
     public Task<Guid> GetServiceAccountCompany(string iamUserId) =>
         _dbContext.IamServiceAccounts
             .Where(x => x.UserEntityId == iamUserId)
-            .Select(x => x.CompanyServiceAccount!.CompanyId)
+            .Select(x => x.CompanyServiceAccount!.ServiceAccountOwnerId)
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

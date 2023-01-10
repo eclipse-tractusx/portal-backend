@@ -76,6 +76,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyServiceAccount> CompanyServiceAccounts { get; set; } = default!;
     public virtual DbSet<CompanyServiceAccountAssignedRole> CompanyServiceAccountAssignedRoles { get; set; } = default!;
     public virtual DbSet<CompanyServiceAccountStatus> CompanyServiceAccountStatuses { get; set; } = default!;
+    public virtual DbSet<CompanyServiceAccountType> CompanyServiceAccountTypes { get; set; } = default!;
     public virtual DbSet<CompanyStatus> CompanyStatuses { get; set; } = default!;
     public virtual DbSet<CompanyUser> CompanyUsers { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
@@ -584,15 +585,24 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<CompanyServiceAccount>(entity =>
         {
-            entity.HasOne(d => d.Company)
+            entity.HasOne(d => d.ServiceAccountOwner)
                 .WithMany(p => p!.CompanyServiceAccounts)
-                .HasForeignKey(d => d.CompanyId)
+                .HasForeignKey(d => d.ServiceAccountOwnerId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.CompanyServiceAccountStatus)
-                .WithMany(p => p!.CompanyServiceAccounts)
+                .WithMany(p => p.CompanyServiceAccounts)
                 .HasForeignKey(d => d.CompanyServiceAccountStatusId);
                 
+            entity.HasOne(d => d.CompanyServiceAccountType)
+                .WithMany(p => p.CompanyServiceAccounts)
+                .HasForeignKey(d => d.CompanyServiceAccountTypeId);
+
+            entity.HasOne(d => d.OfferSubscription)
+                .WithMany(p => p.CompanyServiceAccounts)
+                .HasForeignKey(d => d.OfferSubscriptionId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
             entity.HasMany(p => p.UserRoles)
                 .WithMany(p => p.CompanyServiceAccounts)
                 .UsingEntity<CompanyServiceAccountAssignedRole>(
@@ -658,6 +668,13 @@ public class PortalDbContext : DbContext
                 Enum.GetValues(typeof(CompanyStatusId))
                     .Cast<CompanyStatusId>()
                     .Select(e => new CompanyStatus(e))
+            );
+
+        modelBuilder.Entity<CompanyServiceAccountType>()
+            .HasData(
+                Enum.GetValues(typeof(CompanyServiceAccountTypeId))
+                    .Cast<CompanyServiceAccountTypeId>()
+                    .Select(e => new CompanyServiceAccountType(e))
             );
 
         modelBuilder.Entity<CompanyUser>(entity =>

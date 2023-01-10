@@ -28,7 +28,7 @@ public class ServiceProviderController : ControllerBase
     /// get detail data of the calling users service provider
     /// </summary>
     /// <returns></returns>
-    /// <remarks>Example: POST: api/administration/serviceprovider/owncompany</remarks>
+    /// <remarks>Example: GET: api/administration/serviceprovider/owncompany</remarks>
     /// <response code="200">The service provider details.</response>
     /// <response code="400">The given data are incorrect.</response>
     /// <response code="403">The calling users company is not a service-provider</response>
@@ -71,7 +71,7 @@ public class ServiceProviderController : ControllerBase
     /// </summary>
     /// <param name="data">Service provider detail data</param>
     /// <returns></returns>
-    /// <remarks>Example: PUT: api/administration/serviceprovider/owncompany/ccf3cd17-c4bc-4cec-a041-2da709b787b0</remarks>
+    /// <remarks>Example: PUT: api/administration/serviceprovider/owncompany</remarks>
     /// <response code="204">The service provider details were updated successfully.</response>
     /// <response code="400">The given data are incorrect.</response>
     /// <response code="404">Service Provider was not found.</response>

@@ -195,6 +195,14 @@ public static class BaseSeed
             new ("4b8f156e-5dfc-4a58-9384-1efb195c1c34", new Guid("adf37b09-53f3-48ea-b8fb-8cbb7fd79324"))
         });
 
+        dbContext.CompanyServiceAccounts.AddRange(new List<CompanyServiceAccount>
+        {
+            new (new Guid("7259744a-2ab0-49bf-9fe3-fcb88f6ad332"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyServiceAccountStatusId.ACTIVE, "Test SA", "Only a test sa", DateTimeOffset.UtcNow, CompanyServiceAccountTypeId.MANAGED)
+            {
+                OfferSubscriptionId = new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd")
+            }
+        });
+        
         dbContext.IamClients.AddRange(new List<IamClient>
         {
             new (new Guid("0c9051d0-d032-11ec-9d64-0242ac120002"), "Cl2-CX-Portal"),
