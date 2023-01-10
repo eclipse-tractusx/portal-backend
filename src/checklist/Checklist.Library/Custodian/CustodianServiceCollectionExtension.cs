@@ -22,6 +22,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian;
@@ -45,7 +46,9 @@ public static class CustodianServiceCollectionExtension
         {
             c.BaseAddress = new Uri(settings.Value.KeyCloakTokenAdress);
         }).AddHttpMessageHandler<LoggingHandler<CustodianService>>();
-        services.AddTransient<ICustodianService, CustodianService>();
+        services
+            .AddTransient<ITokenService, TokenService>()
+            .AddTransient<ICustodianService, CustodianService>();
 
         return services;
     }

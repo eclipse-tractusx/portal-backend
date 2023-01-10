@@ -67,11 +67,15 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
             .Select(x => new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(x.ChecklistEntryTypeId, x.StatusId))
             .ToDictionaryAsync(x => x.Item1, x => x.Item2);
 
+    /// <param name="workerBatchSize"></param>
     /// <inheritdoc />
-    public Task<Dictionary<Guid, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)>>> GetChecklistDataGroupedByApplicationId() =>
+    public IAsyncEnumerable<(Guid ApplicationId, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)> ChecklistEntries)> GetChecklistDataGroupedByApplicationId(int workerBatchSize) =>
         _portalDbContext.ApplicationChecklist
             .GroupBy(x => x.ApplicationId)
-            .Where(x => x.Any(e => e.StatusId == ChecklistEntryStatusId.TO_DO))
+            .Where(x => 
+                x.Any(e => e.StatusId == ChecklistEntryStatusId.TO_DO) &&
+                x.All(e => e.StatusId != ChecklistEntryStatusId.FAILED))
             .Select(x => new ValueTuple<Guid, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)>>(x.Key, x.Select(e => new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(e.ChecklistEntryTypeId, e.StatusId))))
-            .ToDictionaryAsync(x => x.Item1, x => x.Item2);
+            .Take(workerBatchSize)
+            .ToAsyncEnumerable();
 }

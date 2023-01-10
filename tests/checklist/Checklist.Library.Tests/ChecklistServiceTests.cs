@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
@@ -69,7 +70,7 @@ public class ChecklistServiceTests
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
 
-        _service = new ChecklistService(_portalRepositories, _bpdmService, _custodianService);
+        _service = new ChecklistService(_portalRepositories, _bpdmService, _custodianService, A.Fake<ILogger<IChecklistService>>());
     }
     
     #region TriggerBpnDataPush

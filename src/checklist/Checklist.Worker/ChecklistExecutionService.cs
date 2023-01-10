@@ -32,6 +32,7 @@ public class ChecklistExecutionService : BackgroundService
     private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ILogger<ChecklistExecutionService> _logger;
+    private readonly int _workerBatchSize;
 
     /// <summary>
     /// Creates a new instance of <see cref="ChecklistExecutionService"/>
@@ -39,14 +40,17 @@ public class ChecklistExecutionService : BackgroundService
     /// <param name="applicationLifetime">Application lifetime</param>
     /// <param name="serviceScopeFactory">access to the services</param>
     /// <param name="logger">the logger</param>
+    /// <param name="config">the configuration</param>
     public ChecklistExecutionService(
         IHostApplicationLifetime applicationLifetime,
         IServiceScopeFactory serviceScopeFactory,
-        ILogger<ChecklistExecutionService> logger)
+        ILogger<ChecklistExecutionService> logger,
+        IConfiguration config)
     {
         _applicationLifetime = applicationLifetime;
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
+        _workerBatchSize = config.GetValue<int>("WorkerBatchSize");
     }
 
     /// <inheritdoc />
@@ -60,12 +64,12 @@ public class ChecklistExecutionService : BackgroundService
             try
             {
                 var checklistService = scope.ServiceProvider.GetRequiredService<IChecklistService>();
-                _logger.LogInformation("Getting checklist items");
-                var checklistEntryData = await portalRepositories.GetInstance<IApplicationChecklistRepository>().GetChecklistDataGroupedByApplicationId().ConfigureAwait(false);
-                var tasks = checklistEntryData
-                    .Select(x => Task.Run(() => checklistService.ProcessChecklist(x.Key, x.Value, stoppingToken), stoppingToken))
-                    .ToArray();
-                Task.WaitAll(tasks);
+                var checklistEntryData = await portalRepositories.GetInstance<IApplicationChecklistRepository>().GetChecklistDataGroupedByApplicationId(_workerBatchSize).ToListAsync(stoppingToken).ConfigureAwait(false);
+                _logger.LogInformation("Found {Count} application checklists to process", checklistEntryData.Count);
+                foreach (var entryData in checklistEntryData)
+                {
+                    await checklistService.ProcessChecklist(entryData.ApplicationId, entryData.ChecklistEntries, stoppingToken).ConfigureAwait(false);
+                }
                 _logger.LogInformation("Processed checklist items");
             }
             catch (Exception ex)
