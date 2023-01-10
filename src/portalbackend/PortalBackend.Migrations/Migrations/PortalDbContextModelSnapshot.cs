@@ -28,7 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
 #nullable disable
 
-namespace PortalBackend.Migrations.Migrations
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
     partial class PortalDbContextModelSnapshot : ModelSnapshot
