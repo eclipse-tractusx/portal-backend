@@ -300,6 +300,10 @@ public static class BaseSeed
             new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019911"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058019952"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), ConsentStatusId.INACTIVE, DateTimeOffset.UtcNow)
             {
                 Comment = "Test"
+            },
+            new(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019912"), new Guid("f6d3148b-2e2b-4688-a382-326d4232ee6e"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), ConsentStatusId.ACTIVE, DateTimeOffset.UtcNow)
+            {
+                Comment = "Test"
             }
         });
         dbContext.AgreementAssignedCompanyRoles.AddRange(new List<AgreementAssignedCompanyRole>
@@ -369,5 +373,6 @@ public static class BaseSeed
                 StatusId =ConnectorStatusId.PENDING,
             },
         });
+       
     };
 }

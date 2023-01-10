@@ -66,7 +66,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _bpdmService = bpdmService;
     }
 
-    public Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
+    public Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId)
     {
         if (applicationId == Guid.Empty)
         {
@@ -75,14 +75,40 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return GetCompanyWithAddressAsyncInternal(applicationId);
     }
 
-    private async Task<CompanyWithAddress> GetCompanyWithAddressAsyncInternal(Guid applicationId)
+    private async Task<CompanyWithAddressData> GetCompanyWithAddressAsyncInternal(Guid applicationId)
     {
-        var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
+        var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyUserRoleWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
         if (companyWithAddress == null)
         {
-            throw new NotFoundException($"no company found for applicationId {applicationId}");
+            throw new NotFoundException($"applicationId {applicationId} not found");
         }
-        return companyWithAddress;
+        return new CompanyWithAddressData(
+            companyWithAddress.CompanyId,
+            companyWithAddress.Name,
+            companyWithAddress.Shortname ?? "",
+            companyWithAddress.BusinessPartnerNumber ?? "",
+            companyWithAddress.City ?? "",
+            companyWithAddress.StreetName ?? "",
+            companyWithAddress.CountryAlpha2Code ?? "",
+            companyWithAddress.Region ?? "",
+            companyWithAddress.Streetadditional ?? "",
+            companyWithAddress.Streetnumber ?? "",
+            companyWithAddress.Zipcode ?? "",
+            companyWithAddress.CountryDe ?? "",
+            companyWithAddress.AgreementsData
+                .GroupBy(x => x.CompanyRoleId)
+                .Select(g => new AgreementsRoleData(
+                    g.Key,
+                    g.Select(y => new AgreementConsentData(
+                        y.AgreementId,
+                        y.ConsentStatusId ?? ConsentStatusId.INACTIVE)))),
+            companyWithAddress.InvitedCompanyUserData
+                .Select(x => new InvitedUserData(
+                    x.UserId,
+                    x.FirstName ?? "",
+                    x.LastName ?? "",
+                    x.Email ?? ""))
+        );
     }
 
     public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size,CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null)

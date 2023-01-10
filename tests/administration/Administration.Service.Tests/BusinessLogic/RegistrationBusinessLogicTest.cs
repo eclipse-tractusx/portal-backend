@@ -251,6 +251,8 @@ public class RegistrationBusinessLogicTest
 
     #endregion
 
+    #region GetCompanyApplicationDetailsAsync
+
     [Fact]
     public async Task GetCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries()
     {
@@ -301,8 +303,95 @@ public class RegistrationBusinessLogicTest
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
         result.Content.Should().HaveCount(5);       
     }
+
+    #endregion
+
+    #region GetCompanyWithAddressAsync
+
+    [Fact]
+    public async Task GetCompanyWithAddressAsync_WithDefaultRequest_GetsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var data = _fixture.Build<CompanyUserRoleWithAddress>()
+            .With(x => x.AgreementsData, _fixture.CreateMany<AgreementsData>(20))
+            .Create();
+        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAdressUntrackedAsync(applicationId))
+            .Returns(data);
+
+        // Act
+        var result = await _logic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAdressUntrackedAsync(applicationId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<CompanyWithAddressData>();
+        result.Should().Match<CompanyWithAddressData>(r =>
+            r.CompanyId == data.CompanyId &&
+            r.Name == data.Name &&
+            r.ShortName == data.Shortname &&
+            r.BusinessPartnerNumber == data.BusinessPartnerNumber &&
+            r.City == data.City &&
+            r.StreetName == data.StreetName &&
+            r.CountryAlpha2Code == data.CountryAlpha2Code &&
+            r.Region == data.Region &&
+            r.StreetAdditional == data.Streetadditional &&
+            r.StreetNumber == data.Streetnumber &&
+            r.ZipCode == data.Zipcode &&
+            r.CountryDe == data.CountryDe
+        );
+        result.AgreementsRoleData.Should().HaveSameCount(data.AgreementsData.DistinctBy(ad => ad.CompanyRoleId));
+        result.InvitedUserData.Should().HaveSameCount(data.InvitedCompanyUserData);
+    }
+
+    [Fact]
+    public async Task GetCompanyWithAddressAsync_WithDefaultRequest_GetsExpectedResult_DefaultValues()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var data = _fixture.Build<CompanyUserRoleWithAddress>()
+            .With(x => x.Shortname, (string?)null)
+            .With(x => x.BusinessPartnerNumber, (string?)null)
+            .With(x => x.City, (string?)null)
+            .With(x => x.StreetName, (string?)null)
+            .With(x => x.CountryAlpha2Code, (string?)null)
+            .With(x => x.Region, (string?)null)
+            .With(x => x.Streetadditional, (string?)null)
+            .With(x => x.Streetnumber, (string?)null)
+            .With(x => x.Zipcode, (string?)null)
+            .With(x => x.CountryDe, (string?)null)
+            .With(x => x.InvitedCompanyUserData, _fixture.CreateMany<Guid>().Select(id => new InvitedCompanyUserData(id, null, null, null)))
+            .Create();
+        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAdressUntrackedAsync(applicationId))
+            .Returns(data);
+
+        // Act
+        var result = await _logic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAdressUntrackedAsync(applicationId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<CompanyWithAddressData>();
+        result.Should().Match<CompanyWithAddressData>(r =>
+            r.CompanyId == data.CompanyId &&
+            r.Name == data.Name &&
+            r.ShortName == "" &&
+            r.BusinessPartnerNumber == "" &&
+            r.City == "" &&
+            r.StreetName == "" &&
+            r.CountryAlpha2Code == "" &&
+            r.Region == "" &&
+            r.StreetAdditional == "" &&
+            r.StreetNumber == "" &&
+            r.ZipCode == "" &&
+            r.CountryDe == ""
+        );
+        result.InvitedUserData.Should().HaveSameCount(data.InvitedCompanyUserData);
+        result.InvitedUserData.Should().AllSatisfy(u => u.Should().Match<InvitedUserData>(u => u.FirstName == "" && u.LastName == "" && u.Email == ""));
+    }
+
+    #endregion
+
     #region Trigger bpn data push
-    
+
     [Fact]
     public async Task TriggerBpnDataPush_WithValidData_CallsService()
     {
