@@ -30,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -252,14 +253,21 @@ public class OfferService : IOfferService
             .ToListAsync()
             .ConfigureAwait(false);
         var description = $"Technical User for app {offerDetails.OfferName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}";
+        var serviceAccountCreationData = new ServiceAccountCreationInfo(
+            clientId,
+            description,
+            IamClientAuthMethod.SECRET,
+            serviceAccountUserRoles.Select(x => x.UserRoleId));
         var (technicalClientId, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation
             .CreateServiceAccountAsync(
-                clientId,
-                description,
-                IamClientAuthMethod.SECRET, 
-                serviceAccountUserRoles.Select(x => x.UserRoleId), 
+                serviceAccountCreationData,
                 offerDetails.CompanyId,
-                Enumerable.Repeat(offerDetails.Bpn, 1))
+                Enumerable.Repeat(offerDetails.Bpn, 1),
+                CompanyServiceAccountTypeId.MANAGED,
+                sa =>
+                {
+                    sa.OfferSubscriptionId = data.RequestId;
+                })
             .ConfigureAwait(false);
 
         offerSubscriptionsRepository.AttachAndModifyOfferSubscription(data.RequestId, subscription =>
@@ -374,7 +382,7 @@ public class OfferService : IOfferService
         return new OfferProviderResponse(
             data.Title,
             data.Provider,
-            data.LeadPictureUri,
+            data.LeadPictureId,
             data.ProviderName,
             data.UseCase,
             data.Descriptions,
@@ -689,5 +697,26 @@ public class OfferService : IOfferService
                     nameof(languageCodes));
             }
         }
+    }
+
+    public async Task DeactivateOfferIdAsync(Guid appId, string iamUserId, OfferTypeId offerTypeId)
+    {
+        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var appdata =  await appRepository.GetOfferActiveStatusDataByIdAsync(appId, offerTypeId, iamUserId).ConfigureAwait(false);
+        if(appdata == default)
+        {
+            throw new NotFoundException($"App {appId} does not exist.");
+        }
+        if(!appdata.IsUserCompanyProvider)
+        {
+            throw new ForbiddenException("Missing permission: The user's company does not provide the requested app so they cannot deactivate it.");
+        }
+        if(!appdata.IsStatusActive)
+        {
+            throw new ConflictException($"offerStatus is in Incorrect State");
+        }
+        appRepository.AttachAndModifyOffer(appId, offer => 
+            offer.OfferStatusId = OfferStatusId.INACTIVE );
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

@@ -62,7 +62,7 @@ public interface IOfferRepository
     /// </summary>
     /// <param name="languageShortName">The optional language shortName</param>
     /// <returns>Returns a async enumerable of (Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName)</returns>
-    IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName);
+    IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, Guid LeadPictureId, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName);
 
     /// <summary>
     /// Gets the details of an app by its id
@@ -320,4 +320,13 @@ public interface IOfferRepository
     /// <param name="offerType">Type of the offer</param>
     /// <returns>Returns the data needed to decline an offer</returns>
     Task<(string? OfferName, OfferStatusId OfferStatus, Guid? CompanyId, bool IsUserOfProvider)> GetOfferDeclineDataAsync(Guid offerId, string iamUserId, OfferTypeId offerType);
+    
+    /// <summary>
+    /// Retireve and Validate Offer Status for App
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name ="iamUserId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task<(bool IsStatusActive, bool IsUserCompanyProvider)> GetOfferActiveStatusDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId);
 }

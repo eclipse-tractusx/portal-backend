@@ -2,6 +2,12 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## Unreleased
+* Technical Support: DB seeding ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* Bugfix: Registration store address
+* Feature: App deactivation for marketplace
+* Change: App LeadPicture (GET /api/apps/{appId} & GET /api/apps/appreleaseprocess/{appId}/appStatus) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+
 ## 0.10.0
 
 ### Change

@@ -70,9 +70,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
         [JsonPropertyName("countryDe")]
         public string? CountryDe { get; set; }
 
-        [JsonPropertyName("taxId")]
-        public string? TaxId { get; set; }
-
         [JsonPropertyName("companyRoles")]
         public IEnumerable<CompanyRoleId> CompanyRoleIds { get; set; }
 

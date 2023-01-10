@@ -1139,6 +1139,95 @@ public class OfferServiceTests
 
     #endregion
 
+    #region DeactivateOfferStatusId
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    public async Task DeactivateOfferStatusIdAsync_WithoutExistingAppId_ThrowsForbiddenExceptionException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var notExistingId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(notExistingId, offerTypeId, _iamUserId))
+            .ReturnsLazily(() => new ValueTuple<bool, bool>());
+    
+        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        async Task Act() => await sut.DeactivateOfferIdAsync(notExistingId,_iamUserId, offerTypeId).ConfigureAwait(false);
+
+        // Assert
+        await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    public async Task DeactivateOfferStatusIdAsync_WithNotAssignedUser_ThrowsForbiddenException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var appid = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(appid, offerTypeId, _iamUserId))
+            .ReturnsLazily(() => new ValueTuple<bool, bool>(true, false));
+    
+        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        async Task Act() => await sut.DeactivateOfferIdAsync(appid, _iamUserId, offerTypeId).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be("Missing permission: The user's company does not provide the requested app so they cannot deactivate it.");
+
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    public async Task DeactivateOfferStatusIdAsync_WithNotOfferStatusId_ThrowsConflictException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var appid = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(appid, offerTypeId, _iamUserId))
+            .ReturnsLazily(() => new ValueTuple<bool, bool>(false, true));
+    
+        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        async Task Act() => await sut.DeactivateOfferIdAsync(appid,_iamUserId, offerTypeId).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be("offerStatus is in Incorrect State");
+
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    public async Task DeactivateOfferStatusIdAsync_WithValidData_CallsExpected(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var offer = _fixture.Create<Offer>();
+        var appid = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(appid, offerTypeId, _iamUserId))
+            .ReturnsLazily(() => new ValueTuple<bool, bool>(true, true));
+        
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appid, A<Action<Offer>>._, A<Action<Offer>?>._))
+            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
+            {
+                initializeParemeters?.Invoke(offer);
+                setOptionalParameters.Invoke(offer);
+            });
+                var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        await sut.DeactivateOfferIdAsync(appid,_iamUserId, offerTypeId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appid, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        offer.OfferStatusId.Should().Be(OfferStatusId.INACTIVE);
+    }
+    
+    #endregion
+    
     #region Setup
 
     private void SetupValidateSalesManager()
@@ -1273,8 +1362,7 @@ public class OfferServiceTests
         A.CallTo(() => _provisioningManager.SetupClientAsync(A<string>._, A<IEnumerable<string>?>._))
             .ReturnsLazily(() => "cl1");
         
-        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<string>._, A<string>._,
-                A<IamClientAuthMethod>._, A<IEnumerable<Guid>>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Any(y => y == "CAXSDUMMYCATENAZZ"))))
+        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Any(y => y == "CAXSDUMMYCATENAZZ")), CompanyServiceAccountTypeId.MANAGED, A<Action<CompanyServiceAccount>?>._))
             .ReturnsLazily(() => new ValueTuple<string, ServiceAccountData, Guid, List<UserRoleData>>(
                     "sa2", 
                     new ServiceAccountData(Guid.NewGuid().ToString(), "cl1", new ClientAuthData(IamClientAuthMethod.SECRET)

@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -29,14 +30,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 /// App subscription relationship between companies and apps.
 /// </summary>
 [AuditEntityV1(typeof(AuditOfferSubscription20221005))]
-public class OfferSubscription : IAuditableV1
+public class OfferSubscription : IAuditableV1, IBaseEntity
 {
     /// <summary>
     /// Only used for the audit table
     /// </summary>
-    private OfferSubscription()
+    public OfferSubscription()
     {
         this.ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
+        this.CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
     }
 
     /// <summary>
@@ -65,12 +67,12 @@ public class OfferSubscription : IAuditableV1
     /// <summary>
     /// ID of the company subscribing an app.
     /// </summary>
-    public Guid CompanyId { get; private set; }
+    public Guid CompanyId { get; set; }
 
     /// <summary>
     /// ID of the apps subscribed by a company.
     /// </summary>
-    public Guid OfferId { get; private set; }
+    public Guid OfferId { get; set; }
 
     /// <summary>
     /// ID of the app subscription status.
@@ -121,4 +123,5 @@ public class OfferSubscription : IAuditableV1
     public virtual AppSubscriptionDetail? AppSubscriptionDetail { get; private set; }
 
     public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
+    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
 }

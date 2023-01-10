@@ -72,7 +72,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     app.ShortDescription ?? Constants.ErrorString,
                     app.VendorCompanyName,
                     app.LicenseText ?? Constants.ErrorString,
-                    app.ThumbnailUrl ?? Constants.ErrorString,
+                    app.LeadPictureId,
                     app.UseCaseNames));
 
     /// <inheritdoc/>
@@ -84,7 +84,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     x.SubscriptionId,
                     x.OfferName ?? Constants.ErrorString,
                     x.SubscriptionUrl,
-                    x.ThumbnailUrl ?? Constants.ErrorString,
+                    x.LeadPictureId,
                     x.Provider));
 
     /// <inheritdoc/>
@@ -100,7 +100,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         return new AppDetailResponse(
             result.Id,
             result.Title ?? Constants.ErrorString,
-            result.LeadPictureUri ?? Constants.ErrorString,
+            result.LeadPictureId,
             result.DetailPictureUris,
             result.ProviderUri ?? Constants.ErrorString,
             result.Provider,
@@ -292,4 +292,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc />
     public Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data) => 
         _offerService.DeclineOfferAsync(appId, iamUserId, data, OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.AppOverviewAddress);
+    
+    /// <inheritdoc />
+    public Task DeactivateOfferbyAppIdAsync(Guid appId, string iamUserId) =>
+        _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
 }

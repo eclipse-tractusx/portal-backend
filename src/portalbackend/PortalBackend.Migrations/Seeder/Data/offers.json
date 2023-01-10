@@ -1,0 +1,53 @@
+[
+  {
+    "id": "9b957704-3505-4445-822c-d7ef80f27fcd",
+    "name": "Portal",
+    "date_created": "2022-03-24 18:01:33.388000 +00:00",
+    "date_released": "2022-03-24 18:01:33.388000 +00:00",
+    "thumbnail_url": null,
+    "marketing_url": null,
+    "contact_email": null,
+    "contact_number": "0000",
+    "provider": "Catena-X",
+    "provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "offer_status_id": 3,
+    "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
+    "offer_type_id": 2,
+    "last_editor_id": null
+  },
+  {
+    "id": "9ef01c20-6d9d-41ef-b336-fa64e1e2e4c2",
+    "name": "Registration",
+    "date_created": "2022-03-24 18:01:33.388000 +00:00",
+    "date_released": "2022-03-24 18:01:33.388000 +00:00",
+    "thumbnail_url": null,
+    "marketing_url": null,
+    "contact_email": null,
+    "contact_number": "0000",
+    "provider": "Catena-X",
+    "provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "offer_status_id": 3,
+    "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
+    "offer_type_id": 2,
+    "last_editor_id": null
+  },
+  {
+    "id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "name": "Technical User Management",
+    "date_created": "2022-03-24 18:01:33.388000 +00:00",
+    "date_released": "2022-03-24 18:01:33.388000 +00:00",
+    "thumbnail_url": null,
+    "marketing_url": null,
+    "contact_email": null,
+    "contact_number": "0000",
+    "provider": "Catena-X",
+    "provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "offer_status_id": 3,
+    "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
+    "offer_type_id": 2,
+    "last_editor_id": null
+  }
+]
