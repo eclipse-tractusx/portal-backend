@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Net;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
@@ -36,6 +37,7 @@ public class ChecklistServiceTests
     private static readonly Guid IdWithoutBpn = new ("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
     private static readonly Guid IdWithBpn = new ("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
     private static readonly Guid IdWithFailingCustodian = new ("bda6d1b5-042e-493a-894c-11f3a89c12b1");
+    private static readonly Guid IdWithCustodianUnavailable = new ("beaa6de5-d411-4da8-850e-06047d3170be");
     private static readonly Guid NotExistingApplicationId = new ("1942e8d3-b545-4fbc-842c-01a694f84390");
     private static readonly Guid ActiveApplicationCompanyId = new("66c765dd-872d-46e0-aac1-f79330b55406");
     private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
@@ -348,6 +350,26 @@ public class ChecklistServiceTests
     }
 
     [Fact]
+    public async Task CreateWalletAsync_WithCustodianUnavailable_EntryIsUpdatedCorrectly()
+    {
+        // Arrange
+        var entry = new ApplicationChecklistEntry(IdWithFailingCustodian, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        SetupForCreateWallet(entry);
+
+        // Act
+        var result = await _service.CreateWalletAsync(IdWithCustodianUnavailable, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _custodianService.CreateWalletAsync("custodiaNotAvailable", "a company", A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(IdWithCustodianUnavailable, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, A<Action<ApplicationChecklistEntry>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        entry.Comment.Should().Contain("Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.ServiceException: Failed");
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.TO_DO);
+        result.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task CreateWalletAsync_WithFailingCustodianCall_EntryIsUpdatedCorrectly()
     {
         // Arrange
@@ -624,13 +646,18 @@ public class ChecklistServiceTests
             .ReturnsLazily(() => new ValueTuple<Guid, string, string?, string>(CompanyId, ValidCompanyName, ValidBpn, "DE"));
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(IdWithFailingCustodian))
             .ReturnsLazily(() => new ValueTuple<Guid, string, string?, string>(Guid.NewGuid(), "a company", "bpnNotValidForWallet", "DE"));
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(A<Guid>.That.Not.Matches(x => x == IdWithBpn || x == IdWithoutBpn || x == IdWithFailingCustodian)))
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(IdWithCustodianUnavailable))
+            .ReturnsLazily(() => new ValueTuple<Guid, string, string?, string>(Guid.NewGuid(), "a company", "custodiaNotAvailable", "DE"));
+        
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(A<Guid>.That.Not.Matches(x => x == IdWithBpn || x == IdWithoutBpn || x == IdWithFailingCustodian || x == IdWithCustodianUnavailable)))
             .ReturnsLazily(() => new ValueTuple<Guid, string, string?, string>());
 
         A.CallTo(() => _custodianService.CreateWalletAsync(ValidBpn, ValidCompanyName, CancellationToken.None))
             .ReturnsLazily(() => "It worked.");
-        A.CallTo(() => _custodianService.CreateWalletAsync(A<string>.That.Not.Matches(x => x == ValidBpn), A<string>._, CancellationToken.None))
+        A.CallTo(() => _custodianService.CreateWalletAsync(A<string>.That.Matches(x => x == "bpnNotValidForWallet"), A<string>._, CancellationToken.None))
             .Throws(new ServiceException("Failed"));
+        A.CallTo(() => _custodianService.CreateWalletAsync(A<string>.That.Matches(x => x == "custodiaNotAvailable"), A<string>._, CancellationToken.None))
+            .Throws(new ServiceException("Failed", HttpStatusCode.ServiceUnavailable));
     }
 
     private void SetupForUpdate(ApplicationChecklistEntry applicationChecklistEntry)

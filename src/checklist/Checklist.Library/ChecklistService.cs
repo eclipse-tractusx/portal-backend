@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Net;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
@@ -77,12 +78,11 @@ public class ChecklistService : IChecklistService
                 .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
                     checklist =>
                     {
-                        checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
+                        checklist.ApplicationChecklistEntryStatusId = ex.StatusCode != HttpStatusCode.ServiceUnavailable ? ApplicationChecklistEntryStatusId.FAILED : ApplicationChecklistEntryStatusId.TO_DO;
                         checklist.Comment = ex.ToString();
                     });
             createdWallet = false;
         }
-        
         
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return createdWallet;
