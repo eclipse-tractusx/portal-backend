@@ -40,7 +40,7 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
     }
 
     /// <inheritdoc />
-    public void CreateChecklistForApplication(Guid applicationId, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)> checklistEntries)
+    public void CreateChecklistForApplication(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> checklistEntries)
     {
         var entries = checklistEntries
             .Select(x => new ApplicationChecklistEntry(
@@ -52,30 +52,30 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
     }
 
     /// <inheritdoc />
-    public void AttachAndModifyApplicationChecklist(Guid applicationId, ChecklistEntryTypeId checklistTypeId, Action<ApplicationChecklistEntry> setFields)
+    public void AttachAndModifyApplicationChecklist(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistTypeId, Action<ApplicationChecklistEntry> setFields)
     {
-        var entity = new ApplicationChecklistEntry(applicationId, checklistTypeId, default, default);
+        var entity = new ApplicationChecklistEntry(applicationId, applicationChecklistTypeId, default, default);
         _portalDbContext.ApplicationChecklist.Attach(entity);
         entity.DateLastChanged = DateTimeOffset.UtcNow;
         setFields.Invoke(entity);
     }
 
     /// <inheritdoc />
-    public Task<Dictionary<ChecklistEntryTypeId, ChecklistEntryStatusId>> GetChecklistDataAsync(Guid applicationId) =>
+    public Task<Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>> GetChecklistDataAsync(Guid applicationId) =>
         _portalDbContext.ApplicationChecklist
             .Where(x => x.ApplicationId == applicationId)
-            .Select(x => new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(x.ChecklistEntryTypeId, x.StatusId))
+            .Select(x => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId))
             .ToDictionaryAsync(x => x.Item1, x => x.Item2);
 
     /// <param name="workerBatchSize"></param>
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid ApplicationId, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)> ChecklistEntries)> GetChecklistDataGroupedByApplicationId(int workerBatchSize) =>
+    public IAsyncEnumerable<(Guid ApplicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> ChecklistEntries)> GetChecklistDataGroupedByApplicationId(int workerBatchSize) =>
         _portalDbContext.ApplicationChecklist
             .GroupBy(x => x.ApplicationId)
             .Where(x => 
-                x.Any(e => e.StatusId == ChecklistEntryStatusId.TO_DO) &&
-                x.All(e => e.StatusId != ChecklistEntryStatusId.FAILED))
-            .Select(x => new ValueTuple<Guid, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)>>(x.Key, x.Select(e => new ValueTuple<ChecklistEntryTypeId, ChecklistEntryStatusId>(e.ChecklistEntryTypeId, e.StatusId))))
+                x.Any(e => e.ApplicationChecklistEntryStatusId == ApplicationChecklistEntryStatusId.TO_DO) &&
+                x.All(e => e.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.FAILED))
+            .Select(x => new ValueTuple<Guid, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>(x.Key, x.Select(e => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(e.ApplicationChecklistEntryTypeId, e.ApplicationChecklistEntryStatusId))))
             .Take(workerBatchSize)
             .ToAsyncEnumerable();
 }

@@ -144,11 +144,14 @@ public class CompanyRepository : ICompanyRepository
 
     /// <inheritdoc />
     public Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, string iamUserId) =>
-        _context.ProviderCompanyDetails
-            .Where(x => x.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
-            .Select(x => new ValueTuple<ProviderDetailReturnData,bool>(
-                new ProviderDetailReturnData(x.Id, x.CompanyId, x.AutoSetupUrl),
-                x.Company!.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId)))
+        _context.Companies
+            .Where(company => company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
+            .Select(company => new ValueTuple<ProviderDetailReturnData,bool>(
+                new ProviderDetailReturnData(
+                    company.ProviderCompanyDetail!.Id,
+                    company.Id,
+                    company.ProviderCompanyDetail.AutoSetupUrl),
+                company.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

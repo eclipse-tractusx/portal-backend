@@ -33,5 +33,5 @@ public interface IChecklistService
     /// <param name="applicationId">Id of the application to process the checklist</param>
     /// <param name="checklistEntries">The checklist entries to process</param>
     /// <param name="cancellationToken">Cancellation Token</param>
-    Task ProcessChecklist(Guid applicationId, IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)> checklistEntries, CancellationToken cancellationToken);
+    Task ProcessChecklist(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> checklistEntries, CancellationToken cancellationToken);
 }

@@ -18,8 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public record ServiceProviderDetailData(string Url);
-
-public record ProviderDetailReturnData(Guid? Id, Guid CompanyId, string? Url);
+public enum ApplicationChecklistEntryTypeId
+{
+    REGISTRATION_VERIFICATION = 1,
+    BUSINESS_PARTNER_NUMBER = 2,
+    IDENTITY_WALLET = 3,
+    CLEARING_HOUSE = 4,
+    SELF_DESCRIPTION_LP = 5
+}
