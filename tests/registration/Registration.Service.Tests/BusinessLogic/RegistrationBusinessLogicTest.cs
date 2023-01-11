@@ -1229,7 +1229,9 @@ public class RegistrationBusinessLogicTest
     }
 
     #endregion
-    
+
+    #region GetCompanyIdentifiers
+
     [Fact]
     public async Task GetCompanyIdentifiers_ReturnsExpectedOutput()
     {
@@ -1248,7 +1250,7 @@ public class RegistrationBusinessLogicTest
             null!,
             _portalRepositories);
         // Act
-        var result = await sut.GetCompanyIdentifiers("DE").ConfigureAwait(false);
+        var result = await sut.GetCompanyIdentifiers(_fixture.Create<string>()).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -1259,6 +1261,34 @@ public class RegistrationBusinessLogicTest
             Assert.IsType<UniqueIdentifierData?>(item);
         }
     }
+
+    [Fact]
+    public async Task GetCompanyIdentifiers_InvalidCountry_Throws()
+    {
+        // Arrange
+        A.CallTo(() => _staticDataRepository.GetCompanyIdentifiers(A<string>._))
+            .Returns(((IEnumerable<UniqueIdentifierId> IdentifierIds, bool IsValidCountry))default);
+ 
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories);
+
+        var countryCode = _fixture.Create<string>();
+
+        // Act
+        var Act = () => sut.GetCompanyIdentifiers(countryCode);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"invalid country code {countryCode}");
+    }
+
+    #endregion
 
     #region Setup  
 

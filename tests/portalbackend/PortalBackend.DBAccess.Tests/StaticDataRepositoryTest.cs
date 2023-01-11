@@ -31,7 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
 {
-     private readonly TestDbFixture _dbTestDbFixture;
+    private readonly TestDbFixture _dbTestDbFixture;
 
     public StaticDataRepositoryTest(TestDbFixture testDbFixture)
     {
@@ -43,9 +43,13 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
+    #region GetCompanyIdentifiers
+
     [Theory]
-    [InlineData("DE", new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER })]
-    public async Task GetCompanyIdentifiers_ReturnsExpectedResult(string countryCode, IEnumerable<UniqueIdentifierId> expectedIds)
+    [InlineData("DE", new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER }, true)]
+    [InlineData("PT", new UniqueIdentifierId[] {}, true)]
+    [InlineData("XY", null, false)]
+    public async Task GetCompanyIdentifiers_ReturnsExpectedResult(string countryCode, IEnumerable<UniqueIdentifierId>? expectedIds, bool validCountry)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
@@ -54,9 +58,22 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetCompanyIdentifiers(countryCode).ConfigureAwait(false);
 
         // Assert
-        result.IdentifierIds.Should().HaveSameCount(expectedIds);
-        result.IdentifierIds.OrderBy(item => item).Should().ContainInOrder(expectedIds.OrderBy(item => item));
+        result.IsValidCountryCode.Should().Be(validCountry);
+        if (result.IsValidCountryCode)
+        {
+            result.IdentifierIds.Should().NotBeNull();
+            result.IdentifierIds.Should().HaveSameCount(expectedIds);
+            result.IdentifierIds.OrderBy(item => item).Should().ContainInOrder(expectedIds?.OrderBy(item => item));
+        }
+        else
+        {
+            result.IdentifierIds.Should().BeNull();
+        }
     }
+
+    #endregion
+
+    #region setup
 
     private async Task<StaticDataRepository> CreateSut()
     {
@@ -65,4 +82,5 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
         return sut;
     }
 
+    #endregion
 }

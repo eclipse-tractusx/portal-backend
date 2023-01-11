@@ -704,7 +704,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         
         if(!uniqueIdentifierData.IsValidCountryCode)
         {
-            throw new NotFoundException($"Country code does not exist");
+            throw new NotFoundException($"invalid country code {alpha2Code}");
         }
         return uniqueIdentifierData.IdentifierIds.Select(identifierId => new UniqueIdentifierData((int)identifierId, identifierId));
     }

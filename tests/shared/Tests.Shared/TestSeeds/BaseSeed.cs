@@ -374,7 +374,7 @@ public static class BaseSeed
             },
         });
 
-        dbContext.CountryAssignedIdentifier.AddRange(new List<CountryAssignedIdentifier>
+        dbContext.CountryAssignedIdentifier.AddRange(new CountryAssignedIdentifier[]
         {
             new ("DE", UniqueIdentifierId.COMMERCIAL_REG_NUMBER)
         });
