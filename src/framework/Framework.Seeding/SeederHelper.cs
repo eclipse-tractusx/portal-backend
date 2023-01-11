@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -37,18 +38,26 @@ public static class SeederHelper
             throw new ConflictException($"No location found for assembly {Assembly.GetExecutingAssembly()}");
         }
 
-        var data = new List<T>();
-        data.AddRange(await GetDataFromFile<T>(logger, fileName, location, cancellationToken).ConfigureAwait(false));
+        var data = new ConcurrentBag<T>();
+        foreach (var entry in await GetDataFromFile<T>(logger, fileName, location, cancellationToken)
+                     .ConfigureAwait(false))
+        {
+            data.Add(entry);
+        }
+
         ParallelOptions parallelOptions = new()
         {
             MaxDegreeOfParallelism = 3
         };
         await Parallel.ForEachAsync(additionalEnvironments, parallelOptions, async (env, ct) =>
         {
-            data.AddRange(await GetDataFromFile<T>(logger, fileName, location, ct, env));
+            foreach (var entry in await GetDataFromFile<T>(logger, fileName, location, ct, env).ConfigureAwait(false))
+            {
+                data.Add(entry);
+            }
         }).ConfigureAwait(false);
 
-        return data;
+        return data.ToList();
     }
 
     private static async Task<List<T>> GetDataFromFile<T>(ILogger logger, string fileName, string location, CancellationToken cancellationToken, string? env = null) where T : class

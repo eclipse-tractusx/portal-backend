@@ -79,25 +79,13 @@
   },
   {
     "id": "607818be-4978-41f4-bf63-fa8d2de51155",
-    "user_role": "Digital Twin Management",
-    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
-  },
-  {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51156",
-    "user_role": "Semantic Model Management",
+    "user_role": "Connector User",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   },
   {
     "id": "607818be-4978-41f4-bf63-fa8d2de51157",
-    "user_role": "Wallet Management",
-    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
-  },
-  {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51164",
-    "user_role": "DAPS Certificate Management",
+    "user_role": "Identity Wallet Management",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   },
@@ -122,6 +110,12 @@
   {
     "id": "607818be-4978-41f4-bf63-fa8d2de51168",
     "user_role": "Service Management",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51169",
+    "user_role": "App Tech User",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   }

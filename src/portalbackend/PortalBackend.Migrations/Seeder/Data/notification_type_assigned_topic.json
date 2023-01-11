@@ -1,0 +1,82 @@
+[
+  {
+    "notification_type_id": 1,
+    "notification_topic_id": 1
+  },
+  {
+    "notification_type_id": 2,
+    "notification_topic_id": 2
+  },
+  {
+    "notification_type_id": 3,
+    "notification_topic_id": 1
+  },
+  {
+    "notification_type_id": 4,
+    "notification_topic_id": 1
+  },
+  {
+    "notification_type_id": 5,
+    "notification_topic_id": 1
+  },
+  {
+    "notification_type_id": 6,
+    "notification_topic_id": 1
+  },
+  {
+    "notification_type_id": 7,
+    "notification_topic_id": 1
+  },
+  {
+    "notification_type_id": 8,
+    "notification_topic_id": 2
+  },
+  {
+    "notification_type_id": 9,
+    "notification_topic_id": 3
+  },
+  {
+    "notification_type_id": 10,
+    "notification_topic_id": 1
+  },
+  {
+    "notification_type_id": 11,
+    "notification_topic_id": 3
+  },
+  {
+    "notification_type_id": 12,
+    "notification_topic_id": 1
+  },
+  {
+    "notification_type_id": 13,
+    "notification_topic_id": 2
+  },
+  {
+    "notification_type_id": 14,
+    "notification_topic_id": 3
+  },
+  {
+    "notification_type_id": 16,
+    "notification_topic_id": 3
+  },
+  {
+    "notification_type_id": 15,
+    "notification_topic_id": 3
+  },
+  {
+    "notification_type_id": 17,
+    "notification_topic_id": 3
+  },
+  {
+    "notification_type_id": 18,
+    "notification_topic_id": 3
+  },
+  {
+    "notification_type_id": 19,
+    "notification_topic_id": 3
+  },
+  {
+    "notification_type_id": 20,
+    "notification_topic_id": 3
+  }
+]

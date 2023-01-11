@@ -130,16 +130,6 @@
     "description": "Add, Change and Delete own Digital Twins"
   },
   {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51156",
-    "language_short_name": "de",
-    "description": "Hinzufügen, Ändern und Löschen von Semantic Models"
-  },
-  {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51156",
-    "language_short_name": "en",
-    "description": "Add, Change and Delete Semnatic Models"
-  },
-  {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51157",
     "language_short_name": "de",
     "description": "Anzeigen und Ändern des Unternehmens-Wallets"
@@ -148,16 +138,6 @@
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51157",
     "language_short_name": "en",
     "description": "View and modify own company wallet"
-  },
-  {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51164",
-    "language_short_name": "de",
-    "description": "Erstellen von DAPS Zertifikaten"
-  },
-  {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51164",
-    "language_short_name": "en",
-    "description": "Enables Service Providers to create DAPS certificates"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51165",
@@ -178,5 +158,15 @@
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51168",
     "language_short_name": "en",
     "description": "Service Management for Service Providers"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51169",
+    "language_short_name": "de",
+    "description": "App user profile for technical users of apps registered in the cx dataspace."
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51169",
+    "language_short_name": "en",
+    "description": "App user profile for technical users of apps registered in the cx dataspace."
   }
 ]

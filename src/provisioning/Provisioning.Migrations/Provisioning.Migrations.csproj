@@ -21,7 +21,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Provisioning.Migrations.Migrations</AssemblyName>
+    <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Provisioning.Migrations</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
