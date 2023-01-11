@@ -1123,7 +1123,7 @@ public class OfferServiceTests
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
             .Returns(roleIds.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>._, A<Guid>._))
-            .Returns(new[] {"test@email.com"}.ToAsyncEnumerable());
+            .Returns(new (string Email, string? Firstname, string? Lastname)[] {new ("test@email.com", "Test User 1", "cx-user-2")}.ToAsyncEnumerable());
         var sut = new OfferService(_portalRepositories, null!, null!, _notificationService, _mailingService);
 
         // Act
@@ -1362,8 +1362,7 @@ public class OfferServiceTests
         A.CallTo(() => _provisioningManager.SetupClientAsync(A<string>._, A<IEnumerable<string>?>._))
             .ReturnsLazily(() => "cl1");
         
-        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<string>._, A<string>._,
-                A<IamClientAuthMethod>._, A<IEnumerable<Guid>>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Any(y => y == "CAXSDUMMYCATENAZZ"))))
+        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Any(y => y == "CAXSDUMMYCATENAZZ")), CompanyServiceAccountTypeId.MANAGED, A<Action<CompanyServiceAccount>?>._))
             .ReturnsLazily(() => new ValueTuple<string, ServiceAccountData, Guid, List<UserRoleData>>(
                     "sa2", 
                     new ServiceAccountData(Guid.NewGuid().ToString(), "cl1", new ClientAuthData(IamClientAuthMethod.SECRET)

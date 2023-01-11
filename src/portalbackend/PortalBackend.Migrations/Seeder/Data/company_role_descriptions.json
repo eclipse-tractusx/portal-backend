@@ -1,0 +1,42 @@
+[
+  {
+    "company_role_id": 1,
+    "language_short_name": "de",
+    "description": "Der Netzwerkteilnehmer deckt die Rollen Datenanbieter-, Datenkonsumenten- und App-Benutzer ab. Als Teilnehmer sind Sie ein aktives Mitglied des Netzwerks mit allen Diensten, um als Mitwirkender und Benutzer teilzunehmen."
+  },
+  {
+    "company_role_id": 1,
+    "language_short_name": "en",
+    "description": "The participant role is covering the data provider, data consumer or app user scenario. As participant you are an active member of the network with enabled services to particiapte as contributer and user."
+  },
+  {
+    "company_role_id": 2,
+    "language_short_name": "de",
+    "description": "Als App-Anbieter können Anwednungen über den CX-Marktplatz angeboten werden. Als App-Anbieter können außerdem am Developer Hub teilnehmen, Anwendungen im Netzwerk anbieten und diese verwalten."
+  },
+  {
+    "company_role_id": 2,
+    "language_short_name": "en",
+    "description": "The App Provider is a company which is providing application software via the CX marketplace. As app provider you can participate and use the developer hub, release and offer applications to the network and manage your applications."
+  },
+  {
+    "company_role_id": 3,
+    "language_short_name": "de",
+    "description": "Als Service Anbieter können 3rd Party angebote - wie z.b. Dataspace Services, EDCs und ähnliches im Netzwerk angeboten werden."
+  },
+  {
+    "company_role_id": 3,
+    "language_short_name": "en",
+    "description": "The Service Provider is able to offer 3rd party services, such as dataspace service offerings to CX Members. CX members can subscribe for those services."
+  },
+  {
+    "company_role_id": 4,
+    "language_short_name": "de",
+    "description": "Betreiber"
+  },
+  {
+    "company_role_id": 4,
+    "language_short_name": "en",
+    "description": "Operator"
+  }
+]
