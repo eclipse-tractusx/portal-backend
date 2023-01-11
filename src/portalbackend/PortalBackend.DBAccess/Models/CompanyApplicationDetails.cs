@@ -37,18 +37,25 @@ public class CompanyApplicationDetails
 
     [JsonPropertyName("applicationId")]
     public Guid ApplicationId { get; set; }
+    
     [JsonPropertyName("applicationStatus")]
     public CompanyApplicationStatusId CompanyApplicationStatusId { get; set; }
+    
     [JsonPropertyName("dateCreated")]
     public DateTimeOffset DateCreated { get; set; }
+    
     [JsonPropertyName("companyName")]
     public string CompanyName { get; set; }
+    
     [JsonPropertyName("email")]
     public string? Email { get; set; }
+    
     [JsonPropertyName("bpn")]
     public string? BusinessPartnerNumber { get; set; }
+    
     [JsonPropertyName("documents")]
     public IEnumerable<DocumentDetails> Documents { get; set; }
+    
     [JsonPropertyName("companyRoles")]
     public IEnumerable<CompanyRoleId> CompanyRoles { get; set; }
 }
