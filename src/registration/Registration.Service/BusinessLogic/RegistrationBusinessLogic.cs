@@ -675,14 +675,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         var uniqueIdentifierData = await _portalRepositories.GetInstance<IStaticDataRepository>().GetCompanyIdentifiers(alpha2Code).ConfigureAwait(false);
         
-        if(!uniqueIdentifierData.IsCountryCodeExist)
+        if(!uniqueIdentifierData.IsValidCountryCode)
         {
-            throw new NotFoundException($"Unique Ids for requested country not found");
+            throw new NotFoundException($"Country code does not exist");
         }
-        if(!uniqueIdentifierData.IdentifierData.Select(x=>x.Id).Any())
-        {
-            return Enumerable.Empty<UniqueIdentifierData>();
-        }
-        return uniqueIdentifierData.IdentifierData;
+        return uniqueIdentifierData.IdentifierIds.Select(identifierId => new UniqueIdentifierData((int)identifierId, identifierId));
     }
 }

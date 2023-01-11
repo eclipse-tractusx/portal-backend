@@ -18,18 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-using System.Net;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
 {
@@ -116,7 +115,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
             var (fileName, content) = await this.WithIamUserId(user => _registrationBusinessLogic.GetDocumentContentAsync(documentId, user));
             return File(content, "application/pdf", fileName);
         }
-        
+
         /// <summary>
         /// Gets documents for a specific document type and application
         /// </summary>
@@ -146,7 +145,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(List<string>), (int)HttpStatusCode.OK)]
         public IAsyncEnumerable<string> GetClientRolesComposite() =>
             _registrationBusinessLogic.GetClientRolesCompositeAsync();
-            
+
         /// <summary>
         /// Gets the applications with each status
         /// </summary>
@@ -372,7 +371,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(IAsyncEnumerable<CompanyRolesDetails>), StatusCodes.Status200OK)]
         public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync([FromQuery] string? languageShortName = null) =>
             _registrationBusinessLogic.GetCompanyRoles(languageShortName);
-        
+
         /// <summary>
         /// Deletes the document with the given id
         /// </summary>
@@ -395,7 +394,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
             await this.WithIamUserId(iamUserId => _registrationBusinessLogic.DeleteRegistrationDocumentAsync(documentId, iamUserId));
             return NoContent();
         }
-        
+
         /// <summary>
         ///  Gets the company Identifier for Country Alpha2Code
         /// </summary>
@@ -411,6 +410,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public  Task<IEnumerable<UniqueIdentifierData>> GetCompanyIdentifiers([FromRoute] string alpha2Code) =>
             _registrationBusinessLogic.GetCompanyIdentifiers(alpha2Code);
-        
     }
 }

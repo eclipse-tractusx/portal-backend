@@ -1236,7 +1236,7 @@ public class RegistrationBusinessLogicTest
     public async Task GetCompanyIdentifiers_ReturnsExpectedOutput()
     {
         // Arrange
-        var uniqueIdentifierData = _fixture.CreateMany<UniqueIdentifierData>();
+        var uniqueIdentifierData = _fixture.CreateMany<UniqueIdentifierId>();
 
         A.CallTo(() => _staticDataRepository.GetCompanyIdentifiers(A<string>._))
             .Returns((uniqueIdentifierData,true));

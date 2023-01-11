@@ -90,7 +90,7 @@ public static class BaseSeed
                 CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")
             }
         });
-        
+
         dbContext.ProviderCompanyDetails.AddRange(new List<ProviderCompanyDetail>
         {
             new(new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), "https://www.test-service.com", DateTimeOffset.UtcNow)
@@ -211,18 +211,18 @@ public static class BaseSeed
         {
             new(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("06b243a4-ba51-4bf3-bc40-5d79a2231b90"))
         });
-        
+
         dbContext.ServiceAssignedServiceTypes.AddRange(new List<ServiceAssignedServiceType>
         {
             new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.CONSULTANCE_SERVICE)
         });
-        
+
         dbContext.OfferAssignedDocuments.AddRange(new List<OfferAssignedDocument>
         {
             new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("7fc2fb78-8dc2-4f5f-b1d1-91c9c2f4506f")),
             new (new Guid("99c5fd12-8085-4de2-abfd-215e1ee4baa4"), new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"))
         });
-        
+
         dbContext.UserRoles.AddRange(new List<UserRole>
         {
             new (new Guid("58f897ec-0aad-4588-8ffa-5f45d6638633"), "CX User", new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")),
@@ -240,7 +240,7 @@ public static class BaseSeed
             new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992"), new Guid("7410693c-c893-409e-852f-9ee886ce94a6")),
             new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058019993"), new Guid("607818be-4978-41f4-bf63-fa8d2de51154"))
         });
-        
+
         dbContext.Agreements.AddRange(new List<Agreement>
         {
             new(new Guid("f6d3148b-2e2b-4688-a382-326d4232ee6e"), AgreementCategoryId.CX_FRAME_CONTRACT, "CatenaX Base Frame Agreement", DateTimeOffset.UtcNow)
@@ -280,7 +280,7 @@ public static class BaseSeed
             new (new Guid("ac1cf001-7fbc-1f2f-817f-bce058019952"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")),
             new (new Guid("979a29b1-40c2-4169-979c-43c3156dbf64"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"))
         });
-        
+
         dbContext.AgreementAssignedDocuments.AddRange(new List<AgreementAssignedDocument>
         {
             new (new Guid("f6d3148b-2e2b-4688-a382-326d4232ee6e"), new Guid("7fc2fb78-8dc2-4f5f-b1d1-91c9c2f4506f")),
@@ -295,7 +295,7 @@ public static class BaseSeed
             new (new Guid("34782A2E-7B54-4E78-85BA-419AF534837F"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.INFO, true),
             new (new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), DateTimeOffset.UtcNow, NotificationTypeId.INFO, false),
         });
-        
+
         dbContext.Connectors.AddRange(new List<Connector>
         {
             new(new Guid("5aea3711-cc54-47b4-b7eb-ba9f3bf1cb15"), "Tes One", "DE", "https://api.tes-one.com")
@@ -311,14 +311,13 @@ public static class BaseSeed
                 ProviderId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
                 HostId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
                 TypeId = ConnectorTypeId.CONNECTOR_AS_A_SERVICE,
-                StatusId =ConnectorStatusId.PENDING,
+                StatusId = ConnectorStatusId.PENDING,
             },
         });
 
         dbContext.CountryAssignedIdentifier.AddRange(new List<CountryAssignedIdentifier>
         {
-            new ("DE",UniqueIdentifierId.COMMERCIAL_REG_NUMBER)
-    
+            new ("DE", UniqueIdentifierId.COMMERCIAL_REG_NUMBER)
         });
     };
 }
