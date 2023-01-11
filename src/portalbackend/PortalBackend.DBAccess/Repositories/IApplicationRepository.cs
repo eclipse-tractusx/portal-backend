@@ -43,5 +43,5 @@ public interface IApplicationRepository
     IAsyncEnumerable<WelcomeEmailData> GetRegistrationDeclineEmailDataUntrackedAsync(Guid applicationId, IEnumerable<Guid> roleIds);
     IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null);
     Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAdressUntrackedAsync(Guid companyApplicationId);
-    Task<string?> GetBpnForApplicationIdAsync(Guid applicationId);
+    Task<(string? Bpn, bool ChecklistAlreadyExists)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId);
 }

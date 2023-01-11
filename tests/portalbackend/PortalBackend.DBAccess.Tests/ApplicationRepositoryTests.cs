@@ -53,10 +53,11 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var bpn = await sut.GetBpnForApplicationIdAsync(ApplicationId).ConfigureAwait(false);
+        var (bpn, alreadyExists) = await sut.GetBpnAndChecklistCheckForApplicationIdAsync(ApplicationId).ConfigureAwait(false);
 
         // Assert
         bpn.Should().Be("CAXSDUMMYCATENAZZ");
+        alreadyExists.Should().BeFalse();
     }
 
     #endregion

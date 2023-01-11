@@ -28,6 +28,7 @@ public class ChecklistCreationServiceTests
 {
     private static readonly Guid ApplicationWithoutBpnId = new ("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
     private static readonly Guid ApplicationWithBpnId = new ("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
+    private static readonly Guid ApplicationWithChecklist = new ("e100db0b-9ccd-4020-971c-7e05c0ef5780");
     private readonly IPortalRepositories _portalRepositories;
     private readonly IApplicationRepository _applicationRepository;
     private readonly IApplicationChecklistRepository _applicationChecklistRepository;
@@ -87,14 +88,31 @@ public class ChecklistCreationServiceTests
             .MustHaveHappenedOnceExactly();
     }
 
+    [Fact]
+    public async Task CreateInitialChecklistAsync_WithoutAlreadyExistingChecklist_DoesntCreateAgain()
+    {
+        // Arrange
+        SetupFakesForCreate();
+        
+        // Act
+        await _service.CreateInitialChecklistAsync(ApplicationWithChecklist).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
+                ApplicationWithoutBpnId,
+                A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>._))
+            .MustNotHaveHappened();
+    }
+
     #endregion
     
     #region Setup
 
     private void SetupFakesForCreate()
     {
-        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(ApplicationWithBpnId)).ReturnsLazily(() => "testbpn");
-        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(ApplicationWithoutBpnId)).ReturnsLazily(() => (string?)null);
+        A.CallTo(() => _applicationRepository.GetBpnAndChecklistCheckForApplicationIdAsync(ApplicationWithBpnId)).ReturnsLazily(() => new ValueTuple<string?, bool>("testbpn", false));
+        A.CallTo(() => _applicationRepository.GetBpnAndChecklistCheckForApplicationIdAsync(ApplicationWithoutBpnId)).ReturnsLazily(() => new ValueTuple<string?, bool>(null, false));
+        A.CallTo(() => _applicationRepository.GetBpnAndChecklistCheckForApplicationIdAsync(ApplicationWithChecklist)).ReturnsLazily(() => new ValueTuple<string?, bool>("123", true));
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_applicationChecklistRepository);

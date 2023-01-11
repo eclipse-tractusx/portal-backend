@@ -249,10 +249,10 @@ public class ApplicationRepository : IApplicationRepository
             .SingleOrDefaultAsync();
 
      /// <inheritdoc />
-     public Task<string?> GetBpnForApplicationIdAsync(Guid applicationId) => 
+     public Task<(string? Bpn, bool ChecklistAlreadyExists)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId) => 
          _dbContext.CompanyApplications
              .AsNoTracking()
              .Where(a => a.Id == applicationId)
-             .Select(x => x.Company!.BusinessPartnerNumber)
+             .Select(x => new ValueTuple<string?, bool>(x.Company!.BusinessPartnerNumber, x.ApplicationChecklist.Any()))
              .SingleOrDefaultAsync();
 }
