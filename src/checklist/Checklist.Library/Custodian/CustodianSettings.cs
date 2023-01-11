@@ -61,5 +61,3 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian
         public string BaseAdress { get; set; }
     }
 }
-
-

@@ -32,6 +32,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 public class ApplicationRepositoryTest : IAssemblyFixture<TestDbFixture>
 {
+
+    private static readonly Guid ApplicationWithBpn = new("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
+    private static readonly Guid ApplicationWithoutBpn = new("1b86d973-3aac-4dcd-a9e9-0c222766202b");
     private readonly TestDbFixture _dbTestDbFixture;
 
     public ApplicationRepositoryTest(TestDbFixture testDbFixture)
@@ -48,7 +51,7 @@ public class ApplicationRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetCompanyUserRoleWithAdressUntrackedAsync_WithExistingEntry_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
         var results = await sut
@@ -64,10 +67,49 @@ public class ApplicationRepositoryTest : IAssemblyFixture<TestDbFixture>
         results.InvitedCompanyUserData.Should().ContainSingle(u => u.FirstName == "Test User 2" && u.LastName == "cx-admin-2" && u.Email == "tester.user2@test.de");
     }
 
-    private async Task<(ApplicationRepository, PortalDbContext)> CreateSut()
+    [Fact]
+    public async Task GetBpnForApplicationIdAsync_WithValidApplicationId_ReturnsBpn()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var bpn = await sut.GetBpnForApplicationIdAsync(ApplicationWithBpn).ConfigureAwait(false);
+        
+        // Assert
+        bpn.Should().Be("CAXSDUMMYCATENAZZ");
+    }
+
+    [Fact]
+    public async Task GetBpnForApplicationIdAsync_WithNotExistingApplicationId_ReturnsNull()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var bpn = await sut.GetBpnForApplicationIdAsync(Guid.NewGuid()).ConfigureAwait(false);
+        
+        // Assert
+        bpn.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetBpnForApplicationIdAsync_WithApplicationIdWithoutBpn_ReturnsNull()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var bpn = await sut.GetBpnForApplicationIdAsync(ApplicationWithoutBpn).ConfigureAwait(false);
+        
+        // Assert
+        bpn.Should().BeNull();
+    }
+
+    private async Task<ApplicationRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new ApplicationRepository(context);
-        return (sut, context);
+        return sut;
     }
 }

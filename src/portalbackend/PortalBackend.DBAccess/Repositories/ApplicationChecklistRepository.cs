@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections;
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -67,15 +66,14 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
             .Select(x => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId))
             .ToDictionaryAsync(x => x.Item1, x => x.Item2);
 
-    /// <param name="workerBatchSize"></param>
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid ApplicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> ChecklistEntries)> GetChecklistDataGroupedByApplicationId(int workerBatchSize) =>
+    public IAsyncEnumerable<(Guid ApplicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> ChecklistEntries)> GetChecklistDataGroupedByApplicationId(int itemCount) =>
         _portalDbContext.ApplicationChecklist
             .GroupBy(x => x.ApplicationId)
             .Where(x => 
                 x.Any(e => e.ApplicationChecklistEntryStatusId == ApplicationChecklistEntryStatusId.TO_DO) &&
                 x.All(e => e.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.FAILED))
             .Select(x => new ValueTuple<Guid, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>(x.Key, x.Select(e => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(e.ApplicationChecklistEntryTypeId, e.ApplicationChecklistEntryStatusId))))
-            .Take(workerBatchSize)
+            .Take(itemCount)
             .ToAsyncEnumerable();
 }

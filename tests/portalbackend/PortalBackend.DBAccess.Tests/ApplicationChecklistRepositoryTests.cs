@@ -35,9 +35,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
-    
-    private readonly static Guid ApplicationId = new("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
-    private readonly static Guid ApplicationWithExistingChecklistId = new("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
+
+    private static readonly Guid ApplicationId = new("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
+    private static readonly Guid ApplicationWithExistingChecklistId = new("1b86d973-3aac-4dcd-a9e9-0c222766202b");
 
     public ApplicationChecklistRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -63,7 +63,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
             new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS),
             new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO),
         };
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
 
         // Act
         sut.CreateChecklistForApplication(ApplicationId, checklistEntries);
@@ -91,7 +91,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
     public async Task AttachAndModifyApplicationChecklist_UpdatesEntry()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
 
         // Act
         sut.AttachAndModifyApplicationChecklist(ApplicationWithExistingChecklistId, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
@@ -117,10 +117,67 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
 
     #endregion
     
-    private async Task<(ApplicationChecklistRepository, PortalDbContext)> CreateSut()
+    #region GetChecklistDataAsync
+
+    [Fact]
+    public async Task GetChecklistDataAsync_WithValidApplicationId_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var checklistData = await sut.GetChecklistDataAsync(ApplicationWithExistingChecklistId).ConfigureAwait(false);
+
+        // Assert
+        checklistData.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetChecklistDataAsync_WithNotExistingApplicationId_ReturnsEmptyDictionary()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var checklistData = await sut.GetChecklistDataAsync(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        checklistData.Should().HaveCount(0);
+    }
+
+    #endregion
+
+    #region GetChecklistDataGroupedByApplicationId 
+
+    [Fact]
+    public async Task GetChecklistDataGroupedByApplicationId_WithValidApplicationId_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var checklistData = await sut.GetChecklistDataGroupedByApplicationId(5).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        checklistData.Should().HaveCount(1);
+        var data = checklistData.First();
+        data.ApplicationId.Should().Be(ApplicationWithExistingChecklistId);
+        data.ChecklistEntries.Should().HaveCount(5);
+    }
+
+    #endregion
+
+    private async Task<(ApplicationChecklistRepository, PortalDbContext)> CreateSutWithContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new ApplicationChecklistRepository(context);
         return (sut, context);
+    }
+    
+    private async Task<ApplicationChecklistRepository> CreateSut()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var sut = new ApplicationChecklistRepository(context);
+        return sut;
     }
 }

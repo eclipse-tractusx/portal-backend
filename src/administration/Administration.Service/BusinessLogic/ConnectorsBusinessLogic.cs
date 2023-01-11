@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -28,7 +29,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Microsoft.Extensions.Options;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
