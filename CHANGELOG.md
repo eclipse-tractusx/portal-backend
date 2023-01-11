@@ -8,22 +8,37 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 ## 1.0.0 RC-1
 
 ### Change
-* Change: Service Provider Detail Endpoints - ID deleted from path url; information fetched from user token
-* Change: GET company application filters enabled
-* Change: App LeadPicture (GET /api/apps/{appId} & GET /api/apps/appreleaseprocess/{appId}/appStatus) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* Service Provider Detail Endpoints - ID deleted from path url; information fetched from user token
+* GET company application filters enabled
+* App LeadPicture (GET /api/apps/{appId} & GET /api/apps/appreleaseprocess/{appId}/appStatus) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* App LeadImage/Thumbnail URL got exchanged from a document name to an document id to be able to fetch the image from the portal.documents table
+
 
 ### Feature
 * App Service
   * enable filtering for app approval management function GET /inReview - (marketplace service; controller: appreleaseprocess)
   * app deactivation enpoint created to enable marketplace deactivations - (marketplace service; controller: apps)
+* Registration Service
+  * enhanced business logic of POST /submitregistration by locking application related documents
+* Administration Service
+  * enhanced endpoint for GET /registration/applications by adding applied company roles
+  * enhanced endpoint for GET /companyDetailswithAddress by adding applied company roles, agreement consent status and invited users
+* Service cutting features - Service Account creation logic got updated after db attribute enhancement (see technical support section) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * Administration Service POST /owncompany/serviceaccounts business logic updated to handle service_account_type and subscription_id
+  * Administration Service GET /owncompany/serviceaccounts business logic and response body updated to handle service_account_type, subscription_id and  offer_name
+  * Service Service POST/autosetup business logic updated to handle service_account_type and store subscription_id
 
 ### Technical Support
 * Migration: DB Seeding enabled with initital base image files for all db tables ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat). The DB seeding enables delta migrations.
 * DB tales for unique identifier handling of companies added (portal.unique_identifiers; portal.country_assigned_identifiers; portal.company_identifiers)
+* Db attribute enhancement for company_service_accounts ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
 * Remove migration dev history by merging migration files to set initial release 1.0.0 db migration
+* Remove companies.tax_id attribute from portal db, data load files & api response
+* Email image urls of static images changed to new repo
 
 ### Bugfix
 * Email template layout fixed for /nextsteps.html & /appprovider_subscription_request.html
+* Email parameter update for /declineappsubscription template
 * Registration service POST /application/{applicationId}/companyDetailsWithAddress address storing and overwrite logic fixed
 
 ## 0.10.0
