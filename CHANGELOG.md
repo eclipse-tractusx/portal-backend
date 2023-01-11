@@ -5,7 +5,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 ## Unreleased
 
 
-## 1.0.0 RC-1
+## 1.0.0-RC1
 
 ### Change
 * Service Provider Detail Endpoints - ID deleted from path url; information fetched from user token
@@ -17,7 +17,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 ### Feature
 * App Service
   * enable filtering for app approval management function GET /inReview - (marketplace service; controller: appreleaseprocess)
-  * app deactivation enpoint created to enable marketplace deactivations - (marketplace service; controller: apps)
+  * app deactivation endpoint created to enable marketplace deactivations - (marketplace service; controller: apps)
 * Registration Service
   * enhanced business logic of POST /submitregistration by locking application related documents
 * Administration Service
@@ -29,10 +29,10 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * Service Service POST/autosetup business logic updated to handle service_account_type and store subscription_id
 
 ### Technical Support
-* Migration: DB Seeding enabled with initital base image files for all db tables ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat). The DB seeding enables delta migrations.
-* DB tales for unique identifier handling of companies added (portal.unique_identifiers; portal.country_assigned_identifiers; portal.company_identifiers)
+* Migration: Data Seeding for db enabled with initial base data files for all db tables ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat) The data seeding enables delta data load
+* Db tables for unique identifier handling of companies added (portal.unique_identifiers; portal.country_assigned_identifiers; portal.company_identifiers)
 * Db attribute enhancement for company_service_accounts ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
-* Remove migration dev history by merging migration files to set initial release 1.0.0 db migration
+* Remove migration dev history by merging migration files to provide one initial release 1.0.0-RC1 db migration ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
 * Remove companies.tax_id attribute from portal db, data load files & api response
 * Email image urls of static images changed to new repo
 
