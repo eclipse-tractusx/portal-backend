@@ -18,17 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Net;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using System.Net;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Tests.Bpdm;
 
 public class BpdmServiceTests
 {
