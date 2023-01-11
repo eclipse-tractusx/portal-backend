@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
@@ -27,12 +28,18 @@ public record UserCreationInfo(
     [property:JsonPropertyName("userName")]
     string? userName,
 
+    [RegularExpression(@"^(([^<>()[\]\\.,;:\s@""]+(\.[^<>()[\]\\.,;:\s@""]+)*)|("".+""))@((\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\])|(([a-z0-9-]+\.)+[a-z]{2,}))$",
+     ErrorMessage = "Invalid email")]
     [property:JsonPropertyName("email")]
     string eMail,
 
+    [RegularExpression(@"^(([A-Za-zÀ-ÿ]{1,40}?([-,.'\s]?[A-Za-zÀ-ÿ]{1,40}?)){1,8})$",
+     ErrorMessage = "Invalid firstName")]
     [property:JsonPropertyName("firstName")]
     string? firstName,
 
+    [RegularExpression(@"^(([A-Za-zÀ-ÿ]{1,40}?([-,.'\s]?[A-Za-zÀ-ÿ]{1,40}?)){1,8})$",
+     ErrorMessage = "Invalid lastName")]
     [property:JsonPropertyName("lastName")]
     string? lastName,
 

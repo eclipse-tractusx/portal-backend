@@ -18,18 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record UserCreationInfoIdp(
 
+    [RegularExpression(@"^(([A-Za-zÀ-ÿ]{1,40}?([-,.'\s]?[A-Za-zÀ-ÿ]{1,40}?)){1,8})$",
+     ErrorMessage = "Invalid firstName")]
     [property: JsonPropertyName("firstName")]
     string FirstName,
     
+    [RegularExpression(@"^(([A-Za-zÀ-ÿ]{1,40}?([-,.'\s]?[A-Za-zÀ-ÿ]{1,40}?)){1,8})$",
+     ErrorMessage = "Invalid lastName")]    
     [property: JsonPropertyName("lastName")]
     string LastName,
 
+    [RegularExpression(@"^(([^<>()[\]\\.,;:\s@""]+(\.[^<>()[\]\\.,;:\s@""]+)*)|("".+""))@((\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\])|(([a-z0-9-]+\.)+[a-z]{2,}))$",
+     ErrorMessage = "Invalid email")]
     [property: JsonPropertyName("email")]
     string Email,
 
