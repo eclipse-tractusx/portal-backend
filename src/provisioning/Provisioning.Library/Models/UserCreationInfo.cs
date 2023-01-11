@@ -18,7 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
@@ -27,12 +29,15 @@ public record UserCreationInfo(
     [property:JsonPropertyName("userName")]
     string? userName,
 
+    [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email")]
     [property:JsonPropertyName("email")]
     string eMail,
 
+    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName")]
     [property:JsonPropertyName("firstName")]
     string? firstName,
 
+    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName")]
     [property:JsonPropertyName("lastName")]
     string? lastName,
 
