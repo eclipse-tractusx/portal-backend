@@ -1162,7 +1162,7 @@ public class RegistrationBusinessLogicTest
         // Act
         await sut.SubmitRegistrationAsync(applicationid, _iamUserId);
         // Arrange
-        A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._)).MustHaveHappened(2, Times.Exactly);
+        A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._)).MustHaveHappened(2, Times.Exactly);
     }
     
     [Fact]
