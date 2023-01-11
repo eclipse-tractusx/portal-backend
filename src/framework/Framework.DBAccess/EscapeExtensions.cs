@@ -18,20 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.RegularExpressions;
+
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 
 /// <summary>
-/// Filter operations for the CompanyApplicationStatus
+/// Provides constant values
 /// </summary>
-public enum CompanyApplicationStatusFilter
+public static class EscaperExtensions
 {
-    /// <summary>
-    /// Closed Status for the CompanyApplication
-    /// </summary>
-    Closed = 1,
+    private static Regex _iLikeExpression = new Regex(@"(?=[\%\\_])", RegexOptions.IgnorePatternWhitespace, TimeSpan.FromSeconds(1));
 
-    /// <summary>
-    /// InReview Status for the CompanyApplication
-    /// </summary>
-    InReview = 2
+    public static string EscapeForILike(this string value) => _iLikeExpression.Replace(value, @"\");
 }
