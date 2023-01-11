@@ -20,11 +20,10 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using FluentAssertions;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -43,18 +42,20 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
-    
-    [Fact]
-    public async Task GetCompanyIdentifiers_ReturnsExpectedResult()
+
+    [Theory]
+    [InlineData("DE", new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER })]
+    public async Task GetCompanyIdentifiers_ReturnsExpectedResult(string countryCode, IEnumerable<UniqueIdentifierId> expectedIds)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCompanyIdentifiers("DE").ConfigureAwait(false);
+        var result = await sut.GetCompanyIdentifiers(countryCode).ConfigureAwait(false);
 
         // Assert
-        result.IdentifierData.Select(x=>x.Id).FirstOrDefault().Should().Be((int)UniqueIdentifierId.COMMERCIAL_REG_NUMBER);
+        result.IdentifierIds.Should().HaveSameCount(expectedIds);
+        result.IdentifierIds.OrderBy(item => item).Should().ContainInOrder(expectedIds.OrderBy(item => item));
     }
 
     private async Task<StaticDataRepository> CreateSut()

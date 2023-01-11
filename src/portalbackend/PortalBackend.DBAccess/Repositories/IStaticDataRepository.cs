@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -44,5 +45,5 @@ public interface IStaticDataRepository
     /// </summary>
     /// <param name="alpha2Code"></param>
     /// <returns>Returns  enumerable of <see cref="UniqueIdentifierData"/> and IsCountryCodeExist</returns>
-    Task<(IEnumerable<UniqueIdentifierData> IdentifierData, bool IsCountryCodeExist)> GetCompanyIdentifiers(string alpha2Code);
+    Task<(IEnumerable<UniqueIdentifierId> IdentifierIds, bool IsValidCountryCode)> GetCompanyIdentifiers(string alpha2Code);
 }

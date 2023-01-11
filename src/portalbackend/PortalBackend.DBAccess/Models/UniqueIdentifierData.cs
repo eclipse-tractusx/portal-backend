@@ -17,7 +17,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
- 
+
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
@@ -26,4 +28,4 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="Id"></param>
 /// <param name="Label"></param>
 /// <returns></returns>
-public record UniqueIdentifierData(int Id, string Label);
+public record UniqueIdentifierData(int Id, UniqueIdentifierId Label);
