@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -36,16 +37,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models
 
         [JsonPropertyName("userName")]
         public string? userName { get; set; }        
-        [RegularExpression(@"^(([A-Za-zÀ-ÿ]{1,40}?([-,.'\s]?[A-Za-zÀ-ÿ]{1,40}?)){1,8})$",
-         ErrorMessage = "Invalid firstName")]
+        [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName")]
         [JsonPropertyName("firstName")]
         public string firstName { get; set; }
-        [RegularExpression(@"^(([A-Za-zÀ-ÿ]{1,40}?([-,.'\s]?[A-Za-zÀ-ÿ]{1,40}?)){1,8})$",
-         ErrorMessage = "Invalid lastName")]
+        [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName")]
         [JsonPropertyName("lastName")]
         public string lastName { get; set; }
-        [RegularExpression(@"^(([^<>()[\]\\.,;:\s@""]+(\.[^<>()[\]\\.,;:\s@""]+)*)|("".+""))@((\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\])|(([a-z0-9-]+\.)+[a-z]{2,}))$",
-         ErrorMessage = "Invalid email")]
+        [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email")]
         [JsonPropertyName("email")]
         public string email { get; set; }
         [JsonPropertyName("organisationName")]
