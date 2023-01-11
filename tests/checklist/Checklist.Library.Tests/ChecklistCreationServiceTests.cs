@@ -62,10 +62,10 @@ public class ChecklistCreationServiceTests
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
             ApplicationWithBpnId,
-            A<IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)>>
+            A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>
                 .That
                 .Matches(x => 
-                    x.Count(y => y.TypeId == ChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ChecklistEntryStatusId.DONE) == 1)))
+                    x.Count(y => y.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.DONE) == 1)))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -81,9 +81,9 @@ public class ChecklistCreationServiceTests
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
                 ApplicationWithoutBpnId,
-                A<IEnumerable<(ChecklistEntryTypeId TypeId, ChecklistEntryStatusId StatusId)>>
+                A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>
                     .That
-                    .Matches(x => x.All(y => y.StatusId == ChecklistEntryStatusId.TO_DO))))
+                    .Matches(x => x.All(y => y.StatusId == ApplicationChecklistEntryStatusId.TO_DO))))
             .MustHaveHappenedOnceExactly();
     }
 

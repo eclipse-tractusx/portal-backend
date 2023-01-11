@@ -18,8 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
-public record ServiceProviderDetailData(string Url);
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public record ProviderDetailReturnData(Guid? Id, Guid CompanyId, string? Url);
+public class ApplicationChecklistEntryStatus
+{
+    private ApplicationChecklistEntryStatus()
+    {
+        Label = null!;
+        ApplicationChecklistEntries = new HashSet<ApplicationChecklistEntry>();
+    }
+
+    public ApplicationChecklistEntryStatus(ApplicationChecklistEntryStatusId applicationChecklistEntryStatusId) : this()
+    {
+        Id = applicationChecklistEntryStatusId;
+        Label = applicationChecklistEntryStatusId.ToString();
+    }
+
+    public ApplicationChecklistEntryStatusId Id { get; private set; }
+
+    [MaxLength(255)]
+    public string Label { get; private set; }
+
+    // Navigation properties
+    public virtual ICollection<ApplicationChecklistEntry> ApplicationChecklistEntries { get; private set; }
+}

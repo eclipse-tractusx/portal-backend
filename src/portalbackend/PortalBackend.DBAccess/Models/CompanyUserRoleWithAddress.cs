@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
@@ -18,8 +18,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record ServiceProviderDetailData(string Url);
+public record CompanyUserRoleWithAddress(
+    Guid CompanyId,
+    string Name,
+    string? Shortname,
+    string? BusinessPartnerNumber,
+    string? City,
+    string? StreetName,
+    string? CountryAlpha2Code,
+    string? Region,
+    string? Streetadditional,
+    string? Streetnumber,
+    string? Zipcode,
+    string? CountryDe,
+    IEnumerable<AgreementsData> AgreementsData,
+    IEnumerable<InvitedCompanyUserData> InvitedCompanyUserData
+);
 
-public record ProviderDetailReturnData(Guid? Id, Guid CompanyId, string? Url);
+public record AgreementsData(CompanyRoleId CompanyRoleId, Guid AgreementId, ConsentStatusId? ConsentStatusId);
+
+public record InvitedCompanyUserData(Guid UserId, string? FirstName, string? LastName, string? Email);
