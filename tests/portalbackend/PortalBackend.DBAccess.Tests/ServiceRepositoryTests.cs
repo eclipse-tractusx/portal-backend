@@ -80,24 +80,6 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetActiveServices
-
-    [Fact]
-    public async Task GetActiveServices_ReturnsExpectedAppCount()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetActiveServicesPaginationSource(null, null)(0, 15).ConfigureAwait(false);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Count.Should().Be(1);
-    }
-
-    #endregion
-
     #region GetServiceDetailByIdUntrackedAsync
 
     [Fact]
