@@ -162,6 +162,10 @@ public static class BaseSeed
         {
             new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("6ca00fc6-4c82-47d8-8616-059ebe65232b"))
         });
+        dbContext.OfferDescriptions.AddRange(new OfferDescription[] {
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), "en", "some long Description", "some short Description"),
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), "de", "eine lange Beschreibung", "eine kurze Beschreibung"),
+        });
         dbContext.AppInstances.AddRange(AppInstanceData.AppInstances);
         dbContext.OfferSubscriptions.AddRange(new List<OfferSubscription>
         {
