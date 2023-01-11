@@ -74,10 +74,11 @@ public class ApplicationRepositoryTest : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
         
         // Act
-        var bpn = await sut.GetBpnForApplicationIdAsync(ApplicationWithBpn).ConfigureAwait(false);
+        var (bpn, alreadyExists) = await sut.GetBpnAndChecklistCheckForApplicationIdAsync(ApplicationWithBpn).ConfigureAwait(false);
         
         // Assert
         bpn.Should().Be("CAXSDUMMYCATENAZZ");
+        alreadyExists.Should().BeFalse();
     }
 
     [Fact]
@@ -87,10 +88,10 @@ public class ApplicationRepositoryTest : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
         
         // Act
-        var bpn = await sut.GetBpnForApplicationIdAsync(Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.GetBpnAndChecklistCheckForApplicationIdAsync(Guid.NewGuid()).ConfigureAwait(false);
         
         // Assert
-        bpn.Should().BeNull();
+        result.Should().Be(default);
     }
 
     [Fact]
@@ -100,10 +101,11 @@ public class ApplicationRepositoryTest : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
         
         // Act
-        var bpn = await sut.GetBpnForApplicationIdAsync(ApplicationWithoutBpn).ConfigureAwait(false);
+        var (bpn, alreadyExists) = await sut.GetBpnAndChecklistCheckForApplicationIdAsync(ApplicationWithoutBpn).ConfigureAwait(false);
         
         // Assert
         bpn.Should().BeNull();
+        alreadyExists.Should().BeTrue();
     }
 
     private async Task<ApplicationRepository> CreateSut()

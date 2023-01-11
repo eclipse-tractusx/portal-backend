@@ -36,13 +36,16 @@ public class ChecklistCreationService : IChecklistCreationService
     /// <inheritdoc />
     public async Task CreateInitialChecklistAsync(Guid applicationId)
     {
-        var bpn =  await _portalRepositories.GetInstance<IApplicationRepository>().GetBpnForApplicationIdAsync(applicationId).ConfigureAwait(false);
-        var checklistEntries = Enum.GetValues<ApplicationChecklistEntryTypeId>()
-            .Select(x => 
-                new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(x, GetChecklistStatus(x, bpn))
-            );
-        _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .CreateChecklistForApplication(applicationId, checklistEntries);
+        var (bpn, checklistAlreadyExists) = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpnAndChecklistCheckForApplicationIdAsync(applicationId).ConfigureAwait(false);
+        if (!checklistAlreadyExists)
+        {
+            var checklistEntries = Enum.GetValues<ApplicationChecklistEntryTypeId>()
+                .Select(x => 
+                    new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(x, GetChecklistStatus(x, bpn))
+                );
+            _portalRepositories.GetInstance<IApplicationChecklistRepository>()
+                .CreateChecklistForApplication(applicationId, checklistEntries);    
+        }
     }
 
     private static ApplicationChecklistEntryStatusId GetChecklistStatus(ApplicationChecklistEntryTypeId applicationChecklistEntryTypeId, string? bpn) =>
