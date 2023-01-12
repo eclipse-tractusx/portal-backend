@@ -18,23 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+using AutoFixture;
+using AutoFixture.Kernel;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
-public class OwnCompanyUserEditableDetails
+public static class IFixtureExtensions
 {
-    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
-    [JsonPropertyName("firstName")]
-    public string? FirstName { get; set; }
-
-    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
-    [JsonPropertyName("lastName")]
-    public string? LastName { get; set; }
-
-    [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
-    [JsonPropertyName("email")]
-    public string? Email { get; set; }
+    public static string CreateEmail(this IFixture fixture) => (string)new SpecimenContext(fixture).Resolve(new RegularExpressionRequest(@"^[a-z]{20}@[a-z]{10}\.[a-z]{2}$"));
+    public static string CreateName(this IFixture fixture) => (string)new SpecimenContext(fixture).Resolve(new RegularExpressionRequest(@"^[a-z]{20}$"));
 }

@@ -38,6 +38,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests.BusinessLogic;
@@ -748,6 +749,8 @@ public class RegistrationBusinessLogicTest
         SetupFakesForInvitation();
 
         var userCreationInfo = _fixture.Build<UserCreationInfoWithMessage>()
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
             .With(x => x.eMail, "")
             .Create();
 
