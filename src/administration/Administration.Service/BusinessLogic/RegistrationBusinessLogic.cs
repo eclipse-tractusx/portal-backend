@@ -134,7 +134,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                                 {
                                     DocumentTypeId = document.DocumentTypeId
                                 })),
-                        application.Company!.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId))
+                        application.Company!.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
+                        application.ApplicationChecklist.Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)))
                     {
                         Email = application.Invitations
                             .Select(invitation => invitation.CompanyUser)
