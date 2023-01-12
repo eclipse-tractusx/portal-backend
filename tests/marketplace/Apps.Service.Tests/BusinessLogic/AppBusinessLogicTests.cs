@@ -413,9 +413,6 @@ public class AppBusinessLogicTests
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
         var data = _fixture.Create<byte[]>();
-        //var appImageFileContent = _fixture.Build<AppImageFileContent>()
-                                 // .With(x=>x.Content,data)
-                                 // .Create();
         var settings = new AppsSettings
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
@@ -432,6 +429,54 @@ public class AppBusinessLogicTests
         // Assert
         result.Content.Should().BeSameAs(data);
         A.CallTo(() => _documentRepository.GetAppImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds)).MustHaveHappened();
+    }
+
+    [Fact]
+    public async Task GetAppImageDocumentContentAsync_WithInvalidDocumentTypeId_ThrowsArgumentException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var data = _fixture.Create<byte[]>();
+        var settings = new AppsSettings
+        {
+            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
+        };
+        A.CallTo(() => _documentRepository.GetAppImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds))
+            .Returns((false, data, true));
+
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(settings), A.Fake<MailingService>());
+
+        // Act
+        async Task Act() => await sut.GetAppImageDocumentContentAsync(appId, documentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"Document {documentId} can not get retrieved. Document type not supported.");
+    }
+
+    [Fact]
+    public async Task GetAppImageDocumentContentAsync_WithOfferNotLinkToDocument_ThrowsArgumentException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var data = _fixture.Create<byte[]>();
+        var settings = new AppsSettings
+        {
+            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
+        };
+        A.CallTo(() => _documentRepository.GetAppImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds))
+            .Returns((true, data, false));
+
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(settings), A.Fake<MailingService>());
+
+        // Act
+        async Task Act() => await sut.GetAppImageDocumentContentAsync(appId, documentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"Document {documentId} and app id {appId} do not match.");
     }
 
     private (CompanyUser, IamUser) CreateTestUserPair()
