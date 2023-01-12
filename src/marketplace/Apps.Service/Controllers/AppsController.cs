@@ -341,13 +341,13 @@ public class AppsController : ControllerBase
     }
     
     /// <summary>
-    /// Get Document Content for Lead Image and App Lead Image DocumentType
+    /// Retrieve Document Content for document type "App Lead Image" and "App Image" by ID
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="documentId"></param>
     /// <remarks>Example: GET: /api/apps/{appId}/appImages/{documentId}</remarks>
     /// <response code="200">Returns the document Content</response>
-    /// <response code="400">Document and app id do not match. or Document can not get retrieved. Document type not supported.</response>
+    /// <response code="400">Document / App id not found or document type not supported.</response>
     [HttpGet]
     [Authorize(Roles = "view_documents")]
     [Route("{appId}/appImages/{documentId}")]
