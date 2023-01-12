@@ -389,7 +389,7 @@ jobs:
           # Path to Docker image
           image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_checklist-worker:latest"
           format: "sarif"
-          output: "trivy-results6.sarif"
+          output: "trivy-results11.sarif"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
 
