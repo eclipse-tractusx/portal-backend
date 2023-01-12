@@ -17,17 +17,9 @@
 -
 - SPDX-License-Identifier: Apache-2.0
 -->
-
 <Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Seeding\Framework.Seeding.csproj" />
-    <ProjectReference Include="..\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.DBAccess\Framework.DBAccess.csproj" />
-  </ItemGroup>
   <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess</AssemblyName>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

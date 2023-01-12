@@ -28,10 +28,10 @@ public enum CompanyApplicationStatusFilter
     /// <summary>
     /// Closed Status for the CompanyApplication
     /// </summary>
-    Closed =1,
+    Closed = 1,
 
     /// <summary>
     /// InReview Status for the CompanyApplication
     /// </summary>
-    InReview=2
+    InReview = 2
 }

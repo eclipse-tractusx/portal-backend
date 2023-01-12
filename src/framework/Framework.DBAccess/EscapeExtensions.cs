@@ -18,23 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 
-public class OwnCompanyUserEditableDetails
+/// <summary>
+/// Provides constant values
+/// </summary>
+public static class EscaperExtensions
 {
-    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName")]
-    [JsonPropertyName("firstName")]
-    public string? FirstName { get; set; }
+    private static Regex _iLikeExpression = new Regex(@"(?=[\%\\_])", RegexOptions.IgnorePatternWhitespace, TimeSpan.FromSeconds(1));
 
-    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName")]
-    [JsonPropertyName("lastName")]
-    public string? LastName { get; set; }
-
-    [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email")]
-    [JsonPropertyName("email")]
-    public string? Email { get; set; }
+    public static string EscapeForILike(this string value) => _iLikeExpression.Replace(value, @"\");
 }
