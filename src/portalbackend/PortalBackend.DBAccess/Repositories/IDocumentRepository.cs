@@ -93,4 +93,13 @@ public interface IDocumentRepository
     /// <param name="documentId">Id of the document</param>
     /// <returns>The document seed data</returns>
     Task<DocumentSeedData?> GetDocumentSeedDataByIdAsync(Guid documentId);
+
+    /// <summary>
+    /// Retrieve Document TypeId , Content and validate app link to document
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="documentId"></param>
+    /// <param name="appDocumentTypeIds"></param>
+    /// <returns></returns>
+    Task<(bool IsDocumentTypeIdLeadImage, byte[] Content, bool IsAppLinkDocument)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId, IEnumerable<DocumentTypeId> appDocumentTypeIds);
 }

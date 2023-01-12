@@ -204,6 +204,20 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().BeNull();
     }
 
+    [Fact]
+    public async Task GetAppImageDocumentContentAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        IEnumerable<DocumentTypeId> docIds = new List<DocumentTypeId>{DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE};
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetAppImageDocumentContentAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"),new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"),docIds).ConfigureAwait(false);
+
+        // Assert
+        result.IsDocumentTypeIdLeadImage.Should().Be(true);
+    }
+
     #endregion
     
     private async Task<(DocumentRepository, PortalDbContext)> CreateSut()

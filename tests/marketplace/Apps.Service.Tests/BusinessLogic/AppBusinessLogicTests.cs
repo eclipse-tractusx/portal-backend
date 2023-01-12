@@ -23,7 +23,7 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -49,6 +49,7 @@ public class AppBusinessLogicTests
     private readonly INotificationRepository _notificationRepository;
     private readonly IMailingService _mailingService;
     private readonly IOfferService _offerService;
+    private readonly IDocumentRepository _documentRepository;
 
     public AppBusinessLogicTests()
     {
@@ -65,11 +66,13 @@ public class AppBusinessLogicTests
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _notificationRepository = A.Fake<INotificationRepository>();
+        _documentRepository = A.Fake<IDocumentRepository>();
 
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
     }
 
     [Fact]
@@ -402,7 +405,35 @@ public class AppBusinessLogicTests
     }
 
     #endregion
-    
+
+    [Fact]
+    public async Task GetAppImageDocumentContentAsync_ReturnsExpectedresult()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var data = _fixture.Create<byte[]>();
+        //var appImageFileContent = _fixture.Build<AppImageFileContent>()
+                                 // .With(x=>x.Content,data)
+                                 // .Create();
+        var settings = new AppsSettings
+        {
+            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
+        };
+        A.CallTo(() => _documentRepository.GetAppImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds))
+            .Returns((true, data, true));
+
+
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(settings), A.Fake<MailingService>());
+
+        // Act
+        var result = await sut.GetAppImageDocumentContentAsync(appId, documentId).ConfigureAwait(false);
+
+        // Assert
+        result.Content.Should().BeSameAs(data);
+        A.CallTo(() => _documentRepository.GetAppImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds)).MustHaveHappened();
+    }
+
     private (CompanyUser, IamUser) CreateTestUserPair()
     {
         var companyUser = _fixture.Build<CompanyUser>()

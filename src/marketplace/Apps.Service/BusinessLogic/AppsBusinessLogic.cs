@@ -296,4 +296,20 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc />
     public Task DeactivateOfferbyAppIdAsync(Guid appId, string iamUserId) =>
         _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
+
+    /// <inheritdoc />
+    public async Task<AppImageFileContent> GetAppImageDocumentContentAsync(Guid appId, Guid documentId)
+    {
+        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+        var document = await documentRepository.GetAppImageDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds).ConfigureAwait(false);
+        if (!document.IsDocumentTypeIdLeadImage)
+        {
+            throw new ControllerArgumentException($"Document {documentId} can not get retrieved. Document type not supported.");
+        }
+        if (!document.IsAppLinkDocument)
+        {
+            throw new ControllerArgumentException($"Document {documentId} and app id {appId} do not match.");
+        }
+        return new AppImageFileContent(document.Content);
+    }
 }

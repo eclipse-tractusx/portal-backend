@@ -144,4 +144,15 @@ public class DocumentRepository : IDocumentRepository
                 doc.DocumentContent,
                 (int)doc.DocumentStatusId))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(bool IsDocumentTypeIdLeadImage, byte[] Content, bool IsAppLinkDocument)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId, IEnumerable<DocumentTypeId> appDocumentTypeIds) =>
+        _dbContext.Documents
+            .Where(x => x.Id == documentId)
+            .Select(x => new ValueTuple<bool, byte[], bool>(
+                appDocumentTypeIds.Contains(x.DocumentTypeId),
+                x.DocumentContent,
+                x.Offers.Any(offer => offer.Id == appId)
+            ))
+            .SingleOrDefaultAsync();
 }
