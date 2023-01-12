@@ -125,4 +125,25 @@ public class RegistrationControllerTest
         A.CallTo(() => _registrationBusinessLogicFake.SubmitRoleConsentAsync(applicationId, data, _iamUserId)).MustHaveHappenedOnceExactly();
         result.Should().Be(1);
     }
+
+    [Fact]
+    public async Task GetCompanyIdentifiers_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var data = _fixture.CreateMany<UniqueIdentifierData>(1);
+        A.CallTo(() => _registrationBusinessLogicFake.GetCompanyIdentifiers("DE"))
+            .ReturnsLazily(() => data);
+
+        //Act
+        var result = await this._controller.GetCompanyIdentifiers("DE").ConfigureAwait(false);
+        
+        // Assert
+        foreach (var item in result)
+        {
+            A.CallTo(() => _registrationBusinessLogicFake.GetCompanyIdentifiers("DE")).MustHaveHappenedOnceExactly();
+            Assert.NotNull(item);
+            Assert.IsType<UniqueIdentifierData?>(item);
+        }
+    }
 }

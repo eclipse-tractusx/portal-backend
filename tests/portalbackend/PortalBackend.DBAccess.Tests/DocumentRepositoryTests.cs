@@ -139,6 +139,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         sut.AttachAndModifyDocument(Guid.NewGuid(),
+            null,
             docstatusId =>{ docstatusId.DocumentStatusId = DocumentStatusId.LOCKED; });
 
         // Assert
@@ -150,6 +151,23 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Single().Entity.Should()
             .BeOfType<PortalEntities.Entities.Document>()
                 .Which.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
+    }
+
+    [Fact]
+    public async Task AttachAndModifyDocument_NoUpdate()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyDocument(Guid.NewGuid(),
+            docstatusId =>{ docstatusId.DocumentStatusId = DocumentStatusId.LOCKED; },
+            docstatusId =>{ docstatusId.DocumentStatusId = DocumentStatusId.LOCKED; });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeFalse();
     }
 
     #endregion

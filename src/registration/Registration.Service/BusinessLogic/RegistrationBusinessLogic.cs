@@ -464,8 +464,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
             foreach(var document in applicationUserData.DocumentDatas) 
             {
-                documentRepository.AttachAndModifyDocument(document.DocumentId, doc =>
-                    doc.DocumentStatusId = DocumentStatusId.LOCKED);
+                documentRepository.AttachAndModifyDocument(
+                    document.DocumentId,
+                    doc => doc.DocumentStatusId = document.StatusId,
+                    doc => doc.DocumentStatusId = DocumentStatusId.LOCKED);
             }
         }
 
@@ -481,7 +483,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         if (applicationUserData.Email != null)
         {
-            await _mailingService.SendMails(applicationUserData.Email, mailParameters, new List<string> { "SubmitRegistrationTemplate" });
+            await _mailingService.SendMails(applicationUserData.Email, mailParameters, new [] { "SubmitRegistrationTemplate" });
         }
         else
         {
@@ -701,5 +703,16 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         return true;
+    }
+
+    public async Task<IEnumerable<UniqueIdentifierData>> GetCompanyIdentifiers(string alpha2Code)
+    {
+        var uniqueIdentifierData = await _portalRepositories.GetInstance<IStaticDataRepository>().GetCompanyIdentifiers(alpha2Code).ConfigureAwait(false);
+        
+        if(!uniqueIdentifierData.IsValidCountryCode)
+        {
+            throw new NotFoundException($"invalid country code {alpha2Code}");
+        }
+        return uniqueIdentifierData.IdentifierIds.Select(identifierId => new UniqueIdentifierData((int)identifierId, identifierId));
     }
 }
