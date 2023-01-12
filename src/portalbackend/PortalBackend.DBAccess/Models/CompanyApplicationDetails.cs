@@ -23,52 +23,26 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public class CompanyApplicationDetails
+public record CompanyApplicationDetails(
+    [property: JsonPropertyName("applicationId")] Guid ApplicationId,
+    [property: JsonPropertyName("applicationStatus")] CompanyApplicationStatusId CompanyApplicationStatusId,
+    [property: JsonPropertyName("dateCreated")] DateTimeOffset DateCreated,
+    [property: JsonPropertyName("companyName")] string CompanyName,
+    [property: JsonPropertyName("documents")] IEnumerable<DocumentDetails> Documents,
+    [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleId> CompanyRoles,
+    [property: JsonPropertyName("applicationChecklist")] IEnumerable<ApplicationChecklistEntryDetails> ApplicationChecklist)
 {
-    public CompanyApplicationDetails(Guid applicationId, CompanyApplicationStatusId companyApplicationStatusId, DateTimeOffset dateCreated, string companyName, IEnumerable<DocumentDetails> documents, IEnumerable<CompanyRoleId> companyRoles)
-    {
-        ApplicationId = applicationId;
-        CompanyApplicationStatusId = companyApplicationStatusId;
-        DateCreated = dateCreated;
-        CompanyName = companyName;
-        CompanyRoles = companyRoles;
-        Documents = documents;
-    }
-
-    [JsonPropertyName("applicationId")]
-    public Guid ApplicationId { get; set; }
-    
-    [JsonPropertyName("applicationStatus")]
-    public CompanyApplicationStatusId CompanyApplicationStatusId { get; set; }
-    
-    [JsonPropertyName("dateCreated")]
-    public DateTimeOffset DateCreated { get; set; }
-    
-    [JsonPropertyName("companyName")]
-    public string CompanyName { get; set; }
-    
     [JsonPropertyName("email")]
     public string? Email { get; set; }
     
     [JsonPropertyName("bpn")]
     public string? BusinessPartnerNumber { get; set; }
-    
-    [JsonPropertyName("documents")]
-    public IEnumerable<DocumentDetails> Documents { get; set; }
-    
-    [JsonPropertyName("companyRoles")]
-    public IEnumerable<CompanyRoleId> CompanyRoles { get; set; }
 }
 
-public class DocumentDetails
+public record DocumentDetails([property: JsonPropertyName("documentId")] Guid DocumentId)
 {
-    public DocumentDetails(Guid documentId)
-    {
-        DocumentId = documentId;
-    }
-
     [JsonPropertyName("documentType")]
     public DocumentTypeId? DocumentTypeId { get; set; }
-    [JsonPropertyName("documentId")]
-    public Guid DocumentId { get; set; }
 }
+
+public record ApplicationChecklistEntryDetails(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId);
