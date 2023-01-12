@@ -17,6 +17,7 @@ env:
   IMAGE_NAME_NOTIFICATION: ${{ github.repository }}_notification-service
   IMAGE_NAME_SERVICES: ${{ github.repository }}_services-service
   IMAGE_NAME_PROVISIONING_MIGRATIONS: ${{ github.repository }}_provisioning-migrations
+  IMAGE_NAME_CHECKLIST_WORKER: ${{ github.repository }}_checklist-worker
 
 jobs:
   initdb-release:
@@ -118,7 +119,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MAINTENANCE }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CHECKLIST_WORKER }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
@@ -127,7 +128,7 @@ jobs:
           file: docker/Dockerfile-checklist-worker
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MAINTENANCE }}:${{ steps.git-tag.outputs.git-version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CHECKLIST_WORKER }}:${{ steps.git-tag.outputs.git-version }}
           labels: ${{ steps.meta.outputs.labels }}
 
   registration-service-release:
