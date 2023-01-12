@@ -418,9 +418,8 @@ public class AppBusinessLogicTests
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
-        A.CallTo(() => _documentRepository.GetAppImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds))
-            .Returns((true, data, true));
-
+        A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP))
+            .Returns((true, true, true, data, true));
 
         var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(settings), A.Fake<MailingService>());
 
@@ -429,7 +428,7 @@ public class AppBusinessLogicTests
 
         // Assert
         result.Content.Should().BeSameAs(data);
-        A.CallTo(() => _documentRepository.GetAppImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds)).MustHaveHappened();
+        A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP)).MustHaveHappened();
     }
 
     [Fact]
@@ -443,8 +442,8 @@ public class AppBusinessLogicTests
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
-        A.CallTo(() => _documentRepository.GetAppImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds))
-            .Returns((false, data, true));
+        A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP))
+            .Returns((false, true, true, null, true));
 
         var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(settings), A.Fake<MailingService>());
 
@@ -467,8 +466,8 @@ public class AppBusinessLogicTests
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
-        A.CallTo(() => _documentRepository.GetAppImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds))
-            .Returns((true, data, false));
+        A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP))
+            .Returns((true, false, true, null, true));
 
         var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(settings), A.Fake<MailingService>());
 

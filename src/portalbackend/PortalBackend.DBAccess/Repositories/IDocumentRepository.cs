@@ -101,5 +101,5 @@ public interface IDocumentRepository
     /// <param name="documentId"></param>
     /// <param name="appDocumentTypeIds"></param>
     /// <returns></returns>
-    Task<(bool IsDocumentTypeIdLeadImage, byte[] Content, bool IsAppLinkDocument)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId, IEnumerable<DocumentTypeId> appDocumentTypeIds);
+    Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, byte[]? Content, bool IsDocumentExisting)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId);
 }

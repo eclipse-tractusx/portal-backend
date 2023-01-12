@@ -146,13 +146,25 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsDocumentTypeIdLeadImage, byte[] Content, bool IsAppLinkDocument)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId, IEnumerable<DocumentTypeId> appDocumentTypeIds) =>
+    public Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, byte[]? Content, bool IsDocumentExisting)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId) =>
         _dbContext.Documents
-            .Where(x => x.Id == documentId)
-            .Select(x => new ValueTuple<bool, byte[], bool>(
-                appDocumentTypeIds.Contains(x.DocumentTypeId),
-                x.DocumentContent,
-                x.Offers.Any(offer => offer.Id == appId)
+            .Where(document => document.Id == documentId)
+            .Select(document => new {
+                Offer = document.Offers.SingleOrDefault(offer => offer.Id == offerId),
+                Document = document
+            })
+            .Select(x => new {
+                IsValidDocumentType = documentTypeIds.Contains(x.Document.DocumentTypeId),
+                IsDocumentLinkedToOffer = x.Offer != null,
+                IsValidOfferType = x.Offer!.OfferTypeId == offerTypeId,
+                Document = x.Document
+            })
+            .Select(x => new ValueTuple<bool, bool, bool, byte[]?, bool>(
+                x.IsValidDocumentType,
+                x.IsDocumentLinkedToOffer,
+                x.IsValidOfferType,
+                x.IsValidDocumentType && x.IsDocumentLinkedToOffer && x.IsValidOfferType ? x.Document.DocumentContent : null,
+                true
             ))
             .SingleOrDefaultAsync();
 }
