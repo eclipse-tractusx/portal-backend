@@ -28,7 +28,7 @@ public class ServiceProviderController : ControllerBase
     /// get detail data of the calling users service provider
     /// </summary>
     /// <returns></returns>
-    /// <remarks>Example: POST: api/administration/serviceprovider/owncompany</remarks>
+    /// <remarks>Example: GET: api/administration/serviceprovider/owncompany</remarks>
     /// <response code="200">The service provider details.</response>
     /// <response code="400">The given data are incorrect.</response>
     /// <response code="403">The calling users company is not a service-provider</response>

@@ -19,10 +19,11 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class OfferDetailImage
+public class OfferDetailImage : IBaseEntity
 {
     public OfferDetailImage(Guid id, Guid offerId, string imageUrl)
     {
@@ -31,7 +32,7 @@ public class OfferDetailImage
         ImageUrl = imageUrl;
     }
 
-    public Guid Id { get; private set; }
+    public Guid Id { get; set; }
 
     public Guid OfferId { get; set; }
 

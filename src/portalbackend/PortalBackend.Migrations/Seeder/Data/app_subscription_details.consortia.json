@@ -1,0 +1,142 @@
+[
+  {
+    "id": "a9aa870a-450b-4a58-8381-0cfe7f9f43e7",
+    "offer_subscription_id": "56d878d9-9574-4673-b32a-ebf5753042f5",
+    "app_instance_id": "b161d570-f6ff-45b4-a077-243f72487af6",
+    "app_subscription_url": null,
+    "last_editor_id": null
+  },
+  {
+    "id": "e9e97133-a311-419c-8421-fd70264de9cb",
+    "offer_subscription_id": "b1964680-474d-45dd-b1c4-91f39f9a4c48",
+    "app_instance_id": null,
+    "app_subscription_url": null,
+    "last_editor_id": null
+  },
+  {
+    "id": "f550c647-f94f-4e58-bcb9-b3d338af9009",
+    "offer_subscription_id": "56faf2e0-88ec-4ee5-a736-6c52688250f8",
+    "app_instance_id": "2c252614-ae87-4efc-8af8-4d011e70544b",
+    "app_subscription_url": "https://dismantler-cockpit.d13fe27.kyma.ondemand.com",
+    "last_editor_id": null
+  },
+  {
+    "id": "88b0661c-cc22-4a4a-9721-fc4f3cec21f8",
+    "offer_subscription_id": "0b2ca541-206d-48ad-bc02-fb61fbcb5552",
+    "app_instance_id": "ab25c218-9ab3-4f1a-b6f4-6394fbc33c5a",
+    "app_subscription_url": "https://ec-qas.d13fe27.kyma.ondemand.com",
+    "last_editor_id": null
+  },
+  {
+    "id": "3c7f7825-b2c4-43b8-b91e-8ab6f8e28fac",
+    "offer_subscription_id": "1ab2e5e1-df8f-496b-aa12-c11067805992",
+    "app_instance_id": null,
+    "app_subscription_url": "https://impact.bmw.cloud/workspace/carbon/ri.carbon.main.workspace.7d7f6c71-3981-4b78-b731-1b4c8f243c97/ri.workshop.main.module.c9beba25-4387-40dd-9e59-8c4e3b3df3ff",
+    "last_editor_id": null
+  },
+  {
+    "id": "aa97bc61-149f-4b85-babb-eb40f0424ef5",
+    "offer_subscription_id": "02d5575d-b110-43f0-b0dd-53dbc37147dc",
+    "app_instance_id": "d69075b4-9bce-489c-ba80-8f7f08c4a011",
+    "app_subscription_url": "https://fraud-dashboard.int.demo.catena-x.net/",
+    "last_editor_id": null
+  },
+  {
+    "id": "cb0d1b6a-29fd-4583-a924-641dcf3b26a9",
+    "offer_subscription_id": "34a93025-18de-4c7a-8677-0fd9801248d1",
+    "app_instance_id": null,
+    "app_subscription_url": "https://portal-staging.afqm-services.com/",
+    "last_editor_id": null
+  },
+  {
+    "id": "3cafae15-4f03-49c3-9786-b6ca2e29fa76",
+    "offer_subscription_id": "028265dd-82a8-4924-ab9a-a7b47dc2adfd",
+    "app_instance_id": null,
+    "app_subscription_url": null,
+    "last_editor_id": null
+  },
+  {
+    "id": "9c5cb134-b77b-4b22-ae34-63b686b3b5b9",
+    "offer_subscription_id": "93eecd4e-ca47-4dd2-85bf-775ea72eb312",
+    "app_instance_id": null,
+    "app_subscription_url": "https://dtc-translator.adac.openresearch.com",
+    "last_editor_id": null
+  },
+  {
+    "id": "f21f3782-b2e4-462e-b0c0-986f49359536",
+    "offer_subscription_id": "846ec83b-4b84-4c29-b7ce-3e57d7405844",
+    "app_instance_id": "7e828901-27cb-4078-bd15-00efd247c56a",
+    "app_subscription_url": "https://fleet-management.adac.openresearch.com",
+    "last_editor_id": null
+  },
+  {
+    "id": "bedb45bf-7094-4da0-9e69-0695db782a16",
+    "offer_subscription_id": "ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba",
+    "app_instance_id": "b161d570-f6ff-45b4-a077-243f72487af6",
+    "app_subscription_url": null,
+    "last_editor_id": null
+  },
+  {
+    "id": "d3796e27-d0bb-4376-80c3-2ffb49847424",
+    "offer_subscription_id": "85064593-0aaa-48c4-95a2-2700223aca5e",
+    "app_instance_id": null,
+    "app_subscription_url": null,
+    "last_editor_id": null
+  },
+  {
+    "id": "22835697-99ea-45c8-bce6-9b2553a95c50",
+    "offer_subscription_id": "60f00bd0-98fe-4ed3-ad3b-90045921660c",
+    "app_instance_id": "2c252614-ae87-4efc-8af8-4d011e70544b",
+    "app_subscription_url": "https://dismantler-cockpit.d13fe27.kyma.ondemand.com",
+    "last_editor_id": null
+  },
+  {
+    "id": "f9262016-7400-49a5-9908-c46257b4790f",
+    "offer_subscription_id": "d65e367c-0968-4be9-bd2a-6c3d6339d65c",
+    "app_instance_id": "ab25c218-9ab3-4f1a-b6f4-6394fbc33c5a",
+    "app_subscription_url": "https://ec-qas.d13fe27.kyma.ondemand.com",
+    "last_editor_id": null
+  },
+  {
+    "id": "9741fa8d-74f3-44f8-8ec0-51c83399e508",
+    "offer_subscription_id": "6da4b991-b594-4b80-933a-26383d6d465f",
+    "app_instance_id": "d69075b4-9bce-489c-ba80-8f7f08c4a011",
+    "app_subscription_url": "https://fraud-dashboard.int.demo.catena-x.net/",
+    "last_editor_id": null
+  },
+  {
+    "id": "ed4116b0-f4bc-451e-aaa9-5df08969e1b4",
+    "offer_subscription_id": "4ba33360-72e6-4a56-a253-59761d694d2c",
+    "app_instance_id": null,
+    "app_subscription_url": "https://portal-staging.afqm-services.com/",
+    "last_editor_id": null
+  },
+  {
+    "id": "7f9888cb-2f78-4f71-b7dd-a9231888aa55",
+    "offer_subscription_id": "4d44eb62-7ac8-4a4a-a0d0-fc3daca5edd5",
+    "app_instance_id": null,
+    "app_subscription_url": null,
+    "last_editor_id": null
+  },
+  {
+    "id": "3d8cb906-76a3-4cd7-ae99-4f9225437a27",
+    "offer_subscription_id": "11fd3bb9-6922-4b36-bc28-d30aded20231",
+    "app_instance_id": null,
+    "app_subscription_url": "https://dtc-translator.adac.openresearch.com",
+    "last_editor_id": null
+  },
+  {
+    "id": "37241577-3730-4d39-ab5b-3555a0d11c42",
+    "offer_subscription_id": "1ab6c7c9-ff68-47da-aad4-b88d83b757cd",
+    "app_instance_id": "7e828901-27cb-4078-bd15-00efd247c56a",
+    "app_subscription_url": "https://fleet-management.adac.openresearch.com",
+    "last_editor_id": null
+  },
+  {
+    "id": "ac6413b0-b179-462a-9074-e7d0bcc5ee5a",
+    "offer_subscription_id": "1d28a224-6293-4148-8b60-6714a0f1465d",
+    "app_instance_id": "476b0600-965b-4f10-8eb5-e4568859a889",
+    "app_subscription_url": "https://catena-x.palantirfoundry.com/",
+    "last_editor_id": null
+  }
+]

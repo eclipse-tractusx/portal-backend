@@ -25,6 +25,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -88,14 +89,14 @@ public class RegistrationControllerTest
     {
          //Arrange
         var paginationResponse = new Pagination.Response<CompanyApplicationDetails>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyApplicationDetails>(5));
-        A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15,null))
+        A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15,null,null))
                   .Returns(paginationResponse);
 
         //Act
-        var result = await this._controller.GetApplicationDetailsAsync(0, 15,null).ConfigureAwait(false);
+        var result = await this._controller.GetApplicationDetailsAsync(0, 15,null,null).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15,null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15,null,null)).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
         result.Content.Should().HaveCount(5);
     }
@@ -114,5 +115,22 @@ public class RegistrationControllerTest
         //Assert
         A.CallTo(() => _logic.TriggerBpnDataPushAsync(IamUserId, applicationId, CancellationToken.None)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task GetCompanyWithAddressAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var applicationId = _fixture.Create<Guid>();
+         var data = _fixture.Create<CompanyWithAddressData>();
+        A.CallTo(() => _logic.GetCompanyWithAddressAsync(applicationId))
+            .ReturnsLazily(() => data);
+
+        //Act
+        var result = await this._controller.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetCompanyWithAddressAsync(applicationId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<CompanyWithAddressData>(result);
     }
 }

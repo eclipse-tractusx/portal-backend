@@ -115,7 +115,7 @@ public class SdFactoryService : ISdFactoryService
             $"SelfDescription_{docTitle}.json", 
             documentContent, 
             hash, 
-            DocumentTypeId.APP_TECHNICAL_INFORMATION,
+            DocumentTypeId.SELF_DESCRIPTION,
             doc =>
             {
                 doc.DocumentStatusId = DocumentStatusId.LOCKED;

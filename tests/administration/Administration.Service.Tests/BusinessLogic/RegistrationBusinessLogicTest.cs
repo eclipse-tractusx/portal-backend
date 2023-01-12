@@ -74,6 +74,7 @@ public class RegistrationBusinessLogicTest
     private readonly ISdFactoryService _sdFactory;
     private readonly ICompanyRepository _companyRepository;
     private readonly IBpdmService _bpdmService;
+    private readonly IMailingService _mailingService;
 
     public RegistrationBusinessLogicTest()
     {
@@ -93,8 +94,8 @@ public class RegistrationBusinessLogicTest
         _bpdmService = A.Fake<IBpdmService>();
 
         var userRepository = A.Fake<IUserRepository>();
-        var mailingService = A.Fake<IMailingService>();
         var options = A.Fake<IOptions<RegistrationSettings>>();
+        _mailingService = A.Fake<IMailingService>();
         _notificationService = A.Fake<INotificationService>();
         _sdFactory = A.Fake<ISdFactoryService>();
         
@@ -118,7 +119,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
             .ReturnsLazily(Guid.NewGuid);
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, mailingService, _notificationService, _sdFactory, _bpdmService);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, _mailingService, _notificationService, _sdFactory, _bpdmService);
     }
     
     #region ApprovePartnerRequest
@@ -153,6 +154,44 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
         A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
+        Assert.IsType<bool>(result);
+        Assert.True(result);
+        _notifications.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task ApprovePartnerRequest_WithFailingWalletCreation_ChangesAreSavedInDatabaseAndMailGetsSend()
+    {
+        //Arrange
+        var roles = new List<string> { "Company Admin" };
+        var clientRoleNames = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, roles.AsEnumerable() }
+        };
+        var userRoleData = new List<UserRoleData> { new(UserRoleId, ClientId, "Company Admin") };
+        
+        var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
+        var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
+
+        SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
+        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._))
+            .Throws(new ServiceException("error"));
+
+        //Act
+        var result = await _logic.ApprovePartnerRequest(IamUserId, AccessToken, Id, CancellationToken.None).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(Id)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId2, UserRoleId)).MustNotHaveHappened();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId2, BusinessPartnerNumber)).MustNotHaveHappened();
+        A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
         Assert.IsType<bool>(result);
         Assert.True(result);
         _notifications.Should().HaveCount(5);
@@ -212,6 +251,8 @@ public class RegistrationBusinessLogicTest
 
     #endregion
 
+    #region GetCompanyApplicationDetailsAsync
+
     [Fact]
     public async Task GetCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries()
     {
@@ -222,16 +263,135 @@ public class RegistrationBusinessLogicTest
             .Returns(companyApplicationData.AsQueryable());
 
         // Act
-        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5,null).ConfigureAwait(false);
-
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5,null,null).ConfigureAwait(false);
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 3 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
         result.Content.Should().HaveCount(5);
     }
 
+    [Fact]
+    public async Task GetCompanyApplicationDetailsAsync_WithInReviewRequest_GetsExpectedEntries()
+    {
+        // Arrange
+        var companyAppStatus = new[] { CompanyApplicationStatusId.SUBMITTED };
+        var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.CreateMany<CompanyApplication>(5));
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
+            .Returns(companyApplicationData.AsQueryable());
+
+        // Act
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5,CompanyApplicationStatusFilter.InReview,null).ConfigureAwait(false);
+        // Assert
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 1 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
+        result.Content.Should().HaveCount(5);       
+    }    
+
+    [Fact]
+    public async Task GetCompanyApplicationDetailsAsync_WithClosedRequest_GetsExpectedEntries()
+    {
+        // Arrange
+        var companyAppStatus = new[] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
+        var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.CreateMany<CompanyApplication>(5));
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
+            .Returns(companyApplicationData.AsQueryable());
+
+        // Act
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5,CompanyApplicationStatusFilter.Closed,null).ConfigureAwait(false);
+        // Assert
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 2 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
+        result.Content.Should().HaveCount(5);       
+    }
+
+    #endregion
+
+    #region GetCompanyWithAddressAsync
+
+    [Fact]
+    public async Task GetCompanyWithAddressAsync_WithDefaultRequest_GetsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var data = _fixture.Build<CompanyUserRoleWithAddress>()
+            .With(x => x.AgreementsData, _fixture.CreateMany<AgreementsData>(20))
+            .Create();
+        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAdressUntrackedAsync(applicationId))
+            .Returns(data);
+
+        // Act
+        var result = await _logic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAdressUntrackedAsync(applicationId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<CompanyWithAddressData>();
+        result.Should().Match<CompanyWithAddressData>(r =>
+            r.CompanyId == data.CompanyId &&
+            r.Name == data.Name &&
+            r.ShortName == data.Shortname &&
+            r.BusinessPartnerNumber == data.BusinessPartnerNumber &&
+            r.City == data.City &&
+            r.StreetName == data.StreetName &&
+            r.CountryAlpha2Code == data.CountryAlpha2Code &&
+            r.Region == data.Region &&
+            r.StreetAdditional == data.Streetadditional &&
+            r.StreetNumber == data.Streetnumber &&
+            r.ZipCode == data.Zipcode &&
+            r.CountryDe == data.CountryDe
+        );
+        result.AgreementsRoleData.Should().HaveSameCount(data.AgreementsData.DistinctBy(ad => ad.CompanyRoleId));
+        result.InvitedUserData.Should().HaveSameCount(data.InvitedCompanyUserData);
+    }
+
+    [Fact]
+    public async Task GetCompanyWithAddressAsync_WithDefaultRequest_GetsExpectedResult_DefaultValues()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var data = _fixture.Build<CompanyUserRoleWithAddress>()
+            .With(x => x.Shortname, (string?)null)
+            .With(x => x.BusinessPartnerNumber, (string?)null)
+            .With(x => x.City, (string?)null)
+            .With(x => x.StreetName, (string?)null)
+            .With(x => x.CountryAlpha2Code, (string?)null)
+            .With(x => x.Region, (string?)null)
+            .With(x => x.Streetadditional, (string?)null)
+            .With(x => x.Streetnumber, (string?)null)
+            .With(x => x.Zipcode, (string?)null)
+            .With(x => x.CountryDe, (string?)null)
+            .With(x => x.InvitedCompanyUserData, _fixture.CreateMany<Guid>().Select(id => new InvitedCompanyUserData(id, null, null, null)))
+            .Create();
+        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAdressUntrackedAsync(applicationId))
+            .Returns(data);
+
+        // Act
+        var result = await _logic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAdressUntrackedAsync(applicationId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<CompanyWithAddressData>();
+        result.Should().Match<CompanyWithAddressData>(r =>
+            r.CompanyId == data.CompanyId &&
+            r.Name == data.Name &&
+            r.ShortName == "" &&
+            r.BusinessPartnerNumber == "" &&
+            r.City == "" &&
+            r.StreetName == "" &&
+            r.CountryAlpha2Code == "" &&
+            r.Region == "" &&
+            r.StreetAdditional == "" &&
+            r.StreetNumber == "" &&
+            r.ZipCode == "" &&
+            r.CountryDe == ""
+        );
+        result.InvitedUserData.Should().HaveSameCount(data.InvitedCompanyUserData);
+        result.InvitedUserData.Should().AllSatisfy(u => u.Should().Match<InvitedUserData>(u => u.FirstName == "" && u.LastName == "" && u.Email == ""));
+    }
+
+    #endregion
+
     #region Trigger bpn data push
-    
+
     [Fact]
     public async Task TriggerBpnDataPush_WithValidData_CallsService()
     {
@@ -408,12 +568,13 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._))
             .Returns(Task.CompletedTask);
             
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._))
-            .Invokes(x =>
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._))
+            .Invokes((
+                IDictionary<string,IEnumerable<string>> _, 
+                Guid? creatorId, 
+                IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, 
+                Guid _) =>
             {
-                var creatorId = x.Arguments.Get<Guid?>("creatorId");
-                var notifications = x.Arguments.Get<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>("notifications");
-                if (notifications is null) return;
                 foreach (var notificationData in notifications)
                 {
                     var notification = new Notification(Guid.NewGuid(), Guid.NewGuid(),
@@ -424,7 +585,6 @@ public class RegistrationBusinessLogicTest
                     };
                     _notifications.Add(notification);
                 }
-
             });
     }
 

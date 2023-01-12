@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -28,12 +29,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 /// </summary>
 
 [AuditEntityV1(typeof(AuditAppSubscriptionDetail20221118))]
-public class AppSubscriptionDetail : IAuditableV1
+public class AppSubscriptionDetail : IAuditableV1, IBaseEntity
 {
     /// <summary>
     /// Only needed for ef
     /// </summary>
-    private AppSubscriptionDetail()
+    public AppSubscriptionDetail()
     { }
 
     /// <summary>
