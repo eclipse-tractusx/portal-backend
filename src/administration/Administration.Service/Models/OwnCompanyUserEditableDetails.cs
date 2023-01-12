@@ -18,18 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public class OwnCompanyUserEditableDetails
 {
+    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName")]
     [JsonPropertyName("firstName")]
     public string? FirstName { get; set; }
 
+    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName")]
     [JsonPropertyName("lastName")]
     public string? LastName { get; set; }
 
+    [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email")]
     [JsonPropertyName("email")]
     public string? Email { get; set; }
 }

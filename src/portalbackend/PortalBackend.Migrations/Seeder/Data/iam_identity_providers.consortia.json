@@ -1,0 +1,34 @@
+[
+  {
+    "iam_idp_alias": "bmw-wen-oidc",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce0571b0004"
+  },
+  {
+    "iam_idp_alias": "Company-1",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce057230006"
+  },
+  {
+    "iam_idp_alias": "Company-2",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce057230007"
+  },
+  {
+    "iam_idp_alias": "Security-Company",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce057230008"
+  },
+  {
+    "iam_idp_alias": "CX-Test-Access",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce057770016"
+  },
+  {
+    "iam_idp_alias": "Service-Provider",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce057770017"
+  },
+  {
+    "iam_idp_alias": "App-Provider",
+    "identity_provider_id": "ac1cf001-7fbc-1f2f-817f-bce057770018"
+  },
+  {
+    "iam_idp_alias": "keycloak-oidc",
+    "identity_provider_id": "e7317720-051d-4f4c-9140-ac23c6330351"
+  }
+]

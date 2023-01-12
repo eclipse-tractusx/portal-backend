@@ -45,17 +45,15 @@ builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
     .AddPortalRepositories(builder.Configuration)
     .AddProvisioningManager(builder.Configuration);
 
+builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
+                .AddTransient<IOfferService, OfferService>()
                 .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
                 .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
 
 builder.Services.AddOfferSetupService();
 
 builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
-
-builder.Services.AddTransient<INotificationService, NotificationService>();
-builder.Services.AddTransient<IOfferService, OfferService>();
-
 
 builder.Build()
     .CreateApp<Program>("apps", VERSION)

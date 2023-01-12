@@ -20,10 +20,11 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyServiceAccount
+public class CompanyServiceAccount : IBaseEntity
 {
     private CompanyServiceAccount()
     {
@@ -33,14 +34,15 @@ public class CompanyServiceAccount
         CompanyServiceAccountAssignedRoles = new HashSet<CompanyServiceAccountAssignedRole>();
     }
     
-    public CompanyServiceAccount(Guid id, Guid companyId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description, DateTimeOffset dateCreated) : this()
+    public CompanyServiceAccount(Guid id, Guid serviceAccountOwnerId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description, DateTimeOffset dateCreated, CompanyServiceAccountTypeId companyServiceAccountTypeId) : this()
     {
         Id = id;
         DateCreated = dateCreated;
-        CompanyId = companyId;
+        ServiceAccountOwnerId = serviceAccountOwnerId;
         CompanyServiceAccountStatusId = companyServiceAccountStatusId;
         Name = name;
         Description = description;
+        CompanyServiceAccountTypeId = companyServiceAccountTypeId;
     }
 
     [Key]
@@ -48,19 +50,25 @@ public class CompanyServiceAccount
 
     public DateTimeOffset DateCreated { get; private set; }
 
-    public Guid CompanyId { get; private set; }
+    public Guid ServiceAccountOwnerId { get; private set; }
 
     [MaxLength(255)]
     public string Name { get; set; }
 
     public string Description { get; set; }
 
+    public CompanyServiceAccountTypeId CompanyServiceAccountTypeId { get; set; }
+
     public CompanyServiceAccountStatusId CompanyServiceAccountStatusId { get; set; }
 
+    public Guid? OfferSubscriptionId { get; set; }
+
     // Navigation properties
-    public virtual Company? Company { get; private set; }
+    public virtual Company? ServiceAccountOwner { get; private set; }
     public virtual IamServiceAccount? IamServiceAccount { get; set; }
     public virtual CompanyServiceAccountStatus? CompanyServiceAccountStatus { get; set; }
+    public virtual CompanyServiceAccountType? CompanyServiceAccountType { get; set; }
+    public virtual OfferSubscription? OfferSubscription { get; set; }
     public virtual ICollection<UserRole> UserRoles { get; private set; }
     public virtual ICollection<CompanyServiceAccountAssignedRole> CompanyServiceAccountAssignedRoles { get; private set; }
 }

@@ -227,6 +227,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of app {appId}");
         }
+
+        if (result.ProviderCompanyId == null)
+        {
+            throw new ConflictException($"App {appId} providing company is not yet set.");
+        }
+
         var roleData = CreateUserRolesWithDescriptions(appId, appAssignedDesc);
         var notificationContent = new
         {
@@ -235,7 +241,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         };
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = _settings.ActiveAppNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(_settings.ActiveAppCompanyAdminRoles, result.CompanyUserId, content).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(_settings.ActiveAppCompanyAdminRoles, result.CompanyUserId, content, result.ProviderCompanyId.Value).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return roleData;
     }
@@ -471,16 +477,31 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting) =>
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting, OfferStatusIdFilter? offerStatusIdFilter) =>
         Pagination.CreateResponseAsync(page, size, 15,
             _portalRepositories.GetInstance<IOfferRepository>()
-                .GetAllInReviewStatusAppsAsync(_settings.OfferStatusIds, sorting ?? OfferSorting.DateDesc));
+                .GetAllInReviewStatusAppsAsync(GetOfferStatusIds(offerStatusIdFilter), sorting ?? OfferSorting.DateDesc));
 
     /// <inheritdoc/>
     public Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId) => 
-        _offerService.SubmitOfferAsync(appId, iamUserId, OfferTypeId.APP, _settings.NotificationTypeIds, _settings.CompanyAdminRoles);
+        _offerService.SubmitOfferAsync(appId, iamUserId, OfferTypeId.APP, _settings.SubmitAppNotificationTypeIds, _settings.CompanyAdminRoles);
     
     /// <inheritdoc/>
     public Task ApproveAppRequestAsync(Guid appId, string iamUserId) =>
         _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, (_settings.ApproveAppUserRoles));
+    
+    private IEnumerable<OfferStatusId> GetOfferStatusIds(OfferStatusIdFilter? offerStatusIdFilter)
+    {
+        switch(offerStatusIdFilter)
+        {
+            case OfferStatusIdFilter.InReview :
+            {
+               return new []{ OfferStatusId.IN_REVIEW };
+            }
+            default :
+            {
+                return _settings.OfferStatusIds;
+            }
+        }       
+    }
 }

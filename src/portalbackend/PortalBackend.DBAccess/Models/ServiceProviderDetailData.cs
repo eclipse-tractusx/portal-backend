@@ -22,4 +22,4 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record ServiceProviderDetailData(string Url);
 
-public record ProviderDetailReturnData(Guid? Id, Guid CompanyId, string Url);
+public record ProviderDetailReturnData(Guid? Id, Guid CompanyId, string? Url);

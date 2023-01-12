@@ -93,22 +93,22 @@ public class RegistrationControllerTest
     public async Task GetUploadedDocumentsAsync_ReturnsExpectedResult()
     {
         //Arrange
-        Guid applicationId = new Guid("7eab8e16-8298-4b41-953b-515745423658");
-        var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3).ToAsyncEnumerable();
-        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT))
+        var applicationId = _fixture.Create<Guid>();
+
+        var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3);
+        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _iamUserId))
             .Returns(uploadDocuments);
 
         //Act
-        var result = this._controller.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT);
+        var result = await _controller.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT).ConfigureAwait(false);
 
         //Assert
-        await foreach (var item in result)
-        {
-            A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT)).MustHaveHappenedOnceExactly();
-            Assert.NotNull(item);
-            Assert.IsType<UploadDocuments>(item);
-        }
+        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _iamUserId)).MustHaveHappenedOnceExactly();
+
+        result.Should().HaveSameCount(uploadDocuments);
+        result.Should().ContainInOrder(uploadDocuments);
     }
+    
     [Fact]
     public async Task SubmitCompanyRoleConsentToAgreementsAsync_WithValidData_ReturnsExpected()
     {
@@ -124,5 +124,26 @@ public class RegistrationControllerTest
         // Assert
         A.CallTo(() => _registrationBusinessLogicFake.SubmitRoleConsentAsync(applicationId, data, _iamUserId)).MustHaveHappenedOnceExactly();
         result.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetCompanyIdentifiers_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var data = _fixture.CreateMany<UniqueIdentifierData>(1);
+        A.CallTo(() => _registrationBusinessLogicFake.GetCompanyIdentifiers("DE"))
+            .ReturnsLazily(() => data);
+
+        //Act
+        var result = await this._controller.GetCompanyIdentifiers("DE").ConfigureAwait(false);
+        
+        // Assert
+        foreach (var item in result)
+        {
+            A.CallTo(() => _registrationBusinessLogicFake.GetCompanyIdentifiers("DE")).MustHaveHappenedOnceExactly();
+            Assert.NotNull(item);
+            Assert.IsType<UniqueIdentifierData?>(item);
+        }
     }
 }
