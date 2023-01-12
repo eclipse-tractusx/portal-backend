@@ -122,7 +122,9 @@ public class OfferRepository : IOfferRepository
                     .Select(x => x.OfferSubscriptionStatusId)
                     .FirstOrDefault(),
                 offer.SupportedLanguages.Select(l => l.ShortName),
-                offer.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName))
+                offer.Documents
+                    .Where(doc => doc.DocumentTypeId != DocumentTypeId.APP_IMAGE && doc.DocumentTypeId != DocumentTypeId.APP_LEADIMAGE) 
+                    .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName))
             ))
             .SingleOrDefaultAsync();
 

@@ -155,6 +155,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         offerDetail.Should().NotBeNull();
         offerDetail!.Title.Should().Be("Top App");
+        offerDetail.Documents.Should().NotBeNull();
+        var documenttypeId = offerDetail!.Documents.Select(x => x.documentTypeId);
+        documenttypeId.Should().NotContain(DocumentTypeId.APP_LEADIMAGE);
+        documenttypeId.Should().NotContain(DocumentTypeId.APP_IMAGE);
     }
 
     #endregion
