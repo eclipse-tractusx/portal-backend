@@ -51,10 +51,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync();
         Task<bool> SubmitRegistrationAsync(Guid applicationId, string iamUserId);
         IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId);
-        IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId);
+        Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync(Guid applicationId,DocumentTypeId documentTypeId,string iamUserId);
         Task<int> SetInvitationStatusAsync(string iamUserId);
         Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId);
         Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, string iamUserId);
         IAsyncEnumerable<CompanyRolesDetails> GetCompanyRoles(string? languageShortName = null);
+        Task<IEnumerable<UniqueIdentifierData>> GetCompanyIdentifiers(string alpha2Code);
     }
 }

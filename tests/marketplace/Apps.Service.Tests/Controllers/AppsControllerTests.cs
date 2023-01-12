@@ -257,7 +257,7 @@ public class AppsControllerTests
     public async Task GetAppDataAsync_ReturnsExpectedCount()
     {
         //Arrange
-        var data = new AsyncEnumerableStub<AllAppData>(_fixture.CreateMany<AllAppData>(5));
+        var data = new AsyncEnumerableStub<AllOfferData>(_fixture.CreateMany<AllOfferData>(5));
         A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(A<string>._))
             .Returns(data.AsAsyncEnumerable());
 
@@ -266,7 +266,7 @@ public class AppsControllerTests
 
         //Assert
         A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(IamUserId)).MustHaveHappenedOnceExactly();
-        result.Should().HaveCount(5);
+        result.Should().HaveSameCount(data);
     }
     
     [Fact]
@@ -323,5 +323,21 @@ public class AppsControllerTests
         //Assert
         A.CallTo(() => _logic.DeclineAppRequestAsync(appId, IamUserId, data)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task DeactivateApp_ReturnsNoContent()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.DeactivateOfferbyAppIdAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+        
+        //Act
+        var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);
+        
+        //Assert
+        A.CallTo(() => _logic.DeactivateOfferbyAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>(); 
     }
 }

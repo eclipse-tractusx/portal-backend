@@ -62,7 +62,7 @@ public interface IOfferRepository
     /// </summary>
     /// <param name="languageShortName">The optional language shortName</param>
     /// <returns>Returns a async enumerable of (Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName)</returns>
-    IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName);
+    IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, Guid LeadPictureId, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName);
 
     /// <summary>
     /// Gets the details of an app by its id
@@ -136,7 +136,7 @@ public interface IOfferRepository
     /// </summary>
     /// <param name="iamUserId">IAM ID of the user to retrieve own company app.</param>
     /// <returns>Return Async Enumerable of App Data</returns>
-    IAsyncEnumerable<AllAppData> GetProvidedAppsData(string iamUserId);
+    IAsyncEnumerable<AllOfferData> GetProvidedOffersData(OfferTypeId offerTypeId, string iamUserId);
     
     /// <summary>
     /// Gets the client roles for a specific app
@@ -302,7 +302,7 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(bool OfferExists, string? AppName, Guid CompanyUserId)> GetOfferNameProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+    Task<(bool OfferExists, string? AppName, Guid CompanyUserId, Guid? ProviderCompanyId)> GetOfferNameProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Retireve and Validate Offer Status for App
@@ -310,7 +310,7 @@ public interface IOfferRepository
     /// <param name="appId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(bool IsStatusInReview, string? OfferName)> GetOfferStatusDataByIdAsync(Guid appId, OfferTypeId offerTypeId);
+    Task<(bool IsStatusInReview, string? OfferName, Guid? ProviderCompanyId)> GetOfferStatusDataByIdAsync(Guid appId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the data needed for declining an offer
@@ -320,4 +320,13 @@ public interface IOfferRepository
     /// <param name="offerType">Type of the offer</param>
     /// <returns>Returns the data needed to decline an offer</returns>
     Task<(string? OfferName, OfferStatusId OfferStatus, Guid? CompanyId, bool IsUserOfProvider)> GetOfferDeclineDataAsync(Guid offerId, string iamUserId, OfferTypeId offerType);
+    
+    /// <summary>
+    /// Retireve and Validate Offer Status for App
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name ="iamUserId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task<(bool IsStatusActive, bool IsUserCompanyProvider)> GetOfferActiveStatusDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId);
 }

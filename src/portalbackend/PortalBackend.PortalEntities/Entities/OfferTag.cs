@@ -20,6 +20,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -40,6 +41,7 @@ public class OfferTag
 
     [MaxLength(255)]
     [Column("tag_name")]
+    [JsonPropertyName("tag_name")]
     public string Name { get; set; }
 
     // Navigation properties

@@ -27,22 +27,21 @@ public class ServiceProviderController : ControllerBase
     /// <summary>
     /// get detail data of the calling users service provider
     /// </summary>
-    /// <param name="serviceProviderDetailDataId" example="ccf3cd17-c4bc-4cec-a041-2da709b787b0">Id of the service provider detail data</param>
     /// <returns></returns>
-    /// <remarks>Example: POST: api/administration/serviceprovider/owncompany/ccf3cd17-c4bc-4cec-a041-2da709b787b0</remarks>
+    /// <remarks>Example: GET: api/administration/serviceprovider/owncompany</remarks>
     /// <response code="200">The service provider details.</response>
     /// <response code="400">The given data are incorrect.</response>
     /// <response code="403">The calling users company is not a service-provider</response>
     /// <response code="404">Service Provider was not found.</response>
     [HttpGet]
-    [Route("owncompany/{serviceProviderDetailDataId}", Name = nameof(GetServiceProviderCompanyDetail))]
+    [Route("owncompany", Name = nameof(GetServiceProviderCompanyDetail))]
     [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(ProviderDetailReturnData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<ProviderDetailReturnData> GetServiceProviderCompanyDetail([FromRoute] Guid serviceProviderDetailDataId) =>
-        this.WithIamUserId(iamUserId => _logic.GetServiceProviderCompanyDetailsAsync(serviceProviderDetailDataId, iamUserId));
+    public Task<ProviderDetailReturnData> GetServiceProviderCompanyDetail() =>
+        this.WithIamUserId(iamUserId => _logic.GetServiceProviderCompanyDetailsAsync(iamUserId));
 
     /// <summary>
     /// Adds detail data to the calling users service provider
@@ -70,23 +69,22 @@ public class ServiceProviderController : ControllerBase
     /// <summary>
     /// Updates detail data to the calling users service provider
     /// </summary>
-    /// <param name="serviceProviderDetailDataId" example="ccf3cd17-c4bc-4cec-a041-2da709b787b0">Id of the service provider detail data</param>
     /// <param name="data">Service provider detail data</param>
     /// <returns></returns>
-    /// <remarks>Example: PUT: api/administration/serviceprovider/owncompany/ccf3cd17-c4bc-4cec-a041-2da709b787b0</remarks>
+    /// <remarks>Example: PUT: api/administration/serviceprovider/owncompany</remarks>
     /// <response code="204">The service provider details were updated successfully.</response>
     /// <response code="400">The given data are incorrect.</response>
     /// <response code="404">Service Provider was not found.</response>
     [HttpPut]
-    [Route("owncompany/{serviceProviderDetailDataId}")]
+    [Route("owncompany")]
     [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> UpdateServiceProviderCompanyDetail([FromRoute] Guid serviceProviderDetailDataId, [FromBody] ServiceProviderDetailData data)
+    public async Task<NoContentResult> UpdateServiceProviderCompanyDetail([FromBody] ServiceProviderDetailData data)
     {
-        await this.WithIamUserId(iamUserId => _logic.UpdateServiceProviderCompanyDetailsAsync(serviceProviderDetailDataId, data, iamUserId)).ConfigureAwait(false);
+        await this.WithIamUserId(iamUserId => _logic.UpdateServiceProviderCompanyDetailsAsync(data, iamUserId)).ConfigureAwait(false);
         return NoContent();
     }
 }

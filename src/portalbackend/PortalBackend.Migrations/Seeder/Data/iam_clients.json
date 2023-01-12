@@ -1,0 +1,38 @@
+[
+  {
+    "id": "f032a049-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "technical_roles_management"
+  },
+  {
+    "id": "0c9051d0-d032-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl2-CX-Portal"
+  },
+  {
+    "id": "f032a034-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl1-CX-Registration"
+  },
+  {
+    "id": "f032a035-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl3-CX-Semantic"
+  },
+  {
+    "id": "f032a036-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl4-CX-DigitalTwin"
+  },
+  {
+    "id": "f032a037-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl5-CX-Custodian"
+  },
+  {
+    "id": "f032a038-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl6-CX-DAPS"
+  },
+  {
+    "id": "f032a039-d035-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl7-CX-BPDM"
+  },
+  {
+    "id": "f032a040-d036-11ec-9d64-0242ac120002",
+    "client_client_id": "Cl16-CX-BPDMGate-Portal"
+  }
+]
