@@ -136,7 +136,7 @@ public interface IOfferRepository
     /// </summary>
     /// <param name="iamUserId">IAM ID of the user to retrieve own company app.</param>
     /// <returns>Return Async Enumerable of App Data</returns>
-    IAsyncEnumerable<AllAppData> GetProvidedAppsData(string iamUserId);
+    IAsyncEnumerable<AllOfferData> GetProvidedOffersData(OfferTypeId offerTypeId, string iamUserId);
     
     /// <summary>
     /// Gets the client roles for a specific app

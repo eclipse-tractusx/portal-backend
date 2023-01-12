@@ -29,15 +29,15 @@ public record UserCreationInfo(
     [property:JsonPropertyName("userName")]
     string? userName,
 
-    [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email")]
+    [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
     [property:JsonPropertyName("email")]
     string eMail,
 
-    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName")]
+    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
     [property:JsonPropertyName("firstName")]
     string? firstName,
 
-    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName")]
+    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
     [property:JsonPropertyName("lastName")]
     string? lastName,
 

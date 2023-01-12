@@ -394,11 +394,11 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetActiveServices
     
     [Theory]
-    [InlineData(ServiceOverviewSorting.ProviderAsc)]
-    [InlineData(ServiceOverviewSorting.ProviderDesc)]
-    [InlineData(ServiceOverviewSorting.ReleaseDateAsc)]
-    [InlineData(ServiceOverviewSorting.ReleaseDateDesc)]
-    public async Task GetActiveServices_ReturnsExpectedResult(ServiceOverviewSorting sorting)
+    [InlineData(ServiceOverviewSorting.ProviderAsc, new [] { "Newest Service", "Newest Service 2" }, new [] { "some long Description", null })]
+    [InlineData(ServiceOverviewSorting.ProviderDesc, new [] { "Newest Service 2", "Newest Service" }, new [] { null, "some long Description" })]
+    [InlineData(ServiceOverviewSorting.ReleaseDateAsc, new [] { "Newest Service", "Newest Service 2" }, new [] { "some long Description", null })]
+    [InlineData(ServiceOverviewSorting.ReleaseDateDesc, new [] { "Newest Service 2", "Newest Service" }, new [] { null, "some long Description" })]
+    public async Task GetActiveServices_ReturnsExpectedResult(ServiceOverviewSorting sorting, IEnumerable<string> names, IEnumerable<string> descriptions)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
@@ -408,34 +408,37 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         offerDetail.Should().NotBeNull();
-        offerDetail!.Count.Should().Be(1);
+        offerDetail!.Count.Should().Be(names.Count());
+        offerDetail.Data.Should().HaveSameCount(names);
+        offerDetail.Data.Select(data => data.Title).Should().ContainInOrder(names);
+        offerDetail.Data.Select(data => data.Description).Should().ContainInOrder(descriptions);
     }
 
-    [Fact]
-    public async Task GetActiveServices_WithExistingServiceAndServiceType_ReturnsExpectedResult()
+    [Theory]
+    [InlineData(ServiceTypeId.CONSULTANCE_SERVICE, 0, 2, 1, 1)]
+    [InlineData(ServiceTypeId.DATASPACE_SERVICE, 0, 2, 0, 0)]
+    [InlineData(null, 0, 2, 2, 2)]
+    [InlineData(null, 1, 1, 2, 1)]
+    [InlineData(null, 2, 1, 2, 0)]
+    public async Task GetActiveServices_WithExistingServiceAndServiceType_ReturnsExpectedResult(ServiceTypeId? serviceTypeId, int page, int size, int count, int numData)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var offerDetail = await sut.GetActiveServicesPaginationSource(null, ServiceTypeId.CONSULTANCE_SERVICE)(0, 15).ConfigureAwait(false);
+        var offerDetail = await sut.GetActiveServicesPaginationSource(null, serviceTypeId)(page, size).ConfigureAwait(false);
 
         // Assert
-        offerDetail.Should().NotBeNull();
-        offerDetail!.Count.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task GetActiveServices_WithoutExistingServiceAndServiceType_ReturnsNull()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var offerDetail = await sut.GetActiveServicesPaginationSource(null, ServiceTypeId.DATASPACE_SERVICE)(0, 15).ConfigureAwait(false);
-
-        // Assert
-        offerDetail.Should().BeNull();
+        if (count == 0)
+        {
+            offerDetail.Should().BeNull();
+        }
+        else
+        {
+            offerDetail.Should().NotBeNull();
+            offerDetail!.Count.Should().Be(count);
+            offerDetail.Data.Should().HaveCount(numData);
+        }
     }
 
     #endregion
@@ -477,6 +480,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         offerDetail.OfferStatus.Should().Be(OfferStatusId.ACTIVE);
     }
 
+    #endregion
+
+    #region GetProviderOfferDataWithConsentStatusAsync
+
     [Fact]
     public async Task GetProviderOfferDataWithConsentStatusAsync_ReturnsExpectedResult()
     {
@@ -491,20 +498,27 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.OfferProviderData.LeadPictureId.Should().NotBeEmpty();
         result.OfferProviderData.LeadPictureId.Should().Be(new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"));
     }
-    
-    [Fact]
-    public async Task GetProvidedAppsData_ReturnsExpectedResult()
+
+    #endregion
+
+    #region GetProvidedOffersData
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, "3d8142f1-860b-48aa-8c2b-1ccb18699f65", new [] { "90a24c6d-1092-4590-ae89-a9d2bff1ea41", "00000000-0000-0000-0000-000000000000" })]
+    [InlineData(OfferTypeId.SERVICE, "3d8142f1-860b-48aa-8c2b-1ccb18699f65", new [] { "00000000-0000-0000-0000-000000000000" })]
+    [InlineData(OfferTypeId.CORE_COMPONENT, "3d8142f1-860b-48aa-8c2b-1ccb18699f65", new string[] {})]
+    [InlineData(OfferTypeId.APP, "no such user", new string[] { })]
+    public async Task GetProvidedOffersData_ReturnsExpectedResult(OfferTypeId offerTypeId, string iamUserId, IEnumerable<string> leadPictureIds)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var providerAppData = await sut.GetProvidedAppsData("3d8142f1-860b-48aa-8c2b-1ccb18699f65").ToListAsync().ConfigureAwait(false);
+        var providerAppData = await sut.GetProvidedOffersData(offerTypeId, iamUserId).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        providerAppData.Should().NotBeNull();
-        providerAppData.FirstOrDefault()!.LeadPictureId.Should().NotBeEmpty();
-        providerAppData.FirstOrDefault()!.LeadPictureId.Should().Be(new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"));
+        providerAppData.Should().HaveSameCount(leadPictureIds);
+        providerAppData.OrderBy(item => item.LeadPictureId).Select(item => item.LeadPictureId).Should().ContainInOrder(leadPictureIds.Select(item => new Guid(item)).OrderBy(item => item));
     }
 
     #endregion
