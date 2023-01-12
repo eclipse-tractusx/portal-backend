@@ -63,7 +63,7 @@ jobs:
           output: "trivy-results1.sarif"
           severity: "CRITICAL,HIGH"
           skip-files: "/src/portalbackend/PortalBackend.Migrations/Seeder/Data/documents.consortia.json"
-          timeout: "900s"
+          timeout: "3600s"
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
