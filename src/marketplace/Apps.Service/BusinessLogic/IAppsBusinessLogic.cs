@@ -129,7 +129,7 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="userId">IAM ID of the user to retrieve own company app.</param>
     /// <returns>Async enumberable of company owned apps data</returns>
-    IAsyncEnumerable<AllAppData> GetCompanyProvidedAppsDataForUserAsync(string userId);
+    IAsyncEnumerable<AllOfferData> GetCompanyProvidedAppsDataForUserAsync(string userId);
 
     /// <summary>
     /// Auto setup the app.
