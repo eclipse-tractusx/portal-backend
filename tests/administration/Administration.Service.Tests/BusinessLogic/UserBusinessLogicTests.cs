@@ -36,7 +36,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic.Tests;
@@ -114,7 +114,13 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(true);
 
-        var userList = _fixture.Create<IEnumerable<UserCreationInfo>>();
+        var userList = new [] {
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo()
+        };
 
         var sut = new UserBusinessLogic(
             null!,
@@ -140,15 +146,16 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(true);
 
-        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+        var userCreationInfo = CreateUserCreationInfo();
+
         var error = _fixture.Create<TestException>();
 
         var userList = new [] {
-            _fixture.Create<UserCreationInfo>(),
-            _fixture.Create<UserCreationInfo>(),
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo(),
             userCreationInfo,
-            _fixture.Create<UserCreationInfo>(),
-            _fixture.Create<UserCreationInfo>()
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo()
         };
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
@@ -190,15 +197,15 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(true);
 
-        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+        var userCreationInfo = CreateUserCreationInfo();
         var expected = _fixture.Create<TestException>();
 
         var userList = new [] {
-            _fixture.Create<UserCreationInfo>(),
-            _fixture.Create<UserCreationInfo>(),
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo(),
             userCreationInfo,
-            _fixture.Create<UserCreationInfo>(),
-            _fixture.Create<UserCreationInfo>()
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo()
         };
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
@@ -237,15 +244,15 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(true);
 
-        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+        var userCreationInfo = CreateUserCreationInfo();
         var error = _fixture.Create<TestException>();
 
         var userList = new [] {
-            _fixture.Create<UserCreationInfo>(),
-            _fixture.Create<UserCreationInfo>(),
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo(),
             userCreationInfo,
-            _fixture.Create<UserCreationInfo>(),
-            _fixture.Create<UserCreationInfo>()
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo()
         };
 
         A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail),A<IDictionary<string,string>>._,A<List<string>>._))
@@ -278,7 +285,7 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(false);
 
-        var userCreationInfoIdp = _fixture.Create<UserCreationInfoIdp>();
+        var userCreationInfoIdp = CreateUserCreationInfoIdp();
 
         var sut = new UserBusinessLogic(
             null!,
@@ -300,7 +307,7 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(false);
 
-        var userCreationInfoIdp = _fixture.Create<UserCreationInfoIdp>();
+        var userCreationInfoIdp = CreateUserCreationInfoIdp();
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == userCreationInfoIdp.FirstName))).ReturnsLazily(
             (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
@@ -329,7 +336,7 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(false);
 
-        var userCreationInfoIdp = _fixture.Create<UserCreationInfoIdp>();
+        var userCreationInfoIdp = CreateUserCreationInfoIdp();
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == userCreationInfoIdp.FirstName))).Throws(_error);
 
@@ -354,7 +361,7 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(false);
 
-        var userCreationInfoIdp = _fixture.Create<UserCreationInfoIdp>();
+        var userCreationInfoIdp = CreateUserCreationInfoIdp();
 
         A.CallTo(() => _mailingService.SendMails(A<string>._,A<IDictionary<string,string>>._,A<IEnumerable<string>>._)).Throws(_error);
 
@@ -1250,6 +1257,20 @@ public class UserBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
     }
+
+    private UserCreationInfo CreateUserCreationInfo() => 
+        _fixture.Build<UserCreationInfo>()
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
+            .With(x => x.eMail, _fixture.CreateEmail())
+            .Create();
+
+    private UserCreationInfoIdp CreateUserCreationInfoIdp() => 
+        _fixture.Build<UserCreationInfoIdp>()
+            .With(x => x.FirstName, _fixture.CreateName())
+            .With(x => x.LastName, _fixture.CreateName())
+            .With(x => x.Email, _fixture.CreateEmail())
+            .Create();
 
     #endregion
 
