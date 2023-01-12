@@ -427,7 +427,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   auth-and-dispatch:
-    needs: [ administration-service-release, registration-service-release, provisioning-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release, services-service-release, provisioning-migrations-release ]
+    needs: [ administration-service-release, registration-service-release, provisioning-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release, services-service-release, provisioning-migrations-release, checklist-worker-release ]
     runs-on: ubuntu-latest
 
     steps:
