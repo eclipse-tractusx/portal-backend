@@ -21,12 +21,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Seeding\Framework.Seeding.csproj" />
     <ProjectReference Include="..\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.4" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.1" />
+    <ProjectReference Include="..\..\framework\Framework.DBAccess\Framework.DBAccess.csproj" />
   </ItemGroup>
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess</AssemblyName>

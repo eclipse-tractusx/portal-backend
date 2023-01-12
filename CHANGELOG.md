@@ -2,13 +2,84 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-### Unreleased
-n/a
+## Unreleased
+
+
+## 1.0.0-RC1
+
+### Change
+* Service Provider Detail Endpoints - ID deleted from path url; information fetched from user token
+* GET company application filters enabled
+* App LeadPicture (GET /api/apps/{appId} & GET /api/apps/appreleaseprocess/{appId}/appStatus) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* App LeadImage/Thumbnail URL got exchanged from a document name to an document id to be able to fetch the image from the portal.documents table
+
+
+### Feature
+* App Service
+  * enable filtering for app approval management function GET /inReview - (marketplace service; controller: appreleaseprocess)
+  * app deactivation endpoint created to enable marketplace deactivations - (marketplace service; controller: apps)
+* Registration Service
+  * enhanced business logic of POST /submitregistration by locking application related documents
+* Administration Service
+  * enhanced endpoint for GET /registration/applications by adding applied company roles
+  * enhanced endpoint for GET /companyDetailswithAddress by adding applied company roles, agreement consent status and invited users
+* Service cutting features - Service Account creation logic got updated after db attribute enhancement (see technical support section) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * Administration Service POST /owncompany/serviceaccounts business logic updated to handle service_account_type and subscription_id
+  * Administration Service GET /owncompany/serviceaccounts business logic and response body updated to handle service_account_type, subscription_id and  offer_name
+  * Service Service POST/autosetup business logic updated to handle service_account_type and store subscription_id
+
+### Technical Support
+* Migration: Data Seeding for db enabled with initial base data files for all db tables ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat) The data seeding enables delta data load
+* Db tables for unique identifier handling of companies added (portal.unique_identifiers; portal.country_assigned_identifiers; portal.company_identifiers)
+* Db attribute enhancement for company_service_accounts ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* Remove migration dev history by merging migration files to provide one initial release 1.0.0-RC1 db migration ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* Remove companies.tax_id attribute from portal db, data load files & api response
+* Email image urls of static images changed to new repo
+
+### Bugfix
+* Email template layout fixed for /nextsteps.html & /appprovider_subscription_request.html
+* Email parameter update for /declineappsubscription template
+* Registration service POST /application/{applicationId}/companyDetailsWithAddress address storing and overwrite logic fixed
+
+## 0.10.0
+
+### Change
+* App Service
+   * Get all provided apps: exclude apps with status "CREATED" and "IN REVIEW"
+   * App subscription autosetup endpoint enhanced by email notification to the customer/requester
+   * App subscription activation endpoint enhanced by email notification to the customer/requester
+   * Add service endpoint request body enhancement by adding short and long description key values
+* Administration Service
+   * Updated endpoint for get application/documents to fetch all documents uploaded under the same application ID
+
+### Feature
+* Services Service
+   * Implemented endpoint to enable service provider to submit service for review (incl. notification)
+   * Implemented endpoint to enable operator/CX admin to decline a service release request with message (notification & email)
+   * Implemented endpoint to enable operator/CX admin to approve a service release request (incl. notification)
+* Administration Service
+   * Added new endpoint to submit registration details of an company to BPDM gateway for BPN creation 
+   * IdP creation: updated config of the new idp login flow from "First Login Flow" (keycloak default) to "Login without auto user creation" (new custom flow)
+* App Service
+   * Implemented endpoint to enable operator/CX admin to decline an app release request with message (notification & email)
+   * Implemented endpoint to enable operator/CX admin to approve an app release request (incl. notification)
+
+### Technical Support
+* Portal to DAPS interface communication change to technical user / service account
+* Migrations DB EF Core Enabling for provisioning service
+
+### Bugfix
+* Updated deletion logic of the Maintenance App Batch Delete Service by validating app assigned document foreign key relation before running the deletion of a "Inactive" document and ignore "Pending" documents
+* Welcome email business logic updated. "Send email" logic was connected to SD and Wallet api call success; the relation got disconnected. Email will get send always as long as the application is put to the status "APPROVED"
+* Notification Service: filter by notification_topic got added
+* Registration Service: Application consent status storage logic got corrected to overwrite existing consent for given agreement
+* Service activation notification logic update: only send notification to the requester company user with the role "IT Admin"
+* App subscription/autosetup logic corrected
 
 ## 0.9.0
 
 ### Change
-* Services Endpoints
+* Services Service
    * added service types support the filtering and tagging of services (one service can have multiple service types)
    * enabled service sorting
    * enable service updates

@@ -23,6 +23,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
@@ -83,4 +85,25 @@ public class DocumentsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<bool> DeleteDocumentAsync([FromRoute] Guid documentId) => 
         this.WithIamUserId(userId => _businessLogic.DeleteDocumentAsync(documentId, userId));
+
+    /// <summary>
+    /// Gets the json the seed data for a specific document
+    /// </summary>
+    /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3"></param>
+    /// <returns></returns>
+    /// <remarks>
+    /// Example: GET: /api/registration/documents/{documentId}/seeddata
+    /// <br /> <b>this endpoint can only be used in the dev environment!</b>
+    /// </remarks>
+    /// <response code="200">Successfully deleted the document</response>
+    /// <response code="403">Call was made from a non dev environment</response>
+    /// <response code="404">The document was not found.</response>
+    [HttpGet]
+    // [Authorize(Roles = "view_documents")]
+    [Route("{documentId}/seeddata")]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<DocumentSeedData> GetDocumentSeedData([FromRoute] Guid documentId) =>
+        _businessLogic.GetSeedData(documentId);
 }

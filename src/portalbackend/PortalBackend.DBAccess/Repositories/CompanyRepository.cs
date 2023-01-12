@@ -49,14 +49,17 @@ public class CompanyRepository : ICompanyRepository
                 CompanyStatusId.PENDING,
                 DateTimeOffset.UtcNow)).Entity;
 
-    public void AttachAndModifyCompany(Guid companyId, Action<Company> setOptionalParameters)
+    public void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify)
     {
-        var company = _context.Attach(new Company(companyId, null!, default, default)).Entity;
-        setOptionalParameters.Invoke(company);
+        var company = new Company(companyId, null!, default, default);
+        initialize?.Invoke(company);
+        _context.Attach(company);
+        modify(company);
     }
 
-    public Address CreateAddress(string city, string streetname, string countryAlpha2Code) =>
-        _context.Addresses.Add(
+    public Address CreateAddress(string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters = null)
+    {
+        var address = _context.Addresses.Add(
             new Address(
                 Guid.NewGuid(),
                 city,
@@ -64,6 +67,17 @@ public class CompanyRepository : ICompanyRepository
                 countryAlpha2Code,
                 DateTimeOffset.UtcNow
             )).Entity;
+        setOptionalParameters?.Invoke(address);
+        return address;
+    }
+
+    public void AttachAndModifyAddress(Guid AddressId, Action<Address>? initialize, Action<Address> modify)
+    {
+        var address = new Address(AddressId, null!, null!, null!, default);
+        initialize?.Invoke(address);
+        _context.Attach(address);
+        modify(address);
+    }
 
     public Task<(string CompanyName, Guid CompanyId)> GetCompanyNameIdUntrackedAsync(string iamUserId) =>
         _context.IamUsers
@@ -118,12 +132,10 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsValidServicProviderDetailsId, bool IsSameCompany)> CheckProviderCompanyDetailsExistsForUser(string iamUserId, Guid providerCompanyDetailsId) =>
+    public Task<Guid> CheckProviderCompanyDetailsExistsForUser(string iamUserId) =>
         _context.ProviderCompanyDetails.AsNoTracking()
-            .Where(details => details.Id == providerCompanyDetailsId)
-            .Select(details => new ValueTuple<bool,bool>(
-                true,
-                details.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId)))
+            .Where(details => details.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
+            .Select(details => details.Id)
             .SingleOrDefaultAsync();
     
     /// <inheritdoc />
@@ -131,14 +143,15 @@ public class CompanyRepository : ICompanyRepository
         _context.ProviderCompanyDetails.Add(new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow)).Entity;
 
     /// <inheritdoc />
-    public Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany, bool IsCompanyUser)> GetProviderCompanyDetailAsync(Guid providerDetailDataId, CompanyRoleId companyRoleId, string iamUserId) =>
-        _context.ProviderCompanyDetails
-            .Where(x => 
-                x.Id == providerDetailDataId)
-            .Select(x => new ValueTuple<ProviderDetailReturnData,bool,bool>(
-                new ProviderDetailReturnData(x.Id, x.CompanyId, x.AutoSetupUrl),
-                x.Company!.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId),
-                x.Company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId)))
+    public Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, string iamUserId) =>
+        _context.Companies
+            .Where(company => company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
+            .Select(company => new ValueTuple<ProviderDetailReturnData,bool>(
+                new ProviderDetailReturnData(
+                    company.ProviderCompanyDetail!.Id,
+                    company.Id,
+                    company.ProviderCompanyDetail.AutoSetupUrl),
+                company.CompanyRoles.Any(companyRole => companyRole.Id == companyRoleId)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

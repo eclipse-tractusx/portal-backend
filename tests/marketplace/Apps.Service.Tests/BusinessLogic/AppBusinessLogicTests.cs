@@ -23,7 +23,6 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -34,6 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic.Tests;
@@ -118,7 +118,7 @@ public class AppBusinessLogicTests
     public async Task GetAllActiveAppsAsync_ExecutesSuccessfully()
     {
         // Arrange
-        var results = _fixture.CreateMany<ValueTuple<Guid, string?, string, IEnumerable<string>, string?, string?, string?>>(5);
+        var results = _fixture.CreateMany<ValueTuple<Guid, string?, string, IEnumerable<string>, Guid, string?, string?>>(5);
         A.CallTo(() => _offerRepository.GetAllActiveAppsAsync(A<string>._)).Returns(results.ToAsyncEnumerable());
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, A.Fake<IOptions<AppsSettings>>(), A.Fake<MailingService>());
@@ -138,7 +138,7 @@ public class AppBusinessLogicTests
     public async Task GetAllUserUserBusinessAppsAsync_WithValidData_ReturnsExpectedData()
     {
         // Arrange
-        var appData = _fixture.CreateMany<(Guid, string?, string, string?, string)>(5);
+        var appData = _fixture.CreateMany<(Guid, string?, string, Guid, string)>(5);
         A.CallTo(() => _offerSubscriptionRepository.GetAllBusinessAppDataForUserIdAsync(A<string>._)).Returns(appData.ToAsyncEnumerable());
         var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(new AppsSettings()), A.Fake<MailingService>());
 
@@ -380,6 +380,51 @@ public class AppBusinessLogicTests
 
     #endregion
 
+    #region  DeactivateOfferbyAppId
+
+    [Fact]
+    public async Task DeactivateOfferStatusbyAppIdAsync_CallsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var settings = new AppsSettings
+        {
+            ServiceManagerRoles = _fixture.Create<Dictionary<string, IEnumerable<string>>>(),
+            BasePortalAddress = "test"
+        };
+        var sut = new AppsBusinessLogic(null!,null!, _offerService, Options.Create(settings), _mailingService);
+        
+        // Act
+        await sut.DeactivateOfferbyAppIdAsync(appId, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.DeactivateOfferIdAsync(appId, IamUserId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region GetCompanyProvidedAppsDataForUserAsync
+
+    [Fact]
+    public async Task GetCompanyProvidedAppsDataForUserAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = new AsyncEnumerableStub<AllOfferData>(_fixture.CreateMany<AllOfferData>(5));
+
+        A.CallTo(() => _offerRepository.GetProvidedOffersData(A<OfferTypeId>._, A<string>._))
+            .Returns(data.AsAsyncEnumerable());
+
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), _mailingService);
+
+        //Act
+        var result = await sut.GetCompanyProvidedAppsDataForUserAsync(IamUserId).ToListAsync().ConfigureAwait(false);
+
+        //Assert
+        result.Should().HaveSameCount(data);
+    }
+
+    #endregion
+    
     private (CompanyUser, IamUser) CreateTestUserPair()
     {
         var companyUser = _fixture.Build<CompanyUser>()

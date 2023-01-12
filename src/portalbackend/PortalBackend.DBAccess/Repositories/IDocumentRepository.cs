@@ -56,7 +56,7 @@ public interface IDocumentRepository
     /// <param name="documentTypeId">Id of the document type</param>
     /// <param name="iamUserId">Id of the user</param>
     /// <returns>A collection of documents</returns>
-    IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId);
+    Task<(bool IsApplicationAssignedUser, IEnumerable<UploadDocuments> Documents)> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId);
     
     /// <summary>
     /// Gets the documents userid by the document id
@@ -78,4 +78,19 @@ public interface IDocumentRepository
     /// <param name="iamUserId"></param>
     /// <param name="applicationStatusIds"></param>
     Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, string iamUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
+
+    /// <summary>
+    /// Attaches the document and sets the optional parameters
+    /// </summary>
+    /// <param name="documentId">Id of the document</param>
+    /// <param name="initialize">Action to initialize the entity with values before the change</param>
+    /// <param name="modify">Action to set the values that are subject to change</param>
+    void AttachAndModifyDocument(Guid documentId, Action<Document>? initialize, Action<Document> modify);
+
+    /// <summary>
+    /// Gets the document seed data for the given id
+    /// </summary>
+    /// <param name="documentId">Id of the document</param>
+    /// <returns>The document seed data</returns>
+    Task<DocumentSeedData?> GetDocumentSeedDataByIdAsync(Guid documentId);
 }

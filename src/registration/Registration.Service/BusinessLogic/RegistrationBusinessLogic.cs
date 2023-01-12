@@ -24,7 +24,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -201,35 +200,67 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
         }
 
-        var company = companyApplicationData.CompanyApplication.Company!;
+        var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+        Guid addressId;
 
-        company.BusinessPartnerNumber = companyWithAddress.BusinessPartnerNumber;
-        company.Name = companyWithAddress.Name;
-        company.Shortname = companyWithAddress.Shortname;
-        company.TaxId = companyWithAddress.TaxId;
-        if (company.Address == null)
+        if (companyApplicationData.AddressId.HasValue)
         {
-            company.Address = _portalRepositories.GetInstance<ICompanyRepository>().CreateAddress(
-                companyWithAddress.City,
-                companyWithAddress.StreetName,
-                companyWithAddress.CountryAlpha2Code
+            addressId = companyApplicationData.AddressId.Value;
+            companyRepository.AttachAndModifyAddress(
+                addressId,
+                a => {
+                    a.City = companyApplicationData.City!;
+                    a.Streetname = companyApplicationData.Streetname!;
+                    a.CountryAlpha2Code = companyApplicationData.CountryAlpha2Code!;
+                    a.Zipcode = companyApplicationData.Zipcode;
+                    a.Region = companyApplicationData.Region;
+                    a.Streetadditional = companyApplicationData.Streetadditional;
+                    a.Streetnumber = companyApplicationData.Streetnumber;
+                },
+                a => {
+                    a.City = companyWithAddress.City;
+                    a.Streetname = companyWithAddress.StreetName;
+                    a.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
+                    a.Zipcode = companyWithAddress.Zipcode;
+                    a.Region = companyWithAddress.Region;
+                    a.Streetadditional = companyWithAddress.Streetadditional;
+                    a.Streetnumber = companyWithAddress.Streetnumber;
+                }
             );
         }
         else
         {
-            company.Address.City = companyWithAddress.City;
-            company.Address.Streetname = companyWithAddress.StreetName;
-            company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
+            addressId = companyRepository.CreateAddress(
+                companyWithAddress.City,
+                companyWithAddress.StreetName,
+                companyWithAddress.CountryAlpha2Code,
+                a => {
+                    a.Zipcode = companyWithAddress.Zipcode;
+                    a.Region = companyWithAddress.Region;
+                    a.Streetadditional = companyWithAddress.Streetadditional;
+                    a.Streetnumber = companyWithAddress.Streetnumber;
+                }
+            ).Id;
         }
 
-        company.Address.Zipcode = companyWithAddress.Zipcode;
-        company.Address.Region = companyWithAddress.Region;
-        company.Address.Streetadditional = companyWithAddress.Streetadditional;
-        company.Address.Streetnumber = companyWithAddress.Streetnumber;
-        company.CompanyStatusId = CompanyStatusId.PENDING;
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(
+            companyWithAddress.CompanyId,
+            c => {
+                c.BusinessPartnerNumber = companyApplicationData.BusinessPartnerNumber;
+                c.Name = companyApplicationData.Name;
+                c.Shortname = companyApplicationData.ShortName;
+                c.CompanyStatusId = companyApplicationData.CompanyStatusId;
+                c.AddressId = companyApplicationData.AddressId;
+            },
+            c => {
+                c.BusinessPartnerNumber = companyWithAddress.BusinessPartnerNumber;
+                c.Name = companyWithAddress.Name;
+                c.Shortname = companyWithAddress.Shortname;
+                c.CompanyStatusId = CompanyStatusId.PENDING;
+                c.AddressId = addressId;
+            });
 
-        UpdateApplicationStatus(applicationId, companyApplicationData.CompanyApplication.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository);
-
+        UpdateApplicationStatus(applicationId, companyApplicationData.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -418,9 +449,22 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new NotFoundException($"application {applicationId} does not exist");
         }
+
         if (applicationUserData.CompanyUserId == Guid.Empty)
         {
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
+        }
+         
+        if (applicationUserData.DocumentDatas.Any())
+        {
+            var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+            foreach(var document in applicationUserData.DocumentDatas) 
+            {
+                documentRepository.AttachAndModifyDocument(
+                    document.DocumentId,
+                    doc => doc.DocumentStatusId = document.StatusId,
+                    doc => doc.DocumentStatusId = DocumentStatusId.LOCKED);
+            }
         }
 
         UpdateApplicationStatus(applicationId, applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration, applicationRepository);
@@ -433,7 +477,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         if (applicationUserData.Email != null)
         {
-            await _mailingService.SendMails(applicationUserData.Email, mailParameters, new List<string> { "SubmitRegistrationTemplate" });
+            await _mailingService.SendMails(applicationUserData.Email, mailParameters, new [] { "SubmitRegistrationTemplate" });
         }
         else
         {
@@ -456,9 +500,19 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
     }
     
-    //TODO: Need to implement storage for document upload
-    public IAsyncEnumerable<UploadDocuments> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId) =>
-        _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId,documentTypeId);
+    public async Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId, documentTypeId, iamUserId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"application {applicationId} not found");
+        }
+        if (!result.IsApplicationAssignedUser)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not associated with application {applicationId}");
+        }
+        return result.Documents;
+    }
 
     public async Task<int> SetInvitationStatusAsync(string iamUserId)
     {
@@ -642,5 +696,16 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         return true;
+    }
+
+    public async Task<IEnumerable<UniqueIdentifierData>> GetCompanyIdentifiers(string alpha2Code)
+    {
+        var uniqueIdentifierData = await _portalRepositories.GetInstance<IStaticDataRepository>().GetCompanyIdentifiers(alpha2Code).ConfigureAwait(false);
+        
+        if(!uniqueIdentifierData.IsValidCountryCode)
+        {
+            throw new NotFoundException($"invalid country code {alpha2Code}");
+        }
+        return uniqueIdentifierData.IdentifierIds.Select(identifierId => new UniqueIdentifierData((int)identifierId, identifierId));
     }
 }

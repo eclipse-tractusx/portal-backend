@@ -40,7 +40,7 @@ public class AppsSettings
     /// </summary>
     /// <value></value>
     [Required]
-    public IEnumerable<NotificationTypeId> NotificationTypeIds { get; set; } = null!;
+    public IEnumerable<NotificationTypeId> SubmitAppNotificationTypeIds { get; set; } = null!;
     
     /// <summary>
     /// Document Type Id

@@ -25,29 +25,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// <summary>
 /// Settings used in business logic concerning connectors.
 /// </summary>
-public class BpdmServiceSettings
+public class BpdmServiceSettings : KeyVaultAuthSettings
 {
-    [Required(AllowEmptyStrings = false)]
-    public string Username { get; set; } = null!;
-
-    [Required(AllowEmptyStrings = false)] 
-    public string Password { get; set; } = null!;
-
-    [Required(AllowEmptyStrings = false)] 
-    public string ClientId { get; set; } = null!;
-
-    [Required(AllowEmptyStrings = false)]
-    public string GrantType { get; set; } = null!;
-
-    [Required(AllowEmptyStrings = false)]
-    public string ClientSecret { get; set; } = null!;
-
-    [Required(AllowEmptyStrings = false)]
-    public string Scope { get; set; } = null!;
-
-    [Required(AllowEmptyStrings = false)]
-    public string KeyCloakTokenAdress { get; set; } = null!;
-
     [Required(AllowEmptyStrings = false)]
     public string BaseAdress { get; set; } = null!;
 }

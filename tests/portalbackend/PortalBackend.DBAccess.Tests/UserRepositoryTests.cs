@@ -26,7 +26,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
@@ -319,6 +318,46 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Assert
         result.Should().HaveCount(2);
+    }
+
+    #endregion
+
+    #region GetCompanyUserWithRoleIdForCompany
+
+    [Fact]
+    public async Task GetCompanyUserWithRoleIdForCompany_WithExistingUserForRole_ReturnsExpectedUserId()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var result = await sut
+            .GetCompanyUserWithRoleIdForCompany(new[] {new Guid("607818be-4978-41f4-bf63-fa8d2de51154")}, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))
+            .ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result.First().Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019993"));
+    }
+
+    #endregion
+    
+    #region GetCompanyUserWithRoleIdForCompany
+
+    [Fact]
+    public async Task GetCompanyUserEmailForCompanyAndRoleId_WithExistingUserForRole_ReturnsExpectedEmail()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var result = await sut
+            .GetCompanyUserEmailForCompanyAndRoleId(new[] {new Guid("607818be-4978-41f4-bf63-fa8d2de51154")}, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))
+            .ToListAsync().ConfigureAwait(false);
+        
+        // Assert
+        result.Should().HaveCount(1);
+        result.First().Email.Should().Be("tester.user4@test.de");
     }
 
     #endregion

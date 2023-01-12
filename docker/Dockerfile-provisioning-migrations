@@ -1,0 +1,22 @@
+FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine AS base
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
+WORKDIR /
+COPY /src/provisioning /src/provisioning
+COPY /src/framework/Framework.ErrorHandling /src/framework/Framework.ErrorHandling
+COPY /src/framework/Framework.BaseDependencies /src/framework/Framework.BaseDependencies
+COPY /src/framework/Framework.Seeding /src/framework/Framework.Seeding
+WORKDIR /src/provisioning/Provisioning.Migrations
+RUN dotnet build "Provisioning.Migrations.csproj" -c Release -o /migrations/build
+
+FROM build AS publish
+RUN dotnet publish "Provisioning.Migrations.csproj" -c Release -o /migrations/publish
+
+FROM base AS final
+WORKDIR /migrations
+COPY --from=publish /migrations/publish .
+ENV ASPNETCORE_URLS http://+:8080
+EXPOSE 8080
+RUN chown -R 1000:3000 /migrations
+USER 1000:3000
+ENTRYPOINT ["dotnet", "Org.CatenaX.Ng.Portal.Backend.Provisioning.Migrations.dll"]

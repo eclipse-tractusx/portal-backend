@@ -25,6 +25,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -84,11 +85,16 @@ public class AppReleaseBusinessLogicTest
         _companyUser.IamUser = _iamUser;
         
         _settings = A.Fake<AppsSettings>();
+        _settings.OfferStatusIds = new [] 
+        {
+            OfferStatusId.IN_REVIEW,
+            OfferStatusId.ACTIVE
+        };
         _settings.ActiveAppNotificationTypeIds = new []
         {
             NotificationTypeId.APP_ROLE_ADDED
         };
-        _settings.NotificationTypeIds = new []
+        _settings.SubmitAppNotificationTypeIds = new []
         {
             NotificationTypeId.APP_RELEASE_REQUEST
         };
@@ -107,13 +113,13 @@ public class AppReleaseBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var iamUserId = _fixture.Create<string>();
-        var appUserRoleDescription = new [] {
-            new AppUserRoleDescription("en","this is test1"),
-            new AppUserRoleDescription("de","this is test2"),
-            new AppUserRoleDescription("fr","this is test3")
+        var appUserRoleDescription = new AppUserRoleDescription[] {
+            new("en","this is test1"),
+            new("de","this is test2"),
+            new("fr","this is test3")
         };
-        var appUserRoles = new [] {
-            new AppUserRole("IT Admin",appUserRoleDescription)
+        var appUserRoles = new AppUserRole[] {
+            new("IT Admin",appUserRoleDescription)
         };
         A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>.That.IsEqualTo(appId), A<string>.That.IsEqualTo(iamUserId), A<OfferTypeId>.That.IsEqualTo(OfferTypeId.APP))).Returns((true,true));
         var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, null!, null!);
@@ -309,8 +315,8 @@ public class AppReleaseBusinessLogicTest
             "test", 
             null, 
             _companyUser.Id, 
-            new []{ Guid.NewGuid() },
-            new List<LocalizedDescription>
+            new [] { Guid.NewGuid() },
+            new LocalizedDescription[]
             {
                new("de", "Long description", "desc") 
             }, 
@@ -365,8 +371,8 @@ public class AppReleaseBusinessLogicTest
             });
         var settings = new AppsSettings
         {
-            ContentTypeSettings = new[] {"application/pdf"},
-            DocumentTypeIds = new[] {DocumentTypeId.APP_CONTRACT}
+            ContentTypeSettings = new[] { "application/pdf" },
+            DocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
         };
         
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
@@ -390,8 +396,8 @@ public class AppReleaseBusinessLogicTest
 
         var settings = new AppsSettings()
         {
-            ContentTypeSettings = new[] {"text/csv"},
-            DocumentTypeIds = new[] {DocumentTypeId.APP_CONTRACT}
+            ContentTypeSettings = new[] { "text/csv" },
+            DocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
         };
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -414,16 +420,17 @@ public class AppReleaseBusinessLogicTest
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
+        var companyId = _fixture.Create<Guid>();
         var appName = _fixture.Create<string>();
 
-        var appUserRoleDescription = new [] {
-            new AppUserRoleDescription("de","this is test1"),
-            new AppUserRoleDescription("en","this is test2"),
+        var appUserRoleDescription = new AppUserRoleDescription[] {
+            new("de","this is test1"),
+            new("en","this is test2"),
         };
-        var appAssignedRoleDesc = new [] { new AppUserRole("Legal Admin", appUserRoleDescription) };
+        var appAssignedRoleDesc = new AppUserRole[] { new("Legal Admin", appUserRoleDescription) };
        
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, appName, _companyUser.Id));
+            .ReturnsLazily(() => (true, appName, _companyUser.Id, companyId));
 
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
 
@@ -440,9 +447,61 @@ public class AppReleaseBusinessLogicTest
                 A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescription(A<Guid>._, A<string>.That.IsEqualTo(indexItem.languageCode), A<string>.That.IsEqualTo(indexItem.description))).MustHaveHappened();
             }
         }
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._)).MustHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._)).MustHaveHappened();
         Assert.NotNull(result);
         Assert.IsAssignableFrom<IEnumerable<AppRoleData>>(result);
+    }
+
+    [Fact]
+    public async Task AddActiveAppUserRoleAsync_WithCompanyUserIdNotSet_ThrowsForbiddenException()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var appName = _fixture.Create<string>();
+
+        var appUserRoleDescription = new AppUserRoleDescription[] {
+            new("de","this is test1"),
+            new("en","this is test2"),
+        };
+        var appAssignedRoleDesc = new AppUserRole[] { new("Legal Admin", appUserRoleDescription) };
+       
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
+            .ReturnsLazily(() => (true, appName, Guid.Empty, null));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+
+        //Act
+        async Task Act() => await sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        //Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"user {_iamUser.UserEntityId} is not a member of the providercompany of app {appId}");
+    }
+
+    [Fact]
+    public async Task AddActiveAppUserRoleAsync_WithProviderCompanyNotSet_ThrowsConflictException()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var appName = "app name";
+
+        var appUserRoleDescription = new AppUserRoleDescription[] {
+            new("de","this is test1"),
+            new("en","this is test2"),
+        };
+        var appAssignedRoleDesc = new AppUserRole[] { new("Legal Admin", appUserRoleDescription) };
+       
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
+            .ReturnsLazily(() => (true, appName, _companyUser.Id, null));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+
+        //Act
+        async Task Act() => await sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        //Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"App {appId} providing company is not yet set.");
     }
 
     #endregion
@@ -502,7 +561,69 @@ public class AppReleaseBusinessLogicTest
     }
 
     #endregion
-    
+
+    #region GetAllInReviewStatusApps
+
+    [Fact]
+    public async Task GetAllInReviewStatusAppsAsync_DefaultRequest()
+    {
+        // Arrange
+        var offerStatus = new[] { OfferStatusId.ACTIVE , OfferStatusId.IN_REVIEW };
+        var InReviewData = new[] {
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.ACTIVE),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.ACTIVE),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.ACTIVE)
+        };
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, InReviewData.Skip(skip).Take(take)));
+        A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._,A<OfferSorting>._))
+            .Returns(paginationResult);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+
+        // Act
+        var result = await sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, null).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>
+            .That.Matches(x => x.Count() == 2 && x.All(y => offerStatus.Contains(y))),A<OfferSorting>._)).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<InReviewAppData>>(result);
+        result.Content.Should().HaveCount(5);
+        result.Content.Should().Contain(x => x.Status == OfferStatusId.ACTIVE);
+        result.Content.Should().Contain(x => x.Status == OfferStatusId.IN_REVIEW);
+    }
+
+    [Fact]
+    public async Task GetAllInReviewStatusAppsAsync_InReviewRequest()
+    { 
+        // Arrange
+        var offerStatus = new[] { OfferStatusId.IN_REVIEW };
+        var InReviewData = new[]{
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW)
+        };
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, InReviewData.Skip(skip).Take(take)));
+        A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._,A<OfferSorting>._))
+            .Returns(paginationResult);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+
+        // Act
+        var result = await sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, OfferStatusIdFilter.InReview).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>
+            .That.Matches(x => x.Count() == 1 && x.All(y => offerStatus.Contains(y))),A<OfferSorting>._)).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<InReviewAppData>>(result);
+        result.Content.Should().HaveCount(5);
+        result.Content.Should().NotContain(x => x.Status == OfferStatusId.ACTIVE);
+        result.Content.Should().Contain(x => x.Status == OfferStatusId.IN_REVIEW);
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupUpdateApp()
