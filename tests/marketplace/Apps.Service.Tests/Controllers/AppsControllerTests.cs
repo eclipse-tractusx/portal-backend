@@ -257,7 +257,7 @@ public class AppsControllerTests
     public async Task GetAppDataAsync_ReturnsExpectedCount()
     {
         //Arrange
-        var data = new AsyncEnumerableStub<AllAppData>(_fixture.CreateMany<AllAppData>(5));
+        var data = new AsyncEnumerableStub<AllOfferData>(_fixture.CreateMany<AllOfferData>(5));
         A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(A<string>._))
             .Returns(data.AsAsyncEnumerable());
 
@@ -266,7 +266,7 @@ public class AppsControllerTests
 
         //Assert
         A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(IamUserId)).MustHaveHappenedOnceExactly();
-        result.Should().HaveCount(5);
+        result.Should().HaveSameCount(data);
     }
     
     [Fact]
