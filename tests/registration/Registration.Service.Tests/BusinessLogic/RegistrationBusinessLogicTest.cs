@@ -63,6 +63,7 @@ public class RegistrationBusinessLogicTest
     private readonly TestException _error;
     private readonly IOptions<RegistrationSettings> _options;
     private readonly IMailingService _mailingService;
+    private readonly IStaticDataRepository _staticDataRepository;
     private readonly Func<UserCreationRoleDataIdpInfo,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
 
     public RegistrationBusinessLogicTest()
@@ -84,7 +85,7 @@ public class RegistrationBusinessLogicTest
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
         _applicationRepository = A.Fake<IApplicationRepository>();
         _consentRepository = A.Fake<IConsentRepository>();
-
+        _staticDataRepository = A.Fake<IStaticDataRepository>();
         var options = Options.Create(new RegistrationSettings
         {
             BasePortalAddress = "just a test",
@@ -1229,7 +1230,67 @@ public class RegistrationBusinessLogicTest
 
     #endregion
 
-    #region Setup
+    #region GetCompanyIdentifiers
+
+    [Fact]
+    public async Task GetCompanyIdentifiers_ReturnsExpectedOutput()
+    {
+        // Arrange
+        var uniqueIdentifierData = _fixture.CreateMany<UniqueIdentifierId>();
+
+        A.CallTo(() => _staticDataRepository.GetCompanyIdentifiers(A<string>._))
+            .Returns((uniqueIdentifierData,true));
+ 
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories);
+        // Act
+        var result = await sut.GetCompanyIdentifiers(_fixture.Create<string>()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        foreach (var item in result)
+        {
+            A.CallTo(() => _staticDataRepository.GetCompanyIdentifiers(A<string>._)).MustHaveHappenedOnceExactly();
+            Assert.NotNull(item);
+            Assert.IsType<UniqueIdentifierData?>(item);
+        }
+    }
+
+    [Fact]
+    public async Task GetCompanyIdentifiers_InvalidCountry_Throws()
+    {
+        // Arrange
+        A.CallTo(() => _staticDataRepository.GetCompanyIdentifiers(A<string>._))
+            .Returns(((IEnumerable<UniqueIdentifierId> IdentifierIds, bool IsValidCountry))default);
+ 
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories);
+
+        var countryCode = _fixture.Create<string>();
+
+        // Act
+        var Act = () => sut.GetCompanyIdentifiers(countryCode);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"invalid country code {countryCode}");
+    }
+
+    #endregion
+
+    #region Setup  
 
     private void SetupRepositories()
     {
@@ -1271,6 +1332,8 @@ public class RegistrationBusinessLogicTest
             .Returns(_applicationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>())
             .Returns(_consentRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IStaticDataRepository>())
+            .Returns(_staticDataRepository);
     }
 
     private void SetupFakesForInvitation()
