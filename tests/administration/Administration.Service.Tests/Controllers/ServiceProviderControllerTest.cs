@@ -44,21 +44,18 @@ public class ServiceProviderControllerTest
     }
 
     [Fact]
-    public async Task CreateServiceProviderCompanyDetail_WithValidData_ReturnsOk()
+    public async Task SetServiceProviderCompanyDetail_WithValidData_ReturnsOk()
     {
         //Arrange
-        var id = Guid.NewGuid();
         var data = new ServiceProviderDetailData("https://this-is-a-test.de");  
-        A.CallTo(() => _logic.CreateServiceProviderCompanyDetailsAsync(data, IamUserId))
-            .ReturnsLazily(() => id);
+        A.CallTo(() => _logic.SetServiceProviderCompanyDetailsAsync(data, IamUserId))
+            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
-        var result = await this._controller.CreateServiceProviderCompanyDetail(data).ConfigureAwait(false);
+        await this._controller.SetServiceProviderCompanyDetail(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateServiceProviderCompanyDetailsAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<CreatedAtRouteResult>(result);
-        result.Value.Should().Be(id);
+        A.CallTo(() => _logic.SetServiceProviderCompanyDetailsAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
     }
     
     [Fact]
@@ -78,23 +75,5 @@ public class ServiceProviderControllerTest
         Assert.IsType<ProviderDetailReturnData>(result);
         result.Id.Should().Be(id);
         result.CompanyId.Should().Be(CompanyId);
-    }
-    
-    
-    [Fact]
-    public async Task UpdateServiceProviderCompanyDetail_WithValidData_ReturnsOk()
-    {
-        //Arrange
-        var id = Guid.NewGuid();
-        var data = new ServiceProviderDetailData("https://this-is-a-test.de");  
-        A.CallTo(() => _logic.UpdateServiceProviderCompanyDetailsAsync(data, IamUserId))
-            .ReturnsLazily(() => Task.CompletedTask);
-
-        //Act
-        var result = await this._controller.UpdateServiceProviderCompanyDetail(data).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.UpdateServiceProviderCompanyDetailsAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<NoContentResult>(result);
     }
 }

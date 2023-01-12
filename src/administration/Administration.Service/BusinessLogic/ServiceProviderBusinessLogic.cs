@@ -58,38 +58,42 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
         return result.ProviderDetailReturnData;
     }
 
-    /// <inheritdoc />
-    public Task<Guid> CreateServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
+    public Task SetServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
     {
         ValidateServiceProviderDetailData(data);
-        return CreateServiceProviderCompanyDetailsInternalAsync(data, iamUserId);
+        return SetServiceProviderCompanyDetailsInternalAsync(data, iamUserId);
     }
 
-    private async Task<Guid> CreateServiceProviderCompanyDetailsInternalAsync(ServiceProviderDetailData data, string iamUserId)
+    /// <inheritdoc />
+    private async Task SetServiceProviderCompanyDetailsInternalAsync(ServiceProviderDetailData data, string iamUserId)
     {
-        var result = await _portalRepositories.GetInstance<ICompanyRepository>()
+        var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+        var serviceProviderDetailDataId = await companyRepository
+            .CheckProviderCompanyDetailsExistsForUser(iamUserId)
+            .ConfigureAwait(false);
+        if (serviceProviderDetailDataId == Guid.Empty)
+        {
+            var result = await companyRepository
             .GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(iamUserId, CompanyRoleId.SERVICE_PROVIDER)
             .ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new ConflictException($"IAmUser {iamUserId} is not assigned to company");
+            if (result == default)
+            {
+                throw new ConflictException($"IAmUser {iamUserId} is not assigned to company");
+            }
+            if (!result.IsServiceProviderCompany)
+            {
+                throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
+            }
+            var companyDetails = companyRepository
+                .CreateProviderCompanyDetail(result.CompanyId, data.Url);
         }
-        if (!result.IsServiceProviderCompany)
+        else
         {
-            throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
+            companyRepository.AttachAndModifyProviderCompanyDetails(
+            serviceProviderDetailDataId,
+            details => { details.AutoSetupUrl = data.Url; });
         }
-
-        var companyDetails = _portalRepositories.GetInstance<ICompanyRepository>()
-            .CreateProviderCompanyDetail(result.CompanyId, data.Url);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return companyDetails.Id;
-    }
-
-    /// <inheritdoc />
-    public Task UpdateServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
-    {
-        ValidateServiceProviderDetailData(data);
-        return UpdateServiceProviderCompanyDetailsInternalAsync(data, iamUserId);
     }
 
     private static void ValidateServiceProviderDetailData(ServiceProviderDetailData data)
@@ -98,21 +102,5 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
         {
             throw new ControllerArgumentException("Url must start with https and the maximum allowed length is 100 characters", nameof(data.Url));
         }
-    }
-    
-    private async Task UpdateServiceProviderCompanyDetailsInternalAsync(ServiceProviderDetailData data, string iamUserId)
-    {
-        var serviceProviderDetailDataId = await _portalRepositories.GetInstance<ICompanyRepository>()
-            .CheckProviderCompanyDetailsExistsForUser(iamUserId)
-            .ConfigureAwait(false);
-        if (serviceProviderDetailDataId == Guid.Empty)
-        {
-            throw new NotFoundException($"ServiceProviderDetailData does not exists.");
-        }
-
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyProviderCompanyDetails(
-            serviceProviderDetailDataId,
-            details => { details.AutoSetupUrl = data.Url; });
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
