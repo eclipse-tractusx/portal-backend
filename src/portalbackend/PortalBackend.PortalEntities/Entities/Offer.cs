@@ -68,9 +68,6 @@ public class Offer : IAuditableV1, IBaseEntity
     public DateTimeOffset? DateReleased { get; set; }
 
     [MaxLength(255)]
-    public string? ThumbnailUrl { get; set; }
-
-    [MaxLength(255)]
     public string? MarketingUrl { get; set; }
 
     [MaxLength(255)]

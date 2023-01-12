@@ -42,8 +42,6 @@ public class AuditOffer20221013 : IAuditEntityV1
 
     public DateTimeOffset? DateReleased { get; set; }
 
-    public string? ThumbnailUrl { get; set; }
-
     public string? MarketingUrl { get; set; }
     
     public string? ContactEmail { get; set; }

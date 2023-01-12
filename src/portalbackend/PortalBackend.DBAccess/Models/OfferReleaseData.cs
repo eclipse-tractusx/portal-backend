@@ -24,7 +24,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// Data Object for the Offer Release data
 /// </summary>
 /// <param name="Name"></param>
-/// <param name="ThumbnailUrl"></param>
 /// <param name="SalesManagerId"></param>
 /// <param name="ProviderCompanyId"></param>
 /// <param name="CompanyName"></param>
@@ -33,7 +32,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <returns></returns>
 public record OfferReleaseData(
     string? Name,
-    string? ThumbnailUrl,
     Guid? SalesManagerId,
     Guid? ProviderCompanyId,
     string CompanyName,
