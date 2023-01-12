@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\framework\Framework.Seeding\Framework.Seeding.csproj" />
     <ProjectReference Include="..\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.DBAccess\Framework.DBAccess.csproj" />
   </ItemGroup>
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess</AssemblyName>

@@ -18,11 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -92,14 +93,13 @@ public class ApplicationRepository : IApplicationRepository
             .Select(application => new {
                 Application = application, 
                 CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId).SingleOrDefault(),
-                Documents = application.Company!.CompanyUsers.SelectMany(companyUser => companyUser.Documents).Where(Doc => Doc.DocumentStatusId != DocumentStatusId.LOCKED)
-                    .Select(document => new { document.Id, document.DocumentStatusId })
+                Documents = application.Company.CompanyUsers.SelectMany(companyUser => companyUser.Documents).Where(Doc => Doc.DocumentStatusId != DocumentStatusId.LOCKED)
             })
             .Select(data => new CompanyApplicationUserEmailData(
                 data.Application.ApplicationStatusId,
                 data.CompanyUser!.Id,
-                data.CompanyUser!.Email,
-                data.Documents!.Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId))
+                data.CompanyUser.Email,
+                data.Documents.Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId))
                 ))
             .SingleOrDefaultAsync();
 
@@ -126,11 +126,10 @@ public class ApplicationRepository : IApplicationRepository
             .SingleOrDefaultAsync();
 
     public IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null, IEnumerable<CompanyApplicationStatusId>? applicationStatusIds = null) =>
-        _dbContext.Companies
-            .AsNoTracking()
-            .Where(company => companyName != null ? EF.Functions.ILike(company!.Name, $"{companyName}%") : true)
-            .SelectMany(company => company.CompanyApplications.Where(companyApplication =>
-                applicationStatusIds != null ? applicationStatusIds.Contains(companyApplication.ApplicationStatusId) : true));
+        _dbContext.CompanyApplications.AsNoTracking()
+            .Where(application =>
+                (companyName == null || EF.Functions.ILike(application.Company!.Name, $"{companyName.EscapeForILike()}%")) &&
+                (applicationStatusIds == null || applicationStatusIds.Contains(application.ApplicationStatusId)));
 
     public Task<CompanyApplicationWithCompanyAddressUserData?> GetCompanyApplicationWithCompanyAdressUserDataAsync (Guid applicationId, Guid companyId, string iamUserId) =>
         _dbContext.CompanyApplications
@@ -221,9 +220,9 @@ public class ApplicationRepository : IApplicationRepository
             .AsAsyncEnumerable();
 
     public IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null) =>
-         _dbContext.CompanyApplications
+        _dbContext.CompanyApplications
             .AsNoTracking()
-            .Where(application => companyName != null ? EF.Functions.ILike(application.Company!.Name, $"%{companyName}%") : true);
+            .Where(application => companyName == null || EF.Functions.ILike(application.Company!.Name, $"%{companyName.EscapeForILike()}%"));
 
     public Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAdressUntrackedAsync(Guid companyApplicationId) =>
         _dbContext.CompanyApplications
