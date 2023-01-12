@@ -204,26 +204,50 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().BeNull();
     }
 
-    [Fact]
-    public async Task GetAppImageDocumentContentAsync_ReturnsExpectedResult()
+    #endregion
+
+    #region GetOfferImageDocumentContentAsync
+
+    [Theory]
+    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4", "90a24c6d-1092-4590-ae89-a9d2bff1ea41", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE }, OfferTypeId.APP, true, true, true, true)]
+    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4", "90a24c6d-1092-4590-ae89-a9d2bff1ea41", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE }, OfferTypeId.SERVICE, true, true, true, false)]
+    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4", "90a24c6d-1092-4590-ae89-a9d2bff1ea41", new [] { DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP, true, true, false, true)]
+    [InlineData("deadbeef-0000-0000-0000-000000000000", "90a24c6d-1092-4590-ae89-a9d2bff1ea41", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE }, OfferTypeId.APP, true, false, true, false)]
+    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4", "deadbeef-0000-0000-0000-000000000000", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE }, OfferTypeId.APP, false, false, false, false)]
+    public async Task GetOfferImageDocumentContentAsync_ReturnsExpectedResult(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, bool isDocumentExisting, bool isLinkedToOffer, bool isValidDocumentType, bool isValidOfferType)
     {
         // Arrange
-        IEnumerable<DocumentTypeId> docIds = new List<DocumentTypeId>{DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE};
         var (sut, _) = await CreateSut().ConfigureAwait(false);
     
         // Act
-        var result = await sut.GetAppImageDocumentContentAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"),new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"),docIds).ConfigureAwait(false);
+        var result = await sut.GetOfferImageDocumentContentAsync(offerId, documentId, documentTypeIds, offerTypeId).ConfigureAwait(false);
+
+        if (isDocumentExisting && isLinkedToOffer && isValidDocumentType && isValidOfferType)
+        {
+            result.Content.Should().NotBeNull();
+        }
+        else
+        {
+            result.Content.Should().BeNull();
+        }
 
         // Assert
-        result.IsDocumentTypeIdLeadImage.Should().Be(true);
+        result.IsDocumentExisting.Should().Be(isDocumentExisting);
+        result.IsDocumentLinkedToOffer.Should().Be(isLinkedToOffer);
+        result.IsValidDocumentType.Should().Be(isValidDocumentType);
+        result.IsValidOfferType.Should().Be(isValidOfferType);
     }
 
     #endregion
-    
+
+    #region Setup    
+
     private async Task<(DocumentRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new DocumentRepository(context);
         return (sut, context);
     }
+
+    #endregion
 }

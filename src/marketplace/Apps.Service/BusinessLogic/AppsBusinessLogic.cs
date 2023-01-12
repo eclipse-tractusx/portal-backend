@@ -301,14 +301,26 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public async Task<AppImageFileContent> GetAppImageDocumentContentAsync(Guid appId, Guid documentId)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var document = await documentRepository.GetAppImageDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds).ConfigureAwait(false);
-        if (!document.IsDocumentTypeIdLeadImage)
+        var document = await documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP).ConfigureAwait(false);
+        if (!document.IsDocumentExisting)
+        {
+            throw new NotFoundException($"document {documentId} does not exist");
+        }
+        if (!document.IsValidDocumentType)
         {
             throw new ControllerArgumentException($"Document {documentId} can not get retrieved. Document type not supported.");
         }
-        if (!document.IsAppLinkDocument)
+        if (!document.IsValidOfferType)
+        {
+            throw new ControllerArgumentException($"offer {appId} is not an app");
+        }
+        if (!document.IsDocumentLinkedToOffer)
         {
             throw new ControllerArgumentException($"Document {documentId} and app id {appId} do not match.");
+        }
+        if (document.Content == null)
+        {
+            throw new UnexpectedConditionException($"document content should never be null");
         }
         return new AppImageFileContent(document.Content);
     }
