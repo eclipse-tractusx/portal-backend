@@ -340,4 +340,23 @@ public class AppsControllerTests
         A.CallTo(() => _logic.DeactivateOfferbyAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>(); 
     }
+
+     [Fact]
+    public async Task GetAppImageDocumentContentAsync_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        //var content = _fixture.Create<byte[]>();
+        var appImageFileContent = _fixture.Create<AppImageFileContent>();
+        A.CallTo(() => _logic.GetAppImageDocumentContentAsync(A<Guid>._ , A<Guid>._))
+            .Returns(appImageFileContent);
+
+        //Act
+        var result = await this._controller.GetAppImageDocumentContentAsync(appId,documentId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAppImageDocumentContentAsync(A<Guid>._ , A<Guid>._)).MustHaveHappenedOnceExactly();
+        result.Should().BeSameAs(appImageFileContent);
+    }
 }

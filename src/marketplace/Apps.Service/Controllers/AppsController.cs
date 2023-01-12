@@ -339,5 +339,22 @@ public class AppsController : ControllerBase
         await this.WithIamUserId(userId => _appsBusinessLogic.DeactivateOfferbyAppIdAsync(appId,userId)).ConfigureAwait(false);
         return NoContent();
     }
+    
+    /// <summary>
+    /// Get Document Content for Lead Image and App Lead Image DocumentType
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="documentId"></param>
+    /// <remarks>Example: GET: /api/apps/{appId}/appImages/{documentId}</remarks>
+    /// <response code="200">Returns the document Content</response>
+    /// <response code="400">Document and app id do not match. or Document can not get retrieved. Document type not supported.</response>
+    [HttpGet]
+    [Authorize(Roles = "view_documents")]
+    [Route("{appId}/appImages/{documentId}")]
+    [Produces("application/pdf", "application/json")]
+    [ProducesResponseType(typeof(AppImageFileContent), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<AppImageFileContent> GetAppImageDocumentContentAsync([FromRoute] Guid appId, [FromRoute] Guid documentId)=>
+        await _appsBusinessLogic.GetAppImageDocumentContentAsync(appId, documentId);
 
 }
