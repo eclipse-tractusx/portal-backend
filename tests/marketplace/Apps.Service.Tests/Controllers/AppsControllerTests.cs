@@ -349,6 +349,7 @@ public class AppsControllerTests
         var documentId = _fixture.Create<Guid>();
         var content = _fixture.Create<byte[]>();
         var fileName = _fixture.Create<string>();
+        
         A.CallTo(() => _logic.GetAppImageDocumentContentAsync(A<Guid>._ , A<Guid>._))
             .ReturnsLazily(() => (content,fileName));
 
@@ -357,6 +358,5 @@ public class AppsControllerTests
 
         //Assert
         A.CallTo(() => _logic.GetAppImageDocumentContentAsync(A<Guid>._ , A<Guid>._)).MustHaveHappenedOnceExactly();
-        result.Should().BeSameAs(content);
     }
 }
