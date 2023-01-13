@@ -146,7 +146,7 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, byte[]? Content, bool IsDocumentExisting)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId) =>
+    public Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId) =>
         _dbContext.Documents
             .Where(document => document.Id == documentId)
             .Select(document => new {
@@ -159,12 +159,13 @@ public class DocumentRepository : IDocumentRepository
                 IsValidOfferType = x.Offer!.OfferTypeId == offerTypeId,
                 Document = x.Document
             })
-            .Select(x => new ValueTuple<bool, bool, bool, byte[]?, bool>(
+            .Select(x => new ValueTuple<bool, bool, bool, byte[]?, bool, string>(
                 x.IsValidDocumentType,
                 x.IsDocumentLinkedToOffer,
                 x.IsValidOfferType,
                 x.IsValidDocumentType && x.IsDocumentLinkedToOffer && x.IsValidOfferType ? x.Document.DocumentContent : null,
-                true
+                true,
+                x.Document.DocumentName
             ))
             .SingleOrDefaultAsync();
 }

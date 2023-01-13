@@ -167,5 +167,5 @@ public interface IAppsBusinessLogic
     /// <param name="appId"></param>
     /// <param name="documentId"></param>
     /// <returns>byte Array Content</returns>
-    Task<AppImageFileContent> GetAppImageDocumentContentAsync(Guid appId, Guid documentId);
+    Task<(byte[] Content, string FileName)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId);
 }

@@ -347,16 +347,16 @@ public class AppsControllerTests
         //Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        //var content = _fixture.Create<byte[]>();
-        var appImageFileContent = _fixture.Create<AppImageFileContent>();
+        var content = _fixture.Create<byte[]>();
+        var fileName = _fixture.Create<string>();
         A.CallTo(() => _logic.GetAppImageDocumentContentAsync(A<Guid>._ , A<Guid>._))
-            .Returns(appImageFileContent);
+            .ReturnsLazily(() => (content,fileName));
 
         //Act
         var result = await this._controller.GetAppImageDocumentContentAsync(appId,documentId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetAppImageDocumentContentAsync(A<Guid>._ , A<Guid>._)).MustHaveHappenedOnceExactly();
-        result.Should().BeSameAs(appImageFileContent);
+        result.Should().BeSameAs(content);
     }
 }
