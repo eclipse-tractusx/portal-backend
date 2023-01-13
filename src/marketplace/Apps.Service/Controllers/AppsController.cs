@@ -348,13 +348,21 @@ public class AppsController : ControllerBase
     /// <remarks>Example: GET: /api/apps/{appId}/appImages/{documentId}</remarks>
     /// <response code="200">Returns the document Content</response>
     /// <response code="400">Document / App id not found or document type not supported.</response>
+    /// <response code="404">document not found.</response>
+    /// <response code="409">document content should not null.</response>
     [HttpGet]
     [Authorize(Roles = "view_documents")]
     [Route("{appId}/appImages/{documentId}")]
-    [Produces("application/pdf", "application/json")]
-    [ProducesResponseType(typeof(AppImageFileContent), StatusCodes.Status200OK)]
+    [Produces("image/png")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<AppImageFileContent> GetAppImageDocumentContentAsync([FromRoute] Guid appId, [FromRoute] Guid documentId)=>
-        await _appsBusinessLogic.GetAppImageDocumentContentAsync(appId, documentId);
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<ActionResult> GetAppImageDocumentContentAsync([FromRoute] Guid appId, [FromRoute] Guid documentId)
+    {
+        var (Content,FileName) = await _appsBusinessLogic.GetAppImageDocumentContentAsync(appId, documentId);
+        return File(Content, "image/png", FileName);
+    }
+        
 
 }

@@ -414,12 +414,13 @@ public class AppBusinessLogicTests
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
         var data = _fixture.Create<byte[]>();
+        var fileName = _fixture.Create<string>();
         var settings = new AppsSettings
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
         A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP))
-            .Returns((true, true, true, data, true));
+            .Returns((true, true, true, data, true, fileName));
 
         var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(settings), A.Fake<MailingService>());
 
@@ -432,18 +433,44 @@ public class AppBusinessLogicTests
     }
 
     [Fact]
-    public async Task GetAppImageDocumentContentAsync_WithInvalidDocumentTypeId_ThrowsArgumentException()
+    public async Task GetAppImageDocumentContentAsync_ForDocumentIdNotExist_ThrowsArgumentException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
         var data = _fixture.Create<byte[]>();
+        var fileName = _fixture.Create<string>();
         var settings = new AppsSettings
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
         A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP))
-            .Returns((false, true, true, null, true));
+            .Returns((false, true, true, null, true,fileName));
+
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(settings), A.Fake<MailingService>());
+
+        // Act
+        async Task Act() => await sut.GetAppImageDocumentContentAsync(appId, documentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"document {documentId} does not exist");
+    }
+
+    [Fact]
+    public async Task GetAppImageDocumentContentAsync_WithInvalidDocumentType_ThrowsArgumentException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var data = _fixture.Create<byte[]>();
+        var fileName = _fixture.Create<string>();
+        var settings = new AppsSettings
+        {
+            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
+        };
+        A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP))
+            .Returns((true, false, true, null, true, fileName));
 
         var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(settings), A.Fake<MailingService>());
 
@@ -456,18 +483,44 @@ public class AppBusinessLogicTests
     }
 
     [Fact]
+    public async Task GetAppImageDocumentContentAsync_WithInvalidOfferType_ThrowsArgumentException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var data = _fixture.Create<byte[]>();
+        var fileName = _fixture.Create<string>();
+        var settings = new AppsSettings
+        {
+            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
+        };
+        A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.SERVICE))
+            .Returns((true, true, false, null, true, fileName));
+
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(settings), A.Fake<MailingService>());
+
+        // Act
+        async Task Act() => await sut.GetAppImageDocumentContentAsync(appId, documentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"offer {appId} is not an app");
+    }
+
+    [Fact]
     public async Task GetAppImageDocumentContentAsync_WithOfferNotLinkToDocument_ThrowsArgumentException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
         var data = _fixture.Create<byte[]>();
+        var fileName = _fixture.Create<string>();
         var settings = new AppsSettings
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
         A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP))
-            .Returns((true, false, true, null, true));
+            .Returns((true, false, true, null, true, fileName));
 
         var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(settings), A.Fake<MailingService>());
 
@@ -478,6 +531,32 @@ public class AppBusinessLogicTests
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be($"Document {documentId} and app id {appId} do not match.");
     }
+    
+    [Fact]
+    public async Task GetAppImageDocumentContentAsync_WithContentNull_ThrowsArgumentException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var data = _fixture.Create<byte[]>();
+        var fileName = _fixture.Create<string>();
+        var settings = new AppsSettings
+        {
+            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
+        };
+        A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP))
+            .Returns((true, true, true, null, true, fileName));
+
+        var sut = new AppsBusinessLogic(_portalRepositories, A.Fake<IOfferSubscriptionService>(), A.Fake<IOfferService>(), Options.Create(settings), A.Fake<MailingService>());
+
+        // Act
+        async Task Act() => await sut.GetAppImageDocumentContentAsync(appId, documentId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"document content should never be null");
+    }
+    
 
     #region GetCompanyProvidedAppsDataForUserAsync
 

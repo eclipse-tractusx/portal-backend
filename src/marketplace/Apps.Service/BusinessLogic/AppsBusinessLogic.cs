@@ -298,7 +298,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public async Task<AppImageFileContent> GetAppImageDocumentContentAsync(Guid appId, Guid documentId)
+    public async Task<(byte[] Content, string FileName)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
         var document = await documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP).ConfigureAwait(false);
@@ -322,6 +322,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new UnexpectedConditionException($"document content should never be null");
         }
-        return new AppImageFileContent(document.Content);
+        return (document.Content, document.FileName);
     }
 }
