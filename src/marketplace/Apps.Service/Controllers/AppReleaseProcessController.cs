@@ -276,7 +276,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="404">App does not exist.</response>
     [HttpPut]
     [Route("{appId}/submit")]
-    [Authorize(Roles = "add_app")]
+    [Authorize(Roles = "add_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
