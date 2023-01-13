@@ -103,42 +103,21 @@ public class ApplicationRepository : IApplicationRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyWithAddress?> GetCompanyWithAdressUntrackedAsync(Guid companyApplicationId) =>
-        _dbContext.CompanyApplications
-            .Where(companyApplication => companyApplication.Id == companyApplicationId)
-            .Select(
-                companyApplication => new CompanyWithAddress(
-                    companyApplication.CompanyId,
-                    companyApplication.Company!.Name,
-                    companyApplication.Company.Address!.City ?? "",
-                    companyApplication.Company.Address.Streetname ?? "",
-                    companyApplication.Company.Address.CountryAlpha2Code ?? "")
-                {
-                    BusinessPartnerNumber = companyApplication.Company!.BusinessPartnerNumber,
-                    Shortname = companyApplication.Company.Shortname,
-                    Region = companyApplication.Company.Address.Region,
-                    Streetadditional = companyApplication.Company.Address.Streetadditional,
-                    Streetnumber = companyApplication.Company.Address.Streetnumber,
-                    Zipcode = companyApplication.Company.Address.Zipcode,
-                    CountryDe = companyApplication.Company.Address.Country!.CountryNameDe // FIXME internationalization, maybe move to separate endpoint that returns Contrynames for all (or a specific) language
-                })
-            .AsNoTracking()
-            .SingleOrDefaultAsync();
-
     public IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null, IEnumerable<CompanyApplicationStatusId>? applicationStatusIds = null) =>
         _dbContext.CompanyApplications.AsNoTracking()
             .Where(application =>
                 (companyName == null || EF.Functions.ILike(application.Company!.Name, $"{companyName.EscapeForILike()}%")) &&
                 (applicationStatusIds == null || applicationStatusIds.Contains(application.ApplicationStatusId)));
 
-    public Task<CompanyApplicationWithCompanyAddressUserData?> GetCompanyApplicationWithCompanyAdressUserDataAsync (Guid applicationId, Guid companyId, string iamUserId) =>
+    public Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync (Guid applicationId, string iamUserId, Guid? companyId = null) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
-            .Where(application => application.Id == applicationId
-                && application.CompanyId == companyId)
-            .Select(application => new CompanyApplicationWithCompanyAddressUserData(
+            .Where(application => application.Id == applicationId &&
+                (companyId == null || application.CompanyId == companyId))
+            .Select(application => new CompanyApplicationDetailData(
                 application.ApplicationStatusId,
-                application.Company!.Name,
+                application.Company!.Id,
+                application.Company.Name,
                 application.Company.Shortname,
                 application.Company.BusinessPartnerNumber,
                 application.Company.CompanyStatusId,
@@ -154,7 +133,9 @@ public class ApplicationRepository : IApplicationRepository
                 application.Company.CompanyUsers
                     .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
                     .Select(companyUser => companyUser.Id)
-                    .SingleOrDefault()))
+                    .SingleOrDefault(),
+                application.Company.CompanyIdentifiers
+                    .Select(identifyer => new ValueTuple<UniqueIdentifierId,string>(identifyer.UniqueIdentifierId, identifyer.Value))))
             .SingleOrDefaultAsync();
 
     public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>
