@@ -156,117 +156,187 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
     }
 
-    public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
+    public async Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId, string iamUserId)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationDetailDataAsync(applicationId, iamUserId).ConfigureAwait(false);
         if (result == null)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} not found");
         }
-        return result;
+        if (result.CompanyUserId == Guid.Empty)
+        {
+            throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
+        }
+        return new CompanyDetailData(
+            result.CompanyId,
+            result.Name,
+            result.City ?? "",
+            result.Streetname ?? "",
+            result.CountryAlpha2Code ?? "",
+            result.BusinessPartnerNumber,
+            result.ShortName,
+            result.Region,
+            result.Streetadditional,
+            result.Streetnumber,
+            result.Zipcode,
+            result.CountryNameDe,
+            result.UniqueIds.Select(id => new CompanyUniqueIdData(id.UniqueIdentifierId, id.Value))
+        );
     }
 
-    public Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId)
+    public Task SetCompanyDetailDataAsync(Guid applicationId, CompanyDetailData companyDetails, string iamUserId)
     {
-        if (string.IsNullOrWhiteSpace(companyWithAddress.Name))
+        if (string.IsNullOrWhiteSpace(companyDetails.Name))
         {
-            throw new ControllerArgumentException("Name must not be empty", nameof(companyWithAddress.Name));
+            throw new ControllerArgumentException("Name must not be empty", nameof(companyDetails.Name));
         }
-        if (string.IsNullOrWhiteSpace(companyWithAddress.City))
+        if (string.IsNullOrWhiteSpace(companyDetails.City))
         {
-            throw new ControllerArgumentException("City must not be empty", nameof(companyWithAddress.City));
+            throw new ControllerArgumentException("City must not be empty", nameof(companyDetails.City));
         }
-        if (string.IsNullOrWhiteSpace(companyWithAddress.StreetName))
+        if (string.IsNullOrWhiteSpace(companyDetails.StreetName))
         {
-            throw new ControllerArgumentException("Streetname must not be empty", nameof(companyWithAddress.StreetName));
+            throw new ControllerArgumentException("Streetname must not be empty", nameof(companyDetails.StreetName));
         }
-        if (companyWithAddress.CountryAlpha2Code.Length != 2)
+        if (companyDetails.CountryAlpha2Code.Length != 2)
         {
-            throw new ControllerArgumentException("CountryAlpha2Code must be 2 chars", nameof(companyWithAddress.CountryAlpha2Code));
+            throw new ControllerArgumentException("CountryAlpha2Code must be 2 chars", nameof(companyDetails.CountryAlpha2Code));
         }
-        return SetCompanyWithAddressInternal(applicationId, companyWithAddress, iamUserId);
+        var emptyIds = companyDetails.UniqueIds.Where(uniqueId => string.IsNullOrWhiteSpace(uniqueId.Value));
+        if (emptyIds.Any())
+        {
+            throw new ControllerArgumentException($"uniqueIds must not contain empty values: '{string.Join(", ", emptyIds.Select(uniqueId => uniqueId.UniqueIdentifierId))}'", nameof(companyDetails.UniqueIds));
+        }
+        var distinctIds = companyDetails.UniqueIds.DistinctBy(uniqueId => uniqueId.UniqueIdentifierId);
+        if (distinctIds.Count() < companyDetails.UniqueIds.Count())
+        {
+            var duplicateIds = companyDetails.UniqueIds.Except(distinctIds);
+            throw new ControllerArgumentException($"uniqueIds must not contain duplicate types: '{string.Join(", ", duplicateIds.Select(uniqueId => uniqueId.UniqueIdentifierId))}'", nameof(companyDetails.UniqueIds));
+        }
+        return SetCompanyDetailDataInternal(applicationId, companyDetails, iamUserId);
     }
 
-    private async Task SetCompanyWithAddressInternal(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId)
+    private async Task SetCompanyDetailDataInternal(Guid applicationId, CompanyDetailData companyDetails, string iamUserId)
     {
+        await ValidateCountryAssignedIdentifiers(companyDetails).ConfigureAwait(false);
+
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+        var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+
+        var companyApplicationData = await GetAndValidateApplicationData(applicationId, companyDetails, iamUserId, applicationRepository).ConfigureAwait(false);
+
+        var addressId = CreateOrModifyAddress(companyApplicationData, companyDetails, companyRepository);
+
+        ModifyCompany(addressId, companyApplicationData, companyDetails, companyRepository);
+
+        companyRepository.CreateUpdateDeleteIdentifiers(companyDetails.CompanyId, companyApplicationData.UniqueIds, companyDetails.UniqueIds.Select(x => (x.UniqueIdentifierId, x.Value)));
+
+        UpdateApplicationStatus(applicationId, companyApplicationData.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository);
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    private async Task ValidateCountryAssignedIdentifiers(CompanyDetailData companyDetails)
+    {
+        if (companyDetails.UniqueIds.Any())
+        {
+            var assignedIdentifiers = await _portalRepositories.GetInstance<ICountryRepository>()
+                .GetCountryAssignedIdentifiers(
+                    companyDetails.CountryAlpha2Code,
+                    companyDetails.UniqueIds.Select(uniqueId => uniqueId.UniqueIdentifierId))
+                .ConfigureAwait(false);
+
+            if (!assignedIdentifiers.IsValidCountry)
+            {
+                throw new ControllerArgumentException($"{companyDetails.CountryAlpha2Code} is not a valid country-code", nameof(companyDetails.UniqueIds));
+            }
+            if (assignedIdentifiers.UniqueIdentifierIds.Count() < companyDetails.UniqueIds.Count())
+            {
+                var invalidIds = companyDetails.UniqueIds.ExceptBy(assignedIdentifiers.UniqueIdentifierIds, uniqueId => uniqueId.UniqueIdentifierId);
+                throw new ControllerArgumentException($"invalid uniqueIds for country {companyDetails.CountryAlpha2Code}: '{string.Join(", ", invalidIds.Select(uniqueId => uniqueId.UniqueIdentifierId))}'", nameof(companyDetails.UniqueIds));
+            }
+        }
+    }
+
+    private static async Task<CompanyApplicationDetailData> GetAndValidateApplicationData(Guid applicationId, CompanyDetailData companyDetails, string iamUserId, IApplicationRepository applicationRepository)
+    {
         var companyApplicationData = await applicationRepository
-            .GetCompanyApplicationWithCompanyAdressUserDataAsync(applicationId, companyWithAddress.CompanyId, iamUserId)
+            .GetCompanyApplicationDetailDataAsync(applicationId, iamUserId, companyDetails.CompanyId)
             .ConfigureAwait(false);
+
         if (companyApplicationData == null)
         {
             throw new NotFoundException(
-                $"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
+                $"CompanyApplication {applicationId} for CompanyId {companyDetails.CompanyId} not found");
         }
 
         if (companyApplicationData.CompanyUserId == Guid.Empty)
         {
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
         }
+        return companyApplicationData;
+    }
 
-        var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
-        Guid addressId;
-
-        if (companyApplicationData.AddressId.HasValue)
+    private static Guid CreateOrModifyAddress(CompanyApplicationDetailData initialData, CompanyDetailData modifyData, ICompanyRepository companyRepository)
+    {
+        if (initialData.AddressId.HasValue)
         {
-            addressId = companyApplicationData.AddressId.Value;
             companyRepository.AttachAndModifyAddress(
-                addressId,
+                initialData.AddressId.Value,
                 a => {
-                    a.City = companyApplicationData.City!;
-                    a.Streetname = companyApplicationData.Streetname!;
-                    a.CountryAlpha2Code = companyApplicationData.CountryAlpha2Code!;
-                    a.Zipcode = companyApplicationData.Zipcode;
-                    a.Region = companyApplicationData.Region;
-                    a.Streetadditional = companyApplicationData.Streetadditional;
-                    a.Streetnumber = companyApplicationData.Streetnumber;
+                    a.City = initialData.City!;
+                    a.Streetname = initialData.Streetname!;
+                    a.CountryAlpha2Code = initialData.CountryAlpha2Code!;
+                    a.Zipcode = initialData.Zipcode;
+                    a.Region = initialData.Region;
+                    a.Streetadditional = initialData.Streetadditional;
+                    a.Streetnumber = initialData.Streetnumber;
                 },
                 a => {
-                    a.City = companyWithAddress.City;
-                    a.Streetname = companyWithAddress.StreetName;
-                    a.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
-                    a.Zipcode = companyWithAddress.Zipcode;
-                    a.Region = companyWithAddress.Region;
-                    a.Streetadditional = companyWithAddress.Streetadditional;
-                    a.Streetnumber = companyWithAddress.Streetnumber;
+                    a.City = modifyData.City;
+                    a.Streetname = modifyData.StreetName;
+                    a.CountryAlpha2Code = modifyData.CountryAlpha2Code;
+                    a.Zipcode = modifyData.ZipCode;
+                    a.Region = modifyData.Region;
+                    a.Streetadditional = modifyData.StreetAdditional;
+                    a.Streetnumber = modifyData.StreetNumber;
                 }
             );
+            return initialData.AddressId.Value;
         }
         else
         {
-            addressId = companyRepository.CreateAddress(
-                companyWithAddress.City,
-                companyWithAddress.StreetName,
-                companyWithAddress.CountryAlpha2Code,
+            return companyRepository.CreateAddress(
+                modifyData.City,
+                modifyData.StreetName,
+                modifyData.CountryAlpha2Code,
                 a => {
-                    a.Zipcode = companyWithAddress.Zipcode;
-                    a.Region = companyWithAddress.Region;
-                    a.Streetadditional = companyWithAddress.Streetadditional;
-                    a.Streetnumber = companyWithAddress.Streetnumber;
+                    a.Zipcode = modifyData.ZipCode;
+                    a.Region = modifyData.Region;
+                    a.Streetadditional = modifyData.StreetAdditional;
+                    a.Streetnumber = modifyData.StreetNumber;
                 }
             ).Id;
         }
+    }
 
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(
-            companyWithAddress.CompanyId,
+    private static void ModifyCompany(Guid addressId, CompanyApplicationDetailData initialData, CompanyDetailData modifyData, ICompanyRepository companyRepository) =>
+        companyRepository.AttachAndModifyCompany(
+            modifyData.CompanyId,
             c => {
-                c.BusinessPartnerNumber = companyApplicationData.BusinessPartnerNumber;
-                c.Name = companyApplicationData.Name;
-                c.Shortname = companyApplicationData.ShortName;
-                c.CompanyStatusId = companyApplicationData.CompanyStatusId;
-                c.AddressId = companyApplicationData.AddressId;
+                c.BusinessPartnerNumber = initialData.BusinessPartnerNumber;
+                c.Name = initialData.Name;
+                c.Shortname = initialData.ShortName;
+                c.CompanyStatusId = initialData.CompanyStatusId;
+                c.AddressId = initialData.AddressId;
             },
             c => {
-                c.BusinessPartnerNumber = companyWithAddress.BusinessPartnerNumber;
-                c.Name = companyWithAddress.Name;
-                c.Shortname = companyWithAddress.Shortname;
+                c.BusinessPartnerNumber = modifyData.BusinessPartnerNumber;
+                c.Name = modifyData.Name;
+                c.Shortname = modifyData.ShortName;
                 c.CompanyStatusId = CompanyStatusId.PENDING;
                 c.AddressId = addressId;
             });
-
-        UpdateApplicationStatus(applicationId, companyApplicationData.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
 
     public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, string iamUserId)
     {

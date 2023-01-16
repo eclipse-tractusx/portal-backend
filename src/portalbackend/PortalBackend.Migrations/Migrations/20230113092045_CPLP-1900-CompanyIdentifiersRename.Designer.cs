@@ -22,6 +22,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -31,9 +32,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230113092045_CPLP-1900-CompanyIdentifiersRename")]
+    partial class CPLP1900CompanyIdentifiersRename
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -721,129 +723,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasDatabaseName("ix_app_languages_language_short_name");
 
                     b.ToTable("app_languages", "portal");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntry", b =>
-                {
-                    b.Property<Guid>("ApplicationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("application_id");
-
-                    b.Property<int>("ApplicationChecklistEntryTypeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("application_checklist_entry_type_id");
-
-                    b.Property<int>("ApplicationChecklistEntryStatusId")
-                        .HasColumnType("integer")
-                        .HasColumnName("application_checklist_entry_status_id");
-
-                    b.Property<string>("Comment")
-                        .HasColumnType("text")
-                        .HasColumnName("comment");
-
-                    b.Property<DateTimeOffset>("DateCreated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_created");
-
-                    b.Property<DateTimeOffset?>("DateLastChanged")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_last_changed");
-
-                    b.HasKey("ApplicationId", "ApplicationChecklistEntryTypeId")
-                        .HasName("pk_application_checklist");
-
-                    b.HasIndex("ApplicationChecklistEntryStatusId")
-                        .HasDatabaseName("ix_application_checklist_application_checklist_entry_status_id");
-
-                    b.HasIndex("ApplicationChecklistEntryTypeId")
-                        .HasDatabaseName("ix_application_checklist_application_checklist_entry_type_id");
-
-                    b.ToTable("application_checklist", "portal");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntryStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_application_checklist_statuses");
-
-                    b.ToTable("application_checklist_statuses", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "TO_DO"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "IN_PROGRESS"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Label = "DONE"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Label = "FAILED"
-                        });
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntryType", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_application_checklist_types");
-
-                    b.ToTable("application_checklist_types", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "REGISTRATION_VERIFICATION"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "BUSINESS_PARTNER_NUMBER"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Label = "IDENTITY_WALLET"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Label = "CLEARING_HOUSE"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Label = "SELF_DESCRIPTION_LP"
-                        });
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppSubscriptionDetail", b =>
@@ -3421,35 +3300,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Language");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntry", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntryStatus", "ApplicationChecklistEntryStatus")
-                        .WithMany("ApplicationChecklistEntries")
-                        .HasForeignKey("ApplicationChecklistEntryStatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_application_checklist_application_checklist_statuses_applic");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntryType", "ApplicationChecklistEntryType")
-                        .WithMany("ApplicationChecklistEntries")
-                        .HasForeignKey("ApplicationChecklistEntryTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_application_checklist_application_checklist_types_applicati");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", "Application")
-                        .WithMany("ApplicationChecklist")
-                        .HasForeignKey("ApplicationId")
-                        .IsRequired()
-                        .HasConstraintName("fk_application_checklist_company_applications_application_id");
-
-                    b.Navigation("Application");
-
-                    b.Navigation("ApplicationChecklistEntryStatus");
-
-                    b.Navigation("ApplicationChecklistEntryType");
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppSubscriptionDetail", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppInstance", "AppInstance")
@@ -4342,16 +4192,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("AppSubscriptionDetails");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntryStatus", b =>
-                {
-                    b.Navigation("ApplicationChecklistEntries");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntryType", b =>
-                {
-                    b.Navigation("ApplicationChecklistEntries");
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", b =>
                 {
                     b.Navigation("Agreements");
@@ -4381,8 +4221,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>
                 {
-                    b.Navigation("ApplicationChecklist");
-
                     b.Navigation("Invitations");
                 });
 

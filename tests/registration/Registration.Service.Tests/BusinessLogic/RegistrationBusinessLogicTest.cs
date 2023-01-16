@@ -30,14 +30,14 @@ using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
@@ -55,6 +55,7 @@ public class RegistrationBusinessLogicTest
     private readonly IUserRolesRepository _userRoleRepository;
     private readonly ICompanyRepository _companyRepository;
     private readonly IApplicationRepository _applicationRepository;
+    private readonly ICountryRepository _countryRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly ICompanyRolesRepository _companyRolesRepository;
     private readonly IConsentRepository _consentRepository;
@@ -63,6 +64,7 @@ public class RegistrationBusinessLogicTest
     private readonly Guid _companyUserId;
     private readonly Guid _existingApplicationId;
     private readonly string _displayName;
+    private readonly string _alpha2code;
     private readonly TestException _error;
     private readonly IOptions<RegistrationSettings> _options;
     private readonly IMailingService _mailingService;
@@ -87,6 +89,7 @@ public class RegistrationBusinessLogicTest
         _companyRepository = A.Fake<ICompanyRepository>();
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
         _applicationRepository = A.Fake<IApplicationRepository>();
+        _countryRepository = A.Fake<ICountryRepository>();
         _consentRepository = A.Fake<IConsentRepository>();
         _checklistService = A.Fake<IChecklistCreationService>();
         _staticDataRepository = A.Fake<IStaticDataRepository>();
@@ -107,6 +110,7 @@ public class RegistrationBusinessLogicTest
         _companyUserId = _fixture.Create<Guid>();
         _existingApplicationId = _fixture.Create<Guid>();
         _displayName = _fixture.Create<string>();
+        _alpha2code = "XY";
         _error = _fixture.Create<TestException>();
 
         _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
@@ -238,6 +242,8 @@ public class RegistrationBusinessLogicTest
     {
         //Arrange
         var applicationId = _fixture.Create<Guid>();
+        var userId = _fixture.Create<string>();
+        var data = _fixture.Create<CompanyApplicationDetailData>();
         var sut = new RegistrationBusinessLogic(
             _options,
             null!,
@@ -248,14 +254,15 @@ public class RegistrationBusinessLogicTest
             _portalRepositories,
             null!);
         
-        A.CallTo(() => _applicationRepository.GetCompanyWithAdressUntrackedAsync(applicationId))
-            .ReturnsLazily(A.Fake<CompanyWithAddress>);
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, userId, null))
+            .Returns(data);
 
         // Act
-        var result = await sut.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
+        var result = await sut.GetCompanyDetailData(applicationId, userId).ConfigureAwait(false);
         
         // Assert
         result.Should().NotBeNull();
+        result.UniqueIds.Should().HaveSameCount(data.UniqueIds);
     }
     
     [Fact]
@@ -263,6 +270,7 @@ public class RegistrationBusinessLogicTest
     {
         //Arrange
         var applicationId = _fixture.Create<Guid>();
+        var userId = _fixture.Create<string>();
         var sut = new RegistrationBusinessLogic(
             _options,
             null!,
@@ -273,15 +281,42 @@ public class RegistrationBusinessLogicTest
             _portalRepositories,
             null!);
         
-        A.CallTo(() => _applicationRepository.GetCompanyWithAdressUntrackedAsync(applicationId))
-            .ReturnsLazily(() => (CompanyWithAddress?)null);
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, userId, null))
+            .Returns((CompanyApplicationDetailData?)null);
 
         // Act
-        async Task Act() => await sut.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
+        async Task Act() => await sut.GetCompanyDetailData(applicationId, userId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"CompanyApplication {applicationId} not found");
+    }
+
+    [Fact]
+    public async Task GetCompanyWithAddressAsync_WithInvalidUser_ThrowsForbiddenException()
+    {
+        //Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var userId = _fixture.Create<string>();
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories,
+            null!);
+        
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, userId, null))
+            .Returns(_fixture.Build<CompanyApplicationDetailData>().With(x => x.CompanyUserId, Guid.Empty).Create());
+
+        // Act
+        async Task Act() => await sut.GetCompanyDetailData(applicationId, userId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"iamUserId {userId} is not assigned with CompanyApplication {applicationId}");
     }
 
     #endregion
@@ -289,11 +324,13 @@ public class RegistrationBusinessLogicTest
     #region SetCompanyWithAddress
     
     [Theory]
-    [InlineData(null, null, null, null, "Name")]
-    [InlineData("filled", null, null, null, "City")]
-    [InlineData("filled", "filled", null, null, "StreetName")]
-    [InlineData("filled", "filled", "filled", "", "CountryAlpha2Code")]
-    public async Task SetCompanyWithAddressAsync_WithMissingData_ThrowsArgumentException(string? name, string? city, string? streetName, string? countryCode, string argumentName)
+    [InlineData(null, null, null, null, new UniqueIdentifierId[]{}, new string[]{}, "Name")]
+    [InlineData("filled", null, null, null, new UniqueIdentifierId[]{}, new string[]{}, "City")]
+    [InlineData("filled", "filled", null, null, new UniqueIdentifierId[]{}, new string[]{}, "StreetName")]
+    [InlineData("filled", "filled", "filled", "", new UniqueIdentifierId[]{}, new string[]{}, "CountryAlpha2Code")]
+    [InlineData("filled", "filled", "filled", "XX", new UniqueIdentifierId[]{ UniqueIdentifierId.VAT_ID, UniqueIdentifierId.LEI_CODE }, new string[]{ "filled", "" }, "UniqueIds")]
+    [InlineData("filled", "filled", "filled", "XX", new UniqueIdentifierId[]{ UniqueIdentifierId.VAT_ID, UniqueIdentifierId.VAT_ID }, new string[]{ "filled", "filled" }, "UniqueIds")]
+    public async Task SetCompanyWithAddressAsync_WithMissingData_ThrowsArgumentException(string? name, string? city, string? streetName, string? countryCode, IEnumerable<UniqueIdentifierId> uniqueIdentifierIds, IEnumerable<string> values, string argumentName)
     {
         //Arrange
         var sut = new RegistrationBusinessLogic(
@@ -305,10 +342,12 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!);
-        var companyData = new CompanyWithAddress(Guid.NewGuid(), name!, city!, streetName!, countryCode!);
+
+        var uniqueIdData = uniqueIdentifierIds.Zip(values, (id, value) => new CompanyUniqueIdData(id, value));
+        var companyData = new CompanyDetailData(Guid.NewGuid(), name!, city!, streetName!, countryCode!, null, null, null, null, null, null, null, uniqueIdData);
 
         // Act
-        async Task Act() => await sut.SetCompanyWithAddressAsync(Guid.NewGuid(), companyData, string.Empty).ConfigureAwait(false);
+        async Task Act() => await sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, string.Empty).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -330,13 +369,14 @@ public class RegistrationBusinessLogicTest
             null!,
             _portalRepositories,
             null!);
-        var companyData = new CompanyWithAddress(companyId, "name", "munich", "main street", "de");
 
-        A.CallTo(() => _applicationRepository.GetCompanyApplicationWithCompanyAdressUserDataAsync(applicationId, companyId, A<string>._))
-            .ReturnsLazily(() => (CompanyApplicationWithCompanyAddressUserData?)null);
+        var companyData = new CompanyDetailData(companyId, "name", "munich", "main street", "de", null, null, null, null, null, null, null, Enumerable.Empty<CompanyUniqueIdData>());
+
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<string>._, companyId))
+            .ReturnsLazily(() => (CompanyApplicationDetailData?)null);
         
         // Act
-        async Task Act() => await sut.SetCompanyWithAddressAsync(applicationId, companyData, string.Empty).ConfigureAwait(false);
+        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData, string.Empty).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -349,6 +389,8 @@ public class RegistrationBusinessLogicTest
         //Arrange
         var applicationId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
+        var companyData = new CompanyDetailData(companyId, "name", "munich", "main street", "de", null, null, null, null, null, null, null, Enumerable.Empty<CompanyUniqueIdData>());
+
         var sut = new RegistrationBusinessLogic(
             _options,
             null!,
@@ -358,13 +400,12 @@ public class RegistrationBusinessLogicTest
             null!,
             _portalRepositories,
             null!);
-        var companyData = new CompanyWithAddress(companyId, "name", "munich", "main street", "de");
 
-        A.CallTo(() => _applicationRepository.GetCompanyApplicationWithCompanyAdressUserDataAsync(applicationId, companyId, A<string>._))
-            .ReturnsLazily(() => _fixture.Build<CompanyApplicationWithCompanyAddressUserData>().With(x => x.CompanyUserId, Guid.Empty).Create());
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<string>._, companyId))
+            .ReturnsLazily(() => _fixture.Build<CompanyApplicationDetailData>().With(x => x.CompanyUserId, Guid.Empty).Create());
         
         // Act
-        async Task Act() => await sut.SetCompanyWithAddressAsync(applicationId, companyData, string.Empty).ConfigureAwait(false);
+        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData, string.Empty).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -372,14 +413,22 @@ public class RegistrationBusinessLogicTest
     }
 
     [Fact]
-    public async Task SetCompanyWithAddressAsync_WithoutCompanyAddress_CreatesAddress()
+    public async Task SetCompanyWithAddressAsync_ModifyCompany()
     {
         //Arrange
         var applicationId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
-        var companyApplication = A.Fake<CompanyApplication>();
-        companyApplication.Company = A.Fake<PortalBackend.PortalEntities.Entities.Company>();
-        companyApplication.Company.Address = null;
+
+        var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.CompanyId, companyId)
+            .With(x => x.CountryAlpha2Code, _alpha2code)
+            .Create();
+
+        var existingData = _fixture.Build<CompanyApplicationDetailData>()
+            .Create();        
+
+        Company? company = null;
+
         var sut = new RegistrationBusinessLogic(
             _options,
             null!,
@@ -389,31 +438,63 @@ public class RegistrationBusinessLogicTest
             null!,
             _portalRepositories,
             null!);
-        var companyData = new CompanyWithAddress(companyId, "name", "munich", "main street", "de");
 
-        A.CallTo(() => _applicationRepository.GetCompanyApplicationWithCompanyAdressUserDataAsync(applicationId, companyId, A<string>._))
-            .ReturnsLazily(() =>
-                _fixture.Build<CompanyApplicationWithCompanyAddressUserData>()
-                    .With(x => x.CompanyUserId, _fixture.Create<Guid>())
-                    .With(x => x.AddressId, (Guid?)null)
-                    .Create());
-        
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<string>._, companyId))
+            .Returns(existingData);
+
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .Invokes((Guid companyId, Action<Company>? initialize, Action<Company> modify) =>
+            {
+                company = new Company(companyId, null!, default, default);
+                initialize?.Invoke(company);
+                modify(company);
+            });
+
         // Act
-        await sut.SetCompanyWithAddressAsync(applicationId, companyData, string.Empty).ConfigureAwait(false);
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData, string.Empty).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>?>._))
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+
+        company.Should().NotBeNull();
+        company.Should().Match<Company>(c =>
+            c.Id == companyId &&
+            c.Name == companyData.Name &&
+            c.Shortname == companyData.ShortName &&
+            c.BusinessPartnerNumber == companyData.BusinessPartnerNumber);
     }
 
     [Fact]
-    public async Task SetCompanyWithAddressAsync_WithCompanyAddress_DoesntCreateAddress()
+    public async Task SetCompanyWithAddressAsync_WithoutInitialCompanyAddress_CreatesAddress()
     {
         //Arrange
         var applicationId = Guid.NewGuid();
         var companyId = Guid.NewGuid();
-        var companyApplication = _fixture.Create<CompanyApplication>();
+        var addressId = Guid.NewGuid();
+
+        var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.CompanyId, companyId)
+            .With(x => x.CountryAlpha2Code, _alpha2code)
+            .Create();
+
+        var existingData = _fixture.Build<CompanyApplicationDetailData>()
+            .With(x => x.CompanyId, companyId)
+            .With(x => x.AddressId, (Guid?)null)
+            .With(x => x.City, (string)null!)
+            .With(x => x.CountryAlpha2Code, (string)null!)
+            .With(x => x.CountryNameDe, (string)null!)
+            .With(x => x.Region, (string)null!)
+            .With(x => x.Streetadditional, (string)null!)
+            .With(x => x.Streetname, (string)null!)
+            .With(x => x.Streetnumber, (string)null!)
+            .With(x => x.Zipcode, (string)null!)
+            .Create();        
+
+        Company? company = null;
+        Address? address = null;
+
         var sut = new RegistrationBusinessLogic(
             _options,
             null!,
@@ -423,18 +504,257 @@ public class RegistrationBusinessLogicTest
             null!,
             _portalRepositories,
             null!);
-        var companyData = new CompanyWithAddress(companyId, "name", "munich", "main street", "de");
 
-        A.CallTo(() => _applicationRepository.GetCompanyApplicationWithCompanyAdressUserDataAsync(applicationId, companyId, A<string>._))
-            .ReturnsLazily(() => _fixture.Build<CompanyApplicationWithCompanyAddressUserData>().With(x => x.CompanyUserId, _fixture.Create<Guid>()).Create());
-        
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<string>._, companyId))
+            .Returns(existingData);
+
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .Invokes((Guid companyId, Action<Company>? initialize, Action<Company> modify) =>
+            {
+                company = new Company(companyId, null!, default, default);
+                initialize?.Invoke(company);
+                modify(company);
+            });
+
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
+            .ReturnsLazily((string city, string streetName, string alpha2Code, Action<Address>? setParameters) =>
+            {
+                address = new Address(addressId, city, streetName, alpha2Code, default);
+                setParameters?.Invoke(address);
+                return address;
+            });
+
         // Act
-        await sut.SetCompanyWithAddressAsync(applicationId, companyData, string.Empty).ConfigureAwait(false);
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData, string.Empty).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.CreateAddress(companyData.City, companyData.StreetName, companyData.CountryAlpha2Code, A<Action<Address>>._))
+            .MustHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(companyId, A<Action<Company>>._, A<Action<Company>>._))
+            .MustHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyAddress(A<Guid>._, A<Action<Address>>._, A<Action<Address>>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+
+        company.Should().NotBeNull();
+        address.Should().NotBeNull();
+
+        company!.Id.Should().Be(companyId);
+        company.AddressId.Should().Be(addressId);
+
+        address.Should().Match<Address>(a =>
+            a.Id == addressId &&
+            a.City == companyData.City &&
+            a.CountryAlpha2Code == companyData.CountryAlpha2Code &&
+            a.Region == companyData.Region &&
+            a.Streetadditional == companyData.StreetAdditional &&
+            a.Streetname == companyData.StreetName &&
+            a.Streetnumber == companyData.StreetNumber &&
+            a.Zipcode == companyData.ZipCode);
+    }
+
+    [Fact]
+    public async Task SetCompanyWithAddressAsync_WithInitialCompanyAddress_ModifyAddress()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+
+        var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.CompanyId, companyId)
+            .With(x => x.CountryAlpha2Code, _alpha2code)
+            .Create();
+
+        var existingData = _fixture.Build<CompanyApplicationDetailData>()
+            .With(x => x.CompanyId, companyId)
+            .Create();        
+
+        Company? company = null;
+        Address? address = null;
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories,
+            null!);
+
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<string>._, companyData.CompanyId))
+            .Returns(existingData);
+
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .Invokes((Guid companyId, Action<Company>? initialize, Action<Company> modify) =>
+            {
+                company = new Company(companyId, null!, default, default);
+                initialize?.Invoke(company);
+                modify(company);
+            });
+
+        A.CallTo(() => _companyRepository.AttachAndModifyAddress(existingData.AddressId!.Value, A<Action<Address>>._, A<Action<Address>>._))
+            .Invokes((Guid addressId, Action<Address>? initialize, Action<Address> modify) =>
+            {
+                address = new Address(addressId, null!, null!, null!, default);
+                initialize?.Invoke(address);
+                modify(address);
+            });
+
+        // Act
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData, string.Empty).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>?>._))
             .MustNotHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyAddress(A<Guid>._, A<Action<Address>>._, A<Action<Address>>._!))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.AttachAndModifyAddress(existingData.AddressId!.Value, A<Action<Address>>._, A<Action<Address>>._!))
+            .MustHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+
+        company.Should().NotBeNull();
+        address.Should().NotBeNull();
+
+        company!.Id.Should().Be(companyId);
+        company.AddressId.Should().Be(existingData.AddressId!.Value);
+
+        address.Should().Match<Address>(a =>
+            a.Id == existingData.AddressId!.Value &&
+            a.City == companyData.City &&
+            a.CountryAlpha2Code == companyData.CountryAlpha2Code &&
+            a.Region == companyData.Region &&
+            a.Streetadditional == companyData.StreetAdditional &&
+            a.Streetname == companyData.StreetName &&
+            a.Streetnumber == companyData.StreetNumber &&
+            a.Zipcode == companyData.ZipCode);
+    }
+
+    [Fact]
+    public async Task SetCompanyWithAddressAsync_WithUniqueIdentifiers_CreateModifyDeleteExpected()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+
+        var uniqueIdentifiers = _fixture.CreateMany<UniqueIdentifierId>(4);
+
+        var firstIdData = _fixture.Build<CompanyUniqueIdData>().With(x => x.UniqueIdentifierId, uniqueIdentifiers.First()).Create();       // shall not modify
+        var secondIdData = _fixture.Build<CompanyUniqueIdData>().With(x => x.UniqueIdentifierId, uniqueIdentifiers.ElementAt(1)).Create(); // shall modify
+        var thirdIdData = _fixture.Build<CompanyUniqueIdData>().With(x => x.UniqueIdentifierId, uniqueIdentifiers.ElementAt(2)).Create();  // shall create new
+
+        var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.CompanyId, companyId)
+            .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.UniqueIds, new [] { firstIdData, secondIdData, thirdIdData })
+            .Create();
+
+        var existingData = _fixture.Build<CompanyApplicationDetailData>()
+            .With(x => x.UniqueIds, new [] {
+                (firstIdData.UniqueIdentifierId, firstIdData.Value),            // shall be left unmodified
+                (secondIdData.UniqueIdentifierId, _fixture.Create<string>()),   // shall be modified
+                (uniqueIdentifiers.ElementAt(3), _fixture.Create<string>()) })  // shall be deleted
+            .Create();        
+
+        IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)>? initialIdentifiers = null;
+        IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)>? modifiedIdentifiers = null;
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories,
+            null!);
+
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<string>._, companyId))
+            .Returns(existingData);
+
+        A.CallTo(() => _companyRepository.CreateUpdateDeleteIdentifiers(A<Guid>._, A<IEnumerable<(UniqueIdentifierId,string)>>._, A<IEnumerable<(UniqueIdentifierId,string)>>._))
+            .Invokes((Guid companyId, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> initial, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> modified) => {
+                initialIdentifiers = initial;
+                modifiedIdentifiers = modified;
+            });
+
+        // Act
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData, string.Empty).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _companyRepository.CreateUpdateDeleteIdentifiers(companyId, A<IEnumerable<(UniqueIdentifierId,string)>>._, A<IEnumerable<(UniqueIdentifierId,string)>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.CreateUpdateDeleteIdentifiers(A<Guid>.That.Not.IsEqualTo(companyId), A<IEnumerable<(UniqueIdentifierId,string)>>._, A<IEnumerable<(UniqueIdentifierId,string)>>._)).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+
+        initialIdentifiers.Should().NotBeNull();
+        modifiedIdentifiers.Should().NotBeNull();
+        initialIdentifiers.Should().ContainInOrder(existingData.UniqueIds);
+        modifiedIdentifiers.Should().ContainInOrder((firstIdData.UniqueIdentifierId, firstIdData.Value), (secondIdData.UniqueIdentifierId, secondIdData.Value), (thirdIdData.UniqueIdentifierId, thirdIdData.Value));
+    }
+
+    [Fact]
+    public async Task SetCompanyWithAddressAsync_WithInvalidCountryCode_Throws()
+    {
+        //Arrange
+        var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.CountryAlpha2Code, _alpha2code)
+            .Create();
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories,
+            null!);
+
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers(A<string>._, A<IEnumerable<UniqueIdentifierId>>._))
+            .Returns((false,null!));
+
+        // Act
+        var Act = () => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, string.Empty);
+
+        //Assert
+        var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"{_alpha2code} is not a valid country-code (Parameter 'UniqueIds')");
+    }
+
+    [Fact]
+    public async Task SetCompanyWithAddressAsync_WithInvalidUniqueIdentifiers_Throws()
+    {
+        //Arrange
+        var identifiers = _fixture.CreateMany<UniqueIdentifierId>(2);
+
+        var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.UniqueIds, identifiers.Select(id => _fixture.Build<CompanyUniqueIdData>().With(x => x.UniqueIdentifierId, id).Create()))
+            .Create();
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories,
+            null!);
+
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers(_alpha2code, A<IEnumerable<UniqueIdentifierId>>._))
+            .Returns((true, new [] { identifiers.First() }));
+
+        // Act
+        var Act = () => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, string.Empty);
+
+        //Assert
+        var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"invalid uniqueIds for country {_alpha2code}: '{identifiers.ElementAt(1)}' (Parameter 'UniqueIds')");
     }
 
     #endregion
@@ -1143,7 +1463,7 @@ public class RegistrationBusinessLogicTest
         await sut.SubmitRoleConsentAsync(applicationId, consents, _iamUserId).ConfigureAwait(false);
 
         // Arrange
-        A.CallTo(() => _consentRepository.AttachAndModifiesConsents(A<IEnumerable<Guid>>._, A<Action<Consent>>._)).MustHaveHappenedANumberOfTimesMatching(x => x == 2);
+        A.CallTo(() => _consentRepository.AttachAndModifiesConsents(A<IEnumerable<Guid>>._, A<Action<Consent>>._)).MustHaveHappened(2, Times.Exactly);
         A.CallTo(() => _consentRepository.CreateConsent(A<Guid>._, A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<Action<Consent>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _companyRolesRepository.CreateCompanyAssignedRole(companyId, CompanyRoleId.ACTIVE_PARTICIPANT)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _companyRolesRepository.CreateCompanyAssignedRole(A<Guid>.That.Not.IsEqualTo(companyId), A<CompanyRoleId>._)).MustNotHaveHappened();
@@ -1341,18 +1661,29 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _provisioningManager.GetClientRoleMappingsForUserAsync(string.Empty, string.Empty)).Throws(new Exception());
 
         A.CallTo(() => _userRepository.GetCompanyUserIdForUserApplicationUntrackedAsync(
-                A<Guid>.That.Matches(x => x == _existingApplicationId), A<string>.That.Matches(x => x == _iamUserId)))
-            .ReturnsLazily(() => _companyUserId);
+                _existingApplicationId, _iamUserId))
+            .Returns(_companyUserId);
         A.CallTo(() => _userRepository.GetCompanyUserIdForUserApplicationUntrackedAsync(
-                A<Guid>.That.Matches(x => x == _existingApplicationId), A<string>.That.Not.Matches(x => x == _iamUserId)))
-            .ReturnsLazily(() => Guid.Empty);
+                _existingApplicationId, A<string>.That.Not.Matches(x => x == _iamUserId)))
+            .Returns(Guid.Empty);
         A.CallTo(() => _userRepository.GetCompanyUserIdForUserApplicationUntrackedAsync(
-                A<Guid>.That.Not.Matches(x => x == _existingApplicationId), A<string>.That.Matches(x => x == _iamUserId)))
-            .ReturnsLazily(() => Guid.Empty);
+                A<Guid>.That.Not.Matches(x => x == _existingApplicationId), _iamUserId))
+            .Returns(Guid.Empty);
         A.CallTo(() => _userRepository.GetCompanyUserIdForUserApplicationUntrackedAsync(
                 A<Guid>.That.Not.Matches(x => x == _existingApplicationId), A<string>.That.Not.Matches(x => x == _iamUserId)))
-            .ReturnsLazily(() => Guid.Empty);
-        
+            .Returns(Guid.Empty);
+
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers(A<string>._, A<IEnumerable<UniqueIdentifierId>>._))
+            .ReturnsLazily((string alpha2Code, IEnumerable<UniqueIdentifierId> identifiers) => (true, identifiers));
+
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
+            .ReturnsLazily((string city, string streetName, string alpha2Code, Action<Address>? setParameters) =>
+            {
+                var address = new Address(Guid.NewGuid(), city, streetName, alpha2Code, _fixture.Create<DateTimeOffset>());
+                setParameters?.Invoke(address);
+                return address;
+            });
+
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>())
             .Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IInvitationRepository>())
@@ -1365,6 +1696,8 @@ public class RegistrationBusinessLogicTest
             .Returns(_companyRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>())
             .Returns(_applicationRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>())
+            .Returns(_countryRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>())
             .Returns(_consentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IStaticDataRepository>())
