@@ -144,4 +144,28 @@ public class DocumentRepository : IDocumentRepository
                 doc.DocumentContent,
                 (int)doc.DocumentStatusId))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
+        _dbContext.Documents
+            .Where(document => document.Id == documentId)
+            .Select(document => new {
+                Offer = document.Offers.SingleOrDefault(offer => offer.Id == offerId),
+                Document = document
+            })
+            .Select(x => new {
+                IsValidDocumentType = documentTypeIds.Contains(x.Document.DocumentTypeId),
+                IsDocumentLinkedToOffer = x.Offer != null,
+                IsValidOfferType = x.Offer!.OfferTypeId == offerTypeId,
+                Document = x.Document
+            })
+            .Select(x => new ValueTuple<bool, bool, bool, byte[]?, bool, string>(
+                x.IsValidDocumentType,
+                x.IsDocumentLinkedToOffer,
+                x.IsValidOfferType,
+                x.IsValidDocumentType && x.IsDocumentLinkedToOffer && x.IsValidOfferType ? x.Document.DocumentContent : null,
+                true,
+                x.Document.DocumentName
+            ))
+            .SingleOrDefaultAsync(cancellationToken);
 }

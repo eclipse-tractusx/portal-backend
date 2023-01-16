@@ -160,4 +160,13 @@ public interface IAppsBusinessLogic
     /// <param name="appId">Id of the app</param>
     /// <param name="iamUserId">Id of the iamUser</param>
     public Task DeactivateOfferbyAppIdAsync(Guid appId, string iamUserId);
+
+    /// <summary>
+    /// Retrieve Document Content for document type "App Lead Image" and "App Image" by ID
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="documentId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>byte Array Content</returns>
+    Task<(byte[] Content, string ContentType, string FileName)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken);
 }
