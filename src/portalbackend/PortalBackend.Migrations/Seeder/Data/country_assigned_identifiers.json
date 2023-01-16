@@ -1,1370 +1,1370 @@
 [
   {
-    "alpha2code": "DE",
+    "country_alpha2code": "DE",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "IN",
+    "country_alpha2code": "IN",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "SE",
+    "country_alpha2code": "SE",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "BG",
+    "country_alpha2code": "BG",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "EE",
+    "country_alpha2code": "EE",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "GR",
+    "country_alpha2code": "GR",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "FE",
+    "country_alpha2code": "FE",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "IT",
+    "country_alpha2code": "IT",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "LU",
+    "country_alpha2code": "LU",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "LV",
+    "country_alpha2code": "LV",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "MT",
+    "country_alpha2code": "MT",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "AT",
+    "country_alpha2code": "AT",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "PT",
+    "country_alpha2code": "PT",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "SI",
+    "country_alpha2code": "SI",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "FI",
+    "country_alpha2code": "FI",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "BE",
+    "country_alpha2code": "BE",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "CZ",
+    "country_alpha2code": "CZ",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "IE",
+    "country_alpha2code": "IE",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "ES",
+    "country_alpha2code": "ES",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "HR",
+    "country_alpha2code": "HR",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "CY",
+    "country_alpha2code": "CY",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "LT",
+    "country_alpha2code": "LT",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "HU",
+    "country_alpha2code": "HU",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "NL",
+    "country_alpha2code": "NL",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "PL",
+    "country_alpha2code": "PL",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "RO",
+    "country_alpha2code": "RO",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "SK",
+    "country_alpha2code": "SK",
     "unique_identifier_id": 1
   },
   {
-    "alpha2code": "AD",
+    "country_alpha2code": "AD",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AE",
+    "country_alpha2code": "AE",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AF",
+    "country_alpha2code": "AF",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AG",
+    "country_alpha2code": "AG",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AI",
+    "country_alpha2code": "AI",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AL",
+    "country_alpha2code": "AL",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AM",
+    "country_alpha2code": "AM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AO",
+    "country_alpha2code": "AO",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AQ",
+    "country_alpha2code": "AQ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AR",
+    "country_alpha2code": "AR",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AS",
+    "country_alpha2code": "AS",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AT",
+    "country_alpha2code": "AT",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AU",
+    "country_alpha2code": "AU",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AW",
+    "country_alpha2code": "AW",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AX",
+    "country_alpha2code": "AX",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AZ",
+    "country_alpha2code": "AZ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BA",
+    "country_alpha2code": "BA",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BB",
+    "country_alpha2code": "BB",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BD",
+    "country_alpha2code": "BD",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BE",
+    "country_alpha2code": "BE",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BF",
+    "country_alpha2code": "BF",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BG",
+    "country_alpha2code": "BG",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BH",
+    "country_alpha2code": "BH",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BI",
+    "country_alpha2code": "BI",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BJ",
+    "country_alpha2code": "BJ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BL",
+    "country_alpha2code": "BL",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BM",
+    "country_alpha2code": "BM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BN",
+    "country_alpha2code": "BN",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BO",
+    "country_alpha2code": "BO",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BQ",
+    "country_alpha2code": "BQ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BR",
+    "country_alpha2code": "BR",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BS",
+    "country_alpha2code": "BS",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BT",
+    "country_alpha2code": "BT",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BV",
+    "country_alpha2code": "BV",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BW",
+    "country_alpha2code": "BW",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BY",
+    "country_alpha2code": "BY",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "BZ",
+    "country_alpha2code": "BZ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CA",
+    "country_alpha2code": "CA",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CC",
+    "country_alpha2code": "CC",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CD",
+    "country_alpha2code": "CD",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CF",
+    "country_alpha2code": "CF",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CH",
+    "country_alpha2code": "CH",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CI",
+    "country_alpha2code": "CI",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CK",
+    "country_alpha2code": "CK",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CL",
+    "country_alpha2code": "CL",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CM",
+    "country_alpha2code": "CM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CN",
+    "country_alpha2code": "CN",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CO",
+    "country_alpha2code": "CO",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CR",
+    "country_alpha2code": "CR",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CU",
+    "country_alpha2code": "CU",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CV",
+    "country_alpha2code": "CV",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CW",
+    "country_alpha2code": "CW",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CX",
+    "country_alpha2code": "CX",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CY",
+    "country_alpha2code": "CY",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "CZ",
+    "country_alpha2code": "CZ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "DE",
+    "country_alpha2code": "DE",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "DJ",
+    "country_alpha2code": "DJ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "DK",
+    "country_alpha2code": "DK",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "DM",
+    "country_alpha2code": "DM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "DO",
+    "country_alpha2code": "DO",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "DZ",
+    "country_alpha2code": "DZ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "EC",
+    "country_alpha2code": "EC",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "EE",
+    "country_alpha2code": "EE",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "EG",
+    "country_alpha2code": "EG",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "EH",
+    "country_alpha2code": "EH",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "ER",
+    "country_alpha2code": "ER",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "ES",
+    "country_alpha2code": "ES",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "ET",
+    "country_alpha2code": "ET",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "FI",
+    "country_alpha2code": "FI",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "FJ",
+    "country_alpha2code": "FJ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "FK",
+    "country_alpha2code": "FK",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "FM",
+    "country_alpha2code": "FM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "FO",
+    "country_alpha2code": "FO",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "FR",
+    "country_alpha2code": "FR",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GA",
+    "country_alpha2code": "GA",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GB",
+    "country_alpha2code": "GB",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GD",
+    "country_alpha2code": "GD",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GE",
+    "country_alpha2code": "GE",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GF",
+    "country_alpha2code": "GF",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GG",
+    "country_alpha2code": "GG",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GH",
+    "country_alpha2code": "GH",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GI",
+    "country_alpha2code": "GI",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GL",
+    "country_alpha2code": "GL",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GM",
+    "country_alpha2code": "GM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GN",
+    "country_alpha2code": "GN",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GP",
+    "country_alpha2code": "GP",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GQ",
+    "country_alpha2code": "GQ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GR",
+    "country_alpha2code": "GR",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GS",
+    "country_alpha2code": "GS",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GT",
+    "country_alpha2code": "GT",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GU",
+    "country_alpha2code": "GU",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GW",
+    "country_alpha2code": "GW",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "GY",
+    "country_alpha2code": "GY",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "HK",
+    "country_alpha2code": "HK",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "HM",
+    "country_alpha2code": "HM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "HN",
+    "country_alpha2code": "HN",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "HR",
+    "country_alpha2code": "HR",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "HT",
+    "country_alpha2code": "HT",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "HU",
+    "country_alpha2code": "HU",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "ID",
+    "country_alpha2code": "ID",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "IE",
+    "country_alpha2code": "IE",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "IL",
+    "country_alpha2code": "IL",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "IM",
+    "country_alpha2code": "IM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "IN",
+    "country_alpha2code": "IN",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "IO",
+    "country_alpha2code": "IO",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "IQ",
+    "country_alpha2code": "IQ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "IR",
+    "country_alpha2code": "IR",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "IS",
+    "country_alpha2code": "IS",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "IT",
+    "country_alpha2code": "IT",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "JE",
+    "country_alpha2code": "JE",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "JM",
+    "country_alpha2code": "JM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "JO",
+    "country_alpha2code": "JO",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "JP",
+    "country_alpha2code": "JP",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "KE",
+    "country_alpha2code": "KE",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "KG",
+    "country_alpha2code": "KG",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "KH",
+    "country_alpha2code": "KH",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "KI",
+    "country_alpha2code": "KI",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "KM",
+    "country_alpha2code": "KM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "KN",
+    "country_alpha2code": "KN",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "KP",
+    "country_alpha2code": "KP",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "KR",
+    "country_alpha2code": "KR",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "KW",
+    "country_alpha2code": "KW",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "KY",
+    "country_alpha2code": "KY",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "KZ",
+    "country_alpha2code": "KZ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "LA",
+    "country_alpha2code": "LA",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "LB",
+    "country_alpha2code": "LB",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "LC",
+    "country_alpha2code": "LC",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "LI",
+    "country_alpha2code": "LI",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "LK",
+    "country_alpha2code": "LK",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "LR",
+    "country_alpha2code": "LR",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "LS",
+    "country_alpha2code": "LS",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "LT",
+    "country_alpha2code": "LT",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "LU",
+    "country_alpha2code": "LU",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "LV",
+    "country_alpha2code": "LV",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "LY",
+    "country_alpha2code": "LY",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MA",
+    "country_alpha2code": "MA",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MC",
+    "country_alpha2code": "MC",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MD",
+    "country_alpha2code": "MD",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "ME",
+    "country_alpha2code": "ME",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MF",
+    "country_alpha2code": "MF",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MG",
+    "country_alpha2code": "MG",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MH",
+    "country_alpha2code": "MH",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MK",
+    "country_alpha2code": "MK",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "ML",
+    "country_alpha2code": "ML",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MM",
+    "country_alpha2code": "MM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MN",
+    "country_alpha2code": "MN",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MO",
+    "country_alpha2code": "MO",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MP",
+    "country_alpha2code": "MP",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MQ",
+    "country_alpha2code": "MQ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MR",
+    "country_alpha2code": "MR",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MS",
+    "country_alpha2code": "MS",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MT",
+    "country_alpha2code": "MT",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MU",
+    "country_alpha2code": "MU",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MV",
+    "country_alpha2code": "MV",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MW",
+    "country_alpha2code": "MW",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MX",
+    "country_alpha2code": "MX",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MY",
+    "country_alpha2code": "MY",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "MZ",
+    "country_alpha2code": "MZ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "NA",
+    "country_alpha2code": "NA",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "NC",
+    "country_alpha2code": "NC",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "NE",
+    "country_alpha2code": "NE",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "NF",
+    "country_alpha2code": "NF",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "NG",
+    "country_alpha2code": "NG",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "NI",
+    "country_alpha2code": "NI",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "NL",
+    "country_alpha2code": "NL",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "NO",
+    "country_alpha2code": "NO",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "NP",
+    "country_alpha2code": "NP",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "NR",
+    "country_alpha2code": "NR",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "NU",
+    "country_alpha2code": "NU",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "NZ",
+    "country_alpha2code": "NZ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "OM",
+    "country_alpha2code": "OM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "PA",
+    "country_alpha2code": "PA",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "PE",
+    "country_alpha2code": "PE",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "PF",
+    "country_alpha2code": "PF",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "PG",
+    "country_alpha2code": "PG",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "PH",
+    "country_alpha2code": "PH",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "PK",
+    "country_alpha2code": "PK",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "PL",
+    "country_alpha2code": "PL",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "PM",
+    "country_alpha2code": "PM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "PN",
+    "country_alpha2code": "PN",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "PR",
+    "country_alpha2code": "PR",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "PS",
+    "country_alpha2code": "PS",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "PT",
+    "country_alpha2code": "PT",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "PW",
+    "country_alpha2code": "PW",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "PY",
+    "country_alpha2code": "PY",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "QA",
+    "country_alpha2code": "QA",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "RE",
+    "country_alpha2code": "RE",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "RO",
+    "country_alpha2code": "RO",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "RS",
+    "country_alpha2code": "RS",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "RU",
+    "country_alpha2code": "RU",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "RW",
+    "country_alpha2code": "RW",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SA",
+    "country_alpha2code": "SA",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SB",
+    "country_alpha2code": "SB",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SC",
+    "country_alpha2code": "SC",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SD",
+    "country_alpha2code": "SD",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SE",
+    "country_alpha2code": "SE",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SG",
+    "country_alpha2code": "SG",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SH",
+    "country_alpha2code": "SH",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SI",
+    "country_alpha2code": "SI",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SJ",
+    "country_alpha2code": "SJ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SK",
+    "country_alpha2code": "SK",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SL",
+    "country_alpha2code": "SL",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SM",
+    "country_alpha2code": "SM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SN",
+    "country_alpha2code": "SN",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SO",
+    "country_alpha2code": "SO",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SR",
+    "country_alpha2code": "SR",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SS",
+    "country_alpha2code": "SS",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "ST",
+    "country_alpha2code": "ST",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SV",
+    "country_alpha2code": "SV",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SX",
+    "country_alpha2code": "SX",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SY",
+    "country_alpha2code": "SY",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "SZ",
+    "country_alpha2code": "SZ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TC",
+    "country_alpha2code": "TC",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TD",
+    "country_alpha2code": "TD",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TF",
+    "country_alpha2code": "TF",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TG",
+    "country_alpha2code": "TG",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TH",
+    "country_alpha2code": "TH",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TJ",
+    "country_alpha2code": "TJ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TK",
+    "country_alpha2code": "TK",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TL",
+    "country_alpha2code": "TL",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TM",
+    "country_alpha2code": "TM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TN",
+    "country_alpha2code": "TN",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TO",
+    "country_alpha2code": "TO",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TR",
+    "country_alpha2code": "TR",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TT",
+    "country_alpha2code": "TT",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TV",
+    "country_alpha2code": "TV",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TW",
+    "country_alpha2code": "TW",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "TZ",
+    "country_alpha2code": "TZ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "UA",
+    "country_alpha2code": "UA",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "UG",
+    "country_alpha2code": "UG",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "UM",
+    "country_alpha2code": "UM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "US",
+    "country_alpha2code": "US",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "UY",
+    "country_alpha2code": "UY",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "UZ",
+    "country_alpha2code": "UZ",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "VA",
+    "country_alpha2code": "VA",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "VC",
+    "country_alpha2code": "VC",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "VE",
+    "country_alpha2code": "VE",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "VG",
+    "country_alpha2code": "VG",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "VI",
+    "country_alpha2code": "VI",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "VN",
+    "country_alpha2code": "VN",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "VU",
+    "country_alpha2code": "VU",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "WF",
+    "country_alpha2code": "WF",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "WS",
+    "country_alpha2code": "WS",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "YE",
+    "country_alpha2code": "YE",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "YT",
+    "country_alpha2code": "YT",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "ZA",
+    "country_alpha2code": "ZA",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "ZM",
+    "country_alpha2code": "ZM",
     "unique_identifier_id": 5
   },
   {
-    "alpha2code": "AT",
+    "country_alpha2code": "AT",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "BE",
+    "country_alpha2code": "BE",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "BG",
+    "country_alpha2code": "BG",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "HR",
+    "country_alpha2code": "HR",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "CY",
+    "country_alpha2code": "CY",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "CZ",
+    "country_alpha2code": "CZ",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "DK",
+    "country_alpha2code": "DK",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "EE",
+    "country_alpha2code": "EE",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "FI",
+    "country_alpha2code": "FI",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "FR",
+    "country_alpha2code": "FR",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "DE",
+    "country_alpha2code": "DE",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "EL",
+    "country_alpha2code": "EL",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "HU",
+    "country_alpha2code": "HU",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "IE",
+    "country_alpha2code": "IE",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "IT",
+    "country_alpha2code": "IT",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "LV",
+    "country_alpha2code": "LV",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "LT",
+    "country_alpha2code": "LT",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "LU",
+    "country_alpha2code": "LU",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "MT",
+    "country_alpha2code": "MT",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "NL",
+    "country_alpha2code": "NL",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "PL",
+    "country_alpha2code": "PL",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "PT",
+    "country_alpha2code": "PT",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "RO",
+    "country_alpha2code": "RO",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "SK",
+    "country_alpha2code": "SK",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "SI",
+    "country_alpha2code": "SI",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "ES",
+    "country_alpha2code": "ES",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "SE",
+    "country_alpha2code": "SE",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "AL",
+    "country_alpha2code": "AL",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "MK",
+    "country_alpha2code": "MK",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "AU",
+    "country_alpha2code": "AU",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "BY",
+    "country_alpha2code": "BY",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "CA",
+    "country_alpha2code": "CA",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "IS",
+    "country_alpha2code": "IS",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "IN",
+    "country_alpha2code": "IN",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "ID",
+    "country_alpha2code": "ID",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "IL",
+    "country_alpha2code": "IL",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "KZ",
+    "country_alpha2code": "KZ",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "NZ",
+    "country_alpha2code": "NZ",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "NG",
+    "country_alpha2code": "NG",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "NO",
+    "country_alpha2code": "NO",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "PH",
+    "country_alpha2code": "PH",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "RU",
+    "country_alpha2code": "RU",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "SM",
+    "country_alpha2code": "SM",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "SA",
+    "country_alpha2code": "SA",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "RS",
+    "country_alpha2code": "RS",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "CH",
+    "country_alpha2code": "CH",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "TR",
+    "country_alpha2code": "TR",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "UA",
+    "country_alpha2code": "UA",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "GB",
+    "country_alpha2code": "GB",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "UZ",
+    "country_alpha2code": "UZ",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "AR",
+    "country_alpha2code": "AR",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "BO",
+    "country_alpha2code": "BO",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "BR",
+    "country_alpha2code": "BR",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "CL",
+    "country_alpha2code": "CL",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "CO",
+    "country_alpha2code": "CO",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "CR",
+    "country_alpha2code": "CR",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "EC",
+    "country_alpha2code": "EC",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "SV",
+    "country_alpha2code": "SV",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "GT",
+    "country_alpha2code": "GT",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "HN",
+    "country_alpha2code": "HN",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "MX",
+    "country_alpha2code": "MX",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "NI",
+    "country_alpha2code": "NI",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "PA",
+    "country_alpha2code": "PA",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "PY",
+    "country_alpha2code": "PY",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "PE",
+    "country_alpha2code": "PE",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "DO",
+    "country_alpha2code": "DO",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "UY",
+    "country_alpha2code": "UY",
     "unique_identifier_id": 2
   },
   {
-    "alpha2code": "VE",
+    "country_alpha2code": "VE",
     "unique_identifier_id": 2
   }
 ]
