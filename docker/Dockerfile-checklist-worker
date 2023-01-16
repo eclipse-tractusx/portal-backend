@@ -2,9 +2,9 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /
-COPY src/checklist/Checklist.Worker/ src/checklist/Checklist.Worker/
-COPY src/checklist/Checklist.Library/ src/checklist/Checklist.Library/
-COPY src/portalbackend/PortalBackend.PortalEntities/ src/portalbackend/PortalBackend.PortalEntities/
+COPY /src/portalbackend /src/portalbackend
+COPY /src/framework /src/framework
+COPY /src/keycloak /src/keycloak
 RUN dotnet restore "src/checklist/Checklist.Worker/Checklist.Worker.csproj"
 WORKDIR /src/checklist/Checklist.Worker
 RUN dotnet build "Checklist.Worker.csproj" -c Release -o /app/build
