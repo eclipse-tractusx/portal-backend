@@ -352,7 +352,7 @@ public class AppsController : ControllerBase
     /// <response code="404">document not found.</response>
     /// <response code="409">document content should not null.</response>
     [HttpGet]
-    //[Authorize(Roles = "view_documents")]
+    [Authorize(Roles = "view_documents")]
     [Route("{appId}/appImages/{documentId}")]
     [Produces("image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/tiff")]    
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
