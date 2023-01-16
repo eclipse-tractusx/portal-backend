@@ -220,7 +220,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
     
         // Act
-        var result = await sut.GetOfferImageDocumentContentAsync(offerId, documentId, documentTypeIds, offerTypeId).ConfigureAwait(false);
+        var result = await sut.GetOfferImageDocumentContentAsync(offerId, documentId, documentTypeIds, offerTypeId, CancellationToken.None).ConfigureAwait(false);
 
         if (isDocumentExisting && isLinkedToOffer && isValidDocumentType && isValidOfferType)
         {

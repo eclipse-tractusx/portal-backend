@@ -100,6 +100,7 @@ public interface IDocumentRepository
     /// <param name="appId"></param>
     /// <param name="documentId"></param>
     /// <param name="appDocumentTypeIds"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId);
+    Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken);
 }
