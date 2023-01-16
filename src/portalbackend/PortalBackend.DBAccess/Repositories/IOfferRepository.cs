@@ -109,6 +109,8 @@ public interface IOfferRepository
     /// <param name="appUseCases">The use cases that should be added to the database</param>
     void AddAppAssignedUseCases(IEnumerable<(Guid appId, Guid useCaseId)> appUseCases);
 
+    void CreateDeleteAppAssignedUseCases(Guid appId, IEnumerable<Guid> initialUseCases, IEnumerable<Guid> modifyUseCases);
+
     /// <summary>
     /// Adds <see cref="OfferDescription"/>s to the database
     /// </summary>
