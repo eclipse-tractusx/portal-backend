@@ -43,6 +43,64 @@ public class ContextExtensionsTests
         _context = A.Fake<DbContext>();
     }
 
+    #region AddRemoveRange
+
+    [Theory]
+    [InlineData(
+        new [] { "1e237b5f-f486-4583-b121-0885593c8242", "df27919c-30c6-4ee7-8356-7d9fef01e2a9", "f1166064-2457-458e-b8f9-32a481f34785", "7dda58bd-cfe5-4f0f-8070-ea57a8371c78", "10ed72c8-492b-4569-9448-8f438cfc6b55" }, // initialKeys
+        new [] { "1e237b5f-f486-4583-b121-0885593c8242", "7f11d9a9-5ab3-4691-8a11-6250e72aa31d", "f1166064-2457-458e-b8f9-32a481f34785", "6f00c68f-85ca-47ba-b8ba-8fe8aa58b53d", "10ed72c8-492b-4569-9448-8f438cfc6b55" }, // updateKeys
+        new [] { "7f11d9a9-5ab3-4691-8a11-6250e72aa31d", "6f00c68f-85ca-47ba-b8ba-8fe8aa58b53d" }, // addedEntityKeys
+        new [] { "df27919c-30c6-4ee7-8356-7d9fef01e2a9", "7dda58bd-cfe5-4f0f-8070-ea57a8371c78" }  // removedEntityKeys
+    )]
+
+    public void AddRemoveRangeSuccess(
+        IEnumerable<string> initialKeys,
+        IEnumerable<string> updateKeys,
+        IEnumerable<string> addedEntityKeys,
+        IEnumerable<string> removedEntityKeys)
+    {
+        var key1 = Guid.NewGuid();
+        var initial = initialKeys.Select(x => new Guid(x)).ToImmutableArray();
+        var update = updateKeys.Select(x => new Guid(x)).ToImmutableArray();
+        var addedEntities = addedEntityKeys.Select(x => new TestEntity(key1, new Guid(x))).OrderBy(x => x.EntityKey2).ToImmutableArray();
+        var removedEntities = removedEntityKeys.Select(x => new TestEntity(key1, new Guid(x))).OrderBy(x => x.EntityKey2).ToImmutableArray();
+
+        IEnumerable<TestEntity>? added = null;
+        IEnumerable<TestEntity>? removed = null;
+
+        A.CallTo(() => _context.AddRange(A<IEnumerable<TestEntity>>._))
+            .Invokes((IEnumerable<object> entities) => {
+                added = entities.Select(x => (TestEntity)x).ToImmutableArray();
+            });
+        A.CallTo(() => _context.RemoveRange(A<IEnumerable<TestEntity>>._))
+            .Invokes((IEnumerable<object> entities) => {
+                removed = entities.Select(x => (TestEntity)x).ToImmutableArray();
+            });
+
+        _context.AddRemoveRange(
+            initial,
+            update,
+            key2 => new TestEntity(key1, key2)
+        );
+
+        A.CallTo(() => _context.AddRange(A<IEnumerable<object>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _context.AddRange(A<object[]>._)).MustNotHaveHappened();
+        A.CallTo(() => _context.RemoveRange(A<IEnumerable<object>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _context.RemoveRange(A<object[]>._)).MustNotHaveHappened();
+
+        added.Should().NotBeNull();
+        added.Should().HaveSameCount(addedEntities);
+        removed.Should().NotBeNull();
+        removed.Should().HaveSameCount(removedEntities);
+
+        added!.OrderBy(x => x.EntityKey2).Should().ContainInOrder(addedEntities);
+        removed!.OrderBy(x => x.EntityKey2).Should().ContainInOrder(removedEntities);
+    }
+
+    public record TestEntity(Guid entityKey1, Guid EntityKey2);
+
+    #endregion
+
     #region AddUpdateRemoveRange
 
     [Theory]
@@ -67,25 +125,25 @@ public class ContextExtensionsTests
     {
         var initialItems = initialKeys.Zip(initialValues).Select(x => ((Guid InitialKey, string InitialValue))(new Guid(x.First), x.Second)).ToImmutableArray();
         var updateItems = updateKeys.Zip(updateValues).Select(x => ((Guid UpdateKey, string UpdateValue))(new Guid(x.First),x.Second)).ToImmutableArray();
-        var addedEntities = addedEntityKeys.Zip(addedEntityValues).Select(x => new TestEntity(new Guid(x.First), x.Second)).OrderBy(x => x.EntityKey).ToImmutableArray();
-        var updatedEntities = updatedEntityKeys.Zip(updatedEntityValues).Select(x => new TestEntity(new Guid(x.First), x.Second)).OrderBy(x => x.EntityKey).ToImmutableArray();
-        var removedEntities = removedEntityKeys.Select(x => new TestEntity(new Guid(x), null!)).OrderBy(x => x.EntityKey).ToImmutableArray();
+        var addedEntities = addedEntityKeys.Zip(addedEntityValues).Select(x => new TestValueEntity(new Guid(x.First), x.Second)).OrderBy(x => x.EntityKey).ToImmutableArray();
+        var updatedEntities = updatedEntityKeys.Zip(updatedEntityValues).Select(x => new TestValueEntity(new Guid(x.First), x.Second)).OrderBy(x => x.EntityKey).ToImmutableArray();
+        var removedEntities = removedEntityKeys.Select(x => new TestValueEntity(new Guid(x), null!)).OrderBy(x => x.EntityKey).ToImmutableArray();
 
-        IEnumerable<TestEntity>? added = null;
-        IEnumerable<TestEntity>? updated = null;
-        IEnumerable<TestEntity>? removed = null;
+        IEnumerable<TestValueEntity>? added = null;
+        IEnumerable<TestValueEntity>? updated = null;
+        IEnumerable<TestValueEntity>? removed = null;
 
-        A.CallTo(() => _context.AddRange(A<IEnumerable<TestEntity>>._))
+        A.CallTo(() => _context.AddRange(A<IEnumerable<TestValueEntity>>._))
             .Invokes((IEnumerable<object> entities) => {
-                added = entities.Select(x => (TestEntity)x).ToImmutableArray();
+                added = entities.Select(x => (TestValueEntity)x).ToImmutableArray();
             });
-        A.CallTo(() => _context.AttachRange(A<IEnumerable<TestEntity>>._))
+        A.CallTo(() => _context.AttachRange(A<IEnumerable<TestValueEntity>>._))
             .Invokes((IEnumerable<object> entities) => {
-                updated = entities.Select(x => (TestEntity)x).ToImmutableArray();
+                updated = entities.Select(x => (TestValueEntity)x).ToImmutableArray();
             });
-        A.CallTo(() => _context.RemoveRange(A<IEnumerable<TestEntity>>._))
+        A.CallTo(() => _context.RemoveRange(A<IEnumerable<TestValueEntity>>._))
             .Invokes((IEnumerable<object> entities) => {
-                removed = entities.Select(x => (TestEntity)x).ToImmutableArray();
+                removed = entities.Select(x => (TestValueEntity)x).ToImmutableArray();
             });
 
         _context.AddAttachRemoveRange(
@@ -93,7 +151,7 @@ public class ContextExtensionsTests
             updateItems,
             initialItem => initialItem.InitialKey,
             updateItem => updateItem.UpdateKey,
-            key => new TestEntity(key,null!),
+            key => new TestValueEntity(key,null!),
             (initialItem, updateItem) => initialItem.InitialValue == updateItem.UpdateValue,
             (entity, initialItem) => entity.EntityValue = initialItem.InitialValue,
             (entity, updateItem) => entity.EntityValue = updateItem.UpdateValue
@@ -118,9 +176,9 @@ public class ContextExtensionsTests
         removed!.OrderBy(x => x.EntityKey).Should().ContainInOrder(removedEntities);
     }
 
-    public record TestEntity
+    public record TestValueEntity
     {
-        public TestEntity(Guid entityKey, string entityValue)
+        public TestValueEntity(Guid entityKey, string entityValue)
         {
             EntityKey = entityKey;
             EntityValue = entityValue;
@@ -129,5 +187,6 @@ public class ContextExtensionsTests
         public Guid EntityKey { get; }
         public string EntityValue { get; set; }
     }
+
     #endregion
 }
