@@ -25,7 +25,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// </summary>
 /// <param name="Name"></param>
 /// <param name="ThumbnailUrl"></param>
-/// <param name="SalesManagerId"></param>
 /// <param name="ProviderCompanyId"></param>
 /// <param name="CompanyName"></param>
 /// <param name="IsDescriptionLongNotSet"></param>
@@ -34,7 +33,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 public record OfferReleaseData(
     string? Name,
     string? ThumbnailUrl,
-    Guid? SalesManagerId,
     Guid? ProviderCompanyId,
     string CompanyName,
     bool IsDescriptionLongNotSet,

@@ -29,7 +29,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -409,8 +408,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             .GetAppUpdateData(
                 appId,
                 iamUserId,
-                appRequestModel.SupportedLanguageCodes,
-                appRequestModel.UseCaseIds)
+                appRequestModel.SupportedLanguageCodes)
             .ConfigureAwait(false);
         if (appData is null)
         {
@@ -458,12 +456,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         _offerService.UpsertRemoveOfferDescription(appId, appRequestModel.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), appData.OfferDescriptions);
         UpdateAppSupportedLanguages(appId, newSupportedLanguages, appData.Languages.Where(x => !x.IsMatch).Select(x => x.Shortname), appRepository);
 
-        var newUseCases = appRequestModel.UseCaseIds.Except(appData.MatchingUseCases);
-        if (newUseCases.Any())
-        {
-            appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
-                (appId, uc)));
-        }
+        appRepository.CreateDeleteAppAssignedUseCases(appId, appData.MatchingUseCases, appRequestModel.UseCaseIds);
 
         _offerService.CreateOrUpdateOfferLicense(appId, appRequestModel.Provider, appData.OfferLicense);
         
