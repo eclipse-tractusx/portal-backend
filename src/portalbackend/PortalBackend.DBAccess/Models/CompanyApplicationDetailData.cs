@@ -22,8 +22,9 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record CompanyApplicationWithCompanyAddressUserData(
+public record CompanyApplicationDetailData(
     CompanyApplicationStatusId ApplicationStatusId,
+    Guid CompanyId,
     string Name,
     string? ShortName,
     string? BusinessPartnerNumber,
@@ -37,4 +38,6 @@ public record CompanyApplicationWithCompanyAddressUserData(
     string? Region,
     string? CountryAlpha2Code,
     string? CountryNameDe,
-    Guid CompanyUserId);
+    Guid CompanyUserId,
+    IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> UniqueIds
+);

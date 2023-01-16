@@ -36,12 +36,14 @@ public interface ICompanyRepository
     /// <returns>Created company entity.</returns>
     Company CreateCompany(string companyName);
 
-    public void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify);
+    void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify);
 
     Address CreateAddress(string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters = null);
 
-    public void AttachAndModifyAddress(Guid AddressId, Action<Address>? initialize, Action<Address> modify);
-    
+    void AttachAndModifyAddress(Guid AddressId, Action<Address>? initialize, Action<Address> modify);
+
+    void CreateUpdateDeleteIdentifiers(Guid companyId, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> initialItems, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> modifiedItems);
+
     Task<(string CompanyName, Guid CompanyId)> GetCompanyNameIdUntrackedAsync(string iamUserId);
 
     /// <summary>

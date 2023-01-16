@@ -19,31 +19,27 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 
-public class CompanyIdentifier
-{
-    private CompanyIdentifier() 
-    {
-        Value = null!;
-    }
+public record CompanyDetailData(
+    Guid CompanyId,
+    string Name,
+    string City,
+    string StreetName,
+    string CountryAlpha2Code,
+    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
+    string? ShortName,
+    string? Region,
+    string? StreetAdditional,
+    string? StreetNumber,
+    string? ZipCode,
+    string? CountryDe,
+    IEnumerable<CompanyUniqueIdData> UniqueIds
+);
 
-    public CompanyIdentifier(Guid companyId, UniqueIdentifierId uniqueIdentifierId, string value)
-        : this()
-    {
-        CompanyId = companyId;
-        UniqueIdentifierId = uniqueIdentifierId;
-        Value = value;
-    }
-
-    public Guid CompanyId { get; private set; }
-
-    public UniqueIdentifierId UniqueIdentifierId { get; private set; }
-
-    public string Value { get; set; }
-
-    // Navigation properties
-    public virtual Company? Company { get; private set; }
-    public virtual UniqueIdentifier? UniqueIdentifier { get; private set; }
-}
+public record CompanyUniqueIdData(
+    [property: JsonPropertyName("type")] UniqueIdentifierId UniqueIdentifierId,
+    string Value
+);
