@@ -21,9 +21,53 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Immutable;
 
 public static class ContextExtensions
 {
+    public static void AddRemoveRange<TEntity,TKey>(
+        this DbContext context,
+        IEnumerable<TKey> initialKeys,
+        IEnumerable<TKey> modifyKeys,
+        Func<TKey,TEntity> createSelector) where TEntity : class
+    {
+        context.AddRange(
+            modifyKeys
+                .Except(initialKeys)
+                .Select(modifyKey => createSelector(modifyKey)));
+
+        context.RemoveRange(
+            initialKeys
+                .Except(modifyKeys)
+                .Select(initialKey => createSelector(initialKey)));
+    }
+
+    public static void AddRemoveRange<TModify,TEntity,TKey>(
+        this DbContext context,
+        IEnumerable<TKey> initialKeys,
+        IEnumerable<TModify> modifyItems,
+        Func<TModify,TKey> modifyKeySelector,
+        Func<TKey,TEntity> createSelector,
+        Action<TEntity,TModify> modify) where TEntity : class
+    {
+        context.AddRange(
+            modifyItems
+                .ExceptBy(
+                    initialKeys,
+                    modifyKeySelector)
+                .Select(
+                    modifyItem => {
+                        var entity = createSelector(modifyKeySelector(modifyItem));
+                        modify(entity, modifyItem);
+                        return entity;
+                    }));
+
+        context.RemoveRange(
+            initialKeys
+                .Except(modifyItems.Select(modifyKeySelector))
+                .Select(initialKey => createSelector(initialKey)));
+    }
+
     public static void AddAttachRemoveRange<TInitial,TModify,TEntity,TKey>(
         this DbContext context,
         IEnumerable<TInitial> initialItems,
@@ -35,24 +79,14 @@ public static class ContextExtensions
         Action<TEntity,TInitial> initialize,
         Action<TEntity,TModify> modify) where TEntity : class
     {
-        context.AddRange(
-            modifyItems
-                .ExceptBy(
-                    initialItems.Select(initialKeySelector),
-                    modifyKeySelector)
-                .Select(
-                    modifyItem => {
-                        var entity = createSelector(modifyKeySelector(modifyItem));
-                        modify(entity, modifyItem);
-                        return entity;
-                    }));
-
-        context.RemoveRange(
-            initialItems
-                .ExceptBy(
-                    modifyItems.Select(modifyKeySelector),
-                    initialKeySelector)
-                .Select(initialItem => createSelector(initialKeySelector(initialItem))));
+        AddRemoveRange(
+            context,
+            initialItems.Select(initialKeySelector),
+            modifyItems,
+            modifyKeySelector,
+            createSelector,
+            modify
+        );
 
         var joined = initialItems
             .Join(
@@ -66,7 +100,7 @@ public static class ContextExtensions
                 x.modifyItem,
                 entity = createSelector(initialKeySelector(x.initialItem))
             })
-            .ToList();
+            .ToImmutableList();
         context.AttachRange(
             joined
                 .Select(
