@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 /// <summary>
@@ -31,4 +33,6 @@ public interface ICountryRepository
     /// <param name="alpha2Code">The alpha2code to check the countries for</param>
     /// <returns><c>true</c> if the country exists for the given alpha 2 code, otherwise <c>false</c></returns>
     Task<bool> CheckCountryExistsByAlpha2CodeAsync(string alpha2Code);
+
+    Task<(bool IsValidCountry, IEnumerable<UniqueIdentifierId> UniqueIdentifierIds)> GetCountryAssignedIdentifiers(string alpha2Code, IEnumerable<UniqueIdentifierId> uniqueIdentifierIds);
 }

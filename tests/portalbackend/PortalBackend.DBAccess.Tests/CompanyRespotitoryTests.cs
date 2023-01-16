@@ -20,12 +20,13 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using FluentAssertions;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using System.Collections.Immutable;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -270,6 +271,69 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().BeEmpty();
     }
+
+    #endregion
+
+    #region CreateUpdateDeleteIdentifiers
+
+    [Theory]
+    [InlineData(
+        new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.VAT_ID }, // initialKeys
+        new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.VIES },   // updateKeys
+        new [] { "value-1", "value-2", "value-3", "value-4" },                                                                                // initialValues
+        new [] { "value-1", "changed-1", "changed-2", "added-1" },                                                                            // updateValues
+        new [] { UniqueIdentifierId.VIES },                                                                                                   // addedEntityKeys
+        new [] { "added-1" },                                                                                                                 // addedEntityValues
+        new [] { UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE },                                                                      // updatedEntityKeys
+        new [] { "changed-1", "changed-2" },                                                                                                  // updatedEntityValues
+        new [] { UniqueIdentifierId.VAT_ID }                                                                                                  // removedEntityKeys
+    )]
+    [InlineData(
+        new [] { UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.VAT_ID },                                           // initialKeys
+        new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.EORI, UniqueIdentifierId.VIES },                                // updateKeys
+        new [] { "value-1", "value-2", "value-3" },                                                                                           // initialValues
+        new [] { "added-1", "changed-1", "added-2" },                                                                                         // updateValues
+        new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VIES },                                                         // addedEntityKeys
+        new [] { "added-1", "added-2"},                                                                                                       // addedEntityValues
+        new [] { UniqueIdentifierId.EORI },                                                                                                   // updatedEntityKeys
+        new [] { "changed-1" },                                                                                                               // updatedEntityValues
+        new [] { UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.VAT_ID }                                                                     // removedEntityKeys
+    )]
+
+    public async Task CreateUpdateDeleteIdentifiers(
+        IEnumerable<UniqueIdentifierId> initialKeys, IEnumerable<UniqueIdentifierId> updateKeys,
+        IEnumerable<string> initialValues, IEnumerable<string> updateValues,
+        IEnumerable<UniqueIdentifierId> addedEntityKeys, IEnumerable<string> addedEntityValues,
+        IEnumerable<UniqueIdentifierId> updatedEntityKeys, IEnumerable<string> updatedEntityValues,
+        IEnumerable<UniqueIdentifierId> removedEntityKeys)
+    {
+        var companyId = Guid.NewGuid();
+        var initialItems = initialKeys.Zip(initialValues).Select(x => ((UniqueIdentifierId InitialKey, string InitialValue))(x.First, x.Second)).ToImmutableArray();
+        var updateItems = updateKeys.Zip(updateValues).Select(x => ((UniqueIdentifierId UpdateKey, string UpdateValue))(x.First, x.Second)).ToImmutableArray();
+        var addedEntities = addedEntityKeys.Zip(addedEntityValues).Select(x => new CompanyIdentifier(companyId, x.First, x.Second)).OrderBy(x => x.UniqueIdentifierId).ToImmutableArray();
+        var updatedEntities = updatedEntityKeys.Zip(updatedEntityValues).Select(x => new CompanyIdentifier(companyId, x.First, x.Second)).OrderBy(x => x.UniqueIdentifierId).ToImmutableArray();
+        var removedEntities = removedEntityKeys.Select(x => new CompanyIdentifier(companyId, x, null!)).OrderBy(x => x.UniqueIdentifierId).ToImmutableArray();
+
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        sut.CreateUpdateDeleteIdentifiers(companyId, initialItems, updateItems);
+
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().AllSatisfy(entry => entry.Entity.Should().BeOfType<CompanyIdentifier>());
+        changedEntries.Should().HaveCount(addedEntities.Length + updatedEntities.Length + removedEntities.Length);
+        var added = changedEntries.Where(entry => entry.State == Microsoft.EntityFrameworkCore.EntityState.Added).Select(x => (CompanyIdentifier)x.Entity).ToImmutableArray();
+        var modified = changedEntries.Where(entry => entry.State == Microsoft.EntityFrameworkCore.EntityState.Modified).Select(x => (CompanyIdentifier)x.Entity).ToImmutableArray();
+        var deleted = changedEntries.Where(entry => entry.State == Microsoft.EntityFrameworkCore.EntityState.Deleted).Select(x => (CompanyIdentifier)x.Entity).ToImmutableArray();
+
+        added.Should().HaveSameCount(addedEntities);
+        added.OrderBy(x => x.UniqueIdentifierId).Zip(addedEntities).Should().AllSatisfy(x => (x.First.UniqueIdentifierId == x.Second.UniqueIdentifierId && x.First.Value == x.Second.Value).Should().BeTrue());
+        modified.Should().HaveSameCount(updatedEntities);
+        modified.OrderBy(x => x.UniqueIdentifierId).Zip(updatedEntities).Should().AllSatisfy(x => (x.First.UniqueIdentifierId == x.Second.UniqueIdentifierId && x.First.Value == x.Second.Value).Should().BeTrue());
+        deleted.Should().HaveSameCount(removedEntities);
+        deleted.OrderBy(x => x.UniqueIdentifierId).Zip(removedEntities).Should().AllSatisfy(x => (x.First.UniqueIdentifierId == x.Second.UniqueIdentifierId && x.First.Value == x.Second.Value).Should().BeTrue());
+   }
 
     #endregion
 
