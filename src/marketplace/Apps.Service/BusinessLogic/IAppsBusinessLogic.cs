@@ -166,6 +166,7 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="documentId"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns>byte Array Content</returns>
-    Task<(byte[] Content, string FileName)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId);
+    Task<(byte[] Content, string ContentType, string FileName)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken);
 }

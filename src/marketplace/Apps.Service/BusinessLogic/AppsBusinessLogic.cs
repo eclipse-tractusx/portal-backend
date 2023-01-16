@@ -23,6 +23,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -298,10 +299,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public async Task<(byte[] Content, string FileName)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId)
+    public async Task<(byte[] Content, string ContentType, string FileName)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var document = await documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP).ConfigureAwait(false);
+        var document = await documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken).ConfigureAwait(false);
         if (!document.IsDocumentExisting)
         {
             throw new NotFoundException($"document {documentId} does not exist");
@@ -322,6 +323,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new UnexpectedConditionException($"document content should never be null");
         }
-        return (document.Content, document.FileName);
+        return (document.Content, document.FileName.MapToImageContentType(), document.FileName);
     }
 }
