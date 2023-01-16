@@ -34,4 +34,12 @@ public interface IChecklistService
     /// <param name="checklistEntries">The checklist entries to process</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     Task ProcessChecklist(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> checklistEntries, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Sets the registration verification state for the given application.
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    /// <param name="approve"><c>true</c> if the application is approved, otherwise <c>false</c></param>
+    /// <param name="comment">An additional comment, only set if the application got declined</param>
+    Task HandleRegistrationVerification(Guid applicationId, bool approve, string? comment = null);
 }

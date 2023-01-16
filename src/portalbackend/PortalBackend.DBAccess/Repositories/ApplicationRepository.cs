@@ -148,8 +148,8 @@ public class ApplicationRepository : IApplicationRepository
     /// <inheritdoc />
     public Task<(Guid companyId, string companyName, string? businessPartnerNumber, string countryCode)> GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(Guid applicationId) =>
         _dbContext.CompanyApplications.Where(companyApplication =>
-                companyApplication.Id == applicationId
-                && companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
+                companyApplication.Id == applicationId &&
+                companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
             .Select(ca => new ValueTuple<Guid, string, string?, string>(
                 ca.CompanyId,
                 ca.Company!.Name,
@@ -234,5 +234,18 @@ public class ApplicationRepository : IApplicationRepository
              .AsNoTracking()
              .Where(a => a.Id == applicationId)
              .Select(x => new ValueTuple<string?, bool>(x.Company!.BusinessPartnerNumber, x.ApplicationChecklist.Any()))
+             .SingleOrDefaultAsync();
+
+     /// <inheritdoc />
+     public Task<(CompanyApplicationStatusId ApplicationStatusId, ApplicationChecklistEntryStatusId RegistrationVerificationStatusId)> GetApplicationStatusWithChecklistTypeStatusAsync(Guid applicationId, ApplicationChecklistEntryTypeId checklitEntryTypeId) =>
+         _dbContext.CompanyApplications
+             .AsNoTracking()
+             .Where(ca => ca.Id == applicationId)
+             .Select(ca => new ValueTuple<CompanyApplicationStatusId, ApplicationChecklistEntryStatusId>(
+                 ca.ApplicationStatusId,
+                 ca.ApplicationChecklist
+                     .Where(x => x.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION)
+                     .Select(x => x.ApplicationChecklistEntryStatusId)
+                     .SingleOrDefault()))
              .SingleOrDefaultAsync();
 }

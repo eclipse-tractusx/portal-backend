@@ -151,6 +151,52 @@ public class ChecklistService : IChecklistService
     }
 
     /// <inheritdoc />
+    public async Task HandleRegistrationVerification(Guid applicationId, bool approve, string? comment = null)
+    {
+        if (!approve && string.IsNullOrWhiteSpace(comment))
+        {
+            throw new ConflictException("Application is denied but no comment set.");
+        }
+
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>()
+            .GetApplicationStatusWithChecklistTypeStatusAsync(applicationId, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION)
+            .ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"CompanyApplication {applicationId} does not exist.");
+        }
+        
+        if (result.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
+        {
+            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
+        }
+
+        if (result.RegistrationVerificationStatusId == default)
+        {
+            throw new ConflictException($"No ChecklistEntry of type {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION} exists for application {applicationId}");
+        }
+
+        if (result.RegistrationVerificationStatusId != ApplicationChecklistEntryStatusId.TO_DO)
+        {
+            throw new ConflictException($"ChecklistEntry {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION} is not in state {ApplicationChecklistEntryStatusId.TO_DO}");
+        }
+        
+        _portalRepositories.GetInstance<IApplicationChecklistRepository>().AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            entry =>
+            {
+                entry.ApplicationChecklistEntryStatusId = approve
+                    ? ApplicationChecklistEntryStatusId.DONE
+                    : ApplicationChecklistEntryStatusId.FAILED;
+
+                if (!string.IsNullOrWhiteSpace(comment))
+                {
+                    entry.Comment = comment;
+                }
+            });
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public Task UpdateCompanyBpn(Guid applicationId, string bpn)
     {
         var regex = new Regex(@"(\w|\d){16}", RegexOptions.Compiled, TimeSpan.FromSeconds(5));

@@ -43,4 +43,12 @@ public interface IApplicationRepository
     IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null);
     Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAdressUntrackedAsync(Guid companyApplicationId);
     Task<(string? Bpn, bool ChecklistAlreadyExists)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId);
+
+    /// <summary>
+    /// Gets the application status and the status of the application checklist entry of the given type
+    /// </summary>
+    /// <param name="applicationId">Id of the application to get the states for</param>
+    /// <param name="checklitEntryTypeId">Type of the checklist entry to check the status for</param>
+    /// <returns>Returns the status of the application checklist entry of the given type</returns>
+    Task<(CompanyApplicationStatusId ApplicationStatusId, ApplicationChecklistEntryStatusId RegistrationVerificationStatusId)> GetApplicationStatusWithChecklistTypeStatusAsync(Guid applicationId, ApplicationChecklistEntryTypeId checklitEntryTypeId);
 }

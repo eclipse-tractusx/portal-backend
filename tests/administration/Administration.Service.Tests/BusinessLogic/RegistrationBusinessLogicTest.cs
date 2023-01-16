@@ -22,9 +22,6 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -423,6 +420,21 @@ public class RegistrationBusinessLogicTest
 
     #endregion
 
+    #region SetRegistrationVerification
+
+    [Fact]
+    public async Task SetRegistrationVerification_CallsExpected()
+    {
+        // Act
+        await _logic.SetRegistrationVerification(ApplicationId, true).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _checklistService.HandleRegistrationVerification(ApplicationId, true, null))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupFakes(
