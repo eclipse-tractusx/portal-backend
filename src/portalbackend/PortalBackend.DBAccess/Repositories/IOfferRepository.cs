@@ -258,8 +258,7 @@ public interface IOfferRepository
     Task<AppUpdateData?> GetAppUpdateData(
         Guid appId,
         string iamUserId,
-        IEnumerable<string> languageCodes,
-        IEnumerable<Guid> useCaseIds);
+        IEnumerable<string> languageCodes);
 
     /// <summary>
     /// Updates the licenseText of the given offerLicense

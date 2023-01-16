@@ -408,8 +408,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             .GetAppUpdateData(
                 appId,
                 iamUserId,
-                appRequestModel.SupportedLanguageCodes,
-                appRequestModel.UseCaseIds)
+                appRequestModel.SupportedLanguageCodes)
             .ConfigureAwait(false);
         if (appData is null)
         {
