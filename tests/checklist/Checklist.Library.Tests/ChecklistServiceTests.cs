@@ -38,8 +38,10 @@ public class ChecklistServiceTests
     private static readonly Guid IdWithBpn = new ("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
     private static readonly Guid IdWithFailingCustodian = new ("bda6d1b5-042e-493a-894c-11f3a89c12b1");
     private static readonly Guid IdWithCustodianUnavailable = new ("beaa6de5-d411-4da8-850e-06047d3170be");
-    private static readonly Guid NotExistingApplicationId = new ("1942e8d3-b545-4fbc-842c-01a694f84390");
-    private static readonly Guid ActiveApplicationCompanyId = new("66c765dd-872d-46e0-aac1-f79330b55406");
+    private static readonly Guid IdWithStateCreated = new ("148c0a07-2e1f-4dce-bfe0-4e3d1825c266");
+    private static readonly Guid IdWithChecklistEntryInProgress = new ("9b288a8d-1d2f-4b86-be97-da40420dc8e4");
+    private static readonly Guid NotExistingApplicationId = new ("9f0cfd0d-c512-438e-a07e-3198bce873bf");
+    private static readonly Guid ActiveApplicationCompanyId = new("045abf01-7762-468b-98fb-84a30c39b7c7");
     private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
     private static readonly Guid CompanyId = new("95c4339e-e087-4cd2-a5b8-44d385e64630");
     private const string ValidBpn = "BPNL123698762345";
@@ -566,6 +568,116 @@ public class ChecklistServiceTests
 
     #endregion
     
+    #region HandleRegistrationVerification
+    
+    [Fact]
+    public async Task HandleRegistrationVerification_WithNotExistingApplication_ThrowsNotFoundException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        SetupForRegistrationVerification();
+
+        // Act
+        async Task Act() => await _service.HandleRegistrationVerification(applicationId, true).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"CompanyApplication {applicationId} does not exist.");
+    }
+
+    [Fact]
+    public async Task HandleRegistrationVerification_WithNotSubmittedApplication_ThrowsArgumentException()
+    {
+        // Arrange
+        SetupForRegistrationVerification();
+
+        // Act
+        async Task Act() => await _service.HandleRegistrationVerification(IdWithStateCreated, true).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
+        ex.ParamName.Should().Be("applicationId");
+    }
+
+    [Fact]
+    public async Task HandleRegistrationVerification_WithoutChecklistItem_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForRegistrationVerification();
+
+        // Act
+        async Task Act() => await _service.HandleRegistrationVerification(IdWithoutBpn, true).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"No ChecklistEntry of type {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION} exists for application {IdWithoutBpn}");
+    }
+
+    [Fact]
+    public async Task HandleRegistrationVerification_WithChecklistInProgress_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForRegistrationVerification();
+
+        // Act
+        async Task Act() => await _service.HandleRegistrationVerification(IdWithChecklistEntryInProgress, true).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"ChecklistEntry {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION} is not in state {ApplicationChecklistEntryStatusId.TO_DO}");
+    }
+
+    [Fact]
+    public async Task HandleRegistrationVerification_WithDeclineButNoMessageSet_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForRegistrationVerification();
+
+        // Act
+        async Task Act() => await _service.HandleRegistrationVerification(IdWithBpn, false).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("Application is denied but no comment set.");
+    }
+
+    [Fact]
+    public async Task HandleRegistrationVerification_WithApproval_CallsExpected()
+    {
+        // Arrange
+        var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        SetupForRegistrationVerification(entry);
+
+        // Act
+        await _service.HandleRegistrationVerification(IdWithBpn, true).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<Action<ApplicationChecklistEntry>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        entry.Comment.Should().BeNull();
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+    }
+    
+    [Fact]
+    public async Task HandleRegistrationVerification_WithDecline_StateAndCommentSetCorrectly()
+    {
+        // Arrange
+        var comment = "application rejected because of reasons.";
+        var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        SetupForRegistrationVerification(entry);
+
+        // Act
+        await _service.HandleRegistrationVerification(IdWithBpn, false, comment).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<Action<ApplicationChecklistEntry>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        entry.Comment.Should().Be(comment);
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.FAILED);
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupFakesForTrigger(ApplicationChecklistEntry? applicationChecklistEntry = null)
@@ -658,6 +770,25 @@ public class ChecklistServiceTests
             .Throws(new ServiceException("Failed"));
         A.CallTo(() => _custodianService.CreateWalletAsync(A<string>.That.Matches(x => x == "custodiaNotAvailable"), A<string>._, CancellationToken.None))
             .Throws(new ServiceException("Failed", HttpStatusCode.ServiceUnavailable));
+    }
+
+    private void SetupForRegistrationVerification(ApplicationChecklistEntry? applicationChecklistEntry = null)
+    {
+        if (applicationChecklistEntry != null)
+        {
+            SetupForUpdate(applicationChecklistEntry);
+        }
+
+        A.CallTo(() => _applicationRepository.GetApplicationStatusWithChecklistTypeStatusAsync(IdWithoutBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION))
+            .ReturnsLazily(() => new ValueTuple<CompanyApplicationStatusId, ApplicationChecklistEntryStatusId>(CompanyApplicationStatusId.SUBMITTED, default));
+        A.CallTo(() => _applicationRepository.GetApplicationStatusWithChecklistTypeStatusAsync(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION))
+            .ReturnsLazily(() => new ValueTuple<CompanyApplicationStatusId, ApplicationChecklistEntryStatusId>(CompanyApplicationStatusId.SUBMITTED, ApplicationChecklistEntryStatusId.TO_DO));
+        A.CallTo(() => _applicationRepository.GetApplicationStatusWithChecklistTypeStatusAsync(IdWithStateCreated, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION))
+            .ReturnsLazily(() => new ValueTuple<CompanyApplicationStatusId, ApplicationChecklistEntryStatusId>(CompanyApplicationStatusId.CREATED, ApplicationChecklistEntryStatusId.TO_DO));
+        A.CallTo(() => _applicationRepository.GetApplicationStatusWithChecklistTypeStatusAsync(IdWithChecklistEntryInProgress, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION))
+            .ReturnsLazily(() => new ValueTuple<CompanyApplicationStatusId, ApplicationChecklistEntryStatusId>(CompanyApplicationStatusId.SUBMITTED, ApplicationChecklistEntryStatusId.IN_PROGRESS));
+        A.CallTo(() => _applicationRepository.GetApplicationStatusWithChecklistTypeStatusAsync(A<Guid>.That.Not.Matches(x => x == IdWithBpn || x == IdWithoutBpn || x == IdWithStateCreated || x == IdWithChecklistEntryInProgress), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION))
+            .ReturnsLazily(() => new ValueTuple<CompanyApplicationStatusId, ApplicationChecklistEntryStatusId>());
     }
 
     private void SetupForUpdate(ApplicationChecklistEntry applicationChecklistEntry)

@@ -67,6 +67,8 @@ public class ApplicationRepositoryTest : IAssemblyFixture<TestDbFixture>
         results.InvitedCompanyUserData.Should().ContainSingle(u => u.FirstName == "Test User 2" && u.LastName == "cx-admin-2" && u.Email == "tester.user2@test.de");
     }
 
+    #region GetBpnForApplicationId
+    
     [Fact]
     public async Task GetBpnForApplicationIdAsync_WithValidApplicationId_ReturnsBpn()
     {
@@ -108,6 +110,53 @@ public class ApplicationRepositoryTest : IAssemblyFixture<TestDbFixture>
         alreadyExists.Should().BeTrue();
     }
 
+    #endregion
+    
+    #region GetApplicationStatusWithChecklistTypeStatusAsync
+    
+    [Fact]
+    public async Task GetApplicationStatusWithChecklistTypeStatusAsync_WithValidApplicationId_ReturnExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var (applicationStatus, checklistEntryStatus) = await sut.GetApplicationStatusWithChecklistTypeStatusAsync(ApplicationWithoutBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION).ConfigureAwait(false);
+        
+        // Assert
+        applicationStatus.Should().Be(CompanyApplicationStatusId.SUBMITTED);
+        checklistEntryStatus.Should().Be(ApplicationChecklistEntryStatusId.TO_DO);
+    }
+
+    [Fact]
+    public async Task GetApplicationStatusWithChecklistTypeStatusAsync_WithApplicationWithoutChecklist_ReturnExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var (applicationStatus, checklistEntryStatus) = await sut.GetApplicationStatusWithChecklistTypeStatusAsync(ApplicationWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION).ConfigureAwait(false);
+        
+        // Assert
+        applicationStatus.Should().Be(CompanyApplicationStatusId.CONFIRMED);
+        checklistEntryStatus.Should().Be(default);
+    }
+
+    [Fact]
+    public async Task GetApplicationStatusWithRegistrationVerificationStatusAsync_WithNotExistingApplication_ReturnExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var result = await sut.GetApplicationStatusWithChecklistTypeStatusAsync(Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION).ConfigureAwait(false);
+        
+        // Assert
+        result.Should().Be(default);
+    }
+
+    #endregion
+    
     private async Task<ApplicationRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

@@ -377,6 +377,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         => _checklistService.UpdateCompanyBpn(applicationId, bpn);
 
     /// <inheritdoc />
+    public Task SetRegistrationVerification(Guid applicationId, bool approve, string? comment = null) =>
+        _checklistService.HandleRegistrationVerification(applicationId, approve, comment);
+
+    /// <inheritdoc />
     public Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken) =>
         _checklistService.TriggerBpnDataPush(applicationId, iamUserId, cancellationToken);
 

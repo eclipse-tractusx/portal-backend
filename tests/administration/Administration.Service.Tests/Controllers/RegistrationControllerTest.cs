@@ -128,4 +128,32 @@ public class RegistrationControllerTest
         A.CallTo(() => _logic.GetCompanyWithAddressAsync(applicationId)).MustHaveHappenedOnceExactly();
         Assert.IsType<CompanyWithAddressData>(result);
     }
+
+    [Fact]
+    public async Task ApproveApplication_ReturnsExpectedResult()
+    {
+        //Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        //Act
+        var result = await this._controller.ApproveApplication(applicationId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.SetRegistrationVerification(applicationId, true, null)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task DeclineApplication_ReturnsExpectedResult()
+    {
+        //Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        //Act
+        var result = await this._controller.DeclineApplication(applicationId, "test").ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.SetRegistrationVerification(applicationId, false, "test")).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
 }
