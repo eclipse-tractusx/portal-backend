@@ -344,7 +344,6 @@ public class OfferRepository : IOfferRepository
             .Select(o => new OfferReleaseData(
                 o.Name,
                 o.ThumbnailUrl,
-                o.SalesManagerId,
                 o.ProviderCompanyId,
                 o.ProviderCompany!.Name,
                 o.OfferDescriptions.Any(description => description.DescriptionLong == ""),
