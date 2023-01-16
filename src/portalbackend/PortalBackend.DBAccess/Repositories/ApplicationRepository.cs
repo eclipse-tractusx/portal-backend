@@ -135,7 +135,7 @@ public class ApplicationRepository : IApplicationRepository
                     .Select(companyUser => companyUser.Id)
                     .SingleOrDefault(),
                 application.Company.CompanyIdentifiers
-                    .Select(identifyer => new ValueTuple<UniqueIdentifierId,string>(identifyer.UniqueIdentifierId, identifyer.Value))))
+                    .Select(identifier => new ValueTuple<UniqueIdentifierId,string>(identifier.UniqueIdentifierId, identifier.Value))))
             .SingleOrDefaultAsync();
 
     public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>
