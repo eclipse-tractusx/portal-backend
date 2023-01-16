@@ -93,7 +93,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; set; } = default!;
     public virtual DbSet<ConsentStatus> ConsentStatuses { get; set; } = default!;
     public virtual DbSet<Country> Countries { get; set; } = default!;
-    public virtual DbSet<CountryAssignedIdentifier> CountryAssignedIdentifier { get; set; } = default!;
+    public virtual DbSet<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; set; } = default!;
     public virtual DbSet<Document> Documents { get; set; } = default!;
     public virtual DbSet<DocumentType> DocumentTypes { get; set; } = default!;
     public virtual DbSet<DocumentStatus> DocumentStatus { get; set; } = default!;

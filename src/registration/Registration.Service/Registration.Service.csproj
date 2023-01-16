@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 - Copyright (c) 2021,2022 Microsoft and BMW Group AG
 - Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
 -
@@ -28,8 +28,8 @@
     <UserSecretsId>1557fa58-6743-480f-8f98-155d33f89c0a</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..\..</DockerfileContext>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>    
-    <NoWarn>CS1591</NoWarn>    
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <NoWarn>CS1591</NoWarn>
     <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Registration.Service</RootNamespace>
   </PropertyGroup>
 
