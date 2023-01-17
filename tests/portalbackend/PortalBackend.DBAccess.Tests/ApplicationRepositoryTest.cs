@@ -32,15 +32,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 public class ApplicationRepositoryTest : IAssemblyFixture<TestDbFixture>
 {
+    private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
 
     public ApplicationRepositoryTest(TestDbFixture testDbFixture)
     {
-        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => fixture.Behaviors.Remove(b));
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
 
-        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
 
@@ -73,16 +74,50 @@ public class ApplicationRepositoryTest : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
-        Guid applicatiodId = new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
+        Guid applicationId = new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
+
         // Act
-        var result = await sut.GetRegistrationDataUntrackedAsync(applicatiodId, "623770c5-cf38-4b9f-9a35-f8b9ae972e2d", new [] { DocumentTypeId.CX_FRAME_CONTRACT, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }).ConfigureAwait(false);
+        var result = await sut.GetRegistrationDataUntrackedAsync(applicationId, "623770c5-cf38-4b9f-9a35-f8b9ae972e2d", new [] { DocumentTypeId.CX_FRAME_CONTRACT, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }).ConfigureAwait(false);
+
         // Assert
-        
         result.Should().NotBeNull();
         result.IsValidApplicationId.Should().BeTrue();
         result.IsSameCompanyUser.Should().BeTrue();
         result.Data.Should().NotBeNull();
         result.Data!.DocumentNames.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GetRegistrationDataUntrackedAsync_WithInvalidApplicationId_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        Guid applicationId = Guid.NewGuid();
+
+        // Act
+        var result = await sut.GetRegistrationDataUntrackedAsync(applicationId, "623770c5-cf38-4b9f-9a35-f8b9ae972e2d", new [] { DocumentTypeId.CX_FRAME_CONTRACT, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.IsValidApplicationId.Should().BeFalse();
+        result.IsSameCompanyUser.Should().BeFalse();
+        result.Data.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetRegistrationDataUntrackedAsync_WithInvalidUser_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        Guid applicationId = new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
+        // Act
+        var result = await sut.GetRegistrationDataUntrackedAsync(applicationId, _fixture.Create<string>(), new [] { DocumentTypeId.CX_FRAME_CONTRACT, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.IsValidApplicationId.Should().BeTrue();
+        result.IsSameCompanyUser.Should().BeFalse();
+        result.Data.Should().BeNull();
     }
 
     #endregion

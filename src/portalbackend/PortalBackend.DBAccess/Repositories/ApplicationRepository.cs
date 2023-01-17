@@ -254,11 +254,11 @@ public class ApplicationRepository : IApplicationRepository
                     x.Company.Address.Zipcode,
                     x.Company.Address.CountryAlpha2Code,
                     x.Company.Address.Country!.CountryNameDe,
-                    x.Company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
+                    x.Company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
                     x.Company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
                         .Select(consent => new ValueTuple<Guid,ConsentStatusId>(
                             consent.AgreementId, consent.ConsentStatusId)),
-                    x.Company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Where(document=>documentTypes.Contains(document.DocumentTypeId)).Select(document => document.DocumentName)),
+                    x.Company.CompanyUsers.SelectMany(companyUser => companyUser.Documents.Where(document => documentTypes.Contains(document.DocumentTypeId)).Select(document => document.DocumentName)),
                     x.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId,string>(identifier.UniqueIdentifierId, identifier.Value)))
                     : null))
             .SingleOrDefaultAsync();
