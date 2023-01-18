@@ -27,10 +27,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// </summary>
 /// <param name="Title">Title</param>
 /// <param name="Provider">Provider</param>
-/// <param name="LeadPictureUri">LeadPictureUri</param>
 /// <param name="SalesManagerId">SalesManagerId</param>
 /// <param name="UseCaseIds">UseCaseIds</param>
 /// <param name="Descriptions">Descriptions</param>
 /// <param name="SupportedLanguageCodes">SupportedLanguageCodes</param>
 /// <param name="Price">Price</param>
-public record AppRequestModel(string? Title, string Provider, string? LeadPictureUri, Guid? SalesManagerId, IEnumerable<Guid> UseCaseIds, IEnumerable<LocalizedDescription> Descriptions, IEnumerable<string> SupportedLanguageCodes, string Price);
+public record AppRequestModel(string? Title, string Provider, Guid? SalesManagerId, IEnumerable<Guid> UseCaseIds, IEnumerable<LocalizedDescription> Descriptions, IEnumerable<string> SupportedLanguageCodes, string Price);
