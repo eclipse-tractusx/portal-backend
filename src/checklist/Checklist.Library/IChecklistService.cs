@@ -5,14 +5,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 public interface IChecklistService
 {
     /// <summary>
-    /// Creates the wallet for the company of the given application
-    /// </summary>
-    /// <param name="applicationId">Id of the application</param>
-    /// <param name="cancellationToken">CanellationToken</param>
-    /// <returns>true if the wallet creation was successful, otherwise false.</returns>
-    Task<bool> CreateWalletAsync(Guid applicationId, CancellationToken cancellationToken);
-
-    /// <summary>
     /// Triggers the bpn data push
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
@@ -21,25 +13,10 @@ public interface IChecklistService
     Task TriggerBpnDataPush(Guid applicationId, string iamUserId, CancellationToken cancellationToken);
     
     /// <summary>
-    /// Updates the company bpn
-    /// </summary>
-    /// <param name="applicationId">Id of the application to update the bpn</param>
-    /// <param name="bpn">the bpn to set</param>
-    Task UpdateCompanyBpn(Guid applicationId, string bpn);
-
-    /// <summary>
     /// Processes the possible automated steps of the checklist
     /// </summary>
     /// <param name="applicationId">Id of the application to process the checklist</param>
     /// <param name="checklistEntries">The checklist entries to process</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     Task ProcessChecklist(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> checklistEntries, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Sets the registration verification state for the given application.
-    /// </summary>
-    /// <param name="applicationId">Id of the application</param>
-    /// <param name="approve"><c>true</c> if the application is approved, otherwise <c>false</c></param>
-    /// <param name="comment">An additional comment, only set if the application got declined</param>
-    Task HandleRegistrationVerification(Guid applicationId, bool approve, string? comment = null);
 }

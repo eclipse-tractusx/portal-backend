@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230110173628_CPLP-1963-AddChecklist")]
+    [Migration("20230118083612_CPLP-1963-AddChecklist")]
     partial class CPLP1963AddChecklist
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1921,12 +1921,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnName("unique_identifier_id");
 
                     b.HasKey("CountryAlpha2Code", "UniqueIdentifierId")
-                        .HasName("pk_country_assigned_identifier");
+                        .HasName("pk_country_assigned_identifiers");
 
                     b.HasIndex("UniqueIdentifierId")
-                        .HasDatabaseName("ix_country_assigned_identifier_unique_identifier_id");
+                        .HasDatabaseName("ix_country_assigned_identifiers_unique_identifier_id");
 
-                    b.ToTable("country_assigned_identifier", "portal");
+                    b.ToTable("country_assigned_identifiers", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
@@ -3440,7 +3440,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasConstraintName("fk_application_checklist_application_checklist_types_applicati");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", "Application")
-                        .WithMany("ApplicationChecklist")
+                        .WithMany("ApplicationChecklistEntries")
                         .HasForeignKey("ApplicationId")
                         .IsRequired()
                         .HasConstraintName("fk_application_checklist_company_applications_application_id");
@@ -3908,13 +3908,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .WithMany("CountryAssignedIdentifiers")
                         .HasForeignKey("CountryAlpha2Code")
                         .IsRequired()
-                        .HasConstraintName("fk_country_assigned_identifier_countries_country_alpha2code");
+                        .HasConstraintName("fk_country_assigned_identifiers_countries_country_alpha2code");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UniqueIdentifier", "UniqueIdentifier")
                         .WithMany("CountryAssignedIdentifiers")
                         .HasForeignKey("UniqueIdentifierId")
                         .IsRequired()
-                        .HasConstraintName("fk_country_assigned_identifier_unique_identifiers_unique_ident");
+                        .HasConstraintName("fk_country_assigned_identifiers_unique_identifiers_unique_iden");
 
                     b.Navigation("Country");
 
@@ -4383,7 +4383,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>
                 {
-                    b.Navigation("ApplicationChecklist");
+                    b.Navigation("ApplicationChecklistEntries");
 
                     b.Navigation("Invitations");
                 });

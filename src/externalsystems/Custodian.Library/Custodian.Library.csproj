@@ -21,19 +21,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Checklist.Library</AssemblyName>
-        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Checklist.Library</RootNamespace>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Custodian.Library</AssemblyName>
+        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Custodian.Library</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\externalsystems\Bpdm.Library\Bpdm.Library.csproj" />
-      <ProjectReference Include="..\..\externalsystems\Custodian.Library\Custodian.Library.csproj" />
-      <ProjectReference Include="..\..\framework\Framework.Token\Framework.Token.csproj" />
-      <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
-      <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+        <ProjectReference Include="..\..\framework\Framework.Token\Framework.Token.csproj" />
+        <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
+        <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     </ItemGroup>
 
 </Project>

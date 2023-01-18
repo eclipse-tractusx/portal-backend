@@ -46,6 +46,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests.Busines
 
 public class RegistrationBusinessLogicTest
 {
+    private static readonly Guid IdWithoutBpn = new ("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
+    private static readonly Guid IdWithBpn = new ("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
+    private static readonly Guid IdWithStateCreated = new ("148c0a07-2e1f-4dce-bfe0-4e3d1825c266");
+    private static readonly Guid IdWithChecklistEntryInProgress = new ("9b288a8d-1d2f-4b86-be97-da40420dc8e4");
     private readonly IFixture _fixture;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IUserProvisioningService _userProvisioningService;
@@ -1644,7 +1648,7 @@ public class RegistrationBusinessLogicTest
     }
 
     #endregion
-
+    
     #region Setup  
 
     private void SetupRepositories()
@@ -1728,9 +1732,7 @@ public class RegistrationBusinessLogicTest
                 .With(x => x.Error, (Exception?)null)
                 .Create());
     }
-
     
-
     #endregion
 
     [Serializable]

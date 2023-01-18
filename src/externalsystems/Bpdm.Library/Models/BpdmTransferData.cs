@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
@@ -18,13 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian;
-
-public interface ICustodianService
-{
-    public IAsyncEnumerable<GetWallets> GetWalletsAsync(CancellationToken cancellationToken);
-
-    public Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken);
-}
+/// <summary>
+/// View model of an application's detailed data for the bpdm.
+/// </summary>
+/// <param name="CompanyName">Name of the company.</param>
+/// <param name="AlphaCode2">AlphaCode 2 of the company.</param>
+/// <param name="ZipCode">Zipcode of the company's address.</param>
+/// <param name="City">City of the company's address.</param>
+/// <param name="Street">Street of the company's address.</param>
+public record BpdmTransferData(string CompanyName, string AlphaCode2, string ZipCode, string City, string Street);

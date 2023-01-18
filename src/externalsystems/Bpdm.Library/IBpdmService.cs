@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
@@ -18,16 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 
 /// <summary>
-/// Settings used in business logic concerning connectors.
+/// Service to call the BPDM endpoints
 /// </summary>
-public class BpdmServiceSettings : KeyVaultAuthSettings
+public interface IBpdmService
 {
-    [Required(AllowEmptyStrings = false)]
-    public string BaseAdress { get; set; } = null!;
+    /// <summary>
+    /// Triggers the bpn data push
+    /// </summary>
+    /// <param name="data">The bpdm data</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
+    Task<bool> TriggerBpnDataPush(BpdmTransferData data, CancellationToken cancellationToken);
 }

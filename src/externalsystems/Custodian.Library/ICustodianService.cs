@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
@@ -18,20 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
+namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 
-/// <summary>
-/// Service to call the BPDM endpoints
-/// </summary>
-public interface IBpdmService
+public interface ICustodianService
 {
-    /// <summary>
-    /// Triggers the bpn data push
-    /// </summary>
-    /// <param name="data">The bpdm data</param>
-    /// <param name="cancellationToken">Cancellation Token</param>
-    /// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
-    Task<bool> TriggerBpnDataPush(BpdmTransferData data, CancellationToken cancellationToken);
+    public IAsyncEnumerable<GetWallets> GetWalletsAsync(CancellationToken cancellationToken);
+
+    public Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken);
 }

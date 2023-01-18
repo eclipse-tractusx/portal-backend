@@ -569,7 +569,7 @@ public class PortalDbContext : DbContext
             entity.HasKey(x => new { x.ApplicationId, ChecklistEntryTypeId = x.ApplicationChecklistEntryTypeId });
                 
             entity.HasOne(ace => ace.Application)
-                .WithMany(a => a.ApplicationChecklist)
+                .WithMany(a => a.ApplicationChecklistEntries)
                 .HasForeignKey(ace => ace.ApplicationId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });

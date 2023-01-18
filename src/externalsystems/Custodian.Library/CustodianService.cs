@@ -18,17 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net;
-using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian;
+namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 
 public class CustodianService : ICustodianService
 {
