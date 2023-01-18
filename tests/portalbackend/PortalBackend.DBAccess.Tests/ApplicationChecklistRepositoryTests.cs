@@ -38,7 +38,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
 
     private static readonly Guid ApplicationId = new("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
     private static readonly Guid ApplicationWithExistingChecklistId = new("1b86d973-3aac-4dcd-a9e9-0c222766202b");
-
+    
     public ApplicationChecklistRepositoryTests(TestDbFixture testDbFixture)
     {
         var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -150,7 +150,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
     #region GetChecklistDataGroupedByApplicationId 
 
     [Fact]
-    public async Task GetChecklistDataGroupedByApplicationId_WithValidApplicationId_ReturnsExpected()
+    public async Task GetChecklistDataGroupedByApplicationId_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
@@ -161,7 +161,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         // Assert
         checklistData.Should().HaveCount(5);
     }
-
+    
     #endregion
 
     private async Task<(ApplicationChecklistRepository, PortalDbContext)> CreateSutWithContext()

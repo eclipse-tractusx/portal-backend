@@ -43,7 +43,7 @@ public interface IApplicationRepository
     IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null);
     Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAdressUntrackedAsync(Guid companyApplicationId);
     Task<(bool IsValidApplicationId, bool IsSameCompanyUser, RegistrationData? Data)> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes);
-    Task<(string? Bpn, bool ChecklistAlreadyExists)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId);
+    Task<(string? Bpn, IEnumerable<ApplicationChecklistEntryTypeId> ExistingChecklistEntryTypeIds)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId);
 
     /// <summary>
     /// Gets the application status and the status of the application checklist entry of the given type
@@ -52,4 +52,11 @@ public interface IApplicationRepository
     /// <param name="checklistEntryTypeId">Type of the checklist entry to check the status for</param>
     /// <returns>Returns the status of the application checklist entry of the given type</returns>
     Task<(CompanyApplicationStatusId ApplicationStatusId, ApplicationChecklistEntryStatusId RegistrationVerificationStatusId)> GetApplicationStatusWithChecklistTypeStatusAsync(Guid applicationId, ApplicationChecklistEntryTypeId checklistEntryTypeId);
+
+    /// <summary>
+    /// Gets the company bpn for the given application
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    /// <returns>Returns the bpn</returns>
+    Task<string?> GetBpnForApplicationIdAsync(Guid applicationId);
 }

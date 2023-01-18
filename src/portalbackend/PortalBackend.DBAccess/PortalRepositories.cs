@@ -105,4 +105,6 @@ public class PortalRepositories : IPortalRepositories
     
 
     public Task<int> SaveAsync() => _dbContext.SaveChangesAsync();
+    
+    public void Clear() => _dbContext.ChangeTracker.Clear();
 }

@@ -35,8 +35,9 @@ public class ChecklistExecutionServiceTests
     private readonly IApplicationChecklistRepository _applicationChecklistRepository;
 
     private readonly IChecklistService _checklistService;
-    private ChecklistExecutionService _service;
+    private readonly IChecklistCreationService _checklistCreationService;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
+    private readonly ChecklistExecutionService _service;
 
     public ChecklistExecutionServiceTests()
     {
@@ -48,6 +49,7 @@ public class ChecklistExecutionServiceTests
         var portalRepositories = A.Fake<IPortalRepositories>();
         _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
         _checklistService = A.Fake<IChecklistService>();
+        _checklistCreationService = A.Fake<IChecklistCreationService>();
 
         A.CallTo(() => portalRepositories.GetInstance<IApplicationChecklistRepository>())
             .Returns(_applicationChecklistRepository);
@@ -56,6 +58,7 @@ public class ChecklistExecutionServiceTests
         var serviceProvider = fixture.Create<IServiceProvider>();
         A.CallTo(() => serviceProvider.GetService(typeof(IPortalRepositories))).Returns(portalRepositories);
         A.CallTo(() => serviceProvider.GetService(typeof(IChecklistService))).Returns(_checklistService);
+        A.CallTo(() => serviceProvider.GetService(typeof(IChecklistCreationService))).Returns(_checklistCreationService);
         var serviceScope = fixture.Create<IServiceScope>();
         A.CallTo(() => serviceScope.ServiceProvider).Returns(serviceProvider);
         var serviceScopeFactory = fixture.Create<IServiceScopeFactory>();
@@ -79,6 +82,32 @@ public class ChecklistExecutionServiceTests
         A.CallTo(() => _checklistService.ProcessChecklist(A<Guid>._,
             A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>._,
             CancellationToken.None)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithException_LogsError()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var list = new List<ValueTuple<Guid, ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>
+        {
+            new(applicationId, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE),
+            new(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS),
+            new(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
+            new(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
+            new(applicationId, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO),
+        };
+        A.CallTo(() => _applicationChecklistRepository.GetChecklistDataGroupedByApplicationId())
+            .Returns(list.ToAsyncEnumerable());
+        A.CallTo(() => _checklistService.ProcessChecklist(A<Guid>._, A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>._, A<CancellationToken>._))
+            .Throws(() => new Exception("Only a test"));
+
+        // Act
+        await _service.StartAsync(CancellationToken.None);
+
+        // Assert
+        Environment.ExitCode.Should().Be(1);
+        A.CallTo(() => _hostApplicationLifetime.StopApplication()).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -131,28 +160,27 @@ public class ChecklistExecutionServiceTests
     }
     
     [Fact]
-    public async Task ExecuteAsync_WithException_LogsError()
+    public async Task ExecuteAsync_WithMissingType_CreatesTypeAndExecutes()
     {
         // Arrange
         var applicationId = Guid.NewGuid();
         var list = new List<ValueTuple<Guid, ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>
         {
             new(applicationId, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE),
-            new(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS),
-            new(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
+            new(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE),
             new(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
             new(applicationId, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO),
         };
         A.CallTo(() => _applicationChecklistRepository.GetChecklistDataGroupedByApplicationId())
             .Returns(list.ToAsyncEnumerable());
-        A.CallTo(() => _checklistService.ProcessChecklist(A<Guid>._, A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>._, A<CancellationToken>._))
-            .Throws(() => new Exception("Only a test"));
 
         // Act
         await _service.StartAsync(CancellationToken.None);
 
         // Assert
-        Environment.ExitCode.Should().Be(1);
-        A.CallTo(() => _hostApplicationLifetime.StopApplication()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _checklistCreationService.CreateMissingChecklistItems(applicationId, A<IEnumerable<ApplicationChecklistEntryTypeId>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _checklistService.ProcessChecklist(A<Guid>._, A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>._, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
     }
 }

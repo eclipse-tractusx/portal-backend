@@ -70,9 +70,7 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
     public IAsyncEnumerable<(Guid ApplicationId, ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> GetChecklistDataGroupedByApplicationId() =>
         _portalDbContext.ApplicationChecklist
             .OrderBy(x => x.ApplicationId)
-            .Where(x => 
-                x.ApplicationChecklistEntryStatusId == ApplicationChecklistEntryStatusId.TO_DO &&
-                x.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.FAILED)
+            .Where(x => x.Application!.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
             .Select(x => new ValueTuple<Guid, ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(x.ApplicationId, x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId))
             .ToAsyncEnumerable();
 }
