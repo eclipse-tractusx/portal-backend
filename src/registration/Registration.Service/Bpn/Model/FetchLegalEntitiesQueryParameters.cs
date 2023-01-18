@@ -18,14 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
-
-public interface IBpnAccess
-{
-    IAsyncEnumerable<FetchBusinessPartnerDto> FetchBusinessPartner(string bpn, string token, CancellationToken cancellationToken);
-    Task<IEnumerable<BpdmLegalEntityDto>> FetchLegalEntities(FetchLegalEntitiesQueryParameters parameters, string token,  CancellationToken cancellationToken);
-    Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken);
-    IAsyncEnumerable<BpdmLegalEntityAddressDto> FetchLegalEntityAddressByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken);
-}
+public record FetchLegalEntitiesQueryParameters(
+    string? Name,
+    string? LegalForm,
+    string? Status,
+    string? Classification,
+    string? AdministrativeArea,
+    string? PostCode,
+    string? Locality,
+    string? Thoroughfare,
+    string? Premise,
+    string? PostalDeliveryPoint,
+    string? SiteName,
+    int Page,
+    int Size
+);

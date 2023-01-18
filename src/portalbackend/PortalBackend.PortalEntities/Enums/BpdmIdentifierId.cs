@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 Microsoft and BMW Group AG
+ * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,14 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
-
-public interface IBpnAccess
+public enum BpdmIdentifierId
 {
-    IAsyncEnumerable<FetchBusinessPartnerDto> FetchBusinessPartner(string bpn, string token, CancellationToken cancellationToken);
-    Task<IEnumerable<BpdmLegalEntityDto>> FetchLegalEntities(FetchLegalEntitiesQueryParameters parameters, string token,  CancellationToken cancellationToken);
-    Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken);
-    IAsyncEnumerable<BpdmLegalEntityAddressDto> FetchLegalEntityAddressByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken);
+    EU_VAT_ID_DE = 1,
+    CH_UID = 2,
+    EU_VAT_ID_FR = 3,
+    FR_SIREN = 4,
+    EU_VAT_ID_AT = 5,
+    DE_BNUM = 6,
+    CZ_ICO = 7,
+    EU_VAT_ID_CZ = 8,
+    EU_VAT_ID_PL = 9,
+    EU_VAT_ID_BE = 10,
+    EU_VAT_ID_CH = 11,
+    EU_VAT_ID_DK = 12,
+    EU_VAT_ID_ES = 13,
+    EU_VAT_ID_GB = 14,
+    EU_VAT_ID_NO = 15,
+    BE_ENT_NO = 16,
+    CVR_DK = 17,
+    ID_CRN = 18,
+    NO_ORGID = 19,
+    LEI_ID = 20,
 }

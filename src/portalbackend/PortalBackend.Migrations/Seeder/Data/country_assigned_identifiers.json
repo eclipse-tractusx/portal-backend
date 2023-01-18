@@ -1,7 +1,28 @@
 [
   {
     "country_alpha2code": "DE",
-    "unique_identifier_id": 1
+    "unique_identifier_id": 1,
+    "bpdm_identifier_id": 6
+  },
+  {
+    "country_alpha2code": "CH",
+    "unique_identifier_id": 1,
+    "bpdm_identifier_id": 2
+  },
+  {
+    "country_alpha2code": "DK",
+    "unique_identifier_id": 1,
+    "bpdm_identifier_id": 17
+  },
+  {
+    "country_alpha2code": "GB",
+    "unique_identifier_id": 1,
+    "bpdm_identifier_id": 18
+  },
+  {
+    "country_alpha2code": "NO",
+    "unique_identifier_id": 1,
+    "bpdm_identifier_id": 19
   },
   {
     "country_alpha2code": "IN",
@@ -25,7 +46,8 @@
   },
   {
     "country_alpha2code": "FR",
-    "unique_identifier_id": 1
+    "unique_identifier_id": 1,
+    "bpdm_identifier_id": 4
   },
   {
     "country_alpha2code": "IT",
@@ -61,11 +83,13 @@
   },
   {
     "country_alpha2code": "BE",
-    "unique_identifier_id": 1
+    "unique_identifier_id": 1,
+    "bpdm_identifier_id": 16
   },
   {
     "country_alpha2code": "CZ",
-    "unique_identifier_id": 1
+    "unique_identifier_id": 1,
+    "bpdm_identifier_id": 7
   },
   {
     "country_alpha2code": "IE",
@@ -1097,11 +1121,13 @@
   },
   {
     "country_alpha2code": "AT",
-    "unique_identifier_id": 2
+    "unique_identifier_id": 2,
+    "bpdm_identifier_id": 5
   },
   {
     "country_alpha2code": "BE",
-    "unique_identifier_id": 2
+    "unique_identifier_id": 2,
+    "bpdm_identifier_id": 10
   },
   {
     "country_alpha2code": "BG",
@@ -1117,11 +1143,13 @@
   },
   {
     "country_alpha2code": "CZ",
-    "unique_identifier_id": 2
+    "unique_identifier_id": 2,
+    "bpdm_identifier_id": 8
   },
   {
     "country_alpha2code": "DK",
-    "unique_identifier_id": 2
+    "unique_identifier_id": 2,
+    "bpdm_identifier_id": 12
   },
   {
     "country_alpha2code": "EE",
@@ -1133,11 +1161,13 @@
   },
   {
     "country_alpha2code": "FR",
-    "unique_identifier_id": 2
+    "unique_identifier_id": 2,
+    "bpdm_identifier_id": 3
   },
   {
     "country_alpha2code": "DE",
-    "unique_identifier_id": 2
+    "unique_identifier_id": 2,
+    "bpdm_identifier_id": 1
   },
   {
     "country_alpha2code": "GR",
@@ -1177,7 +1207,8 @@
   },
   {
     "country_alpha2code": "PL",
-    "unique_identifier_id": 2
+    "unique_identifier_id": 2,
+    "bpdm_identifier_id": 9
   },
   {
     "country_alpha2code": "PT",
@@ -1197,7 +1228,8 @@
   },
   {
     "country_alpha2code": "ES",
-    "unique_identifier_id": 2
+    "unique_identifier_id": 2,
+    "bpdm_identifier_id": 13
   },
   {
     "country_alpha2code": "SE",
@@ -1253,7 +1285,8 @@
   },
   {
     "country_alpha2code": "NO",
-    "unique_identifier_id": 2
+    "unique_identifier_id": 2,
+    "bpdm_identifier_id": 15
   },
   {
     "country_alpha2code": "PH",
@@ -1277,7 +1310,8 @@
   },
   {
     "country_alpha2code": "CH",
-    "unique_identifier_id": 2
+    "unique_identifier_id": 2,
+    "bpdm_identifier_id": 11
   },
   {
     "country_alpha2code": "TR",
@@ -1289,7 +1323,8 @@
   },
   {
     "country_alpha2code": "GB",
-    "unique_identifier_id": 2
+    "unique_identifier_id": 2,
+    "bpdm_identifier_id": 14
   },
   {
     "country_alpha2code": "UZ",
