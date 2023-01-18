@@ -44,7 +44,7 @@ public class ServiceProviderController : ControllerBase
         this.WithIamUserId(iamUserId => _logic.GetServiceProviderCompanyDetailsAsync(iamUserId));
     
     /// <summary>
-    /// Updates detail data to the calling users service provider
+    /// Sets detail data to the calling users service provider
     /// </summary>
     /// <param name="data">Service provider detail data</param>
     /// <returns></returns>
@@ -55,10 +55,13 @@ public class ServiceProviderController : ControllerBase
     [HttpPut]
     [Route("owncompany")]
     [Authorize(Roles = "add_service_offering")]
-    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task SetServiceProviderCompanyDetail([FromBody] ServiceProviderDetailData data) =>
+    public async Task<NoContentResult> SetServiceProviderCompanyDetail([FromBody] ServiceProviderDetailData data)
+    {
         await this.WithIamUserId(iamUserId => _logic.SetServiceProviderCompanyDetailsAsync(data, iamUserId)).ConfigureAwait(false);
+        return NoContent();
+    }
 }
