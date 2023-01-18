@@ -88,7 +88,7 @@ public class CustodianService : ICustodianService
     private async Task<HttpClient> GetCustodianHttpClient(CancellationToken cancellationToken)
     {
         var tokenParameters = new GetTokenSettings(
-                "custodianAuth",
+                $"{nameof(CustodianService)}Auth",
                 _settings.Username,
                 _settings.Password,
                 _settings.ClientId,
@@ -98,7 +98,7 @@ public class CustodianService : ICustodianService
 
         var token = await _tokenService.GetTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(false);
 
-        var httpClient = _httpClientFactory.CreateClient("custodian");
+        var httpClient = _httpClientFactory.CreateClient(nameof(CustodianService));
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return httpClient;
     }
