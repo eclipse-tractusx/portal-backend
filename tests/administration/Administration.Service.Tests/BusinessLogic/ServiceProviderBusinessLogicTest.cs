@@ -75,6 +75,8 @@ public class ServiceProviderBusinessLogicTest
         await sut.SetServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
 
         //Assert
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._,A<string>._)).MustHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._,A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
         _serviceProviderDetails.Should().ContainSingle();
     }
@@ -92,6 +94,8 @@ public class ServiceProviderBusinessLogicTest
         await sut.SetServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
 
         //Assert
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._,A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._,A<Action<ProviderCompanyDetail>>._)).MustHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
     }
 

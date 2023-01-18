@@ -58,13 +58,13 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
         return result.ProviderDetailReturnData;
     }
 
+    /// <inheritdoc />
     public Task SetServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
     {
         ValidateServiceProviderDetailData(data);
         return SetServiceProviderCompanyDetailsInternalAsync(data, iamUserId);
     }
 
-    /// <inheritdoc />
     private async Task SetServiceProviderCompanyDetailsInternalAsync(ServiceProviderDetailData data, string iamUserId)
     {
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
@@ -74,8 +74,8 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
         if (serviceProviderDetailDataId == Guid.Empty)
         {
             var result = await companyRepository
-            .GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(iamUserId, CompanyRoleId.SERVICE_PROVIDER)
-            .ConfigureAwait(false);
+                .GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(iamUserId, CompanyRoleId.SERVICE_PROVIDER)
+                .ConfigureAwait(false);
             if (result == default)
             {
                 throw new ConflictException($"IAmUser {iamUserId} is not assigned to company");
@@ -84,8 +84,7 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
             {
                 throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
             }
-            var companyDetails = companyRepository
-                .CreateProviderCompanyDetail(result.CompanyId, data.Url);
+            companyRepository.CreateProviderCompanyDetail(result.CompanyId, data.Url);
         }
         else
         {
