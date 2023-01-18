@@ -849,7 +849,7 @@ public class OfferServiceTests
     {
         // Arrange
         var notExistingOffer = _fixture.Create<Guid>();
-        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(notExistingOffer, offerType)).ReturnsLazily(() => new OfferReleaseData(null, null, null, "company", true, true));
+        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(notExistingOffer, offerType)).ReturnsLazily(() => new OfferReleaseData(null, null, "company", true, true));
 
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
