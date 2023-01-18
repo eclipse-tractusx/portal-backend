@@ -126,7 +126,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var checklistData = await sut.GetChecklistDataAsync(ApplicationWithExistingChecklistId).ConfigureAwait(false);
+        var checklistData = await sut.GetChecklistDataAsync(ApplicationWithExistingChecklistId).ToListAsync().ConfigureAwait(false);
 
         // Assert
         checklistData.Should().HaveCount(5);
@@ -139,7 +139,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var checklistData = await sut.GetChecklistDataAsync(Guid.NewGuid()).ConfigureAwait(false);
+        var checklistData = await sut.GetChecklistDataAsync(Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         checklistData.Should().HaveCount(0);

@@ -233,7 +233,7 @@ public class ApplicationRepository : IApplicationRepository
          _dbContext.CompanyApplications
              .AsNoTracking()
              .Where(a => a.Id == applicationId)
-             .Select(x => new ValueTuple<string?, bool>(x.Company!.BusinessPartnerNumber, x.ApplicationChecklist.Any()))
+             .Select(x => new ValueTuple<string?, bool>(x.Company!.BusinessPartnerNumber, x.ApplicationChecklistEntries.Any()))
              .SingleOrDefaultAsync();
 
      /// <inheritdoc />
@@ -243,7 +243,7 @@ public class ApplicationRepository : IApplicationRepository
              .Where(ca => ca.Id == applicationId)
              .Select(ca => new ValueTuple<CompanyApplicationStatusId, ApplicationChecklistEntryStatusId>(
                  ca.ApplicationStatusId,
-                 ca.ApplicationChecklist
+                 ca.ApplicationChecklistEntries
                      .Where(x => x.ApplicationChecklistEntryTypeId == checklistEntryTypeId)
                      .Select(x => x.ApplicationChecklistEntryStatusId)
                      .SingleOrDefault()))

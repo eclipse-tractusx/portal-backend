@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
@@ -18,14 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm.Models;
+using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 
 /// <summary>
-/// View model of an application's detailed data for the bpdm.
+/// Settings used in business logic concerning connectors.
 /// </summary>
-/// <param name="CompanyName">Name of the company.</param>
-/// <param name="AlphaCode2">AlphaCode 2 of the company.</param>
-/// <param name="ZipCode">Zipcode of the company's address.</param>
-/// <param name="City">City of the company's address.</param>
-/// <param name="Street">Street of the company's address.</param>
-public record BpdmTransferData(string CompanyName, string AlphaCode2, string ZipCode, string City, string Street);
+public class BpdmServiceSettings : KeyVaultAuthSettings
+{
+    [Required(AllowEmptyStrings = false)]
+    public string BaseAdress { get; set; } = null!;
+}

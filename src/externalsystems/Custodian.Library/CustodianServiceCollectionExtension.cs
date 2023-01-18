@@ -18,34 +18,40 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
+namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 
-public static class BpdmServiceCollectionExtension
+public static class CustodianServiceCollectionExtension
 {
-    public static IServiceCollection AddBpdmService(this IServiceCollection services, IConfigurationSection section)
+    public static IServiceCollection AddCustodianService(this IServiceCollection services, IConfigurationSection section)
     {
-        services.AddOptions<BpdmServiceSettings>()
+        services.AddOptions<CustodianSettings>()
             .Bind(section)
             .ValidateOnStart();
-        services.AddTransient<LoggingHandler<BpdmService>>();
+        services.AddTransient<LoggingHandler<CustodianService>>();
 
         var sp = services.BuildServiceProvider();
-        var settings = sp.GetRequiredService<IOptions<BpdmServiceSettings>>();
-        services.AddHttpClient(nameof(BpdmService), c =>
+        var settings = sp.GetRequiredService<IOptions<CustodianSettings>>();
+        services.AddHttpClient(nameof(CustodianService), c =>
         {
             c.BaseAddress = new Uri(settings.Value.BaseAdress);
-        }).AddHttpMessageHandler<LoggingHandler<BpdmService>>();
-        services.AddHttpClient($"{nameof(BpdmService)}Auth", c =>
+        }).AddHttpMessageHandler<LoggingHandler<CustodianService>>();
+        services.AddHttpClient($"{nameof(CustodianService)}Auth", c =>
         {
             c.BaseAddress = new Uri(settings.Value.KeyCloakTokenAdress);
-        }).AddHttpMessageHandler<LoggingHandler<BpdmService>>();
-        services.AddTransient<IBpdmService, BpdmService>();
-
+        }).AddHttpMessageHandler<LoggingHandler<CustodianService>>();
+        services
+            .AddTransient<ITokenService, TokenService>()
+            .AddTransient<ICustodianService, CustodianService>();
+        services.AddTransient<ICustodianBusinessLogic, CustodianBusinessLogic>();
+        
         return services;
     }
 }

@@ -18,10 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -43,6 +45,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly INotificationService _notificationService;
     private readonly ISdFactoryService _sdFactoryService;
     private readonly IChecklistService _checklistService;
+    private readonly ICustodianBusinessLogic _custodianBusinessLogic;
 
     public RegistrationBusinessLogic(
         IPortalRepositories portalRepositories, 
@@ -51,7 +54,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IMailingService mailingService,
         INotificationService notificationService,
         ISdFactoryService sdFactoryService,
-        IChecklistService checklistService)
+        IChecklistService checklistService,
+        ICustodianBusinessLogic custodianBusinessLogic)
     {
         _portalRepositories = portalRepositories;
         _settings = configuration.Value;
@@ -60,6 +64,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _notificationService = notificationService;
         _sdFactoryService = sdFactoryService;
         _checklistService = checklistService;
+        _custodianBusinessLogic = custodianBusinessLogic;
     }
 
     public Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId)
@@ -120,7 +125,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             _settings.ApplicationsMaxPageSize,
             (skip, take) => new Pagination.AsyncSource<CompanyApplicationDetails>(
                 applications.CountAsync(),
-                applications.OrderByDescending(application => application.DateCreated)
+                applications
+                    .AsSplitQuery()
+                    .OrderByDescending(application => application.DateCreated)
                     .Skip(skip)
                     .Take(take)
                     .Select(application => new CompanyApplicationDetails(
@@ -135,7 +142,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                                     DocumentTypeId = document.DocumentTypeId
                                 })),
                         application.Company!.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
-                        application.ApplicationChecklist.Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)))
+                        application.ApplicationChecklistEntries.Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)))
                     {
                         Email = application.Invitations
                             .Select(invitation => invitation.CompanyUser)
@@ -183,7 +190,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         Guid? documentId = null;
         try
         {
-            await _checklistService.CreateWalletAsync(applicationId, cancellationToken).ConfigureAwait(false);
+            await _custodianBusinessLogic.CreateWalletAsync(applicationId, cancellationToken).ConfigureAwait(false);
             documentId = await _sdFactoryService.RegisterSelfDescriptionAsync(accessToken, applicationId, countryCode, businessPartnerNumber, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception)
@@ -373,12 +380,103 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     .AsAsyncEnumerable()));
     }
 
+    /// <inheritdoc />
     public Task UpdateCompanyBpn(Guid applicationId, string bpn)
-        => _checklistService.UpdateCompanyBpn(applicationId, bpn);
+    {
+        var regex = new Regex(@"(\w|\d){16}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+        if (!regex.IsMatch(bpn))
+        {
+            throw new ControllerArgumentException("BPN must contain exactly 16 characters long.", nameof(bpn));
+        }
+        if (!bpn.StartsWith("BPNL", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ControllerArgumentException("businessPartnerNumbers must prefixed with BPNL", nameof(bpn));
+        }
+        
+        return UpdateCompanyBpnAsync(applicationId, bpn);
+    }
+
+    private async Task UpdateCompanyBpnAsync(Guid applicationId, string bpn)
+    {
+        var result = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetBpnForIamUserUntrackedAsync(applicationId, bpn).ToListAsync().ConfigureAwait(false);
+        if (!result.Any(item => item.IsApplicationCompany))
+        {
+            throw new NotFoundException($"application {applicationId} not found");
+        }
+
+        if (result.Any(item => !item.IsApplicationCompany))
+        {
+            throw new ConflictException("BusinessPartnerNumber is already assigned to a different company");
+        }
+
+        var applicationCompanyData = result.Single(item => item.IsApplicationCompany);
+        if (!applicationCompanyData.IsApplicationPending)
+        {
+            throw new ConflictException(
+                $"application {applicationId} for company {applicationCompanyData.CompanyId} is not pending");
+        }
+
+        if (!string.IsNullOrWhiteSpace(applicationCompanyData.BusinessPartnerNumber))
+        {
+            throw new ConflictException(
+                $"BusinessPartnerNumber of company {applicationCompanyData.CompanyId} has already been set.");
+        }
+
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null, 
+            c => { c.BusinessPartnerNumber = bpn; });
+
+        _portalRepositories.GetInstance<IApplicationChecklistRepository>()
+            .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
+                checklist => { checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE; });
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 
     /// <inheritdoc />
-    public Task SetRegistrationVerification(Guid applicationId, bool approve, string? comment = null) =>
-        _checklistService.HandleRegistrationVerification(applicationId, approve, comment);
+    public async Task SetRegistrationVerification(Guid applicationId, bool approve, string? comment = null)
+    {
+        if (!approve && string.IsNullOrWhiteSpace(comment))
+        {
+            throw new ConflictException("Application is denied but no comment set.");
+        }
+
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>()
+            .GetApplicationStatusWithChecklistTypeStatusAsync(applicationId, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION)
+            .ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"CompanyApplication {applicationId} does not exist.");
+        }
+        
+        if (result.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
+        {
+            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
+        }
+
+        if (result.RegistrationVerificationStatusId == default)
+        {
+            throw new ConflictException($"No ChecklistEntry of type {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION} exists for application {applicationId}");
+        }
+
+        if (result.RegistrationVerificationStatusId != ApplicationChecklistEntryStatusId.TO_DO)
+        {
+            throw new ConflictException($"ChecklistEntry {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION} is not in state {ApplicationChecklistEntryStatusId.TO_DO}");
+        }
+        
+        _portalRepositories.GetInstance<IApplicationChecklistRepository>().AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            entry =>
+            {
+                entry.ApplicationChecklistEntryStatusId = approve
+                    ? ApplicationChecklistEntryStatusId.DONE
+                    : ApplicationChecklistEntryStatusId.FAILED;
+
+                if (!string.IsNullOrWhiteSpace(comment))
+                {
+                    entry.Comment = comment;
+                }
+            });
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 
     /// <inheritdoc />
     public Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken) =>

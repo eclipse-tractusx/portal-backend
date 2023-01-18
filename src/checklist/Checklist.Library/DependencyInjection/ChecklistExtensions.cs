@@ -20,9 +20,8 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Bpdm;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.DependencyInjection;
 

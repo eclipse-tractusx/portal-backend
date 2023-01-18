@@ -21,14 +21,13 @@
 using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Tests.Custodian;
+namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Tests;
 
 public class CustodianServiceTests
 {
