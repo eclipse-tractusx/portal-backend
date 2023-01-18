@@ -32,18 +32,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker.Tests;
 
 public class ChecklistExecutionServiceTests
 {
-
-    private static readonly Guid IdWithoutBpn = new("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
-    private static readonly Guid IdWithBpn = new("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
-    private static readonly Guid IdWithFailingCustodian = new("bda6d1b5-042e-493a-894c-11f3a89c12b1");
-    private static readonly Guid NotExistingApplicationId = new("1942e8d3-b545-4fbc-842c-01a694f84390");
-    private static readonly Guid ActiveApplicationCompanyId = new("66c765dd-872d-46e0-aac1-f79330b55406");
-    private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
-    private static readonly Guid CompanyId = new("95c4339e-e087-4cd2-a5b8-44d385e64630");
-    private const string ValidBpn = "BPNL123698762345";
-    private const string ValidCompanyName = "valid company";
-    private const string AlreadyTakenBpn = "BPNL123698762666";
-
     private readonly IApplicationChecklistRepository _applicationChecklistRepository;
 
     private readonly IChecklistService _checklistService;
@@ -65,12 +53,6 @@ public class ChecklistExecutionServiceTests
             .Returns(_applicationChecklistRepository);
 
         _hostApplicationLifetime = fixture.Create<IHostApplicationLifetime>();
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string>
-            {
-                {"WorkerBatchSize", "5"}
-            }.ToImmutableDictionary())
-            .Build();
         var serviceProvider = fixture.Create<IServiceProvider>();
         A.CallTo(() => serviceProvider.GetService(typeof(IPortalRepositories))).Returns(portalRepositories);
         A.CallTo(() => serviceProvider.GetService(typeof(IChecklistService))).Returns(_checklistService);
@@ -78,17 +60,17 @@ public class ChecklistExecutionServiceTests
         A.CallTo(() => serviceScope.ServiceProvider).Returns(serviceProvider);
         var serviceScopeFactory = fixture.Create<IServiceScopeFactory>();
         A.CallTo(() => serviceScopeFactory.CreateScope()).Returns(serviceScope);
+        A.CallTo(() => serviceProvider.GetService(typeof(IServiceScopeFactory))).Returns(serviceScopeFactory);
 
-        _service = new ChecklistExecutionService(_hostApplicationLifetime, serviceScopeFactory,
-            fixture.Create<ILogger<ChecklistExecutionService>>(), config);
+        _service = new ChecklistExecutionService(_hostApplicationLifetime, serviceScopeFactory, fixture.Create<ILogger<ChecklistExecutionService>>());
     }
 
     [Fact]
     public async Task ExecuteAsync_WithNoPendingItems_NoServiceCall()
     {
         // Arrange
-        A.CallTo(() => _applicationChecklistRepository.GetChecklistDataGroupedByApplicationId(5))
-            .Returns(new List<ValueTuple<Guid, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>>().ToAsyncEnumerable());
+        A.CallTo(() => _applicationChecklistRepository.GetChecklistDataGroupedByApplicationId())
+            .Returns(new List<ValueTuple<Guid, ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>().ToAsyncEnumerable());
 
         // Act
         await _service.StartAsync(CancellationToken.None);
@@ -103,28 +85,40 @@ public class ChecklistExecutionServiceTests
     public async Task ExecuteAsync_With5PendingApplications_CallsServiceExactly5Times()
     {
         // Arrange
-        var checklist = new[]
-        {
-            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(
-                ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE),
-            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(
-                ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS),
-            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(
-                ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
-            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(
-                ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
-            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(
-                ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO)
-        };
-        var list = new List<ValueTuple<Guid, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>>
+        var application1 = Guid.NewGuid();
+        var application2 = Guid.NewGuid();
+        var application3 = Guid.NewGuid();
+        var application4 = Guid.NewGuid();
+        var application5 = Guid.NewGuid();
+        var list = new List<ValueTuple<Guid, ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>
             {
-                new(Guid.NewGuid(), checklist),
-                new(Guid.NewGuid(), checklist),
-                new(Guid.NewGuid(), checklist),
-                new(Guid.NewGuid(), checklist),
-                new(Guid.NewGuid(), checklist),
+                new(application1, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE),
+                new(application1, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS),
+                new(application1, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
+                new(application1, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
+                new(application1, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO),
+                new(application2, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE),
+                new(application2, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS),
+                new(application2, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
+                new(application2, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
+                new(application2, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO),
+                new(application3, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE),
+                new(application3, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS),
+                new(application3, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
+                new(application3, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
+                new(application3, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO),
+                new(application4, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE),
+                new(application4, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS),
+                new(application4, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
+                new(application4, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
+                new(application4, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO),
+                new(application5, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE),
+                new(application5, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS),
+                new(application5, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
+                new(application5, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
+                new(application5, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO),
             };
-        A.CallTo(() => _applicationChecklistRepository.GetChecklistDataGroupedByApplicationId(5))
+        A.CallTo(() => _applicationChecklistRepository.GetChecklistDataGroupedByApplicationId())
             .Returns(list.ToAsyncEnumerable());
 
         // Act
@@ -140,24 +134,16 @@ public class ChecklistExecutionServiceTests
     public async Task ExecuteAsync_WithException_LogsError()
     {
         // Arrange
-        var checklist = new[]
+        var applicationId = Guid.NewGuid();
+        var list = new List<ValueTuple<Guid, ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>
         {
-            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(
-                ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE),
-            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(
-                ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS),
-            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(
-                ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
-            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(
-                ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
-            new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(
-                ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO)
+            new(applicationId, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE),
+            new(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS),
+            new(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
+            new(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
+            new(applicationId, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO),
         };
-        var list = new List<ValueTuple<Guid, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>>
-        {
-            new(Guid.NewGuid(), checklist),
-        };
-        A.CallTo(() => _applicationChecklistRepository.GetChecklistDataGroupedByApplicationId(5))
+        A.CallTo(() => _applicationChecklistRepository.GetChecklistDataGroupedByApplicationId())
             .Returns(list.ToAsyncEnumerable());
         A.CallTo(() => _checklistService.ProcessChecklist(A<Guid>._, A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>._, A<CancellationToken>._))
             .Throws(() => new Exception("Only a test"));

@@ -67,13 +67,12 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid ApplicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> ChecklistEntries)> GetChecklistDataGroupedByApplicationId(int itemCount) =>
+    public IAsyncEnumerable<(Guid ApplicationId, ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> GetChecklistDataGroupedByApplicationId() =>
         _portalDbContext.ApplicationChecklist
-            .GroupBy(x => x.ApplicationId)
+            .OrderBy(x => x.ApplicationId)
             .Where(x => 
-                x.Any(e => e.ApplicationChecklistEntryStatusId == ApplicationChecklistEntryStatusId.TO_DO) &&
-                x.All(e => e.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.FAILED))
-            .Select(x => new ValueTuple<Guid, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>(x.Key, x.Select(e => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(e.ApplicationChecklistEntryTypeId, e.ApplicationChecklistEntryStatusId))))
-            .Take(itemCount)
+                x.ApplicationChecklistEntryStatusId == ApplicationChecklistEntryStatusId.TO_DO &&
+                x.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.FAILED)
+            .Select(x => new ValueTuple<Guid, ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(x.ApplicationId, x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId))
             .ToAsyncEnumerable();
 }

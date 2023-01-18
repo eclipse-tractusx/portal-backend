@@ -51,7 +51,6 @@ public interface IApplicationChecklistRepository
     /// <summary>
     /// Gets all checklist entries where at least one item is in TO_DO state grouped by the application id
     /// </summary>
-    /// <param name="itemCount"></param>
     /// <returns>Returns an async enumerable with the checklist data</returns>
-    IAsyncEnumerable<(Guid ApplicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> ChecklistEntries)> GetChecklistDataGroupedByApplicationId(int itemCount);
+    IAsyncEnumerable<(Guid ApplicationId, ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> GetChecklistDataGroupedByApplicationId();
 }
