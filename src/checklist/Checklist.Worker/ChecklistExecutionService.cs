@@ -65,8 +65,20 @@ public class ChecklistExecutionService : BackgroundService
                 await foreach (var entryData in checklistEntryData.ConfigureAwait(false).WithCancellation(stoppingToken))
                 {
                     // Get a new scope to get a new DbContext for each call of the checklist service 
-                    var checklistService = scope.ServiceProvider.CreateScope().ServiceProvider.GetRequiredService<IChecklistService>();
-                    await checklistService.ProcessChecklist(entryData.Key, entryData.Select(e => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(e.TypeId, e.StatusId)), stoppingToken).ConfigureAwait(false);
+                    using var checklistServiceScope = scope.ServiceProvider.CreateScope();
+                    var checklistService = checklistServiceScope.ServiceProvider.GetRequiredService<IChecklistService>();
+                    var checklistCreationService = checklistServiceScope.ServiceProvider.GetRequiredService<IChecklistCreationService>();
+
+                    var applicationId = entryData.Key;
+                    var existingChecklistTypes = entryData.Select(e => e.TypeId);
+                    var checklistEntries = entryData.Select(e => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(e.TypeId, e.StatusId)).ToList();
+                    if(Enum.GetValues<ApplicationChecklistEntryTypeId>().Length != existingChecklistTypes.Count())
+                    {
+                        var newlyCreatedEntries = await checklistCreationService.CreateMissingChecklistItems(applicationId, existingChecklistTypes).ConfigureAwait(false);
+                        checklistEntries.AddRange(newlyCreatedEntries);
+                    }
+
+                    await checklistService.ProcessChecklist(applicationId, checklistEntries, stoppingToken).ConfigureAwait(false);
                 }
                 _logger.LogInformation("Processed checklist items");
             }

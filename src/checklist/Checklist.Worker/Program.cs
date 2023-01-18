@@ -18,13 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Reflection;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using System.Reflection;
 
 var host = Host.CreateDefaultBuilder(args)
     .UseSystemd()
@@ -46,8 +44,9 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((hostContext, services) =>
     {
-        services.AddPortalRepositories(hostContext.Configuration);
-        services.AddChecklist(hostContext.Configuration.GetSection("Checklist"));
+        services.AddPortalRepositories(hostContext.Configuration)
+            .AddChecklist(hostContext.Configuration.GetSection("Checklist"))
+            .AddChecklistCreation();
         services.AddHostedService<ChecklistExecutionService>();
     }).Build();
 

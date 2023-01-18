@@ -264,11 +264,13 @@ public class ApplicationRepository : IApplicationRepository
             .SingleOrDefaultAsync();
 
      /// <inheritdoc />
-     public Task<(string? Bpn, bool ChecklistAlreadyExists)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId) => 
+     public Task<(string? Bpn, IEnumerable<ApplicationChecklistEntryTypeId> ExistingChecklistEntryTypeIds)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId) => 
          _dbContext.CompanyApplications
              .AsNoTracking()
              .Where(a => a.Id == applicationId)
-             .Select(x => new ValueTuple<string?, bool>(x.Company!.BusinessPartnerNumber, x.ApplicationChecklistEntries.Any()))
+             .Select(x => new ValueTuple<string?, IEnumerable<ApplicationChecklistEntryTypeId>>(
+                 x.Company!.BusinessPartnerNumber,
+                 x.ApplicationChecklistEntries.Select(ace => ace.ApplicationChecklistEntryTypeId)))
              .SingleOrDefaultAsync();
 
      /// <inheritdoc />
@@ -282,5 +284,12 @@ public class ApplicationRepository : IApplicationRepository
                      .Where(x => x.ApplicationChecklistEntryTypeId == checklistEntryTypeId)
                      .Select(x => x.ApplicationChecklistEntryStatusId)
                      .SingleOrDefault()))
+             .SingleOrDefaultAsync();
+
+     /// <inheritdoc />
+     public Task<string?> GetBpnForApplicationIdAsync(Guid applicationId) =>
+         _dbContext.CompanyApplications.AsNoTracking()
+             .Where(ca => ca.Id == applicationId)
+             .Select(x => x.Company!.BusinessPartnerNumber)
              .SingleOrDefaultAsync();
 }

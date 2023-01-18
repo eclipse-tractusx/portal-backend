@@ -36,16 +36,41 @@ public class ChecklistCreationService : IChecklistCreationService
     /// <inheritdoc />
     public async Task CreateInitialChecklistAsync(Guid applicationId)
     {
-        var (bpn, checklistAlreadyExists) = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpnAndChecklistCheckForApplicationIdAsync(applicationId).ConfigureAwait(false);
-        if (!checklistAlreadyExists)
+        var (bpn, existingChecklistEntryTypeIds) = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpnAndChecklistCheckForApplicationIdAsync(applicationId).ConfigureAwait(false);
+        CreateEntries(applicationId, existingChecklistEntryTypeIds, bpn);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>> CreateMissingChecklistItems(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> existingChecklistEntryTypeIds)
+    {
+        var bpn = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpnForApplicationIdAsync(applicationId).ConfigureAwait(false);
+        var createdEntries = CreateEntries(applicationId, existingChecklistEntryTypeIds, bpn);
+        if (!createdEntries.Any())
         {
-            var checklistEntries = Enum.GetValues<ApplicationChecklistEntryTypeId>()
-                .Select(x => 
-                    new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(x, GetChecklistStatus(x, bpn))
-                );
+            return createdEntries;
+        }
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        _portalRepositories.Clear();
+
+        return createdEntries;
+    }
+
+    private IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> CreateEntries(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> existingChecklistEntryTypeIds, string? bpn)
+    {
+        var checklistEntries = Enum.GetValues<ApplicationChecklistEntryTypeId>()
+            .Where(x => !existingChecklistEntryTypeIds.Any(e => e == x))
+            .Select(x =>
+                new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(x,
+                    GetChecklistStatus(x, bpn))
+            );
+        if (checklistEntries.Any())
+        {
             _portalRepositories.GetInstance<IApplicationChecklistRepository>()
                 .CreateChecklistForApplication(applicationId, checklistEntries);    
         }
+
+        return checklistEntries;
     }
 
     private static ApplicationChecklistEntryStatusId GetChecklistStatus(ApplicationChecklistEntryTypeId applicationChecklistEntryTypeId, string? bpn) =>
