@@ -59,9 +59,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <param name="authorization">the authorization</param>
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>Returns a List with one company</returns>
-        /// <remarks>Example: Get: /api/registration/company/{bpn}CAXSDUMMYCATENAZZ</remarks>
+        /// <remarks>Example: GET /api/registration/company/{bpn}CAXSDUMMYCATENAZZ</remarks>
         /// <response code="200">Returns the company</response>
         /// <response code="503">The requested service responded with the given error.</response>
+        [Obsolete($"use {nameof(GetCompanyBpdmDetailDataAsync)} instead")]
         [HttpGet]
         [Authorize(Roles = "add_company_data")]
         [Route("company/{bpn}")]
@@ -70,6 +71,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
         public IAsyncEnumerable<FetchBusinessPartnerDto> GetOneObjectAsync([FromRoute] string bpn, [FromHeader] string authorization, CancellationToken cancellationToken) => 
             _registrationBusinessLogic.GetCompanyByIdentifierAsync(bpn, authorization.Split(" ")[1], cancellationToken);
+
+        /// <summary>
+        /// Gets legal entity and address data from bpdm by its bpn
+        /// </summary>
+        /// <param name="bpn" example="BPNL000000055EPN">The bpn to get the company for</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>Returns a List with one company</returns>
+        /// <remarks>Example: Get: /api/registration/legalEntityAddress/BPNL000000055EPN</remarks>
+        /// <response code="200">Returns the company</response>
+        /// <response code="503">The requested service responded with the given error.</response>
+        [HttpGet]
+        [Authorize(Roles = "add_company_data")]
+        [Route("legalEntityAddress/{bpn}")]
+        [ProducesResponseType(typeof(BpdmLegalAddressDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+        public Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataAsync([FromRoute] string bpn, CancellationToken cancellationToken) => 
+            this.WithBearerToken(token => _registrationBusinessLogic.GetCompanyBpdmDetailDataByBusinessPartnerNumber(bpn, token, cancellationToken));
 
         /// <summary>
         /// Uploads a document

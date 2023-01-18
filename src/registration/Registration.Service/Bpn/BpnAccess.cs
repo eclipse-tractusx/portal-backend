@@ -18,11 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 
@@ -51,6 +52,126 @@ public class BpnAccess : IBpnAccess
         else
         {
             throw new ServiceException($"Access to BPN Failed with Status Code {result.StatusCode}", result.StatusCode);
+        }
+    }
+
+    public async Task<IEnumerable<BpdmLegalEntityDto>> FetchLegalEntities(FetchLegalEntitiesQueryParameters parameters, string token, CancellationToken cancellationToken)
+    {
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var uri = new UriBuilder()
+        {
+            Path = "api/catena/legal-entities",
+            Query = string.Join("&", new [] {
+                    ("name", parameters.Name),
+                    ("legalForm", parameters.LegalForm),
+                    ("status", parameters.Status),
+                    ("classification", parameters.Classification),
+                    ("administrativeArea", parameters.AdministrativeArea),
+                    ("postCode", parameters.PostCode),
+                    ("locality", parameters.Locality),
+                    ("thoroughfare", parameters.Thoroughfare),
+                    ("premise", parameters.Premise),
+                    ("postalDeliveryPoint", parameters.PostalDeliveryPoint),
+                    ("siteName", parameters.SiteName),
+                    ("page", parameters.Page.ToString()),
+                    ("size", parameters.Size.ToString())
+                }
+                .Where(x => x.Item2 != null)
+                .Select(x => $"{x.Item1}={Uri.EscapeDataString(x.Item2!)}"))
+        }.Uri;
+        var result = await _httpClient.GetAsync(uri.PathAndQuery, cancellationToken).ConfigureAwait(false);
+        if (result.IsSuccessStatusCode)
+        {
+            await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                var legalEntityResponse = await JsonSerializer.DeserializeAsync<BpdmGetLegalEntitiesResponse>(
+                    responseStream,
+                    new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+                return legalEntityResponse?.Content?.Select(c => c.LegalEntity) ?? throw new ServiceException("Access to external system bpdm did not return a valid legal entity response");
+            }
+            catch(JsonException je)
+            {
+                throw new ServiceException($"Access to external system bpdm did not return a valid json response: {je.Message}");
+            }
+        }
+        else
+        {
+            throw new ServiceException($"Access to external system bpdm failed with Status Code {result.StatusCode}", result.StatusCode);
+        }
+    }
+
+    public async Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken)
+    {
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var uri = new UriBuilder()
+        {
+            Path = $"api/catena/legal-entities/{Uri.EscapeDataString(businessPartnerNumber)}",
+            Query = "idType=BPN"
+        }.Uri;
+        var result = await _httpClient.GetAsync(uri.PathAndQuery, cancellationToken).ConfigureAwait(false);
+        if (result.IsSuccessStatusCode)
+        {
+            await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                var legalEntityResponse = await JsonSerializer.DeserializeAsync<BpdmLegalEntityDto>(
+                    responseStream,
+                    new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+                if (legalEntityResponse?.Bpn == null)
+                {
+                    throw new ServiceException("Access to external system bpdm did not return a valid legal entity response");
+                }
+                return legalEntityResponse;
+            }
+            catch(JsonException je)
+            {
+                throw new ServiceException($"Access to external system bpdm did not return a valid json response: {je.Message}");
+            }
+        }
+        else
+        {
+            throw new ServiceException($"Access to external system bpdm failed with Status Code {result.StatusCode}", result.StatusCode);
+        }
+    }
+
+    public async IAsyncEnumerable<BpdmLegalEntityAddressDto> FetchLegalEntityAddressByBpn(string businessPartnerNumber, string token, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var uri = new UriBuilder()
+        {
+            Path = $"api/catena/legal-entities/legal-addresses/search"
+        }.Uri;
+        var json = new [] { businessPartnerNumber };
+        var result = await _httpClient.PostAsJsonAsync(uri.PathAndQuery, json, cancellationToken).ConfigureAwait(false);
+        if (result.IsSuccessStatusCode)
+        {
+            await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+
+            await foreach (var address in JsonSerializer
+                    .DeserializeAsyncEnumerable<BpdmLegalEntityAddressDto>(
+                        responseStream,
+                        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
+                        cancellationToken: cancellationToken)
+                    .CatchingAsync(
+                        ex => {
+                            throw new ServiceException($"Access to external system bpdm did not return a valid json response: {ex.Message}");
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false))
+            {
+                if (address?.LegalAddress == null || address.LegalEntity == null)
+                {
+                    throw new ServiceException("Access to external system bpdm did not return a valid legal entity address response");
+                }
+                yield return address;
+            }
+        }
+        else
+        {
+            throw new ServiceException($"Access to external system bpdm failed with Status Code {result.StatusCode}", result.StatusCode);
         }
     }
 }

@@ -19,27 +19,27 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CountryAssignedIdentifier
+public class BpdmIdentifier
 {
-    public CountryAssignedIdentifier(string countryAlpha2Code, UniqueIdentifierId uniqueIdentifierId)
+    private BpdmIdentifier()
     {
-        CountryAlpha2Code = countryAlpha2Code;
-        UniqueIdentifierId = uniqueIdentifierId;
+        Label = null!;
+        CountryAssignedIdentifiers = new HashSet<CountryAssignedIdentifier>();
     }
-    
-    [JsonPropertyName("country_alpha2code")]
-    [StringLength(2, MinimumLength = 2)]
-    public string CountryAlpha2Code { get; private set; }
-    public UniqueIdentifierId UniqueIdentifierId { get; private set; }
-    public BpdmIdentifierId? BpdmIdentifierId { get; set; }
 
-    // Navigation properties
-    public virtual Country? Country { get; private set; }
-    public virtual UniqueIdentifier? UniqueIdentifier { get; private set; }
-    public virtual BpdmIdentifier? BpdmIdentifier { get; set; }
+    public BpdmIdentifier(BpdmIdentifierId bpdmIdentifierId) : this()
+    {
+        Id = bpdmIdentifierId;
+        Label = bpdmIdentifierId.ToString();
+    }
+
+    public BpdmIdentifierId Id { get; private set; }
+
+    [MaxLength(255)]
+    public string Label { get; private set; }
+    public virtual ICollection<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; private set; }
 }
