@@ -302,7 +302,7 @@ jobs:
           filepath: "portal-backend-portal-migrations.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.dll'
 
   analyze-maintenance-service:
     runs-on: ubuntu-latest
@@ -478,4 +478,4 @@ jobs:
           filepath: "portal-backend-provisioning-migrations.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.CatenaX.Ng.Portal.Backend.Provisioning.Migrations.Migrations.dll'
+          include: 'Org.CatenaX.Ng.Portal.Backend.Provisioning.Migrations.dll'

@@ -93,4 +93,14 @@ public interface IDocumentRepository
     /// <param name="documentId">Id of the document</param>
     /// <returns>The document seed data</returns>
     Task<DocumentSeedData?> GetDocumentSeedDataByIdAsync(Guid documentId);
+
+    /// <summary>
+    /// Retrieve Document TypeId , Content and validate app link to document
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="documentId"></param>
+    /// <param name="appDocumentTypeIds"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken);
 }
