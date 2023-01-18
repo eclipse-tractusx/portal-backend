@@ -73,10 +73,16 @@ public class ChecklistService : IChecklistService
             }
             catch (Exception ex)
             {
+                var statusId = ApplicationChecklistEntryStatusId.FAILED;
+                if (ex is ServiceException serviceException && serviceException.StatusCode == HttpStatusCode.ServiceUnavailable)
+                {
+                    statusId = ApplicationChecklistEntryStatusId.TO_DO;
+                }
+
                 _portalRepositories.GetInstance<IApplicationChecklistRepository>()
                     .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
                         item => { 
-                            item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
+                            item.ApplicationChecklistEntryStatusId = statusId;
                             item.Comment = ex.ToString(); 
                         });
                 await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -87,28 +93,15 @@ public class ChecklistService : IChecklistService
     private async Task<bool> CreateWalletAsync(Guid applicationId, CancellationToken cancellationToken)
     {
         var createdWallet = false;
-        try
-        {
-            var message = await _custodianBusinessLogic.CreateWalletAsync(applicationId, cancellationToken).ConfigureAwait(false);
-            _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-                .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
-                    checklist =>
-                    {
-                        checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
-                        checklist.Comment = message;
-                    });
-            createdWallet = true;
-        }
-        catch (ServiceException ex)
-        {
-            _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-                .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
-                    checklist =>
-                    {
-                        checklist.ApplicationChecklistEntryStatusId = ex.StatusCode == HttpStatusCode.ServiceUnavailable ? ApplicationChecklistEntryStatusId.TO_DO : ApplicationChecklistEntryStatusId.FAILED;
-                        checklist.Comment = ex.ToString();
-                    });
-        }
+        var message = await _custodianBusinessLogic.CreateWalletAsync(applicationId, cancellationToken).ConfigureAwait(false);
+        _portalRepositories.GetInstance<IApplicationChecklistRepository>()
+            .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
+                checklist =>
+                {
+                    checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
+                    checklist.Comment = message;
+                });
+        createdWallet = true;
         
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return createdWallet;
