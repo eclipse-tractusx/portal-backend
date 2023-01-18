@@ -102,7 +102,7 @@ public class CustodianServiceTests
         {
             BaseAddress = new Uri("https://base.address.com")
         };
-        A.CallTo(() => _httpClientFactory.CreateClient("custodian")).Returns(httpClient);
+        A.CallTo(() => _httpClientFactory.CreateClient(nameof(CustodianService))).Returns(httpClient);
         var sut = new CustodianService(_httpClientFactory, _tokenService, _options);
 
         // Act
@@ -141,7 +141,7 @@ public class CustodianServiceTests
         {
             BaseAddress = new Uri("https://base.address.com")
         };
-        A.CallTo(() => _httpClientFactory.CreateClient(A<string>.That.Matches(x => x == "custodian")))
+        A.CallTo(() => _httpClientFactory.CreateClient(A<string>.That.Matches(x => x == nameof(CustodianService))))
             .Returns(httpClient);
         var sut = new CustodianService(_httpClientFactory, _tokenService, _options);
         
@@ -162,7 +162,7 @@ public class CustodianServiceTests
         {
             BaseAddress = new Uri("https://base.address.com")
         };
-        A.CallTo(() => _httpClientFactory.CreateClient("custodian")).Returns(httpClient);
+        A.CallTo(() => _httpClientFactory.CreateClient(nameof(CustodianService))).Returns(httpClient);
         var sut = new CustodianService(_httpClientFactory, _tokenService, _options);
 
         // Act
