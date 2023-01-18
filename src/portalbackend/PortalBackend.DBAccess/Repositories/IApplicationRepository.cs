@@ -42,6 +42,7 @@ public interface IApplicationRepository
     IAsyncEnumerable<WelcomeEmailData> GetRegistrationDeclineEmailDataUntrackedAsync(Guid applicationId, IEnumerable<Guid> roleIds);
     IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null);
     Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAdressUntrackedAsync(Guid companyApplicationId);
+    Task<(bool IsValidApplicationId, bool IsSameCompanyUser, RegistrationData? Data)> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes);
     Task<(string? Bpn, bool ChecklistAlreadyExists)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId);
 
     /// <summary>
