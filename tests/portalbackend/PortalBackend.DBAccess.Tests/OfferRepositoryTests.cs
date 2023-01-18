@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -337,7 +338,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var offerDetail = await sut.GetAppUpdateData(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "623770c5-cf38-4b9f-9a35-f8b9ae972e2e", new []{"de"}, new []{ new Guid("06b243a4-ba51-4bf3-bc40-5d79a2231b90")}).ConfigureAwait(false);
+        var offerDetail = await sut.GetAppUpdateData(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "623770c5-cf38-4b9f-9a35-f8b9ae972e2e", new []{"de"}).ConfigureAwait(false);
 
         // Assert
         offerDetail.Should().NotBeNull();
@@ -394,11 +395,11 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetActiveServices
     
     [Theory]
-    [InlineData(ServiceOverviewSorting.ProviderAsc)]
-    [InlineData(ServiceOverviewSorting.ProviderDesc)]
-    [InlineData(ServiceOverviewSorting.ReleaseDateAsc)]
-    [InlineData(ServiceOverviewSorting.ReleaseDateDesc)]
-    public async Task GetActiveServices_ReturnsExpectedResult(ServiceOverviewSorting sorting)
+    [InlineData(ServiceOverviewSorting.ProviderAsc, new [] { "Newest Service", "Newest Service 2" }, new [] { "some long Description", null })]
+    [InlineData(ServiceOverviewSorting.ProviderDesc, new [] { "Newest Service 2", "Newest Service" }, new [] { null, "some long Description" })]
+    [InlineData(ServiceOverviewSorting.ReleaseDateAsc, new [] { "Newest Service", "Newest Service 2" }, new [] { "some long Description", null })]
+    [InlineData(ServiceOverviewSorting.ReleaseDateDesc, new [] { "Newest Service 2", "Newest Service" }, new [] { null, "some long Description" })]
+    public async Task GetActiveServices_ReturnsExpectedResult(ServiceOverviewSorting sorting, IEnumerable<string> names, IEnumerable<string> descriptions)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
@@ -408,34 +409,37 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         offerDetail.Should().NotBeNull();
-        offerDetail!.Count.Should().Be(1);
+        offerDetail!.Count.Should().Be(names.Count());
+        offerDetail.Data.Should().HaveSameCount(names);
+        offerDetail.Data.Select(data => data.Title).Should().ContainInOrder(names);
+        offerDetail.Data.Select(data => data.Description).Should().ContainInOrder(descriptions);
     }
 
-    [Fact]
-    public async Task GetActiveServices_WithExistingServiceAndServiceType_ReturnsExpectedResult()
+    [Theory]
+    [InlineData(ServiceTypeId.CONSULTANCE_SERVICE, 0, 2, 1, 1)]
+    [InlineData(ServiceTypeId.DATASPACE_SERVICE, 0, 2, 0, 0)]
+    [InlineData(null, 0, 2, 2, 2)]
+    [InlineData(null, 1, 1, 2, 1)]
+    [InlineData(null, 2, 1, 2, 0)]
+    public async Task GetActiveServices_WithExistingServiceAndServiceType_ReturnsExpectedResult(ServiceTypeId? serviceTypeId, int page, int size, int count, int numData)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var offerDetail = await sut.GetActiveServicesPaginationSource(null, ServiceTypeId.CONSULTANCE_SERVICE)(0, 15).ConfigureAwait(false);
+        var offerDetail = await sut.GetActiveServicesPaginationSource(null, serviceTypeId)(page, size).ConfigureAwait(false);
 
         // Assert
-        offerDetail.Should().NotBeNull();
-        offerDetail!.Count.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task GetActiveServices_WithoutExistingServiceAndServiceType_ReturnsNull()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var offerDetail = await sut.GetActiveServicesPaginationSource(null, ServiceTypeId.DATASPACE_SERVICE)(0, 15).ConfigureAwait(false);
-
-        // Assert
-        offerDetail.Should().BeNull();
+        if (count == 0)
+        {
+            offerDetail.Should().BeNull();
+        }
+        else
+        {
+            offerDetail.Should().NotBeNull();
+            offerDetail!.Count.Should().Be(count);
+            offerDetail.Data.Should().HaveCount(numData);
+        }
     }
 
     #endregion
@@ -517,6 +521,48 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         providerAppData.Should().HaveSameCount(leadPictureIds);
         providerAppData.OrderBy(item => item.LeadPictureId).Select(item => item.LeadPictureId).Should().ContainInOrder(leadPictureIds.Select(item => new Guid(item)).OrderBy(item => item));
     }
+
+    #endregion
+
+#region CreateDeleteAppAssignedUseCases
+
+    [Theory]
+    [InlineData(
+        new [] { "8895a7b6-39bc-4483-a1de-958e19eb9109", "eac5baeb-65ce-47fd-954e-bf5b4d411ba0", "581aafa7-f43c-40fc-a64c-e7be13e6c861" },                                         // initialKeys
+        new [] { "581aafa7-f43c-40fc-a64c-e7be13e6c861", "09986f28-a8be-4df7-a61b-2a1e9c243b74", "f5e5cc9a-eb76-4d72-bd0f-09af6dcd7190", "a69f819b-9d27-43c6-9ca0-fe37f11cfbdc" }, // updateKeys
+        new [] { "09986f28-a8be-4df7-a61b-2a1e9c243b74", "f5e5cc9a-eb76-4d72-bd0f-09af6dcd7190", "a69f819b-9d27-43c6-9ca0-fe37f11cfbdc" },                                         // addedEntityKeys
+        new [] { "8895a7b6-39bc-4483-a1de-958e19eb9109", "eac5baeb-65ce-47fd-954e-bf5b4d411ba0" }                                                                                  // removedEntityKeys
+    )]
+
+    public async Task CreateDeleteAppAssignedUseCases_Success(
+        IEnumerable<string> initialKeys, IEnumerable<string> updateKeys,
+        IEnumerable<string> addedEntityKeys, IEnumerable<string> removedEntityKeys)
+    {
+        var appId = Guid.NewGuid();
+        var initialItems = initialKeys.Select(x => new Guid(x)).ToImmutableArray();
+        var updateItems = updateKeys.Select(x => new Guid(x)).ToImmutableArray();
+        var addedEntities = addedEntityKeys.Select(x => new AppAssignedUseCase(appId, new Guid(x))).OrderBy(x => x.UseCaseId).ToImmutableArray();
+        var removedEntities = removedEntityKeys.Select(x => new AppAssignedUseCase(appId, new Guid(x))).OrderBy(x => x.UseCaseId).ToImmutableArray();
+
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        sut.CreateDeleteAppAssignedUseCases(appId, initialItems, updateItems);
+
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().AllSatisfy(entry => entry.Entity.Should().BeOfType<AppAssignedUseCase>());
+        changedEntries.Should().HaveCount(addedEntities.Length + removedEntities.Length);
+        var added = changedEntries.Where(entry => entry.State == Microsoft.EntityFrameworkCore.EntityState.Added).Select(x => (AppAssignedUseCase)x.Entity).ToImmutableArray();
+        var modified = changedEntries.Where(entry => entry.State == Microsoft.EntityFrameworkCore.EntityState.Modified).Select(x => (AppAssignedUseCase)x.Entity).ToImmutableArray();
+        var deleted = changedEntries.Where(entry => entry.State == Microsoft.EntityFrameworkCore.EntityState.Deleted).Select(x => (AppAssignedUseCase)x.Entity).ToImmutableArray();
+
+        added.Should().HaveSameCount(addedEntities);
+        added.OrderBy(x => x.UseCaseId).Zip(addedEntities).Should().AllSatisfy(x => (x.First.AppId == x.Second.AppId && x.First.UseCaseId == x.Second.UseCaseId).Should().BeTrue());
+        modified.Should().BeEmpty();
+        deleted.Should().HaveSameCount(removedEntities);
+        deleted.OrderBy(x => x.UseCaseId).Zip(removedEntities).Should().AllSatisfy(x => (x.First.AppId == x.Second.AppId && x.First.UseCaseId == x.Second.UseCaseId).Should().BeTrue());
+   }
 
     #endregion
 

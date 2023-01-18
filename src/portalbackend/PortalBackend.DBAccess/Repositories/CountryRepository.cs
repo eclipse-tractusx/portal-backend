@@ -18,8 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -37,6 +38,18 @@ public class CountryRepository : ICountryRepository
     }
 
     /// <inheritdoc />
-    public async Task<bool> CheckCountryExistsByAlpha2CodeAsync(string alpha2Code) =>
-        await _portalDbContext.Countries.AnyAsync(x => x.Alpha2Code == alpha2Code);
+    public Task<bool> CheckCountryExistsByAlpha2CodeAsync(string alpha2Code) =>
+        _portalDbContext.Countries.AnyAsync(x => x.Alpha2Code == alpha2Code);
+
+    public Task<(bool IsValidCountry, IEnumerable<UniqueIdentifierId> UniqueIdentifierIds)> GetCountryAssignedIdentifiers(string alpha2Code, IEnumerable<UniqueIdentifierId> uniqueIdentifierIds) =>
+        _portalDbContext.Countries
+            .AsNoTracking()
+            .Where(country => country.Alpha2Code == alpha2Code)
+            .Select(country => new ValueTuple<bool,IEnumerable<UniqueIdentifierId>>(
+                true,
+                country.CountryAssignedIdentifiers
+                    .Where(assignedIdentifier => uniqueIdentifierIds.Contains(assignedIdentifier.UniqueIdentifierId))
+                    .Select(assignedIdentifier => assignedIdentifier.UniqueIdentifierId)
+            ))
+            .SingleOrDefaultAsync();
 }

@@ -508,8 +508,7 @@ public class OfferService : IOfferService
 
     private static void ValidateOfferDetails(OfferReleaseData offerDetails)
     {
-        if (offerDetails.Name is not null &&
-            offerDetails.SalesManagerId is not null &&
+        if (offerDetails.Name is not null && 
             offerDetails.ProviderCompanyId is not null &&
             offerDetails is { IsDescriptionLongNotSet: false, IsDescriptionShortNotSet: false }) return;
         

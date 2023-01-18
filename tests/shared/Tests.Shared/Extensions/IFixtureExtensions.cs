@@ -18,32 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using AutoFixture;
+using AutoFixture.Kernel;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
-public class CompanyIdentifier
+public static class IFixtureExtensions
 {
-    private CompanyIdentifier() 
-    {
-        Value = null!;
-    }
-
-    public CompanyIdentifier(Guid companyId, UniqueIdentifierId uniqueIdentifierId, string value)
-        : this()
-    {
-        CompanyId = companyId;
-        UniqueIdentifierId = uniqueIdentifierId;
-        Value = value;
-    }
-
-    public Guid CompanyId { get; private set; }
-
-    public UniqueIdentifierId UniqueIdentifierId { get; private set; }
-
-    public string Value { get; set; }
-
-    // Navigation properties
-    public virtual Company? Company { get; private set; }
-    public virtual UniqueIdentifier? UniqueIdentifier { get; private set; }
+    public static string CreateEmail(this IFixture fixture) => (string)new SpecimenContext(fixture).Resolve(new RegularExpressionRequest(@"^[a-z]{20}@[a-z]{10}\.[a-z]{2}$"));
+    public static string CreateName(this IFixture fixture) => (string)new SpecimenContext(fixture).Resolve(new RegularExpressionRequest(@"^[a-z]{20}$"));
 }

@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -78,6 +79,17 @@ public class CompanyRepository : ICompanyRepository
         _context.Attach(address);
         modify(address);
     }
+
+    public void CreateUpdateDeleteIdentifiers(Guid companyId, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> initialItems, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> modifiedItems) =>
+        _context.AddAttachRemoveRange(
+            initialItems,
+            modifiedItems,
+            initial => initial.UniqueIdentifierId,
+            modified => modified.UniqueIdentifierId,
+            identifierId => new CompanyIdentifier(companyId, identifierId, null!),
+            (initial, modified) => initial.Value == modified.Value,
+            (entity, initial) => entity.Value = initial.Value,
+            (entity, modified) => entity.Value = modified.Value);
 
     public Task<(string CompanyName, Guid CompanyId)> GetCompanyNameIdUntrackedAsync(string iamUserId) =>
         _context.IamUsers

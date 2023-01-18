@@ -68,7 +68,7 @@
   {
     "alpha2code": "AT",
     "alpha3code": "AUT",
-    "country_name_de": "Austria",
+    "country_name_de": "Oesterreich",
     "country_name_en": "Austria"
   },
   {
@@ -116,7 +116,7 @@
   {
     "alpha2code": "BE",
     "alpha3code": "BEL",
-    "country_name_de": "Belgium",
+    "country_name_de": "Belgien",
     "country_name_en": "Belgium"
   },
   {
@@ -398,7 +398,7 @@
   {
     "alpha2code": "ES",
     "alpha3code": "ESP",
-    "country_name_de": "Spain",
+    "country_name_de": "Spanien",
     "country_name_en": "Spain"
   },
   {
@@ -410,7 +410,7 @@
   {
     "alpha2code": "FI",
     "alpha3code": "FIN",
-    "country_name_de": "Finland",
+    "country_name_de": "Finnland",
     "country_name_en": "Finland"
   },
   {
@@ -590,7 +590,7 @@
   {
     "alpha2code": "HU",
     "alpha3code": "HUN",
-    "country_name_de": "Hungary",
+    "country_name_de": "Ungarn",
     "country_name_en": "Hungary"
   },
   {
@@ -602,7 +602,7 @@
   {
     "alpha2code": "IE",
     "alpha3code": "IRL",
-    "country_name_de": "Ireland",
+    "country_name_de": "Irland",
     "country_name_en": "Ireland"
   },
   {
@@ -644,13 +644,13 @@
   {
     "alpha2code": "IS",
     "alpha3code": "ISL",
-    "country_name_de": "Iceland",
+    "country_name_de": "Island",
     "country_name_en": "Iceland"
   },
   {
     "alpha2code": "IT",
     "alpha3code": "ITA",
-    "country_name_de": "Italy",
+    "country_name_de": "Italien",
     "country_name_en": "Italy"
   },
   {
@@ -788,7 +788,7 @@
   {
     "alpha2code": "LT",
     "alpha3code": "LTU",
-    "country_name_de": "Lithuania",
+    "country_name_de": "Litauen",
     "country_name_en": "Lithuania"
   },
   {
@@ -800,7 +800,7 @@
   {
     "alpha2code": "LV",
     "alpha3code": "LVA",
-    "country_name_de": "Latvia",
+    "country_name_de": "Lettland",
     "country_name_en": "Latvia"
   },
   {
@@ -986,7 +986,7 @@
   {
     "alpha2code": "NL",
     "alpha3code": "NLD",
-    "country_name_de": "Netherlands (the)",
+    "country_name_de": "Niederlande",
     "country_name_en": "Netherlands (the)"
   },
   {
@@ -1064,7 +1064,7 @@
   {
     "alpha2code": "PL",
     "alpha3code": "POL",
-    "country_name_de": "Poland",
+    "country_name_de": "Polen",
     "country_name_en": "Poland"
   },
   {
@@ -1124,7 +1124,7 @@
   {
     "alpha2code": "RO",
     "alpha3code": "ROU",
-    "country_name_de": "Romania",
+    "country_name_de": "Rumaenien",
     "country_name_en": "Romania"
   },
   {
@@ -1172,7 +1172,7 @@
   {
     "alpha2code": "SE",
     "alpha3code": "SWE",
-    "country_name_de": "Sweden",
+    "country_name_de": "Schweden",
     "country_name_en": "Sweden"
   },
   {
@@ -1190,7 +1190,7 @@
   {
     "alpha2code": "SI",
     "alpha3code": "SVN",
-    "country_name_de": "Slovenia",
+    "country_name_de": "Slowenien",
     "country_name_en": "Slovenia"
   },
   {
@@ -1202,7 +1202,7 @@
   {
     "alpha2code": "SK",
     "alpha3code": "SVK",
-    "country_name_de": "Slovakia",
+    "country_name_de": "Slowakei",
     "country_name_en": "Slovakia"
   },
   {

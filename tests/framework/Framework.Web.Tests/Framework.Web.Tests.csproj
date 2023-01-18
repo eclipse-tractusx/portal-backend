@@ -1,5 +1,5 @@
 <!--
-- Copyright (c) 2021,2022 Microsoft and BMW Group AG
+- Copyright (c) 2021,2022 BMW Group AG
 - Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
@@ -41,7 +41,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\framework\Framework.IO\Framework.IO.csproj" />
     <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+    <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.Web\Framework.Web.csproj" />
   </ItemGroup>
 </Project>
