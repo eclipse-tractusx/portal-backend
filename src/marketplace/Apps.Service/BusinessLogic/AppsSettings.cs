@@ -122,6 +122,13 @@ public class AppsSettings
     /// Max page size for pagination
     /// </summary>
     public int ApplicationsMaxPageSize { get; set; }
+    
+    /// <summary>
+    /// Document Type Id for App Image
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<DocumentTypeId> AppImageDocumentTypeIds { get; set; } = null!;
 }
 
 /// <summary>

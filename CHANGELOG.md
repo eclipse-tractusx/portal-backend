@@ -4,6 +4,22 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+## 1.0.0-RC2
+
+### Change
+* n/a
+
+### Feature
+* Registration service new endpoints for unique identifiers released (GET & POST)
+
+### Technical Support
+* Migration base image data load extended by country_assigned_unique_identifiers
+* Migration base image data load updates for countries and documents
+
+### Bugfix
+* App Release endpoints for updating app details and validation for submitting apps fixed/changed
+* Get /services/active response fix for shortDescription
+
 
 ## 1.0.0-RC1
 

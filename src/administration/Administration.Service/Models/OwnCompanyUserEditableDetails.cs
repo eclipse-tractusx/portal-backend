@@ -26,15 +26,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public class OwnCompanyUserEditableDetails
 {
-    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName")]
+    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
     [JsonPropertyName("firstName")]
     public string? FirstName { get; set; }
 
-    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName")]
+    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
     [JsonPropertyName("lastName")]
     public string? LastName { get; set; }
 
-    [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email")]
+    [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
     [JsonPropertyName("email")]
     public string? Email { get; set; }
 }

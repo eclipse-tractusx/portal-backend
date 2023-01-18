@@ -39,10 +39,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         /// <param name="iamUserId">The Id of the current user</param>
         /// <returns></returns>
         Task<(string fileName, byte[] content)> GetDocumentContentAsync(Guid documentId, string iamUserId);
-        
+
         IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId);
-        Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId);
-        Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId);
+        Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId, string iamUserId);
+        Task SetCompanyDetailDataAsync(Guid applicationId, CompanyDetailData companyDetails, string iamUserId);
         Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, string iamUserId);
         Task<int> SetOwnCompanyApplicationStatusAsync(Guid applicationId, CompanyApplicationStatusId status, string iamUserId);
         Task<CompanyApplicationStatusId> GetOwnCompanyApplicationStatusAsync(Guid applicationId, string iamUserId);

@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -171,6 +172,12 @@ public class OfferRepository : IOfferRepository
     public void AddAppAssignedUseCases(IEnumerable<(Guid appId, Guid useCaseId)> appUseCases) =>
         _context.AppAssignedUseCases.AddRange(appUseCases.Select(s => new AppAssignedUseCase(s.appId, s.useCaseId)));
 
+    public void CreateDeleteAppAssignedUseCases(Guid appId, IEnumerable<Guid> initialUseCases, IEnumerable<Guid> modifyUseCases) =>
+        _context.AddRemoveRange(
+            initialUseCases,
+            modifyUseCases,
+            useCaseId => new AppAssignedUseCase(appId, useCaseId));
+
     /// <inheritdoc />
     public void AddOfferDescriptions(IEnumerable<(Guid offerId, string languageShortName, string descriptionLong, string descriptionShort)> offerDescriptions) =>
         _context.OfferDescriptions.AddRange(offerDescriptions.Select(s => new OfferDescription(s.offerId, s.languageShortName, s.descriptionLong, s.descriptionShort)));
@@ -272,7 +279,7 @@ public class OfferRepository : IOfferRepository
                 service.Name!,
                 service.Provider,
                 service.ContactEmail,
-                null,
+                service.OfferDescriptions.SingleOrDefault(ln => ln.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionLong,
                 service.OfferLicenses.FirstOrDefault()!.Licensetext,
                 service.ServiceTypes.Select(x => x.Id)))
         .SingleOrDefaultAsync();
@@ -340,7 +347,6 @@ public class OfferRepository : IOfferRepository
             .Where(o => o.Id == offerId && o.OfferStatusId == OfferStatusId.CREATED && o.OfferTypeId == offerTypeId)
             .Select(o => new OfferReleaseData(
                 o.Name,
-                o.SalesManagerId,
                 o.ProviderCompanyId,
                 o.ProviderCompany!.Name,
                 o.OfferDescriptions.Any(description => description.DescriptionLong == ""),
@@ -416,8 +422,7 @@ public class OfferRepository : IOfferRepository
     public Task<AppUpdateData?> GetAppUpdateData(
         Guid appId,
         string iamUserId,
-        IEnumerable<string> languageCodes,
-        IEnumerable<Guid> useCaseIds) =>
+        IEnumerable<string> languageCodes) =>
         _context.Offers
             .AsNoTracking()
             .Where(offer => offer.Id == appId && offer.OfferTypeId == OfferTypeId.APP)
@@ -427,7 +432,7 @@ public class OfferRepository : IOfferRepository
                 x.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
                 x.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
                 x.SupportedLanguages.Select(sl => new ValueTuple<string, bool>(sl.ShortName, languageCodes.Any(lc => lc == sl.ShortName))),
-                x.UseCases.Select(uc => uc.Id).Where(uc => useCaseIds.Any(uci => uci == uc)),
+                x.UseCases.Select(uc => uc.Id),
                 x.OfferLicenses.Select(ol => new ValueTuple<Guid, string, bool>(ol.Id, ol.Licensetext, ol.Offers.Count > 1)).FirstOrDefault(),
                 x.SalesManagerId
             ))

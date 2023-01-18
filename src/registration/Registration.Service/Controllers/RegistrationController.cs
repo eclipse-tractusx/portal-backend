@@ -205,14 +205,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [Route("application/{applicationId}/companyDetailsWithAddress")]
         [ProducesResponseType(typeof(CompanyWithAddress), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public Task<CompanyWithAddress> GetCompanyWithAddressAsync([FromRoute] Guid applicationId) =>
-            _registrationBusinessLogic.GetCompanyWithAddressAsync(applicationId);
+        public Task<CompanyDetailData> GetCompanyDetailDataAsync([FromRoute] Guid applicationId) =>
+            this.WithIamUserId(iamUserId =>
+                _registrationBusinessLogic.GetCompanyDetailData(applicationId, iamUserId));
 
         /// <summary>
         /// Sets the company with its address for the given application id
         /// </summary>
         /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application to set the company for.</param>
-        /// <param name="companyWithAddress">The company with its address</param>
+        /// <param name="companyDetailData">The company with its address</param>
         /// <remarks>Example: Post: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyDetailsWithAddress</remarks>
         /// <response code="200">Successfully set the company with its address</response>
         /// <response code="400">A request parameter was incorrect.</response>
@@ -223,9 +224,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public Task SetCompanyWithAddressAsync([FromRoute] Guid applicationId, [FromBody] CompanyWithAddress companyWithAddress) =>
+        public Task SetCompanyDetailDataAsync([FromRoute] Guid applicationId, [FromBody] CompanyDetailData companyDetailData) =>
             this.WithIamUserId(iamUserId =>
-                _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress, iamUserId));
+                _registrationBusinessLogic.SetCompanyDetailDataAsync(applicationId, companyDetailData, iamUserId));
 
         /// <summary>
         /// Invites the given user to the given application
