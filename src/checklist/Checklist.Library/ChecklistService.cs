@@ -79,8 +79,7 @@ public class ChecklistService : IChecklistService
                     statusId = ApplicationChecklistEntryStatusId.TO_DO;
                 }
 
-                _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-                    .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
+                _portalRepositories.GetInstance<IApplicationChecklistRepository>().AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
                         item => { 
                             item.ApplicationChecklistEntryStatusId = statusId;
                             item.Comment = ex.ToString(); 
@@ -92,7 +91,6 @@ public class ChecklistService : IChecklistService
 
     private async Task<bool> CreateWalletAsync(Guid applicationId, CancellationToken cancellationToken)
     {
-        var createdWallet = false;
         var message = await _custodianBusinessLogic.CreateWalletAsync(applicationId, cancellationToken).ConfigureAwait(false);
         _portalRepositories.GetInstance<IApplicationChecklistRepository>()
             .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
@@ -101,10 +99,8 @@ public class ChecklistService : IChecklistService
                     checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
                     checklist.Comment = message;
                 });
-        createdWallet = true;
-        
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return createdWallet;
+        return true;
     }
 
     /// <summary>

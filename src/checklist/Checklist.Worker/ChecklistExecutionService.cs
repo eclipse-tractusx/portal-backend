@@ -19,8 +19,10 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker;
 
@@ -32,7 +34,6 @@ public class ChecklistExecutionService : BackgroundService
     private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ILogger<ChecklistExecutionService> _logger;
-    private readonly int _workerBatchSize;
 
     /// <summary>
     /// Creates a new instance of <see cref="ChecklistExecutionService"/>
@@ -40,17 +41,14 @@ public class ChecklistExecutionService : BackgroundService
     /// <param name="applicationLifetime">Application lifetime</param>
     /// <param name="serviceScopeFactory">access to the services</param>
     /// <param name="logger">the logger</param>
-    /// <param name="config">the configuration</param>
     public ChecklistExecutionService(
         IHostApplicationLifetime applicationLifetime,
         IServiceScopeFactory serviceScopeFactory,
-        ILogger<ChecklistExecutionService> logger,
-        IConfiguration config)
+        ILogger<ChecklistExecutionService> logger)
     {
         _applicationLifetime = applicationLifetime;
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
-        _workerBatchSize = config.GetValue<int>("WorkerBatchSize");
     }
 
     /// <inheritdoc />
@@ -63,12 +61,12 @@ public class ChecklistExecutionService : BackgroundService
         {
             try
             {
-                var checklistService = scope.ServiceProvider.GetRequiredService<IChecklistService>();
-                var checklistEntryData = await portalRepositories.GetInstance<IApplicationChecklistRepository>().GetChecklistDataGroupedByApplicationId(_workerBatchSize).ToListAsync(stoppingToken).ConfigureAwait(false);
-                _logger.LogInformation("Found {Count} application checklists to process", checklistEntryData.Count);
-                foreach (var entryData in checklistEntryData)
+                var checklistEntryData = portalRepositories.GetInstance<IApplicationChecklistRepository>().GetChecklistDataGroupedByApplicationId().PreSortedGroupBy(x => x.ApplicationId).ConfigureAwait(false);
+                await foreach (var entryData in checklistEntryData.ConfigureAwait(false).WithCancellation(stoppingToken))
                 {
-                    await checklistService.ProcessChecklist(entryData.ApplicationId, entryData.ChecklistEntries, stoppingToken).ConfigureAwait(false);
+                    // Get a new scope to get a new DbContext for each call of the checklist service 
+                    var checklistService = scope.ServiceProvider.CreateScope().ServiceProvider.GetRequiredService<IChecklistService>();
+                    await checklistService.ProcessChecklist(entryData.Key, entryData.Select(e => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(e.TypeId, e.StatusId)), stoppingToken).ConfigureAwait(false);
                 }
                 _logger.LogInformation("Processed checklist items");
             }
