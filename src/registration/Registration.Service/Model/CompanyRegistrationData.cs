@@ -19,13 +19,14 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 
-public record RegistrationData(
+public record CompanyRegistrationData(
     Guid CompanyId,
     string Name,
-    string? BusinessPartnerNumber,
+    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
     string? ShortName,
     string? City,
     string? Region,
@@ -33,10 +34,19 @@ public record RegistrationData(
     string? StreetName,
     string? StreetNumber,
     string? ZipCode,
-    string? CountryAlpha2Code,
+    [property: JsonPropertyName("countryAlpha2Code")] string? CountryAlpha2Code,
     string? CountryDe,
-    IEnumerable<CompanyRoleId> CompanyRoleIds,
-    IEnumerable<(Guid AgreementId, ConsentStatusId ConsentStatusId)> AgreementConsentStatuses,
-    IEnumerable<string> DocumentNames,
-    IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> Identifiers
+    [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleId> CompanyRoleIds,
+    [property: JsonPropertyName("agreements")] IEnumerable<AgreementConsentStatusForRegistrationData> AgreementConsentStatuses,
+    IEnumerable<RegistrationDocumentNames> Documents,
+    IEnumerable<CompanyUniqueIdData> UniqueIds
+);
+
+public record AgreementConsentStatusForRegistrationData(
+    Guid AgreementId,
+    [property: JsonPropertyName("consentStatus")] ConsentStatusId ConsentStatusId
+);
+
+public record RegistrationDocumentNames(
+    string DocumentName
 );

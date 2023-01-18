@@ -602,14 +602,39 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId)
+    public async Task<CompanyRegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId)
     {
-        var registrationData = await _portalRepositories.GetInstance<IUserRepository>().GetRegistrationDataUntrackedAsync(applicationId, iamUserId, _settings.DocumentTypeIds).ConfigureAwait(false);
-        if (registrationData == null)
+        var (isValidApplicationId, isSameCompanyUser, data) = await _portalRepositories.GetInstance<IApplicationRepository>().GetRegistrationDataUntrackedAsync(applicationId, iamUserId, _settings.DocumentTypeIds).ConfigureAwait(false);
+        if (!isValidApplicationId)
+        {
+            throw new NotFoundException($"application {applicationId} does not exist");
+        }
+        if (!isSameCompanyUser)
         {
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
         }
-        return registrationData;
+        if (data == null)
+        {
+            throw new UnexpectedConditionException($"registrationData should never be null for application {applicationId}");
+        }
+        return new CompanyRegistrationData(
+            data.CompanyId,
+            data.Name,
+            data.BusinessPartnerNumber,
+            data.ShortName,
+            data.City,
+            data.Region,
+            data.StreetAdditional,
+            data.StreetName,
+            data.StreetNumber,
+            data.ZipCode,
+            data.CountryAlpha2Code,
+            data.CountryDe,
+            data.CompanyRoleIds,
+            data.AgreementConsentStatuses.Select(consentStatus => new AgreementConsentStatusForRegistrationData(consentStatus.AgreementId, consentStatus.ConsentStatusId)),
+            data.DocumentNames.Select(name => new RegistrationDocumentNames(name)),
+            data.Identifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value))
+        );
     }
 
     public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRoles(string? languageShortName = null) =>
