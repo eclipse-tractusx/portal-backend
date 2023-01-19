@@ -67,7 +67,7 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid ApplicationId, ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> GetChecklistDataGroupedByApplicationId() =>
+    public IAsyncEnumerable<(Guid ApplicationId, ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> GetChecklistDataOrderedByApplicationId() =>
         _portalDbContext.ApplicationChecklist
             .OrderBy(x => x.ApplicationId)
             .Where(x => x.Application!.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
