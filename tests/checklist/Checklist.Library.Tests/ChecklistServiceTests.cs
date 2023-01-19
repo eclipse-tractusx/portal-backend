@@ -94,7 +94,7 @@ public class ChecklistServiceTests
         // Assert
         A.CallTo(() => _bpdmBusinessLogic.TriggerBpnDataPush(IdWithoutBpn, IamUserId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(IdWithoutBpn, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.IN_PROGRESS);
     }
 
@@ -221,7 +221,7 @@ public class ChecklistServiceTests
         A.CallTo(() => _custodianBusinessLogic.CreateWalletAsync(A<Guid>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         entry.Comment.Should().Contain("Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.ServiceException: Failed");
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.FAILED);
     }
@@ -253,7 +253,7 @@ public class ChecklistServiceTests
         A.CallTo(() => _custodianBusinessLogic.CreateWalletAsync(A<Guid>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         entry.Comment.Should().Contain("Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.ServiceException: Failed");
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.TO_DO);
     }
@@ -285,7 +285,7 @@ public class ChecklistServiceTests
         A.CallTo(() => _custodianBusinessLogic.CreateWalletAsync(IdWithBpn, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(IdWithBpn, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, A<Action<ApplicationChecklistEntry>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         entry.Comment.Should().Be("It worked.");
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
     }

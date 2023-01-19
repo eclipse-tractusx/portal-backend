@@ -55,7 +55,6 @@ public class ChecklistService : IChecklistService
             {
                 checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
             });
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -84,12 +83,11 @@ public class ChecklistService : IChecklistService
                             item.ApplicationChecklistEntryStatusId = statusId;
                             item.Comment = ex.ToString(); 
                         });
-                await _portalRepositories.SaveAsync().ConfigureAwait(false);
             }
         }
     }
 
-    private async Task<bool> CreateWalletAsync(Guid applicationId, CancellationToken cancellationToken)
+    private async Task CreateWalletAsync(Guid applicationId, CancellationToken cancellationToken)
     {
         var message = await _custodianBusinessLogic.CreateWalletAsync(applicationId, cancellationToken).ConfigureAwait(false);
         _portalRepositories.GetInstance<IApplicationChecklistRepository>()
@@ -99,8 +97,6 @@ public class ChecklistService : IChecklistService
                     checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
                     checklist.Comment = message;
                 });
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return true;
     }
 
     /// <summary>
@@ -113,9 +109,10 @@ public class ChecklistService : IChecklistService
     private async Task CheckCanRunStepAsync(Guid applicationId, ApplicationChecklistEntryTypeId step, IEnumerable<ApplicationChecklistEntryStatusId> allowedStatus)
     {
         var checklistData = await _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .GetChecklistDataAsync(applicationId).ToListAsync().ConfigureAwait(false);
+            .GetChecklistDataAsync(applicationId)
+            .ToDictionaryAsync(x => x.TypeId, x => x.StatusId).ConfigureAwait(false);
 
-        var possibleSteps = GetNextPossibleTypesWithMatchingStatus(checklistData.ToDictionary(x => x.TypeId, x => x.StatusId), allowedStatus);
+        var possibleSteps = GetNextPossibleTypesWithMatchingStatus(checklistData, allowedStatus);
         if (!possibleSteps.Contains(step))
         {
             throw new ConflictException($"{step} is not available as next step");
