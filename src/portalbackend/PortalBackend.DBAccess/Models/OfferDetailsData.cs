@@ -43,9 +43,9 @@ public record OfferDetailsData(
     Guid LeadPictureId,
 
     /// <summary>
-    /// List of URIs to app's secondary pictures.
+    /// List of Images to app's secondary pictures.
     /// </summary>
-    IEnumerable<string> DetailPictureUris,
+    IEnumerable<Guid> Images,
 
     /// <summary>
     /// Uri to provider's marketing presence.

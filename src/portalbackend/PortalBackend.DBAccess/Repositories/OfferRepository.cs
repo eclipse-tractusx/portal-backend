@@ -104,7 +104,7 @@ public class OfferRepository : IOfferRepository
                 offer.Id,
                 offer.Name,
                 offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
-                offer.OfferDetailImages.Select(adi => adi.ImageUrl),
+                offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_IMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id),
                 offer.MarketingUrl,
                 offer.Provider,
                 offer.ContactEmail,
@@ -199,13 +199,6 @@ public class OfferRepository : IOfferRepository
     public void RemoveAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguageIds) =>
         _context.RemoveRange(appLanguageIds.Select(x => new AppLanguage(x.appId, x.languageShortName)));
 
-    ///<inheritdoc />
-    public void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages) =>
-        _context.OfferDetailImages.AddRange(appImages.Select(s=> new OfferDetailImage(Guid.NewGuid(), s.appId, s.imageUrl)));
-
-    public void RemoveOfferDetailImages(IEnumerable<Guid> imageIds) =>
-        _context.RemoveRange(imageIds.Select(imageId => new OfferDetailImage(imageId, Guid.Empty, null!)));
-
     public IAsyncEnumerable<AllOfferData> GetProvidedOffersData(OfferTypeId offerTypeId, string iamUserId) =>
         _context.Offers
             .AsNoTracking()
@@ -223,20 +216,19 @@ public class OfferRepository : IOfferRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> Descriptions, IEnumerable<(Guid Id, string Url)> ImageUrls)> GetAppDetailsForUpdateAsync(Guid appId, string userId) =>
+    public Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> Descriptions)> GetAppDetailsForUpdateAsync(Guid appId, string userId) =>
         _context.Offers
             .AsNoTracking()
             .AsSplitQuery()
             .Where(a => a.Id == appId)
             .Select(a =>
-                new ValueTuple<bool,bool,string?,string?,string?,IEnumerable<(string,string,string)>, IEnumerable<(Guid,string)>>(
+                new ValueTuple<bool,bool,string?,string?,string?,IEnumerable<(string,string,string)>>(
                     a.OfferStatusId == OfferStatusId.CREATED,
                     a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
                     a.ContactEmail,
                     a.ContactNumber,
                     a.MarketingUrl,
-                    a.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
-                    a.OfferDetailImages.Select(image => new ValueTuple<Guid,string>(image.Id, image.ImageUrl))
+                    a.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort))
                 ))
             .SingleOrDefaultAsync();
        
@@ -382,7 +374,7 @@ public class OfferRepository : IOfferRepository
                     offer.OfferLicenses
                         .Select(license => license.Licensetext)
                         .FirstOrDefault(),
-                    offer.OfferDetailImages.Select(image => image.ImageUrl),
+                    offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_IMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id),
                     offer.MarketingUrl,
                     offer.ContactEmail,
                     offer.ContactNumber,

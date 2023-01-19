@@ -39,7 +39,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="ContactEmail"></param>
 /// <param name="ContactNumber"></param>
 /// <returns></returns>
-public record OfferProviderData(string? Title, string Provider, Guid LeadPictureId, string? ProviderName, IEnumerable<string> UseCase, IEnumerable<OfferDescriptionData> Descriptions, IEnumerable<AgreementAssignedOfferData> Agreements, IEnumerable<string> SupportedLanguageCodes, string? Price, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber, IEnumerable<DocumentTypeData> Documents, Guid? SalesManagerId);
+public record OfferProviderData(string? Title, string Provider, Guid LeadPictureId, string? ProviderName, IEnumerable<string> UseCase, IEnumerable<OfferDescriptionData> Descriptions, IEnumerable<AgreementAssignedOfferData> Agreements, IEnumerable<string> SupportedLanguageCodes, string? Price, IEnumerable<Guid> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber, IEnumerable<DocumentTypeData> Documents, Guid? SalesManagerId);
 
 /// <summary>
 /// Model for Offer Description

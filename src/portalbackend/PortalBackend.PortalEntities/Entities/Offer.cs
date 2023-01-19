@@ -35,7 +35,6 @@ public class Offer : IAuditableV1, IBaseEntity
         OfferType = null!;
         AgreementAssignedOffers = new HashSet<AgreementAssignedOffer>();
         OfferDescriptions = new HashSet<OfferDescription>();
-        OfferDetailImages = new HashSet<OfferDetailImage>();
         Companies = new HashSet<Company>();
         OfferSubscriptions = new HashSet<OfferSubscription>();
         OfferLicenses = new HashSet<OfferLicense>();
@@ -101,7 +100,6 @@ public class Offer : IAuditableV1, IBaseEntity
     public virtual OfferStatus? OfferStatus{ get; set; }
     public virtual ICollection<AgreementAssignedOffer> AgreementAssignedOffers { get; private set; }
     public virtual ICollection<OfferDescription> OfferDescriptions { get; private set; }
-    public virtual ICollection<OfferDetailImage> OfferDetailImages { get; private set; }
     public virtual ICollection<AppInstance> AppInstances { get; private set; }
     public virtual ICollection<OfferLicense> OfferLicenses { get; private set; }
     public virtual ICollection<Company> Companies { get; private set; }
