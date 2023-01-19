@@ -474,8 +474,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken) =>
-        _checklistService.TriggerBpnDataPush(applicationId, iamUserId, cancellationToken);
+    public async Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken)
+    {
+        await _checklistService.TriggerBpnDataPush(applicationId, iamUserId, cancellationToken).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 
     private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IDictionary<string, IEnumerable<string>> roles)
     {

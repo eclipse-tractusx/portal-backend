@@ -54,21 +54,21 @@ public class ChecklistExecutionService : BackgroundService
     /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var scope = _serviceScopeFactory.CreateScope();
-        var portalRepositories = scope.ServiceProvider.GetRequiredService<IPortalRepositories>();
-            
+        using var outerLoopScope = _serviceScopeFactory.CreateScope();
+        var outerLoopRepositories = outerLoopScope.ServiceProvider.GetRequiredService<IPortalRepositories>();
+
+        using var checklistServiceScope = outerLoopScope.ServiceProvider.CreateScope();
+        var checklistService = checklistServiceScope.ServiceProvider.GetRequiredService<IChecklistService>();
+        var checklistCreationService = checklistServiceScope.ServiceProvider.GetRequiredService<IChecklistCreationService>();
+        var checklistRepositories = checklistServiceScope.ServiceProvider.GetRequiredService<IPortalRepositories>();
+
         if (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                var checklistEntryData = portalRepositories.GetInstance<IApplicationChecklistRepository>().GetChecklistDataOrderedByApplicationId().PreSortedGroupBy(x => x.ApplicationId).ConfigureAwait(false);
+                var checklistEntryData = outerLoopRepositories.GetInstance<IApplicationChecklistRepository>().GetChecklistDataOrderedByApplicationId().PreSortedGroupBy(x => x.ApplicationId).ConfigureAwait(false);
                 await foreach (var entryData in checklistEntryData.ConfigureAwait(false).WithCancellation(stoppingToken))
                 {
-                    // Get a new scope to get a new DbContext for each call of the checklist service 
-                    using var checklistServiceScope = scope.ServiceProvider.CreateScope();
-                    var checklistService = checklistServiceScope.ServiceProvider.GetRequiredService<IChecklistService>();
-                    var checklistCreationService = checklistServiceScope.ServiceProvider.GetRequiredService<IChecklistCreationService>();
-
                     var applicationId = entryData.Key;
                     var existingChecklistTypes = entryData.Select(e => e.TypeId);
                     var checklistEntries = entryData.Select(e => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(e.TypeId, e.StatusId)).ToList();
@@ -79,6 +79,8 @@ public class ChecklistExecutionService : BackgroundService
                     }
 
                     await checklistService.ProcessChecklist(applicationId, checklistEntries, stoppingToken).ConfigureAwait(false);
+                    await checklistRepositories.SaveAsync().ConfigureAwait(false);
+                    checklistRepositories.Clear();
                 }
                 _logger.LogInformation("Processed checklist items");
             }

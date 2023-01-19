@@ -44,16 +44,7 @@ public class ChecklistCreationService : IChecklistCreationService
     public async Task<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>> CreateMissingChecklistItems(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> existingChecklistEntryTypeIds)
     {
         var bpn = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpnForApplicationIdAsync(applicationId).ConfigureAwait(false);
-        var createdEntries = CreateEntries(applicationId, existingChecklistEntryTypeIds, bpn);
-        if (!createdEntries.Any())
-        {
-            return createdEntries;
-        }
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        _portalRepositories.Clear();
-
-        return createdEntries;
+        return CreateEntries(applicationId, existingChecklistEntryTypeIds, bpn);
     }
 
     private IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> CreateEntries(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> existingChecklistEntryTypeIds, string? bpn)
