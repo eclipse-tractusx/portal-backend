@@ -134,8 +134,9 @@ public class CompanyRepository : ICompanyRepository
     /// <inheritdoc />
     public Task<Guid> CheckProviderCompanyDetailsExistsForUser(string iamUserId) =>
         _context.ProviderCompanyDetails.AsNoTracking()
-            .Where(details => details.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId) 
-                || details.Company!.CompanyServiceAccounts.Any(sa => sa.IamServiceAccount!.UserEntityId == iamUserId))
+            .Where(details =>
+                details.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId) ||
+                details.Company!.CompanyServiceAccounts.Any(sa => sa.IamServiceAccount!.UserEntityId == iamUserId))
             .Select(details => details.Id)
             .SingleOrDefaultAsync();
     
