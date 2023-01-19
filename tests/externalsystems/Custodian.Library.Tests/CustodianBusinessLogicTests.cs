@@ -112,12 +112,12 @@ public class CustodianBusinessLogicTests
     
     private void SetupForCreateWallet()
     {
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(IdWithoutBpn))
-            .ReturnsLazily(() => new ValueTuple<Guid, string, string?, string>(Guid.NewGuid(), ValidCompanyName, null, "DE"));
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(IdWithBpn))
-            .ReturnsLazily(() => new ValueTuple<Guid, string, string?, string>(CompanyId, ValidCompanyName, ValidBpn, "DE"));
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(A<Guid>.That.Not.Matches(x => x == IdWithBpn || x == IdWithoutBpn)))
-            .ReturnsLazily(() => new ValueTuple<Guid, string, string?, string>());
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(IdWithoutBpn))
+            .Returns(new ValueTuple<Guid, string, string?>(Guid.NewGuid(), ValidCompanyName, null));
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(IdWithBpn))
+            .ReturnsLazily(() => new ValueTuple<Guid, string, string?>(CompanyId, ValidCompanyName, ValidBpn));
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(A<Guid>.That.Not.Matches(x => x == IdWithBpn || x == IdWithoutBpn)))
+            .Returns(((Guid, string, string?))default);
 
         A.CallTo(() => _custodianService.CreateWalletAsync(ValidBpn, ValidCompanyName, CancellationToken.None))
             .ReturnsLazily(() => "It worked.");
