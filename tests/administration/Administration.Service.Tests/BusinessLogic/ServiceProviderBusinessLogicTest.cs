@@ -68,15 +68,15 @@ public class ServiceProviderBusinessLogicTest
         //Arrange
         var serviceProviderDetailData = new ServiceProviderDetailData("https://www.service-url.com");
         var sut = _fixture.Create<ServiceProviderBusinessLogic>();
-        A.CallTo(() => _companyRepository.CheckProviderCompanyDetailsExistsForUser(IamUserId))
-            .Returns(Guid.Empty);
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(IamUserId))
+            .Returns((Guid.Empty,null!));
             
         //Act
         await sut.SetServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._,A<string>._)).MustHaveHappened();
-        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._,A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._,A<Action<ProviderCompanyDetail>>._,A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
         _serviceProviderDetails.Should().ContainSingle();
     }
@@ -85,18 +85,37 @@ public class ServiceProviderBusinessLogicTest
     public async Task SetServiceProviderCompanyDetailsAsync_WithServiceProviderDetailsId_ReturnsExpectedResult()
     {
         //Arrange
-        var serviceProviderDetailData = new ServiceProviderDetailData("https://www.service-url.com");
+        var detailsId = Guid.NewGuid();
+        var existingUrl = _fixture.Create<string>();
+        var changedUrl = "https://www.service-url.com";
+        var serviceProviderDetailData = new ServiceProviderDetailData(changedUrl);
         var sut = _fixture.Create<ServiceProviderBusinessLogic>();
-        A.CallTo(() => _companyRepository.CheckProviderCompanyDetailsExistsForUser(IamUserId))
-            .Returns(Guid.NewGuid());
-            
+
+        ProviderCompanyDetail? initialDetail = null;
+        ProviderCompanyDetail? modifyDetail = null;
+
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(IamUserId))
+            .Returns((detailsId, existingUrl));
+
+        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._,A<Action<ProviderCompanyDetail>>._,A<Action<ProviderCompanyDetail>>._))
+            .Invokes((Guid id, Action<ProviderCompanyDetail> initialize, Action<ProviderCompanyDetail> modifiy) => {
+                initialDetail = new ProviderCompanyDetail(id, Guid.Empty, null!, default);
+                modifyDetail = new ProviderCompanyDetail(id, Guid.Empty, null!, default);
+                initialize(initialDetail);
+                modifiy(modifyDetail);
+            });
+
         //Act
         await sut.SetServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._,A<Action<ProviderCompanyDetail>>._)).MustHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(detailsId, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
+        initialDetail.Should().NotBeNull();
+        initialDetail!.AutoSetupUrl.Should().Be(existingUrl);
+        modifyDetail.Should().NotBeNull();
+        modifyDetail!.AutoSetupUrl.Should().Be(changedUrl);
     }
 
     [Fact]
@@ -236,10 +255,10 @@ public class ServiceProviderBusinessLogicTest
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<string>.That.Not.Matches(x => x == IamUserId)))
             .ReturnsLazily(() => ((ProviderDetailReturnData,bool))default);
         
-        A.CallTo(() => _companyRepository.CheckProviderCompanyDetailsExistsForUser(A<string>.That.Matches(x => x == IamUserId)))
-            .ReturnsLazily(() => (Guid.NewGuid()));
-        A.CallTo(() => _companyRepository.CheckProviderCompanyDetailsExistsForUser(A<string>.That.Not.Matches(x => x == IamUserId)))
-            .ReturnsLazily(() => (Guid.Empty));
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(A<string>.That.Matches(x => x == IamUserId)))
+            .ReturnsLazily(() => (Guid.NewGuid(), _fixture.Create<string>()));
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(A<string>.That.Not.Matches(x => x == IamUserId)))
+            .Returns((Guid.Empty, null!));
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         _fixture.Inject(_portalRepositories);

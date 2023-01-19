@@ -222,7 +222,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region AttachAndModifyServiceProviderDetails
 
     [Fact]
-    public async Task AttachAndModifyServiceProviderDetails_ReturnsExpectedResult()
+    public async Task AttachAndModifyServiceProviderDetails_Changed_ReturnsExpectedResult()
     {
         // Arrange
         const string url = "https://service-url.com/new";
@@ -230,6 +230,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         sut.AttachAndModifyProviderCompanyDetails(new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122"),
+            detail => { detail.AutoSetupUrl = null!; },
             detail => { detail.AutoSetupUrl = url; });
 
         // Assert
@@ -239,6 +240,32 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);
         changedEntries.Single().Entity.Should().BeOfType<ProviderCompanyDetail>().Which.AutoSetupUrl.Should().Be(url);
+        var entry = changedEntries.Single();
+        entry.Entity.Should().BeOfType<ProviderCompanyDetail>().Which.AutoSetupUrl.Should().Be(url);
+        entry.State.Should().Be(Microsoft.EntityFrameworkCore.EntityState.Modified);
+    }
+
+    [Fact]
+    public async Task AttachAndModifyServiceProviderDetails_Unchanged_ReturnsExpectedResult()
+    {
+        // Arrange
+        const string url = "https://service-url.com/new";
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyProviderCompanyDetails(new Guid("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122"),
+            detail => { detail.AutoSetupUrl = url; },
+            detail => { detail.AutoSetupUrl = url; });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeFalse();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var entry = changedEntries.Single();
+        entry.Entity.Should().BeOfType<ProviderCompanyDetail>().Which.AutoSetupUrl.Should().Be(url);
+        entry.State.Should().Be(Microsoft.EntityFrameworkCore.EntityState.Unchanged);
     }
 
     #endregion
@@ -252,10 +279,10 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.CheckProviderCompanyDetailsExistsForUser("623770c5-cf38-4b9f-9a35-f8b9ae972e2d").ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailsExistsForUser("623770c5-cf38-4b9f-9a35-f8b9ae972e2d").ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeEmpty();
+        result.Should().NotBe(default);
     }
 
     [Fact]
@@ -265,10 +292,10 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.CheckProviderCompanyDetailsExistsForUser(Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailsExistsForUser(Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeEmpty();
+        result.Should().Be(default);
     }
 
     #endregion
