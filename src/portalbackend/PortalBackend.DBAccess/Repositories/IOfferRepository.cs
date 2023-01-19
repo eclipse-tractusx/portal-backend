@@ -157,17 +157,8 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <returns>ValueTuple, first item is true if the app is in status CREATED,
     /// second item is true if the user is eligible to edit it</returns>
-    Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> Descriptions, IEnumerable<(Guid Id, string Url)> ImageUrls)> GetAppDetailsForUpdateAsync(Guid appId, string userId);
+    Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> Descriptions)> GetAppDetailsForUpdateAsync(Guid appId, string userId);
     
-    /// <summary>
-    /// Add App Detail Images
-    /// </summary>
-    /// <param name="appImages"></param>
-    void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages);
-
-    void RemoveOfferDetailImages(IEnumerable<Guid> imageIds);
-
-    /// <summary>
     /// Get Offer Release data by Offer Id
     /// </summary>
     /// <param name="offerId">Id of the offer</param>

@@ -71,10 +71,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ControllerArgumentException("Language Code must not be empty");
         }
-        if (updateModel.Images.Any(image => string.IsNullOrWhiteSpace(image)))
-        {
-            throw new ControllerArgumentException("ImageUrl must not be empty");
-        }
         return EditAppAsync(appId, updateModel, userId);
     }
 
@@ -111,22 +107,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         });
 
         _offerService.UpsertRemoveOfferDescription(appId, updateModel.Descriptions, appResult.Descriptions);
-        UpsertRemoveAppDetailImage(appId, updateModel.Images, appResult.ImageUrls, appRepository);
-        
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
-
-    private static void UpsertRemoveAppDetailImage(Guid appId, IEnumerable<string> UpdateUrls, IEnumerable<(Guid Id, string Url)> ExistingImages, IOfferRepository appRepository)
-    {
-        appRepository.AddAppDetailImages(
-            UpdateUrls.Except(ExistingImages.Select(image => image.Url))
-                .Select(url => new ValueTuple<Guid,string>(appId, url))
-        );
-
-        appRepository.RemoveOfferDetailImages(
-            ExistingImages.ExceptBy(UpdateUrls, image => image.Url)
-                .Select(image => image.Id)
-        );
     }
 
     /// <inheritdoc/>

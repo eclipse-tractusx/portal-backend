@@ -121,7 +121,6 @@ public class BatchSeeder : ICustomSeeder
         await SeedTableForBaseEntity<OfferSubscription>("offer_subscriptions", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<AppInstance>("app_instances", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<AppSubscriptionDetail>("app_subscription_details", cancellationToken).ConfigureAwait(false);
-        await SeedTableForBaseEntity<OfferDetailImage>("offer_detail_images", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<UseCase>("use_cases", cancellationToken).ConfigureAwait(false);
     }
 

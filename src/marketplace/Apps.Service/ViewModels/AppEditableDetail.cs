@@ -26,9 +26,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// Model for updating an app.
 /// </summary>
 /// <param name="Descriptions"></param>
-/// <param name="Images"></param>
 /// <param name="ProviderUri"></param>
 /// <param name="ContactEmail"></param>
 /// <param name="ContactNumber"></param>
 /// <returns></returns>
-public record AppEditableDetail(IEnumerable<Localization> Descriptions, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber);
+public record AppEditableDetail(IEnumerable<Localization> Descriptions, string? ProviderUri, string? ContactEmail, string? ContactNumber);
