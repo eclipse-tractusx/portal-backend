@@ -26,7 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditOffer20221013))]
+[AuditEntityV1(typeof(AuditOffer20230119))]
 public class Offer : IAuditableV1, IBaseEntity
 {
     private Offer()
