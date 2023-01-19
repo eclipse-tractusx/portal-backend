@@ -146,15 +146,24 @@ public class ApplicationRepository : IApplicationRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid companyId, string companyName, string? businessPartnerNumber, string countryCode)> GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(Guid applicationId) =>
+    public Task<(Guid companyId, string? businessPartnerNumber, string countryCode)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
         _dbContext.CompanyApplications.Where(companyApplication =>
                 companyApplication.Id == applicationId &&
                 companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(ca => new ValueTuple<Guid, string, string?, string>(
+            .Select(ca => new ValueTuple<Guid, string?, string>(
                 ca.CompanyId,
-                ca.Company!.Name,
                 ca.Company!.BusinessPartnerNumber,
                 ca.Company!.Address!.Country!.Alpha2Code))
+            .SingleOrDefaultAsync();
+
+    public Task<(Guid companyId, string companyName, string? businessPartnerNumber)> GetCompanyAndApplicationDetailsForCreateWalletAsync(Guid applicationId) =>
+        _dbContext.CompanyApplications.Where(companyApplication =>
+                companyApplication.Id == applicationId &&
+                companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
+            .Select(ca => new ValueTuple<Guid, string, string?>(
+                ca.CompanyId,
+                ca.Company!.Name,
+                ca.Company!.BusinessPartnerNumber))
             .SingleOrDefaultAsync();
 
     public IAsyncEnumerable<CompanyInvitedUserData> GetInvitedUsersDataByApplicationIdUntrackedAsync(Guid applicationId) =>

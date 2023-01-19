@@ -49,8 +49,8 @@ public interface IApplicationChecklistRepository
     IAsyncEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> GetChecklistDataAsync(Guid applicationId);
 
     /// <summary>
-    /// Gets all checklist entries where at least one item is in TO_DO state grouped by the application id
+    /// Gets all checklist entries where at least one item is in TO_DO state ordered by the application id
     /// </summary>
     /// <returns>Returns an async enumerable with the checklist data</returns>
-    IAsyncEnumerable<(Guid ApplicationId, ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> GetChecklistDataGroupedByApplicationId();
+    IAsyncEnumerable<(Guid ApplicationId, ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> GetChecklistDataOrderedByApplicationId();
 }

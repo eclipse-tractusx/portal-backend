@@ -61,7 +61,7 @@ public class ChecklistExecutionService : BackgroundService
         {
             try
             {
-                var checklistEntryData = portalRepositories.GetInstance<IApplicationChecklistRepository>().GetChecklistDataGroupedByApplicationId().PreSortedGroupBy(x => x.ApplicationId).ConfigureAwait(false);
+                var checklistEntryData = portalRepositories.GetInstance<IApplicationChecklistRepository>().GetChecklistDataOrderedByApplicationId().PreSortedGroupBy(x => x.ApplicationId).ConfigureAwait(false);
                 await foreach (var entryData in checklistEntryData.ConfigureAwait(false).WithCancellation(stoppingToken))
                 {
                     // Get a new scope to get a new DbContext for each call of the checklist service 

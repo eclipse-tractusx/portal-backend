@@ -137,21 +137,16 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         application.Company!.Name,
                         application.Invitations.SelectMany(invitation =>
                             invitation.CompanyUser!.Documents.Where(document => _settings.DocumentTypeIds.Contains(document.DocumentTypeId)).Select(document =>
-                                new DocumentDetails(document.Id)
-                                {
-                                    DocumentTypeId = document.DocumentTypeId
-                                })),
+                                new DocumentDetails(document.Id, document.DocumentTypeId))),
                         application.Company!.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
-                        application.ApplicationChecklistEntries.Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)))
-                    {
-                        Email = application.Invitations
+                        application.ApplicationChecklistEntries.Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)),
+                        application.Invitations
                             .Select(invitation => invitation.CompanyUser)
                             .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
                                 && companyUser.Email != null)
                             .Select(companyUser => companyUser!.Email)
                             .FirstOrDefault(),
-                        BusinessPartnerNumber = application.Company.BusinessPartnerNumber
-                    })
+                        application.Company.BusinessPartnerNumber))
                     .AsAsyncEnumerable()));
     }
 
@@ -172,12 +167,12 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new UnexpectedConditionException($"user {iamUserId} is not associated with a companyuser");
         }
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var result = await applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(applicationId).ConfigureAwait(false);
+        var result = await applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(applicationId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} is not in status SUBMITTED");
         }
-        var (companyId, _, businessPartnerNumber, countryCode) = result;
+        var (companyId, businessPartnerNumber, countryCode) = result;
 
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
@@ -437,7 +432,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         if (!approve && string.IsNullOrWhiteSpace(comment))
         {
-            throw new ConflictException("Application is denied but no comment set.");
+            throw new ControllerArgumentException("Application is denied but no comment set.");
         }
 
         var result = await _portalRepositories.GetInstance<IApplicationRepository>()
@@ -450,7 +445,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         
         if (result.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
         {
-            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
+            throw new ConflictException($"CompanyApplication {applicationId} is not in status SUBMITTED");
         }
 
         if (result.RegistrationVerificationStatusId == default)
