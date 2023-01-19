@@ -1607,6 +1607,113 @@ public class RegistrationBusinessLogicTest
 
     #endregion
 
+    #region GetRegistrationDataAsync
+
+    [Fact]
+    public async Task GetRegistrationDataAsync_ReturnsExpected()
+    {
+        // Arrange
+        var data = _fixture.Create<RegistrationData>();
+        A.CallTo(() => _applicationRepository.GetRegistrationDataUntrackedAsync(_existingApplicationId, _iamUserId, A<IEnumerable<DocumentTypeId>>._))
+            .Returns((true, true, data));
+            
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, null!, _portalRepositories);
+
+        // Act
+        var result = await sut.GetRegistrationDataAsync(_existingApplicationId, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<CompanyRegistrationData>();
+        result.Should().Match<CompanyRegistrationData>(x =>
+            x.CompanyId == data.CompanyId &&
+            x.Name == data.Name &&
+            x.BusinessPartnerNumber == data.BusinessPartnerNumber &&
+            x.ShortName == data.ShortName &&
+            x.City == data.City &&
+            x.Region == data.Region &&
+            x.StreetAdditional == data.StreetAdditional &&
+            x.StreetName == data.StreetName &&
+            x.StreetNumber == data.StreetNumber &&
+            x.ZipCode == data.ZipCode &&
+            x.CountryAlpha2Code == data.CountryAlpha2Code &&
+            x.CountryDe == data.CountryDe);
+        result.CompanyRoleIds.Should().HaveSameCount(data.CompanyRoleIds);
+        result.CompanyRoleIds.Should().ContainInOrder(data.CompanyRoleIds);
+        result.AgreementConsentStatuses.Should().HaveSameCount(data.AgreementConsentStatuses);
+        result.AgreementConsentStatuses.Zip(data.AgreementConsentStatuses).Should().AllSatisfy(x =>
+            x.Should().Match<(AgreementConsentStatusForRegistrationData First,(Guid AgreementId,ConsentStatusId ConsentStatusId) Second)>(x =>
+                x.First.AgreementId == x.Second.AgreementId && x.First.ConsentStatusId == x.Second.ConsentStatusId));
+        result.Documents.Should().HaveSameCount(data.DocumentNames);
+        result.Documents.Zip(data.DocumentNames).Should().AllSatisfy(x =>
+            x.Should().Match<(RegistrationDocumentNames First, string Second)>(x =>
+                x.First.DocumentName == x.Second));
+        result.UniqueIds.Should().HaveSameCount(data.Identifiers);
+        result.UniqueIds.Zip(data.Identifiers).Should().AllSatisfy(x =>
+            x.Should().Match<(CompanyUniqueIdData First, (UniqueIdentifierId UniqueIdentifierId, string Value) Second)>(x =>
+                x.First.UniqueIdentifierId == x.Second.UniqueIdentifierId && x.First.Value == x.Second.Value));
+    }
+
+    [Fact]
+    public async Task GetRegistrationDataAsync_WithInvalidApplicationId_Throws()
+    {
+        // Arrange
+        var data = _fixture.Create<RegistrationData>();
+        var applicationId = Guid.NewGuid();
+        A.CallTo(() => _applicationRepository.GetRegistrationDataUntrackedAsync(A<Guid>._, _iamUserId, A<IEnumerable<DocumentTypeId>>._))
+            .Returns((false, false, data));
+            
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, null!, _portalRepositories);
+
+        // Act
+        var Act = () => sut.GetRegistrationDataAsync(applicationId, _iamUserId);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"application {applicationId} does not exist");
+    }
+
+    [Fact]
+    public async Task GetRegistrationDataAsync_WithInvalidUser_Throws()
+    {
+        // Arrange
+        var data = _fixture.Create<RegistrationData>();
+        var applicationId = Guid.NewGuid();
+        var iamUserId = _fixture.Create<string>();
+        A.CallTo(() => _applicationRepository.GetRegistrationDataUntrackedAsync(A<Guid>._, A<string>._, A<IEnumerable<DocumentTypeId>>._))
+            .Returns((true, false, data));
+            
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, null!, _portalRepositories);
+
+        // Act
+        var Act = () => sut.GetRegistrationDataAsync(applicationId, iamUserId);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
+    }
+
+    [Fact]
+    public async Task GetRegistrationDataAsync_WithNullData_Throws()
+    {
+        var applicationId = Guid.NewGuid();
+        var iamUserId = _fixture.Create<string>();
+        // Arrange
+        A.CallTo(() => _applicationRepository.GetRegistrationDataUntrackedAsync(A<Guid>._, A<string>._, A<IEnumerable<DocumentTypeId>>._))
+            .Returns((true, true, null));
+            
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, null!, _portalRepositories);
+
+        // Act
+        var Act = () => sut.GetRegistrationDataAsync(applicationId, iamUserId);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"registrationData should never be null for application {applicationId}");
+    }
+
+    #endregion
+
     #region Setup  
 
     private void SetupRepositories()
