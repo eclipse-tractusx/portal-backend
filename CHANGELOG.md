@@ -4,6 +4,21 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+## 1.0.0-RC3
+
+### Change
+* n/a
+
+### Feature
+* Registration service: GET and POST endpoints for applications enhanced by company unique identifier
+* Marketplace service: new endpoint to fetch app documents got released
+
+### Technical Support
+* n/a
+
+### Bugfix
+* Marketplace service: GET /app/details updated to exclude app images from document response
+
 ## 1.0.0-RC2
 
 ### Change
