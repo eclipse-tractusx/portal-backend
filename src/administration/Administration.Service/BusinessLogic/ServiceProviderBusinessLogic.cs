@@ -61,7 +61,12 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     /// <inheritdoc />
     public Task SetServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
     {
-        ValidateServiceProviderDetailData(data);
+        if (string.IsNullOrWhiteSpace(data.Url) || !data.Url.StartsWith("https://") || data.Url.Length > 100)
+        {
+            throw new ControllerArgumentException(
+                "Url must start with https and the maximum allowed length is 100 characters", nameof(data.Url));
+        }
+
         return SetServiceProviderCompanyDetailsInternalAsync(data, iamUserId);
     }
 
@@ -93,13 +98,5 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
             details => { details.AutoSetupUrl = data.Url; });
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
-
-    private static void ValidateServiceProviderDetailData(ServiceProviderDetailData data)
-    {
-        if (string.IsNullOrWhiteSpace(data.Url) || !data.Url.StartsWith("https://") || data.Url.Length > 100)
-        {
-            throw new ControllerArgumentException("Url must start with https and the maximum allowed length is 100 characters", nameof(data.Url));
-        }
     }
 }
