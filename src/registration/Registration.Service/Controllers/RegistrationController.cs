@@ -350,12 +350,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <remarks>Example: Get: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/registrationData</remarks>
         /// <response code="200">Returns the registration data</response>
         /// <response code="403">The user id is not associated with CompanyApplication.</response>
+        /// <response code="404">The application does not exist.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/registrationData")]
-        [ProducesResponseType(typeof(RegistrationData), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CompanyRegistrationData), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-         public Task<RegistrationData> GetRegistrationDataAsync([FromRoute] Guid applicationId) =>
+         public Task<CompanyRegistrationData> GetRegistrationDataAsync([FromRoute] Guid applicationId) =>
             this.WithIamUserId(iamUserId => 
                 _registrationBusinessLogic.GetRegistrationDataAsync(applicationId,iamUserId));
 
