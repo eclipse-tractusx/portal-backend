@@ -31,7 +31,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 public interface IUserRepository
 {
     IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);
-    Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes);
     CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId, Guid lastEditorId);
     void AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser> setOptionalParameters);
     IamUser CreateIamUser(Guid companyUserId, string iamUserId);
