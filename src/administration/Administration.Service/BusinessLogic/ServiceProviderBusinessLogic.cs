@@ -73,10 +73,10 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     private async Task SetServiceProviderCompanyDetailsInternalAsync(ServiceProviderDetailData data, string iamUserId)
     {
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
-        var serviceProviderDetailDataId = await companyRepository
-            .CheckProviderCompanyDetailsExistsForUser(iamUserId)
+        var serviceProviderDetailData = await companyRepository
+            .GetProviderCompanyDetailsExistsForUser(iamUserId)
             .ConfigureAwait(false);
-        if (serviceProviderDetailDataId == Guid.Empty)
+        if (serviceProviderDetailData == default)
         {
             var result = await companyRepository
                 .GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(iamUserId, CompanyRoleId.SERVICE_PROVIDER)
@@ -94,8 +94,9 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
         else
         {
             companyRepository.AttachAndModifyProviderCompanyDetails(
-            serviceProviderDetailDataId,
-            details => { details.AutoSetupUrl = data.Url; });
+                serviceProviderDetailData.ProviderCompanyDetailId,
+                details => { details.AutoSetupUrl = serviceProviderDetailData.Url; },
+                details => { details.AutoSetupUrl = data.Url; });
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
