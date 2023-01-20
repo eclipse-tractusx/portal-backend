@@ -155,6 +155,52 @@ public class BPNAccessTest
     }
 
     [Fact]
+    public async Task FetchLegalEntityByBpn_EmptyResponse_Throws()
+    {
+        //Arrange
+        var json = "";
+        ConfigureHttpClientFactoryFixture(new HttpResponseMessage 
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(json)
+        });
+
+        var httpClient = _fixture.Create<HttpClient>();
+        var sut = _fixture.Create<BpnAccess>();
+
+        var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
+
+        //Act
+        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+
+        //Assert
+        result.Should().NotBeNull();
+        result.Message.Should().StartWith("Access to external system bpdm did not return a valid json response");
+    }
+
+    [Fact]
+    public async Task FetchLegalEntityByBpn_NoContentResponse_Throws()
+    {
+        //Arrange
+        ConfigureHttpClientFactoryFixture(new HttpResponseMessage 
+        {
+            StatusCode = HttpStatusCode.OK,
+        });
+
+        var httpClient = _fixture.Create<HttpClient>();
+        var sut = _fixture.Create<BpnAccess>();
+
+        var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
+
+        //Act
+        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+
+        //Assert
+        result.Should().NotBeNull();
+        result.Message.Should().StartWith("Access to external system bpdm did not return a valid json response");
+    }
+
+    [Fact]
     public async Task FetchLegalEntityByBpn_InvalidJsonType_Throws()
     {
         //Arrange
