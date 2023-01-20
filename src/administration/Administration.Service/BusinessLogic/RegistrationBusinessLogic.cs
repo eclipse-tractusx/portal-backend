@@ -464,11 +464,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 entry.ApplicationChecklistEntryStatusId = approve
                     ? ApplicationChecklistEntryStatusId.DONE
                     : ApplicationChecklistEntryStatusId.FAILED;
-
-                if (!string.IsNullOrWhiteSpace(comment))
-                {
-                    entry.Comment = comment;
-                }
+                entry.Comment = comment;
             });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
