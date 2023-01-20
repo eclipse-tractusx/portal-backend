@@ -35,11 +35,9 @@ public interface IServiceProviderBusinessLogic
     Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(string iamUserId);
 
     /// <summary>
-    /// Creates service provider company details
+    /// Sets service provider company details
     /// </summary>
     /// <param name="data">Detail data for the service provider</param>
     /// <param name="iamUserId">Id of the iam user</param>
-    Task<Guid> CreateServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId);
-
-    Task UpdateServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId);
+    Task SetServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId);
 }

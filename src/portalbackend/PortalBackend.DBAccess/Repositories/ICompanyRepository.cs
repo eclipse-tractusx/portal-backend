@@ -68,7 +68,7 @@ public interface ICompanyRepository
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
     Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(string iamUserId, CompanyRoleId companyRoleId);
 
-    Task<Guid> CheckProviderCompanyDetailsExistsForUser(string iamUserId);
+    Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(string iamUserId);
     
     /// <summary>
     /// Creates service provider company details
@@ -92,7 +92,7 @@ public interface ICompanyRepository
     /// <param name="providerCompanyDetailId">Id of the service provider company details</param>
     /// <param name="setOptionalParameters">sets the fields that should be updated.</param>
     /// <returns></returns>
-    void AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail> setOptionalParameters);
+    void AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail> initialize, Action<ProviderCompanyDetail> modify);
 
     /// <summary>
     /// Gets the business partner number for the given id

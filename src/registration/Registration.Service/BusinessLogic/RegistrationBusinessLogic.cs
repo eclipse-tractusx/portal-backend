@@ -33,6 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
@@ -45,6 +46,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
+    private readonly IChecklistCreationService _checklistService;
 
     public RegistrationBusinessLogic(
         IOptions<RegistrationSettings> settings,
@@ -53,7 +55,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IProvisioningManager provisioningManager,
         IUserProvisioningService userProvisioningService,
         ILogger<RegistrationBusinessLogic> logger,
-        IPortalRepositories portalRepositories)
+        IPortalRepositories portalRepositories,
+        IChecklistCreationService checklistService)
     {
         _settings = settings.Value;
         _mailingService = mailingService;
@@ -62,6 +65,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _userProvisioningService = userProvisioningService;
         _logger = logger;
         _portalRepositories = portalRepositories;
+        _checklistService = checklistService;
     }
 
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
@@ -538,6 +542,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         UpdateApplicationStatus(applicationId, applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration, applicationRepository);
+        await _checklistService.CreateInitialChecklistAsync(applicationId);
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         var mailParameters = new Dictionary<string, string>
@@ -753,6 +759,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 {
                     ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
                 });
+
                 break;
             }
         }
