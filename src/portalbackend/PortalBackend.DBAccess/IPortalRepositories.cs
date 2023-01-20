@@ -49,4 +49,5 @@ public interface IPortalRepositories
     public T GetInstance<T>();
 
     public Task<int> SaveAsync();
+    void Clear();
 }

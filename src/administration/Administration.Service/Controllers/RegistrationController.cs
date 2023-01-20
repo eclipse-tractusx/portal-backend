@@ -161,14 +161,13 @@ public class RegistrationController : ControllerBase
     public Task UpdateCompanyBpn([FromRoute] Guid applicationId, [FromRoute] string bpn) =>
         _logic.UpdateCompanyBpn(applicationId, bpn);
 
-    
     /// <summary>
     /// Approves the partner request
     /// </summary>
     /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application that should be approved</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>the result as a boolean</returns>
-    /// Example: PUT: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/approveRequest
+    /// Example: PUT: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger-bpn
     /// <response code="200">the result as a boolean.</response>
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, the BusinessPartnerNumber (bpn) for the given CompanyApplications company is empty or no applicationId was set.</response>
     /// <response code="404">Application ID not found.</response>
@@ -185,6 +184,51 @@ public class RegistrationController : ControllerBase
     public async Task<NoContentResult> TriggerBpnDataPush([FromRoute] Guid applicationId, CancellationToken cancellationToken)
     {
         await this.WithIamUserId(user => _logic.TriggerBpnDataPushAsync(user, applicationId, cancellationToken)).ConfigureAwait(false);
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// Approves the registration verification for the application with the given id
+    /// </summary>
+    /// <param name="applicationId">Id of the application that should be approved</param>
+    /// <remarks>
+    /// Example: GET: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/approve
+    /// </remarks>
+    /// <response code="204">Successfully approved the application</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, or there is no checklist entry of type Registration_Verification.</response>
+    /// <response code="404">Application ID not found.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("applications/{applicationId}/approve")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> ApproveApplication([FromRoute] Guid applicationId)
+    {
+        await _logic.SetRegistrationVerification(applicationId, true).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Declines the registration verification for the application with the given id
+    /// </summary>
+    /// <param name="applicationId">Id of the application that should be declined</param>
+    /// <param name="comment">Comment to explain why the application got declined</param>
+    /// <remarks>
+    /// Example: GET: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/decline
+    /// </remarks>
+    /// <response code="204">Successfully declined the application</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, or there is no checklist entry of type Registration_Verification.</response>
+    /// <response code="404">Application ID not found.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("applications/{applicationId}/decline")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> DeclineApplication([FromRoute] Guid applicationId, [FromBody] string comment)
+    {
+        await _logic.SetRegistrationVerification(applicationId, false, comment).ConfigureAwait(false);
         return NoContent();
     }
 }
