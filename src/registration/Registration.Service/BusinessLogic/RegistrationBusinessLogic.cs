@@ -96,9 +96,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private async Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataByBusinessPartnerNumberInternal(string businessPartnerNumber, string token, CancellationToken cancellationToken)
     {
         var legalEntity = await _bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, cancellationToken).ConfigureAwait(false);
-        if (!businessPartnerNumber.Equals(legalEntity?.Bpn, StringComparison.OrdinalIgnoreCase))
+        if (!businessPartnerNumber.Equals(legalEntity.Bpn, StringComparison.OrdinalIgnoreCase))
         {
-            throw new ConflictException($"Bpdm did return incorrect bpn legal-entity-data");
+            throw new ConflictException("Bpdm did return incorrect bpn legal-entity-data");
         }
         BpdmLegalEntityAddressDto? legalEntityAddress;
         try
@@ -115,7 +115,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         if (!businessPartnerNumber.Equals(legalEntityAddress.LegalEntity, StringComparison.OrdinalIgnoreCase))
         {
-            throw new ConflictException($"Bpdm did return incorrect bpn address-data");
+            throw new ConflictException("Bpdm did return incorrect bpn address-data");
         }
 
         var legalAddress = legalEntityAddress.LegalAddress;
@@ -132,52 +132,24 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 bpdmIdentifier => bpdmIdentifier.BpdmIdentifierId,
                 assignedIdentifier => assignedIdentifier.BpdmIdentifierId,
                 (bpdmIdentifier, countryIdentifier) => (countryIdentifier.UniqueIdentifierId, bpdmIdentifier.Value));
-        
-        BpdmNameDto? name;
-        try
+
+        TItem? SingleOrDefaultChecked<TItem>(IEnumerable<TItem> items, string itemName)
         {
-            name = legalEntity.Names.SingleOrDefault();
-        }
-        catch(InvalidOperationException)
-        {
-            throw new ConflictException($"bpdm returned more than a single name in legal entity for {businessPartnerNumber}");
-        }
-        string? administrativeArea;
-        try
-        {
-            administrativeArea = legalAddress.AdministrativeAreas.SingleOrDefault()?.Value;
-        }
-        catch(InvalidOperationException)
-        {
-            throw new ConflictException($"bpdm returned more than a single administrativeArea in legal address for {businessPartnerNumber}");
-        }
-        string? postCode;
-        try
-        {
-            postCode = legalAddress.PostCodes.SingleOrDefault()?.Value;
-        }
-        catch(InvalidOperationException)
-        {
-            throw new ConflictException($"bpdm returned more than a single postCode in legal address for {businessPartnerNumber}");
-        }
-        string? locality;
-        try
-        {
-            locality = legalAddress.Localities.SingleOrDefault()?.Value;
-        }
-        catch(InvalidOperationException)
-        {
-            throw new ConflictException($"bpdm returned more than a single locality in legal address for {businessPartnerNumber}");
-        }
-        BpdmThoroughfareDto? thoroughfare;
-        try
-        {
-            thoroughfare = legalAddress.Thoroughfares.SingleOrDefault();
-        }
-        catch(InvalidOperationException)
-        {
-            throw new ConflictException($"bpdm returned more than a single thoroughfare in legal address for {businessPartnerNumber}");
-        }
+            try
+            {
+                return items.SingleOrDefault();
+            } catch (InvalidOperationException)
+            {
+                throw new ConflictException($"bpdm returned more than a single {itemName} in legal entity for {businessPartnerNumber}");
+            }
+        };
+
+        BpdmNameDto? name = SingleOrDefaultChecked(legalEntity.Names, nameof(name));
+        string? administrativeArea = SingleOrDefaultChecked(legalAddress.AdministrativeAreas, nameof(administrativeArea))?.Value;
+        string? postCode = SingleOrDefaultChecked(legalAddress.PostCodes, nameof(postCode))?.Value;
+        string? locality = SingleOrDefaultChecked(legalAddress.Localities, nameof(locality))?.Value;
+        BpdmThoroughfareDto? thoroughfare = SingleOrDefaultChecked(legalAddress.Thoroughfares, nameof(thoroughfare));
+
         return new CompanyBpdmDetailData(
             businessPartnerNumber,
             country,
