@@ -18,14 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using FakeItEasy;
-using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Custodian;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -37,12 +34,18 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
 public class RegistrationBusinessLogicTest
 {
+    private static readonly Guid IdWithBpn = new ("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
+    private static readonly Guid NotExistingApplicationId = new ("9f0cfd0d-c512-438e-a07e-3198bce873bf");
+    private static readonly Guid ActiveApplicationCompanyId = new("045abf01-7762-468b-98fb-84a30c39b7c7");
+    private static readonly Guid IdWithStateCreated = new ("148c0a07-2e1f-4dce-bfe0-4e3d1825c266");
+    private static readonly Guid IdWithChecklistEntryInProgress = new ("9b288a8d-1d2f-4b86-be97-da40420dc8e4");
+    private static readonly Guid CompanyId = new("95c4339e-e087-4cd2-a5b8-44d385e64630");
+    
     private static readonly Guid Id = new("d90995fe-1241-4b8d-9f5c-f3909acc6383");
     private static readonly Guid IdWithoutBpn = new("d90995fe-1241-4b8d-9f5c-f3909acc6399");
     private static readonly string AccessToken = "THISISTHEACCESSTOKEN";
@@ -57,24 +60,27 @@ public class RegistrationBusinessLogicTest
     private static readonly Guid CentralUserId3 = new("6bc51706-9a30-4eb9-9e60-77fdd6d9cd71");
     private static readonly Guid UserRoleId = new("607818be-4978-41f4-bf63-fa8d2de51154");
     private const string BusinessPartnerNumber = "CAXLSHAREDIDPZZ";
+    private const string AlreadyTakenBpn = "BPNL123698762666";
     private const string CompanyName = "Shared Idp Test";
     private const string ClientId = "catenax-portal";
+    private const string ValidBpn = "BPNL123698762345";
 
     private readonly IProvisioningManager _provisioningManager;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IApplicationRepository _applicationRepository;
+    private readonly IApplicationChecklistRepository _applicationChecklistRepository;
     private readonly IUserBusinessPartnerRepository _businessPartnerRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _rolesRepository;
-    private readonly ICustodianService _custodianService;
     private readonly IFixture _fixture;
     private readonly RegistrationBusinessLogic _logic;
     private readonly RegistrationSettings _settings;
     private readonly List<Notification> _notifications = new();
     private readonly INotificationService _notificationService;
-    private readonly ISdFactoryService _sdFactory;
     private readonly ICompanyRepository _companyRepository;
-    private readonly IBpdmService _bpdmService;
     private readonly IMailingService _mailingService;
+    private readonly ICustodianBusinessLogic _custodianBusinessLogic;
+    private readonly IChecklistService _checklistService;
 
     public RegistrationBusinessLogicTest()
     {
@@ -86,19 +92,20 @@ public class RegistrationBusinessLogicTest
         _provisioningManager = A.Fake<IProvisioningManager>();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _applicationRepository = A.Fake<IApplicationRepository>();
+        _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
         _businessPartnerRepository = A.Fake<IUserBusinessPartnerRepository>();
+        _userRepository = A.Fake<IUserRepository>();
         _rolesRepository = A.Fake<IUserRolesRepository>();
-        _custodianService = A.Fake<ICustodianService>();
         _settings = A.Fake<RegistrationSettings>();
         _companyRepository = A.Fake<ICompanyRepository>();
-        _bpdmService = A.Fake<IBpdmService>();
 
-        var userRepository = A.Fake<IUserRepository>();
         var options = A.Fake<IOptions<RegistrationSettings>>();
         _mailingService = A.Fake<IMailingService>();
         _notificationService = A.Fake<INotificationService>();
-        _sdFactory = A.Fake<ISdFactoryService>();
-        
+        var sdFactory = A.Fake<ISdFactoryService>();
+        _custodianBusinessLogic = A.Fake<ICustodianBusinessLogic>();
+        _checklistService = A.Fake<IChecklistService>();
+
         _settings.WelcomeNotificationTypeIds = new List<NotificationTypeId>
         {
             NotificationTypeId.WELCOME,
@@ -110,16 +117,17 @@ public class RegistrationBusinessLogicTest
         _settings.ApplicationsMaxPageSize = 15;
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_applicationChecklistRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_rolesRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => options.Value).Returns(_settings);
 
-        A.CallTo(() => userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
+        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
             .ReturnsLazily(Guid.NewGuid);
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _custodianService, _mailingService, _notificationService, _sdFactory, _bpdmService);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _provisioningManager, _mailingService, _notificationService, sdFactory, _checklistService, _custodianBusinessLogic);
     }
     
     #region ApprovePartnerRequest
@@ -144,7 +152,7 @@ public class RegistrationBusinessLogicTest
         var result = await _logic.ApprovePartnerRequest(IamUserId, AccessToken, Id, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(Id)).MustHaveHappened(1, Times.Exactly);
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber)).MustHaveHappened(1, Times.Exactly);
@@ -153,7 +161,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappened(1, Times.Exactly);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
-        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _custodianBusinessLogic.CreateWalletAsync(Id, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
         Assert.IsType<bool>(result);
         Assert.True(result);
         _notifications.Should().HaveCount(5);
@@ -174,14 +182,14 @@ public class RegistrationBusinessLogicTest
         var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
 
         SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
-        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._))
+        A.CallTo(() => _custodianBusinessLogic.CreateWalletAsync(Id, A<CancellationToken>._))
             .Throws(new ServiceException("error"));
 
         //Act
         var result = await _logic.ApprovePartnerRequest(IamUserId, AccessToken, Id, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(Id)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
@@ -190,7 +198,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _rolesRepository.CreateCompanyUserAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
-        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _custodianBusinessLogic.CreateWalletAsync(Id, A<CancellationToken>._)).MustHaveHappened(1, Times.OrMore);
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
         Assert.IsType<bool>(result);
         Assert.True(result);
@@ -226,8 +234,8 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(applicationId))
-            .ReturnsLazily(() => new ValueTuple<Guid, string, string?, string>());
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(applicationId))
+            .ReturnsLazily(() => new ValueTuple<Guid, string?, string>());
 
         //Act
         async Task Action() => await _logic.ApprovePartnerRequest(IamUserId, AccessToken, applicationId, CancellationToken.None).ConfigureAwait(false);
@@ -393,7 +401,7 @@ public class RegistrationBusinessLogicTest
     #region Trigger bpn data push
 
     [Fact]
-    public async Task TriggerBpnDataPush_WithValidData_CallsService()
+    public async Task TriggerBpnDataPush_CallsChecklistService()
     {
         // Act
         var data = _fixture
@@ -407,77 +415,226 @@ public class RegistrationBusinessLogicTest
         await _logic.TriggerBpnDataPushAsync(IamUserId, ApplicationId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _bpdmService.TriggerBpnDataPush(A<BpdmTransferData>._, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _checklistService.TriggerBpnDataPush(ApplicationId, IamUserId, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
     
+    #endregion
+    
+    #region UpdateCompanyBpn
+    
     [Fact]
-    public async Task TriggerBpnDataPush_WithNotExistingApplication_ThrowsNotFoundException()
+    public async Task UpdateCompanyBpnAsync_WithInvalidBpn_ThrowsControllerArgumentException()
     {
         // Arrange
-        var notExistingApplicationId = Guid.NewGuid();
-        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, notExistingApplicationId))
-            .ReturnsLazily(() => (BpdmData?)null);
+        var bpn = "123";
 
         // Act
-        async Task Act() => await _logic.TriggerBpnDataPushAsync(IamUserId, notExistingApplicationId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Application {notExistingApplicationId} does not exists.");
-    }
-
-    [Fact]
-    public async Task TriggerBpnDataPush_WithNotSubmittedApplication_ThrowsArgumentException()
-    {
-        // Arrange
-        var createdApplicationId = Guid.NewGuid();
-        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, createdApplicationId))
-            .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.CREATED, null!, null!, null!, null!, null!, true));
-
-        // Act
-        async Task Act() => await _logic.TriggerBpnDataPushAsync(IamUserId, createdApplicationId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
-        ex.ParamName.Should().Be("applicationId");
-    }
-
-    [Fact]
-    public async Task TriggerBpnDataPush_WithNotExistingUser_ThrowsArgumentException()
-    {
-        // Arrange
-        var applicationId = Guid.NewGuid();
-        var wrongUserId = Guid.NewGuid().ToString();
-        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(wrongUserId, applicationId))
-            .ReturnsLazily(() => new BpdmData(CompanyApplicationStatusId.SUBMITTED, null!, null!, null!, null!, null!, false));
-
-        // Act
-        async Task Act() => await _logic.TriggerBpnDataPushAsync(wrongUserId, applicationId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateCompanyBpn(IdWithBpn, bpn).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.ParamName.Should().Be("iamUserId");
+        ex.ParamName.Should().Be("bpn");
+        ex.Message.Should().Be("BPN must contain exactly 16 characters long. (Parameter 'bpn')");
+    }
+    
+    [Fact]
+    public async Task UpdateCompanyBpnAsync_WithInvalidBpnPrefix_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var bpn = "BPXX123698762345";
+
+        // Act
+        async Task Act() => await _logic.UpdateCompanyBpn(IdWithBpn, bpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.ParamName.Should().Be("bpn");
+        ex.Message.Should().Be("businessPartnerNumbers must prefixed with BPNL (Parameter 'bpn')");
     }
 
     [Fact]
-    public async Task TriggerBpnDataPush_WithEmptyZipCode_ThrowsConflictException()
+    public async Task UpdateCompanyBpnAsync_WithNotExistingApplication_ThrowsNotFoundException()
     {
         // Arrange
-        var createdApplicationId = _fixture.Create<Guid>();
-        var data = _fixture.Build<BpdmData>()
-            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
-            .With(x => x.IsUserInCompany, true)
-            .With(x => x.ZipCode, (string?)null)
-            .Create();
-        A.CallTo(() => _companyRepository.GetBpdmDataForApplicationAsync(IamUserId, createdApplicationId))
-            .ReturnsLazily(() => data);
+        SetupForUpdateCompanyBpn();
+        
+        // Act
+        async Task Act() => await _logic.UpdateCompanyBpn(NotExistingApplicationId, ValidBpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"application {NotExistingApplicationId} not found");
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpnAsync_WithAlreadyTakenBpn_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForUpdateCompanyBpn();
 
         // Act
-        async Task Act() => await _logic.TriggerBpnDataPushAsync(IamUserId, createdApplicationId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateCompanyBpn(IdWithoutBpn, AlreadyTakenBpn).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("ZipCode must not be empty");
+        ex.Message.Should().Be("BusinessPartnerNumber is already assigned to a different company");
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpnAsync_WithActiveCompanyForApplication_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForUpdateCompanyBpn();
+
+        // Act
+        async Task Act() => await _logic.UpdateCompanyBpn(ActiveApplicationCompanyId, ValidBpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"application {ActiveApplicationCompanyId} for company {CompanyId} is not pending");
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpnAsync_WithBpnAlreadySet_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForUpdateCompanyBpn();
+
+        // Act
+        async Task Act() => await _logic.UpdateCompanyBpn(IdWithBpn, ValidBpn).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"BusinessPartnerNumber of company {CompanyId} has already been set.");
+    }
+
+    [Fact]
+    public async Task UpdateCompanyBpnAsync_WithValidData_CallsExpected()
+    {
+        // Arrange
+        var entry = new ApplicationChecklistEntry(IdWithoutBpn, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        SetupForUpdateCompanyBpn(entry);
+
+        // Act
+        await _logic.UpdateCompanyBpn(IdWithoutBpn, ValidBpn).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(CompanyId, null, A<Action<Company>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(IdWithoutBpn, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+    }
+
+    #endregion
+    
+    #region SetRegistrationVerification
+    
+    [Fact]
+    public async Task SetRegistrationVerification_WithNotExistingApplication_ThrowsNotFoundException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        SetupForRegistrationVerification();
+        
+        // Act
+        async Task Act() => await _logic.SetRegistrationVerification(applicationId, true).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"CompanyApplication {applicationId} does not exist.");
+    }
+
+    [Fact]
+    public async Task SetRegistrationVerification_WithNotSubmittedApplication_ThrowsArgumentException()
+    {
+        // Arrange
+        SetupForRegistrationVerification();
+
+        // Act
+        async Task Act() => await _logic.SetRegistrationVerification(IdWithStateCreated, true).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"CompanyApplication {IdWithStateCreated} is not in status SUBMITTED");
+    }
+
+    [Fact]
+    public async Task SetRegistrationVerification_WithoutChecklistItem_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForRegistrationVerification();
+
+        // Act
+        async Task Act() => await _logic.SetRegistrationVerification(IdWithoutBpn, true).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"No ChecklistEntry of type {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION} exists for application {IdWithoutBpn}");
+    }
+
+    [Fact]
+    public async Task SetRegistrationVerification_WithChecklistInProgress_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForRegistrationVerification();
+
+        // Act
+        async Task Act() => await _logic.SetRegistrationVerification(IdWithChecklistEntryInProgress, true).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"ChecklistEntry {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION} is not in state {ApplicationChecklistEntryStatusId.TO_DO}");
+    }
+
+    [Fact]
+    public async Task SetRegistrationVerification_WithDeclineButNoMessageSet_ThrowsConflictException()
+    {
+        // Arrange
+        SetupForRegistrationVerification();
+
+        // Act
+        async Task Act() => await _logic.SetRegistrationVerification(IdWithBpn, false).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("Application is denied but no comment set.");
+    }
+
+    [Fact]
+    public async Task SetRegistrationVerification_WithApproval_CallsExpected()
+    {
+        // Arrange
+        var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        SetupForRegistrationVerification(entry);
+
+        // Act
+        await _logic.SetRegistrationVerification(IdWithBpn, true).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<Action<ApplicationChecklistEntry>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        entry.Comment.Should().BeNull();
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+    }
+    
+    [Fact]
+    public async Task SetRegistrationVerification_WithDecline_StateAndCommentSetCorrectly()
+    {
+        // Arrange
+        var comment = "application rejected because of reasons.";
+        var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        SetupForRegistrationVerification(entry);
+
+        // Act
+        await _logic.SetRegistrationVerification(IdWithBpn, false, comment).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<Action<ApplicationChecklistEntry>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        entry.Comment.Should().Be(comment);
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.FAILED);
     }
 
     #endregion
@@ -509,11 +666,15 @@ public class RegistrationBusinessLogicTest
             { ClientId, new List<string> { "Company Admin" }.AsEnumerable() }
         };
 
-        
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(A<Guid>.That.Matches(x => x == Id)))
-            .ReturnsLazily(() => new ValueTuple<Guid, string, string?, string>(company.Id, company.Name, company.BusinessPartnerNumber!, "de"));
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
-            .ReturnsLazily(() => new ValueTuple<Guid, string, string?, string>(IdWithoutBpn, company.Name, null, "de"));
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == Id)))
+            .ReturnsLazily(() => new ValueTuple<Guid, string?, string>(company.Id, company.BusinessPartnerNumber!, "de"));
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
+            .ReturnsLazily(() => new ValueTuple<Guid, string?, string>(IdWithoutBpn, null, "de"));
+
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(A<Guid>.That.Matches(x => x == Id)))
+            .ReturnsLazily(() => new ValueTuple<Guid, string, string?>(company.Id, company.Name, company.BusinessPartnerNumber!));
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
+            .ReturnsLazily(() => new ValueTuple<Guid, string, string?>(IdWithoutBpn, company.Name, null));
 
         var welcomeEmailData = new List<WelcomeEmailData>();
         welcomeEmailData.AddRange(new WelcomeEmailData[]
@@ -565,9 +726,6 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.SaveAsync())
             .Returns(1);
 
-        A.CallTo(() => _custodianService.CreateWalletAsync(BusinessPartnerNumber, CompanyName, A<CancellationToken>._))
-            .Returns(Task.CompletedTask);
-            
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._))
             .Invokes((
                 IDictionary<string,IEnumerable<string>> _, 
@@ -586,6 +744,72 @@ public class RegistrationBusinessLogicTest
                     _notifications.Add(notification);
                 }
             });
+    }
+
+    private void SetupForUpdateCompanyBpn(ApplicationChecklistEntry? applicationChecklistEntry = null)
+    {
+        if (applicationChecklistEntry != null)
+        {
+            SetupForUpdate(applicationChecklistEntry);
+        }
+
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(IdWithoutBpn, ValidBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            {
+                new (true, true, null, CompanyId)
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(NotExistingApplicationId, ValidBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            {
+                new (false, true, ValidBpn, CompanyId)
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(IdWithoutBpn, AlreadyTakenBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            {
+                new (true, true, ValidBpn, CompanyId),
+                new (false, true, AlreadyTakenBpn, Guid.NewGuid())
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(ActiveApplicationCompanyId, ValidBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            {
+                new (true, false, ValidBpn, CompanyId)
+            }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(IdWithBpn, ValidBpn))
+            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            {
+                new (true, true, ValidBpn, CompanyId)
+            }.ToAsyncEnumerable());
+    }
+
+    private void SetupForRegistrationVerification(ApplicationChecklistEntry? applicationChecklistEntry = null)
+    {
+        if (applicationChecklistEntry != null)
+        {
+            SetupForUpdate(applicationChecklistEntry);
+        }
+
+        A.CallTo(() => _applicationRepository.GetApplicationStatusWithChecklistTypeStatusAsync(IdWithoutBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION))
+            .ReturnsLazily(() => new ValueTuple<CompanyApplicationStatusId, ApplicationChecklistEntryStatusId>(CompanyApplicationStatusId.SUBMITTED, default));
+        A.CallTo(() => _applicationRepository.GetApplicationStatusWithChecklistTypeStatusAsync(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION))
+            .ReturnsLazily(() => new ValueTuple<CompanyApplicationStatusId, ApplicationChecklistEntryStatusId>(CompanyApplicationStatusId.SUBMITTED, ApplicationChecklistEntryStatusId.TO_DO));
+        A.CallTo(() => _applicationRepository.GetApplicationStatusWithChecklistTypeStatusAsync(IdWithStateCreated, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION))
+            .ReturnsLazily(() => new ValueTuple<CompanyApplicationStatusId, ApplicationChecklistEntryStatusId>(CompanyApplicationStatusId.CREATED, ApplicationChecklistEntryStatusId.TO_DO));
+        A.CallTo(() => _applicationRepository.GetApplicationStatusWithChecklistTypeStatusAsync(IdWithChecklistEntryInProgress, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION))
+            .ReturnsLazily(() => new ValueTuple<CompanyApplicationStatusId, ApplicationChecklistEntryStatusId>(CompanyApplicationStatusId.SUBMITTED, ApplicationChecklistEntryStatusId.IN_PROGRESS));
+        A.CallTo(() => _applicationRepository.GetApplicationStatusWithChecklistTypeStatusAsync(A<Guid>.That.Not.Matches(x => x == IdWithBpn || x == IdWithoutBpn || x == IdWithStateCreated || x == IdWithChecklistEntryInProgress), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION))
+            .ReturnsLazily(() => new ValueTuple<CompanyApplicationStatusId, ApplicationChecklistEntryStatusId>());
+    }
+
+    private void SetupForUpdate(ApplicationChecklistEntry applicationChecklistEntry)
+    {
+        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._))
+            .Invokes((Guid _, ApplicationChecklistEntryTypeId _, Action<ApplicationChecklistEntry> setFields) =>
+            {
+                applicationChecklistEntry.DateLastChanged = DateTimeOffset.UtcNow;
+                setFields.Invoke(applicationChecklistEntry);
+            });
+
+        A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_applicationChecklistRepository);
     }
 
     #endregion
