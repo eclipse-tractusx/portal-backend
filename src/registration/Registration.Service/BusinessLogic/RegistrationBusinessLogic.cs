@@ -48,6 +48,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly ILogger<RegistrationBusinessLogic> _logger;
     private readonly IChecklistCreationService _checklistService;
 
+    private static readonly Regex bpnRegex = new Regex(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
+
     public RegistrationBusinessLogic(
         IOptions<RegistrationSettings> settings,
         IMailingService mailingService,
@@ -71,15 +73,107 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
         _portalRepositories.GetInstance<IUserRolesRepository>().GetClientRolesCompositeAsync(_settings.KeyCloakClientID);
 
+    [Obsolete($"use {nameof(GetCompanyBpdmDetailDataByBusinessPartnerNumber)} instead")]
     public IAsyncEnumerable<FetchBusinessPartnerDto> GetCompanyByIdentifierAsync(string companyIdentifier, string token, CancellationToken cancellationToken)
     {
-        var regex = new Regex(@"(\w|\d){16}");
-        if (!regex.IsMatch(companyIdentifier))
+        if (!bpnRegex.IsMatch(companyIdentifier))
         {
-            throw new ArgumentException("BPN must contain exactly 16 digits or letters.", nameof(companyIdentifier));
+            throw new ControllerArgumentException("BPN must contain exactly 16 digits or letters.", nameof(companyIdentifier));
         }
 
         return _bpnAccess.FetchBusinessPartner(companyIdentifier, token, cancellationToken);
+    }
+
+    public Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataByBusinessPartnerNumber(string businessPartnerNumber, string token, CancellationToken cancellationToken)
+    {
+        if (!bpnRegex.IsMatch(businessPartnerNumber))
+        {
+            throw new ControllerArgumentException("BPN must contain exactly 16 digits or letters.", nameof(businessPartnerNumber));
+        }
+        return GetCompanyBpdmDetailDataByBusinessPartnerNumberInternal(businessPartnerNumber, token, cancellationToken);
+    }
+
+    private async Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataByBusinessPartnerNumberInternal(string businessPartnerNumber, string token, CancellationToken cancellationToken)
+    {
+        var legalEntity = await _bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, cancellationToken).ConfigureAwait(false);
+        if (!businessPartnerNumber.Equals(legalEntity.Bpn, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ConflictException("Bpdm did return incorrect bpn legal-entity-data");
+        }
+        BpdmLegalEntityAddressDto? legalEntityAddress;
+        try
+        {
+            legalEntityAddress = await _bpnAccess.FetchLegalEntityAddressByBpn(businessPartnerNumber, token, cancellationToken).SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch(InvalidOperationException)
+        {
+            throw new ConflictException($"bpdm returned more than a single legalEntityAddress for {businessPartnerNumber}");
+        }
+        if (legalEntityAddress == null)
+        {
+            throw new ConflictException($"bpdm returned no legalEntityAddress for {businessPartnerNumber}");
+        }
+        if (!businessPartnerNumber.Equals(legalEntityAddress.LegalEntity, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ConflictException("Bpdm did return incorrect bpn address-data");
+        }
+
+        var legalAddress = legalEntityAddress.LegalAddress;
+
+        var country = legalAddress.Country.TechnicalKey;
+
+        var bpdmIdentifiers = ParseBpdmIdentifierDtos(legalEntity.Identifiers).ToList();
+        var assignedIdentifiers = await _portalRepositories.GetInstance<IStaticDataRepository>()
+            .GetCountryAssignedIdentifiers(bpdmIdentifiers.Select(x => x.BpdmIdentifierId), country)
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        var portalIdentifiers = bpdmIdentifiers.Join(
+                assignedIdentifiers,
+                bpdmIdentifier => bpdmIdentifier.BpdmIdentifierId,
+                assignedIdentifier => assignedIdentifier.BpdmIdentifierId,
+                (bpdmIdentifier, countryIdentifier) => (countryIdentifier.UniqueIdentifierId, bpdmIdentifier.Value));
+
+        TItem? SingleOrDefaultChecked<TItem>(IEnumerable<TItem> items, string itemName)
+        {
+            try
+            {
+                return items.SingleOrDefault();
+            } catch (InvalidOperationException)
+            {
+                throw new ConflictException($"bpdm returned more than a single {itemName} in legal entity for {businessPartnerNumber}");
+            }
+        }
+
+        BpdmNameDto? name = SingleOrDefaultChecked(legalEntity.Names, nameof(name));
+        string? administrativeArea = SingleOrDefaultChecked(legalAddress.AdministrativeAreas, nameof(administrativeArea))?.Value;
+        string? postCode = SingleOrDefaultChecked(legalAddress.PostCodes, nameof(postCode))?.Value;
+        string? locality = SingleOrDefaultChecked(legalAddress.Localities, nameof(locality))?.Value;
+        BpdmThoroughfareDto? thoroughfare = SingleOrDefaultChecked(legalAddress.Thoroughfares, nameof(thoroughfare));
+
+        return new CompanyBpdmDetailData(
+            businessPartnerNumber,
+            country,
+            name?.Value ?? "",
+            name?.ShortName ?? "",
+            locality ?? "",
+            thoroughfare?.Value ?? "",
+            administrativeArea,
+            null, // TODO clarify how to map from bpdm data
+            thoroughfare?.Number,
+            postCode,
+            portalIdentifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value))
+        );
+    }
+
+    private static IEnumerable<(BpdmIdentifierId BpdmIdentifierId, string Value)> ParseBpdmIdentifierDtos(IEnumerable<BpdmIdentifierDto> bpdmIdentifierDtos)
+    {
+        foreach (var identifier in bpdmIdentifierDtos)
+        {
+            if (Enum.TryParse<BpdmIdentifierId>(identifier.Type.TechnicalKey, out var bpdmIdentifierId))
+            {
+                yield return (bpdmIdentifierId, identifier.Value);
+            }
+        }
     }
 
     public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId, CancellationToken cancellationToken)
