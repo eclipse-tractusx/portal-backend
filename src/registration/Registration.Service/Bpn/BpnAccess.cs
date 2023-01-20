@@ -80,25 +80,22 @@ public class BpnAccess : IBpnAccess
                 .Select(x => $"{x.Item1}={Uri.EscapeDataString(x.Item2!)}"))
         }.Uri;
         var result = await _httpClient.GetAsync(uri.PathAndQuery, cancellationToken).ConfigureAwait(false);
-        if (result.IsSuccessStatusCode)
-        {
-            await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            try
-            {
-                var legalEntityResponse = await JsonSerializer.DeserializeAsync<BpdmGetLegalEntitiesResponse>(
-                    responseStream,
-                    new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
-                return legalEntityResponse?.Content?.Select(c => c.LegalEntity) ?? throw new ServiceException("Access to external system bpdm did not return a valid legal entity response");
-            }
-            catch(JsonException je)
-            {
-                throw new ServiceException($"Access to external system bpdm did not return a valid json response: {je.Message}");
-            }
-        }
-        else
+        if (!result.IsSuccessStatusCode)
         {
             throw new ServiceException($"Access to external system bpdm failed with Status Code {result.StatusCode}", result.StatusCode);
+        }
+        await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var legalEntityResponse = await JsonSerializer.DeserializeAsync<BpdmGetLegalEntitiesResponse>(
+                responseStream,
+                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+            return legalEntityResponse?.Content?.Select(c => c.LegalEntity) ?? throw new ServiceException("Access to external system bpdm did not return a valid legal entity response");
+        }
+        catch(JsonException je)
+        {
+            throw new ServiceException($"Access to external system bpdm did not return a valid json response: {je.Message}");
         }
     }
 
@@ -111,29 +108,26 @@ public class BpnAccess : IBpnAccess
             Query = "idType=BPN"
         }.Uri;
         var result = await _httpClient.GetAsync(uri.PathAndQuery, cancellationToken).ConfigureAwait(false);
-        if (result.IsSuccessStatusCode)
-        {
-            await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            try
-            {
-                var legalEntityResponse = await JsonSerializer.DeserializeAsync<BpdmLegalEntityDto>(
-                    responseStream,
-                    new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
-                if (legalEntityResponse?.Bpn == null)
-                {
-                    throw new ServiceException("Access to external system bpdm did not return a valid legal entity response");
-                }
-                return legalEntityResponse;
-            }
-            catch(JsonException je)
-            {
-                throw new ServiceException($"Access to external system bpdm did not return a valid json response: {je.Message}");
-            }
-        }
-        else
+        if (!result.IsSuccessStatusCode)
         {
             throw new ServiceException($"Access to external system bpdm failed with Status Code {result.StatusCode}", result.StatusCode);
+        }
+        await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var legalEntityResponse = await JsonSerializer.DeserializeAsync<BpdmLegalEntityDto>(
+                responseStream,
+                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (legalEntityResponse?.Bpn == null)
+            {
+                throw new ServiceException("Access to external system bpdm did not return a valid legal entity response");
+            }
+            return legalEntityResponse;
+        }
+        catch(JsonException je)
+        {
+            throw new ServiceException($"Access to external system bpdm did not return a valid json response: {je.Message}");
         }
     }
 
@@ -142,7 +136,7 @@ public class BpnAccess : IBpnAccess
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         var uri = new UriBuilder()
         {
-            Path = $"api/catena/legal-entities/legal-addresses/search"
+            Path = "api/catena/legal-entities/legal-addresses/search"
         }.Uri;
         var json = new [] { businessPartnerNumber };
         var result = await _httpClient.PostAsJsonAsync(uri.PathAndQuery, json, cancellationToken).ConfigureAwait(false);
