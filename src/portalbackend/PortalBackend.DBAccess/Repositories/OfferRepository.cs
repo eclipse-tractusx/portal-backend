@@ -280,7 +280,6 @@ public class OfferRepository : IOfferRepository
                 service.Id,
                 service.Name!,
                 service.Provider,
-                service.ThumbnailUrl,
                 service.ContactEmail,
                 service.OfferDescriptions.SingleOrDefault(ln => ln.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionLong,
                 service.OfferLicenses.FirstOrDefault()!.Licensetext,
@@ -296,7 +295,6 @@ public class OfferRepository : IOfferRepository
                 offer.Id,
                 offer.Name,
                 offer.Provider,
-                offer.ThumbnailUrl,
                 offer.ContactEmail,
                 offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
                 offer.OfferLicenses.FirstOrDefault()!.Licensetext,
@@ -313,7 +311,6 @@ public class OfferRepository : IOfferRepository
                  offer.Id,
                  offer.Name,
                  offer.Provider,
-                 offer.ThumbnailUrl,
                  offer.ContactEmail,
                  offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
                  offer.OfferLicenses.FirstOrDefault()!.Licensetext,
@@ -352,7 +349,6 @@ public class OfferRepository : IOfferRepository
             .Where(o => o.Id == offerId && o.OfferStatusId == OfferStatusId.CREATED && o.OfferTypeId == offerTypeId)
             .Select(o => new OfferReleaseData(
                 o.Name,
-                o.ThumbnailUrl,
                 o.ProviderCompanyId,
                 o.ProviderCompany!.Name,
                 o.OfferDescriptions.Any(description => description.DescriptionLong == ""),

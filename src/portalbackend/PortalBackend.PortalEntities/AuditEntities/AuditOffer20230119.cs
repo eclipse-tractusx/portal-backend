@@ -24,9 +24,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-public class AuditOffer20221013 : IAuditEntityV1
+public class AuditOffer20230119 : IAuditEntityV1
 {
-    public AuditOffer20221013()
+    public AuditOffer20230119()
     {
         Provider = null!;
     }
@@ -41,8 +41,6 @@ public class AuditOffer20221013 : IAuditEntityV1
     public DateTimeOffset DateCreated { get; private set; }
 
     public DateTimeOffset? DateReleased { get; set; }
-
-    public string? ThumbnailUrl { get; set; }
 
     public string? MarketingUrl { get; set; }
     
