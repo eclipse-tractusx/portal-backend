@@ -40,6 +40,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests.BusinessLogic;
@@ -198,12 +199,124 @@ public class RegistrationBusinessLogicTest
         async Task Act() => await sut.GetCompanyByIdentifierAsync("NotLongEnough", "justatoken", CancellationToken.None).ToListAsync().ConfigureAwait(false);
         
         // Assert
-        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.ParamName.Should().Be("companyIdentifier");
     }
 
     #endregion
+
+    #region GetCompanyBpdmDetailDataByBusinessPartnerNumber
     
+    [Fact]
+    public async Task GetCompanyBpdmDetailDataByBusinessPartnerNumber_WithValidBpn_ReturnsExpected()
+    {
+        //Arrange
+        var bpnAccess = A.Fake<IBpnAccess>();
+        var businessPartnerNumber = "THISBPNISVALID12";
+        var token = _fixture.Create<string>();
+        var country = "XY";
+
+        var uniqueIdSeed = _fixture.CreateMany<(BpdmIdentifierId BpdmIdentifierId, UniqueIdentifierId UniqueIdentifierId, string Value)>(5).ToImmutableArray();
+        var name = _fixture.Create<string>();
+        var shortName = _fixture.Create<string>();
+        var region = _fixture.Create<string>();
+        var city = _fixture.Create<string>();
+        var streetName = _fixture.Create<string>();
+        var streetNumber = _fixture.Create<string>();
+        var zipCode = _fixture.Create<string>();
+
+        var bpdmIdentifiers = uniqueIdSeed.Select(x => ((string TechnicalKey, string Value))(x.BpdmIdentifierId.ToString(), x.Value));
+        var validIdentifiers = uniqueIdSeed.Skip(2).Take(2).Select(x => (x.BpdmIdentifierId, x.UniqueIdentifierId));
+
+        var legalEntity = _fixture.Build<Bpn.Model.BpdmLegalEntityDto>()
+            .With(x => x.Bpn, businessPartnerNumber)
+            .With(x => x.Names, new [] { _fixture.Build<Bpn.Model.BpdmNameDto>()
+                    .With(x => x.Value, name)
+                    .With(x => x.ShortName, shortName)
+                    .Create() })
+            .With(x => x.Identifiers, bpdmIdentifiers.Select(identifier => _fixture.Build<Bpn.Model.BpdmIdentifierDto>()
+                    .With(x => x.Type, _fixture.Build<Bpn.Model.BpdmUrlDataDto>().With(x => x.TechnicalKey, identifier.TechnicalKey).Create())
+                    .With(x => x.Value, identifier.Value)
+                    .Create()))
+            .Create();
+        var bpdmAddress = _fixture.Build<Bpn.Model.BpdmLegalEntityAddressDto>()
+            .With(x => x.LegalEntity, businessPartnerNumber)
+            .With(x => x.LegalAddress, _fixture.Build<Bpn.Model.BpdmLegalAddressDto>()
+                .With(x => x.Country, _fixture.Build<Bpn.Model.BpdmDataDto>().With(x => x.TechnicalKey, country).Create())
+                .With(x => x.AdministrativeAreas, new [] { _fixture.Build<Bpn.Model.BpdmAdministrativeAreaDto>().With(x => x.Value, region).Create() })
+                .With(x => x.PostCodes, new [] { _fixture.Build<Bpn.Model.BpdmPostCodeDto>().With(x => x.Value, zipCode).Create() })
+                .With(x => x.Localities, new [] { _fixture.Build<Bpn.Model.BpdmLocalityDto>().With(x => x.Value, city).Create() })
+                .With(x => x.Thoroughfares, new [] { _fixture.Build<Bpn.Model.BpdmThoroughfareDto>().With(x => x.Value, streetName).With(x => x.Number, streetNumber).Create()})
+                .Create())
+            .Create();                    
+        A.CallTo(() => bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, A<CancellationToken>._))
+            .Returns(legalEntity);
+        A.CallTo(() => bpnAccess.FetchLegalEntityAddressByBpn(businessPartnerNumber, token, A<CancellationToken>._))
+            .Returns(new [] { bpdmAddress }.ToAsyncEnumerable());
+        A.CallTo(() => _staticDataRepository.GetCountryAssignedIdentifiers(A<IEnumerable<BpdmIdentifierId>>.That.Matches<IEnumerable<BpdmIdentifierId>>(ids => ids.SequenceEqual(uniqueIdSeed.Select(seed => seed.BpdmIdentifierId))), country))
+            .Returns(validIdentifiers.ToAsyncEnumerable());
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            bpnAccess,
+            null!,
+            null!,
+            null!,
+            _portalRepositories,
+            null!);
+
+        // Act
+        var result = await sut.GetCompanyBpdmDetailDataByBusinessPartnerNumber(businessPartnerNumber, token, CancellationToken.None).ConfigureAwait(false);
+
+        A.CallTo(() => bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => bpnAccess.FetchLegalEntityAddressByBpn(businessPartnerNumber, token, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _staticDataRepository.GetCountryAssignedIdentifiers(A<IEnumerable<BpdmIdentifierId>>.That.Matches<IEnumerable<BpdmIdentifierId>>(ids => ids.SequenceEqual(uniqueIdSeed.Select(seed => seed.BpdmIdentifierId))), country))
+            .MustHaveHappenedOnceExactly();
+
+        result.Should().NotBeNull();
+        result.BusinessPartnerNumber.Should().Be(businessPartnerNumber);
+        result.CountryAlpha2Code.Should().Be(country);
+
+        var expectedUniqueIds = uniqueIdSeed.Skip(2).Take(2).Select(x => new CompanyUniqueIdData(x.UniqueIdentifierId, x.Value));
+        result.UniqueIds.Should().HaveSameCount(expectedUniqueIds);
+        result.UniqueIds.Should().ContainInOrder(expectedUniqueIds);
+
+        result.Name.Should().Be(name);
+        result.ShortName.Should().Be(shortName);
+        result.Region.Should().Be(region);
+        result.City.Should().Be(city);
+        result.StreetName.Should().Be(streetName);
+        result.StreetNumber.Should().Be(streetNumber);
+        result.ZipCode.Should().Be(zipCode);
+    }
+    
+    [Fact]
+    public async Task GetCompanyBpdmDetailDataByBusinessPartnerNumber_WithValidBpn_ThrowsArgumentException()
+    {
+        //Arrange
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!);
+        
+        // Act
+        async Task Act() => await sut.GetCompanyBpdmDetailDataByBusinessPartnerNumber("NotLongEnough", "justatoken", CancellationToken.None).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.ParamName.Should().Be("businessPartnerNumber");
+    }
+
+    #endregion
+
     #region GetAllApplicationsForUserWithStatus
 
     [Fact]

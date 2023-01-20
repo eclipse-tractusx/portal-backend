@@ -65,6 +65,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
     public virtual DbSet<AuditUserRole20221017> AuditUserRole20221017 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole20221018> AuditCompanyUserAssignedRole20221018 { get; set; } = default!;
+    public virtual DbSet<BpdmIdentifier> BpdmIdentifiers { get; set; } = default!;    
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
@@ -1035,5 +1036,12 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.UniqueIdentifierId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
+
+        modelBuilder.Entity<BpdmIdentifier>()
+            .HasData(
+                Enum.GetValues(typeof(BpdmIdentifierId))
+                    .Cast<BpdmIdentifierId>()
+                    .Select(e => new BpdmIdentifier(e))
+            );
     }
 }
