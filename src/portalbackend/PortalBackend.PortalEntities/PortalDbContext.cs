@@ -59,7 +59,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<ApplicationChecklistEntryType> ApplicationChecklistTypes { get; set; } = default!;
     public virtual DbSet<AppSubscriptionDetail> AppSubscriptionDetails { get; set; } = default!;
     public virtual DbSet<AuditAppSubscriptionDetail20221118> AuditAppSubscriptionDetail20221118 { get; set; } = default!;
-    public virtual DbSet<AuditOffer20221013> AuditOffer20221013 { get; set; } = default!;
     public virtual DbSet<AuditOffer20230119> AuditOffer20230119 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
