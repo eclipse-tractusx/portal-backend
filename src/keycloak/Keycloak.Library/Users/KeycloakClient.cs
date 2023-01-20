@@ -24,11 +24,9 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Groups;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using Flurl.Http;
-using Newtonsoft.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
