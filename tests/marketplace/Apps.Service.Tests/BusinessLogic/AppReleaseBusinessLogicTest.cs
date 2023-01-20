@@ -148,7 +148,7 @@ public class AppReleaseBusinessLogicTest
     public async Task AddAppAsync_WithoutEmptyLanguageCodes_ThrowsException()
     {
         // Arrange
-        var data = new AppRequestModel("test", "test", null, Guid.NewGuid(), new List<Guid>(), new List<LocalizedDescription>(), new [] { string.Empty }, "123");
+        var data = new AppRequestModel("test", "test", Guid.NewGuid(), new List<Guid>(), new List<LocalizedDescription>(), new [] { string.Empty }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -164,7 +164,7 @@ public class AppReleaseBusinessLogicTest
     public async Task AddAppAsync_WithEmptyUseCaseIds_ThrowsException()
     {
         // Arrange
-        var data = new AppRequestModel("test", "test", null, Guid.NewGuid(), new []{ Guid.Empty }, new List<LocalizedDescription>(), new [] { "de" }, "123");
+        var data = new AppRequestModel("test", "test", Guid.NewGuid(), new []{ Guid.Empty }, new List<LocalizedDescription>(), new [] { "de" }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -180,7 +180,7 @@ public class AppReleaseBusinessLogicTest
     public async Task AddAppAsync_WithSalesManagerValidData_ReturnsExpected()
     {
         // Arrange
-        var data = new AppRequestModel("test", "test", null, _companyUser.Id, new []{ Guid.NewGuid() }, new List<LocalizedDescription>{ new("de", "Long description", "desc")}, new [] { "de" }, "123");
+        var data = new AppRequestModel("test", "test", _companyUser.Id, new []{ Guid.NewGuid() }, new List<LocalizedDescription>{ new("de", "Long description", "desc")}, new [] { "de" }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -208,7 +208,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>.That.IsEqualTo(_iamUser.UserEntityId))).Returns(_companyUser.CompanyId);
-        var data = new AppRequestModel("test", "test", null, null, new []{ Guid.NewGuid() }, new List<LocalizedDescription>{ new("de", "Long description", "desc")}, new [] { "de" }, "123");
+        var data = new AppRequestModel("test", "test", null, new []{ Guid.NewGuid() }, new List<LocalizedDescription>{ new("de", "Long description", "desc")}, new [] { "de" }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -241,7 +241,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateApp();
-        var data = new AppRequestModel("test", "test", null, Guid.NewGuid(), new List<Guid>(), new List<LocalizedDescription>(), new [] { string.Empty }, "123");
+        var data = new AppRequestModel("test", "test", Guid.NewGuid(), new List<Guid>(), new List<LocalizedDescription>(), new [] { string.Empty }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -258,7 +258,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateApp();
-        var data = new AppRequestModel("test", "test", null, Guid.NewGuid(), new []{ Guid.Empty }, new List<LocalizedDescription>(), new [] { "de" }, "123");
+        var data = new AppRequestModel("test", "test", Guid.NewGuid(), new []{ Guid.Empty }, new List<LocalizedDescription>(), new [] { "de" }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -275,7 +275,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateApp();
-        var data = new AppRequestModel("test", "test", null, Guid.NewGuid(), new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de" }, "123");
+        var data = new AppRequestModel("test", "test", Guid.NewGuid(), new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de" }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
      
@@ -292,7 +292,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateApp();
-        var data = new AppRequestModel("test", "test", null, _companyUser.Id, new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de", "en", "invalid" }, "123");
+        var data = new AppRequestModel("test", "test", _companyUser.Id, new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de", "en", "invalid" }, "123");
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
         
@@ -312,8 +312,7 @@ public class AppReleaseBusinessLogicTest
 
         var data = new AppRequestModel(
             "test",
-            "test", 
-            null, 
+            "test",  
             _companyUser.Id, 
             new [] { Guid.NewGuid() },
             new LocalizedDescription[]

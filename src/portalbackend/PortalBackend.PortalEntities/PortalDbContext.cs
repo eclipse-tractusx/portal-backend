@@ -54,9 +54,12 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AppInstance> AppInstances { get; set; } = default!;
     public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
     public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
-    public virtual DbSet<AuditAppSubscriptionDetail20221118> AuditAppSubscriptionDetail20221118 { get; set; } = default!;
+    public virtual DbSet<ApplicationChecklistEntry> ApplicationChecklist { get; set; } = default!;
+    public virtual DbSet<ApplicationChecklistEntryStatus> ApplicationChecklistStatuses { get; set; } = default!;
+    public virtual DbSet<ApplicationChecklistEntryType> ApplicationChecklistTypes { get; set; } = default!;
     public virtual DbSet<AppSubscriptionDetail> AppSubscriptionDetails { get; set; } = default!;
-    public virtual DbSet<AuditOffer20221013> AuditOffer20221013 { get; set; } = default!;
+    public virtual DbSet<AuditAppSubscriptionDetail20221118> AuditAppSubscriptionDetail20221118 { get; set; } = default!;
+    public virtual DbSet<AuditOffer20230119> AuditOffer20230119 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
@@ -375,7 +378,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<Offer, AuditOffer20221013>();
+            entity.HasAuditV1Triggers<Offer, AuditOffer20230119>();
         });
 
         modelBuilder.Entity<AppSubscriptionDetail>(entity =>
@@ -560,6 +563,30 @@ public class PortalDbContext : DbContext
                 Enum.GetValues(typeof(CompanyApplicationStatusId))
                     .Cast<CompanyApplicationStatusId>()
                     .Select(e => new CompanyApplicationStatus(e))
+            );
+
+        modelBuilder.Entity<ApplicationChecklistEntry>(entity =>
+        {
+            entity.HasKey(x => new { x.ApplicationId, ChecklistEntryTypeId = x.ApplicationChecklistEntryTypeId });
+                
+            entity.HasOne(ace => ace.Application)
+                .WithMany(a => a.ApplicationChecklistEntries)
+                .HasForeignKey(ace => ace.ApplicationId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<ApplicationChecklistEntryStatus>()
+            .HasData(
+                Enum.GetValues(typeof(ApplicationChecklistEntryStatusId))
+                    .Cast<ApplicationChecklistEntryStatusId>()
+                    .Select(e => new ApplicationChecklistEntryStatus(e))
+            );
+
+        modelBuilder.Entity<ApplicationChecklistEntryType>()
+            .HasData(
+                Enum.GetValues(typeof(ApplicationChecklistEntryTypeId))
+                    .Cast<ApplicationChecklistEntryTypeId>()
+                    .Select(e => new ApplicationChecklistEntryType(e))
             );
 
         modelBuilder.Entity<CompanyIdentityProvider>()

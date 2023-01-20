@@ -21,7 +21,6 @@
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
@@ -248,20 +247,6 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task GetRegistrationDataUntrackedAsync_WithApplicationIdAndDocumentType_ReturnsExpectedResult()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-        Guid applicatiodId = new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
-        // Act
-        var result = await sut.GetRegistrationDataUntrackedAsync(applicatiodId, ValidIamUserId, new [] { DocumentTypeId.CX_FRAME_CONTRACT, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }).ConfigureAwait(false);
-        // Assert
-        
-        result.Should().NotBeNull();
-        result!.Documents.Should().NotBeNull();
     }
 
     #endregion

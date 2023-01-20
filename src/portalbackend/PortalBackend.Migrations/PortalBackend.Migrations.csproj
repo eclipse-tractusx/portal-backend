@@ -378,6 +378,10 @@
     <Content Include="Seeder\Data\country_assigned_identifiers.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Remove="Seeder\Data\application_checklist.consortia.json" />
+    <Content Include="Seeder\Data\application_checklist.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

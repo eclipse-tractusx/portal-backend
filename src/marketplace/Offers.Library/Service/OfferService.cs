@@ -349,7 +349,6 @@ public class OfferService : IOfferService
             service.ContactEmail = data.ContactEmail;
             service.Name = data.Title;
             service.SalesManagerId = data.SalesManager;
-            service.ThumbnailUrl = data.ThumbnailUrl;
             service.Provider = results.Single(x => x.IsIamUser).CompanyShortName;
             service.OfferStatusId = OfferStatusId.CREATED;
             service.ProviderCompanyId = results.Single(x => x.IsIamUser).CompanyId;
@@ -509,7 +508,7 @@ public class OfferService : IOfferService
 
     private static void ValidateOfferDetails(OfferReleaseData offerDetails)
     {
-        if (offerDetails.Name is not null && offerDetails.ThumbnailUrl is not null &&
+        if (offerDetails.Name is not null && 
             offerDetails.ProviderCompanyId is not null &&
             offerDetails is { IsDescriptionLongNotSet: false, IsDescriptionShortNotSet: false }) return;
         
@@ -517,11 +516,6 @@ public class OfferService : IOfferService
         if (offerDetails.Name is null)
         {
             nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.Name)}");
-        }
-
-        if (offerDetails.ThumbnailUrl is null)
-        {
-            nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.ThumbnailUrl)}");
         }
 
         if (offerDetails.ProviderCompanyId is null)

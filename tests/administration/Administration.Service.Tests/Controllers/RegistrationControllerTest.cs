@@ -18,10 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using FakeItEasy;
-using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
@@ -29,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
@@ -132,5 +127,33 @@ public class RegistrationControllerTest
         //Assert
         A.CallTo(() => _logic.GetCompanyWithAddressAsync(applicationId)).MustHaveHappenedOnceExactly();
         Assert.IsType<CompanyWithAddressData>(result);
+    }
+
+    [Fact]
+    public async Task ApproveApplication_ReturnsExpectedResult()
+    {
+        //Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        //Act
+        var result = await this._controller.ApproveApplication(applicationId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.SetRegistrationVerification(applicationId, true, null)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task DeclineApplication_ReturnsExpectedResult()
+    {
+        //Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        //Act
+        var result = await this._controller.DeclineApplication(applicationId, "test").ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.SetRegistrationVerification(applicationId, false, "test")).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
     }
 }

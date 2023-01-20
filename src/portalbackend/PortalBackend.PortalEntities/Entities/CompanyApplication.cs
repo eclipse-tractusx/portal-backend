@@ -31,6 +31,7 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
     protected CompanyApplication()
     {
         Invitations = new HashSet<Invitation>();
+        ApplicationChecklistEntries = new HashSet<ApplicationChecklistEntry>();
     }
 
     public CompanyApplication(Guid id, Guid companyId, CompanyApplicationStatusId applicationStatusId, DateTimeOffset dateCreated) : this()
@@ -56,4 +57,5 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
     public virtual CompanyApplicationStatus? ApplicationStatus { get; set; }
     public virtual Company? Company { get;  set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }
+    public virtual ICollection<ApplicationChecklistEntry> ApplicationChecklistEntries { get; private set; }
 }

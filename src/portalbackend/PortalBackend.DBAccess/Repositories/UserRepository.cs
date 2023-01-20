@@ -54,34 +54,6 @@ public class UserRepository : IUserRepository
             })
             .AsAsyncEnumerable();
 
-    public Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes) =>
-        _dbContext.IamUsers
-            .AsNoTracking()
-            .Where(iamUser =>
-                iamUser.UserEntityId == iamUserId
-                && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-            .Select(iamUser => iamUser.CompanyUser!.Company)
-            .Select(company => new RegistrationData(
-                company!.Id,
-                company.Name,
-                company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Where(document=>documentTypes.Contains(document.DocumentTypeId)).Select(document => new RegistrationDocumentNames(document.DocumentName))),
-                company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
-                    .Select(consent => new AgreementConsentStatusForRegistrationData(
-                        consent.AgreementId, consent.ConsentStatusId)))
-            {
-                City = company.Address!.City,
-                Streetname = company.Address.Streetname,
-                CountryAlpha2Code = company.Address.CountryAlpha2Code,
-                BusinessPartnerNumber = company.BusinessPartnerNumber,
-                Shortname = company.Shortname,
-                Region = company.Address.Region,
-                Streetadditional = company.Address.Streetadditional,
-                Streetnumber = company.Address.Streetnumber,
-                Zipcode = company.Address.Zipcode,
-                CountryDe = company.Address.Country!.CountryNameDe
-            }).SingleOrDefaultAsync();
-
     public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId,
         CompanyUserStatusId companyUserStatusId, Guid lastEditorId) =>
         _dbContext.CompanyUsers.Add(
