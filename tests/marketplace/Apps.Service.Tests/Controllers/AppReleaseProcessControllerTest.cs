@@ -249,7 +249,6 @@ public class AppReleaseProcessControllerTest
         var data = new AppRequestModel(
             "Test",
             "Test Provider",
-            "https://test.de",
             Guid.NewGuid(),
             new []
             {

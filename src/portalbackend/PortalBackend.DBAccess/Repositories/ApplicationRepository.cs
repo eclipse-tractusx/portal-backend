@@ -146,15 +146,24 @@ public class ApplicationRepository : IApplicationRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid companyId, string companyName, string? businessPartnerNumber, string countryCode)> GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(Guid applicationId) =>
+    public Task<(Guid companyId, string? businessPartnerNumber, string countryCode)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
         _dbContext.CompanyApplications.Where(companyApplication =>
-                companyApplication.Id == applicationId
-                && companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(ca => new ValueTuple<Guid, string, string?, string>(
+                companyApplication.Id == applicationId &&
+                companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
+            .Select(ca => new ValueTuple<Guid, string?, string>(
                 ca.CompanyId,
-                ca.Company!.Name,
                 ca.Company!.BusinessPartnerNumber,
                 ca.Company!.Address!.Country!.Alpha2Code))
+            .SingleOrDefaultAsync();
+
+    public Task<(Guid companyId, string companyName, string? businessPartnerNumber)> GetCompanyAndApplicationDetailsForCreateWalletAsync(Guid applicationId) =>
+        _dbContext.CompanyApplications.Where(companyApplication =>
+                companyApplication.Id == applicationId &&
+                companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
+            .Select(ca => new ValueTuple<Guid, string, string?>(
+                ca.CompanyId,
+                ca.Company!.Name,
+                ca.Company!.BusinessPartnerNumber))
             .SingleOrDefaultAsync();
 
     public IAsyncEnumerable<CompanyInvitedUserData> GetInvitedUsersDataByApplicationIdUntrackedAsync(Guid applicationId) =>
@@ -227,4 +236,69 @@ public class ApplicationRepository : IApplicationRepository
                     companyApplication.Invitations.Select(x => new InvitedCompanyUserData(x.CompanyUserId, x.CompanyUser!.Firstname, x.CompanyUser.Lastname, x.CompanyUser.Email))))
             .AsNoTracking()
             .SingleOrDefaultAsync();
+
+    public Task<(bool IsValidApplicationId, bool IsSameCompanyUser, RegistrationData? Data)> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes) =>
+        _dbContext.CompanyApplications
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(application =>
+                application.Id == applicationId)
+            .Select(application => new {
+                IsSameCompanyUser = application.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId),
+                Company = application.Company
+            })
+            .Select(x => new ValueTuple<bool,bool,RegistrationData?>(
+                true,
+                x.IsSameCompanyUser,
+                x.IsSameCompanyUser ? new RegistrationData(
+                    x.Company!.Id,
+                    x.Company.Name,
+                    x.Company.BusinessPartnerNumber,
+                    x.Company.Shortname,
+                    x.Company.Address!.City,
+                    x.Company.Address.Region,
+                    x.Company.Address.Streetadditional,
+                    x.Company.Address.Streetname,
+                    x.Company.Address.Streetnumber,
+                    x.Company.Address.Zipcode,
+                    x.Company.Address.CountryAlpha2Code,
+                    x.Company.Address.Country!.CountryNameDe,
+                    x.Company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
+                    x.Company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
+                        .Select(consent => new ValueTuple<Guid,ConsentStatusId>(
+                            consent.AgreementId, consent.ConsentStatusId)),
+                    x.Company.CompanyUsers.SelectMany(companyUser => companyUser.Documents.Where(document => documentTypes.Contains(document.DocumentTypeId)).Select(document => document.DocumentName)),
+                    x.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId,string>(identifier.UniqueIdentifierId, identifier.Value)))
+                    : null))
+            .SingleOrDefaultAsync();
+
+     /// <inheritdoc />
+     public Task<(string? Bpn, IEnumerable<ApplicationChecklistEntryTypeId> ExistingChecklistEntryTypeIds)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId) => 
+         _dbContext.CompanyApplications
+             .AsNoTracking()
+             .Where(a => a.Id == applicationId)
+             .Select(x => new ValueTuple<string?, IEnumerable<ApplicationChecklistEntryTypeId>>(
+                 x.Company!.BusinessPartnerNumber,
+                 x.ApplicationChecklistEntries.Select(ace => ace.ApplicationChecklistEntryTypeId)))
+             .SingleOrDefaultAsync();
+
+     /// <inheritdoc />
+     public Task<(CompanyApplicationStatusId ApplicationStatusId, ApplicationChecklistEntryStatusId RegistrationVerificationStatusId)> GetApplicationStatusWithChecklistTypeStatusAsync(Guid applicationId, ApplicationChecklistEntryTypeId checklistEntryTypeId) =>
+         _dbContext.CompanyApplications
+             .AsNoTracking()
+             .Where(ca => ca.Id == applicationId)
+             .Select(ca => new ValueTuple<CompanyApplicationStatusId, ApplicationChecklistEntryStatusId>(
+                 ca.ApplicationStatusId,
+                 ca.ApplicationChecklistEntries
+                     .Where(x => x.ApplicationChecklistEntryTypeId == checklistEntryTypeId)
+                     .Select(x => x.ApplicationChecklistEntryStatusId)
+                     .SingleOrDefault()))
+             .SingleOrDefaultAsync();
+
+     /// <inheritdoc />
+     public Task<string?> GetBpnForApplicationIdAsync(Guid applicationId) =>
+         _dbContext.CompanyApplications.AsNoTracking()
+             .Where(ca => ca.Id == applicationId)
+             .Select(x => x.Company!.BusinessPartnerNumber)
+             .SingleOrDefaultAsync();
 }
