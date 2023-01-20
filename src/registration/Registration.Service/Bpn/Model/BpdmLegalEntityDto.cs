@@ -20,19 +20,6 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 
-public record BpdmGetLegalEntitiesResponse(
-    int TotalElements,
-    int TotalPages,
-    int Page,
-    int ContentSize,
-    IEnumerable<BpdmGetLegalEntitiesContent> Content
-);
-
-public record BpdmGetLegalEntitiesContent(
-    int Score,
-    BpdmLegalEntityDto LegalEntity
-);
-
 public record BpdmLegalEntityDto(
     string Bpn,
     IEnumerable<BpdmIdentifierDto> Identifiers,

@@ -22,6 +22,7 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model
 {
+    [Obsolete("delete as soon endpoint GET /api/registration/company/{bpn} is being removed")]
     public class FetchBusinessPartnerDto
     {
         [JsonPropertyName("bpn")]
