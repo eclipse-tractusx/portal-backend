@@ -144,10 +144,12 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<Guid> CheckProviderCompanyDetailsExistsForUser(string iamUserId) =>
+    public Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(string iamUserId) =>
         _context.ProviderCompanyDetails.AsNoTracking()
-            .Where(details => details.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
-            .Select(details => details.Id)
+            .Where(details =>
+                details.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId) ||
+                details.Company!.CompanyServiceAccounts.Any(sa => sa.IamServiceAccount!.UserEntityId == iamUserId))
+            .Select(details => new ValueTuple<Guid,string>(details.Id, details.AutoSetupUrl))
             .SingleOrDefaultAsync();
     
     /// <inheritdoc />
@@ -167,10 +169,12 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public void AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail> setOptionalParameters)
+    public void AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail> initialize, Action<ProviderCompanyDetail> modify)
     {
-        var providerCompanyDetail = _context.Attach(new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, default)).Entity;
-        setOptionalParameters.Invoke(providerCompanyDetail);
+        var details = new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, default);
+        initialize(details);
+        _context.Attach(details);
+        modify(details);
     }
     
     /// <inheritdoc />
