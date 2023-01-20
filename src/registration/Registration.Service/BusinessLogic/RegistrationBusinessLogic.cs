@@ -142,7 +142,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             {
                 throw new ConflictException($"bpdm returned more than a single {itemName} in legal entity for {businessPartnerNumber}");
             }
-        };
+        }
 
         BpdmNameDto? name = SingleOrDefaultChecked(legalEntity.Names, nameof(name));
         string? administrativeArea = SingleOrDefaultChecked(legalAddress.AdministrativeAreas, nameof(administrativeArea))?.Value;
