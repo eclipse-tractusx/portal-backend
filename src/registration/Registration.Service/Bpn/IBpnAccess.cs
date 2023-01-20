@@ -25,7 +25,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 public interface IBpnAccess
 {
     IAsyncEnumerable<FetchBusinessPartnerDto> FetchBusinessPartner(string bpn, string token, CancellationToken cancellationToken);
-    Task<IEnumerable<BpdmLegalEntityDto>> FetchLegalEntities(FetchLegalEntitiesQueryParameters parameters, string token,  CancellationToken cancellationToken);
     Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken);
     IAsyncEnumerable<BpdmLegalEntityAddressDto> FetchLegalEntityAddressByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken);
 }

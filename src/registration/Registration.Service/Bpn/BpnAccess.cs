@@ -55,50 +55,6 @@ public class BpnAccess : IBpnAccess
         }
     }
 
-    public async Task<IEnumerable<BpdmLegalEntityDto>> FetchLegalEntities(FetchLegalEntitiesQueryParameters parameters, string token, CancellationToken cancellationToken)
-    {
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        var uri = new UriBuilder()
-        {
-            Path = "api/catena/legal-entities",
-            Query = string.Join("&", new [] {
-                    ("name", parameters.Name),
-                    ("legalForm", parameters.LegalForm),
-                    ("status", parameters.Status),
-                    ("classification", parameters.Classification),
-                    ("administrativeArea", parameters.AdministrativeArea),
-                    ("postCode", parameters.PostCode),
-                    ("locality", parameters.Locality),
-                    ("thoroughfare", parameters.Thoroughfare),
-                    ("premise", parameters.Premise),
-                    ("postalDeliveryPoint", parameters.PostalDeliveryPoint),
-                    ("siteName", parameters.SiteName),
-                    ("page", parameters.Page.ToString()),
-                    ("size", parameters.Size.ToString())
-                }
-                .Where(x => x.Item2 != null)
-                .Select(x => $"{x.Item1}={Uri.EscapeDataString(x.Item2!)}"))
-        }.Uri;
-        var result = await _httpClient.GetAsync(uri.PathAndQuery, cancellationToken).ConfigureAwait(false);
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new ServiceException($"Access to external system bpdm failed with Status Code {result.StatusCode}", result.StatusCode);
-        }
-        await using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            var legalEntityResponse = await JsonSerializer.DeserializeAsync<BpdmGetLegalEntitiesResponse>(
-                responseStream,
-                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-            return legalEntityResponse?.Content?.Select(c => c.LegalEntity) ?? throw new ServiceException("Access to external system bpdm did not return a valid legal entity response");
-        }
-        catch(JsonException je)
-        {
-            throw new ServiceException($"Access to external system bpdm did not return a valid json response: {je.Message}");
-        }
-    }
-
     public async Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken)
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
