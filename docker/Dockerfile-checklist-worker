@@ -2,6 +2,8 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /
+COPY /src/checklist /src/checklist
+COPY /src/externalsystems /src/externalsystems
 COPY /src/portalbackend /src/portalbackend
 COPY /src/framework /src/framework
 COPY /src/keycloak /src/keycloak
