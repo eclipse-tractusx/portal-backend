@@ -263,7 +263,8 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
-            _portalRepositories);
+            _portalRepositories,
+            null!);
 
         // Act
         var result = await sut.GetCompanyBpdmDetailDataByBusinessPartnerNumber(businessPartnerNumber, token, CancellationToken.None).ConfigureAwait(false);
@@ -298,6 +299,7 @@ public class RegistrationBusinessLogicTest
         //Arrange
         var sut = new RegistrationBusinessLogic(
             _options,
+            null!,
             null!,
             null!,
             null!,
