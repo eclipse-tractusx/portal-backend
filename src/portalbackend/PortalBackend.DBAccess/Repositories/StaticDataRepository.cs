@@ -73,10 +73,14 @@ public class StaticDataRepository : IStaticDataRepository
                 ))
             .SingleOrDefaultAsync();
     
-    public IAsyncEnumerable<(BpdmIdentifierId BpdmIdentifierId, UniqueIdentifierId UniqueIdentifierId)> GetCountryAssignedIdentifiers(IEnumerable<BpdmIdentifierId> bpdmIdentifierIds, string countryAlpha2Code) =>
-        _dbContext.CountryAssignedIdentifiers
+    public Task<(bool IsValidCountry, IEnumerable<(BpdmIdentifierId BpdmIdentifierId, UniqueIdentifierId UniqueIdentifierId)> Identifiers)> GetCountryAssignedIdentifiers(IEnumerable<BpdmIdentifierId> bpdmIdentifierIds, string countryAlpha2Code) =>
+        _dbContext.Countries
             .AsNoTracking()
-            .Where(identifier => identifier.CountryAlpha2Code == countryAlpha2Code && identifier.BpdmIdentifierId != null && bpdmIdentifierIds.Contains(identifier.BpdmIdentifierId.Value))
-            .Select(identifier => new ValueTuple<BpdmIdentifierId,UniqueIdentifierId>(identifier.BpdmIdentifierId!.Value, identifier.UniqueIdentifierId))
-            .AsAsyncEnumerable();
+            .Where(country => country.Alpha2Code == countryAlpha2Code)
+            .Select(country => new ValueTuple<bool,IEnumerable<(BpdmIdentifierId,UniqueIdentifierId)>>(
+                true,
+                country.CountryAssignedIdentifiers
+                    .Where(identifier => identifier.BpdmIdentifierId != null && bpdmIdentifierIds.Contains(identifier.BpdmIdentifierId.Value))
+                    .Select(identifier => new ValueTuple<BpdmIdentifierId,UniqueIdentifierId>(identifier.BpdmIdentifierId!.Value, identifier.UniqueIdentifierId))))
+            .SingleOrDefaultAsync();
 }

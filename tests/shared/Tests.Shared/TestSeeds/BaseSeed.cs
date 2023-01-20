@@ -395,7 +395,8 @@ public static class BaseSeed
 
         dbContext.CountryAssignedIdentifiers.AddRange(new CountryAssignedIdentifier[]
         {
-            new ("DE", UniqueIdentifierId.COMMERCIAL_REG_NUMBER)
+            new ("DE", UniqueIdentifierId.COMMERCIAL_REG_NUMBER),
+            new ("DE", UniqueIdentifierId.VAT_ID) { BpdmIdentifierId = BpdmIdentifierId.EU_VAT_ID_DE },
         });
     };
 }
