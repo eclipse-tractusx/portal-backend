@@ -72,4 +72,11 @@ public class StaticDataRepository : IStaticDataRepository
                    true
                 ))
             .SingleOrDefaultAsync();
+    
+    public IAsyncEnumerable<(BpdmIdentifierId BpdmIdentifierId, UniqueIdentifierId UniqueIdentifierId)> GetCountryAssignedIdentifiers(IEnumerable<BpdmIdentifierId> bpdmIdentifierIds, string countryAlpha2Code) =>
+        _dbContext.CountryAssignedIdentifiers
+            .AsNoTracking()
+            .Where(identifier => identifier.CountryAlpha2Code == countryAlpha2Code && identifier.BpdmIdentifierId != null && bpdmIdentifierIds.Contains(identifier.BpdmIdentifierId.Value))
+            .Select(identifier => new ValueTuple<BpdmIdentifierId,UniqueIdentifierId>(identifier.BpdmIdentifierId!.Value, identifier.UniqueIdentifierId))
+            .AsAsyncEnumerable();
 }

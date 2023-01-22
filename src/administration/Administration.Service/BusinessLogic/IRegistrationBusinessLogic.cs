@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
@@ -34,4 +35,12 @@ public interface IRegistrationBusinessLogic
     Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null);
     Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken);
     Task UpdateCompanyBpn(Guid applicationId, string bpn);
+    
+    /// <summary>
+    /// Sets the registration verification state for the given application.
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    /// <param name="approve"><c>true</c> if the application is approved, otherwise <c>false</c></param>
+    /// <param name="comment">An additional comment, only set if the application got declined</param>
+    Task SetRegistrationVerification(Guid applicationId, bool approve, string? comment = null);
 }

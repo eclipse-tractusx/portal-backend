@@ -354,7 +354,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         var appId = appRepository.CreateOffer(appRequestModel.Provider, OfferTypeId.APP, app =>
         {
             app.Name = appRequestModel.Title;
-            app.ThumbnailUrl = appRequestModel.LeadPictureUri;
             app.ProviderCompanyId = companyId;
             app.OfferStatusId = OfferStatusId.CREATED;
             if (appRequestModel.SalesManagerId.HasValue)
@@ -425,7 +424,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         app =>
         {
             app.Name = appRequestModel.Title;
-            app.ThumbnailUrl = appRequestModel.LeadPictureUri;
             app.OfferStatusId = OfferStatusId.CREATED;
             app.Provider = appRequestModel.Provider;
             app.SalesManagerId = appRequestModel.SalesManagerId;
