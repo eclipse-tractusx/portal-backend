@@ -348,7 +348,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\": \"Test Service\",\r\n    \"thumbnailUrl\": \"dasisteintest\",\r\n    \"price\": \"42\",\r\n    \"contactEmail\": \"info@tester.de\",\r\n    \"salesManagerId\": null,\r\n    \"descriptions\": [\r\n        {\r\n            \"languageCode\": \"de\",\r\n            \"longDescription\" : \"Das ist ein neuer service\",\r\n            \"shortDescription\": \"Test\"\r\n        },\r\n        {\r\n            \"languageCode\": \"en\",\r\n            \"longDescription\" : \"Thats a new service\",\r\n            \"shortDescription\": \"Test\"\r\n        }\r\n    ],\r\n    \"ServiceTypeIds\": [\r\n        \"CONSULTANCE_SERVICE\"\r\n    ]\r\n}",
+					"raw": "{\r\n    \"title\": \"Test Service\",\r\n    \"price\": \"42\",\r\n    \"contactEmail\": \"info@tester.de\",\r\n    \"salesManagerId\": null,\r\n    \"descriptions\": [\r\n        {\r\n            \"languageCode\": \"de\",\r\n            \"longDescription\" : \"Das ist ein neuer service\",\r\n            \"shortDescription\": \"Test\"\r\n        },\r\n        {\r\n            \"languageCode\": \"en\",\r\n            \"longDescription\" : \"Thats a new service\",\r\n            \"shortDescription\": \"Test\"\r\n        }\r\n    ],\r\n    \"ServiceTypeIds\": [\r\n        \"CONSULTANCE_SERVICE\"\r\n    ]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -493,7 +493,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\": \"Test Service\",\r\n    \"thumbnailUrl\": \"dasisteintest\",\r\n    \"price\": \"42\",\r\n    \"contactEmail\": \"info@tester.de\",\r\n    \"salesManager\": null,\r\n    \"descriptions\": [\r\n        {\r\n            \"languageCode\": \"de\",\r\n            \"longDescription\" : \"Das ist ein neuer service\",\r\n            \"shortDescription\": \"Test\"\r\n        },\r\n        {\r\n            \"languageCode\": \"en\",\r\n            \"longDescription\" : \"Thats a new service\",\r\n            \"shortDescription\": \"Test\"\r\n        }\r\n    ],\r\n    \"ServiceTypeIds\": [\r\n        \"DATASPACE_SERVICE\"\r\n    ]\r\n}",
+					"raw": "{\r\n    \"title\": \"Test Service\",\r\n     \"price\": \"42\",\r\n    \"contactEmail\": \"info@tester.de\",\r\n    \"salesManager\": null,\r\n    \"descriptions\": [\r\n        {\r\n            \"languageCode\": \"de\",\r\n            \"longDescription\" : \"Das ist ein neuer service\",\r\n            \"shortDescription\": \"Test\"\r\n        },\r\n        {\r\n            \"languageCode\": \"en\",\r\n            \"longDescription\" : \"Thats a new service\",\r\n            \"shortDescription\": \"Test\"\r\n        }\r\n    ],\r\n    \"ServiceTypeIds\": [\r\n        \"DATASPACE_SERVICE\"\r\n    ]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"

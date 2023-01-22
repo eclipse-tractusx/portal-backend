@@ -241,7 +241,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("audit_company_user_assigned_role20221018", "portal");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditOffer20221013", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditOffer20230119", b =>
                 {
                     b.Property<Guid>("AuditV1Id")
                         .ValueGeneratedOnAdd()
@@ -317,14 +317,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("sales_manager_id");
 
-                    b.Property<string>("ThumbnailUrl")
-                        .HasColumnType("text")
-                        .HasColumnName("thumbnail_url");
-
                     b.HasKey("AuditV1Id")
-                        .HasName("pk_audit_offer20221013");
+                        .HasName("pk_audit_offer20230119");
 
-                    b.ToTable("audit_offer20221013", "portal");
+                    b.ToTable("audit_offer20230119", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditOfferSubscription20221005", b =>
@@ -723,6 +719,129 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("app_languages", "portal");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntry", b =>
+                {
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_id");
+
+                    b.Property<int>("ApplicationChecklistEntryTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("application_checklist_entry_type_id");
+
+                    b.Property<int>("ApplicationChecklistEntryStatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("application_checklist_entry_status_id");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("text")
+                        .HasColumnName("comment");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_created");
+
+                    b.Property<DateTimeOffset?>("DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_last_changed");
+
+                    b.HasKey("ApplicationId", "ApplicationChecklistEntryTypeId")
+                        .HasName("pk_application_checklist");
+
+                    b.HasIndex("ApplicationChecklistEntryStatusId")
+                        .HasDatabaseName("ix_application_checklist_application_checklist_entry_status_id");
+
+                    b.HasIndex("ApplicationChecklistEntryTypeId")
+                        .HasDatabaseName("ix_application_checklist_application_checklist_entry_type_id");
+
+                    b.ToTable("application_checklist", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntryStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_application_checklist_statuses");
+
+                    b.ToTable("application_checklist_statuses", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "TO_DO"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "IN_PROGRESS"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "DONE"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Label = "FAILED"
+                        });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntryType", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_application_checklist_types");
+
+                    b.ToTable("application_checklist_types", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "REGISTRATION_VERIFICATION"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "BUSINESS_PARTNER_NUMBER"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "IDENTITY_WALLET"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Label = "CLEARING_HOUSE"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "SELF_DESCRIPTION_LP"
+                        });
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppSubscriptionDetail", b =>
                 {
                     b.Property<Guid>("Id")
@@ -797,6 +916,126 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 3,
                             Label = "DELETE"
+                        });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.BpdmIdentifier", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_bpdm_identifiers");
+
+                    b.ToTable("bpdm_identifiers", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "EU_VAT_ID_DE"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "CH_UID"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "EU_VAT_ID_FR"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Label = "FR_SIREN"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "EU_VAT_ID_AT"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Label = "DE_BNUM"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Label = "CZ_ICO"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Label = "EU_VAT_ID_CZ"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Label = "EU_VAT_ID_PL"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Label = "EU_VAT_ID_BE"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Label = "EU_VAT_ID_CH"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Label = "EU_VAT_ID_DK"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Label = "EU_VAT_ID_ES"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Label = "EU_VAT_ID_GB"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Label = "EU_VAT_ID_NO"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Label = "BE_ENT_NO"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Label = "CVR_DK"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Label = "ID_CRN"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Label = "NO_ORGID"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Label = "LEI_ID"
                         });
                 });
 
@@ -1795,8 +2034,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("integer")
                         .HasColumnName("unique_identifier_id");
 
+                    b.Property<int?>("BpdmIdentifierId")
+                        .HasColumnType("integer")
+                        .HasColumnName("bpdm_identifier_id");
+
                     b.HasKey("CountryAlpha2Code", "UniqueIdentifierId")
                         .HasName("pk_country_assigned_identifiers");
+
+                    b.HasIndex("BpdmIdentifierId")
+                        .HasDatabaseName("ix_country_assigned_identifiers_bpdm_identifier_id");
 
                     b.HasIndex("UniqueIdentifierId")
                         .HasDatabaseName("ix_country_assigned_identifiers_unique_identifier_id");
@@ -2520,11 +2766,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("sales_manager_id");
 
-                    b.Property<string>("ThumbnailUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("thumbnail_url");
-
                     b.HasKey("Id")
                         .HasName("pk_offers");
 
@@ -2543,9 +2784,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("offers", "portal");
 
                     b
-                        .HasAnnotation("LC_TRIGGER_AFTER_DELETE_OFFER", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_OFFER() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_OFFER$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer20221013 (\"id\", \"name\", \"date_created\", \"date_released\", \"thumbnail_url\", \"marketing_url\", \"contact_email\", \"contact_number\", \"provider\", \"offer_type_id\", \"sales_manager_id\", \"provider_company_id\", \"offer_status_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT OLD.id, \r\n  OLD.name, \r\n  OLD.date_created, \r\n  OLD.date_released, \r\n  OLD.thumbnail_url, \r\n  OLD.marketing_url, \r\n  OLD.contact_email, \r\n  OLD.contact_number, \r\n  OLD.provider, \r\n  OLD.offer_type_id, \r\n  OLD.sales_manager_id, \r\n  OLD.provider_company_id, \r\n  OLD.offer_status_id, \r\n  OLD.date_last_changed, \r\n  OLD.last_editor_id, \r\n  gen_random_uuid(), \r\n  3, \r\n  CURRENT_DATE, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_OFFER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_OFFER AFTER DELETE\r\nON portal.offers\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_OFFER();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_OFFER", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_OFFER() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_OFFER$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer20221013 (\"id\", \"name\", \"date_created\", \"date_released\", \"thumbnail_url\", \"marketing_url\", \"contact_email\", \"contact_number\", \"provider\", \"offer_type_id\", \"sales_manager_id\", \"provider_company_id\", \"offer_status_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.name, \r\n  NEW.date_created, \r\n  NEW.date_released, \r\n  NEW.thumbnail_url, \r\n  NEW.marketing_url, \r\n  NEW.contact_email, \r\n  NEW.contact_number, \r\n  NEW.provider, \r\n  NEW.offer_type_id, \r\n  NEW.sales_manager_id, \r\n  NEW.provider_company_id, \r\n  NEW.offer_status_id, \r\n  NEW.date_last_changed, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_OFFER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_OFFER AFTER INSERT\r\nON portal.offers\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_OFFER();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_OFFER", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_OFFER() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_OFFER$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer20221013 (\"id\", \"name\", \"date_created\", \"date_released\", \"thumbnail_url\", \"marketing_url\", \"contact_email\", \"contact_number\", \"provider\", \"offer_type_id\", \"sales_manager_id\", \"provider_company_id\", \"offer_status_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.name, \r\n  NEW.date_created, \r\n  NEW.date_released, \r\n  NEW.thumbnail_url, \r\n  NEW.marketing_url, \r\n  NEW.contact_email, \r\n  NEW.contact_number, \r\n  NEW.provider, \r\n  NEW.offer_type_id, \r\n  NEW.sales_manager_id, \r\n  NEW.provider_company_id, \r\n  NEW.offer_status_id, \r\n  NEW.date_last_changed, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_OFFER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_OFFER AFTER UPDATE\r\nON portal.offers\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_OFFER();");
+                        .HasAnnotation("LC_TRIGGER_AFTER_DELETE_OFFER", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_OFFER() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_OFFER$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer20230119 (\"id\", \"name\", \"date_created\", \"date_released\", \"marketing_url\", \"contact_email\", \"contact_number\", \"provider\", \"offer_type_id\", \"sales_manager_id\", \"provider_company_id\", \"offer_status_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT OLD.id, \r\n  OLD.name, \r\n  OLD.date_created, \r\n  OLD.date_released, \r\n  OLD.marketing_url, \r\n  OLD.contact_email, \r\n  OLD.contact_number, \r\n  OLD.provider, \r\n  OLD.offer_type_id, \r\n  OLD.sales_manager_id, \r\n  OLD.provider_company_id, \r\n  OLD.offer_status_id, \r\n  OLD.date_last_changed, \r\n  OLD.last_editor_id, \r\n  gen_random_uuid(), \r\n  3, \r\n  CURRENT_DATE, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_OFFER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_OFFER AFTER DELETE\r\nON portal.offers\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_OFFER();")
+                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_OFFER", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_OFFER() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_OFFER$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer20230119 (\"id\", \"name\", \"date_created\", \"date_released\", \"marketing_url\", \"contact_email\", \"contact_number\", \"provider\", \"offer_type_id\", \"sales_manager_id\", \"provider_company_id\", \"offer_status_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.name, \r\n  NEW.date_created, \r\n  NEW.date_released, \r\n  NEW.marketing_url, \r\n  NEW.contact_email, \r\n  NEW.contact_number, \r\n  NEW.provider, \r\n  NEW.offer_type_id, \r\n  NEW.sales_manager_id, \r\n  NEW.provider_company_id, \r\n  NEW.offer_status_id, \r\n  NEW.date_last_changed, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_OFFER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_OFFER AFTER INSERT\r\nON portal.offers\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_OFFER();")
+                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_OFFER", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_OFFER() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_OFFER$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer20230119 (\"id\", \"name\", \"date_created\", \"date_released\", \"marketing_url\", \"contact_email\", \"contact_number\", \"provider\", \"offer_type_id\", \"sales_manager_id\", \"provider_company_id\", \"offer_status_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.name, \r\n  NEW.date_created, \r\n  NEW.date_released, \r\n  NEW.marketing_url, \r\n  NEW.contact_email, \r\n  NEW.contact_number, \r\n  NEW.provider, \r\n  NEW.offer_type_id, \r\n  NEW.sales_manager_id, \r\n  NEW.provider_company_id, \r\n  NEW.offer_status_id, \r\n  NEW.date_last_changed, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_OFFER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_OFFER AFTER UPDATE\r\nON portal.offers\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_OFFER();");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferAssignedDocument", b =>
@@ -3298,6 +3539,35 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Language");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntry", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntryStatus", "ApplicationChecklistEntryStatus")
+                        .WithMany("ApplicationChecklistEntries")
+                        .HasForeignKey("ApplicationChecklistEntryStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_application_checklist_application_checklist_statuses_applic");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntryType", "ApplicationChecklistEntryType")
+                        .WithMany("ApplicationChecklistEntries")
+                        .HasForeignKey("ApplicationChecklistEntryTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_application_checklist_application_checklist_types_applicati");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", "Application")
+                        .WithMany("ApplicationChecklistEntries")
+                        .HasForeignKey("ApplicationId")
+                        .IsRequired()
+                        .HasConstraintName("fk_application_checklist_company_applications_application_id");
+
+                    b.Navigation("Application");
+
+                    b.Navigation("ApplicationChecklistEntryStatus");
+
+                    b.Navigation("ApplicationChecklistEntryType");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppSubscriptionDetail", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppInstance", "AppInstance")
@@ -3750,6 +4020,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CountryAssignedIdentifier", b =>
                 {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.BpdmIdentifier", "BpdmIdentifier")
+                        .WithMany("CountryAssignedIdentifiers")
+                        .HasForeignKey("BpdmIdentifierId")
+                        .HasConstraintName("fk_country_assigned_identifiers_bpdm_identifiers_bpdm_identifi");
+
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Country", "Country")
                         .WithMany("CountryAssignedIdentifiers")
                         .HasForeignKey("CountryAlpha2Code")
@@ -3761,6 +4036,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("UniqueIdentifierId")
                         .IsRequired()
                         .HasConstraintName("fk_country_assigned_identifiers_unique_identifiers_unique_iden");
+
+                    b.Navigation("BpdmIdentifier");
 
                     b.Navigation("Country");
 
@@ -4190,6 +4467,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("AppSubscriptionDetails");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntryStatus", b =>
+                {
+                    b.Navigation("ApplicationChecklistEntries");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntryType", b =>
+                {
+                    b.Navigation("ApplicationChecklistEntries");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.BpdmIdentifier", b =>
+                {
+                    b.Navigation("CountryAssignedIdentifiers");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", b =>
                 {
                     b.Navigation("Agreements");
@@ -4219,6 +4511,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>
                 {
+                    b.Navigation("ApplicationChecklistEntries");
+
                     b.Navigation("Invitations");
                 });
 

@@ -146,15 +146,24 @@ public class ApplicationRepository : IApplicationRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid companyId, string companyName, string? businessPartnerNumber, string countryCode)> GetCompanyAndApplicationDetailsForSubmittedApplicationAsync(Guid applicationId) =>
+    public Task<(Guid companyId, string? businessPartnerNumber, string countryCode)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
         _dbContext.CompanyApplications.Where(companyApplication =>
-                companyApplication.Id == applicationId
-                && companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(ca => new ValueTuple<Guid, string, string?, string>(
+                companyApplication.Id == applicationId &&
+                companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
+            .Select(ca => new ValueTuple<Guid, string?, string>(
                 ca.CompanyId,
-                ca.Company!.Name,
                 ca.Company!.BusinessPartnerNumber,
                 ca.Company!.Address!.Country!.Alpha2Code))
+            .SingleOrDefaultAsync();
+
+    public Task<(Guid companyId, string companyName, string? businessPartnerNumber)> GetCompanyAndApplicationDetailsForCreateWalletAsync(Guid applicationId) =>
+        _dbContext.CompanyApplications.Where(companyApplication =>
+                companyApplication.Id == applicationId &&
+                companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
+            .Select(ca => new ValueTuple<Guid, string, string?>(
+                ca.CompanyId,
+                ca.Company!.Name,
+                ca.Company!.BusinessPartnerNumber))
             .SingleOrDefaultAsync();
 
     public IAsyncEnumerable<CompanyInvitedUserData> GetInvitedUsersDataByApplicationIdUntrackedAsync(Guid applicationId) =>
@@ -262,4 +271,34 @@ public class ApplicationRepository : IApplicationRepository
                     x.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId,string>(identifier.UniqueIdentifierId, identifier.Value)))
                     : null))
             .SingleOrDefaultAsync();
+
+     /// <inheritdoc />
+     public Task<(string? Bpn, IEnumerable<ApplicationChecklistEntryTypeId> ExistingChecklistEntryTypeIds)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId) => 
+         _dbContext.CompanyApplications
+             .AsNoTracking()
+             .Where(a => a.Id == applicationId)
+             .Select(x => new ValueTuple<string?, IEnumerable<ApplicationChecklistEntryTypeId>>(
+                 x.Company!.BusinessPartnerNumber,
+                 x.ApplicationChecklistEntries.Select(ace => ace.ApplicationChecklistEntryTypeId)))
+             .SingleOrDefaultAsync();
+
+     /// <inheritdoc />
+     public Task<(CompanyApplicationStatusId ApplicationStatusId, ApplicationChecklistEntryStatusId RegistrationVerificationStatusId)> GetApplicationStatusWithChecklistTypeStatusAsync(Guid applicationId, ApplicationChecklistEntryTypeId checklistEntryTypeId) =>
+         _dbContext.CompanyApplications
+             .AsNoTracking()
+             .Where(ca => ca.Id == applicationId)
+             .Select(ca => new ValueTuple<CompanyApplicationStatusId, ApplicationChecklistEntryStatusId>(
+                 ca.ApplicationStatusId,
+                 ca.ApplicationChecklistEntries
+                     .Where(x => x.ApplicationChecklistEntryTypeId == checklistEntryTypeId)
+                     .Select(x => x.ApplicationChecklistEntryStatusId)
+                     .SingleOrDefault()))
+             .SingleOrDefaultAsync();
+
+     /// <inheritdoc />
+     public Task<string?> GetBpnForApplicationIdAsync(Guid applicationId) =>
+         _dbContext.CompanyApplications.AsNoTracking()
+             .Where(ca => ca.Id == applicationId)
+             .Select(x => x.Company!.BusinessPartnerNumber)
+             .SingleOrDefaultAsync();
 }

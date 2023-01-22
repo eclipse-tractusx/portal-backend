@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.FileProviders;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -49,6 +50,7 @@ builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
                 .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
+builder.Services.AddChecklistCreation();
 builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address"));
 
 builder.Build()
