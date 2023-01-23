@@ -31,6 +31,8 @@ public class TemplateManager : ITemplateManager
 {
     private readonly TemplateSettings _settings;
 
+    private static readonly Regex _templateMatcherExpression = new Regex(@"\{(\w+)\}", RegexOptions.None, TimeSpan.FromSeconds(1)); // to replace any text surrounded by { and }
+
     public TemplateManager(IOptions<TemplateSettings> templateSettings)
     {
         _settings = templateSettings.Value;
@@ -78,8 +80,7 @@ public class TemplateManager : ITemplateManager
     }
 
     private static string ReplaceValues(string template, IDictionary<string,string> parameters) => 
-        Regex.Replace(
+        _templateMatcherExpression.Replace(
             template,
-            @"\{(\w+)\}", //replaces any text surrounded by { and }
             m => parameters.TryGetValue(m.Groups[1].Value, out var value) ? value : "null");
 }

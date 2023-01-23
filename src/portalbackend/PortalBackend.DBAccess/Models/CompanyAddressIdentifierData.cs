@@ -18,36 +18,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record CompanyWithAddress(
-    [property: JsonPropertyName("companyId")] Guid CompanyId,
-    [property: JsonPropertyName("name")] string Name,
-    [property: JsonPropertyName("city")] string City,
-    [property: JsonPropertyName("streetName")] string StreetName,
-    [property: JsonPropertyName("countryAlpha2Code")] string CountryAlpha2Code)
-{
-    [JsonPropertyName("bpn")]
-    public string? BusinessPartnerNumber { get; set; }
+public record CompanyAddressIdentifierData(
+    Guid CompanyId,
+    string Name,
+    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
+    string? ShortName,
+    string City,
+    string StreetName,
+    string CountryAlpha2Code,
+    string? Region,
+    string? StreetAdditional,
+    string? StreetNumber,
+    string? ZipCode,
+    IEnumerable<CompanyIdentifierData> UniqueIds
+);
 
-    [JsonPropertyName("shortName")]
-    public string? Shortname { get; set; }
-
-    [JsonPropertyName("region")]
-    public string? Region { get; set; }
-
-    [JsonPropertyName("streetAdditional")]
-    public string? Streetadditional { get; set; }
-
-    [JsonPropertyName("streetNumber")]
-    public string? Streetnumber { get; set; }
-
-    [JsonPropertyName("zipCode")]
-    public string? Zipcode { get; set; }
-
-    [JsonPropertyName("countryDe")]
-    public string? CountryDe { get; set; }
-    
-}
+public record CompanyIdentifierData(
+    [property: JsonPropertyName("type")] UniqueIdentifierId UniqueIdentifierId,
+    string Value
+);
