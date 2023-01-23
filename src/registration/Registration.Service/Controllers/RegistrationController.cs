@@ -222,7 +222,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/companyDetailsWithAddress")]
-        [ProducesResponseType(typeof(CompanyWithAddress), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CompanyDetailData), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public Task<CompanyDetailData> GetCompanyDetailDataAsync([FromRoute] Guid applicationId) =>
             this.WithIamUserId(iamUserId =>
