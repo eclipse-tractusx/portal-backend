@@ -58,7 +58,7 @@ public interface ICompanyRepository
     /// </summary>
     /// <returns> Business partner numbers of all active companies</returns>
     IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync();
-    Task<CompanyWithAddress?> GetOwnCompanyDetailsAsync(string iamUserId);
+    Task<CompanyAddressIdentifierData?> GetOwnCompanyDetailsAsync(string iamUserId);
 
     /// <summary>
     /// Checks whether the iamUser is assigned to the company and the company exists

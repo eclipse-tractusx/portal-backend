@@ -56,7 +56,9 @@ public static class BaseSeed
             new(new Guid("b4db3945-19a7-4a50-97d6-e66e8dfd04fb"), "Munich", "Street", "DE", DateTimeOffset.UtcNow)
             {
                 Zipcode = "00001",
-                Streetnumber = "1"
+                Streetnumber = "1",
+                Region = "BY",
+                Streetadditional = "foo"
             },
             new(new Guid("12302f9b-418c-4b8c-aea8-3eedf67e6a02"), "Munich", "Street", "DE", DateTimeOffset.UtcNow)
             {
@@ -70,7 +72,7 @@ public static class BaseSeed
             new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), "Catena-X", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow)
             {
                 AddressId = new Guid("b4db3945-19a7-4a50-97d6-e66e8dfd04fb"),
-                Shortname = "Catena-X",
+                Shortname = "Cat-X",
                 BusinessPartnerNumber = "CAXSDUMMYCATENAZZ",
             },
             new(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"), "Test Company", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow)
@@ -397,6 +399,11 @@ public static class BaseSeed
         {
             new ("DE", UniqueIdentifierId.COMMERCIAL_REG_NUMBER),
             new ("DE", UniqueIdentifierId.VAT_ID) { BpdmIdentifierId = BpdmIdentifierId.EU_VAT_ID_DE },
+        });
+
+        dbContext.CompanyIdentifiers.AddRange(new CompanyIdentifier[]
+        {
+            new (new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "REG08154711")
         });
     };
 }

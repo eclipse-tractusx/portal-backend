@@ -114,23 +114,24 @@ public class CompanyRepository : ICompanyRepository
             .Select(company => company.BusinessPartnerNumber)
             .AsAsyncEnumerable();
 
-    public Task<CompanyWithAddress?> GetOwnCompanyDetailsAsync(string iamUserId) =>
-        _context.IamUsers
+    public Task<CompanyAddressIdentifierData?> GetOwnCompanyDetailsAsync(string iamUserId) =>
+        _context.Companies
             .AsNoTracking()
-            .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .Select(iamUser => iamUser.CompanyUser!.Company)
-            .Select(company => new CompanyWithAddress(
+            .Where(company => company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
+            .Select(company => new CompanyAddressIdentifierData(
                 company!.Id,
                 company.Name,
+                company.BusinessPartnerNumber,
+                company.Shortname,
                 company.Address!.City,
-                company.Address!.Streetname,
-                company.Address!.CountryAlpha2Code)
-            {
-                BusinessPartnerNumber = company.BusinessPartnerNumber,
-                Region = company.Address!.Region,
-                Streetnumber = company.Address!.Streetnumber,
-                Zipcode = company.Address!.Zipcode
-            })
+                company.Address.Streetname,
+                company.Address.CountryAlpha2Code,
+                company.Address.Region,
+                company.Address.Streetadditional,
+                company.Address.Streetnumber,
+                company.Address!.Zipcode,
+                company.CompanyIdentifiers
+                    .Select(identifier => new CompanyIdentifierData(identifier.UniqueIdentifierId, identifier.Value))))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

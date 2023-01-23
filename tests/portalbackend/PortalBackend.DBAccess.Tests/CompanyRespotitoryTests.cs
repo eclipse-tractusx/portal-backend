@@ -21,6 +21,7 @@
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -361,6 +362,34 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         deleted.Should().HaveSameCount(removedEntities);
         deleted.OrderBy(x => x.UniqueIdentifierId).Zip(removedEntities).Should().AllSatisfy(x => (x.First.UniqueIdentifierId == x.Second.UniqueIdentifierId && x.First.Value == x.Second.Value).Should().BeTrue());
    }
+
+    #endregion
+
+    #region GetOwnCompanyDetailsAsync
+
+    [Fact]
+    public async Task GetOwnCompanyDetailsAsync_ReturnsExpected()
+    {
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        var result = await sut.GetOwnCompanyDetailsAsync("623770c5-cf38-4b9f-9a35-f8b9ae972e2e").ConfigureAwait(false);
+
+        result.Should().NotBeNull();
+
+        result!.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        result.Name.Should().Be("Catena-X");
+        result.ShortName.Should().Be("Cat-X");
+        result.BusinessPartnerNumber.Should().Be("CAXSDUMMYCATENAZZ");
+        result.CountryAlpha2Code.Should().Be("DE");
+        result.City.Should().Be("Munich");
+        result.StreetName.Should().Be("Street");
+        result.StreetAdditional.Should().Be("foo");
+        result.StreetNumber.Should().Be("1");
+        result.Region.Should().Be("BY");
+        result.ZipCode.Should().Be("00001");
+        result.UniqueIds.Should().HaveCount(1);
+        result.UniqueIds.First().Should().Match<CompanyIdentifierData>(identifier => identifier.UniqueIdentifierId == UniqueIdentifierId.COMMERCIAL_REG_NUMBER && identifier.Value == "REG08154711");
+    }
 
     #endregion
 
