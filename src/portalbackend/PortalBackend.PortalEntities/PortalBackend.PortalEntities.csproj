@@ -45,10 +45,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration">
-      <HintPath>..\..\..\..\..\..\..\..\Program Files\dotnet\shared\Microsoft.AspNetCore.App\6.0.8\Microsoft.Extensions.Configuration.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 </Project>
