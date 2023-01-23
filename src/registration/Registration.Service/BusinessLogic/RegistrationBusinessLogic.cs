@@ -123,15 +123,19 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var country = legalAddress.Country.TechnicalKey;
 
         var bpdmIdentifiers = ParseBpdmIdentifierDtos(legalEntity.Identifiers).ToList();
-        var assignedIdentifiers = await _portalRepositories.GetInstance<IStaticDataRepository>()
-            .GetCountryAssignedIdentifiers(bpdmIdentifiers.Select(x => x.BpdmIdentifierId), country)
-            .ToListAsync(cancellationToken).ConfigureAwait(false);
+        var assignedIdentifiersResult = await _portalRepositories.GetInstance<IStaticDataRepository>()
+            .GetCountryAssignedIdentifiers(bpdmIdentifiers.Select(x => x.BpdmIdentifierId), country).ConfigureAwait(false);
 
-        var portalIdentifiers = bpdmIdentifiers.Join(
-                assignedIdentifiers,
-                bpdmIdentifier => bpdmIdentifier.BpdmIdentifierId,
+        if (!assignedIdentifiersResult.IsValidCountry)
+        {
+            throw new ConflictException($"Bpdm did return invalid country {country} in address-data");
+        }
+
+        var portalIdentifiers = assignedIdentifiersResult.Identifiers.Join(
+                bpdmIdentifiers,
                 assignedIdentifier => assignedIdentifier.BpdmIdentifierId,
-                (bpdmIdentifier, countryIdentifier) => (countryIdentifier.UniqueIdentifierId, bpdmIdentifier.Value));
+                bpdmIdentifier => bpdmIdentifier.BpdmIdentifierId,
+                (countryIdentifier, bpdmIdentifier) => (countryIdentifier.UniqueIdentifierId, bpdmIdentifier.Value));
 
         TItem? SingleOrDefaultChecked<TItem>(IEnumerable<TItem> items, string itemName)
         {

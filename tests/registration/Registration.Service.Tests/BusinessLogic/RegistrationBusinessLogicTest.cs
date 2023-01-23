@@ -254,7 +254,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => bpnAccess.FetchLegalEntityAddressByBpn(businessPartnerNumber, token, A<CancellationToken>._))
             .Returns(new [] { bpdmAddress }.ToAsyncEnumerable());
         A.CallTo(() => _staticDataRepository.GetCountryAssignedIdentifiers(A<IEnumerable<BpdmIdentifierId>>.That.Matches<IEnumerable<BpdmIdentifierId>>(ids => ids.SequenceEqual(uniqueIdSeed.Select(seed => seed.BpdmIdentifierId))), country))
-            .Returns(validIdentifiers.ToAsyncEnumerable());
+            .Returns((true, validIdentifiers));
 
         var sut = new RegistrationBusinessLogic(
             _options,
