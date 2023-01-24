@@ -138,6 +138,73 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
+    public async Task TestUserCreation_NoUserNameAndEmail_Throws()
+    {
+        SetupFakesForUserCreation(true);
+
+        var nullUserName = _fixture.Build<UserCreationInfo>().With(x => x.userName, (string?)null).Create();
+        var nullEmail = _fixture.Build<UserCreationInfo>().With(x => x.eMail, (string?)null).Create();
+        var nullUserNameEmail = _fixture.Build<UserCreationInfo>().With(x => x.eMail, (string?)null).With(x => x.userName, (string?)null).Create();
+
+        var userList = new [] {
+            CreateUserCreationInfo(),
+            nullUserName,
+            CreateUserCreationInfo(),
+            nullEmail,
+            CreateUserCreationInfo(),
+            nullUserNameEmail,
+            CreateUserCreationInfo()
+        };
+
+        var sut = new UserBusinessLogic(
+            null!,
+            _userProvisioningService,
+            null!,
+            _portalRepositories,
+            _mailingService,
+            _logger,
+            _options);
+
+        var Act = async () => await sut.CreateOwnCompanyUsersAsync(userList, _iamUserId).ToListAsync().ConfigureAwait(false);
+
+        var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+
+        result.Message.Should().Be($"userName and eMail must not both be empty '{nullUserNameEmail.firstName} {nullUserNameEmail.lastName}'");
+    }
+
+    [Fact]
+    public async Task TestUserCreation_NoRoles_Throws()
+    {
+        SetupFakesForUserCreation(true);
+
+        var noRoles = _fixture.Build<UserCreationInfo>().With(x => x.Roles, Enumerable.Empty<string>()).Create();
+        var noRolesNoUserName = _fixture.Build<UserCreationInfo>().With(x => x.Roles, Enumerable.Empty<string>()).With(x => x.userName, (string?)null).Create();
+
+        var userList = new [] {
+            CreateUserCreationInfo(),
+            noRoles,
+            CreateUserCreationInfo(),
+            noRolesNoUserName,
+            CreateUserCreationInfo()
+        };
+
+        var sut = new UserBusinessLogic(
+            null!,
+            _userProvisioningService,
+            null!,
+            _portalRepositories,
+            _mailingService,
+            _logger,
+            _options);
+
+        var Act = async () => await sut.CreateOwnCompanyUsersAsync(userList, _iamUserId).ToListAsync().ConfigureAwait(false);
+
+        var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+
+        result.Message.Should().Be($"at least one role must be specified for users '{noRoles.userName}, {noRolesNoUserName.eMail}'");
+    }
+
+    [Fact]
     public async Task TestUserCreationCreationError()
     {
         SetupFakesForUserCreation(true);
