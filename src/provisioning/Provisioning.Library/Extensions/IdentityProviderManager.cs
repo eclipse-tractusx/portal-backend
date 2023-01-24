@@ -178,23 +178,6 @@ public partial class ProvisioningManager
             : null;
     }
 
-    private Task CreateCentralIdentityProviderTenantMapperAsync(string alias) =>
-        _CentralIdp.AddIdentityProviderMapperAsync(
-            _Settings.CentralRealm,
-            alias,
-            new IdentityProviderMapper
-            {
-                Name=_Settings.MappedIdpAttribute + "-mapper",
-                _IdentityProviderMapper="hardcoded-attribute-idp-mapper",
-                IdentityProviderAlias=alias,
-                Config=new Dictionary<string,object>
-                {
-                    ["syncMode"]="INHERIT",
-                    ["attribute"]=_Settings.MappedIdpAttribute,
-                    ["attribute.value"]=alias
-                }
-            });
-    
     private Task CreateCentralIdentityProviderOrganisationMapperAsync(string alias, string organisationName) =>
         _CentralIdp.AddIdentityProviderMapperAsync(
             _Settings.CentralRealm,
