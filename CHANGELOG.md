@@ -8,7 +8,9 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ### Change
 * Registration Service: new GET endpoint released for /legalEntityAddress/{bpn} with reworked and enhanced response body to support legal entity address and unique identifier handling
-* Administration Service: POST & PUT endpoints for service provider url merged into PUT
+* Administration Service: 
+  * POST & PUT endpoints for service provider url merged into PUT
+  * user creation endpoint - role attribute mandatorily set - minimum one role is mandatory
 * DB offer attribute "thumbnailUrl" removed and impacted endpoints updated ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
 
 ### Feature
@@ -16,6 +18,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ### Technical Support
 * Checklist worker enabled to support future application checklist process planned for R#3.0 with automatic process trigger based on configured application status sets
+* IdP creation logic - identity provider mapper "tenant" decommissioned
 
 ### Bugfix
 * n/a
