@@ -99,6 +99,7 @@ public class OfferRepository : IOfferRepository
     /// <inheritdoc />
     public Task<OfferDetailsData?> GetOfferDetailsByIdAsync(Guid offerId, string iamUserId, string? languageShortName, string defaultLanguageShortName, OfferTypeId offerTypeId) =>
         _context.Offers.AsNoTracking()
+            .AsSplitQuery()
             .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
             .Select(offer => new OfferDetailsData(
                 offer.Id,
@@ -218,11 +219,10 @@ public class OfferRepository : IOfferRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> Descriptions)> GetAppDetailsForUpdateAsync(Guid appId, string userId) =>
+    public Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, string userId, OfferTypeId offerTypeId) =>
         _context.Offers
             .AsNoTracking()
-            .AsSplitQuery()
-            .Where(a => a.Id == appId)
+            .Where(a => a.Id == appId && a.OfferTypeId == offerTypeId)
             .Select(a =>
                 new ValueTuple<bool,bool,string?,string?,string?,IEnumerable<(string,string,string)>>(
                     a.OfferStatusId == OfferStatusId.CREATED,

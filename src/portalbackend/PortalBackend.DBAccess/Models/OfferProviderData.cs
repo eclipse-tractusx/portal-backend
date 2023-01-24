@@ -39,7 +39,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="ContactEmail"></param>
 /// <param name="ContactNumber"></param>
 /// <returns></returns>
-public record OfferProviderData(string? Title, string Provider, Guid LeadPictureId, string? ProviderName, IEnumerable<string> UseCase, IEnumerable<OfferDescriptionData> Descriptions, IEnumerable<AgreementAssignedOfferData> Agreements, IEnumerable<string> SupportedLanguageCodes, string? Price, IEnumerable<Guid> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber, IEnumerable<DocumentTypeData> Documents, Guid? SalesManagerId);
+public record OfferProviderData(
+    string? Title,
+    string Provider,
+    Guid LeadPictureId,
+    string? ProviderName,
+    IEnumerable<string> UseCase,
+    IEnumerable<OfferDescriptionData> Descriptions,
+    IEnumerable<AgreementAssignedOfferData> Agreements,
+    IEnumerable<string> SupportedLanguageCodes,
+    string? Price,
+    IEnumerable<Guid> Images,
+    string? ProviderUri,
+    string? ContactEmail,
+    string? ContactNumber,
+    IEnumerable<DocumentTypeData> Documents,
+    Guid? SalesManagerId
+);
 
 /// <summary>
 /// Model for Offer Description
@@ -48,7 +64,11 @@ public record OfferProviderData(string? Title, string Provider, Guid LeadPicture
 /// <param name="longDescription"></param>
 /// <param name="shortDescription"></param>
 /// <returns></returns>
-public record OfferDescriptionData(string languageCode, string longDescription, string shortDescription);
+public record OfferDescriptionData(
+    string languageCode,
+    string longDescription,
+    string shortDescription
+);
 
 /// <summary>
 /// 
@@ -56,4 +76,8 @@ public record OfferDescriptionData(string languageCode, string longDescription, 
 /// <param name="AgreementId"></param>
 /// <param name="AgreementName"></param>
 /// <returns></returns>
-public record AgreementAssignedOfferData(Guid AgreementId, string? AgreementName, ConsentStatusId? ConsentStatusId);
+public record AgreementAssignedOfferData(
+    Guid AgreementId,
+    string? AgreementName,
+    ConsentStatusId? ConsentStatusId
+);
