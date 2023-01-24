@@ -84,7 +84,6 @@ public class UserProvisioningService : IUserProvisioningService
                         user.Email
                     ),
                     _provisioningManager.GetStandardAttributes(
-                        alias: alias,
                         organisationName: companyName,
                         businessPartnerNumber: businessPartnerNumber
                     )
