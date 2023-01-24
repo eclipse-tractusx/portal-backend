@@ -32,7 +32,7 @@ public record OfferProviderResponse(
     IEnumerable<OfferAgreement> Agreements, 
     IEnumerable<string> SupportedLanguageCodes, 
     string? Price, 
-    IEnumerable<string> Images, 
+    IEnumerable<Guid> Images, 
     string? ProviderUri, 
     string? ContactEmail, 
     string? ContactNumber, 
