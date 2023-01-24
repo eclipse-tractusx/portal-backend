@@ -102,7 +102,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             result.Id,
             result.Title ?? Constants.ErrorString,
             result.LeadPictureId,
-            result.DetailPictureUris,
+            result.Images,
             result.ProviderUri ?? Constants.ErrorString,
             result.Provider,
             result.ContactEmail,

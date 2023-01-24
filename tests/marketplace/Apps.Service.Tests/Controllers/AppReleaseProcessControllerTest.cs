@@ -60,10 +60,6 @@ public class AppReleaseProcessControllerTest
             {
                 new("en", "This is a long description", "description")
             },
-            new[]
-            {
-                "https://test.com/image.jpg"
-            },
             "https://test.provider.com",
             null,
             null);

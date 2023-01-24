@@ -113,7 +113,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferAssignedDocument> OfferAssignedDocuments { get; set; } = default!;
     public virtual DbSet<OfferAssignedLicense> OfferAssignedLicenses { get; set; } = default!;
     public virtual DbSet<OfferDescription> OfferDescriptions { get; set; } = default!;
-    public virtual DbSet<OfferDetailImage> OfferDetailImages { get; set; } = default!;
     public virtual DbSet<OfferLicense> OfferLicenses { get; set; } = default!;
     public virtual DbSet<OfferStatus> OfferStatuses { get; set; } = default!;
     public virtual DbSet<OfferTag> OfferTags { get; set; } = default!;
@@ -435,12 +434,6 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.LanguageShortName)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
-
-        modelBuilder.Entity<OfferDetailImage>()
-            .HasOne(d => d.Offer)
-                .WithMany(p => p!.OfferDetailImages)
-                .HasForeignKey(d => d.OfferId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
 
         modelBuilder.Entity<OfferStatus>()
             .HasData(
