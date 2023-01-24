@@ -21,7 +21,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Tests</AssemblyName>
+        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web.Tests</AssemblyName>
+        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web.Tests</RootNamespace>
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -47,7 +48,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+      <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling.Web\Framework.ErrorHandling.Web.csproj" />
     </ItemGroup>
 
 

@@ -42,7 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\framework\Framework.Token\Framework.Token.csproj" />
-    <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
 </Project>

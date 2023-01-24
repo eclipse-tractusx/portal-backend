@@ -21,19 +21,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling</AssemblyName>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Flurl.Http.Signed" Version="3.2.4" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
   </ItemGroup>
 
 </Project>

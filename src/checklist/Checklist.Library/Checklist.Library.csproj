@@ -31,8 +31,6 @@
     <ItemGroup>
       <ProjectReference Include="..\..\externalsystems\Bpdm.Library\Bpdm.Library.csproj" />
       <ProjectReference Include="..\..\externalsystems\Custodian.Library\Custodian.Library.csproj" />
-      <ProjectReference Include="..\..\framework\Framework.Token\Framework.Token.csproj" />
-      <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     </ItemGroup>
 
