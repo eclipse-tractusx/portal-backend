@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 

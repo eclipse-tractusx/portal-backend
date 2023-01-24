@@ -20,7 +20,7 @@
 
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+    <ProjectReference Include="..\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />

@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 

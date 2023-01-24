@@ -34,7 +34,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\framework\Framework.Cors\Framework.Cors.csproj" />
-        <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+        <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
         <ProjectReference Include="..\..\framework\Framework.Swagger\Framework.Swagger.csproj" />
         <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
         <ProjectReference Include="..\..\keycloak\Keycloak.Authentication\Keycloak.Authentication.csproj" />

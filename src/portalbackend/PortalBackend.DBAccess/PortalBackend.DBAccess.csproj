@@ -20,7 +20,7 @@
 
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Seeding\Framework.Seeding.csproj" />
     <ProjectReference Include="..\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
