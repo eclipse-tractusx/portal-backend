@@ -4,6 +4,22 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+## 1.0.0-RC4
+
+### Change
+* Registration Service: new GET endpoint released for /legalEntityAddress/{bpn} with reworked and enhanced response body to support legal entity address and unique identifier handling
+* Administration Service: POST & PUT endpoints for service provider url merged into PUT
+* DB offer attribute "thumbnailUrl" removed and impacted endpoints updated ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+
+### Feature
+* Administration Service: Gaia-X Compliance release preparation with new wallet endpoint to create MIW for new CX members
+
+### Technical Support
+* Checklist worker enabled to support future application checklist process planned for R#3.0 with automatic process trigger based on configured application status sets
+
+### Bugfix
+* n/a
+
 ## 1.0.0-RC3
 
 ### Change
