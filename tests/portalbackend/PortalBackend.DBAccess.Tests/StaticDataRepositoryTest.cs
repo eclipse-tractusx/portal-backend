@@ -46,7 +46,7 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
     #region GetCompanyIdentifiers
 
     [Theory]
-    [InlineData("DE", new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER }, true)]
+    [InlineData("DE", new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VAT_ID }, true)]
     [InlineData("PT", new UniqueIdentifierId[] {}, true)]
     [InlineData("XY", null, false)]
     public async Task GetCompanyIdentifiers_ReturnsExpectedResult(string countryCode, IEnumerable<UniqueIdentifierId>? expectedIds, bool validCountry)
@@ -68,6 +68,38 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
         else
         {
             result.IdentifierIds.Should().BeNull();
+        }
+    }
+
+    #endregion
+
+    #region GetCountryAssignedIdentifiers
+
+    [Theory]
+    [InlineData("DE", new [] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, new [] { BpdmIdentifierId.EU_VAT_ID_DE }, new [] { UniqueIdentifierId.VAT_ID }, true)]
+    [InlineData("DE", new BpdmIdentifierId [] {}, new BpdmIdentifierId [] {}, new UniqueIdentifierId [] {}, true)]
+    [InlineData("PT", new [] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, new BpdmIdentifierId [] {}, new UniqueIdentifierId[] {}, true)]
+    [InlineData("XY", new [] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, null, null, false)]
+    public async Task GetCountryAssignedIdentifiers_ReturnsExpectedResult(string countryCode, IEnumerable<BpdmIdentifierId> bpdmIdentifiers, IEnumerable<BpdmIdentifierId>? expectedBpdmIds, IEnumerable<UniqueIdentifierId>? expectedUniqueIds, bool validCountry)
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCountryAssignedIdentifiers(bpdmIdentifiers, countryCode).ConfigureAwait(false);
+
+        // Assert
+        result.IsValidCountry.Should().Be(validCountry);
+        if (result.IsValidCountry)
+        {
+            var expectedIds = (IEnumerable<(BpdmIdentifierId BpdmId, UniqueIdentifierId UniqueId)>)expectedBpdmIds!.Zip(expectedUniqueIds!);
+            result.Identifiers.Should().NotBeNull();
+            result.Identifiers.Should().HaveSameCount(expectedIds);
+            result.Identifiers.OrderBy(item => item).Should().ContainInOrder(expectedIds?.OrderBy(item => item));
+        }
+        else
+        {
+            result.Identifiers.Should().BeNull();
         }
     }
 
