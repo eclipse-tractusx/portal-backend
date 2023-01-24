@@ -57,9 +57,9 @@ public class CompanyDataController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_company_data")]
     [Route("ownCompanyDetails")]
-    [ProducesResponseType(typeof(CompanyWithAddress), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CompanyAddressIdentifierData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<CompanyWithAddress> GetOwnCompanyDetailsAsync() =>
+    public Task<CompanyAddressIdentifierData> GetOwnCompanyDetailsAsync() =>
         this.WithIamUserId(iamUserId =>_logic.GetOwnCompanyDetailsAsync(iamUserId));
 }
