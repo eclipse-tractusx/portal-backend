@@ -42,6 +42,8 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     private readonly IProvisioningManager _provisioningManager;
     private readonly IdentityProviderSettings _settings;
 
+    private static readonly Regex _displayNameValidationExpression = new Regex(@"^[a-zA-Z0-9\!\?\@\&\#\'\x22\(\)_\-\=\/\*\.\,\;\: ]+$", RegexOptions.None, TimeSpan.FromSeconds(1));
+
     public IdentityProviderBusinessLogic(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager, IOptions<IdentityProviderSettings> options)
     {
         _portalRepositories = portalRepositories;
@@ -107,7 +109,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             throw new ControllerArgumentException("displayName length must be 2-30 characters");
         }
-        if (!Regex.IsMatch(displayName, @"^[a-zA-Z0-9\!\?\@\&\#\'\x22\(\)_\-\=\/\*\.\,\;\: ]+$"))
+        if (!_displayNameValidationExpression.IsMatch(displayName))
         {
             throw new ControllerArgumentException("allowed characters in displayName: 'a-zA-Z0-9!?@&#'\"()_-=/*.,;: '");
         }
