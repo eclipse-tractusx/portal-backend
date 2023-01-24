@@ -4,6 +4,7 @@ on:
   push:
     paths:
       # service and transitive paths
+      - 'src/framework/**'
       - 'src/provisioning/Provisioning.Migrations/**'
       - 'src/provisioning/Provisioning.ProvisioningEntities/**'
       # workflow file
