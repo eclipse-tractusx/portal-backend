@@ -60,8 +60,6 @@ public partial class ProvisioningManager : IProvisioningManager
 
         await UpdateCentralIdentityProviderUrlsAsync(idpName, await sharedKeycloak.GetOpenIDConfigurationAsync(idpName).ConfigureAwait(false)).ConfigureAwait(false);
 
-        await CreateCentralIdentityProviderTenantMapperAsync(idpName).ConfigureAwait(false);
-
         await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false);
 
         await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false);
@@ -108,13 +106,9 @@ public partial class ProvisioningManager : IProvisioningManager
         return userIdCentral;
     }
 
-    public IEnumerable<(string AttributeName,IEnumerable<string> AttributeValues)> GetStandardAttributes(string? alias = null, string? organisationName = null, string? businessPartnerNumber = null)
+    public IEnumerable<(string AttributeName,IEnumerable<string> AttributeValues)> GetStandardAttributes(string? organisationName = null, string? businessPartnerNumber = null)
     {
         var attributes = new List<(string,IEnumerable<string>)>();
-        if (alias != null)
-        {
-            attributes.Add(new (_Settings.MappedIdpAttribute, Enumerable.Repeat<string>(alias,1)));
-        }
         if (organisationName != null)
         {
             attributes.Add(new (_Settings.MappedCompanyAttribute, Enumerable.Repeat<string>(organisationName,1)));

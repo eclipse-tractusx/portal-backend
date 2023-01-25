@@ -20,7 +20,7 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
 public class LoggingHandler<TLogger> : DelegatingHandler 
     where TLogger : class

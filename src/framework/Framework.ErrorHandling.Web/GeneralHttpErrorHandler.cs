@@ -24,7 +24,7 @@ using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 
 public class GeneralHttpErrorHandler
 {
@@ -136,7 +136,7 @@ public class GeneralHttpErrorHandler
         );
     }
 
-    private class MetaData
+    private sealed class MetaData
     {
         public MetaData(string url, string description)
         {

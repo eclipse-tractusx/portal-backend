@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;

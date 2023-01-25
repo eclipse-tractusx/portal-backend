@@ -18,7 +18,7 @@
 - SPDX-License-Identifier: Apache-2.0
 -->
 
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker</AssemblyName>
@@ -27,6 +27,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <UserSecretsId>864FF3A5-6A8A-4786-939B-D7060E74EEF6</UserSecretsId>
+        <OutputType>Exe</OutputType>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <DockerfileContext>..\..\..</DockerfileContext>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -42,8 +43,6 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="6.0.0" />
-        <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
     </ItemGroup>
 
     <ItemGroup>

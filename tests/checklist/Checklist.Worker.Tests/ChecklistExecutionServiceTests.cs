@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -34,7 +33,6 @@ public class ChecklistExecutionServiceTests
 
     private readonly IChecklistService _checklistService;
     private readonly IChecklistCreationService _checklistCreationService;
-    private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly ChecklistExecutionService _service;
 
     public ChecklistExecutionServiceTests()
@@ -52,7 +50,6 @@ public class ChecklistExecutionServiceTests
         A.CallTo(() => portalRepositories.GetInstance<IApplicationChecklistRepository>())
             .Returns(_applicationChecklistRepository);
 
-        _hostApplicationLifetime = fixture.Create<IHostApplicationLifetime>();
         var serviceProvider = fixture.Create<IServiceProvider>();
         A.CallTo(() => serviceProvider.GetService(typeof(IPortalRepositories))).Returns(portalRepositories);
         A.CallTo(() => serviceProvider.GetService(typeof(IChecklistService))).Returns(_checklistService);
@@ -63,7 +60,7 @@ public class ChecklistExecutionServiceTests
         A.CallTo(() => serviceScopeFactory.CreateScope()).Returns(serviceScope);
         A.CallTo(() => serviceProvider.GetService(typeof(IServiceScopeFactory))).Returns(serviceScopeFactory);
 
-        _service = new ChecklistExecutionService(_hostApplicationLifetime, serviceScopeFactory, fixture.Create<ILogger<ChecklistExecutionService>>());
+        _service = new ChecklistExecutionService(serviceScopeFactory, fixture.Create<ILogger<ChecklistExecutionService>>());
     }
 
     [Fact]
@@ -74,7 +71,7 @@ public class ChecklistExecutionServiceTests
             .Returns(new List<ValueTuple<Guid, ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>().ToAsyncEnumerable());
 
         // Act
-        await _service.StartAsync(CancellationToken.None);
+        await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
         A.CallTo(() => _checklistService.ProcessChecklist(A<Guid>._,
@@ -101,11 +98,10 @@ public class ChecklistExecutionServiceTests
             .Throws(() => new Exception("Only a test"));
 
         // Act
-        await _service.StartAsync(CancellationToken.None);
+        await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
         Environment.ExitCode.Should().Be(1);
-        A.CallTo(() => _hostApplicationLifetime.StopApplication()).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -149,7 +145,7 @@ public class ChecklistExecutionServiceTests
             .Returns(list.ToAsyncEnumerable());
 
         // Act
-        await _service.StartAsync(CancellationToken.None);
+        await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
         A.CallTo(() => _checklistService.ProcessChecklist(A<Guid>._,
@@ -173,7 +169,7 @@ public class ChecklistExecutionServiceTests
             .Returns(list.ToAsyncEnumerable());
 
         // Act
-        await _service.StartAsync(CancellationToken.None);
+        await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
         A.CallTo(() => _checklistCreationService.CreateMissingChecklistItems(applicationId, A<IEnumerable<ApplicationChecklistEntryTypeId>>._))

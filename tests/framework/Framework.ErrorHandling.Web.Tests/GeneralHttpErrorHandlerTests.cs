@@ -25,6 +25,7 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Tests;

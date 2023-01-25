@@ -18,15 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 

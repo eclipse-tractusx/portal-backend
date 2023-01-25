@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -29,30 +31,29 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker;
 /// <summary>
 /// Service that checks if there are open/pending tasks of a checklist and executes them.
 /// </summary>
-public class ChecklistExecutionService : BackgroundService
+public class ChecklistExecutionService
 {
-    private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ILogger<ChecklistExecutionService> _logger;
 
     /// <summary>
     /// Creates a new instance of <see cref="ChecklistExecutionService"/>
     /// </summary>
-    /// <param name="applicationLifetime">Application lifetime</param>
     /// <param name="serviceScopeFactory">access to the services</param>
     /// <param name="logger">the logger</param>
     public ChecklistExecutionService(
-        IHostApplicationLifetime applicationLifetime,
         IServiceScopeFactory serviceScopeFactory,
         ILogger<ChecklistExecutionService> logger)
     {
-        _applicationLifetime = applicationLifetime;
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
     }
 
-    /// <inheritdoc />
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    /// <summary>
+    /// Handles the checklist processing
+    /// </summary>
+    /// <param name="stoppingToken">Cancellation Token</param>
+    public async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var outerLoopScope = _serviceScopeFactory.CreateScope();
         var outerLoopRepositories = outerLoopScope.ServiceProvider.GetRequiredService<IPortalRepositories>();
@@ -90,7 +91,5 @@ public class ChecklistExecutionService : BackgroundService
                 _logger.LogError("Checklist processing failed with following Exception {ExceptionMessage}", ex.Message);
             }
         }
-
-        _applicationLifetime.StopApplication();
     }
 }

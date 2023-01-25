@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+    <ProjectReference Include="..\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
   </ItemGroup>
 
 </Project>

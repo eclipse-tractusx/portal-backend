@@ -99,12 +99,13 @@ public class OfferRepository : IOfferRepository
     /// <inheritdoc />
     public Task<OfferDetailsData?> GetOfferDetailsByIdAsync(Guid offerId, string iamUserId, string? languageShortName, string defaultLanguageShortName, OfferTypeId offerTypeId) =>
         _context.Offers.AsNoTracking()
+            .AsSplitQuery()
             .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
             .Select(offer => new OfferDetailsData(
                 offer.Id,
                 offer.Name,
                 offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
-                offer.OfferDetailImages.Select(adi => adi.ImageUrl),
+                offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_IMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id),
                 offer.MarketingUrl,
                 offer.Provider,
                 offer.ContactEmail,
@@ -201,13 +202,6 @@ public class OfferRepository : IOfferRepository
     public void RemoveAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguageIds) =>
         _context.RemoveRange(appLanguageIds.Select(x => new AppLanguage(x.appId, x.languageShortName)));
 
-    ///<inheritdoc />
-    public void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages) =>
-        _context.OfferDetailImages.AddRange(appImages.Select(s=> new OfferDetailImage(Guid.NewGuid(), s.appId, s.imageUrl)));
-
-    public void RemoveOfferDetailImages(IEnumerable<Guid> imageIds) =>
-        _context.RemoveRange(imageIds.Select(imageId => new OfferDetailImage(imageId, Guid.Empty, null!)));
-
     public IAsyncEnumerable<AllOfferData> GetProvidedOffersData(OfferTypeId offerTypeId, string iamUserId) =>
         _context.Offers
             .AsNoTracking()
@@ -225,20 +219,18 @@ public class OfferRepository : IOfferRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> Descriptions, IEnumerable<(Guid Id, string Url)> ImageUrls)> GetAppDetailsForUpdateAsync(Guid appId, string userId) =>
+    public Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, string userId, OfferTypeId offerTypeId) =>
         _context.Offers
             .AsNoTracking()
-            .AsSplitQuery()
-            .Where(a => a.Id == appId)
+            .Where(a => a.Id == appId && a.OfferTypeId == offerTypeId)
             .Select(a =>
-                new ValueTuple<bool,bool,string?,string?,string?,IEnumerable<(string,string,string)>, IEnumerable<(Guid,string)>>(
+                new ValueTuple<bool,bool,string?,string?,string?,IEnumerable<(string,string,string)>>(
                     a.OfferStatusId == OfferStatusId.CREATED,
                     a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
                     a.ContactEmail,
                     a.ContactNumber,
                     a.MarketingUrl,
-                    a.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
-                    a.OfferDetailImages.Select(image => new ValueTuple<Guid,string>(image.Id, image.ImageUrl))
+                    a.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort))
                 ))
             .SingleOrDefaultAsync();
        
@@ -380,7 +372,7 @@ public class OfferRepository : IOfferRepository
                     offer.OfferLicenses
                         .Select(license => license.Licensetext)
                         .FirstOrDefault(),
-                    offer.OfferDetailImages.Select(image => image.ImageUrl),
+                    offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_IMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id),
                     offer.MarketingUrl,
                     offer.ContactEmail,
                     offer.ContactNumber,
