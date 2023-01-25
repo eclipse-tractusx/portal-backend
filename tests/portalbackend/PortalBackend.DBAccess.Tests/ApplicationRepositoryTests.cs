@@ -56,17 +56,34 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut
+        var result = await sut
             .GetCompanyUserRoleWithAdressUntrackedAsync(new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"))
             .ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBeNull();
-        results!.AgreementsData.Should().HaveCount(1);
-        results.AgreementsData.First().ConsentStatusId.Should().Be(ConsentStatusId.ACTIVE);
-        results.InvitedCompanyUserData.Should().HaveCount(2);
-        results.InvitedCompanyUserData.Should().ContainSingle(u => u.FirstName == "Test User 1" && u.LastName == "cx-user-2" && u.Email == "tester.user1@test.de");
-        results.InvitedCompanyUserData.Should().ContainSingle(u => u.FirstName == "Test User 2" && u.LastName == "cx-admin-2" && u.Email == "tester.user2@test.de");
+        result.Should().NotBeNull();
+
+        result!.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        result.Name.Should().Be("Catena-X");
+        result.Shortname.Should().Be("Cat-X");
+        result.BusinessPartnerNumber.Should().Be("CAXSDUMMYCATENAZZ");
+        result.CountryAlpha2Code.Should().Be("DE");
+        result.City.Should().Be("Munich");
+        result.StreetName.Should().Be("Street");
+        result.Streetadditional.Should().Be("foo");
+        result.Streetnumber.Should().Be("1");
+        result.Region.Should().Be("BY");
+        result.Zipcode.Should().Be("00001");
+
+        result!.AgreementsData.Should().HaveCount(1);
+        result.AgreementsData.First().ConsentStatusId.Should().Be(ConsentStatusId.ACTIVE);
+
+        result.InvitedCompanyUserData.Should().HaveCount(2);
+        result.InvitedCompanyUserData.Should().ContainSingle(u => u.FirstName == "Test User 1" && u.LastName == "cx-user-2" && u.Email == "tester.user1@test.de");
+        result.InvitedCompanyUserData.Should().ContainSingle(u => u.FirstName == "Test User 2" && u.LastName == "cx-admin-2" && u.Email == "tester.user2@test.de");
+
+        result.CompanyIdentifiers.Should().HaveCount(1);
+        result.CompanyIdentifiers.First().Should().Match<(UniqueIdentifierId UniqueIdentifierId,string Value)>(identifier => identifier.UniqueIdentifierId == UniqueIdentifierId.COMMERCIAL_REG_NUMBER && identifier.Value == "REG08154711");
     }
 
     #endregion GetRegistrationDataUntrackedAsync
