@@ -98,7 +98,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.OfferSubscription.RequesterId,
                 x.App.Name,
                 x.App.ProviderCompany!.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)!.Id,
-                new RequesterData(x.OfferSubscription!.Requester!.Email, x.OfferSubscription!.Requester!.Firstname, x.OfferSubscription!.Requester!.Lastname)
+                new RequesterData(x.OfferSubscription.Requester!.Email, x.OfferSubscription.Requester.Firstname, x.OfferSubscription.Requester.Lastname)
             ))
             .SingleOrDefaultAsync();
 
@@ -137,16 +137,16 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .Select(x => new OfferSubscriptionTransferData(
                     x.OfferSubscriptionStatusId, 
                     x.Offer!.ProviderCompany!.CompanyUsers.Where(cu => cu.IamUser!.UserEntityId == iamUserId).Select(cu => cu.Id).SingleOrDefault(),
-                    x.Offer!.ProviderCompany!.CompanyServiceAccounts.Where(cu => cu.IamServiceAccount!.UserEntityId == iamUserId).Select(cu => cu.Id).SingleOrDefault(),
+                    x.Offer.ProviderCompany.CompanyServiceAccounts.Where(cu => cu.IamServiceAccount!.UserEntityId == iamUserId).Select(cu => cu.Id).SingleOrDefault(),
                     x.Company!.Name,
                     x.CompanyId,
                     x.RequesterId,
                     x.OfferId,
-                    x.Offer!.Name!,
-                    x.Company.BusinessPartnerNumber!,
+                    x.Company.BusinessPartnerNumber,
+                    x.Offer!.Name,
                     x.Requester!.Email,
-                    x.Requester!.Firstname,
-                    x.Requester!.Lastname
+                    x.Requester.Firstname,
+                    x.Requester.Lastname
             ))
             .SingleOrDefaultAsync();
 

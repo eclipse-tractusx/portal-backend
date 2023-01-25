@@ -263,7 +263,7 @@ public class OfferService : IOfferService
             .CreateServiceAccountAsync(
                 serviceAccountCreationData,
                 offerDetails.CompanyId,
-                Enumerable.Repeat(offerDetails.Bpn, 1),
+                offerDetails.Bpn == null ? Enumerable.Empty<string>() : Enumerable.Repeat(offerDetails.Bpn, 1),
                 CompanyServiceAccountTypeId.MANAGED,
                 sa =>
                 {
@@ -286,7 +286,7 @@ public class OfferService : IOfferService
             var mailParams = new Dictionary<string, string>
             {
                 { "offerCustomerName", !string.IsNullOrWhiteSpace(userName) ? userName : "User" },
-                { "offerName", offerDetails.OfferName },
+                { "offerName", offerDetails.OfferName ?? "unnamed Offer"},
                 { "url", basePortalAddress },
             };
             await _mailingService.SendMails(offerDetails.RequesterEmail, mailParams, new List<string> { "subscription-activation" }).ConfigureAwait(false);
