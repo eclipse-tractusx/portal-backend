@@ -177,8 +177,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new NotFoundException($"App {appId} does not exist.");
         }
 
-        var (subscriptionId, subscriptionStatusId, requesterId, appName, companyUserId, email, firstname) = assignedAppData;
-
+        var (subscriptionId, subscriptionStatusId, requesterId, appName, companyUserId, _) = assignedAppData;
+        var requesterData = assignedAppData.Requester;
         if(companyUserId == Guid.Empty)
         {
             throw new ControllerArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
@@ -212,16 +212,18 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     AppName = appName
                 });
             });
-        
-        if (!string.IsNullOrWhiteSpace(email))
+
+        var userName = string.Join(" ", new[] { requesterData.Firstname, requesterData.Lastname }); 
+
+        if (!string.IsNullOrWhiteSpace(requesterData.Email))
         {
             var mailParams = new Dictionary<string, string>
             {
-                { "offerCustomerName", firstname ?? "User" },
+                { "offerCustomerName", !string.IsNullOrWhiteSpace(userName) ? userName : "App Owner" },
                 { "offerName", appName },
                 { "url", _settings.BasePortalAddress },
             };
-            await _mailingService.SendMails(email, mailParams, new List<string> { "subscription-activation" }).ConfigureAwait(false);
+            await _mailingService.SendMails(requesterData.Email, mailParams, new List<string> { "subscription-activation" }).ConfigureAwait(false);
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
