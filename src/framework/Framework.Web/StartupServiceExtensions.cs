@@ -18,15 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
 
@@ -69,13 +67,4 @@ public static class StartupServiceExtensions
 
         return services;
     }
-
-    public static IServiceCollection AddCustomAuthorization(this IServiceCollection services, IConfiguration configuration) =>
-        services.AddTransient<IAuthorizationHandler, ClaimRequestPathHandler>()
-            .AddAuthorization(option =>
-            {
-                option.AddPolicy("CheckTenant",
-                    policy => { policy.AddRequirements(new ClaimRequestPathRequirement("tenant", "tenant")); });
-            })
-            .AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 }
