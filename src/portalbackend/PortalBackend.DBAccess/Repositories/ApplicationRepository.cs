@@ -232,8 +232,19 @@ public class ApplicationRepository : IApplicationRepository
                     companyApplication.Company.Address.Streetnumber,
                     companyApplication.Company.Address.Zipcode,
                     companyApplication.Company.Address.Country!.CountryNameDe,
-                    companyApplication.Company.CompanyRoles.SelectMany(companyRole => companyRole.AgreementAssignedCompanyRoles.Select(x => new AgreementsData(x.CompanyRoleId, x.AgreementId, x.Agreement!.Consents.SingleOrDefault(consent => consent.CompanyId == companyApplication.CompanyId)!.ConsentStatusId))),
-                    companyApplication.Invitations.Select(x => new InvitedCompanyUserData(x.CompanyUserId, x.CompanyUser!.Firstname, x.CompanyUser.Lastname, x.CompanyUser.Email))))
+                    companyApplication.Company.CompanyRoles.SelectMany(companyRole =>
+                        companyRole.AgreementAssignedCompanyRoles.Select(x =>
+                            new AgreementsData(
+                                x.CompanyRoleId,
+                                x.AgreementId,
+                                x.Agreement!.Consents.SingleOrDefault(consent => consent.CompanyId == companyApplication.CompanyId)!.ConsentStatusId))),
+                    companyApplication.Invitations.Select(x =>
+                        new InvitedCompanyUserData(
+                            x.CompanyUserId,
+                            x.CompanyUser!.Firstname,
+                            x.CompanyUser.Lastname,
+                            x.CompanyUser.Email)),
+                    companyApplication.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId,string>(identifier.UniqueIdentifierId, identifier.Value))))
             .AsNoTracking()
             .SingleOrDefaultAsync();
 

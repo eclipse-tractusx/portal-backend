@@ -21,7 +21,6 @@
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FluentAssertions;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -387,8 +386,6 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.StreetNumber.Should().Be("1");
         result.Region.Should().Be("BY");
         result.ZipCode.Should().Be("00001");
-        result.UniqueIds.Should().HaveCount(1);
-        result.UniqueIds.First().Should().Match<CompanyIdentifierData>(identifier => identifier.UniqueIdentifierId == UniqueIdentifierId.COMMERCIAL_REG_NUMBER && identifier.Value == "REG08154711");
     }
 
     #endregion

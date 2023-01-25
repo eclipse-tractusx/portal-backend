@@ -349,6 +349,7 @@ public class RegistrationBusinessLogicTest
         );
         result.AgreementsRoleData.Should().HaveSameCount(data.AgreementsData.DistinctBy(ad => ad.CompanyRoleId));
         result.InvitedUserData.Should().HaveSameCount(data.InvitedCompanyUserData);
+        result.UniqueIds.Should().HaveSameCount(data.CompanyIdentifiers);
     }
 
     [Fact]

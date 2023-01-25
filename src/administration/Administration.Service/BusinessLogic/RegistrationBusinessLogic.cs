@@ -108,7 +108,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     x.UserId,
                     x.FirstName ?? "",
                     x.LastName ?? "",
-                    x.Email ?? ""))
+                    x.Email ?? "")),
+            companyWithAddress.CompanyIdentifiers.Select(identifier => new IdentifierData(identifier.UniqueIdentifierId, identifier.Value))
         );
     }
 
