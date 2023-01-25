@@ -36,7 +36,8 @@ public record CompanyUserRoleWithAddress(
     string? Zipcode,
     string? CountryDe,
     IEnumerable<AgreementsData> AgreementsData,
-    IEnumerable<InvitedCompanyUserData> InvitedCompanyUserData
+    IEnumerable<InvitedCompanyUserData> InvitedCompanyUserData,
+    IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> CompanyIdentifiers
 );
 
 public record AgreementsData(CompanyRoleId CompanyRoleId, Guid AgreementId, ConsentStatusId? ConsentStatusId);
