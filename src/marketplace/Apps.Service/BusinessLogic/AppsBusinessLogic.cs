@@ -177,8 +177,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new NotFoundException($"App {appId} does not exist.");
         }
 
-        var (subscriptionId, subscriptionStatusId, requesterId, appName, companyUserId, _) = assignedAppData;
-        var requesterData = assignedAppData.Requester;
+        var (subscriptionId, subscriptionStatusId, requesterId, appName, companyUserId, requesterData) = assignedAppData;
         if(companyUserId == Guid.Empty)
         {
             throw new ControllerArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");

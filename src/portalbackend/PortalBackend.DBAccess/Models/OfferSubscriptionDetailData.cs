@@ -25,8 +25,9 @@ public record OfferSubscriptionTransferData(
     Guid CompanyId,
     Guid RequesterId, 
     Guid OfferId, 
-    string OfferName, 
-    string Bpn,
+    string? OfferName, 
+    string? Bpn,
     string? RequesterEmail,
     string? RequesterFirstname,
-    string? RequesterLastname);
+    string? RequesterLastname
+);

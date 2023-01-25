@@ -309,7 +309,13 @@ public class AppBusinessLogicTests
         // Arrange
         var appId = _fixture.Create<Guid>();
         A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, A<string>.That.Not.Matches(x => x == IamUserId)))
-            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData>(Guid.Empty, default, Guid.Empty, "app 1", Guid.Empty, new RequesterData(string.Empty,string.Empty,string.Empty)));
+            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData>(
+                Guid.Empty,
+                default,
+                Guid.Empty,
+                "app 1",
+                Guid.Empty,
+                new RequesterData(string.Empty, string.Empty, string.Empty)));
         
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
 
@@ -330,7 +336,13 @@ public class AppBusinessLogicTests
         var companyId = _fixture.Create<Guid>();
         offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
         A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, companyId, IamUserId))
-            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData>(offerSubscription.Id, offerSubscription.OfferSubscriptionStatusId, offerSubscription.RequesterId, "app 1", Guid.NewGuid(), new RequesterData(string.Empty,string.Empty,string.Empty)));
+            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData>(
+                offerSubscription.Id,
+                offerSubscription.OfferSubscriptionStatusId,
+                offerSubscription.RequesterId,
+                "app 1",
+                Guid.NewGuid(),
+                new RequesterData(string.Empty, string.Empty, string.Empty)));
         
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
 
@@ -350,7 +362,13 @@ public class AppBusinessLogicTests
         var offerSubscription = _fixture.Create<OfferSubscription>();
         offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
         A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, IamUserId))
-            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData>(offerSubscription.Id, offerSubscription.OfferSubscriptionStatusId, offerSubscription.RequesterId, "app 1", Guid.NewGuid(), new RequesterData(string.Empty,string.Empty,string.Empty)));
+            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData>(
+                offerSubscription.Id,
+                offerSubscription.OfferSubscriptionStatusId,
+                offerSubscription.RequesterId,
+                "app 1",
+                Guid.NewGuid(),
+                new RequesterData(string.Empty, string.Empty, string.Empty)));
         
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
 
@@ -370,7 +388,13 @@ public class AppBusinessLogicTests
         var offerSubscription = _fixture.Create<OfferSubscription>();
         offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
         A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, IamUserId))
-            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData>(offerSubscription.Id, offerSubscription.OfferSubscriptionStatusId, offerSubscription.RequesterId, "app 1", Guid.NewGuid(), new RequesterData("test@email.com","tony","gilbert")));
+            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData>(
+                offerSubscription.Id,
+                offerSubscription.OfferSubscriptionStatusId,
+                offerSubscription.RequesterId,
+                "app 1",
+                Guid.NewGuid(),
+                new RequesterData("test@email.com", "tony", "gilbert")));
         
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), _mailingService);
 
