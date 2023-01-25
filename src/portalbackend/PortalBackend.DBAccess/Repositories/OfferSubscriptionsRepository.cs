@@ -98,7 +98,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.OfferSubscription.RequesterId,
                 x.App.Name,
                 x.App.ProviderCompany!.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)!.Id,
-                new RequesterData(x.OfferSubscription!.Requester!.Email, x.OfferSubscription.Requester.Firstname, x.OfferSubscription.Requester.Lastname)
+                new RequesterData(x.OfferSubscription!.Requester!.Email, x.OfferSubscription!.Requester!.Firstname, x.OfferSubscription!.Requester!.Lastname)
             ))
             .SingleOrDefaultAsync();
 
