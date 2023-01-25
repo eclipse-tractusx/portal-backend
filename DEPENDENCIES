@@ -40,7 +40,6 @@ nuget/nuget/-/xunit.core/2.4.1
 nuget/nuget/-/xunit.extensibility.core/2.4.1
 nuget/nuget/-/xunit.extensibility.execution/2.4.1
 nuget/nuget/-/coverlet.collector/3.1.2
-nuget/nuget/-/FluentAssertions/6.6.0
 nuget/nuget/-/xunit.runner.visualstudio/2.4.3
 nuget/nuget/-/Newtonsoft.Json/9.0.1
 nuget/nuget/-/Xunit.Extensions.AssemblyFixture/2.4.1
