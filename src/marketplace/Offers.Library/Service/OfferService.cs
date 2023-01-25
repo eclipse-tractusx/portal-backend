@@ -280,11 +280,12 @@ public class OfferService : IOfferService
         await CreateNotifications(companyAdminRoles, offerTypeId, offerDetails);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
+        var userName = string.Join(" ", new[] { offerDetails.RequesterFirstname, offerDetails.RequesterLastname }); 
         if (!string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
         {
             var mailParams = new Dictionary<string, string>
             {
-                { "offerRequesterName", offerDetails.RequesterFirstname ?? "User" },
+                { "offerCustomerName", !string.IsNullOrWhiteSpace(userName) ? userName : "User" },
                 { "offerName", offerDetails.OfferName },
                 { "url", basePortalAddress },
             };
