@@ -124,7 +124,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             throw new ControllerArgumentException($"user {iamUserId} is not associated with a company", nameof(iamUserId));
         }
-        var alias = await _provisioningManager.CreateOwnIdpAsync(displayName ?? result.CompanyName, protocol).ConfigureAwait(false);
+        var alias = await _provisioningManager.CreateOwnIdpAsync(displayName ?? result.CompanyName, result.CompanyName, protocol).ConfigureAwait(false);
         var identityProvider = identityProviderRepository.CreateIdentityProvider(identityProviderCategory);
         identityProvider.CompanyIdentityProviders.Add(identityProviderRepository.CreateCompanyIdentityProvider(result.CompanyId, identityProvider.Id));
         identityProviderRepository.CreateIamIdentityProvider(identityProvider, alias);
