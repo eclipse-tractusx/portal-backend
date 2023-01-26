@@ -263,7 +263,7 @@ public class OfferService : IOfferService
             .CreateServiceAccountAsync(
                 serviceAccountCreationData,
                 offerDetails.CompanyId,
-                Enumerable.Repeat(offerDetails.Bpn, 1),
+                offerDetails.Bpn == null ? Enumerable.Empty<string>() : Enumerable.Repeat(offerDetails.Bpn, 1),
                 CompanyServiceAccountTypeId.MANAGED,
                 sa =>
                 {
@@ -280,12 +280,13 @@ public class OfferService : IOfferService
         await CreateNotifications(companyAdminRoles, offerTypeId, offerDetails);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
+        var userName = string.Join(" ", new[] { offerDetails.RequesterFirstname, offerDetails.RequesterLastname }); 
         if (!string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
         {
             var mailParams = new Dictionary<string, string>
             {
-                { "offerRequesterName", offerDetails.RequesterFirstname ?? "User" },
-                { "offerName", offerDetails.OfferName },
+                { "offerCustomerName", !string.IsNullOrWhiteSpace(userName) ? userName : "User" },
+                { "offerName", offerDetails.OfferName ?? "unnamed Offer"},
                 { "url", basePortalAddress },
             };
             await _mailingService.SendMails(offerDetails.RequesterEmail, mailParams, new List<string> { "subscription-activation" }).ConfigureAwait(false);

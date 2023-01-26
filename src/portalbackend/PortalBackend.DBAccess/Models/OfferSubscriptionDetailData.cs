@@ -16,6 +16,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="Bpn">Bpn of the app company</param>
 /// <param name="RequesterEmail">Email address of the requesting company user</param>
 /// <param name="RequesterFirstname">First name of the requesting company user</param>
+/// <param name="RequesterLastname">First name of the requesting company user</param>
 public record OfferSubscriptionTransferData(
     OfferSubscriptionStatusId Status, 
     Guid CompanyUserId, 
@@ -24,7 +25,9 @@ public record OfferSubscriptionTransferData(
     Guid CompanyId,
     Guid RequesterId, 
     Guid OfferId, 
-    string OfferName, 
-    string Bpn,
+    string? OfferName, 
+    string? Bpn,
     string? RequesterEmail,
-    string? RequesterFirstname);
+    string? RequesterFirstname,
+    string? RequesterLastname
+);
