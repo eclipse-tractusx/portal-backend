@@ -20,11 +20,13 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Runtime.CompilerServices;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker;
 
@@ -60,6 +62,7 @@ public class ChecklistExecutionService
 
         using var checklistServiceScope = outerLoopScope.ServiceProvider.CreateScope();
         var checklistService = checklistServiceScope.ServiceProvider.GetRequiredService<IChecklistService>();
+        var applicationActivation = checklistServiceScope.ServiceProvider.GetRequiredService<IApplicationActivationService>();
         var checklistCreationService = checklistServiceScope.ServiceProvider.GetRequiredService<IChecklistCreationService>();
         var checklistRepositories = checklistServiceScope.ServiceProvider.GetRequiredService<IPortalRepositories>();
 
@@ -68,20 +71,11 @@ public class ChecklistExecutionService
             try
             {
                 var checklistEntryData = outerLoopRepositories.GetInstance<IApplicationChecklistRepository>().GetChecklistDataOrderedByApplicationId().PreSortedGroupBy(x => x.ApplicationId).ConfigureAwait(false);
-                await foreach (var entryData in checklistEntryData.ConfigureAwait(false).WithCancellation(stoppingToken))
+                await foreach (var entryData in checklistEntryData.WithCancellation(stoppingToken).ConfigureAwait(false))
                 {
                     var applicationId = entryData.Key;
-                    var existingChecklistTypes = entryData.Select(e => e.TypeId);
-                    var checklistEntries = entryData.Select(e => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(e.TypeId, e.StatusId)).ToList();
-                    if(Enum.GetValues<ApplicationChecklistEntryTypeId>().Length != existingChecklistTypes.Count())
-                    {
-                        var newlyCreatedEntries = await checklistCreationService.CreateMissingChecklistItems(applicationId, existingChecklistTypes).ConfigureAwait(false);
-                        checklistEntries.AddRange(newlyCreatedEntries);
-                    }
-
-                    await checklistService.ProcessChecklist(applicationId, checklistEntries, stoppingToken).ConfigureAwait(false);
-                    await checklistRepositories.SaveAsync().ConfigureAwait(false);
-                    checklistRepositories.Clear();
+                    var checklistEntries = await HandleChecklistProcessing(entryData, checklistCreationService, applicationId, checklistService, checklistRepositories, stoppingToken).ToListAsync(stoppingToken).ConfigureAwait(false);
+                    await HandleApplicationActivation(checklistEntries, applicationActivation, applicationId, checklistRepositories).ConfigureAwait(false);
                 }
                 _logger.LogInformation("Processed checklist items");
             }
@@ -90,6 +84,56 @@ public class ChecklistExecutionService
                 Environment.ExitCode = 1;
                 _logger.LogError("Checklist processing failed with following Exception {ExceptionMessage}", ex.Message);
             }
+        }
+    }
+
+    private static async IAsyncEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> HandleChecklistProcessing(
+        IEnumerable<(Guid ApplicationId, ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> entryData,
+        IChecklistCreationService checklistCreationService,
+        Guid applicationId,
+        IChecklistService checklistService,
+        IPortalRepositories checklistRepositories,
+        [EnumeratorCancellation] CancellationToken stoppingToken)
+    {
+        var existingChecklistTypes = entryData.Select(e => e.TypeId);
+        var checklistEntries = entryData.Select(e => (e.TypeId, e.StatusId))
+            .ToList();
+        if (Enum.GetValues<ApplicationChecklistEntryTypeId>().Length != existingChecklistTypes.Count())
+        {
+            var newlyCreatedEntries = await checklistCreationService
+                .CreateMissingChecklistItems(applicationId, existingChecklistTypes).ConfigureAwait(false);
+            checklistEntries.AddRange(newlyCreatedEntries);
+            await checklistRepositories.SaveAsync().ConfigureAwait(false);
+            checklistRepositories.Clear();
+        }
+
+        await foreach (var (typeId, statusId, processed) in checklistService.ProcessChecklist(applicationId, checklistEntries, stoppingToken).ConfigureAwait(false))
+        {
+            if (processed)
+            {
+                await checklistRepositories.SaveAsync().ConfigureAwait(false);
+                checklistRepositories.Clear();
+            }
+            yield return (typeId, statusId);
+        }
+    }
+
+    private async Task HandleApplicationActivation(IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> checklistEntries,
+        IApplicationActivationService applicationActivation, Guid applicationId, IPortalRepositories checklistRepositories)
+    {
+        if (checklistEntries.All(x => x.StatusId == ApplicationChecklistEntryStatusId.DONE))
+        {
+            try
+            {
+                await applicationActivation.HandleApplicationActivation(applicationId).ConfigureAwait(false);
+                await checklistRepositories.SaveAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Application activation for application {ApplicationId} failed with error {ErrorMessage}",
+                    applicationId, ex.ToString());
+            }
+            checklistRepositories.Clear();
         }
     }
 }

@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -41,15 +42,31 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
         var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyAndApplicationDetailsForCreateWalletAsync(applicationId).ConfigureAwait(false);
         if (result == default)
         {
-            throw new NotFoundException($"CompanyApplication {applicationId} is not in status SUBMITTED");
+            throw new ConflictException($"CompanyApplication {applicationId} is not in status SUBMITTED");
         }
         var (companyId, companyName, businessPartnerNumber) = result;
 
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
-            throw new ControllerArgumentException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty", "bpn");
+            throw new ConflictException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty");
         }
         
         return await _custodianService.CreateWalletAsync(businessPartnerNumber, companyName, cancellationToken).ConfigureAwait(false);
+    }
+    
+    /// <inheritdoc />
+    public async Task<WalletData?> GetWalletByBpnAsync(Guid applicationId, CancellationToken cancellationToken)
+    {
+        var bpn = await _portalRepositories.GetInstance<IApplicationRepository>()
+            .GetBpnForApplicationIdAsync(applicationId).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(bpn))
+        {
+            throw new ConflictException("BusinessPartnerNumber is not set");
+        }
+
+        var walletData = await _custodianService.GetWalletByBpnAsync(bpn, cancellationToken)
+            .ConfigureAwait(false);
+        
+        return walletData;
     }
 }

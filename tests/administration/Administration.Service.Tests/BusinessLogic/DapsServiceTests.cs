@@ -31,9 +31,7 @@ public class DapsServiceTests
 {
     #region Initialization
     
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ITokenService _tokenService;
-    private readonly string _accessToken;
     private readonly IOptions<DapsSettings> _options;
 
     public DapsServiceTests()
@@ -43,7 +41,6 @@ public class DapsServiceTests
             .ForEach(b => fixture.Behaviors.Remove(b));
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _accessToken = fixture.Create<string>();
         _options = Options.Create(new DapsSettings
         {
             DapsUrl = "https://www.api.daps-not-existing.com",
@@ -55,7 +52,6 @@ public class DapsServiceTests
             GrantType = "cred",
             KeyCloakTokenAdress = "https://key.cloak.com",
         });
-        _httpClientFactory = A.Fake<IHttpClientFactory>();
         _tokenService = A.Fake<ITokenService>();
     }
 
@@ -69,19 +65,18 @@ public class DapsServiceTests
         // Arrange
         var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
 
-        SetupTokenService();
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK);
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
-        A.CallTo(() => _httpClientFactory.CreateClient(nameof(DapsService)))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<DapsService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
         const string clientName = "Connec Tor";
         const string referringConnector = "https://connect-tor.com";
         const string businessPartnerNumber = "BPNL000000000009";
-        var service = new DapsService(_httpClientFactory, _tokenService, _options);
+        var service = new DapsService(_tokenService, _options);
 
         // Act
         var result = await service.EnableDapsAuthAsync(clientName, referringConnector, businessPartnerNumber, file, CancellationToken.None).ConfigureAwait(false);
@@ -96,19 +91,18 @@ public class DapsServiceTests
         // Arrange
         var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
 
-        SetupTokenService();
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
-        A.CallTo(() => _httpClientFactory.CreateClient(nameof(DapsService)))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<DapsService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
         const string clientName = "Connec Tor";
         const string referringConnector = "https://connect-tor.com";
         const string businessPartnerNumber = "BPNL000000000009";
-        var service = new DapsService(_httpClientFactory, _tokenService, _options);
+        var service = new DapsService(_tokenService, _options);
 
         // Act
         async Task Act() => await service.EnableDapsAuthAsync(clientName, referringConnector, businessPartnerNumber, file, CancellationToken.None).ConfigureAwait(false);
@@ -123,34 +117,24 @@ public class DapsServiceTests
         // Arrange
         var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
 
-        SetupTokenService();
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex:  new HttpRequestException ("DNS Error"));
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
-        A.CallTo(() => _httpClientFactory.CreateClient(nameof(DapsService)))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<DapsService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
         const string clientName = "Connec Tor";
         const string referringConnector = "https://connect-tor.com";
         const string businessPartnerNumber = "BPNL000000000009";
-        var service = new DapsService(_httpClientFactory, _tokenService, _options);
+        var service = new DapsService(_tokenService, _options);
 
         // Act
         async Task Act() => await service.EnableDapsAuthAsync(clientName, referringConnector, businessPartnerNumber, file, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
-    }
-
-    #endregion
-
-    #region Setup
-
-    private void SetupTokenService()
-    {
-        A.CallTo(() => _tokenService.GetTokenAsync(A<GetTokenSettings>._, A<CancellationToken>._)).Returns(_accessToken);
     }
 
     #endregion

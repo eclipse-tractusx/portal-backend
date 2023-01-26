@@ -18,23 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using System.Net;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Tests.Bpdm;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
 
 public class BpdmServiceTests
 {
     #region Initialization
 
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ITokenService _tokenService;
-    private readonly string _accessToken;
     private readonly IOptions<BpdmServiceSettings> _options;
     private readonly IFixture _fixture;
 
@@ -44,8 +41,7 @@ public class BpdmServiceTests
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-
-        _accessToken = _fixture.Create<string>();
+        
         _options = Options.Create(new BpdmServiceSettings
         {
             Password = "passWord",
@@ -57,7 +53,6 @@ public class BpdmServiceTests
             GrantType = "cred",
             KeyCloakTokenAdress = "https://key.cloak.com",
         });
-        _httpClientFactory = A.Fake<IHttpClientFactory>();
         _tokenService = A.Fake<ITokenService>();
     }
 
@@ -70,16 +65,15 @@ public class BpdmServiceTests
     {
         // Arrange
         var data = _fixture.Create<BpdmTransferData>();
-        SetupTokenService();
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK);
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
-        A.CallTo(() => _httpClientFactory.CreateClient(nameof(BpdmService)))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
-        var sut = new BpdmService(_httpClientFactory, _tokenService, _options);
+        var sut = new BpdmService(_tokenService, _options);
         
         // Act
         var result = await sut.TriggerBpnDataPush(data, CancellationToken.None).ConfigureAwait(false);
@@ -93,14 +87,13 @@ public class BpdmServiceTests
     {
         // Arrange
         var data = _fixture.Create<BpdmTransferData>();
-        SetupTokenService();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
-        A.CallTo(() => _httpClientFactory.CreateClient(nameof(BpdmService))).Returns(httpClient);
-        var sut = new BpdmService(_httpClientFactory, _tokenService, _options);
+        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+        var sut = new BpdmService(_tokenService, _options);
 
         // Act
         async Task Act() => await sut.TriggerBpnDataPush(data, CancellationToken.None).ConfigureAwait(false);
@@ -108,15 +101,6 @@ public class BpdmServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().Contain("Bpdm Service Call failed");
-    }
-
-    #endregion
-
-    #region Setup
-    
-    private void SetupTokenService()
-    {
-        A.CallTo(() => _tokenService.GetTokenAsync(A<GetTokenSettings>._, A<CancellationToken>._)).Returns(_accessToken);
     }
 
     #endregion

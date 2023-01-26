@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library;
 
 /// <summary>
 /// Service to handle communication with the connectors sd factory
@@ -31,12 +31,11 @@ public interface ISdFactoryService
     /// <summary>
     /// Registers the Connector at the connectorsSdFactory
     /// </summary>
-    /// <param name="connectorRequestModel">the connector request model</param>
-    /// <param name="accessToken">the access token</param>
+    /// <param name="connectorUrl">the url of the connector</param>
     /// <param name="businessPartnerNumber">the bpn</param>
     /// <param name="cancellationToken"></param>
     /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task<Guid> RegisterConnectorAsync(ConnectorRequestModel connectorRequestModel, string accessToken, string businessPartnerNumber, CancellationToken cancellationToken);
+    Task<Guid> RegisterConnectorAsync(string connectorUrl, string businessPartnerNumber, CancellationToken cancellationToken);
 
-    Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken);
+    Task<Guid> RegisterSelfDescriptionAsync(IEnumerable<(UniqueIdentifierId Id, string Value)> uniqueIdentifiers, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken);
 }

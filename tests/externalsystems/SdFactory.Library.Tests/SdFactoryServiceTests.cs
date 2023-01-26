@@ -19,29 +19,32 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using System.Net;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Net;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Tests;
 
 public class SdFactoryServiceTests
 {
     #region Initialization
     
-    private readonly Guid _applicationId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
+    private static readonly IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers = new List<(UniqueIdentifierId Id, string Value)>
+    {
+        new (UniqueIdentifierId.VAT_ID, "JUSTATEST")
+    };
+    
     private readonly IPortalRepositories _portalRepositories;
     private readonly IDocumentRepository _documentRepository;
     private readonly ICollection<Document> _documents;
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly IOptions<SdFactorySettings> _options;
+    private readonly ITokenService _tokenService;
 
     public SdFactoryServiceTests()
     {
@@ -58,7 +61,7 @@ public class SdFactoryServiceTests
             SdFactoryUrl = "https://www.api.sdfactory.com",
             SdFactoryIssuerBpn = "BPNL00000003CRHK"
         });
-        _httpClientFactory = A.Fake<IHttpClientFactory>();
+        _tokenService = A.Fake<ITokenService>();
         SetupRepositoryMethods();
     }
 
@@ -70,7 +73,8 @@ public class SdFactoryServiceTests
     public async Task RegisterConnectorAsync_WithValidData_CreatesDocumentInDatabase()
     {
         // Arrange
-        var contentJson = @"{
+        const string bpn = "BPNL000000000009";
+        const string contentJson = @"{
           'id': 'http://sdhub.int.demo.catena-x.net/selfdescription/vc/62a86c917ed7226dae676c86',
           '@context': [
             'https://www.w3.org/2018/credentials/v1',
@@ -102,13 +106,10 @@ public class SdFactoryServiceTests
         }";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, contentJson.ToFormContent("application/vc+ld+json"));
         CreateHttpClient(httpMessageHandlerMock);
-        var connectorInputModel = new ConnectorRequestModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
-        var accessToken = "this-is-a-super-secret-secret-not";
-        var bpn = "BPNL000000000009";
-        var service = new SdFactoryService(_options, _httpClientFactory, _portalRepositories);
+        var service = new SdFactoryService(_portalRepositories, _tokenService, _options);
 
         // Act
-        await service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn, CancellationToken.None).ConfigureAwait(false);
+        await service.RegisterConnectorAsync("https://connect-tor.com", bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         _documents.Should().HaveCount(1);
@@ -120,15 +121,13 @@ public class SdFactoryServiceTests
     public async Task  RegisterConnectorAsync_WithInvalidData_ThrowsException()
     {
         // Arrange
+        const string bpn = "BPNL000000000009";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         CreateHttpClient(httpMessageHandlerMock);
-        var connectorInputModel = new ConnectorRequestModel("Connec Tor", "https://connect-tor.com", ConnectorTypeId.COMPANY_CONNECTOR, ConnectorStatusId.ACTIVE, "de", Guid.NewGuid(), Guid.NewGuid());
-        var accessToken = "this-is-a-super-secret-secret-not";
-        var bpn = "BPNL000000000009";
-        var service = new SdFactoryService(_options, _httpClientFactory, _portalRepositories);
+        var service = new SdFactoryService(_portalRepositories, _tokenService, _options);
 
         // Act
-        async Task Action() => await service.RegisterConnectorAsync(connectorInputModel, accessToken, bpn, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await service.RegisterConnectorAsync("https://connect-tor.com", bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);
@@ -143,7 +142,8 @@ public class SdFactoryServiceTests
     public async Task RegisterSelfDescriptionAsync_WithValidData_CreatesDocumentInDatabase()
     {
         // Arrange
-        var contentJson = @"{
+        const string bpn = "BPNL000000000009";
+        const string contentJson = @"{
           'id': 'http://sdhub.int.demo.catena-x.net/selfdescription/vc/62a86c917ed7226dae676c86',
           '@context': [
             'https://www.w3.org/2018/credentials/v1',
@@ -175,12 +175,10 @@ public class SdFactoryServiceTests
         }";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, contentJson.ToFormContent("application/vc+ld+json"));
         CreateHttpClient(httpMessageHandlerMock);
-        var accessToken = "this-is-a-super-secret-secret-not";
-        var bpn = "BPNL000000000009";
-        var service = new SdFactoryService(_options, _httpClientFactory, _portalRepositories);
+        var service = new SdFactoryService(_portalRepositories, _tokenService, _options);
 
         // Act
-        await service.RegisterSelfDescriptionAsync(accessToken, _applicationId, "de", bpn, CancellationToken.None).ConfigureAwait(false);
+        await service.RegisterSelfDescriptionAsync(UniqueIdentifiers, "de", bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         _documents.Should().HaveCount(1);
@@ -192,14 +190,13 @@ public class SdFactoryServiceTests
     public async Task  RegisterSelfDescriptionAsync_WithInvalidData_ThrowsException()
     {
         // Arrange
+        const string bpn = "BPNL000000000009";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         CreateHttpClient(httpMessageHandlerMock);
-        var accessToken = "this-is-a-super-secret-secret-not";
-        var bpn = "BPNL000000000009";
-        var service = new SdFactoryService(_options, _httpClientFactory, _portalRepositories);
+        var service = new SdFactoryService(_portalRepositories, _tokenService, _options);
 
         // Act
-        async Task Action() => await service.RegisterSelfDescriptionAsync(accessToken, _applicationId, "de", bpn, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await service.RegisterSelfDescriptionAsync(UniqueIdentifiers, "de", bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);
@@ -213,7 +210,8 @@ public class SdFactoryServiceTests
     private void CreateHttpClient(HttpMessageHandler httpMessageHandlerMock)
     {
         var httpClient = new HttpClient(httpMessageHandlerMock) {BaseAddress = new Uri(_options.Value.SdFactoryUrl)};
-        A.CallTo(() => _httpClientFactory.CreateClient(A<string>._)).Returns(httpClient);
+        A.CallTo(() => _tokenService.GetAuthorizedClient<SdFactoryService>(_options.Value, CancellationToken.None))
+            .ReturnsLazily(() => httpClient);
     }
 
     private void SetupRepositoryMethods()

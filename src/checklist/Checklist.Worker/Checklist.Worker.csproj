@@ -47,6 +47,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
+        <ProjectReference Include="..\..\registration\ApplicationActivation.Library\ApplicationActivation.Library.csproj" />
         <ProjectReference Include="..\Checklist.Library\Checklist.Library.csproj" />
     </ItemGroup>
 
@@ -54,6 +55,13 @@
         <SonarQubeSetting Include="sonar.coverage.exclusions">
             <Value>Program.cs</Value>
         </SonarQubeSetting>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="appsettings.json" />
+      <Content Include="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

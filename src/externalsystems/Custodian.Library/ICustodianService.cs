@@ -18,13 +18,31 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 
+/// <summary>
+/// Service for wallet related topics
+/// </summary>
 public interface ICustodianService
 {
-    public IAsyncEnumerable<GetWallets> GetWalletsAsync(CancellationToken cancellationToken);
-
-    public Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken);
+    /// <summary>
+    /// Gets a wallet by the bpn
+    /// </summary>
+    /// <param name="bpn">bpn to get the wallet for</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>Returns either the wallet for the bpn or null</returns>
+    /// <exception cref="ServiceException"></exception>
+    Task<WalletData> GetWalletByBpnAsync(string bpn, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="bpn"></param>
+    /// <param name="name"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken);
 }

@@ -65,6 +65,11 @@ public static class BaseSeed
                 Zipcode = "00001",
                 Streetnumber = "2"
             },
+            new(new Guid("1fdf48eb-53f1-4d44-9685-c8f78189b156"), "Munich", "Street", "DE", DateTimeOffset.UtcNow)
+            {
+                Zipcode = "00001",
+                Streetnumber = "2"
+            },
         });
 
         dbContext.Companies.AddRange(new List<Company>
@@ -80,11 +85,18 @@ public static class BaseSeed
                 AddressId = new Guid("12302f9b-418c-4b8c-aea8-3eedf67e6a02"),
                 Shortname = "Test",
             },
+            new(new Guid("27538eac-27a3-4f74-9306-e5149b93ade5"), "Submitted Company With Bpn", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow)
+            {
+                AddressId = new Guid("1fdf48eb-53f1-4d44-9685-c8f78189b156"),
+                Shortname = "Test",
+                BusinessPartnerNumber = "CAXSTESTYCATENAZZ",
+            },
         });
         dbContext.CompanyApplications.AddRange(new List<CompanyApplication>
         {
             new (new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), CompanyApplicationStatusId.CONFIRMED, DateTimeOffset.UtcNow),
-            new (new Guid("1b86d973-3aac-4dcd-a9e9-0c222766202b"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"), CompanyApplicationStatusId.SUBMITTED, DateTimeOffset.UtcNow)
+            new (new Guid("1b86d973-3aac-4dcd-a9e9-0c222766202b"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"), CompanyApplicationStatusId.SUBMITTED, DateTimeOffset.UtcNow),
+            new (new Guid("2bb2005f-6e8d-41eb-967b-cde67546cafc"), new Guid("27538eac-27a3-4f74-9306-e5149b93ade5"), CompanyApplicationStatusId.SUBMITTED, DateTimeOffset.UtcNow),
         });
 
         dbContext.ApplicationChecklist.AddRange(new List<ApplicationChecklistEntry>
@@ -94,6 +106,18 @@ public static class BaseSeed
             new (new Guid("1b86d973-3aac-4dcd-a9e9-0c222766202b"), ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
             new (new Guid("1b86d973-3aac-4dcd-a9e9-0c222766202b"), ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
             new (new Guid("1b86d973-3aac-4dcd-a9e9-0c222766202b"), ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+            
+            new (new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+            new (new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"), ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+            new (new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"), ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+            new (new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"), ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+            new (new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"), ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+            
+            new (new Guid("2bb2005f-6e8d-41eb-967b-cde67546cafc"), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+            new (new Guid("2bb2005f-6e8d-41eb-967b-cde67546cafc"), ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+            new (new Guid("2bb2005f-6e8d-41eb-967b-cde67546cafc"), ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+            new (new Guid("2bb2005f-6e8d-41eb-967b-cde67546cafc"), ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
+            new (new Guid("2bb2005f-6e8d-41eb-967b-cde67546cafc"), ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow),
         });
         
         dbContext.Invitations.AddRange(new List<Invitation>
@@ -403,7 +427,8 @@ public static class BaseSeed
 
         dbContext.CompanyIdentifiers.AddRange(new CompanyIdentifier[]
         {
-            new (new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "REG08154711")
+            new (new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "REG08154711"),
+            new (new Guid("27538eac-27a3-4f74-9306-e5149b93ade5"), UniqueIdentifierId.VAT_ID, "DE123456789")
         });
     };
 }

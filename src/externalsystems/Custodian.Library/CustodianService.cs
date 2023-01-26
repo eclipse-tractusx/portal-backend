@@ -18,33 +18,31 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net.Http.Headers;
+using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 
 public class CustodianService : ICustodianService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ITokenService _tokenService;
     private readonly CustodianSettings _settings;
 
-    public CustodianService(IHttpClientFactory httpClientFactory, ITokenService tokenService, IOptions<CustodianSettings> settings)
+    public CustodianService(ITokenService tokenService, IOptions<CustodianSettings> settings)
     {
-        _httpClientFactory = httpClientFactory;
         _tokenService = tokenService;
         _settings = settings.Value;
     }
 
+    /// <inhertidoc />
     public async Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken)
     {
-        var httpClient = await GetCustodianHttpClient(cancellationToken).ConfigureAwait(false);
+        var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
 
         var requestBody = new { name = name, bpn = bpn };
         var json = JsonSerializer.Serialize(requestBody);
@@ -61,45 +59,34 @@ public class CustodianService : ICustodianService
         return await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async IAsyncEnumerable<GetWallets> GetWalletsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+    /// <inhertidoc />
+    public async Task<WalletData> GetWalletByBpnAsync(string bpn, CancellationToken cancellationToken)
     {
-        var httpClient = await GetCustodianHttpClient(cancellationToken).ConfigureAwait(false);
+        var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
 
-        const string url = "/api/wallets";
-        var result = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
-        
-        if (result.IsSuccessStatusCode)
+        var result = await httpClient.GetAsync($"/api/wallets/{bpn}", cancellationToken).ConfigureAwait(false);
+        if (!result.IsSuccessStatusCode)
         {
-            using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await foreach (var wallet in JsonSerializer.DeserializeAsyncEnumerable<GetWallets>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false))
+            throw new ServiceException("Error on retrieving Wallets HTTP Response Code {StatusCode}",
+                result.StatusCode);
+        }
+
+        using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var walletData = await JsonSerializer
+                .DeserializeAsync<WalletData>(responseStream, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+            if (walletData == null)
             {
-                if (wallet != null)
-                {
-                    yield return wallet;
-                }
+                throw new ServiceException("Couldn't resolve wallet data from the service");
             }
+
+            return walletData;
         }
-        else
+        catch (JsonException)
         {
-            throw new ServiceException("Error on retrieving Wallets HTTP Response Code {StatusCode}", result.StatusCode);
+            throw new ServiceException("Couldn't resolve wallet data");
         }
-    }
-
-    private async Task<HttpClient> GetCustodianHttpClient(CancellationToken cancellationToken)
-    {
-        var tokenParameters = new GetTokenSettings(
-                $"{nameof(CustodianService)}Auth",
-                _settings.Username,
-                _settings.Password,
-                _settings.ClientId,
-                _settings.GrantType,
-                _settings.ClientSecret,
-                _settings.Scope);
-
-        var token = await _tokenService.GetTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(false);
-
-        var httpClient = _httpClientFactory.CreateClient(nameof(CustodianService));
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        return httpClient;
     }
 }

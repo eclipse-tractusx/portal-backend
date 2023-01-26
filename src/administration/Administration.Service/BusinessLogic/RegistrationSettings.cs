@@ -27,30 +27,14 @@ public class RegistrationSettings
 {
     public RegistrationSettings()
     {
-        ApplicationApprovalInitialRoles = null!;
         PartnerUserInitialRoles = null!;
-        CompanyAdminRoles = null!;
-        WelcomeNotificationTypeIds = null!;
         DocumentTypeIds = null!;
-        BasePortalAddress = null!;
     }
 
     public int ApplicationsMaxPageSize { get; set; }
     
     [Required]
-    public IDictionary<string,IEnumerable<string>> ApplicationApprovalInitialRoles { get; set; }
-    
-    [Required]
     public IDictionary<string,IEnumerable<string>> PartnerUserInitialRoles { get; set; }
-    
-    [Required]
-    public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; set; }
-
-    /// <summary>
-    /// IDs of the notification types that should be created as welcome notifications
-    /// </summary>
-    [Required]
-    public IEnumerable<NotificationTypeId> WelcomeNotificationTypeIds { get; set; }
 
     /// <summary>
     /// Document Type Id
@@ -58,9 +42,6 @@ public class RegistrationSettings
     /// <value></value>
     [Required]
     public IEnumerable<DocumentTypeId?> DocumentTypeIds { get; set; }
-
-    [Required(AllowEmptyStrings = false)]
-    public string BasePortalAddress { get; set; }
 }
 
 public static class RegistrationSettingsExtension

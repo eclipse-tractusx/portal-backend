@@ -18,10 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library;
 
 public static class SdServiceCollectionExtension
 {
@@ -38,7 +41,14 @@ public static class SdServiceCollectionExtension
         {
             c.BaseAddress = new Uri(settings.Value.SdFactoryUrl);
         }).AddHttpMessageHandler<LoggingHandler<SdFactoryService>>();
-        services.AddTransient<ISdFactoryService, SdFactoryService>();
+        services.AddHttpClient($"{nameof(SdFactoryService)}Auth", c =>
+        {
+            c.BaseAddress = new Uri(settings.Value.KeyCloakTokenAdress);
+        }).AddHttpMessageHandler<LoggingHandler<SdFactoryService>>();
+
+        services
+            .AddTransient<ISdFactoryService, SdFactoryService>()
+            .AddTransient<ISdFactoryBusinessLogic, SdFactoryBusinessLogic>();
 
         return services;
     }

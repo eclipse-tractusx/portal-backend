@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
@@ -44,39 +44,6 @@ public class RegistrationControllerTest
         _logic = A.Fake<IRegistrationBusinessLogic>();
         this._controller = new RegistrationController(_logic);
         _controller.AddControllerContextWithClaimAndBearer(IamUserId, AccessToken);
-    }
-
-    [Fact]
-    public async Task Test1()
-    {
-        //Arrange
-        var id = new Guid("d90995fe-1241-4b8d-9f5c-f3909acc6383");
-        A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, AccessToken, id, A<CancellationToken>._))
-                  .Returns(true);
-
-        //Act
-        var result = await this._controller.ApprovePartnerRequest(id, CancellationToken.None).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, AccessToken, id, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
-        Assert.IsType<bool>(result);
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task Test2()
-    {
-        //Arrange
-        A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, AccessToken, Guid.Empty, A<CancellationToken>._))
-                  .Returns(false);
-
-        //Act
-        var result = await this._controller.ApprovePartnerRequest(Guid.Empty, CancellationToken.None).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.ApprovePartnerRequest(IamUserId, AccessToken, Guid.Empty, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
-        Assert.IsType<bool>(result);
-        Assert.False(result);
     }
 
     [Fact]
@@ -150,10 +117,27 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
 
         //Act
-        var result = await this._controller.DeclineApplication(applicationId, "test").ConfigureAwait(false);
+        var result = await this._controller.DeclineApplication(applicationId, new RegistrationDeclineData("test")).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.SetRegistrationVerification(applicationId, false, "test")).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task ProcessClearinghouseResponse_ReturnsExpectedResult()
+    {
+        //Arrange
+        var bpn = _fixture.Create<string>();
+        var data = _fixture.Create<ClearinghouseResponseData>();
+        A.CallTo(() => _logic.ProcessClearinghouseResponseAsync(bpn, data, A<CancellationToken>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.ProcessClearinghouseResponse(bpn, data, CancellationToken.None).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.ProcessClearinghouseResponseAsync(bpn, data, CancellationToken.None)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 }

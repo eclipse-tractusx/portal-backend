@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.AspNetCore.Mvc;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -30,7 +30,6 @@ public interface IRegistrationBusinessLogic
 {
     Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId);
     Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null);
-    Task<bool> ApprovePartnerRequest(string iamUserId, string accessToken, Guid applicationId, CancellationToken cancellationToken);
     Task<bool> DeclinePartnerRequest(Guid applicationId);
     Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null);
     Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken);
@@ -43,4 +42,12 @@ public interface IRegistrationBusinessLogic
     /// <param name="approve"><c>true</c> if the application is approved, otherwise <c>false</c></param>
     /// <param name="comment">An additional comment, only set if the application got declined</param>
     Task SetRegistrationVerification(Guid applicationId, bool approve, string? comment = null);
+    
+    /// <summary>
+    /// Processes the clearinghouse response
+    /// </summary>
+    /// <param name="bpn">the bpn of the company</param>
+    /// <param name="data">the response data</param>
+    /// <param name="cancellationToken">cancellation token</param>
+    Task ProcessClearinghouseResponseAsync(string bpn, ClearinghouseResponseData data, CancellationToken cancellationToken);
 }

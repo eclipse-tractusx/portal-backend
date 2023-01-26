@@ -18,13 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 
@@ -48,9 +46,8 @@ public static class CustodianServiceCollectionExtension
             c.BaseAddress = new Uri(settings.Value.KeyCloakTokenAdress);
         }).AddHttpMessageHandler<LoggingHandler<CustodianService>>();
         services
-            .AddTransient<ITokenService, TokenService>()
-            .AddTransient<ICustodianService, CustodianService>();
-        services.AddTransient<ICustodianBusinessLogic, CustodianBusinessLogic>();
+            .AddTransient<ICustodianService, CustodianService>()
+            .AddTransient<ICustodianBusinessLogic, CustodianBusinessLogic>();
         
         return services;
     }
