@@ -18,44 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library
 {
-    public class CustodianSettings
+    public class CustodianSettings : KeyVaultAuthSettings
     {
         public CustodianSettings()
         {
-            Username = null!;
-            Password = null!;
-            ClientId = null!;
-            GrantType = null!;
-            ClientSecret = null!;
-            Scope = null!;
-            KeyCloakTokenAdress = null!;
             BaseAdress = null!;
         }
-
-        [Required(AllowEmptyStrings = false)]
-        public string Username { get; set; }
-
-        [Required(AllowEmptyStrings = false)]
-        public string Password { get; set; }
-
-        [Required(AllowEmptyStrings = false)]
-        public string ClientId { get; set; }
-
-        [Required(AllowEmptyStrings = false)]
-        public string GrantType { get; set; }
-
-        [Required(AllowEmptyStrings = false)]
-        public string ClientSecret { get; set; }
-
-        [Required(AllowEmptyStrings = false)]
-        public string Scope { get; set; }
-
-        [Required(AllowEmptyStrings = false)]
-        public string KeyCloakTokenAdress { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         public string BaseAdress { get; set; }

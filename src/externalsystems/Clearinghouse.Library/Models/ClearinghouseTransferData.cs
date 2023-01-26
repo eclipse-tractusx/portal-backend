@@ -1,5 +1,5 @@
-﻿/********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
+/********************************************************************************
+ * Copyright (c) 2021,2022 Microsoft and BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,19 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
+using System.Text.Json.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public class GetWallets
-{
-    public string? bpn { get; set; }
-    public string? name { get; set; }
-    public Wallet? wallet { get; set; }
-}
+namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 
-public class Wallet
-{
-    public string? did { get; set; }
-    public DateTime createdAt { get; set; }
-    public string? publicKey { get; set; }
-    public object[]? vcs { get; set; }
-}
+public record ClearinghouseTransferData(
+    [property: JsonPropertyName("participantDetails")] ParticipantDetails ParticipantDetails,
+    [property: JsonPropertyName("identityDetails")] IdentityDetails IdentityDetails);
+
+public record IdentityDetails(
+    [property: JsonPropertyName("did")] string Did,
+    [property: JsonPropertyName("uniqueIds")] IEnumerable<UniqueIdData> UniqueIds);

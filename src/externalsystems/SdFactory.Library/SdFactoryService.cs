@@ -19,66 +19,70 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Net.Http.Headers;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
+using System.Net.Http.Json;
 using System.Security.Cryptography;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library;
 
 /// <summary>
 /// Service to handle communication with the connectors sd factory
 /// </summary>
 public class SdFactoryService : ISdFactoryService
 {
-    private readonly HttpClient _httpClient;
     private readonly IPortalRepositories _portalRepositories;
+    private readonly ITokenService _tokenService;
     private readonly SdFactorySettings _settings;
 
     /// <summary>
     /// Creates a new instance of <see cref="SdFactoryService"/>
     /// </summary>
-    /// <param name="httpClientFactory">Factory to create httpClients</param>
+    /// <param name="tokenService">Access to the token service</param>
     /// <param name="options">The options</param>
     /// <param name="portalRepositories">Access to the portalRepositories</param>
-    public SdFactoryService(IOptions<SdFactorySettings> options, IHttpClientFactory httpClientFactory,
-        IPortalRepositories portalRepositories)
+    public SdFactoryService(
+        IPortalRepositories portalRepositories,
+        ITokenService tokenService,
+        IOptions<SdFactorySettings> options)
     {
         _settings = options.Value;
-        _httpClient = httpClientFactory.CreateClient(nameof(SdFactoryService));
         _portalRepositories = portalRepositories;
+        _tokenService = tokenService;
     }
 
     /// <inheritdoc />
-    public async Task<Guid> RegisterConnectorAsync(ConnectorRequestModel connectorRequestModel, string accessToken, string businessPartnerNumber, CancellationToken cancellationToken)
+    public async Task<Guid> RegisterConnectorAsync(string connectorUrl, string businessPartnerNumber, CancellationToken cancellationToken)
     {
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-        // The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
+        var httpClient = await _tokenService.GetAuthorizedClient<SdFactoryService>(_settings, cancellationToken)
+            .ConfigureAwait(false);
+        // TODO The hardcoded values (headquarterCountry, legalCountry, sdType, issuer) will be fetched from the user input or db in future
         var requestModel = new ConnectorSdFactoryRequestModel(
             SdFactoryRequestModelSdType.ServiceOffering,
-            connectorRequestModel.ConnectorUrl,
+            connectorUrl,
             string.Empty,
             string.Empty,
             string.Empty,
             _settings.SdFactoryIssuerBpn,
             businessPartnerNumber);
 
-        var response = await _httpClient.PostAsJsonAsync((string?)null, requestModel, cancellationToken).ConfigureAwait(false);
+        var response = await httpClient.PostAsJsonAsync((string?)null, requestModel, cancellationToken).ConfigureAwait(false);
 
         return await ProcessResponse(SdFactoryResponseModelTitle.Connector, response, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<Guid> RegisterSelfDescriptionAsync(string accessToken, Guid applicationId, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken)
+    public async Task<Guid> RegisterSelfDescriptionAsync(IEnumerable<(UniqueIdentifierId Id, string Value)> uniqueIdentifiers, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken)
     {
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
+        var httpClient = await _tokenService.GetAuthorizedClient<SdFactoryService>(_settings, cancellationToken)
+            .ConfigureAwait(false);
         var requestModel = new SdFactoryRequestModel(
-            applicationId.ToString(),
+            uniqueIdentifiers.Select(x => new RegistrationNumber(x.Id.GetSdUniqueIdentifierValue(), x.Value)),
             countryCode,
             countryCode,
             SdFactoryRequestModelSdType.LegalPerson,
@@ -86,7 +90,7 @@ public class SdFactoryService : ISdFactoryService
             businessPartnerNumber,
             _settings.SdFactoryIssuerBpn);
 
-        var response = await _httpClient.PostAsJsonAsync((string?)null, requestModel, cancellationToken).ConfigureAwait(false);
+        var response = await httpClient.PostAsJsonAsync((string?)null, requestModel, cancellationToken).ConfigureAwait(false);
 
         return await ProcessResponse(SdFactoryResponseModelTitle.LegalPerson, response, cancellationToken).ConfigureAwait(false);
     }

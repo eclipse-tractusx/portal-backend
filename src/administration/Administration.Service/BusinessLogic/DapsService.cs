@@ -18,10 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
-using System.Net.Http.Headers;
-using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -29,19 +28,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class DapsService : IDapsService
 {
     private const string BaseSecurityProfile = "BASE_SECURITY_PROFILE";
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ITokenService _tokenService;
     private readonly DapsSettings _settings;
 
     /// <summary>
     /// Creates a new instance of <see cref="DapsService"/>
     /// </summary>
-    /// <param name="httpClientFactory">Factory to create httpClients</param>
     /// <param name="tokenService"></param>
     /// <param name="options"></param>
-    public DapsService(IHttpClientFactory httpClientFactory, ITokenService tokenService, IOptions<DapsSettings> options)
+    public DapsService(ITokenService tokenService, IOptions<DapsSettings> options)
     {
-        _httpClientFactory = httpClientFactory;
         _tokenService = tokenService;
         _settings = options.Value;
     }
@@ -56,7 +52,7 @@ public class DapsService : IDapsService
     private async Task<bool> HandleRequest(string clientName, string connectorUrl, string businessPartnerNumber,
         IFormFile formFile, CancellationToken cancellationToken)
     {
-        var httpClient = await GetDapsHttpClient(cancellationToken).ConfigureAwait(false);
+        var httpClient = await _tokenService.GetAuthorizedClient<DapsService>(_settings, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -81,23 +77,5 @@ public class DapsService : IDapsService
         {
             throw new ServiceException("Daps Service Call failed", ex);
         }
-    }
-    
-    private async Task<HttpClient> GetDapsHttpClient(CancellationToken cancellationToken)
-    {
-        var tokenParameters = new GetTokenSettings(
-            $"{nameof(DapsService)}Auth",
-            _settings.Username,
-            _settings.Password,
-            _settings.ClientId,
-            _settings.GrantType,
-            _settings.ClientSecret,
-            _settings.Scope);
-
-        var token = await _tokenService.GetTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(false);
-
-        var httpClient = _httpClientFactory.CreateClient(nameof(DapsService));
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        return httpClient;
     }
 }

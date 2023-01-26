@@ -20,10 +20,10 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using FluentAssertions;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -31,9 +31,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
-
     private static readonly Guid ApplicationWithBpn = new("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
+    private static readonly Guid SubmittedApplicationWithBpn = new("2bb2005f-6e8d-41eb-967b-cde67546cafc");
     private static readonly Guid ApplicationWithoutBpn = new("1b86d973-3aac-4dcd-a9e9-0c222766202b");
+    private static readonly Guid CompanyId = new("27538eac-27a3-4f74-9306-e5149b93ade5");
     private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
 
@@ -156,7 +157,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Assert
         bpn.Should().Be("CAXSDUMMYCATENAZZ");
-        existingChecklistEntryTypeIds.Should().BeEmpty();
+        existingChecklistEntryTypeIds.Should().HaveCount(5);
     }
 
     [Fact]
@@ -215,7 +216,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Assert
         applicationStatus.Should().Be(CompanyApplicationStatusId.CONFIRMED);
-        checklistEntryStatus.Should().Be(default);
+        checklistEntryStatus.Should().Be(ApplicationChecklistEntryStatusId.TO_DO);
     }
 
     [Fact]
@@ -272,6 +273,165 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Assert
         bpn.Should().BeNull();
+    }
+
+    #endregion
+    
+    #region GetClearinghouseDataForApplicationId
+    
+    [Fact]
+    public async Task GetClearinghouseDataForApplicationId_WithValidApplicationId_ReturnsCorrectData()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetClearinghouseDataForApplicationId(ApplicationWithBpn).ConfigureAwait(false);
+        
+        // Assert
+        data.Should().NotBeNull();
+        data!.ParticipantDetails.Bpn.Should().Be("CAXSDUMMYCATENAZZ");
+        data.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.CONFIRMED);
+    }
+
+    [Fact]
+    public async Task GetClearinghouseDataForApplicationId_WithNotExistingApplicationId_ReturnsNull()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var result = await sut.GetClearinghouseDataForApplicationId(Guid.NewGuid()).ConfigureAwait(false);
+        
+        // Assert
+        result.Should().Be(default);
+    }
+
+    #endregion
+
+    #region GetSubmittedIdAndClearinghouseChecklistStatusByBpn
+    
+    [Fact]
+    public async Task GetSubmittedIdAndClearinghouseChecklistStatusByBpn_WithValidApplicationId_ReturnsCorrectData()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetSubmittedIdAndClearinghouseChecklistStatusByBpn("CAXSTESTYCATENAZZ").ConfigureAwait(false);
+        
+        // Assert
+        data.Should().NotBeNull();
+        data.ApplicationId.Should().Be(new Guid("2bb2005f-6e8d-41eb-967b-cde67546cafc"));
+        data.StatusId.Should().Be(ApplicationChecklistEntryStatusId.TO_DO);
+    }
+
+    [Fact]
+    public async Task GetSubmittedIdAndClearinghouseChecklistStatusByBpn_WithNotExistingApplicationId_ReturnsNull()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var result = await sut.GetSubmittedIdAndClearinghouseChecklistStatusByBpn("notexisting").ConfigureAwait(false);
+        
+        // Assert
+        result.Should().Be(default);
+    }
+    
+    #endregion
+    
+    #region GetCompanyIdForSubmittedApplicationId
+    
+    [Fact]
+    public async Task GetCompanyIdForSubmittedApplicationId_WithValidApplicationId_ReturnsCorrectData()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetCompanyIdForSubmittedApplicationId(SubmittedApplicationWithBpn).ConfigureAwait(false);
+        
+        // Assert
+        data.Should().NotBeEmpty();
+        data.Should().Be(CompanyId);
+    }
+
+    [Fact]
+    public async Task GetCompanyIdForSubmittedApplicationId_WithNotExistingApplicationId_ReturnsDefault()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetCompanyIdForSubmittedApplicationId(Guid.NewGuid()).ConfigureAwait(false);
+        
+        // Assert
+        data.Should().Be(Guid.Empty);
+    }
+
+    #endregion
+    
+    #region GetCompanyAndApplicationDetailsForApprovalAsync
+
+    [Fact]
+    public async Task GetCompanyAndApplicationDetailsForApprovalAsync_WithSubmittedApplication_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetCompanyAndApplicationDetailsForApprovalAsync(SubmittedApplicationWithBpn).ConfigureAwait(false);
+        
+        // Assert
+        data.companyId.Should().Be(CompanyId);
+        data.businessPartnerNumber.Should().NotBeNullOrEmpty().And.Be("CAXSTESTYCATENAZZ");
+    }
+
+    [Fact]
+    public async Task GetCompanyAndApplicationDetailsForApprovalAsync_WithNotExistingApplication_ReturnsDefault()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetCompanyAndApplicationDetailsForApprovalAsync(Guid.NewGuid()).ConfigureAwait(false);
+        
+        // Assert
+        data.Should().Be(default);
+    }
+
+    #endregion
+
+    #region GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync
+
+    [Fact]
+    public async Task GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync_WithSubmittedApplication_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(SubmittedApplicationWithBpn).ConfigureAwait(false);
+        
+        // Assert
+        data.CompanyId.Should().Be(CompanyId);
+        data.BusinessPartnerNumber.Should().NotBeNullOrEmpty().And.Be("CAXSTESTYCATENAZZ");
+        data.Alpha2Code.Should().Be("DE");
+        data.UniqueIdentifiers.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync_WithNotExistingApplication_ReturnsDefault()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(Guid.NewGuid()).ConfigureAwait(false);
+        
+        // Assert
+        data.Should().Be(default);
     }
 
     #endregion

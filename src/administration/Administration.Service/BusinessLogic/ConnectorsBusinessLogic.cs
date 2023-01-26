@@ -29,6 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -38,7 +39,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly ISdFactoryService _sdFactoryService;
+    private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly IDapsService _dapsService;
     private readonly ConnectorsSettings _settings;
 
@@ -47,13 +48,13 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     /// </summary>
     /// <param name="portalRepositories">Access to the needed repositories</param>
     /// <param name="options">The options</param>
-    /// <param name="sdFactoryService">Access to the connectorsSdFactory</param>
+    /// <param name="sdFactoryBusinessLogic">Access to the connectorsSdFactory</param>
     /// <param name="dapsService">Access to the daps service</param>
-    public ConnectorsBusinessLogic(IPortalRepositories portalRepositories, IOptions<ConnectorsSettings> options, ISdFactoryService sdFactoryService, IDapsService dapsService)
+    public ConnectorsBusinessLogic(IPortalRepositories portalRepositories, IOptions<ConnectorsSettings> options, ISdFactoryBusinessLogic sdFactoryBusinessLogic, IDapsService dapsService)
     {
         _portalRepositories = portalRepositories;
         _settings = options.Value;
-        _sdFactoryService = sdFactoryService;
+        _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
         _dapsService = dapsService;
     }
 
@@ -91,16 +92,16 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken, string iamUserId, CancellationToken cancellationToken)
+    public Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
     {
         ValidateCertificationType(connectorInputModel.Certificate);
-        return CreateConnectorInternalAsync(connectorInputModel, accessToken, iamUserId, cancellationToken);
+        return CreateConnectorInternalAsync(connectorInputModel, iamUserId, cancellationToken);
     }
 
-    public Task<ConnectorData> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, string accessToken, string iamUserId, CancellationToken cancellationToken)
+    public Task<ConnectorData> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
     {
         ValidateCertificationType(connectorInputModel.Certificate);
-        return CreateManagedConnectorInternalAsync(connectorInputModel, accessToken, iamUserId, cancellationToken);
+        return CreateManagedConnectorInternalAsync(connectorInputModel, iamUserId, cancellationToken);
     }
 
     private void ValidateCertificationType(IFormFile? certificate)
@@ -112,7 +113,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         }
     }
 
-    private async Task<ConnectorData> CreateConnectorInternalAsync(ConnectorInputModel connectorInputModel, string accessToken, string iamUserId, CancellationToken cancellationToken)
+    private async Task<ConnectorData> CreateConnectorInternalAsync(ConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
     {
         var (name, connectorUrl, status, location, certificate) = connectorInputModel;
         await CheckLocationExists(location);
@@ -132,14 +133,13 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             location, companyId, companyId);
         var createdConnector = await CreateAndRegisterConnectorAsync(
             connectorRequestModel,
-            accessToken,
             providerBpn,
             certificate,
             cancellationToken).ConfigureAwait(false);
         return new ConnectorData(createdConnector.Name, createdConnector.LocationId, createdConnector.Id, createdConnector.TypeId, createdConnector.StatusId, createdConnector.DapsRegistrationSuccessful);
     }
 
-    private async Task<ConnectorData> CreateManagedConnectorInternalAsync(ManagedConnectorInputModel connectorInputModel, string accessToken, string iamUserId, CancellationToken cancellationToken)
+    private async Task<ConnectorData> CreateManagedConnectorInternalAsync(ManagedConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
     {
         var companyId = await GetCompanyOfUserOrTechnicalUser(iamUserId).ConfigureAwait(false);
         var (name, connectorUrl, status, location, providerBpn, certificate) = connectorInputModel;
@@ -159,7 +159,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             status, location, providerId, companyId);
         var createdConnector = await CreateAndRegisterConnectorAsync(
             connectorRequestModel,
-            accessToken,
             providerBpn,
             certificate,
             cancellationToken).ConfigureAwait(false);
@@ -191,7 +190,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     private async Task<Connector> CreateAndRegisterConnectorAsync(ConnectorRequestModel connectorInputModel,
-        string accessToken, string businessPartnerNumber, IFormFile? file, CancellationToken cancellationToken)
+        string businessPartnerNumber, IFormFile? file, CancellationToken cancellationToken)
     {
         var (name, connectorUrl, type, status, location, provider, host) = connectorInputModel;
 
@@ -225,8 +224,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             createdConnector.DapsRegistrationSuccessful = dapsCallSuccessful;
         }
 
-        var documentId = await _sdFactoryService
-            .RegisterConnectorAsync(connectorInputModel, accessToken, businessPartnerNumber, cancellationToken)
+        var documentId = await _sdFactoryBusinessLogic
+            .RegisterConnectorAsync(connectorInputModel.ConnectorUrl, businessPartnerNumber, cancellationToken)
             .ConfigureAwait(false);
         createdConnector.SelfDescriptionDocumentId = documentId;
 

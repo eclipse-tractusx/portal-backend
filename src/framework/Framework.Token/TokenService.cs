@@ -19,6 +19,8 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
@@ -32,7 +34,25 @@ public class TokenService : ITokenService
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<string?> GetTokenAsync(GetTokenSettings settings, CancellationToken cancellationToken)
+    public async Task<HttpClient> GetAuthorizedClient<T>(KeyVaultAuthSettings settings, CancellationToken cancellationToken)
+    {
+        var tokenParameters = new GetTokenSettings(
+            $"{typeof(T).Name}Auth",
+            settings.Username,
+            settings.Password,
+            settings.ClientId,
+            settings.GrantType,
+            settings.ClientSecret,
+            settings.Scope);
+
+        var token = await this.GetTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(false);
+
+        var httpClient = _httpClientFactory.CreateClient(typeof(T).Name);
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return httpClient;
+    }
+    
+    private async Task<string?> GetTokenAsync(GetTokenSettings settings, CancellationToken cancellationToken)
     {
         try
         {

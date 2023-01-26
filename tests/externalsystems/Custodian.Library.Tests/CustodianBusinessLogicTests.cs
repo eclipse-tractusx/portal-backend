@@ -63,7 +63,7 @@ public class CustodianBusinessLogicTests
     #region Create Wallet
 
     [Fact]
-    public async Task CreateWallet_WithNotExistingApplication_ThrowsNotFoundException()
+    public async Task CreateWallet_WithNotExistingApplication_ThrowsConflictException()
     {
         // Arrange
         var applicationId = Guid.NewGuid();
@@ -73,12 +73,12 @@ public class CustodianBusinessLogicTests
         async Task Act() => await _logic.CreateWalletAsync(applicationId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"CompanyApplication {applicationId} is not in status SUBMITTED");
     }
 
     [Fact]
-    public async Task CreateWallet_WithApplicationWithoutBpn_ThrowsControllerArgumentException()
+    public async Task CreateWallet_WithApplicationWithoutBpn_ThrowsConflictException()
     {
         // Arrange
         SetupForCreateWallet();
@@ -87,8 +87,7 @@ public class CustodianBusinessLogicTests
         async Task Act() => await _logic.CreateWalletAsync(IdWithoutBpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.ParamName.Should().Be("bpn");
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
     }
 
     [Fact]
@@ -108,6 +107,40 @@ public class CustodianBusinessLogicTests
 
     #endregion
 
+    #region GetWalletByBpnAsync
+
+    [Fact]
+    public async Task GetWalletByBpnAsync_WithoutBpn_ThrowsConflictException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(applicationId)).ReturnsLazily(() => (string?)null);
+
+        // Act
+        async Task Act() => await _logic.GetWalletByBpnAsync(applicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("BusinessPartnerNumber is not set");
+    }
+
+    [Fact]
+    public async Task GetWalletByBpnAsync_WithValidData_CallsExpected()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(applicationId)).ReturnsLazily(() => ValidBpn);
+
+        // Act
+        await _logic.GetWalletByBpnAsync(applicationId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _custodianService.GetWalletByBpnAsync(ValidBpn, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
     #region Setup
     
     private void SetupForCreateWallet()

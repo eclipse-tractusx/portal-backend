@@ -18,24 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 
 /// <summary>
-/// Settings used in business logic concerning connectors.
+/// Service to call the clearinghouse endpoints
 /// </summary>
-public class SdFactorySettings
+public interface IClearinghouseService
 {
     /// <summary>
-    /// SD Factory endpoint for registering connectors.
+    /// Triggers the clearinghouse post
     /// </summary>
-    [Required]
-    public string SdFactoryUrl { get; set; } = null!;
-
-    /// <summary>
-    /// BPN of the issuer for the sd factory
-    /// </summary>
-    [Required]
-    public string SdFactoryIssuerBpn { get; set; } = null!;
+    /// <param name="data">The clearinghouse data</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
+    Task TriggerCompanyDataPost(ClearinghouseTransferData data, CancellationToken cancellationToken);
 }

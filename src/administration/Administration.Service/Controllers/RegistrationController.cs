@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
@@ -84,29 +85,6 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<CompanyApplicationDetails>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery] int page, [FromQuery] int size, [FromQuery] CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, [FromQuery] string? companyName = null) =>
         _logic.GetCompanyApplicationDetailsAsync(page, size,companyApplicationStatusFilter, companyName);
-
-    /// <summary>
-    /// Approves the partner request
-    /// </summary>
-    /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application that should be approved</param>
-    /// <param name="cancellationToken">Cancellation Token</param>
-    /// <returns>the result as a boolean</returns>
-    /// Example: PUT: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/approveRequest
-    /// <response code="200">the result as a boolean.</response>
-    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, the BusinessPartnerNumber (bpn) for the given CompanyApplications company is empty or no applicationId was set.</response>
-    /// <response code="404">Application ID not found.</response>
-    /// <response code="500">Internal Server Error.</response>
-    /// <response code="502">Bad Gateway Service Error.</response>
-    [HttpPut]
-    [Authorize(Roles = "approve_new_partner")]
-    [Route("application/{applicationId}/approveRequest")]
-    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public Task<bool> ApprovePartnerRequest([FromRoute] Guid applicationId, CancellationToken cancellationToken) =>
-        this.WithIamUserAndBearerToken((auth) => _logic.ApprovePartnerRequest(auth.iamUserId, auth.bearerToken, applicationId, cancellationToken));
 
     /// <summary>
     /// Decline the Partner Registration Request
@@ -213,7 +191,7 @@ public class RegistrationController : ControllerBase
     /// Declines the registration verification for the application with the given id
     /// </summary>
     /// <param name="applicationId">Id of the application that should be declined</param>
-    /// <param name="comment">Comment to explain why the application got declined</param>
+    /// <param name="data">Comment to explain why the application got declined</param>
     /// <remarks>
     /// Example: GET: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/decline
     /// </remarks>
@@ -226,9 +204,32 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> DeclineApplication([FromRoute] Guid applicationId, [FromBody] string comment)
+    public async Task<NoContentResult> DeclineApplication([FromRoute] Guid applicationId, [FromBody] RegistrationDeclineData data)
     {
-        await _logic.SetRegistrationVerification(applicationId, false, comment).ConfigureAwait(false);
+        await _logic.SetRegistrationVerification(applicationId, false, data.Comment).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Processes the clearinghouse response
+    /// </summary>
+    /// <param name="bpn" example="">Id of the application that should be approved</param>
+    /// <param name="responseData">Response data from clearinghouse</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/clearinghouse/4f0146c6-32aa-4bb1-b844-df7e8babdcb4
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the clearing_house process is not in status IN_PROGRESS.</response>
+    /// <response code="404">No application found for the bpn.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("clearinghouse/{bpn}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> ProcessClearinghouseResponse([FromRoute] string bpn, [FromBody] ClearinghouseResponseData responseData, CancellationToken cancellationToken)
+    {
+        await _logic.ProcessClearinghouseResponseAsync(bpn, responseData, cancellationToken).ConfigureAwait(false);
         return NoContent();
     }
 }
