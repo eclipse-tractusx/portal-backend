@@ -281,7 +281,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             var mailParameters = new Dictionary<string, string>
             {
                 { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
-                { "companyName", user.CompanyName }
+                { "companyName", user.CompanyName },
+                { "url", _settings.BasePortalAddress }
             };
 
             await _mailingService.SendMails(user.Email, mailParameters, new List<string> { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
