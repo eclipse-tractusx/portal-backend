@@ -85,21 +85,20 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid SubscriptionId, OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, string? AppName, Guid CompanyUserId, string? Email, string? Firstname)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
+    public Task<(Guid SubscriptionId, OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, string? AppName, Guid CompanyUserId, RequesterData Requester)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId) =>
         _context.Offers
             .Where(app => app.Id == appId)
             .Select(app => new {
                 App = app,
                 OfferSubscription = app.OfferSubscriptions.SingleOrDefault(subscription => subscription.CompanyId == companyId),
             })
-            .Select(x => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, string?, string?>(
+            .Select(x => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData>(
                 x.OfferSubscription!.Id,
                 x.OfferSubscription.OfferSubscriptionStatusId,
                 x.OfferSubscription.RequesterId,
                 x.App.Name,
                 x.App.ProviderCompany!.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)!.Id,
-                x.OfferSubscription!.Requester!.Email,
-                x.OfferSubscription.Requester.Firstname
+                new RequesterData(x.OfferSubscription.Requester!.Email, x.OfferSubscription.Requester.Firstname, x.OfferSubscription.Requester.Lastname)
             ))
             .SingleOrDefaultAsync();
 
@@ -138,15 +137,16 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .Select(x => new OfferSubscriptionTransferData(
                     x.OfferSubscriptionStatusId, 
                     x.Offer!.ProviderCompany!.CompanyUsers.Where(cu => cu.IamUser!.UserEntityId == iamUserId).Select(cu => cu.Id).SingleOrDefault(),
-                    x.Offer!.ProviderCompany!.CompanyServiceAccounts.Where(cu => cu.IamServiceAccount!.UserEntityId == iamUserId).Select(cu => cu.Id).SingleOrDefault(),
+                    x.Offer.ProviderCompany.CompanyServiceAccounts.Where(cu => cu.IamServiceAccount!.UserEntityId == iamUserId).Select(cu => cu.Id).SingleOrDefault(),
                     x.Company!.Name,
                     x.CompanyId,
                     x.RequesterId,
                     x.OfferId,
-                    x.Offer!.Name!,
-                    x.Company.BusinessPartnerNumber!,
+                    x.Company.BusinessPartnerNumber,
+                    x.Offer!.Name,
                     x.Requester!.Email,
-                    x.Requester!.Firstname
+                    x.Requester.Firstname,
+                    x.Requester.Lastname
             ))
             .SingleOrDefaultAsync();
 
