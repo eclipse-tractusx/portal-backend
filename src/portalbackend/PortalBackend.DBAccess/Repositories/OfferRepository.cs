@@ -307,7 +307,9 @@ public class OfferRepository : IOfferRepository
                  offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
                  offer.OfferLicenses.FirstOrDefault()!.Licensetext,
                  offer.OfferSubscriptions.Where(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)).Select(x => new OfferSubscriptionStateDetailData(x.Id, x.OfferSubscriptionStatusId)),
-                 offer.ServiceTypes.Select(x => x.Id)
+                 offer.ServiceTypes.Select(x => x.Id),
+                 offer.Documents.Where(doc => doc.DocumentTypeId == DocumentTypeId.ADDITIONAL_DETAILS)
+                    .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName))
              ))
              .SingleOrDefaultAsync();
 
