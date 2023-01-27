@@ -399,10 +399,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetActiveServices
     
     [Theory]
-    [InlineData(ServiceOverviewSorting.ProviderAsc, new [] { "Newest Service", "Newest Service 2" }, new [] { "some long Description", null })]
-    [InlineData(ServiceOverviewSorting.ProviderDesc, new [] { "Newest Service 2", "Newest Service" }, new [] { null, "some long Description" })]
-    [InlineData(ServiceOverviewSorting.ReleaseDateAsc, new [] { "Newest Service", "Newest Service 2" }, new [] { "some long Description", null })]
-    [InlineData(ServiceOverviewSorting.ReleaseDateDesc, new [] { "Newest Service 2", "Newest Service" }, new [] { null, "some long Description" })]
+    [InlineData(ServiceOverviewSorting.ProviderAsc, new [] { "Newest Service", "Newest Service 2" }, new [] { "some short Description", null })]
+    [InlineData(ServiceOverviewSorting.ProviderDesc, new [] { "Newest Service 2", "Newest Service" }, new [] { null, "some short Description" })]
+    [InlineData(ServiceOverviewSorting.ReleaseDateAsc, new [] { "Newest Service", "Newest Service 2" }, new [] { "some short Description", null })]
+    [InlineData(ServiceOverviewSorting.ReleaseDateDesc, new [] { "Newest Service 2", "Newest Service" }, new [] { null, "some short Description" })]
     public async Task GetActiveServices_ReturnsExpectedResult(ServiceOverviewSorting sorting, IEnumerable<string> names, IEnumerable<string> descriptions)
     {
         // Arrange

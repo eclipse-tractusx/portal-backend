@@ -273,7 +273,7 @@ public class OfferRepository : IOfferRepository
                 service.Name!,
                 service.Provider,
                 service.ContactEmail,
-                service.OfferDescriptions.SingleOrDefault(ln => ln.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionLong,
+                service.OfferDescriptions.SingleOrDefault(ln => ln.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionShort,
                 service.OfferLicenses.FirstOrDefault()!.Licensetext,
                 service.ServiceTypes.Select(x => x.Id)))
         .SingleOrDefaultAsync();
