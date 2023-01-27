@@ -902,7 +902,8 @@ public class OfferServiceTests
     public async Task ApproveOfferRequestAsync_ExecutesSuccessfully()
     {
         //Arrange
-        var offer = _fixture.Build<Offer>().With(o => o.OfferStatusId, OfferStatusId.IN_REVIEW).Create();
+        var datetimeUTC = DateTimeOffset.UtcNow;
+        var offer = _fixture.Build<Offer>().With(o => o.OfferStatusId, OfferStatusId.IN_REVIEW).With(o => o.DateReleased, datetimeUTC.Date).Create();
         var requesterId = _fixture.Create<Guid>();
         var companyId = _fixture.Create<Guid>();
         var iamUserId = _fixture.Create<string>();
@@ -937,6 +938,7 @@ public class OfferServiceTests
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId)).MustHaveHappened();
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._)).MustHaveHappened();
        offer.OfferStatusId.Should().Be(OfferStatusId.ACTIVE);
+       offer.DateReleased.Should().BeSameDateAs(datetimeUTC.Date);
        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
