@@ -77,15 +77,25 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerSubscriptionService.AddOfferSubscriptionAsync(serviceId, offerAgreementConsentData, iamUserId, accessToken, _settings.ServiceManagerRoles, OfferTypeId.SERVICE, _settings.BasePortalAddress);
 
     /// <inheritdoc />
-    public async Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId)
+    public async Task<ServiceDetailResponse> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId)
     {        
-        var serviceDetailData = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang, iamUserId).ConfigureAwait(false);
-        if (serviceDetailData == default)
+        var result = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang, iamUserId).ConfigureAwait(false);
+        if (result == default)
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
         }
 
-        return serviceDetailData;
+        return new ServiceDetailResponse(
+            result.Id,
+            result.Title,
+            result.Provider,
+            result.ContactEmail,
+            result.Description,
+            result.Price,
+            result.OfferSubscriptionDetailData,
+            result.ServiceTypeIds,
+            result.Documents.GroupBy(doc => doc.documentTypeId).ToDictionary(d => d.Key, d => d.Select(x => new DocumentData(x.documentId, x.documentName)))
+        );
     }
 
     /// <inheritdoc />
