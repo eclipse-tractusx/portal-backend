@@ -75,6 +75,19 @@ public class ServiceSettings
     [Required]
     public IDictionary<string, IEnumerable<string>> ApproveServiceUserRoles { get; init; } = null!;
 
+    /// <summary>
+    /// Document Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; } = null!;
+
+    /// <summary>
+    /// Document Content Type Settings
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<string> ContentTypeSettings { get; set; } = null!;
 }
 
 public static class ServiceSettingsExtension

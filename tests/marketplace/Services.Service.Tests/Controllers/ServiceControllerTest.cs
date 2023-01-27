@@ -21,6 +21,7 @@
 using AutoFixture;
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
@@ -29,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
@@ -297,5 +299,23 @@ public class ServiceControllerTest
         //Assert
         A.CallTo(() => _logic.DeclineServiceRequestAsync(serviceId, IamUserId, data)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task UpdateServiceDocumentAsync_CallExpected()
+    {
+        // Arrange
+        var serviceId = _fixture.Create<Guid>();
+        var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
+        A.CallTo(() => _logic.CreateServiceDocumentAsync(A<Guid>._,
+            A<DocumentTypeId>._, A<IFormFile>._, A<string>._, CancellationToken.None))
+            .Returns(1);
+        
+        // Act
+        var result = await this._controller.UpdateServiceDocumentAsync(serviceId,DocumentTypeId.ADDITIONAL_DETAILS,file,CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.CreateServiceDocumentAsync(serviceId,
+            DocumentTypeId.ADDITIONAL_DETAILS, file, IamUserId, CancellationToken.None)).MustHaveHappened();
     }
 }

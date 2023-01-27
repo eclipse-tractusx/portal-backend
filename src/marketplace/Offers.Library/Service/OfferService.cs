@@ -18,8 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
@@ -721,5 +723,41 @@ public class OfferService : IOfferService
         appRepository.AttachAndModifyOffer(appId, offer => 
             offer.OfferStatusId = OfferStatusId.INACTIVE );
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    public async Task<int> UploadDocumentAsync(Guid Id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offertypeId, CancellationToken cancellationToken)
+    {
+        if (Id == Guid.Empty)
+            throw new ControllerArgumentException($"{offertypeId}id should not be null");
+
+        if (string.IsNullOrEmpty(document.FileName))
+            throw new ControllerArgumentException("File name should not be null");
+
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(Id, iamUserId, OfferStatusId.CREATED, offertypeId).ConfigureAwait(false);
+
+        if (result == default)
+            throw new NotFoundException($"{offertypeId} {Id} does not exist");
+
+        var companyUserId = result.CompanyUserId;
+        if (companyUserId == Guid.Empty)
+            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of {offertypeId} {Id}");
+
+        var documentName = document.FileName;
+        using var sha512Hash = SHA512.Create();
+        using var ms = new MemoryStream((int)document.Length);
+
+        await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
+        var hash = sha512Hash.ComputeHash(ms);
+        var documentContent = ms.GetBuffer();
+        if (ms.Length != document.Length || documentContent.Length != document.Length)
+            throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
+        
+        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, documentTypeId, x =>
+        {
+            x.CompanyUserId = companyUserId;
+        });
+        _portalRepositories.GetInstance<IOfferRepository>().CreateOfferAssignedDocument(Id, doc.Id);
+        return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

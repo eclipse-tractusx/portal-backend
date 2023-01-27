@@ -319,4 +319,30 @@ public class ServicesController : ControllerBase
         await this.WithIamUserId(userId => _serviceBusinessLogic.DeclineServiceRequestAsync(serviceId, userId, data)).ConfigureAwait(false);
         return NoContent();
     }
+
+    /// <summary>
+    /// Upload document for active service in the marketplace for given serviceId for same company as user
+    /// </summary>
+    /// <param name="serviceId"></param>
+    /// <param name="documentTypeId"></param>
+    /// <param name="document"></param>
+    /// <param name="cancellationToken"></param>
+    /// <remarks>Example: PUT: /api/services/updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents</remarks>
+    /// <response code="200">Successfully uploaded the document</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="404">service does not exist.</response>
+    /// <response code="403">The user is not assigned with the service.</response>
+    /// <response code="415">Only PDF files are supported.</response>
+    [HttpPut]
+    [Route("updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents")]
+    [Authorize(Roles = "add_service_offering")]
+    [Consumes("multipart/form-data")]
+    [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
+    public Task<int> UpdateServiceDocumentAsync([FromRoute] Guid serviceId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
+         this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateServiceDocumentAsync(serviceId, documentTypeId, document, iamUserId, cancellationToken));
 }

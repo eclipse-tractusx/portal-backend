@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -177,4 +178,15 @@ public interface IOfferService
     /// <param name="iamUserId">Id of the iam User</param>
     /// <param name="offerTypeId">Type of the offer</param>
     Task DeactivateOfferIdAsync(Guid appId, string iamUserId, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Upload Document the given offertypeId by Id
+    /// </summary>
+    /// <param name="Id"></param>
+    /// <param name="documentTypeId"></param>
+    /// <param name="document"></param>
+    /// <param name="iamUserId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="offertypeId"></param>
+    Task<int> UploadDocumentAsync(Guid Id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offertypeId, CancellationToken cancellationToken);
 }
