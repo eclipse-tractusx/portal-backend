@@ -79,11 +79,15 @@ public partial class ProvisioningManager : IProvisioningManager
         await DeleteSharedIdpServiceAccountAsync(sharedKeycloak, alias);
     }
 
-    public async Task<string> CreateOwnIdpAsync(string displayName, IamIdentityProviderProtocol providerProtocol)
+    public async Task<string> CreateOwnIdpAsync(string displayName, string organisationName, IamIdentityProviderProtocol providerProtocol)
     {
         var idpName = await GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
 
         await CreateCentralIdentityProviderAsync(idpName, displayName, GetIdentityProviderTemplate(providerProtocol)).ConfigureAwait(false);
+
+        await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false);
+
+        await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false);
 
         return idpName;
     }
