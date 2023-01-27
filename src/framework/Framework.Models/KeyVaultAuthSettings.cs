@@ -43,5 +43,5 @@ public class KeyVaultAuthSettings
     public string Scope { get; set; } = null!;
 
     [Required(AllowEmptyStrings = false)]
-    public string KeyCloakTokenAdress { get; set; } = null!;
+    public string KeycloakTokenAddress { get; set; } = null!;
 }

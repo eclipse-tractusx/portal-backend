@@ -50,7 +50,7 @@ public class DapsServiceTests
             ClientId = "CatenaX",
             ClientSecret = "pass@Secret",
             GrantType = "cred",
-            KeyCloakTokenAdress = "https://key.cloak.com",
+            KeycloakTokenAddress = "https://key.cloak.com",
         });
         _tokenService = A.Fake<ITokenService>();
     }

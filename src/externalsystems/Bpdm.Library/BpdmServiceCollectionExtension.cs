@@ -39,11 +39,11 @@ public static class BpdmServiceCollectionExtension
         var settings = sp.GetRequiredService<IOptions<BpdmServiceSettings>>();
         services.AddHttpClient(nameof(BpdmService), c =>
         {
-            c.BaseAddress = new Uri(settings.Value.BaseAdress);
+            c.BaseAddress = new Uri(settings.Value.BaseAddress);
         }).AddHttpMessageHandler<LoggingHandler<BpdmService>>();
         services.AddHttpClient($"{nameof(BpdmService)}Auth", c =>
         {
-            c.BaseAddress = new Uri(settings.Value.KeyCloakTokenAdress);
+            c.BaseAddress = new Uri(settings.Value.KeycloakTokenAddress);
         }).AddHttpMessageHandler<LoggingHandler<BpdmService>>();
         services.AddTransient<IBpdmService, BpdmService>()
             .AddTransient<IBpdmBusinessLogic, BpdmBusinessLogic>();

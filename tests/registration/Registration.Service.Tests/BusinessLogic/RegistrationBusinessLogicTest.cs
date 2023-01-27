@@ -102,7 +102,7 @@ public class RegistrationBusinessLogicTest
         var options = Options.Create(new RegistrationSettings
         {
             BasePortalAddress = "just a test",
-            KeyCloakClientID = "CatenaX"
+            KeycloakClientID = "CatenaX"
         });
         _fixture.Inject(options);
         _fixture.Inject(A.Fake<IMailingService>());

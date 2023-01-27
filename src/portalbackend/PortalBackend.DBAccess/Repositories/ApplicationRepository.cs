@@ -225,7 +225,7 @@ public class ApplicationRepository : IApplicationRepository
             .AsNoTracking()
             .Where(application => companyName == null || EF.Functions.ILike(application.Company!.Name, $"%{companyName.EscapeForILike()}%"));
 
-    public Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAdressUntrackedAsync(Guid companyApplicationId) =>
+    public Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAddressUntrackedAsync(Guid companyApplicationId) =>
         _dbContext.CompanyApplications
             .AsSplitQuery()
             .Where(companyApplication => companyApplication.Id == companyApplicationId)

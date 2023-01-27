@@ -60,7 +60,7 @@ public class UserUploadBusinessLogicTests
         _identityProviderId = _fixture.Create<Guid>();
         _iamUserId = _fixture.Create<string>();
         _clientId = _fixture.Create<string>();
-        _settings = _fixture.Build<UserSettings>().With(x => x.Portal, _fixture.Build<UserSetting>().With(x => x.KeyCloakClientID, _clientId).Create()).Create();
+        _settings = _fixture.Build<UserSettings>().With(x => x.Portal, _fixture.Build<UserSetting>().With(x => x.KeycloakClientID, _clientId).Create()).Create();
         _encoding = _fixture.Create<Encoding>();
 
         _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();

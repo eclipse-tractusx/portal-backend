@@ -249,7 +249,7 @@ public class BPNAccessTest
 
     #endregion        
 
-    #region FetchLegalEntityAdressByBpn
+    #region FetchLegalEntityAddressByBpn
 
     [Fact]
     public async Task FetchLegalEntityAddressByBpn_Success_ReturnsExpected()

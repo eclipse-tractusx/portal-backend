@@ -148,7 +148,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         var unknownRoles = roles.Except(validRoleData.Select(r => r.UserRoleText));
         if (unknownRoles.Any())
         {
-            var roleData = await _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeyCloakClientID, unknownRoles, iamUserId)
+            var roleData = await _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, unknownRoles, iamUserId)
                 .ConfigureAwait(false);
 
             if (roleData != null)

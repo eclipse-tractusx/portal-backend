@@ -48,17 +48,17 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
-    #region GetCompanyUserRoleWithAdressUntrackedAsync
+    #region GetCompanyUserRoleWithAddressUntrackedAsync
     
     [Fact]
-    public async Task GetCompanyUserRoleWithAdressUntrackedAsync_WithExistingEntry_ReturnsExpectedResult()
+    public async Task GetCompanyUserRoleWithAddressUntrackedAsync_WithExistingEntry_ReturnsExpectedResult()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut
-            .GetCompanyUserRoleWithAdressUntrackedAsync(new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"))
+            .GetCompanyUserRoleWithAddressUntrackedAsync(new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"))
             .ConfigureAwait(false);
 
         // Assert
