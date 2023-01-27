@@ -43,7 +43,7 @@ public static class SdServiceCollectionExtension
         }).AddHttpMessageHandler<LoggingHandler<SdFactoryService>>();
         services.AddHttpClient($"{nameof(SdFactoryService)}Auth", c =>
         {
-            c.BaseAddress = new Uri(settings.Value.KeyCloakTokenAdress);
+            c.BaseAddress = new Uri(settings.Value.KeycloakTokenAddress);
         }).AddHttpMessageHandler<LoggingHandler<SdFactoryService>>();
 
         services

@@ -40,7 +40,7 @@ public static class DapsServiceCollectionExtension
         }).AddHttpMessageHandler<LoggingHandler<DapsService>>();
         services.AddHttpClient($"{nameof(DapsService)}Auth", c =>
         {
-            c.BaseAddress = new Uri(settings.Value.KeyCloakTokenAdress);
+            c.BaseAddress = new Uri(settings.Value.KeycloakTokenAddress);
         }).AddHttpMessageHandler<LoggingHandler<DapsService>>();
         services.AddTransient<IDapsService, DapsService>();
 

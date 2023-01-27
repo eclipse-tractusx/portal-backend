@@ -71,7 +71,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     }
 
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
-        _portalRepositories.GetInstance<IUserRolesRepository>().GetClientRolesCompositeAsync(_settings.KeyCloakClientID);
+        _portalRepositories.GetInstance<IUserRolesRepository>().GetClientRolesCompositeAsync(_settings.KeycloakClientID);
 
     [Obsolete($"use {nameof(GetCompanyBpdmDetailDataByBusinessPartnerNumber)} instead")]
     public IAsyncEnumerable<FetchBusinessPartnerDto> GetCompanyByIdentifierAsync(string companyIdentifier, string token, CancellationToken cancellationToken)
@@ -459,7 +459,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         if (userCreationInfo.Roles.Any())
         {
             var clientRoles = new Dictionary<string,IEnumerable<string>> {
-                { _settings.KeyCloakClientID, userCreationInfo.Roles }
+                { _settings.KeycloakClientID, userCreationInfo.Roles }
             };
             userRoleDatas = await _userProvisioningService.GetRoleDatas(clientRoles).ToListAsync().ConfigureAwait(false);
         }
@@ -665,7 +665,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         await foreach (var item in _portalRepositories.GetInstance<IInvitationRepository>().GetInvitedUserDetailsUntrackedAsync(applicationId).ConfigureAwait(false))
         {
-            var userRoles = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeyCloakClientID).ConfigureAwait(false);
+            var userRoles = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeycloakClientID).ConfigureAwait(false);
             yield return new InvitedUser(
                 item.InvitationStatus,
                 item.EmailId,

@@ -152,7 +152,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         {
             Task.FromResult(Enumerable.Empty<UserRoleData>());
         }
-        return _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeyCloakClientID, roles, iamUserId);
+        return _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, roles, iamUserId);
     }
 
     public async Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo, string iamUserId)

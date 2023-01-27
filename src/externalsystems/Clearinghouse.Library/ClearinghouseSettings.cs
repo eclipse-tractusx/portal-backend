@@ -29,5 +29,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 public class ClearinghouseSettings : KeyVaultAuthSettings
 {
     [Required(AllowEmptyStrings = false)]
-    public string BaseAdress { get; set; } = null!;
+    public string BaseAddress { get; set; } = null!;
 }

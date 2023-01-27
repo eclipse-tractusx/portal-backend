@@ -39,11 +39,11 @@ public static class ClearinghouseServiceCollectionExtension
         var settings = sp.GetRequiredService<IOptions<ClearinghouseSettings>>();
         services.AddHttpClient(nameof(ClearinghouseService), c =>
         {
-            c.BaseAddress = new Uri(settings.Value.BaseAdress);
+            c.BaseAddress = new Uri(settings.Value.BaseAddress);
         }).AddHttpMessageHandler<LoggingHandler<ClearinghouseService>>();
         services.AddHttpClient($"{nameof(ClearinghouseService)}Auth", c =>
         {
-            c.BaseAddress = new Uri(settings.Value.KeyCloakTokenAdress);
+            c.BaseAddress = new Uri(settings.Value.KeycloakTokenAddress);
         }).AddHttpMessageHandler<LoggingHandler<ClearinghouseService>>();
         services
             .AddTransient<IClearinghouseService, ClearinghouseService>()

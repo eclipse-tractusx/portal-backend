@@ -29,5 +29,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 public class BpdmServiceSettings : KeyVaultAuthSettings
 {
     [Required(AllowEmptyStrings = false)]
-    public string BaseAdress { get; set; } = null!;
+    public string BaseAddress { get; set; } = null!;
 }

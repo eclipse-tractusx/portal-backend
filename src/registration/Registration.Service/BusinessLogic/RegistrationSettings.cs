@@ -27,12 +27,12 @@ public class RegistrationSettings
 {
     public RegistrationSettings()
     {
-        KeyCloakClientID = null!;
+        KeycloakClientID = null!;
         BasePortalAddress = null!;
     }
 
     [Required(AllowEmptyStrings = false)]
-    public string KeyCloakClientID { get; set; }
+    public string KeycloakClientID { get; set; }
     
     [Required(AllowEmptyStrings = false)]
     public string BasePortalAddress { get; set; }

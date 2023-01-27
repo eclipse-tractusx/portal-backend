@@ -27,10 +27,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library
     {
         public CustodianSettings()
         {
-            BaseAdress = null!;
+            BaseAddress = null!;
         }
 
         [Required(AllowEmptyStrings = false)]
-        public string BaseAdress { get; set; }
+        public string BaseAddress { get; set; }
     }
 }

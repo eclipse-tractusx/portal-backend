@@ -159,14 +159,14 @@ public class RegistrationBusinessLogicTest
         var data = _fixture.Build<CompanyUserRoleWithAddress>()
             .With(x => x.AgreementsData, _fixture.CreateMany<AgreementsData>(20))
             .Create();
-        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAdressUntrackedAsync(applicationId))
+        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAddressUntrackedAsync(applicationId))
             .Returns(data);
 
         // Act
         var result = await _logic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAdressUntrackedAsync(applicationId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAddressUntrackedAsync(applicationId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<CompanyWithAddressData>();
         result.Should().Match<CompanyWithAddressData>(r =>
             r.CompanyId == data.CompanyId &&
@@ -205,14 +205,14 @@ public class RegistrationBusinessLogicTest
             .With(x => x.CountryDe, (string?)null)
             .With(x => x.InvitedCompanyUserData, _fixture.CreateMany<Guid>().Select(id => new InvitedCompanyUserData(id, null, null, null)))
             .Create();
-        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAdressUntrackedAsync(applicationId))
+        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAddressUntrackedAsync(applicationId))
             .Returns(data);
 
         // Act
         var result = await _logic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAdressUntrackedAsync(applicationId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAddressUntrackedAsync(applicationId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<CompanyWithAddressData>();
         result.Should().Match<CompanyWithAddressData>(r =>
             r.CompanyId == data.CompanyId &&

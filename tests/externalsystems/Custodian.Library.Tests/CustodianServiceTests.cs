@@ -48,11 +48,11 @@ public class CustodianServiceTests
             Password = "passWord",
             Scope = "test",
             Username = "user@name",
-            BaseAdress = "https://base.address.com",
+            BaseAddress = "https://base.address.com",
             ClientId = "CatenaX",
             ClientSecret = "pass@Secret",
             GrantType = "cred",
-            KeyCloakTokenAdress = "https://key.cloak.com"
+            KeycloakTokenAddress = "https://key.cloak.com"
         });
         _tokenService = A.Fake<ITokenService>();
     }

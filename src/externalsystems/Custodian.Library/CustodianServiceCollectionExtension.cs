@@ -39,11 +39,11 @@ public static class CustodianServiceCollectionExtension
         var settings = sp.GetRequiredService<IOptions<CustodianSettings>>();
         services.AddHttpClient(nameof(CustodianService), c =>
         {
-            c.BaseAddress = new Uri(settings.Value.BaseAdress);
+            c.BaseAddress = new Uri(settings.Value.BaseAddress);
         }).AddHttpMessageHandler<LoggingHandler<CustodianService>>();
         services.AddHttpClient($"{nameof(CustodianService)}Auth", c =>
         {
-            c.BaseAddress = new Uri(settings.Value.KeyCloakTokenAdress);
+            c.BaseAddress = new Uri(settings.Value.KeycloakTokenAddress);
         }).AddHttpMessageHandler<LoggingHandler<CustodianService>>();
         services
             .AddTransient<ICustodianService, CustodianService>()
