@@ -242,6 +242,8 @@ public class ServiceBusinessLogicTests
 
         // Assert
         result.Id.Should().Be(_existingServiceId);
+        result.Documents.Select(x => x.Key).Contains(DocumentTypeId.ADDITIONAL_DETAILS);
+        Assert.IsType<ServiceDetailResponse>(result);
     }
 
     [Fact]
