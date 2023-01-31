@@ -343,6 +343,6 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
-    public Task<int> UpdateServiceDocumentAsync([FromRoute] Guid serviceId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
+    public Task UpdateServiceDocumentAsync([FromRoute] Guid serviceId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
          this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateServiceDocumentAsync(serviceId, documentTypeId, document, iamUserId, cancellationToken));
 }

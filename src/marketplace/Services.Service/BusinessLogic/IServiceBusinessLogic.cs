@@ -162,5 +162,5 @@ public interface IServiceBusinessLogic
     /// <param name="iamUserId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<int> CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
+    Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
 }

@@ -365,55 +365,9 @@ public class AppReleaseBusinessLogicTest
         await sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.UploadDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, OfferTypeId.APP, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.UploadDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, OfferTypeId.APP, settings.DocumentTypeIds, settings.ContentTypeSettings, CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
     
-    [Fact]
-    public async Task CreateAppDocumentAsync_WrongContentTypeThrows()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
-        var settings = new AppsSettings()
-        {
-            ContentTypeSettings = new[] { "text/csv" },
-            DocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
-        };
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
-     
-        // Act
-        async Task Act() => await sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        
-        var error = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
-       
-        error.Message.Should().Be($"Document type not supported. File with contentType :{string.Join(",", settings.ContentTypeSettings)} are allowed.");
-    }
-    
-    [Fact]
-    public async Task CreateAppDocumentAsync_documentTypeIdException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
-        var settings = new AppsSettings()
-        {
-            ContentTypeSettings = new[] { "application/pdf" },
-            DocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
-        };
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
-     
-        // Act
-        async Task Act() => await sut.CreateAppDocumentAsync(appId, DocumentTypeId.SELF_DESCRIPTION, file, _iamUser.UserEntityId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-       
-        error.Message.Should().Be($"documentType must be either: {string.Join(",", settings.DocumentTypeIds)}");
-    }
-
     #endregion
 
     #region  AddActiveAppUserRole

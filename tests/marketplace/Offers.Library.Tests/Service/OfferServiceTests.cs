@@ -1238,9 +1238,9 @@ public class OfferServiceTests
     #region UploadDocument
     
     [Theory]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT)]
-    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS)]
-    public async Task UploadDocumentAsync_WithValidData_CallsExpected(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT, new[] { DocumentTypeId.APP_CONTRACT }, new [] { "application/pdf" })]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS, new[] { DocumentTypeId.ADDITIONAL_DETAILS }, new [] { "application/pdf" })]
+    public async Task UploadDocumentAsync_WithValidData_CallsExpected(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings)
     {
         // Arrange
         var Id = _fixture.Create<Guid>();
@@ -1265,7 +1265,7 @@ public class OfferServiceTests
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
         // Act
-        await sut.UploadDocumentAsync(Id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, CancellationToken.None).ConfigureAwait(false);
+        await sut.UploadDocumentAsync(Id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, documentTypeIdSettings, contentTypeSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -1274,9 +1274,9 @@ public class OfferServiceTests
     }
 
     [Theory]
-    [InlineData(OfferTypeId.APP,DocumentTypeId.APP_CONTRACT)]
-    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS)]
-    public async Task UploadDocumentAsync_InValidData_ThrowsNotFoundException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT, new[] { DocumentTypeId.APP_CONTRACT }, new [] { "application/pdf" })]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS, new[] { DocumentTypeId.ADDITIONAL_DETAILS }, new [] { "application/pdf" })]
+    public async Task UploadDocumentAsync_InValidData_ThrowsNotFoundException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings)
     {
         // Arrange
         var Id = _fixture.Create<Guid>();
@@ -1286,7 +1286,7 @@ public class OfferServiceTests
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
         // Act
-        async Task Act() => await sut.UploadDocumentAsync(Id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UploadDocumentAsync(Id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, documentTypeIdSettings, contentTypeSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -1294,9 +1294,9 @@ public class OfferServiceTests
     }
 
     [Theory]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT)]
-    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS)]
-    public async Task UploadDocumentAsync_InValidData_ThrowsForbiddenException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT, new[] { DocumentTypeId.APP_CONTRACT }, new [] { "application/pdf" })]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS, new[] { DocumentTypeId.ADDITIONAL_DETAILS }, new [] { "application/pdf" })]
+    public async Task UploadDocumentAsync_InValidData_ThrowsForbiddenException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings)
     {
         // Arrange
         var Id = _fixture.Create<Guid>();
@@ -1306,7 +1306,7 @@ public class OfferServiceTests
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
         // Act
-        async Task Act() => await sut.UploadDocumentAsync(Id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UploadDocumentAsync(Id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, documentTypeIdSettings, contentTypeSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
@@ -1314,16 +1314,16 @@ public class OfferServiceTests
     }
 
     [Theory]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT)]
-    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS)]
-    public async Task UploadDocumentAsync_EmptyId_ThrowsControllerArgumentException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT, new[] { DocumentTypeId.APP_CONTRACT }, new [] { "application/pdf" })]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS, new[] { DocumentTypeId.ADDITIONAL_DETAILS }, new [] { "application/pdf" })]
+    public async Task UploadDocumentAsync_EmptyId_ThrowsControllerArgumentException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings)
     {
         // Arrange
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
         // Act
-        async Task Act() => await sut.UploadDocumentAsync(Guid.Empty, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UploadDocumentAsync(Guid.Empty, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, documentTypeIdSettings, contentTypeSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -1331,9 +1331,9 @@ public class OfferServiceTests
     }
 
     [Theory]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT)]
-    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS)]
-    public async Task UploadDocumentAsync_EmptyFileName_ThrowsControllerArgumentException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT, new[] { DocumentTypeId.APP_CONTRACT }, new [] { "application/pdf" })]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS, new[] { DocumentTypeId.ADDITIONAL_DETAILS }, new [] { "application/pdf" })]
+    public async Task UploadDocumentAsync_EmptyFileName_ThrowsControllerArgumentException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings)
     {
         // Arrange
         var Id = _fixture.Create<Guid>();
@@ -1341,15 +1341,51 @@ public class OfferServiceTests
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
         // Act
-        async Task Act() => await sut.UploadDocumentAsync(Id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UploadDocumentAsync(Id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, documentTypeIdSettings, contentTypeSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         ex.Message.Should().Be($"File name should not be null");
     }
 
+    [Theory]
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT, new[] { DocumentTypeId.APP_CONTRACT }, new [] { "application/pdf" })]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS, new[] { DocumentTypeId.ADDITIONAL_DETAILS }, new [] { "application/pdf" })]
+    public async Task UploadDocumentAsync_contentType_ThrowsUnsupportedMediaTypeException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings)
+    {
+        // Arrange
+        var Id = _fixture.Create<Guid>();
+        var file = FormFileHelper.GetFormFile("this is just a test", "TestFile.txt", "text/csv");
+        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        async Task Act() => await sut.UploadDocumentAsync(Id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, documentTypeIdSettings, contentTypeSettings, CancellationToken.None).ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"Document type not supported. File with contentType :{string.Join(",", contentTypeSettings)} are allowed.");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, DocumentTypeId.SELF_DESCRIPTION, new[] { DocumentTypeId.APP_CONTRACT }, new [] { "application/pdf" })]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.APP_TECHNICAL_INFORMATION, new[] { DocumentTypeId.ADDITIONAL_DETAILS }, new [] { "application/pdf" })]
+    public async Task UploadDocumentAsync_documentType_ThrowsControllerArgumentException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings)
+    {
+        // Arrange
+        var Id = _fixture.Create<Guid>();
+        var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
+        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        async Task Act() => await sut.UploadDocumentAsync(Id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, documentTypeIdSettings, contentTypeSettings, CancellationToken.None).ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"documentType must be either: {string.Join(",", documentTypeIdSettings)}");
+    }
+
     #endregion
-    
+
     #region Setup
 
     private void SetupValidateSalesManager()
