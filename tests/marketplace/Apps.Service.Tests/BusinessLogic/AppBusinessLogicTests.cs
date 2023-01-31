@@ -258,31 +258,7 @@ public class AppBusinessLogicTests
 
     #endregion
     
-    #region DeclineAppRequest
     
-    [Fact]
-    public async Task DeclineAppRequestAsync_CallsExpected()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var data = new OfferDeclineRequest("Just a test");
-        var settings = new AppsSettings
-        {
-            ServiceManagerRoles = _fixture.Create<Dictionary<string, IEnumerable<string>>>(),
-            BasePortalAddress = "test"
-        };
-        var sut = new AppsBusinessLogic(null!,null!, _offerService, Options.Create(settings), _mailingService);
-     
-        // Act
-        await sut.DeclineAppRequestAsync(appId, IamUserId, data).ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _offerService.DeclineOfferAsync(appId, IamUserId, data,
-            OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION,
-            A<IDictionary<string, IEnumerable<string>>>._, A<string>._)).MustHaveHappenedOnceExactly();
-    }
-    
-    #endregion
     
     #region ActivateOwnCompanyProvidedAppSubscription
 
