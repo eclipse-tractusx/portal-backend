@@ -62,7 +62,7 @@ public interface IServiceBusinessLogic
     /// <param name="lang">Shortcode of the language for the text translations</param>
     /// <param name="iamUserId">Id of the iam User</param>
     /// <returns>Returns the service detail data</returns>
-    Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId);
+    Task<ServiceDetailResponse> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId);
 
     /// <summary>
     /// Gets the Subscription Details for the given Id

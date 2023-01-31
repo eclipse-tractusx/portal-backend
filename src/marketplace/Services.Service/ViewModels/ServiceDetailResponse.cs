@@ -18,28 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
-/// <summary>
-/// View model of an application's detailed data specific for service.
-/// </summary>
-/// <param name="Id">ID of the app.</param>
-/// <param name="Title">Title or name of the app.</param>
-/// <param name="Provider">Provider of the app.</param>
-/// <param name="ContactEmail">Contact email address.</param>
-/// <param name="Description">The description of the service.</param>
-/// <param name="Price">Pricing information of the app.</param>
-/// <param name="OfferSubscriptionDetailData">Detail Data of the offer subscription</param>
-public record OfferDetailData(
-   Guid Id, 
-   string? Title, 
-   string Provider, 
-   string? ContactEmail,
-   string? Description, 
-   string Price, 
-   IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData);
+namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 
 /// <summary>
 /// View model of an application's detailed data specific for service.
@@ -52,8 +35,8 @@ public record OfferDetailData(
 /// <param name="Price">Pricing information of the app.</param>
 /// <param name="OfferSubscriptionDetailData">Detail Data of the offer subscription</param>
 /// <param name="ServiceTypeIds">Collection of the assigned serviceTypeIds.</param>
-/// <param name="Documents">Collections of the Document type Data.</param>
-public record ServiceDetailData(
+/// <param name="Documents">documents assigned to offer</param>
+public record ServiceDetailResponse(
     Guid Id, 
     string? Title, 
     string Provider, 
@@ -62,11 +45,4 @@ public record ServiceDetailData(
     string Price, 
     IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData,
     IEnumerable<ServiceTypeId> ServiceTypeIds,
-    IEnumerable<DocumentTypeData> Documents);
-
-/// <summary>
-/// View Model of the offer subscription data
-/// </summary>
-/// <param name="OfferSubscriptionId">Id of the offerSubscription</param>
-/// <param name="OfferSubscriptionStatus">Latest status</param>
-public record OfferSubscriptionStateDetailData(Guid OfferSubscriptionId, OfferSubscriptionStatusId OfferSubscriptionStatus);
+    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents);

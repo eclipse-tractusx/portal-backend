@@ -462,6 +462,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         offerDetail.Should().NotBeNull();
         offerDetail!.Title.Should().Be("Newest Service");
+        offerDetail!.Documents.Select(x => x.documentTypeId).Should().Contain(DocumentTypeId.ADDITIONAL_DETAILS);
+        Assert.IsType<ServiceDetailData>(offerDetail);
     }
 
     #endregion
