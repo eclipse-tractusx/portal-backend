@@ -319,11 +319,7 @@ public class OfferService : IOfferService
                 (notificationContent, appSubscriptionActivation)
             },
             offerDetails.CompanyId).ConfigureAwait(false);
-
-        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId, appSubscriptionActivation, false, notification =>
-            {
-                notification.Content = notificationContent;
-            });
+       
     }
 
     /// <inheritdoc />
