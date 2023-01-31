@@ -291,10 +291,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerService.GetOfferAgreementsAsync(appId, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data) => 
-        _offerService.DeclineOfferAsync(appId, iamUserId, data, OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.AppOverviewAddress);
-    
-    /// <inheritdoc />
     public Task DeactivateOfferbyAppIdAsync(Guid appId, string iamUserId) =>
         _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
 

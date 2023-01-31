@@ -153,4 +153,12 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task ApproveAppRequestAsync(Guid appId, string iamUserId);
+
+    /// <summary>
+    /// Declines the app request
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="data">The decline request data</param>
+    Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data);
 }
