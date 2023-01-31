@@ -47,7 +47,7 @@ public interface IConnectorsBusinessLogic
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="cancellationToken"></param>
     /// <returns>View model of created connector.</returns>
-    Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken);
+    Task<Guid> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Add a managed connector to persistence layer and calls the sd factory service with connector parameters.
@@ -56,7 +56,7 @@ public interface IConnectorsBusinessLogic
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="cancellationToken"></param>
     /// <returns>View model of created connector.</returns>
-    Task<ConnectorData> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken);
+    Task<Guid> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Remove a connector from persistence layer by id.
