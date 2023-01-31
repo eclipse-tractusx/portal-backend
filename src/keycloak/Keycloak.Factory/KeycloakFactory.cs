@@ -34,10 +34,12 @@ public class KeycloakFactory : IKeycloakFactory
 
     public KeycloakClient CreateKeycloakClient(string instance)
     {
-        if (!_Settings.TryGetValue(instance, out var settings))
+        if (!_Settings.Keys.Contains(instance, StringComparer.InvariantCultureIgnoreCase))
         {
             throw new ConfigurationException($"undefined keycloak instance '{instance}'");
         }
+
+        var settings = _Settings.Single(x => x.Key.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Value;
         return settings.ClientSecret == null
             ? new KeycloakClient(settings.ConnectionString, settings.User, settings.Password, settings.AuthRealm)
             : KeycloakClient.CreateWithClientId(settings.ConnectionString, settings.ClientId, settings.ClientSecret, settings.AuthRealm);
@@ -45,10 +47,12 @@ public class KeycloakFactory : IKeycloakFactory
 
     public KeycloakClient CreateKeycloakClient(string instance, string clientId, string secret)
     {
-        if (!_Settings.TryGetValue(instance, out var settings))
+        if (!_Settings.Keys.Contains(instance, StringComparer.InvariantCultureIgnoreCase))
         {
             throw new ConfigurationException($"undefined keycloak instance '{instance}'");
         }
+
+        var settings = _Settings.Single(x => x.Key.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Value;
         return KeycloakClient.CreateWithClientId(settings.ConnectionString, clientId, secret, settings.AuthRealm);
     }
 }
