@@ -131,20 +131,11 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<int> CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken) =>
+    public Task CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken) =>
         UploadAppDoc(appId, documentTypeId, document, iamUserId, OfferTypeId.APP, cancellationToken);
     
-    private async Task<int> UploadAppDoc (Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, CancellationToken cancellationToken)
-    {
-        if (!_settings.DocumentTypeIds.Contains(documentTypeId))
-            throw new ControllerArgumentException($"documentType must be either: {string.Join(",", _settings.DocumentTypeIds)}");
-
-        // Check if document is a pdf,jpeg and png file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
-        if (!_settings.ContentTypeSettings.Contains(document.ContentType))
-            throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType :{string.Join(",", _settings.ContentTypeSettings)} are allowed.");
-        
-        return await _offerService.UploadDocumentAsync(appId, documentTypeId, document, iamUserId, offerTypeId, cancellationToken).ConfigureAwait(false);
-    }
+    private async Task UploadAppDoc (Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
+        await _offerService.UploadDocumentAsync(appId, documentTypeId, document, iamUserId, offerTypeId, _settings.DocumentTypeIds, _settings.ContentTypeSettings, cancellationToken).ConfigureAwait(false);
     
     /// <inheritdoc/>
     public Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string iamUserId)

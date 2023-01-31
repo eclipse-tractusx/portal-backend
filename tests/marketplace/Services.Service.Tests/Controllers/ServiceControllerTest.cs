@@ -309,10 +309,10 @@ public class ServiceControllerTest
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         A.CallTo(() => _logic.CreateServiceDocumentAsync(A<Guid>._,
             A<DocumentTypeId>._, A<IFormFile>._, A<string>._, CancellationToken.None))
-            .Returns(1);
+            .ReturnsLazily(() => Task.CompletedTask);
         
         // Act
-        var result = await this._controller.UpdateServiceDocumentAsync(serviceId,DocumentTypeId.ADDITIONAL_DETAILS,file,CancellationToken.None).ConfigureAwait(false);
+        await this._controller.UpdateServiceDocumentAsync(serviceId,DocumentTypeId.ADDITIONAL_DETAILS,file,CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _logic.CreateServiceDocumentAsync(serviceId,

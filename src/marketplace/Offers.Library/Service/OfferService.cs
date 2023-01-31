@@ -725,7 +725,7 @@ public class OfferService : IOfferService
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<int> UploadDocumentAsync(Guid Id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offertypeId, CancellationToken cancellationToken)
+    public async Task UploadDocumentAsync(Guid Id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offertypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings, CancellationToken cancellationToken)
     {
         if (Id == Guid.Empty)
             throw new ControllerArgumentException($"{offertypeId}id should not be null");
@@ -733,6 +733,13 @@ public class OfferService : IOfferService
         if (string.IsNullOrEmpty(document.FileName))
             throw new ControllerArgumentException("File name should not be null");
 
+        if (!documentTypeIdSettings.Contains(documentTypeId))
+            throw new ControllerArgumentException($"documentType must be either: {string.Join(",", documentTypeIdSettings)}");
+
+        // Check if document is a pdf,jpeg and png file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
+        if (!contentTypeSettings.Contains(document.ContentType))
+            throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType :{string.Join(",", contentTypeSettings)} are allowed.");
+        
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(Id, iamUserId, OfferStatusId.CREATED, offertypeId).ConfigureAwait(false);
 
@@ -758,6 +765,6 @@ public class OfferService : IOfferService
             x.CompanyUserId = companyUserId;
         });
         _portalRepositories.GetInstance<IOfferRepository>().CreateOfferAssignedDocument(Id, doc.Id);
-        return await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }
