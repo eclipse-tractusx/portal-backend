@@ -110,7 +110,7 @@ public class ServiceControllerTest
     {
         //Arrange
         var serviceId = Guid.NewGuid();
-        var serviceDetailData = _fixture.Create<ServiceDetailData>();
+        var serviceDetailData = _fixture.Create<ServiceDetailResponse>();
         A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, A<string>._, IamUserId))
             .Returns(serviceDetailData);
 
@@ -119,8 +119,9 @@ public class ServiceControllerTest
 
         //Assert
         A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, "en", IamUserId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<ServiceDetailData>(result);
+        Assert.IsType<ServiceDetailResponse>(result);
         result.Should().Be(serviceDetailData);
+        result.Documents.ContainsKey(DocumentTypeId.ADDITIONAL_DETAILS);
     }
         
     [Fact]

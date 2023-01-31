@@ -133,9 +133,9 @@ public class ServicesController : ControllerBase
     [HttpGet]
     [Route("{serviceId}", Name = nameof(GetServiceDetails))]
     [Authorize(Roles = "view_service_offering")]
-    [ProducesResponseType(typeof(ServiceDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ServiceDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<ServiceDetailData> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string? lang = "en") => 
+    public Task<ServiceDetailResponse> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string? lang = "en") => 
         this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang!, iamUserId));
     
     /// <summary>

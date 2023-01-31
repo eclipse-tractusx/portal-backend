@@ -242,6 +242,8 @@ public class ServiceBusinessLogicTests
 
         // Assert
         result.Id.Should().Be(_existingServiceId);
+        result.Documents.Keys.Should().Contain(DocumentTypeId.ADDITIONAL_DETAILS);
+        Assert.IsType<ServiceDetailResponse>(result);
     }
 
     [Fact]
@@ -628,7 +630,9 @@ public class ServiceBusinessLogicTests
             .ReturnsLazily(() => serviceDetail with {OfferSubscriptionDetailData = new []
             {
                 new OfferSubscriptionStateDetailData(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE)
-            }});
+            }, Documents = new [] {
+                new DocumentTypeData(DocumentTypeId.ADDITIONAL_DETAILS,Guid.NewGuid(), "testDocument")
+            } });
         A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>._, A<string>._))
             .ReturnsLazily(() => (ServiceDetailData?)null);
 
