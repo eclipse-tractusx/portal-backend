@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PortalBackend.Migrations": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

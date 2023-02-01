@@ -32,12 +32,6 @@ try
 {
     Console.WriteLine("Building worker");
     var host = Host.CreateDefaultBuilder(args)
-     .ConfigureAppConfiguration(cfg =>
-     {
-         cfg
-          .AddEnvironmentVariables()
-          .AddUserSecrets(Assembly.GetExecutingAssembly());
-     })
      .ConfigureServices((hostContext, services) =>
       services
         .AddTransient<ChecklistExecutionService>()
