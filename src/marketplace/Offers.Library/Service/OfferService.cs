@@ -332,14 +332,13 @@ public class OfferService : IOfferService
     public async Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId, OfferTypeId offerTypeId)
     {
         var results = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserWithIamUserCheckAndCompanyShortName(iamUserId, data.SalesManager)
+            .GetCompanyUserWithIamUserCheckAndCompanyName(iamUserId, data.SalesManager)
             .ToListAsync().ConfigureAwait(false);
 
-        if (!results.Any(x => x.IsIamUser))
-            throw new ControllerArgumentException($"IamUser is not assignable to company user {iamUserId}", nameof(iamUserId));
+        var iamUserResult = results.Where(x => x.IsIamUser).Select(x => (x.CompanyName, x.CompanyId)).SingleOrDefault();
 
-        if (string.IsNullOrWhiteSpace(results.Single(x => x.IsIamUser).CompanyShortName))
-            throw new ControllerArgumentException($"No matching company found for user {iamUserId}", nameof(iamUserId));
+        if (iamUserResult == default)
+            throw new ControllerArgumentException($"IamUser is not assignable to company user {iamUserId}", nameof(iamUserId));
 
         if (data.SalesManager.HasValue && results.All(x => x.CompanyUserId != data.SalesManager))
             throw new ControllerArgumentException("SalesManager does not exist", nameof(data.SalesManager));
@@ -352,9 +351,9 @@ public class OfferService : IOfferService
             service.ContactEmail = data.ContactEmail;
             service.Name = data.Title;
             service.SalesManagerId = data.SalesManager;
-            service.Provider = results.Single(x => x.IsIamUser).CompanyShortName;
+            service.Provider = iamUserResult.CompanyName;
             service.OfferStatusId = OfferStatusId.CREATED;
-            service.ProviderCompanyId = results.Single(x => x.IsIamUser).CompanyId;
+            service.ProviderCompanyId = iamUserResult.CompanyId;
         });
         var licenseId = offerRepository.CreateOfferLicenses(data.Price).Id;
         offerRepository.CreateOfferAssignedLicense(service.Id, licenseId);
