@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.BusinessLogic;
@@ -570,6 +571,29 @@ public class ServiceBusinessLogicTests
             A<IDictionary<string, IEnumerable<string>>>._, A<string>._)).MustHaveHappenedOnceExactly();
     }
     
+    #endregion
+
+    #region Create Service Document
+    [Fact]
+    public async Task CreateServiceDocument_ExecutesSuccessfully()
+    {
+        // Arrange
+        var serviceId = _fixture.Create<Guid>();
+        var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
+        var settings = new ServiceSettings()
+        {
+            ContentTypeSettings = new[] { "application/pdf" },
+            DocumentTypeIds = new[] { DocumentTypeId.ADDITIONAL_DETAILS }
+        };
+        var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, null!, Options.Create(settings));
+
+        // Act
+        await sut.CreateServiceDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, _iamUser.UserEntityId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.UploadDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, _iamUser.UserEntityId, OfferTypeId.SERVICE, settings.DocumentTypeIds, settings.ContentTypeSettings, CancellationToken.None)).MustHaveHappenedOnceExactly();
+    }
+
     #endregion
     
     #region Setup

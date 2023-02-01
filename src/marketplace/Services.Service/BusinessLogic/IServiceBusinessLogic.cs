@@ -152,4 +152,15 @@ public interface IServiceBusinessLogic
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="data">The decline request data</param>
     Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data);
+
+    /// <summary>
+    /// Upload document for given company user for Service
+    /// </summary>
+    /// <param name="serviceId"></param>
+    /// <param name="documentTypeId"></param>
+    /// <param name="document"></param>
+    /// <param name="iamUserId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
 }
