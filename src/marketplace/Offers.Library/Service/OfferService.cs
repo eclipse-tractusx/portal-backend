@@ -329,7 +329,7 @@ public class OfferService : IOfferService
     public async Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId, OfferTypeId offerTypeId)
     {
         var results = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserWithIamUserCheckAndCompanyShortName(iamUserId, data.SalesManager)
+            .GetCompanyUserWithIamUserCheckAndCompanyName(iamUserId, data.SalesManager)
             .ToListAsync().ConfigureAwait(false);
 
         if (!results.Any(x => x.IsIamUser))
@@ -346,7 +346,7 @@ public class OfferService : IOfferService
             service.ContactEmail = data.ContactEmail;
             service.Name = data.Title;
             service.SalesManagerId = data.SalesManager;
-            service.Provider = results.Single(x => x.IsIamUser).CompanyShortName;
+            service.Provider = results.Single(x => x.IsIamUser).CompanyName;
             service.OfferStatusId = OfferStatusId.CREATED;
             service.ProviderCompanyId = results.Single(x => x.IsIamUser).CompanyId;
         });
