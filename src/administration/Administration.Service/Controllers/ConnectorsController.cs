@@ -61,7 +61,7 @@ public class ConnectorsController : ControllerBase
     /// <response code="200">Returns a list of all of the current user's company's connectors.</response>
     [HttpGet]
     [Route("")]
-    // [Authorize(Roles = "view_connectors")]
+    [Authorize(Roles = "view_connectors")]
     [ProducesResponseType(typeof(Pagination.Response<ConnectorData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<ConnectorData>> GetCompanyConnectorsForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
         this.WithIamUserId(iamUserId => _businessLogic.GetAllCompanyConnectorDatasForIamUserAsyncEnum(iamUserId, page, size));
@@ -75,7 +75,7 @@ public class ConnectorsController : ControllerBase
     /// <response code="404">Connector ID not found.</response>
     [HttpGet]
     [Route("{connectorId}", Name = nameof(GetCompanyConnectorByIdForCurrentUserAsync))]
-    // [Authorize(Roles = "view_connectors")]
+    [Authorize(Roles = "view_connectors")]
     [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
