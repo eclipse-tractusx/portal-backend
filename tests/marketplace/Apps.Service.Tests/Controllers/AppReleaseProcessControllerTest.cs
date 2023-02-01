@@ -83,7 +83,7 @@ public class AppReleaseProcessControllerTest
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         A.CallTo(() => _logic.CreateAppDocumentAsync(A<Guid>._, A<DocumentTypeId>._, A<FormFile>._, A<string>._, A<CancellationToken>._))
-            .Returns(1);
+            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         await this._controller.UpdateAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None).ConfigureAwait(false);
