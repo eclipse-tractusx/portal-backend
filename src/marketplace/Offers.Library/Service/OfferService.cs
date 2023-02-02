@@ -572,7 +572,7 @@ public class OfferService : IOfferService
         offerRepository.AttachAndModifyOffer(offerId, offer =>
         {
             offer.OfferStatusId = OfferStatusId.ACTIVE;
-            offer.DateReleased = DateTimeOffset.UtcNow;
+            offer.DateReleased = DateTime.UtcNow;
         });
         object notificationContent = offerTypeId switch
         {
