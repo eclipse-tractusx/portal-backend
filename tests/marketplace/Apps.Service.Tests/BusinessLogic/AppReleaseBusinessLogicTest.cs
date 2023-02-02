@@ -580,6 +580,33 @@ public class AppReleaseBusinessLogicTest
 
     #endregion
 
+    #region DeclineAppRequest
+    
+    [Fact]
+    public async Task DeclineAppRequestAsync_CallsExpected()
+    {
+        // Arrange
+        string IamUserId = "3e8343f7-4fe5-4296-8312-f33aa6dbde5d";
+        var appId = _fixture.Create<Guid>();
+        var data = new OfferDeclineRequest("Just a test");
+        var settings = new AppsSettings
+        {
+            ServiceManagerRoles = _fixture.Create<Dictionary<string, IEnumerable<string>>>(),
+            BasePortalAddress = "test"
+        };
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+     
+        // Act
+        await sut.DeclineAppRequestAsync(appId, IamUserId, data).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.DeclineOfferAsync(appId, IamUserId, data,
+            OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION,
+            A<IDictionary<string, IEnumerable<string>>>._, A<string>._)).MustHaveHappenedOnceExactly();
+    }
+    
+    #endregion
+
     #region Setup
 
     private void SetupUpdateApp()
