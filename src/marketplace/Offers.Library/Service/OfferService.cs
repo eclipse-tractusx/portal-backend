@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,8 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
@@ -326,14 +328,13 @@ public class OfferService : IOfferService
     public async Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId, OfferTypeId offerTypeId)
     {
         var results = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserWithIamUserCheckAndCompanyShortName(iamUserId, data.SalesManager)
+            .GetCompanyUserWithIamUserCheckAndCompanyName(iamUserId, data.SalesManager)
             .ToListAsync().ConfigureAwait(false);
 
-        if (!results.Any(x => x.IsIamUser))
-            throw new ControllerArgumentException($"IamUser is not assignable to company user {iamUserId}", nameof(iamUserId));
+        var iamUserResult = results.Where(x => x.IsIamUser).Select(x => (x.CompanyName, x.CompanyId)).SingleOrDefault();
 
-        if (string.IsNullOrWhiteSpace(results.Single(x => x.IsIamUser).CompanyShortName))
-            throw new ControllerArgumentException($"No matching company found for user {iamUserId}", nameof(iamUserId));
+        if (iamUserResult == default)
+            throw new ControllerArgumentException($"IamUser is not assignable to company user {iamUserId}", nameof(iamUserId));
 
         if (data.SalesManager.HasValue && results.All(x => x.CompanyUserId != data.SalesManager))
             throw new ControllerArgumentException("SalesManager does not exist", nameof(data.SalesManager));
@@ -346,9 +347,9 @@ public class OfferService : IOfferService
             service.ContactEmail = data.ContactEmail;
             service.Name = data.Title;
             service.SalesManagerId = data.SalesManager;
-            service.Provider = results.Single(x => x.IsIamUser).CompanyShortName;
+            service.Provider = iamUserResult.CompanyName;
             service.OfferStatusId = OfferStatusId.CREATED;
-            service.ProviderCompanyId = results.Single(x => x.IsIamUser).CompanyId;
+            service.ProviderCompanyId = iamUserResult.CompanyId;
         });
         var licenseId = offerRepository.CreateOfferLicenses(data.Price).Id;
         offerRepository.CreateOfferAssignedLicense(service.Id, licenseId);
@@ -710,6 +711,49 @@ public class OfferService : IOfferService
         }
         appRepository.AttachAndModifyOffer(appId, offer => 
             offer.OfferStatusId = OfferStatusId.INACTIVE );
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    public async Task UploadDocumentAsync(Guid Id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offertypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings, CancellationToken cancellationToken)
+    {
+        if (Id == Guid.Empty)
+            throw new ControllerArgumentException($"{offertypeId}id should not be null");
+
+        if (string.IsNullOrEmpty(document.FileName))
+            throw new ControllerArgumentException("File name should not be null");
+
+        if (!documentTypeIdSettings.Contains(documentTypeId))
+            throw new ControllerArgumentException($"documentType must be either: {string.Join(",", documentTypeIdSettings)}");
+
+        // Check if document is a pdf,jpeg and png file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
+        if (!contentTypeSettings.Contains(document.ContentType))
+            throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType :{string.Join(",", contentTypeSettings)} are allowed.");
+        
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(Id, iamUserId, OfferStatusId.CREATED, offertypeId).ConfigureAwait(false);
+
+        if (result == default)
+            throw new NotFoundException($"{offertypeId} {Id} does not exist");
+
+        var companyUserId = result.CompanyUserId;
+        if (companyUserId == Guid.Empty)
+            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of {offertypeId} {Id}");
+
+        var documentName = document.FileName;
+        using var sha512Hash = SHA512.Create();
+        using var ms = new MemoryStream((int)document.Length);
+
+        await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
+        var hash = sha512Hash.ComputeHash(ms);
+        var documentContent = ms.GetBuffer();
+        if (ms.Length != document.Length || documentContent.Length != document.Length)
+            throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
+        
+        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, documentTypeId, x =>
+        {
+            x.CompanyUserId = companyUserId;
+        });
+        _portalRepositories.GetInstance<IOfferRepository>().CreateOfferAssignedDocument(Id, doc.Id);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

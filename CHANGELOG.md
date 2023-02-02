@@ -4,6 +4,26 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+## 1.0.0-RC5
+
+### Change
+* Identity Provider mappers "tenant" auto created for new identity provider created via administration service and registration service removed
+* Identity provider mappers "username" and "organisation" added company idp registration endpoints
+* Services Service - added document types and ids inside response of GET services/{serviceID}
+
+### Feature
+* Registration Service: add unique-identifiers to GET /CompanyWithAddress registration endpoint
+* Administration Service
+  * Further enhancements on the company application approval worker by including auto approval and sd factory jobs
+
+### Technical Support
+n/a
+
+### Bugfix
+* Welcome email "Join Now" button hyperlink added
+* Username added inside the 'app subscription activation email'
+* Switched long to short description attribute inside the GET services/active
+
 ## 1.0.0-RC4
 
 ### Change

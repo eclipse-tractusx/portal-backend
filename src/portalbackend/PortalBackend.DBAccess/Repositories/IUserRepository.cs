@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -80,7 +80,7 @@ public interface IUserRepository
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="salesManagerId">The id of the company user to check in the persistence layer.</param>
     /// <returns><c>true</c> if the user exists, otherwise <c>false</c></returns>
-    IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser, string CompanyShortName, Guid CompanyId)> GetCompanyUserWithIamUserCheckAndCompanyShortName(string iamUserId, Guid? salesManagerId);
+    IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser, string CompanyName, Guid CompanyId)> GetCompanyUserWithIamUserCheckAndCompanyName(string iamUserId, Guid? salesManagerId);
 
     /// <summary>
     /// Gets all company user ids which have the any given user role assigned

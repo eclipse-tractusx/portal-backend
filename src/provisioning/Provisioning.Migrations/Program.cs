@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -31,13 +31,6 @@ Console.WriteLine("Starting process");
 try
 {
     var builder = Host.CreateDefaultBuilder(args)
-        .ConfigureAppConfiguration(cfg =>
-        {
-            cfg
-                .AddJsonFile("secrets/appsettings.json", true)
-                .AddEnvironmentVariables()
-                .AddUserSecrets(Assembly.GetExecutingAssembly());
-        })
         .ConfigureServices((hostContext, services) =>
         {
             services.AddDbContext<ProvisioningDbContext>(o =>

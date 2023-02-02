@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -251,58 +251,59 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetCompanyUserWithIamUserCheckAndCompanyShortName
+    #region GetCompanyUserWithIamUserCheckAndCompanyName
 
     [Fact]
-    public async Task GetCompanyUserWithIamUserCheckAndCompanyShortName_WithoutSalesManager_ReturnsOnlyOneUser()
+    public async Task GetCompanyUserWithIamUserCheckAndCompanyName_WithoutSalesManager_ReturnsOnlyOneUser()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
         
         // Act        
-        var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyShortName(ValidIamUserId, null).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyName(ValidIamUserId, null).ToListAsync().ConfigureAwait(false);
         
         // Assert
         result.Should().HaveCount(1);
     }
 
     [Fact]
-    public async Task GetCompanyUserWithIamUserCheckAndCompanyShortName_WithoutUserAndWithoutSalesmanager_ReturnsNoUsers()
+    public async Task GetCompanyUserWithIamUserCheckAndCompanyName_WithoutUserAndWithoutSalesmanager_ReturnsNoUsers()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
         
         // Act        
-        var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyShortName(string.Empty, null).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyName(string.Empty, null).ToListAsync().ConfigureAwait(false);
         
         // Assert
         result.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task GetCompanyUserWithIamUserCheckAndCompanyShortName_WithoutUserAndWithSalesmanager_ReturnsOneUsers()
+    public async Task GetCompanyUserWithIamUserCheckAndCompanyName_WithoutUserAndWithSalesmanager_ReturnsOneUsers()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
         
         // Act        
-        var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyShortName(string.Empty, ValidCompanyUser).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyName(string.Empty, ValidCompanyUser).ToListAsync().ConfigureAwait(false);
         
         // Assert
         result.Should().HaveCount(1);
     }
 
     [Fact]
-    public async Task GetCompanyUserWithIamUserCheckAndCompanyShortName_WithUserAndWithSalesmanager_ReturnsTwoUsers()
+    public async Task GetCompanyUserWithIamUserCheckAndCompanyName_WithUserAndWithSalesmanager_ReturnsTwoUsers()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
         
         // Act        
-        var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyShortName(ValidIamUserId, ValidCompanyUser).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyName(ValidIamUserId, ValidCompanyUser).ToListAsync().ConfigureAwait(false);
         
         // Assert
         result.Should().HaveCount(2);
+        result.Select(x => x.CompanyName).Should().Contain("Catena-X");
     }
 
     #endregion
