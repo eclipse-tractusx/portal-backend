@@ -44,7 +44,7 @@ public class ClearinghouseService : IClearinghouseService
 
         try
         {
-            var result = await httpClient.PutAsJsonAsync("/validation", data, cancellationToken).ConfigureAwait(false);
+            var result = await httpClient.PostAsJsonAsync("/api/v1/validation", data, cancellationToken).ConfigureAwait(false);
             if (!result.IsSuccessStatusCode)
             {
                 throw new ServiceException("Clearinghouse Service Call failed with StatusCode", result.StatusCode);
