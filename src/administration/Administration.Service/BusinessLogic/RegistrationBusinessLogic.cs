@@ -130,7 +130,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                             invitation.CompanyUser!.Documents.Where(document => _settings.DocumentTypeIds.Contains(document.DocumentTypeId)).Select(document =>
                                 new DocumentDetails(document.Id, document.DocumentTypeId))),
                         application.Company!.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
-                        application.ApplicationChecklistEntries.Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)),
+                        application.ApplicationChecklistEntries.OrderBy(x => x.ApplicationChecklistEntryTypeId).Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)),
                         application.Invitations
                             .Select(invitation => invitation.CompanyUser)
                             .Where(companyUser => companyUser!.CompanyUserStatusId == CompanyUserStatusId.ACTIVE
