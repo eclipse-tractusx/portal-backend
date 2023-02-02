@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -462,6 +462,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         offerDetail.Should().NotBeNull();
         offerDetail!.Title.Should().Be("Newest Service");
+        offerDetail!.Documents.Select(x => x.documentTypeId).Should().Contain(DocumentTypeId.ADDITIONAL_DETAILS);
+        Assert.IsType<ServiceDetailData>(offerDetail);
     }
 
     #endregion

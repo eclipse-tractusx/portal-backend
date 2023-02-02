@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -52,6 +52,7 @@ public record OfferDetailData(
 /// <param name="Price">Pricing information of the app.</param>
 /// <param name="OfferSubscriptionDetailData">Detail Data of the offer subscription</param>
 /// <param name="ServiceTypeIds">Collection of the assigned serviceTypeIds.</param>
+/// <param name="Documents">Collections of the Document type Data.</param>
 public record ServiceDetailData(
     Guid Id, 
     string? Title, 
@@ -60,7 +61,8 @@ public record ServiceDetailData(
     string? Description, 
     string Price, 
     IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData,
-    IEnumerable<ServiceTypeId> ServiceTypeIds);
+    IEnumerable<ServiceTypeId> ServiceTypeIds,
+    IEnumerable<DocumentTypeData> Documents);
 
 /// <summary>
 /// View Model of the offer subscription data

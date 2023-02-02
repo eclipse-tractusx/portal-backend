@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -34,10 +34,12 @@ public class KeycloakFactory : IKeycloakFactory
 
     public KeycloakClient CreateKeycloakClient(string instance)
     {
-        if (!_Settings.TryGetValue(instance, out var settings))
+        if (!_Settings.Keys.Contains(instance, StringComparer.InvariantCultureIgnoreCase))
         {
             throw new ConfigurationException($"undefined keycloak instance '{instance}'");
         }
+
+        var settings = _Settings.Single(x => x.Key.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Value;
         return settings.ClientSecret == null
             ? new KeycloakClient(settings.ConnectionString, settings.User, settings.Password, settings.AuthRealm)
             : KeycloakClient.CreateWithClientId(settings.ConnectionString, settings.ClientId, settings.ClientSecret, settings.AuthRealm);
@@ -45,10 +47,12 @@ public class KeycloakFactory : IKeycloakFactory
 
     public KeycloakClient CreateKeycloakClient(string instance, string clientId, string secret)
     {
-        if (!_Settings.TryGetValue(instance, out var settings))
+        if (!_Settings.Keys.Contains(instance, StringComparer.InvariantCultureIgnoreCase))
         {
             throw new ConfigurationException($"undefined keycloak instance '{instance}'");
         }
+
+        var settings = _Settings.Single(x => x.Key.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Value;
         return KeycloakClient.CreateWithClientId(settings.ConnectionString, clientId, secret, settings.AuthRealm);
     }
 }

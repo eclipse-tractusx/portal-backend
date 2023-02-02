@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -151,6 +151,10 @@ public static class BaseSeed
             new (new Guid("2b9e45a6-ec22-489a-b2cb-9cbdd0b6bfbc"), new byte[1024], new byte[1024], "test5.pdf", DateTimeOffset.UtcNow, DocumentStatusId.PENDING, DocumentTypeId.APP_IMAGE)
             {
                 CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")
+            },
+            new (new Guid("b42de0f5-fd35-428a-86eb-a048ed7e57fa"), new byte[1024], new byte[1024], "test5.pdf", DateTimeOffset.UtcNow, DocumentStatusId.PENDING, DocumentTypeId.ADDITIONAL_DETAILS)
+            {
+                CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")
             }
         });
 
@@ -296,7 +300,8 @@ public static class BaseSeed
         {
             new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("7fc2fb78-8dc2-4f5f-b1d1-91c9c2f4506f")),
             new (new Guid("99c5fd12-8085-4de2-abfd-215e1ee4baa4"), new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41")),
-            new (new Guid("99c5fd12-8085-4de2-abfd-215e1ee4baa4"), new Guid("2b9e45a6-ec22-489a-b2cb-9cbdd0b6bfbc"))
+            new (new Guid("99c5fd12-8085-4de2-abfd-215e1ee4baa4"), new Guid("2b9e45a6-ec22-489a-b2cb-9cbdd0b6bfbc")),
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), new Guid("b42de0f5-fd35-428a-86eb-a048ed7e57fa"))
         });
 
         dbContext.UserRoles.AddRange(new List<UserRole>

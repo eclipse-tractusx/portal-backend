@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -62,7 +62,7 @@ public interface IServiceBusinessLogic
     /// <param name="lang">Shortcode of the language for the text translations</param>
     /// <param name="iamUserId">Id of the iam User</param>
     /// <returns>Returns the service detail data</returns>
-    Task<ServiceDetailData> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId);
+    Task<ServiceDetailResponse> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId);
 
     /// <summary>
     /// Gets the Subscription Details for the given Id
@@ -152,4 +152,15 @@ public interface IServiceBusinessLogic
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="data">The decline request data</param>
     Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data);
+
+    /// <summary>
+    /// Upload document for given company user for Service
+    /// </summary>
+    /// <param name="serviceId"></param>
+    /// <param name="documentTypeId"></param>
+    /// <param name="document"></param>
+    /// <param name="iamUserId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
 }
