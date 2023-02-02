@@ -33,7 +33,11 @@ public record ConnectorData(
     Guid Id,
     ConnectorTypeId Type,
     ConnectorStatusId Status,
-    bool? DapsRegistrationSuccessful);
+    bool? DapsRegistrationSuccessful,
+    Guid? HostId,
+    string? HostCompanyName,
+    Guid? SelfDescriptionDocumentId,
+    string? DocumentName);
 
 /// <summary>
 /// Connector information for the daps call.
