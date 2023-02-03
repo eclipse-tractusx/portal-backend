@@ -2,7 +2,24 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-## Unreleased
+## 1.0.0-RC6
+
+### Change
+* Apps & Service Services: auto set the releaseDate of an offer with the approval endpoint
+* App Service: 
+  * POST endpoint to upload documents for services in currently under creation
+  * Endpoint controller switch of /app/decline from apps to appReleaseProcess ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* Checklist.Worker for Registration Service: updates implemented (full feature delivery still ongoing)
+
+### Feature
+n/a
+
+### Technical Support
+* enable maintenance job to use config from env vars; remove initdb container setup - replaced by configmap in helm chart
+* enable notifications service to use config from env vars
+
+### Bugfix
+n/a
 
 ## 1.0.0-RC5
 
