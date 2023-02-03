@@ -105,7 +105,7 @@ public interface IOfferService
     /// <param name="offerTypeId">OfferTypeId of offer to be created</param>
     /// <param name="basePortalAddress">Address of the portal</param>
     /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> companyAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress);
+    Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> iTAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress);
 
     /// <summary>
     /// Creates a new service offering
