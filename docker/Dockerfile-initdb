@@ -1,8 +1,0 @@
-FROM alpine:3.16
-
-RUN mkdir import
-
-RUN chown -R 1000:3000 /import
-USER 1000:3000
-
-COPY import/ import
