@@ -503,7 +503,7 @@ public class OfferServiceTests
 
     #endregion
 
-    #region Auto Setup
+    #region AutoSetupServiceAsync
 
     [Fact]
     public async Task AutoSetup_WithValidData_ReturnsExpectedNotificationAndSecret()
@@ -540,7 +540,14 @@ public class OfferServiceTests
                 appSubscriptionDetails.Add(appDetail);
             })
             .Returns(new AppSubscriptionDetail(appSubscriptionDetailId, _validSubscriptionId));
-       
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._,
+                A<Action<Notification>?>._))
+            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
+            {
+                var notification = new Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
+                setOptionalParameters?.Invoke(notification);
+                notifications.Add(notification);
+            });
         _fixture.Inject(_provisioningManager);
         _fixture.Inject(_serviceAccountCreation);
         _fixture.Inject(_notificationService);
@@ -566,6 +573,7 @@ public class OfferServiceTests
         clients.Should().HaveCount(1);
         appInstances.Should().HaveCount(1);
         appSubscriptionDetails.Should().HaveCount(1);
+        notifications.Should().HaveCount(1);
         A.CallTo(() => mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
     }
 

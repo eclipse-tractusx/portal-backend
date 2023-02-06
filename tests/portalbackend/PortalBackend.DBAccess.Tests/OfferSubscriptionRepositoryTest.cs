@@ -161,6 +161,8 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     
     #endregion
     
+    #region GetOfferDetailsAndCheckUser
+
     [Fact]
     public async Task GetOfferDetailsAndCheckUser_WithValidUserandSubscriptionId_ReturnsExpectedResult()
     {
@@ -179,6 +181,8 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result!.CompanyName.Should().Be("Catena-X");
         result!.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
     }
+
+    #endregion
 
     #region Setup
     
