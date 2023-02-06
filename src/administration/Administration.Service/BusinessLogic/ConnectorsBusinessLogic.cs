@@ -71,7 +71,17 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                     .Skip(skip)
                     .Take(take)
                     .Select(c =>
-                        new ConnectorData(c.Name, c.Location!.Alpha2Code, c.Id, c.TypeId, c.StatusId, c.DapsRegistrationSuccessful)
+                        new ConnectorData(
+                            c.Name,
+                            c.Location!.Alpha2Code,
+                            c.Id,
+                            c.TypeId,
+                            c.StatusId,
+                            c.DapsRegistrationSuccessful,
+                            c.HostId,
+                            c.Host!.Name,
+                            c.SelfDescriptionDocumentId,
+                            c.SelfDescriptionDocument!.DocumentName)
                     ).AsAsyncEnumerable()
             )
         );
@@ -92,13 +102,13 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
+    public Task<Guid> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
     {
         ValidateCertificationType(connectorInputModel.Certificate);
         return CreateConnectorInternalAsync(connectorInputModel, iamUserId, cancellationToken);
     }
 
-    public Task<ConnectorData> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
+    public Task<Guid> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
     {
         ValidateCertificationType(connectorInputModel.Certificate);
         return CreateManagedConnectorInternalAsync(connectorInputModel, iamUserId, cancellationToken);
@@ -113,9 +123,9 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         }
     }
 
-    private async Task<ConnectorData> CreateConnectorInternalAsync(ConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
+    private async Task<Guid> CreateConnectorInternalAsync(ConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
     {
-        var (name, connectorUrl, status, location, certificate) = connectorInputModel;
+        var (name, connectorUrl, location, certificate) = connectorInputModel;
         await CheckLocationExists(location);
 
         var companyId = await GetCompanyOfUserOrTechnicalUser(iamUserId).ConfigureAwait(false);
@@ -129,20 +139,18 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new UnexpectedConditionException($"provider company {companyId} has no businessPartnerNumber assigned");
         }
 
-        var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.COMPANY_CONNECTOR, status,
-            location, companyId, companyId);
-        var createdConnector = await CreateAndRegisterConnectorAsync(
+        var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.COMPANY_CONNECTOR, location, companyId, companyId);
+        return await CreateAndRegisterConnectorAsync(
             connectorRequestModel,
             providerBpn,
             certificate,
             cancellationToken).ConfigureAwait(false);
-        return new ConnectorData(createdConnector.Name, createdConnector.LocationId, createdConnector.Id, createdConnector.TypeId, createdConnector.StatusId, createdConnector.DapsRegistrationSuccessful);
     }
 
-    private async Task<ConnectorData> CreateManagedConnectorInternalAsync(ManagedConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
+    private async Task<Guid> CreateManagedConnectorInternalAsync(ManagedConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
     {
         var companyId = await GetCompanyOfUserOrTechnicalUser(iamUserId).ConfigureAwait(false);
-        var (name, connectorUrl, status, location, providerBpn, certificate) = connectorInputModel;
+        var (name, connectorUrl, location, providerBpn, certificate) = connectorInputModel;
         await CheckLocationExists(location).ConfigureAwait(false);
 
         var providerId = await _portalRepositories
@@ -155,14 +163,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ControllerArgumentException($"Company {providerBpn} does not exist", nameof(providerBpn));
         }
 
-        var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.CONNECTOR_AS_A_SERVICE,
-            status, location, providerId, companyId);
-        var createdConnector = await CreateAndRegisterConnectorAsync(
+        var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.CONNECTOR_AS_A_SERVICE, location, providerId, companyId);
+        return await CreateAndRegisterConnectorAsync(
             connectorRequestModel,
             providerBpn,
             certificate,
             cancellationToken).ConfigureAwait(false);
-        return new ConnectorData(createdConnector.Name, createdConnector.LocationId, createdConnector.Id, createdConnector.TypeId, createdConnector.StatusId, createdConnector.DapsRegistrationSuccessful);
     }
 
     private async Task<Guid> GetCompanyOfUserOrTechnicalUser(string iamUserId)
@@ -189,10 +195,13 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         }
     }
 
-    private async Task<Connector> CreateAndRegisterConnectorAsync(ConnectorRequestModel connectorInputModel,
-        string businessPartnerNumber, IFormFile? file, CancellationToken cancellationToken)
+    private async Task<Guid> CreateAndRegisterConnectorAsync(
+        ConnectorRequestModel connectorInputModel,
+        string businessPartnerNumber,
+        IFormFile? file,
+        CancellationToken cancellationToken)
     {
-        var (name, connectorUrl, type, status, location, provider, host) = connectorInputModel;
+        var (name, connectorUrl, type, location, provider, host) = connectorInputModel;
 
         var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
         var createdConnector = connectorsRepository.CreateConnector(
@@ -204,7 +213,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 connector.ProviderId = provider;
                 connector.HostId = host;
                 connector.TypeId = type;
-                connector.StatusId = status;
             });
 
         if (file is not null)
@@ -222,6 +230,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             }
 
             createdConnector.DapsRegistrationSuccessful = dapsCallSuccessful;
+            createdConnector.StatusId = dapsCallSuccessful ? ConnectorStatusId.ACTIVE : ConnectorStatusId.PENDING;
         }
 
         var documentId = await _sdFactoryBusinessLogic
@@ -230,7 +239,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         createdConnector.SelfDescriptionDocumentId = documentId;
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return createdConnector;
+        return createdConnector.Id;
     }
 
     /// <inheritdoc/>

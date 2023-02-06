@@ -199,7 +199,7 @@ public class RegistrationController : ControllerBase
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, or there is no checklist entry of type Registration_Verification.</response>
     /// <response code="404">Application ID not found.</response>
     [HttpPost]
-    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Roles = "decline_new_partner")]
     [Route("applications/{applicationId}/decline")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

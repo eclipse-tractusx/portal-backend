@@ -114,13 +114,13 @@ public class ConnectorsController : ControllerBase
     [HttpPost]
     [Route("daps")]
     [Authorize(Roles = "add_connectors")]
-    [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<CreatedAtRouteResult> CreateConnectorWithDapsAsync([FromForm] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        var connectorData = await this.WithIamUserId(iamUserId => _businessLogic.CreateConnectorAsync(connectorInputModel, iamUserId, cancellationToken)).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
+        var connectorId = await this.WithIamUserId(iamUserId => _businessLogic.CreateConnectorAsync(connectorInputModel, iamUserId, cancellationToken)).ConfigureAwait(false);
+        return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new {connectorId }, connectorId);
     }
 
     /// <summary>
@@ -136,7 +136,7 @@ public class ConnectorsController : ControllerBase
     [HttpPost]
     [Route("managed")]
     [Authorize(Roles = "add_connectors")]
-    [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromBody] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken) =>
@@ -155,13 +155,13 @@ public class ConnectorsController : ControllerBase
     [HttpPost]
     [Route("managed-daps")]
     [Authorize(Roles = "add_connectors")]
-    [ProducesResponseType(typeof(ConnectorData), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<CreatedAtRouteResult> CreateManagedConnectorWithDapsAsync([FromForm] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        var connectorData = await this.WithIamUserId(iamUserId => _businessLogic.CreateManagedConnectorAsync(connectorInputModel, iamUserId, cancellationToken)).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId = connectorData.Id }, connectorData);
+        var connectorId = await this.WithIamUserId(iamUserId => _businessLogic.CreateManagedConnectorAsync(connectorInputModel, iamUserId, cancellationToken)).ConfigureAwait(false);
+        return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new {connectorId }, connectorId);
     }
 
     /// <summary>
