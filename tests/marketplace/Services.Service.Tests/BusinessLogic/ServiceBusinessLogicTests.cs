@@ -98,9 +98,9 @@ public class ServiceBusinessLogicTests
             {
                 {"Test", new[] {"Technical User"}}
             }, 
-            CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            ITAdminRoles = new Dictionary<string, IEnumerable<string>>
             {
-                {"CatenaX", new[] {"Company Admin"}}
+                {"Cl2-CX-Portal", new[] {"IT Admin"}}
             },
             SubmitServiceNotificationTypeIds = new List<NotificationTypeId>
             {

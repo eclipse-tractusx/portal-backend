@@ -217,7 +217,7 @@ public class OfferService : IOfferService
         return result.OfferAgreementConsentUpdate;
     }
 
-    public async Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> companyAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress)
+    public async Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> iTAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress)
     {
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerDetails = await offerSubscriptionsRepository
@@ -279,7 +279,7 @@ public class OfferService : IOfferService
             subscription.LastEditorId = offerDetails.CompanyUserId;
         });
 
-        await CreateNotifications(companyAdminRoles, offerTypeId, offerDetails);
+        await CreateNotifications(iTAdminRoles, offerTypeId, offerDetails);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         var userName = string.Join(" ", new[] { offerDetails.RequesterFirstname, offerDetails.RequesterLastname }); 
@@ -299,7 +299,7 @@ public class OfferService : IOfferService
     }
 
     private async Task CreateNotifications(
-        IDictionary<string, IEnumerable<string>> companyAdminRoles,
+        IDictionary<string, IEnumerable<string>> iTAdminRoles,
         OfferTypeId offerTypeId,
         OfferSubscriptionTransferData offerDetails)
     {
@@ -313,7 +313,7 @@ public class OfferService : IOfferService
             offerDetails.OfferName
         });
         await _notificationService.CreateNotifications(
-            companyAdminRoles,
+            iTAdminRoles,
             offerDetails.CompanyUserId != Guid.Empty ? offerDetails.CompanyUserId : null,
             new (string?, NotificationTypeId)[]
             {
@@ -472,7 +472,7 @@ public class OfferService : IOfferService
     }
     
     /// <inheritdoc/>
-    public async Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> companyAdminRoles)
+    public async Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> catenaAdminRoles)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var offerDetails = await offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerTypeId).ConfigureAwait(false);
@@ -504,7 +504,7 @@ public class OfferService : IOfferService
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(companyAdminRoles, requesterId, content, offerDetails.ProviderCompanyId!.Value).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(catenaAdminRoles, requesterId, content, offerDetails.ProviderCompanyId!.Value).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
