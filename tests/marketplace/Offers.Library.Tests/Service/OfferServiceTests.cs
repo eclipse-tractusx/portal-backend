@@ -503,7 +503,7 @@ public class OfferServiceTests
 
     #endregion
 
-    #region Auto Setup
+    #region AutoSetupServiceAsync
 
     [Fact]
     public async Task AutoSetup_WithValidData_ReturnsExpectedNotificationAndSecret()

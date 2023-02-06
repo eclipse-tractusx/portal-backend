@@ -161,6 +161,29 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     
     #endregion
     
+    #region GetOfferDetailsAndCheckUser
+
+    [Fact]
+    public async Task GetOfferDetailsAndCheckUser_WithValidUserandSubscriptionId_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferDetailsAndCheckUser(new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"), "3d8142f1-860b-48aa-8c2b-1ccb18699f65", OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().NotBe(default);
+        result!.OfferId.Should().Be(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"));
+        result!.Status.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+        result!.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        result!.CompanyName.Should().Be("Catena-X");
+        result!.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
+    }
+
+    #endregion
+
     #region Setup
     
     private async Task<(OfferSubscriptionsRepository, PortalDbContext)> CreateSut()
