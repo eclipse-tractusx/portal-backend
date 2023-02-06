@@ -155,9 +155,9 @@ public interface IOfferService
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="offerTypeId">Type of the offer</param>
     /// <param name="notificationTypeIds">Ids for the notifications that are created</param>
-    /// <param name="companyAdminRoles">Company Admin Roles</param>
+    /// <param name="catenaAdminRoles">Company Admin Roles</param>
     /// <returns></returns>
-    Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> companyAdminRoles);
+    Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> catenaAdminRoles);
 
     /// <summary>
     /// Declines the given offer
