@@ -26,5 +26,6 @@ public enum ApplicationChecklistEntryTypeId
     BUSINESS_PARTNER_NUMBER = 2,
     IDENTITY_WALLET = 3,
     CLEARING_HOUSE = 4,
-    SELF_DESCRIPTION_LP = 5
+    SELF_DESCRIPTION_LP = 5,
+    APPLICATION_ACTIVATION = 6,
 }

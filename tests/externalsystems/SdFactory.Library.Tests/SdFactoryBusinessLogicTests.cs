@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Collections.Immutable;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -48,6 +50,7 @@ public class SdFactoryBusinessLogicTests
 
     private readonly SdFactoryBusinessLogic _sut;
     private readonly IFixture _fixture;
+    private readonly IChecklistService _checklistService;
 
     public SdFactoryBusinessLogicTests()
     {
@@ -59,12 +62,13 @@ public class SdFactoryBusinessLogicTests
         _applicationRepository = A.Fake<IApplicationRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
+        _checklistService = A.Fake<IChecklistService>();
         _service = A.Fake<ISdFactoryService>();
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
 
-        _sut = new SdFactoryBusinessLogic(_service, _portalRepositories);
+        _sut = new SdFactoryBusinessLogic(_service, _portalRepositories, _checklistService);
     }
 
     #endregion
@@ -90,9 +94,16 @@ public class SdFactoryBusinessLogicTests
     #region RegisterSelfDescription
     
     [Fact]
-    public async Task RegisterSelfDescriptionAsync_WithValidData_CompanyIsUpdated()
+    public async Task RegisterSelfDescriptionAsync_WithValidDataAndChecklistEntryInProgress_ScheduleProcessIsNotCalled()
     {
         // Arrange
+        var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
+            {
+                { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS },
+            }
+            .ToImmutableDictionary();
+        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, checklist, Enumerable.Empty<ProcessStepTypeId>());
         var entity = _fixture.Build<Company>()
             .With(x => x.SelfDescriptionDocumentId, (Guid?)null)
             .Create();
@@ -109,13 +120,53 @@ public class SdFactoryBusinessLogicTests
             });
 
         // Act
-        await _sut.RegisterSelfDescriptionAsync(ApplicationId, CancellationToken.None).ConfigureAwait(false);
+        await _sut.RegisterSelfDescription(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _service.RegisterSelfDescriptionAsync(UniqueIdentifiers, CountryCode, Bpn, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustNotHaveHappened();
+        A.CallTo(() => _checklistService.ScheduleProcessSteps(context, A<IEnumerable<ProcessStepTypeId>>._)).MustNotHaveHappened();
+        entity.SelfDescriptionDocumentId.Should().NotBeNull().And.Be(documentId);
+    }
+
+    [Fact]
+    public async Task RegisterSelfDescriptionAsync_WithValidData_CompanyIsUpdated()
+    {
+        // Arrange
+        var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
+            {
+                { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE },
+            }
+            .ToImmutableDictionary();
+        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var entity = _fixture.Build<Company>()
+            .With(x => x.SelfDescriptionDocumentId, (Guid?)null)
+            .Create();
+        var documentId = Guid.NewGuid();
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
+            .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>(CompanyId, Bpn, CountryCode, UniqueIdentifiers));
+        A.CallTo(() => _service.RegisterSelfDescriptionAsync(UniqueIdentifiers, CountryCode, Bpn, CancellationToken.None))
+            .ReturnsLazily(() => documentId);
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(CompanyId, null, A<Action<Company>>._))
+            .Invokes((Guid _, Action<Company>? initialize, Action<Company> modify) => 
+            {
+                initialize?.Invoke(entity);
+                modify.Invoke(entity);
+            });
+
+        // Act
+        await _sut.RegisterSelfDescription(context, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _service.RegisterSelfDescriptionAsync(UniqueIdentifiers, CountryCode, Bpn, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync())
+            .MustNotHaveHappened();
+        A.CallTo(() => _checklistService.ScheduleProcessSteps(context, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.ACTIVATE_APPLICATION) == 1))).MustHaveHappenedOnceExactly();
         entity.SelfDescriptionDocumentId.Should().NotBeNull().And.Be(documentId);
     }
 
@@ -123,11 +174,19 @@ public class SdFactoryBusinessLogicTests
     public async Task RegisterSelfDescriptionAsync_WithNoApplication_ThrowsConflictException()
     {
         // Arrange
+        var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
+            {
+                { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE },
+            }
+            .ToImmutableDictionary();
+        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>());
 
         // Act
-        async Task Act() => await _sut.RegisterSelfDescriptionAsync(ApplicationId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.RegisterSelfDescription(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -138,11 +197,19 @@ public class SdFactoryBusinessLogicTests
     public async Task RegisterSelfDescriptionAsync_WithBpnNotSet_ThrowsConflictException()
     {
         // Arrange
+        var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
+            {
+                { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE },
+            }
+            .ToImmutableDictionary();
+        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>(CompanyId, null, CountryCode, new List<(UniqueIdentifierId Id, string Value)>()));
 
         // Act
-        async Task Act() => await _sut.RegisterSelfDescriptionAsync(ApplicationId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.RegisterSelfDescription(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -172,13 +239,13 @@ public class SdFactoryBusinessLogicTests
     public void GetSdUniqueIdentifierValue_WithNotYetConfiguredValue_ThrowsArgumentOutOfRangeException()
     {
         // Assert
-        UniqueIdentifierId id = default;
+        const UniqueIdentifierId id = default;
         
         // Act
-        Func<string> Act = () => id.GetSdUniqueIdentifierValue();
-        
+        string Act() => id.GetSdUniqueIdentifierValue();
+
         // Assert
-        var ex = Assert.Throws<ArgumentOutOfRangeException>(Act);
+        var ex = Assert.Throws<ArgumentOutOfRangeException>((Func<string>) Act);
         ex.ParamName.Should().Be("uniqueIdentifierId");
     }
 

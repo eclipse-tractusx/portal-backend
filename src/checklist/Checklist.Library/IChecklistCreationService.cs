@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
@@ -40,4 +41,5 @@ public interface IChecklistCreationService
     /// <param name="existingChecklistEntryTypeIds">The currently existing <see cref="ApplicationChecklistEntryTypeId"/></param>
     /// <returns>The created ChecklistApplication Items</returns>
     Task<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>> CreateMissingChecklistItems(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> existingChecklistEntryTypeIds);
+    IEnumerable<ProcessStep> CreateInitialProcessSteps(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> checklistEntries);
 }

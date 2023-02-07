@@ -18,196 +18,141 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Logging;
-using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
-using System.Net;
-using System.Runtime.CompilerServices;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 
-public class ChecklistService : IChecklistService
+public sealed class ChecklistService : IChecklistService
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IBpdmBusinessLogic _bpdmBusinessLogic;
-    private readonly ICustodianBusinessLogic _custodianBusinessLogic;
-    private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
-    private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
-    private readonly ILogger<IChecklistService> _logger;
 
-    public ChecklistService(
-        IPortalRepositories portalRepositories,
-        IBpdmBusinessLogic bpdmBusinessLogic,
-        ICustodianBusinessLogic custodianBusinessLogic,
-        IClearinghouseBusinessLogic clearinghouseBusinessLogic,
-        ISdFactoryBusinessLogic sdFactoryBusinessLogic,
-        ILogger<IChecklistService> logger)
+    public ChecklistService(IPortalRepositories portalRepositories)
     {
         _portalRepositories = portalRepositories;
-        _bpdmBusinessLogic = bpdmBusinessLogic;
-        _custodianBusinessLogic = custodianBusinessLogic;
-        _clearinghouseBusinessLogic = clearinghouseBusinessLogic;
-        _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
-        _logger = logger;
     }
 
-    /// <inheritdoc />
-    public async Task TriggerBpnDataPush(Guid applicationId, string iamUserId, CancellationToken cancellationToken)
+    async Task<IChecklistService.ManualChecklistProcessStepData> IChecklistService.VerifyChecklistEntryAndProcessSteps(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, IEnumerable<ApplicationChecklistEntryStatusId> entryStatusIds, ProcessStepTypeId processStepTypeId, IEnumerable<ApplicationChecklistEntryTypeId>? entryTypeIds, IEnumerable<ProcessStepTypeId>? processStepTypeIds)
     {
-        await CheckCanRunStepAsync(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, new []{ ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.FAILED }).ConfigureAwait(false);
-        await _bpdmBusinessLogic.TriggerBpnDataPush(applicationId, iamUserId, cancellationToken).ConfigureAwait(false);
-        
-        _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, checklist =>
-            {
-                checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
-            });
-    }
+        var allProcessStepTypeIds = processStepTypeIds == null
+            ? new [] { processStepTypeId }
+            : processStepTypeIds.Append(processStepTypeId);
 
-    /// <inheritdoc />
-    public async IAsyncEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId, bool Processed)> ProcessChecklist(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> checklistEntries, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        var stepExecutions = new Dictionary<ApplicationChecklistEntryTypeId, Func<Guid, Task<ApplicationChecklistEntryStatusId>>>
-        {
-            { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, executionApplicationId => CreateWalletAsync(executionApplicationId, cancellationToken)},
-            { ApplicationChecklistEntryTypeId.CLEARING_HOUSE, executionApplicationId => HandleClearingHouse(executionApplicationId, cancellationToken)},
-            { ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, executionApplicationId => HandleSelfDescription(executionApplicationId, cancellationToken)},
-        };
+        var allEntryTypeIds = entryTypeIds == null
+            ? new [] { entryTypeId }
+            : entryTypeIds.Append(entryTypeId);
 
-        var possibleSteps = GetNextPossibleTypesWithMatchingStatus(checklistEntries.ToDictionary(x => x.TypeId, x => x.StatusId), new[] { ApplicationChecklistEntryStatusId.TO_DO });
-        _logger.LogInformation("Found {StepsCount} possible steps for application {ApplicationId}", possibleSteps.Count(), applicationId);
-
-        foreach (var (stepToExecute, status) in checklistEntries)
-        {
-            if (possibleSteps.Contains(stepToExecute) && stepExecutions.TryGetValue(stepToExecute, out var execution))
-            {
-                var newStatus = status;
-                try
-                {
-                    _logger.LogInformation("Executing {StepToExecute} for application {ApplicationId}", stepToExecute,
-                        applicationId);
-                    newStatus = await execution.Invoke(applicationId).ConfigureAwait(false);
-                    _logger.LogInformation("Executed step {StepToExecute} successfully executed for application {ApplicationId}", stepToExecute,
-                        applicationId);
-                }
-                catch (Exception ex) when (ex is not OperationCanceledException)
-                {
-                    newStatus = ApplicationChecklistEntryStatusId.FAILED;
-                    if (ex is ServiceException { StatusCode: HttpStatusCode.ServiceUnavailable })
-                    {
-                        newStatus = ApplicationChecklistEntryStatusId.TO_DO;
-                    }
-
-                    _portalRepositories.GetInstance<IApplicationChecklistRepository>().AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
-                            item => { 
-                                item.ApplicationChecklistEntryStatusId = newStatus;
-                                item.Comment = ex.ToString(); 
-                            });
-                }
-                yield return (stepToExecute, newStatus, true);
-            }
-            else
-            {
-                yield return (stepToExecute, status, false);                
-            }
-        }
-    }
-
-    private async Task<ApplicationChecklistEntryStatusId> CreateWalletAsync(Guid applicationId, CancellationToken cancellationToken)
-    {
-        var message = await _custodianBusinessLogic.CreateWalletAsync(applicationId, cancellationToken).ConfigureAwait(false);
-        _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
-                checklist =>
-                {
-                    checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
-                    checklist.Comment = message;
-                });
-        return ApplicationChecklistEntryStatusId.DONE;
-    }
-
-    private async Task<ApplicationChecklistEntryStatusId> HandleClearingHouse(Guid applicationId, CancellationToken cancellationToken)
-    {
-        var walletData = await _custodianBusinessLogic.GetWalletByBpnAsync(applicationId, cancellationToken);
-        if (walletData == null || string.IsNullOrEmpty(walletData.Did))
-        {
-            throw new ConflictException($"Decentralized Identifier for application {applicationId} is not set");
-        }
-
-        await _clearinghouseBusinessLogic.TriggerCompanyDataPost(applicationId, walletData.Did, cancellationToken).ConfigureAwait(false);
-        _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
-                checklist =>
-                {
-                    checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
-                });
-        return ApplicationChecklistEntryStatusId.IN_PROGRESS;
-    }
-
-    private async Task<ApplicationChecklistEntryStatusId> HandleSelfDescription(Guid applicationId, CancellationToken cancellationToken)
-    {
-        await _sdFactoryBusinessLogic
-            .RegisterSelfDescriptionAsync(applicationId, cancellationToken)
-            .ConfigureAwait(false);
-        _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
-                checklist =>
-                {
-                    checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
-                });
-        return ApplicationChecklistEntryStatusId.DONE;
-    }
-
-    /// <summary>
-    /// Checks whether the given step can be executed
-    /// </summary>
-    /// <param name="applicationId">id of the application</param>
-    /// <param name="step">the step that should be executed</param>
-    /// <param name="allowedStatus"></param>
-    /// <exception cref="ConflictException">Exception will be thrown if the possible steps don't contain the requested step.</exception>
-    private async Task CheckCanRunStepAsync(Guid applicationId, ApplicationChecklistEntryTypeId step, IEnumerable<ApplicationChecklistEntryStatusId> allowedStatus)
-    {
         var checklistData = await _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .GetChecklistDataAsync(applicationId)
-            .ToDictionaryAsync(x => x.TypeId, x => x.StatusId).ConfigureAwait(false);
+            .GetChecklistProcessStepData(applicationId, allEntryTypeIds, allProcessStepTypeIds).ConfigureAwait(false);
 
-        var possibleSteps = GetNextPossibleTypesWithMatchingStatus(checklistData, allowedStatus);
-        if (!possibleSteps.Contains(step))
+        if (!checklistData.IsValidApplicationId)
         {
-            throw new ConflictException($"{step} is not available as next step");
+            throw new NotFoundException($"application {applicationId} does not exist");
+        }
+        if (!checklistData.IsSubmitted)
+        {
+            throw new ConflictException($"application {applicationId} is not in status SUBMITTED");
+        }
+        if (checklistData.Checklist == null || checklistData.ProcessSteps == null)
+        {
+            throw new UnexpectedConditionException("checklist or processSteps should never be null here");
+        }
+        if (checklistData.ProcessSteps.Any(step => step.ProcessStepStatusId != ProcessStepStatusId.TODO))
+        {
+            throw new UnexpectedConditionException("processSteps should never have other status then TODO here");
+        }
+        if (!checklistData.Checklist.Any(entry => entry.TypeId == entryTypeId && entryStatusIds.Contains(entry.StatusId)))
+        {
+            throw new ConflictException($"application {applicationId} does not have a checklist entry for {entryTypeId} in status {string.Join(", ",entryStatusIds)}");
+        }
+        var processStep = checklistData.ProcessSteps.SingleOrDefault(step => step.ProcessStepTypeId == processStepTypeId);
+        if (processStep is null)
+        {
+            throw new ConflictException($"application {applicationId} checklist entry {entryTypeId}, process step {processStepTypeId} is not eligible to run");
+        }
+        return new IChecklistService.ManualChecklistProcessStepData(applicationId, processStep.Id, entryTypeId, checklistData.Checklist.ToImmutableDictionary(entry => entry.TypeId, entry => entry.StatusId), checklistData.ProcessSteps);
+    }
+
+    public void SkipProcessSteps(IChecklistService.ManualChecklistProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds)
+    {
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        foreach (var processStepGroup in context.ProcessSteps.GroupBy(step => step.ProcessStepTypeId).IntersectBy(processStepTypeIds, step => step.Key))
+        {
+            var firstModified = false;
+            foreach (var processStep in processStepGroup)
+            {
+                processStepRepository.AttachAndModifyProcessStep(
+                    processStep.Id,
+                    null,
+                    step => step.ProcessStepStatusId =
+                        firstModified
+                            ? ProcessStepStatusId.DUPLICATE
+                            : ProcessStepStatusId.SKIPPED);
+                firstModified = true;
+            }
         }
     }
 
-    private static IEnumerable<ApplicationChecklistEntryTypeId> GetNextPossibleTypesWithMatchingStatus(IDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId> currentStatus, IEnumerable<ApplicationChecklistEntryStatusId> checklistEntryStatusIds)
+    public void FinalizeChecklistEntryAndProcessSteps(IChecklistService.ManualChecklistProcessStepData context, Action<ApplicationChecklistEntry> modifyApplicationChecklistEntry, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
     {
-        var possibleTypes = new List<ApplicationChecklistEntryTypeId>();
-        if (currentStatus.TryGetValue(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, out var bpnStatus) && checklistEntryStatusIds.Contains(bpnStatus))
+        var applicationChecklistRepository = _portalRepositories.GetInstance<IApplicationChecklistRepository>();
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+
+        applicationChecklistRepository
+            .AttachAndModifyApplicationChecklist(context.ApplicationId, context.EntryTypeId, modifyApplicationChecklistEntry);
+        processStepRepository
+            .AttachAndModifyProcessStep(context.ProcessStepId, null, step => step.ProcessStepStatusId = ProcessStepStatusId.DONE);
+        if (nextProcessStepTypeIds == null)
         {
-            possibleTypes.Add(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER);
-        }
-        if (currentStatus.TryGetValue(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, out var registrationStatus) && checklistEntryStatusIds.Contains(registrationStatus))
-        {
-            possibleTypes.Add(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION);
-        }
-        if (currentStatus.TryGetValue(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, out var identityStatus) && checklistEntryStatusIds.Contains(identityStatus) && bpnStatus == ApplicationChecklistEntryStatusId.DONE && registrationStatus == ApplicationChecklistEntryStatusId.DONE)
-        {
-            possibleTypes.Add(ApplicationChecklistEntryTypeId.IDENTITY_WALLET);
-        }
-        if (currentStatus.TryGetValue(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, out var clearingHouseStatus) && checklistEntryStatusIds.Contains(clearingHouseStatus) && identityStatus == ApplicationChecklistEntryStatusId.DONE)
-        {
-            possibleTypes.Add(ApplicationChecklistEntryTypeId.CLEARING_HOUSE);
-        }
-        if (currentStatus.TryGetValue(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, out var selfDescriptionStatus) && checklistEntryStatusIds.Contains(selfDescriptionStatus) && clearingHouseStatus == ApplicationChecklistEntryStatusId.DONE)
-        {
-            possibleTypes.Add(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP);
+            return;
         }
 
-        return possibleTypes;
+        foreach (var processStepTypeId in nextProcessStepTypeIds.Except(context.ProcessSteps.Select(step => step.ProcessStepTypeId)))
+        {
+            var step = processStepRepository.CreateProcessStep(processStepTypeId, ProcessStepStatusId.TODO);
+            applicationChecklistRepository.CreateApplicationAssignedProcessStep(context.ApplicationId, step.Id);
+        }
+    }
+
+    public bool ScheduleProcessSteps(IChecklistService.WorkerChecklistProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds)
+    {
+        var modified = false;
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var checklistRepository = _portalRepositories.GetInstance<IApplicationChecklistRepository>();
+        foreach (var processStepTypeId in processStepTypeIds)
+        {
+            if (context.ProcessStepTypeIds.Contains(processStepTypeId))
+            {
+                continue;
+            }
+
+            var step = processStepRepository.CreateProcessStep(processStepTypeId, ProcessStepStatusId.TODO);
+            checklistRepository.CreateApplicationAssignedProcessStep(context.ApplicationId, step.Id);
+            modified = true;
+        }
+        return modified;
+    }
+
+    public static Task<(Action<ApplicationChecklistEntry>?, IEnumerable<ProcessStepTypeId>?, bool)> HandleServiceErrorAsync(Exception exception, ProcessStepTypeId manualProcessTriggerStep)
+    {
+        return Task.FromResult<(Action<ApplicationChecklistEntry>?, IEnumerable<ProcessStepTypeId>?, bool)>(
+            exception is not HttpRequestException ?
+                (item =>
+                    {
+                        item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
+                        item.Comment = exception.ToString();
+                    },
+                    new [] { manualProcessTriggerStep },
+                    true) :
+                (item =>
+                    {
+                        item.Comment = exception.ToString();
+                    },
+                    null,
+                    true));
     }
 }

@@ -21,6 +21,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClient;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 
@@ -37,16 +38,8 @@ public static class SdServiceCollectionExtension
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<SdFactorySettings>>();
-        services.AddHttpClient(nameof(SdFactoryService), c =>
-        {
-            c.BaseAddress = new Uri(settings.Value.SdFactoryUrl);
-        }).AddHttpMessageHandler<LoggingHandler<SdFactoryService>>();
-        services.AddHttpClient($"{nameof(SdFactoryService)}Auth", c =>
-        {
-            c.BaseAddress = new Uri(settings.Value.KeycloakTokenAddress);
-        }).AddHttpMessageHandler<LoggingHandler<SdFactoryService>>();
-
         services
+            .AddCustomHttpClientWithAuthentication<SdFactoryService>(settings.Value.SdFactoryUrl, settings.Value.KeycloakTokenAddress)
             .AddTransient<ISdFactoryService, SdFactoryService>()
             .AddTransient<ISdFactoryBusinessLogic, SdFactoryBusinessLogic>();
 

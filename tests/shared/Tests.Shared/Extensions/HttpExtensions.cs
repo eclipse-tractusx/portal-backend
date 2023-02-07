@@ -33,6 +33,14 @@ public static class HttpExtensions
         options.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
         return await JsonSerializer.DeserializeAsync<T>(responseStream, options).ConfigureAwait(false) ?? throw new InvalidOperationException();
     }
+
+    public static HttpContent ToJsonContent(this object data, JsonSerializerOptions options, string contentType)
+    {
+        var json = JsonSerializer.Serialize(data, options);
+        HttpContent content = new StringContent(json);
+        content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+        return content;
+    }
     
     public static HttpContent ToFormContent(this string stringContent, string contentType)
     {

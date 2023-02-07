@@ -42,7 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\checklist\Checklist.Library\Checklist.Library.csproj" />
+    <ProjectReference Include="..\..\checklist\Checklist.Config\Checklist.Config.csproj" />
     <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
     <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
@@ -54,6 +54,7 @@
     <ProjectReference Include="..\..\framework\Framework.IO\Framework.IO.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Token\Framework.Token.csproj" />
+    <ProjectReference Include="..\..\externalsystems\Bpdm.Library\Bpdm.Library.csproj" />
   </ItemGroup>
 
   <ItemGroup>
