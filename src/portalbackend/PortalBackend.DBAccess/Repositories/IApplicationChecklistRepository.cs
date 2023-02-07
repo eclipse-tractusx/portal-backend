@@ -39,7 +39,7 @@ public interface IApplicationChecklistRepository
     /// <param name="applicationId">Id of the application to modify</param>
     /// <param name="applicationChecklistTypeId">Id of the checklistType to modify</param>
     /// <param name="setFields">Action to sets the fields</param>
-    void AttachAndModifyApplicationChecklist(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistTypeId, Action<ApplicationChecklistEntry> setFields);
+    ApplicationChecklistEntry AttachAndModifyApplicationChecklist(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistTypeId, Action<ApplicationChecklistEntry> setFields);
 
     /// <summary>
     /// Gets the combination of the checklist type and status
@@ -48,9 +48,13 @@ public interface IApplicationChecklistRepository
     /// <returns>Returns the data of the checklist for the specific application</returns>
     IAsyncEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> GetChecklistDataAsync(Guid applicationId);
 
+    Task<(bool IsValidApplicationId, bool IsSubmitted, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>? Checklist, IEnumerable<ProcessStep>? ProcessSteps)> GetChecklistProcessStepData(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> entryTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+
     /// <summary>
     /// Gets all checklist entries where at least one item is in TO_DO state ordered by the application id
     /// </summary>
     /// <returns>Returns an async enumerable with the checklist data</returns>
-    IAsyncEnumerable<(Guid ApplicationId, ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> GetChecklistDataOrderedByApplicationId();
+    IAsyncEnumerable<(Guid ApplicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> Checklist, IEnumerable<ProcessStep> ProcessSteps)> GetChecklistProcessStepData();
+
+    ApplicationAssignedProcessStep CreateApplicationAssignedProcessStep(Guid companyApplicationId, Guid processStepId);
 }

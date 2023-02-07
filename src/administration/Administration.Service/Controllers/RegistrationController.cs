@@ -140,32 +140,6 @@ public class RegistrationController : ControllerBase
         _logic.UpdateCompanyBpn(applicationId, bpn);
 
     /// <summary>
-    /// Approves the partner request
-    /// </summary>
-    /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application that should be approved</param>
-    /// <param name="cancellationToken">Cancellation Token</param>
-    /// <returns>the result as a boolean</returns>
-    /// Example: PUT: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger-bpn
-    /// <response code="200">the result as a boolean.</response>
-    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, the BusinessPartnerNumber (bpn) for the given CompanyApplications company is empty or no applicationId was set.</response>
-    /// <response code="404">Application ID not found.</response>
-    /// <response code="500">Internal Server Error.</response>
-    /// <response code="502">Bad Gateway Service Error.</response>
-    [HttpPut]
-    [Authorize(Roles = "approve_new_partner")]
-    [Route("application/{applicationId}/trigger-bpn")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public async Task<NoContentResult> TriggerBpnDataPush([FromRoute] Guid applicationId, CancellationToken cancellationToken)
-    {
-        await this.WithIamUserId(user => _logic.TriggerBpnDataPushAsync(user, applicationId, cancellationToken)).ConfigureAwait(false);
-        return NoContent();
-    }
-    
-    /// <summary>
     /// Approves the registration verification for the application with the given id
     /// </summary>
     /// <param name="applicationId">Id of the application that should be approved</param>
@@ -230,6 +204,46 @@ public class RegistrationController : ControllerBase
     public async Task<NoContentResult> ProcessClearinghouseResponse([FromRoute] string bpn, [FromBody] ClearinghouseResponseData responseData, CancellationToken cancellationToken)
     {
         await _logic.ProcessClearinghouseResponseAsync(bpn, responseData, cancellationToken).ConfigureAwait(false);
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// Gets the information of an applications checklist
+    /// </summary>
+    /// <param name="applicationId">Id of the application the checklist should be provided for</param>
+    /// <remarks>
+    /// Example: GET: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/checklistDetails
+    /// </remarks>
+    /// <response code="200">The checklist information for the application</response>
+    /// <response code="404">Application ID not found.</response>
+    [HttpGet]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("applications/{applicationId}/checklistDetails")]
+    [ProducesResponseType(typeof(ChecklistDetails), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<IEnumerable<ChecklistDetails>> GetChecklistForApplication([FromRoute] Guid applicationId) =>
+        _logic.GetChecklistForApplicationAsync(applicationId);
+    
+    /// <summary>
+    /// Retriggers the last failed step 
+    /// </summary>
+    /// <param name="applicationId" example="">Id of the application that should be triggered</param>
+    /// <param name="entryTypeId">The entry type that should be restarted</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger <br />
+    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger?checklistEntryTypeId=CLEARING_HOUSE <br />
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
+    /// <response code="404">No application found for the applicationId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("application/{applicationId}/trigger")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> TriggerChecklist([FromRoute] Guid applicationId, [FromQuery] ApplicationChecklistEntryTypeId entryTypeId)
+    {
+        await _logic.TriggerChecklistAsync(applicationId, entryTypeId).ConfigureAwait(false);
         return NoContent();
     }
 }

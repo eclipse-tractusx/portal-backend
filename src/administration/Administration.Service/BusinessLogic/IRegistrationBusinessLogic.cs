@@ -32,7 +32,6 @@ public interface IRegistrationBusinessLogic
     Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null);
     Task<bool> DeclinePartnerRequest(Guid applicationId);
     Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null);
-    Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken);
     Task UpdateCompanyBpn(Guid applicationId, string bpn);
     
     /// <summary>
@@ -50,4 +49,18 @@ public interface IRegistrationBusinessLogic
     /// <param name="data">the response data</param>
     /// <param name="cancellationToken">cancellation token</param>
     Task ProcessClearinghouseResponseAsync(string bpn, ClearinghouseResponseData data, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Gets the checklist details for the given application
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    /// <returns>Returns the checklist details</returns>
+    Task<IEnumerable<ChecklistDetails>> GetChecklistForApplicationAsync(Guid applicationId);
+    
+    /// <summary>
+    /// Regtrigger the failed checklist entry or the specific given checklist entry
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    /// <param name="entryTypeId">The checklist entry type that should be retriggert</param>
+    Task TriggerChecklistAsync(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId);
 }

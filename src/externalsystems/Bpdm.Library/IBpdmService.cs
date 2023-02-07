@@ -33,5 +33,6 @@ public interface IBpdmService
     /// <param name="data">The bpdm data</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
-    Task<bool> TriggerBpnDataPush(BpdmTransferData data, CancellationToken cancellationToken);
+    Task<bool> PutInputLegalEntity(BpdmTransferData data, CancellationToken cancellationToken);
+    Task<BpdmLegalEntityData?> FetchInputLegalEntity(string externalId, CancellationToken cancellationToken);
 }

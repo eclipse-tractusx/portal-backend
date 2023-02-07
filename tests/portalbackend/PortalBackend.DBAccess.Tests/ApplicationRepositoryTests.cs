@@ -157,7 +157,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Assert
         bpn.Should().Be("CAXSDUMMYCATENAZZ");
-        existingChecklistEntryTypeIds.Should().HaveCount(5);
+        existingChecklistEntryTypeIds.Should().HaveCount(6);
     }
 
     [Fact]
@@ -184,7 +184,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Assert
         bpn.Should().BeNull();
-        existingChecklistEntryTypeIds.Should().HaveCount(5);
+        existingChecklistEntryTypeIds.Should().HaveCount(6);
     }
 
     #endregion
@@ -202,7 +202,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Assert
         applicationStatus.Should().Be(CompanyApplicationStatusId.SUBMITTED);
-        checklistEntryStatus.Should().Be(ApplicationChecklistEntryStatusId.TO_DO);
+        checklistEntryStatus.Should().Be(ApplicationChecklistEntryStatusId.DONE);
     }
 
     [Fact]
@@ -216,7 +216,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Assert
         applicationStatus.Should().Be(CompanyApplicationStatusId.CONFIRMED);
-        checklistEntryStatus.Should().Be(ApplicationChecklistEntryStatusId.TO_DO);
+        checklistEntryStatus.Should().Be(ApplicationChecklistEntryStatusId.DONE);
     }
 
     [Fact]
@@ -309,69 +309,6 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetSubmittedIdAndClearinghouseChecklistStatusByBpn
-    
-    [Fact]
-    public async Task GetSubmittedIdAndClearinghouseChecklistStatusByBpn_WithValidApplicationId_ReturnsCorrectData()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-        
-        // Act
-        var data = await sut.GetSubmittedIdAndClearinghouseChecklistStatusByBpn("CAXSTESTYCATENAZZ").ConfigureAwait(false);
-        
-        // Assert
-        data.Should().NotBeNull();
-        data.ApplicationId.Should().Be(new Guid("2bb2005f-6e8d-41eb-967b-cde67546cafc"));
-        data.StatusId.Should().Be(ApplicationChecklistEntryStatusId.TO_DO);
-    }
-
-    [Fact]
-    public async Task GetSubmittedIdAndClearinghouseChecklistStatusByBpn_WithNotExistingApplicationId_ReturnsNull()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-        
-        // Act
-        var result = await sut.GetSubmittedIdAndClearinghouseChecklistStatusByBpn("notexisting").ConfigureAwait(false);
-        
-        // Assert
-        result.Should().Be(default);
-    }
-    
-    #endregion
-    
-    #region GetCompanyIdForSubmittedApplicationId
-    
-    [Fact]
-    public async Task GetCompanyIdForSubmittedApplicationId_WithValidApplicationId_ReturnsCorrectData()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-        
-        // Act
-        var data = await sut.GetCompanyIdForSubmittedApplicationId(SubmittedApplicationWithBpn).ConfigureAwait(false);
-        
-        // Assert
-        data.Should().NotBeEmpty();
-        data.Should().Be(CompanyId);
-    }
-
-    [Fact]
-    public async Task GetCompanyIdForSubmittedApplicationId_WithNotExistingApplicationId_ReturnsDefault()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-        
-        // Act
-        var data = await sut.GetCompanyIdForSubmittedApplicationId(Guid.NewGuid()).ConfigureAwait(false);
-        
-        // Assert
-        data.Should().Be(Guid.Empty);
-    }
-
-    #endregion
-    
     #region GetCompanyAndApplicationDetailsForApprovalAsync
 
     [Fact]
@@ -434,6 +371,71 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         data.Should().Be(default);
     }
 
+    #endregion
+    
+    #region GetApplicationChecklistData
+
+    [Fact]
+    public async Task GetApplicationChecklistData_WithExistingApplication_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetApplicationChecklistData(SubmittedApplicationWithBpn).ConfigureAwait(false);
+        
+        // Assert
+        data.Exists.Should().BeTrue();
+        data.ChecklistData.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetApplicationChecklistData_WithNotExistingApplication_ReturnsDefault()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetApplicationChecklistData(Guid.NewGuid()).ConfigureAwait(false);
+        
+        // Assert
+        data.Should().Be(default);
+    }
+
+    #endregion
+
+    #region GetCompanyAndApplicationDetailsForCreateWalletAsync
+    
+    
+    [Fact]
+    public async Task GetCompanyAndApplicationDetailsForCreateWalletAsync_WithExistingApplication_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetCompanyAndApplicationDetailsForCreateWalletAsync(SubmittedApplicationWithBpn).ConfigureAwait(false);
+        
+        // Assert
+        data.companyId.Should().Be(new Guid("27538eac-27a3-4f74-9306-e5149b93ade5"));
+        data.businessPartnerNumber.Should().Be("CAXSTESTYCATENAZZ");
+        data.companyName.Should().Be("Submitted Company With Bpn");
+    }
+
+
+    [Fact]
+    public async Task GetUserDataForRoleDeletionByIamClientIdsAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetCompanyAndApplicationDetailsForCreateWalletAsync(Guid.NewGuid()).ConfigureAwait(false);
+        
+        // Assert
+        data.Should().Be(default);
+    }
+    
     #endregion
     
     private async Task<ApplicationRepository> CreateSut()

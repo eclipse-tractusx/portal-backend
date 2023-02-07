@@ -18,9 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 
@@ -28,11 +31,13 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 {
     private readonly ISdFactoryService _sdFactoryService;
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IChecklistService _checklistService;
 
-    public SdFactoryBusinessLogic(ISdFactoryService sdFactoryService, IPortalRepositories portalRepositories)
+    public SdFactoryBusinessLogic(ISdFactoryService sdFactoryService, IPortalRepositories portalRepositories, IChecklistService checklistService)
     {
         _sdFactoryService = sdFactoryService;
         _portalRepositories = portalRepositories;
+        _checklistService = checklistService;
     }
 
     /// <inheritdoc />
@@ -43,7 +48,20 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         _sdFactoryService.RegisterConnectorAsync(connectorUrl, businessPartnerNumber, cancellationToken);
 
     /// <inheritdoc />
-    public async Task RegisterSelfDescriptionAsync(
+    public async Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)> RegisterSelfDescription(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    {
+        await RegisterSelfDescriptionInternalAsync(context.ApplicationId, cancellationToken)
+            .ConfigureAwait(false);
+
+        var prerequisiteEntries = context.Checklist.ExceptBy(new [] { ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP }, entry => entry.Key);
+        if (prerequisiteEntries.All(entry => entry.Value == ApplicationChecklistEntryStatusId.DONE))
+        {
+            _checklistService.ScheduleProcessSteps(context, new [] { ProcessStepTypeId.ACTIVATE_APPLICATION });
+        }
+        return (entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE, null, true);
+    }
+
+    private async Task RegisterSelfDescriptionInternalAsync(
         Guid applicationId,
         CancellationToken cancellationToken)
     {

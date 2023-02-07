@@ -75,12 +75,19 @@ public interface IApplicationRepository
     /// </summary>
     /// <param name="bpn">Bpn of the company to get the application for</param>
     /// <returns></returns>
-    Task<(Guid ApplicationId, ApplicationChecklistEntryStatusId StatusId)> GetSubmittedIdAndClearinghouseChecklistStatusByBpn(string bpn);
+    IAsyncEnumerable<Guid> GetSubmittedApplicationIdsByBpn(string bpn);
 
     /// <summary>
-    /// Gets the company id by the application id for submitted applications
+    /// Gets the bpdm data for the given application
     /// </summary>
-    /// <param name="applicationId">The application id</param>
-    /// <returns>The company id</returns>
-    Task<Guid> GetCompanyIdForSubmittedApplicationId(Guid applicationId);
+    /// <param name="applicationId">Id of the application</param>
+    /// <returns>Returns the bpdm data</returns>
+    Task<(Guid CompanyId, BpdmData BpdmData)> GetBpdmDataForApplicationAsync(Guid applicationId);
+
+    /// <summary>
+    /// Gets the checklist data for a specific application
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    /// <returns>Returns the checklist data</returns>
+    Task<(bool Exists, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId, string? Comment)> ChecklistData)> GetApplicationChecklistData(Guid applicationId);
 }

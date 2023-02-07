@@ -22,6 +22,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClient;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
@@ -37,15 +38,9 @@ public static class BpdmServiceCollectionExtension
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<BpdmServiceSettings>>();
-        services.AddHttpClient(nameof(BpdmService), c =>
-        {
-            c.BaseAddress = new Uri(settings.Value.BaseAddress);
-        }).AddHttpMessageHandler<LoggingHandler<BpdmService>>();
-        services.AddHttpClient($"{nameof(BpdmService)}Auth", c =>
-        {
-            c.BaseAddress = new Uri(settings.Value.KeycloakTokenAddress);
-        }).AddHttpMessageHandler<LoggingHandler<BpdmService>>();
-        services.AddTransient<IBpdmService, BpdmService>()
+        services
+            .AddCustomHttpClientWithAuthentication<BpdmService>(settings.Value.BaseAddress, settings.Value.KeycloakTokenAddress)
+            .AddTransient<IBpdmService, BpdmService>()
             .AddTransient<IBpdmBusinessLogic, BpdmBusinessLogic>();
 
         return services;
