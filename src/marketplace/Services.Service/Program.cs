@@ -33,14 +33,6 @@ var VERSION = "v2";
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes")
-{
-    var provider = new PhysicalFileProvider("/app/secrets");
-    builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
-}
-
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
     .AddMailingAndTemplateManager(builder.Configuration)
     .AddPortalRepositories(builder.Configuration)
