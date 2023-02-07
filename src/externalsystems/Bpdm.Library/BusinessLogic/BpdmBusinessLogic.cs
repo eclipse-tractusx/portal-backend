@@ -89,7 +89,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
         await _bpdmService.PutInputLegalEntity(bpdmTransferData, cancellationToken).ConfigureAwait(false);
 
         return (
-            entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
+            entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
             new [] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL },
             true);
     }
