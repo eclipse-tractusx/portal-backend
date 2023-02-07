@@ -30,7 +30,7 @@ n/a
 n/a
 
 ### Technical Support
-* enable migrations and portal maintenance jobs as well as notification service to use config from env vars
+* enable migrations, portal maintenance and checklist-worker jobs as well as notification service to use config from env vars
 * remove initdb container setup - replaced by configmap in portal helm chart
 
 ### Bugfix
