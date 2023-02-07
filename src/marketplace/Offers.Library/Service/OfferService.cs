@@ -156,7 +156,7 @@ public class OfferService : IOfferService
         return consentDetails;
     }
 
-    public IAsyncEnumerable<AgreementData> GetOfferTypeAgreementsAsync(OfferTypeId offerTypeId)=>
+    public IAsyncEnumerable<AgreementDocumentData> GetOfferTypeAgreementsAsync(OfferTypeId offerTypeId)=>
         _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementDataForOfferType(offerTypeId);
 
     public async Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId)

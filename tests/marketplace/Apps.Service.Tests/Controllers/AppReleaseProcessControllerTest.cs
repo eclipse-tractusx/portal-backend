@@ -119,7 +119,7 @@ public class AppReleaseProcessControllerTest
     public async Task GetOfferAgreementData_ReturnsExpectedResult()
     {
         //Arrange
-        var data = _fixture.CreateMany<AgreementData>(5).ToAsyncEnumerable();
+        var data = _fixture.CreateMany<AgreementDocumentData>(5).ToAsyncEnumerable();
         A.CallTo(() => _logic.GetOfferAgreementDataAsync())
             .Returns(data);
 

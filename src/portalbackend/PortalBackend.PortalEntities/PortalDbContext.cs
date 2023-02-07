@@ -47,7 +47,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Address> Addresses { get; set; } = default!;
     public virtual DbSet<Agreement> Agreements { get; set; } = default!;
     public virtual DbSet<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; set; } = default!;
-    public virtual DbSet<AgreementAssignedDocument> AgreementAssignedDocuments { get; set; } = default!;
     public virtual DbSet<AgreementAssignedOffer> AgreementAssignedOffers { get; set; } = default!;
     public virtual DbSet<AgreementAssignedOfferType> AgreementAssignedOfferTypes { get; set; } = default!;
     public virtual DbSet<AgreementCategory> AgreementCategories { get; set; } = default!;
@@ -155,24 +154,6 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p!.Agreements)
                 .HasForeignKey(d => d.IssuerCompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasMany(p => p.Documents)
-                .WithMany(p => p.Agreements)
-                .UsingEntity<AgreementAssignedDocument>(
-                    j => j
-                        .HasOne(d => d.Document!)
-                        .WithMany()
-                        .HasForeignKey(d => d.DocumentId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j => j
-                        .HasOne(d => d.Agreement!)
-                        .WithMany()
-                        .HasForeignKey(d => d.AgreementId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j =>
-                    {
-                        j.HasKey(e => new { e.AgreementId, e.DocumentId });
-                    });
         });
 
         modelBuilder.Entity<AgreementAssignedCompanyRole>(entity =>

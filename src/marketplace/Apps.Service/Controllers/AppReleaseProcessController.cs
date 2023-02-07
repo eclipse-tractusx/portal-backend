@@ -127,8 +127,8 @@ public class AppReleaseProcessController : ControllerBase
     [HttpGet]
     [Route("agreementData")]
     [Authorize(Roles = "edit_apps")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<AgreementData>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync() =>
+    [ProducesResponseType(typeof(IAsyncEnumerable<AgreementDocumentData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync() =>
         _appReleaseBusinessLogic.GetOfferAgreementDataAsync();
     
     /// <summary>

@@ -74,7 +74,7 @@ public interface IOfferService
     /// </summary>
     /// <param name="offerTypeId">OfferTypeId the agreement is associated with</param>
     /// <returns></returns>
-    IAsyncEnumerable<AgreementData> GetOfferTypeAgreementsAsync(OfferTypeId offerTypeId);
+    IAsyncEnumerable<AgreementDocumentData> GetOfferTypeAgreementsAsync(OfferTypeId offerTypeId);
     
     /// <summary>
     /// Return Offer Agreement Consent

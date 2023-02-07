@@ -33,7 +33,6 @@ public class Agreement : IBaseEntity
         AgreementAssignedCompanyRoles = new HashSet<AgreementAssignedCompanyRole>();
         AgreementAssignedOffers = new HashSet<AgreementAssignedOffer>();
         AgreementAssignedOfferTypes = new HashSet<AgreementAssignedOfferType>();
-        Documents = new HashSet<Document>();
     }
 
     public Agreement(Guid id, AgreementCategoryId agreementCategoryId, string name, DateTimeOffset dateCreated) : this()
@@ -62,6 +61,8 @@ public class Agreement : IBaseEntity
 
     public Guid? UseCaseId { get; set; }
 
+    public Guid? DocumentId { get; set; }
+
     // Navigation properties
     public virtual AgreementCategory? AgreementCategory { get; set; }
     public virtual Company? IssuerCompany { get; set; }
@@ -70,5 +71,5 @@ public class Agreement : IBaseEntity
     public virtual ICollection<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; private set; }
     public virtual ICollection<AgreementAssignedOffer> AgreementAssignedOffers { get; private set; }
     public virtual ICollection<AgreementAssignedOfferType> AgreementAssignedOfferTypes { get; private set; }
-    public virtual ICollection<Document> Documents { get; private set; }
+    public virtual Document? Document { get; set; }
 }

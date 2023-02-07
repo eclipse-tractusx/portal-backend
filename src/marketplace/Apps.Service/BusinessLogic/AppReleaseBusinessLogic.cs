@@ -207,7 +207,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync()=>
+    public IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync()=>
         _offerService.GetOfferTypeAgreementsAsync(OfferTypeId.APP);
 
     /// <inheritdoc/>

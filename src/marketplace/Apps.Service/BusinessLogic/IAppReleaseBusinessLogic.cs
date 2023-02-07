@@ -64,7 +64,7 @@ public interface IAppReleaseBusinessLogic
     /// Return Agreements for App_Contract Category
     /// </summary>
     /// <returns></returns>
-    IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync();
+    IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync();
 
     /// <summary>
     /// Return Offer Agreement Consent
