@@ -2,6 +2,21 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.0.0-RC7
+
+### Changen
+n/a
+
+### Feature
+n/a
+
+### Technical Support
+* enable provisioning, appmarketplace and services service to use config from env vars
+
+### Bugfix
+* double creation of notifications for app activation fixed
+* registration approval: removing the company user assigned roles for a specific client id while activating the company
+
 ## 1.0.0-RC6
 
 ### Change
@@ -15,7 +30,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 n/a
 
 ### Technical Support
-* enable migrations and portal maintenance jobs as well as notification service to use config from env vars
+* enable migrations, portal maintenance and checklist-worker jobs as well as notification service to use config from env vars
 * remove initdb container setup - replaced by configmap in portal helm chart
 
 ### Bugfix
