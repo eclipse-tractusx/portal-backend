@@ -40,4 +40,4 @@ public record AgreementData(
 public record AgreementDocumentData(
     [property: JsonPropertyName("agreementId")] Guid AgreementId,
     [property: JsonPropertyName("name")] string AgreementName,
-    [property: JsonPropertyName("documentIds")] IEnumerable<Guid> DocumentIds);
+    [property: JsonPropertyName("documentId")] Guid? DocumentId);

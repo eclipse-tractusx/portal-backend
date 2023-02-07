@@ -60,7 +60,6 @@ public class BatchSeeder : ICustomSeeder
         await SeedBaseEntity(cancellationToken);
 
         await SeedTable<AgreementAssignedCompanyRole>("agreement_assigned_company_roles", x => new {x.AgreementId, x.CompanyRoleId}, cancellationToken).ConfigureAwait(false);
-        await SeedTable<AgreementAssignedDocument>("agreement_assigned_documents", x => new { x.AgreementId, x.DocumentId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<AgreementAssignedOfferType>("agreement_assigned_offer_types", x => new { x.AgreementId, x.OfferTypeId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<AgreementAssignedOffer>("agreement_assigned_offers", x => new { x.AgreementId, x.OfferId}, cancellationToken).ConfigureAwait(false);
         await SeedTable<AppAssignedUseCase>("app_assigned_use_cases", x => new { x.AppId, x.UseCaseId}, cancellationToken).ConfigureAwait(false);

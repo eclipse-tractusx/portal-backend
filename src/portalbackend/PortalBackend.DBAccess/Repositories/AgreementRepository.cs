@@ -61,17 +61,18 @@ public class AgreementRepository : IAgreementRepository
             .Select(agreement => new AgreementDocumentData(
                 agreement.Id,
                 agreement.Name,
-                agreement.Documents.Select(doc=>doc.Id)))
+                agreement.DocumentId))
             .AsAsyncEnumerable();
 
     ///<inheritdoc/>
-    public IAsyncEnumerable<AgreementData> GetAgreementDataForOfferType(OfferTypeId offerTypeId) =>
+    public IAsyncEnumerable<AgreementDocumentData> GetAgreementDataForOfferType(OfferTypeId offerTypeId) =>
         _context.Agreements
             .AsNoTracking()
             .Where(agreement=>agreement.AgreementAssignedOfferTypes.Any(aaot => aaot.OfferTypeId == offerTypeId))
-            .Select(agreement=> new  AgreementData(
+            .Select(agreement=> new  AgreementDocumentData(
                 agreement.Id,
-                agreement.Name
+                agreement.Name,
+                agreement.DocumentId
             ))
             .AsAsyncEnumerable();
 

@@ -56,7 +56,7 @@ public interface IAgreementRepository
     /// </summary>
     /// <param name="categoryId"></param>
     /// <returns></returns>
-    IAsyncEnumerable<AgreementData> GetAgreementDataForOfferType(OfferTypeId offerTypeId);
+    IAsyncEnumerable<AgreementDocumentData> GetAgreementDataForOfferType(OfferTypeId offerTypeId);
 
     /// <summary>
     /// Return matching Agreement and Consent for agreement category app_contract and offer id

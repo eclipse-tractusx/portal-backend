@@ -7,7 +7,8 @@
     "agreement_type": null,
     "name": "Terms & Conditions - Active Participant",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9"
+    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
+    "document_id": "00000000-0000-0000-0000-000000000002"
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1011",
@@ -17,7 +18,8 @@
     "agreement_type": null,
     "name": "Terms & Conditions - App Provider",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9"
+    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
+    "document_id": "00000000-0000-0000-0000-000000000003"
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1013",
@@ -27,7 +29,8 @@
     "agreement_type": null,
     "name": "Security Regulations - Active Participant",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9"
+    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
+    "document_id": "00000000-0000-0000-0000-000000000005"
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1014",
@@ -37,7 +40,8 @@
     "agreement_type": null,
     "name": "Terms & Conditions - Service Marketplace",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9"
+    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
+    "document_id": "00000000-0000-0000-0000-000000000006"
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1015",
@@ -47,7 +51,8 @@
     "agreement_type": null,
     "name": "Data Sovereignty Guidelines",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9"
+    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
+    "document_id": "00000000-0000-0000-0000-000000000007"
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1016",
@@ -57,7 +62,8 @@
     "agreement_type": null,
     "name": "Marketplace Terms & Conditions",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9"
+    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
+    "document_id": "00000000-0000-0000-0000-000000000008"
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1017",
@@ -67,7 +73,8 @@
     "agreement_type": null,
     "name": "Terms & Conditions Service Provider",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9"
+    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
+    "document_id": "00000000-0000-0000-0000-000000000004"
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1018",
@@ -77,7 +84,8 @@
     "agreement_type": null,
     "name": "Data Sharing Approval - allow CX to submit company data (company name, requester) to process the subscription",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9"
+    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
+    "document_id": null
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1090",
@@ -87,7 +95,8 @@
     "agreement_type": null,
     "name": "I confirm that my company has successfully received a Catena-X onboarding certificate issued by an official Conformity Assessment Body (CAB). I awknowledge to upload the certificate. For more information visit the association homepage (Link)",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9"
+    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
+    "document_id": null
   },
   {
     "id": "aa0a0000-7fbc-1f2f-817f-bce0502c1091",
@@ -97,6 +106,7 @@
     "agreement_type": null,
     "name": "I confirm that my company has successfully received a Catena-X onboarding certificate issued by an official Conformity Assessment Body (CAB). I awknowledge to upload the certificate. For more information visit the association homepage (Link)",
     "issuer_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9"
+    "use_case_id": "1aacde78-35ec-4df3-ba1e-f988cddcbbd9",
+    "document_id": null
   }
 ]
