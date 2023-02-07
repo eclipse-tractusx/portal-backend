@@ -22,6 +22,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClient;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
@@ -37,15 +38,8 @@ public static class ClearinghouseServiceCollectionExtension
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<ClearinghouseSettings>>();
-        services.AddHttpClient(nameof(ClearinghouseService), c =>
-        {
-            c.BaseAddress = new Uri(settings.Value.BaseAddress);
-        }).AddHttpMessageHandler<LoggingHandler<ClearinghouseService>>();
-        services.AddHttpClient($"{nameof(ClearinghouseService)}Auth", c =>
-        {
-            c.BaseAddress = new Uri(settings.Value.KeycloakTokenAddress);
-        }).AddHttpMessageHandler<LoggingHandler<ClearinghouseService>>();
         services
+            .AddCustomHttpClientWithAuthentication<ClearinghouseService>(settings.Value.BaseAddress, settings.Value.KeycloakTokenAddress)
             .AddTransient<IClearinghouseService, ClearinghouseService>()
             .AddTransient<IClearinghouseBusinessLogic, ClearinghouseBusinessLogic>();
 

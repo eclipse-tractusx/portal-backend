@@ -38,11 +38,11 @@ public interface ICustodianService
     Task<WalletData> GetWalletByBpnAsync(string bpn, CancellationToken cancellationToken);
     
     /// <summary>
-    /// 
+    /// Creates the wallet
     /// </summary>
-    /// <param name="bpn"></param>
-    /// <param name="name"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="bpn">BusinessPartnerNumber of the company</param>
+    /// <param name="name">the name of the company</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns>The content of the document</returns>
     Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken);
 }

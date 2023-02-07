@@ -46,9 +46,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
         <ProjectReference Include="..\..\registration\ApplicationActivation.Library\ApplicationActivation.Library.csproj" />
-        <ProjectReference Include="..\Checklist.Library\Checklist.Library.csproj" />
+        <ProjectReference Include="..\Checklist.Config\Checklist.Config.csproj" />
     </ItemGroup>
 
     <ItemGroup>

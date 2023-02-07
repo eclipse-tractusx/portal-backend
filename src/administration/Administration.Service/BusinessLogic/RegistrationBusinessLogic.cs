@@ -35,7 +35,7 @@ using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-public class RegistrationBusinessLogic : IRegistrationBusinessLogic
+public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly RegistrationSettings _settings;
@@ -239,10 +239,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ControllerArgumentException("businessPartnerNumbers must prefixed with BPNL", nameof(bpn));
         }
         
-        return UpdateCompanyBpnAsync(applicationId, bpn);
+        return UpdateCompanyBpnInternal(applicationId, bpn);
     }
 
-    private async Task UpdateCompanyBpnAsync(Guid applicationId, string bpn)
+    private async Task UpdateCompanyBpnInternal(Guid applicationId, string bpn)
     {
         var result = await _portalRepositories.GetInstance<IUserRepository>()
             .GetBpnForIamUserUntrackedAsync(applicationId, bpn).ToListAsync().ConfigureAwait(false);
@@ -269,65 +269,128 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 $"BusinessPartnerNumber of company {applicationCompanyData.CompanyId} has already been set.");
         }
 
+        var context = await _checklistService
+            .VerifyChecklistEntryAndProcessSteps(
+                applicationId,
+                ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
+                new [] { ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.IN_PROGRESS },
+                ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL,
+                entryTypeIds: new [] { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION },
+                processStepTypeIds: new [] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL, ProcessStepTypeId.CREATE_IDENTITY_WALLET })
+            .ConfigureAwait(false);
+
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null, 
             c => { c.BusinessPartnerNumber = bpn; });
 
-        _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
-                checklist => { checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE; });
+        var registrationValidationFailed = context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.FAILED;
+
+        _checklistService.SkipProcessSteps(context, new [] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL });
+
+        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+            context,
+            entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
+            registrationValidationFailed
+                ? null
+                : new [] { ProcessStepTypeId.CREATE_IDENTITY_WALLET });
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public Task ProcessClearinghouseResponseAsync(string bpn, ClearinghouseResponseData data, CancellationToken cancellationToken) => 
-        _clearinghouseBusinessLogic.ProcessClearinghouseResponseAsync(bpn, data, cancellationToken);
+    public async Task ProcessClearinghouseResponseAsync(string bpn, ClearinghouseResponseData data, CancellationToken cancellationToken)
+    {
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(bpn).ToListAsync(cancellationToken).ConfigureAwait(false);
+        if (!result.Any())
+        {
+            throw new NotFoundException($"No companyApplication for BPN {bpn} is not in status SUBMITTED");
+        }
+        if (result.Count > 1)
+        {
+            throw new ConflictException($"more than one companyApplication in status SUBMITTED found for BPN {bpn} [{string.Join(", ",result)}]");
+        }
+        await _clearinghouseBusinessLogic.ProcessEndClearinghouse(result.Single(), data, cancellationToken).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 
     /// <inheritdoc />
-    public async Task SetRegistrationVerification(Guid applicationId, bool approve, string? comment = null)
+    public async Task<IEnumerable<ChecklistDetails>> GetChecklistForApplicationAsync(Guid applicationId)
+    {
+        var data = await _portalRepositories.GetInstance<IApplicationRepository>()
+            .GetApplicationChecklistData(applicationId)
+            .ConfigureAwait(false);
+        if (data == default)
+        {
+            throw new NotFoundException($"Application {applicationId} does not exists");
+        }
+
+        return data.ChecklistData.Select(x => new ChecklistDetails(x.TypeId, x.StatusId, x.Comment, x.TypeId.IsAutomated()));
+    }
+
+    /// <inheritdoc />
+    public async Task TriggerChecklistAsync(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId)
+    {
+        var manualProcessStep = entryTypeId.GetManualTriggerProcessStepId();
+        var nextProcessStep = entryTypeId.GetProcessStepForChecklistEntry();
+        if (manualProcessStep is null || nextProcessStep is null)
+        {
+            throw new ConflictException("The process can not be retriggered.");
+        }
+
+        var context = await _checklistService
+            .VerifyChecklistEntryAndProcessSteps(
+                applicationId,
+                entryTypeId,
+                new [] { ApplicationChecklistEntryStatusId.FAILED },
+                manualProcessStep.Value,
+                processStepTypeIds: new [] { nextProcessStep.Value })
+            .ConfigureAwait(false);
+
+        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+            context,
+            item =>
+            {
+                item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.TO_DO;
+            },
+            new [] { nextProcessStep.Value });
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    Task IRegistrationBusinessLogic.SetRegistrationVerification(Guid applicationId, bool approve, string? comment)
     {
         if (!approve && string.IsNullOrWhiteSpace(comment))
         {
             throw new ControllerArgumentException("Application is denied but no comment set.");
         }
+        return SetRegistrationVerificationInternal(applicationId, approve, comment); 
+    }
 
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>()
-            .GetApplicationStatusWithChecklistTypeStatusAsync(applicationId, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION)
+    public async Task SetRegistrationVerificationInternal(Guid applicationId, bool approve, string? comment)
+    {
+        var context = await _checklistService
+            .VerifyChecklistEntryAndProcessSteps(
+                applicationId,
+                ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+                new [] { ApplicationChecklistEntryStatusId.TO_DO },
+                ProcessStepTypeId.VERIFY_REGISTRATION,
+                new [] { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER },
+                new [] { ProcessStepTypeId.CREATE_IDENTITY_WALLET })
             .ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new NotFoundException($"CompanyApplication {applicationId} does not exist.");
-        }
-        
-        if (result.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
-        {
-            throw new ConflictException($"CompanyApplication {applicationId} is not in status SUBMITTED");
-        }
 
-        if (result.RegistrationVerificationStatusId == default)
-        {
-            throw new ConflictException($"No ChecklistEntry of type {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION} exists for application {applicationId}");
-        }
+        var businessPartnerSuccess = context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == ApplicationChecklistEntryStatusId.DONE;
 
-        if (result.RegistrationVerificationStatusId != ApplicationChecklistEntryStatusId.TO_DO)
-        {
-            throw new ConflictException($"ChecklistEntry {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION} is not in state {ApplicationChecklistEntryStatusId.TO_DO}");
-        }
-        
-        _portalRepositories.GetInstance<IApplicationChecklistRepository>().AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+            context,
             entry =>
             {
                 entry.ApplicationChecklistEntryStatusId = approve
                     ? ApplicationChecklistEntryStatusId.DONE
                     : ApplicationChecklistEntryStatusId.FAILED;
                 entry.Comment = comment;
-            });
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public async Task TriggerBpnDataPushAsync(string iamUserId, Guid applicationId, CancellationToken cancellationToken)
-    {
-        await _checklistService.TriggerBpnDataPush(applicationId, iamUserId, cancellationToken).ConfigureAwait(false);
+            },
+            approve && businessPartnerSuccess
+                ? new [] { ProcessStepTypeId.CREATE_IDENTITY_WALLET }
+                : null);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

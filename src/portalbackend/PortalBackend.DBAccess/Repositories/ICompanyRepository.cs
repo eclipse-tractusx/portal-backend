@@ -100,12 +100,4 @@ public interface ICompanyRepository
     /// <param name="companyId">Id of the company</param>
     /// <returns>Returns the business partner number</returns>
     Task<string?> GetCompanyBpnByIdAsync(Guid companyId);
-
-    /// <summary>
-    /// Gets the bpdm data for the given application
-    /// </summary>
-    /// <param name="iamUserId">Id of the user</param>
-    /// <param name="applicationId">Id of the application</param>
-    /// <returns>Returns the bpdm data</returns>
-    Task<BpdmData?> GetBpdmDataForApplicationAsync(string iamUserId, Guid applicationId);
 }
