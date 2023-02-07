@@ -55,6 +55,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
     public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
     public virtual DbSet<ApplicationChecklistEntry> ApplicationChecklist { get; set; } = default!;
+    public virtual DbSet<ApplicationAssignedProcessStep> ApplicationAssignedProcessSteps { get; set; } = default!;
     public virtual DbSet<ApplicationChecklistEntryStatus> ApplicationChecklistStatuses { get; set; } = default!;
     public virtual DbSet<ApplicationChecklistEntryType> ApplicationChecklistTypes { get; set; } = default!;
     public virtual DbSet<AppSubscriptionDetail> AppSubscriptionDetails { get; set; } = default!;
@@ -119,6 +120,9 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferType> OfferTypes { get; set; } = default!;
     public virtual DbSet<OfferSubscription> OfferSubscriptions { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
+    public virtual DbSet<ProcessStep> ProcessSteps { get; set; } = default!;
+    public virtual DbSet<ProcessStepStatus> ProcessStepStatuses { get; set; } = default!;
+    public virtual DbSet<ProcessStepType> ProcessStepTypes { get; set; } = default!;
     public virtual DbSet<ProviderCompanyDetail> ProviderCompanyDetails { get; set; } = default!;
     public virtual DbSet<ServiceAssignedServiceType> ServiceAssignedServiceTypes { get; set; } = default!;
     public virtual DbSet<ServiceType> ServiceTypes { get; set; } = default!;
@@ -1035,6 +1039,35 @@ public class PortalDbContext : DbContext
                 Enum.GetValues(typeof(BpdmIdentifierId))
                     .Cast<BpdmIdentifierId>()
                     .Select(e => new BpdmIdentifier(e))
+            );
+        
+        modelBuilder.Entity<ApplicationAssignedProcessStep>(entity =>
+        {
+            entity.HasKey(e => new { e.CompanyApplicationId, e.ProcessStepId });
+
+            entity.HasOne(d => d.ProcessStep)
+                .WithOne(d => d.ApplicationAssignedProcessStep)
+                .HasForeignKey<ApplicationAssignedProcessStep>(d => d.ProcessStepId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            
+            entity.HasOne(d => d.CompanyApplication)
+                .WithMany(p => p.ApplicationAssignedProcessSteps)
+                .HasForeignKey(d => d.CompanyApplicationId )
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<ProcessStepStatus>()
+            .HasData(
+                Enum.GetValues(typeof(ProcessStepStatusId))
+                    .Cast<ProcessStepStatusId>()
+                    .Select(e => new ProcessStepStatus(e))
+            );
+
+        modelBuilder.Entity<ProcessStepType>()
+            .HasData(
+                Enum.GetValues(typeof(ProcessStepTypeId))
+                    .Cast<ProcessStepTypeId>()
+                    .Select(e => new ProcessStepType(e))
             );
     }
 }

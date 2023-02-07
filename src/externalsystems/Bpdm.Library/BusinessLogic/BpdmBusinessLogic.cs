@@ -19,10 +19,12 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.BusinessLogic;
 
@@ -37,30 +39,105 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
         _bpdmService = bpdmService;
     }
 
-    public async Task<bool> TriggerBpnDataPush(Guid applicationId, string iamUserId, CancellationToken cancellationToken)
+    public async Task<(Action<ApplicationChecklistEntry>?, IEnumerable<ProcessStepTypeId>?, bool)> PushLegalEntity(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
-        var data = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpdmDataForApplicationAsync(iamUserId, applicationId).ConfigureAwait(false);
-        if (data is null)
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpdmDataForApplicationAsync(context.ApplicationId).ConfigureAwait(false);
+
+        if (result == default)
         {
-            throw new NotFoundException($"Application {applicationId} does not exists.");
+            throw new NotFoundException($"Application {context.ApplicationId} does not exists.");
         }
 
-        if (!data.IsUserInCompany)
+        if (result.BpdmData == null)
         {
-            throw new ForbiddenException($"User is not allowed to trigger Bpn Data Push for the application {applicationId}");
+            throw new UnexpectedConditionException($"BpdmData should never be null here");
         }
+
+        var data = result.BpdmData;
+        if (!string.IsNullOrWhiteSpace(data.BusinessPartnerNumber))
+        {
+            throw new ConflictException($"BusinessPartnerNumber is already set");
+        }
+
+        if (string.IsNullOrWhiteSpace(data.Alpha2Code))
+        {
+            throw new ConflictException("Alpha2Code must not be empty");
+        }
+
+        if (string.IsNullOrWhiteSpace(data.City))
+        {
+            throw new ConflictException("City must not be empty");
+        }
+
+        if (string.IsNullOrWhiteSpace(data.StreetName))
+        {
+            throw new ConflictException("StreetName must not be empty");
+        }
+
+        var bpdmTransferData = new BpdmTransferData(
+            context.ApplicationId.ToString(),
+            data.CompanyName,
+            data.ShortName,
+            data.Alpha2Code,
+            data.ZipCode,
+            data.City,
+            data.StreetName,
+            data.StreetNumber,
+            data.Region,
+            data.Identifiers);
+
+        await _bpdmService.PutInputLegalEntity(bpdmTransferData, cancellationToken).ConfigureAwait(false);
+
+        return (
+            entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
+            new [] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL },
+            true);
+    }
+
+    public async Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)> HandlePullLegalEntity(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    {
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpdmDataForApplicationAsync(context.ApplicationId).ConfigureAwait(false);
         
-        if (data.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
+        if (result == default)
         {
-            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
+            throw new UnexpectedConditionException($"CompanyApplication {context.ApplicationId} does not exist");
         }
 
-        if (string.IsNullOrWhiteSpace(data.ZipCode))
+        var (companyId, data) = result;
+
+        var legalEntity = await _bpdmService.FetchInputLegalEntity(context.ApplicationId.ToString(), cancellationToken).ConfigureAwait(false);
+
+        if (legalEntity == null)
         {
-            throw new ConflictException("ZipCode must not be empty");
+            throw new ConflictException($"legal-entity not found in bpdm for application {context.ApplicationId}");
         }
 
-        var bpdmTransferData = new BpdmTransferData(data.CompanyName, data.AlphaCode2, data.ZipCode, data.City, data.Street);
-        return await _bpdmService.TriggerBpnDataPush(bpdmTransferData, cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrEmpty(legalEntity.Bpn))
+        {
+            return (null,null,false);
+        }
+
+        // TODO: clarify whether it should be an error if businessPartnerNumber has been set locally while bpdm-answer was outstanding
+        // TODO: clarify whether it should be an error if address- or identifier-data returned by bpdm does not match what is stored in portal-db or modify in portal-db based on bpdm-response
+
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(
+            companyId,
+            company => 
+            {
+                company.BusinessPartnerNumber = data.BusinessPartnerNumber;
+            },
+            company =>
+            {
+                company.BusinessPartnerNumber = legalEntity.Bpn;
+            });
+
+        var registrationValidationFailed = context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.FAILED;
+
+        return (
+            entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
+            registrationValidationFailed
+                ? null
+                : new [] { ProcessStepTypeId.CREATE_IDENTITY_WALLET },
+            true);
     }
 }

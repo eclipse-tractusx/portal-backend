@@ -18,20 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 
 public interface ICustodianBusinessLogic
 {
-    /// <summary>
-    /// Creates the wallet for the company of the application
-    /// </summary>
-    /// <param name="applicationId">Id of the application to create the company for.</param>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns>Returns the response message</returns>
-    Task<string> CreateWalletAsync(Guid applicationId, CancellationToken cancellationToken);
-    
     /// <summary>
     /// Gets the wallet data for the given application
     /// </summary>
@@ -39,4 +34,12 @@ public interface ICustodianBusinessLogic
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns>Returns the wallet data if existing or null</returns>
     Task<WalletData?> GetWalletByBpnAsync(Guid applicationId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Creates the wallet for the company of the application
+    /// </summary>
+    /// <param name="context">Context for the identity wallet creation.</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns>Returns the checklist data</returns>
+    Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)> CreateIdentityWalletAsync(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
 }

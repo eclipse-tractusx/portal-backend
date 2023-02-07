@@ -182,18 +182,4 @@ public class CompanyRepository : ICompanyRepository
             .Where(x => x.Id == companyId)
             .Select(x => x.BusinessPartnerNumber)
             .SingleOrDefaultAsync();
-
-    /// <inheritdoc />
-    public Task<BpdmData?> GetBpdmDataForApplicationAsync(string iamUserId, Guid applicationId) =>
-        _context.CompanyApplications.AsNoTracking()
-            .Where(x => x.Id == applicationId)
-            .Select(x => new BpdmData(
-                    x.ApplicationStatusId,
-                    x.Company!.Name,
-                    x.Company!.Address!.CountryAlpha2Code,
-                    x.Company!.Address!.Zipcode,
-                    x.Company!.Address!.City,
-                    x.Company!.Address!.Streetname,
-                    x.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
-            .SingleOrDefaultAsync();
 }

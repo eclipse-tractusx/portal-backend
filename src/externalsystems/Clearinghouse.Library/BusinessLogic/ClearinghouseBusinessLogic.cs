@@ -18,11 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 
@@ -30,39 +33,32 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IClearinghouseService _clearinghouseService;
+    private readonly ICustodianBusinessLogic _custodianBusinessLogic;
+    private readonly IChecklistService _checklistService;
 
-    public ClearinghouseBusinessLogic(IPortalRepositories portalRepositories, IClearinghouseService clearinghouseService)
+    public ClearinghouseBusinessLogic(IPortalRepositories portalRepositories, IClearinghouseService clearinghouseService, ICustodianBusinessLogic custodianBusinessLogic, IChecklistService checklistService)
     {
         _portalRepositories = portalRepositories;
         _clearinghouseService = clearinghouseService;
+        _custodianBusinessLogic = custodianBusinessLogic;
+        _checklistService = checklistService;
     }
 
-    /// <inheritdoc />
-    public async Task ProcessClearinghouseResponseAsync(string bpn, ClearinghouseResponseData data, CancellationToken cancellationToken)
+    public async Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)> HandleStartClearingHouse(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedIdAndClearinghouseChecklistStatusByBpn(bpn).ConfigureAwait(false);
-        if (result == default)
+        var walletData = await _custodianBusinessLogic.GetWalletByBpnAsync(context.ApplicationId, cancellationToken);
+        if (walletData == null || string.IsNullOrEmpty(walletData.Did))
         {
-            throw new NotFoundException($"No companyApplication for BPN {bpn} is not in status SUBMITTED");
+            throw new ConflictException($"Decentralized Identifier for application {context.ApplicationId} is not set");
         }
 
-        if (result.StatusId != ApplicationChecklistEntryStatusId.IN_PROGRESS)
-        {
-            throw new ConflictException($"Checklist Item {ApplicationChecklistEntryTypeId.CLEARING_HOUSE} is not in status {ApplicationChecklistEntryStatusId.IN_PROGRESS}");
-        }
-        
-        _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .AttachAndModifyApplicationChecklist(result.ApplicationId,
-                ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
-                item =>
-                {
-                    item.ApplicationChecklistEntryStatusId = data.Status == ClearinghouseResponseStatus.DECLINE ? ApplicationChecklistEntryStatusId.FAILED : ApplicationChecklistEntryStatusId.DONE;
-                    item.Comment = data.Message;
-                });
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await TriggerCompanyDataPost(context.ApplicationId, walletData.Did, cancellationToken).ConfigureAwait(false);
+
+        _checklistService.ScheduleProcessSteps(context, new [] { ProcessStepTypeId.END_CLEARING_HOUSE });
+        return (entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS, null, true);
     }
 
-    public async Task TriggerCompanyDataPost(Guid applicationId, string decentralizedIdentifier, CancellationToken cancellationToken)
+    private async Task TriggerCompanyDataPost(Guid applicationId, string decentralizedIdentifier, CancellationToken cancellationToken)
     {
         var data = await _portalRepositories.GetInstance<IApplicationRepository>()
             .GetClearinghouseDataForApplicationId(applicationId).ConfigureAwait(false);
@@ -86,5 +82,33 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
             new IdentityDetails(decentralizedIdentifier, data.UniqueIds));
 
         await _clearinghouseService.TriggerCompanyDataPost(transferData, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task ProcessEndClearinghouse(Guid applicationId, ClearinghouseResponseData data, CancellationToken cancellationToken)
+    {
+        var context = await _checklistService
+            .VerifyChecklistEntryAndProcessSteps(
+                applicationId,
+                ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
+                new [] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
+                ProcessStepTypeId.END_CLEARING_HOUSE,
+                processStepTypeIds: new [] { ProcessStepTypeId.CREATE_SELF_DESCRIPTION_LP })
+            .ConfigureAwait(false);
+
+        var declined = data.Status == ClearinghouseResponseStatus.DECLINE;
+
+        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+            context,
+            item =>
+            {
+                item.ApplicationChecklistEntryStatusId = 
+                    declined
+                        ? ApplicationChecklistEntryStatusId.FAILED
+                        : ApplicationChecklistEntryStatusId.DONE;
+                item.Comment = data.Message;
+            },
+            declined
+                ? null
+                : new [] { ProcessStepTypeId.CREATE_SELF_DESCRIPTION_LP });
     }
 }

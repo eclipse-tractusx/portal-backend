@@ -37,6 +37,12 @@ public class ApplicationActivationSettings
     [Required]
     public IEnumerable<NotificationTypeId> WelcomeNotificationTypeIds { get; set; } = null!;
 
+    /// <summary>
+    /// ClientIds to remove the roles on company activation
+    /// </summary>
+    [Required]
+    public IEnumerable<string> ClientToRemoveRolesOnActivation { get; set; } = null!;
+
     [Required(AllowEmptyStrings = false)] 
     public string BasePortalAddress { get; set; } = null!;
 
@@ -49,6 +55,7 @@ public class ApplicationActivationSettings
     /// Latest time to start the activation process
     /// </summary>
     public TimeSpan? EndTime { get; set; }
+
 
     public static bool Validate(ApplicationActivationSettings settings)
     {

@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
@@ -37,7 +38,8 @@ public class ChecklistCreationService : IChecklistCreationService
     public async Task CreateInitialChecklistAsync(Guid applicationId)
     {
         var (bpn, existingChecklistEntryTypeIds) = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpnAndChecklistCheckForApplicationIdAsync(applicationId).ConfigureAwait(false);
-        CreateEntries(applicationId, existingChecklistEntryTypeIds, bpn);
+        var entries = CreateEntries(applicationId, existingChecklistEntryTypeIds, bpn);
+        CreateInitialProcessSteps(applicationId, entries);
     }
 
     /// <inheritdoc />
@@ -49,22 +51,19 @@ public class ChecklistCreationService : IChecklistCreationService
 
     private IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> CreateEntries(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> existingChecklistEntryTypeIds, string? bpn)
     {
-        var checklistEntries = Enum.GetValues<ApplicationChecklistEntryTypeId>()
-            .Where(x => !existingChecklistEntryTypeIds.Any(e => e == x))
-            .Select(x =>
-                new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(x,
-                    GetChecklistStatus(x, bpn))
-            );
-        if (checklistEntries.Any())
+        var missingEntries = Enum.GetValues<ApplicationChecklistEntryTypeId>()
+            .Except(existingChecklistEntryTypeIds);
+        if (missingEntries.Any())
         {
+            var newEntries = missingEntries.Select(x => (ApplicationChecklistEntryTypeId: x, ApplicationChecklistStatusTypeId: GetInitialChecklistStatus(x, bpn)));
             _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-                .CreateChecklistForApplication(applicationId, checklistEntries);    
+                .CreateChecklistForApplication(applicationId, newEntries);
+            return newEntries;
         }
-
-        return checklistEntries;
+        return Enumerable.Empty<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>();
     }
 
-    private static ApplicationChecklistEntryStatusId GetChecklistStatus(ApplicationChecklistEntryTypeId applicationChecklistEntryTypeId, string? bpn) =>
+    private static ApplicationChecklistEntryStatusId GetInitialChecklistStatus(ApplicationChecklistEntryTypeId applicationChecklistEntryTypeId, string? bpn) =>
         applicationChecklistEntryTypeId switch
         {
             ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER => string.IsNullOrWhiteSpace(bpn)
@@ -72,4 +71,34 @@ public class ChecklistCreationService : IChecklistCreationService
                 : ApplicationChecklistEntryStatusId.DONE,
             _ => ApplicationChecklistEntryStatusId.TO_DO
         };
+
+    public IEnumerable<ProcessStep> CreateInitialProcessSteps(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId)> checklistEntries)
+    {
+        var applicationChecklistRepository = _portalRepositories.GetInstance<IApplicationChecklistRepository>();
+        return CreateInitialProcessStepsInternal(checklistEntries).Select(processStep => 
+        {
+            applicationChecklistRepository.CreateApplicationAssignedProcessStep(applicationId, processStep.Id);
+            return processStep;
+        }).ToList();
+    }
+
+    private IEnumerable<ProcessStep> CreateInitialProcessStepsInternal(IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> checklistEntries)
+    {
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        foreach (var (entryTypeId, statusId) in checklistEntries)
+        {
+            switch(entryTypeId)
+            {
+                case ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION:
+                    yield return processStepRepository.CreateProcessStep(ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepStatusId.TODO);
+                    break;
+                case ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER when (statusId == ApplicationChecklistEntryStatusId.TO_DO):
+                    yield return processStepRepository.CreateProcessStep(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH, ProcessStepStatusId.TODO);
+                    yield return processStepRepository.CreateProcessStep(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL, ProcessStepStatusId.TODO);
+                    break;
+                default: // IDENTITY_WALLET, CLEARING_HOUSE and SELF_DESCRIPTION_LP start defered.
+                    break;
+            }
+        }
+    }
 }

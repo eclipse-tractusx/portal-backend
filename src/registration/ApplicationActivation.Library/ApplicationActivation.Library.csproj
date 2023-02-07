@@ -26,7 +26,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <UserSecretsId>91356e1f-3558-409f-9afe-a1cd06ae65b2</UserSecretsId>
+        <UserSecretsId>7a408fce-b6c8-44c0-93dd-bcddd693fd79</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -39,6 +39,7 @@
       <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
       <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
       <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
+      <ProjectReference Include="..\..\checklist\Checklist.Library\Checklist.Library.csproj" />
     </ItemGroup>
 
 </Project>

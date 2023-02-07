@@ -32,8 +32,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic.Tests;
 
@@ -1346,34 +1346,5 @@ public class UserBusinessLogicTests
         protected TestException(
             System.Runtime.Serialization.SerializationInfo info,
             System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
-
-    public interface IMockLogger<T>
-    {
-        void Log(LogLevel logLevel, Exception? exception, string logMessage);
-    }
-
-    public class MockLogger<T> : ILogger<T>
-    {
-        private readonly IMockLogger<T> _logger;
-
-        public MockLogger(IMockLogger<T> logger)
-        {
-            _logger = logger;
-        }
-
-        public IDisposable BeginScope<TState>(TState state) => new TestDisposable();
-
-        public bool IsEnabled(LogLevel logLevel) => true;
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState,Exception?,string> formatter) =>
-            _logger.Log(logLevel,exception,formatter(state,exception));
-        
-        public class TestDisposable : IDisposable
-        {
-            public void Dispose() {
-                GC.SuppressFinalize(this);
-            }
-        }
     }
 }

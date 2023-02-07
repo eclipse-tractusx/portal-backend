@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
 /// <summary>
@@ -28,4 +29,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 /// <param name="ZipCode">Zipcode of the company's address.</param>
 /// <param name="City">City of the company's address.</param>
 /// <param name="Street">Street of the company's address.</param>
-public record BpdmTransferData(string CompanyName, string AlphaCode2, string ZipCode, string City, string Street);
+public record BpdmTransferData(
+    string ExternalId,
+    string CompanyName,
+    string? ShortName,
+    string AlphaCode2,
+    string? ZipCode,
+    string City,
+    string StreetName,
+    string? StreetNumber,
+    string? Region,
+    IEnumerable<(BpdmIdentifierId BpdmIdentifierId, string Value)> Identifiers
+);

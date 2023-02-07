@@ -109,6 +109,31 @@ public class ChecklistCreationServiceTests
     #region CreateMissingChecklistItems
 
     [Fact]
+    public async Task CreateMissingChecklistItems_WithNoMissingItems_DoesntCreate()
+    {
+        // Arrange
+        var existingItems = new[]
+        {
+            ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
+            ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
+            ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
+            ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
+            ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION
+        };
+        SetupFakesForCreate();
+        
+        // Act
+        await _service.CreateMissingChecklistItems(ApplicationWithBpnId, existingItems).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
+                ApplicationWithBpnId,
+                A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>._))
+            .MustNotHaveHappened();
+    }
+
+    [Fact]
     public async Task CreateMissingChecklistItems_WithOneMissingItem_CreatesOneItem()
     {
         // Arrange

@@ -18,25 +18,19 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 
 public interface IChecklistService
 {
-    /// <summary>
-    /// Triggers the bpn data push
-    /// </summary>
-    /// <param name="applicationId">Id of the application</param>
-    /// <param name="iamUserId">the current user</param>
-    /// <param name="cancellationToken">Cancellation Token</param>
-    Task TriggerBpnDataPush(Guid applicationId, string iamUserId, CancellationToken cancellationToken);
-    
-    /// <summary>
-    /// Processes the possible automated steps of the checklist
-    /// </summary>
-    /// <param name="applicationId">Id of the application to process the checklist</param>
-    /// <param name="checklistEntries">The checklist entries to process</param>
-    /// <param name="cancellationToken">Cancellation Token</param>
-    IAsyncEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId, bool Processed)> ProcessChecklist(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> checklistEntries, CancellationToken cancellationToken);
+    record ManualChecklistProcessStepData(Guid ApplicationId, Guid ProcessStepId, ApplicationChecklistEntryTypeId EntryTypeId, ImmutableDictionary<ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId> Checklist, IEnumerable<ProcessStep> ProcessSteps);
+    record WorkerChecklistProcessStepData(Guid ApplicationId, ImmutableDictionary<ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId> Checklist, IEnumerable<ProcessStepTypeId> ProcessStepTypeIds);
+
+    Task<ManualChecklistProcessStepData> VerifyChecklistEntryAndProcessSteps(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, IEnumerable<ApplicationChecklistEntryStatusId> entryStatusIds, ProcessStepTypeId processStepTypeId, IEnumerable<ApplicationChecklistEntryTypeId>? entryTypeIds = null, IEnumerable<ProcessStepTypeId>? processStepTypeIds = null);
+    void SkipProcessSteps(ManualChecklistProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+    void FinalizeChecklistEntryAndProcessSteps(ManualChecklistProcessStepData context, Action<ApplicationChecklistEntry> modifyApplicationChecklistEntry, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds);
+    bool ScheduleProcessSteps(WorkerChecklistProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds);
 }
