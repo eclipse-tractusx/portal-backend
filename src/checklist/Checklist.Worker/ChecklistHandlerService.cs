@@ -26,7 +26,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker;
