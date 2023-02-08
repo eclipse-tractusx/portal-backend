@@ -1283,7 +1283,7 @@ public class OfferServiceTests
         var Id = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(Id, _iamUser.UserEntityId, OfferStatusId.CREATED, offerTypeId))
-            .ReturnsLazily(() => new ValueTuple<bool, Guid>());
+            .ReturnsLazily(() => new ValueTuple<bool,bool,Guid>());
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
         // Act
@@ -1303,7 +1303,7 @@ public class OfferServiceTests
         var Id = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(Id, _iamUser.UserEntityId, OfferStatusId.CREATED, offerTypeId))
-            .ReturnsLazily(() => (true, Guid.Empty));
+            .ReturnsLazily(() => (true, true, Guid.Empty));
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
         // Act
@@ -1383,6 +1383,26 @@ public class OfferServiceTests
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         ex.Message.Should().Be($"documentType must be either: {string.Join(",", documentTypeIdSettings)}");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT, new[] { DocumentTypeId.APP_CONTRACT }, new [] { "application/pdf" })]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS, new[] { DocumentTypeId.ADDITIONAL_DETAILS }, new [] { "application/pdf" })]
+    public async Task UploadDocumentAsync_isStatusCreated_ThrowsConflictException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings)
+    {
+        // Arrange
+        var Id = _fixture.Create<Guid>();
+        var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
+        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(Id, _iamUser.UserEntityId, OfferStatusId.CREATED, offerTypeId))
+            .ReturnsLazily(() => (true, false, Guid.NewGuid()));
+        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        async Task Act() => await sut.UploadDocumentAsync(Id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, documentTypeIdSettings, contentTypeSettings, CancellationToken.None).ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"offerStatus is in Incorrect State");
     }
 
     #endregion
@@ -1539,7 +1559,7 @@ public class OfferServiceTests
     private void SetupCreateDocument(Guid appId, OfferTypeId offerTypeId)
     {
         A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(appId, _iamUser.UserEntityId, OfferStatusId.CREATED, offerTypeId))
-            .ReturnsLazily(() => (true, _companyUser.Id));
+            .ReturnsLazily(() => (true, true, _companyUser.Id));
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
     }

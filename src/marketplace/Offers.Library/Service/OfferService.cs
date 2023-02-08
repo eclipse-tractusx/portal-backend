@@ -18,9 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -35,6 +32,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
@@ -739,6 +738,9 @@ public class OfferService : IOfferService
 
         if (result == default)
             throw new NotFoundException($"{offertypeId} {Id} does not exist");
+
+        if(!result.IsStatusCreated)
+            throw new ConflictException($"offerStatus is in Incorrect State");
 
         var companyUserId = result.CompanyUserId;
         if (companyUserId == Guid.Empty)
