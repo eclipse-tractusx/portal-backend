@@ -76,7 +76,7 @@ public class ChecklistExecutionService
         {
             try
             {
-                var checklistEntryData = outerLoopRepositories.GetInstance<IApplicationChecklistRepository>().GetChecklistProcessStepData();
+                var checklistEntryData = outerLoopRepositories.GetInstance<IApplicationChecklistRepository>().GetAllChecklistProcessStepData();
                 await foreach (var entryData in checklistEntryData.WithCancellation(stoppingToken).ConfigureAwait(false))
                 {
                     var checklist = await HandleChecklistProcessing(entryData, checklistCreationService, checklistProcessor, checklistRepositories, stoppingToken).ConfigureAwait(false);

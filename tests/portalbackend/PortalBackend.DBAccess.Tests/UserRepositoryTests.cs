@@ -37,9 +37,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
-    private const string ValidIamUserId = "623770c5-cf38-4b9f-9a35-f8b9ae972e2d";
-    private readonly Guid ValidCompanyUser = new ("ac1cf001-7fbc-1f2f-817f-bce058020001");
-    private readonly Guid _validOfferId = new("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
+    private const string ValidIamUserId = "502dabcf-01c7-47d9-a88e-0be4279097b5";
+    private readonly Guid ValidCompanyUser = new ("ac1cf001-7fbc-1f2f-817f-bce058020006");
+    private readonly Guid _validOfferId = new("ac1cf001-7fbc-1f2f-817f-bce0572c0007");
 
     public UserRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -64,7 +64,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result.companyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"));
+        result.companyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
         result.companyInformation.OrganizationName.Should().Be("Catena-X");
     }
 
@@ -96,7 +96,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result.companyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020000"));
+        result.companyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
     }
 
     [Fact]
@@ -133,7 +133,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result!.Data.Should().NotBeEmpty();
-        result!.Data.Should().HaveCount(7);
+        result!.Data.Should().HaveCount(2);
     }
 
     [Fact]
@@ -173,7 +173,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result!.Data.Should().NotBeEmpty();
-        result!.Data.Should().HaveCount(8);
+        result!.Data.Should().HaveCount(2);
     }
 
     [Fact]
@@ -206,30 +206,13 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.GetServiceProviderCompanyUserWithRoleIdAsync(
-            new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new List<Guid>
-            {
-                new ("7410693c-c893-409e-852f-9ee886ce94a6") // Company Admin
-            }).ToListAsync().ConfigureAwait(false);
-
-        // Assert
-        result.Should().HaveCount(1);
-    }
-
-    [Fact]
-    public async Task GetServiceProviderCompanyUserWithRoleIdAsync_WithMultipleUsers_ReturnsExpectedResult()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetServiceProviderCompanyUserWithRoleIdAsync(
-            new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new List<Guid>
+            new Guid("9b957704-3505-4445-822c-d7ef80f27fcd"), new List<Guid>
             {
                 new ("58f897ec-0aad-4588-8ffa-5f45d6638632") // CX Admin
             }).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().HaveCount(2);
+        result.Should().HaveCount(1);
     }
 
     [Fact]
@@ -302,8 +285,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetCompanyUserWithIamUserCheckAndCompanyName(ValidIamUserId, ValidCompanyUser).ToListAsync().ConfigureAwait(false);
         
         // Assert
-        result.Should().HaveCount(2);
-        result.Select(x => x.CompanyName).Should().Contain("Catena-X");
+        result.Should().HaveCount(1);
     }
 
     #endregion
@@ -318,12 +300,12 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Act
         var result = await sut
-            .GetCompanyUserWithRoleIdForCompany(new[] {new Guid("607818be-4978-41f4-bf63-fa8d2de51154")}, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))
+            .GetCompanyUserWithRoleIdForCompany(new[] {new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632")}, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))
             .ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(1);
-        result.First().Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019993"));
+        result.First().Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
     }
 
     #endregion
@@ -338,12 +320,12 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Act
         var result = await sut
-            .GetCompanyUserEmailForCompanyAndRoleId(new[] {new Guid("607818be-4978-41f4-bf63-fa8d2de51154")}, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))
+            .GetCompanyUserEmailForCompanyAndRoleId(new[] {new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632")}, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))
             .ToListAsync().ConfigureAwait(false);
         
         // Assert
         result.Should().HaveCount(1);
-        result.First().Email.Should().Be("tester.user4@test.de");
+        result.First().Email.Should().Be("tobeadded@cx.com");
     }
 
     #endregion

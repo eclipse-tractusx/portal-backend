@@ -57,4 +57,27 @@
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Seeder\Data\offer_subscriptions.test.json" />
+    <Content Include="Seeder\Data\offer_subscriptions.test.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\notifications.test.json" />
+    <Content Include="Seeder\Data\notifications.test.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\company_users.test.json" />
+    <Content Include="Seeder\Data\company_users.test.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\consents.test.json" />
+    <Content Include="Seeder\Data\consents.test.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\invitations.test.json" />
+    <None Remove="Seeder\Data\documents.test.json" />
+    <Content Include="Seeder\Data\documents.test.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

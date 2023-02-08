@@ -77,7 +77,7 @@ public class ChecklistExecutionServiceTests
     public async Task ExecuteAsync_WithNoPendingItems_NoServiceCall()
     {
         // Arrange
-        A.CallTo(() => _applicationChecklistRepository.GetChecklistProcessStepData())
+        A.CallTo(() => _applicationChecklistRepository.GetAllChecklistProcessStepData())
             .Returns(new List<(Guid ApplicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> Checklist, IEnumerable<ProcessStep> ProcessSteps)>().ToAsyncEnumerable());
 
         // Act
@@ -93,7 +93,7 @@ public class ChecklistExecutionServiceTests
     {
         var stepData = _fixture.CreateMany<(Guid ApplicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> Checklist, IEnumerable<ProcessStep> ProcessSteps)>().ToImmutableArray();
         // Arrange
-        A.CallTo(() => _applicationChecklistRepository.GetChecklistProcessStepData())
+        A.CallTo(() => _applicationChecklistRepository.GetAllChecklistProcessStepData())
             .Returns(stepData.ToAsyncEnumerable());
 
         // Act
@@ -115,7 +115,7 @@ public class ChecklistExecutionServiceTests
                 .With(x => x.ProcessSteps, _fixture.CreateMany<int>(5).Select(_ => _fixture.Build<ProcessStep>().With(x => x.ProcessStepStatusId, ProcessStepStatusId.TODO).Create()))
                 .Create()).ToImmutableArray();
 
-        A.CallTo(() => _applicationChecklistRepository.GetChecklistProcessStepData())
+        A.CallTo(() => _applicationChecklistRepository.GetAllChecklistProcessStepData())
             .Returns(stepData.ToAsyncEnumerable());
         A.CallTo(() => _checklistProcessor.ProcessChecklist(A<Guid>._,A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>._,A<IEnumerable<ProcessStep>>._,A<CancellationToken>._))
             .Throws(() => new Exception("Only a test"));
@@ -139,7 +139,7 @@ public class ChecklistExecutionServiceTests
                 .With(x => x.ProcessSteps, _fixture.CreateMany<int>(5).Select(_ => _fixture.Build<ProcessStep>().With(x => x.ProcessStepStatusId, ProcessStepStatusId.DONE).Create()))
                 .Create()).ToImmutableArray();
 
-        A.CallTo(() => _applicationChecklistRepository.GetChecklistProcessStepData())
+        A.CallTo(() => _applicationChecklistRepository.GetAllChecklistProcessStepData())
             .Returns(stepData.ToAsyncEnumerable());
 
         A.CallTo(() => _checklistProcessor.ProcessChecklist(A<Guid>._,A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>._,A<IEnumerable<ProcessStep>>._,A<CancellationToken>._))
@@ -171,7 +171,7 @@ public class ChecklistExecutionServiceTests
                 .With(x => x.ProcessSteps, _fixture.CreateMany<ProcessStepStatusId>(5).Select(status => _fixture.Build<ProcessStep>().With(x => x.ProcessStepStatusId, status).Create()))
                 .Create()).ToImmutableArray();
 
-        A.CallTo(() => _applicationChecklistRepository.GetChecklistProcessStepData())
+        A.CallTo(() => _applicationChecklistRepository.GetAllChecklistProcessStepData())
             .Returns(stepData.ToAsyncEnumerable());
 
         A.CallTo(() => _checklistProcessor.ProcessChecklist(A<Guid>._,A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>._,A<IEnumerable<ProcessStep>>._,A<CancellationToken>._))
@@ -199,7 +199,7 @@ public class ChecklistExecutionServiceTests
                 .With(x => x.ProcessSteps, _fixture.CreateMany<int>(5).Select(_ => _fixture.Build<ProcessStep>().With(x => x.ProcessStepStatusId, ProcessStepStatusId.DONE).Create()))
                 .Create()).ToImmutableArray();
 
-        A.CallTo(() => _applicationChecklistRepository.GetChecklistProcessStepData())
+        A.CallTo(() => _applicationChecklistRepository.GetAllChecklistProcessStepData())
             .Returns(stepData.ToAsyncEnumerable());
 
         A.CallTo(() => _checklistCreationService.CreateMissingChecklistItems(A<Guid>._,A<IEnumerable<ApplicationChecklistEntryTypeId>>._))
@@ -248,7 +248,7 @@ public class ChecklistExecutionServiceTests
                 .With(x => x.ProcessSteps, _fixture.CreateMany<int>(5).Select(_ => _fixture.Build<ProcessStep>().With(x => x.ProcessStepStatusId, ProcessStepStatusId.DONE).Create()))
                 .Create()).ToImmutableArray();
 
-        A.CallTo(() => _applicationChecklistRepository.GetChecklistProcessStepData())
+        A.CallTo(() => _applicationChecklistRepository.GetAllChecklistProcessStepData())
             .Returns(stepData.ToAsyncEnumerable());
 
         A.CallTo(() => _checklistCreationService.CreateMissingChecklistItems(A<Guid>._,A<IEnumerable<ApplicationChecklistEntryTypeId>>._))

@@ -26,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
-    private static readonly Guid ApplicationWithBpn = new("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
+    private static readonly Guid ApplicationWithBpn = new("6b2d1263-c073-4a48-bfaf-704dc154ca9e");
     private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
 
@@ -46,12 +46,9 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetUserWithUserRolesForApplicationId_WithValidData_ReturnsExpected()
     {
         var userRoleIds = new [] { 
-            new Guid("58f897ec-0aad-4588-8ffa-5f45d6638633"),
-            new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632"),
-            new Guid("58f897ec-0aad-4588-8ffa-5f45d6638633"),
-            new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632"),
             new Guid("7410693c-c893-409e-852f-9ee886ce94a6"),
-            new Guid("607818be-4978-41f4-bf63-fa8d2de51154"),
+            new Guid("7410693c-c893-409e-852f-9ee886ce94a7"),
+            new Guid("ceec23fd-6b26-485c-a4bb-90571a29e148"),
         };        
 
         // Arrange
@@ -61,7 +58,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetUserWithUserRolesForApplicationId(ApplicationWithBpn, userRoleIds).ToListAsync().ConfigureAwait(false);
         
         // Assert
-        data.Should().HaveCount(6);
+        data.Should().HaveCount(2);
         data.Should().AllSatisfy(((Guid,string,IEnumerable<Guid> UserRoleIds) userData) => userData.UserRoleIds.Should().NotBeEmpty().And.AllSatisfy(userRoleId => userRoleIds.Should().Contain(userRoleId)));
     }
     
@@ -82,7 +79,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         data.Should().HaveCount(1);
         var clientData = data.Single();
         clientData.ClientClientId.Should().Be("Cl1-CX-Registration");
-        clientData.UserRoles.Should().HaveCount(4);
+        clientData.UserRoles.Should().HaveCount(3);
     }
 
     #endregion

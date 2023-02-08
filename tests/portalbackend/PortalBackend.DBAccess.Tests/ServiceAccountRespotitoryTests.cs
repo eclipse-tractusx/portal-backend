@@ -37,10 +37,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
-    private const string IamUserId = "3d8142f1-860b-48aa-8c2b-1ccb18699f65";
+    private const string IamUserId = "502dabcf-01c7-47d9-a88e-0be4279097b5";
     private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
     private readonly Guid _validSubscriptionId = new("eb98bdf5-14e1-4feb-a954-453eac0b93cd");
-    private readonly Guid _validServiceAccountId = new("7259744a-2ab0-49bf-9fe3-fcb88f6ad332");
+    private readonly Guid _validServiceAccountId = new("7e85a0b8-0001-ab67-10d1-0ef508201006");
     
     public ServiceAccountRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -98,7 +98,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
+        result!.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
+        result!.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
+        result!.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
     }
 
     [Fact]
@@ -181,8 +181,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetOwnCompanyServiceAccountDetailedDataUntrackedAsync
 
     [Theory]
-    [InlineData(1,0,10,1)]
-    [InlineData(1,1,10,0)]
+    [InlineData(19,0,10,10)]
+    [InlineData(19,1,9,9)]
     public async Task GetOwnCompanyServiceAccountsUntracked_ReturnsExpectedResult(int count, int page, int size, int expected)
     {
         // Arrange
@@ -197,7 +197,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Data.Should().HaveCount(expected);
         if (expected > 0)
         {
-            result.Data.First().CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
+            result.Data.First().CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
         }
     }
 

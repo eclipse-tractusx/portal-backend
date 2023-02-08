@@ -23,20 +23,33 @@ using Microsoft.Extensions.Logging;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
+/// <summary>
+/// Executes the custom seeders
+/// </summary>
 internal class CustomSeederRunner
 {
     private readonly ICustomSeeder[] _seeders;
     private readonly ILogger<CustomSeederRunner> _logger;
 
+    /// <summary>
+    /// Creates a new instance of <see cref="CustomSeederRunner"/>
+    /// Retrieves all implementations of <seealso cref="ICustomSeeder"/>
+    /// </summary>
+    /// <param name="serviceProvider">The service provider with the CustomSeeder registrations</param>
+    /// <param name="logger">Logger</param>
     public CustomSeederRunner(IServiceProvider serviceProvider, ILogger<CustomSeederRunner> logger) =>
         (_seeders, _logger) = (serviceProvider.GetServices<ICustomSeeder>().ToArray(), logger);
 
+    /// <summary>
+    /// Executes all registered seeders in the order they have defined
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation Token</param>
     public async Task RunSeedersAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Found {SeederCount} custom seeder", _seeders.Length);
         foreach (var seeder in _seeders.OrderBy(x => x.Order))
         {
-            await seeder.InitializeAsync(cancellationToken);
+            await seeder.ExecuteAsync(cancellationToken);
         }
     }
 }
