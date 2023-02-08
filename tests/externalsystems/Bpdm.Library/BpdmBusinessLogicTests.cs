@@ -228,7 +228,7 @@ public class BpdmBusinessLogicTests
         // Assert
         result.Item3.Should().BeTrue();
         result.Item1?.Invoke(entry);
-        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.IN_PROGRESS);
         A.CallTo(() => _bpdmService.PutInputLegalEntity(
                 A<BpdmTransferData>.That.Matches(x => x.ZipCode == "50668" && x.CompanyName == ValidCompanyName),
                 A<CancellationToken>._))
