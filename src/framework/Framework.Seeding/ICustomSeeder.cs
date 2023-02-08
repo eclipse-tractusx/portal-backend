@@ -18,11 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.DependencyInjection;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
+/// <summary>
+/// Definition for a custom seeders
+/// </summary>
+/// <remarks>
+/// The implementation of the <see cref="ICustomSeeder"/> is automatically done by adding <seealso cref="DatabaseInitializerExtensions"/> 
+/// </remarks>
 public interface ICustomSeeder
 {
+    /// <summary>
+    /// Defines the order of the seeders execution.
+    /// Should be a positive integer, where 1 is the first Seeder that runs.
+    /// </summary>
     int Order { get; }
 
-    Task InitializeAsync(CancellationToken cancellationToken);
+    /// <summary>
+    /// Executes the logic for the seeder. This method is called by <seealso cref="CustomSeederRunner.RunSeedersAsync"/>
+    /// </summary>
+    /// <remarks>This method also executes a SaveChanges on the database</remarks>
+    /// <param name="cancellationToken">CancellationToken</param>
+    Task ExecuteAsync(CancellationToken cancellationToken);
 }

@@ -46,8 +46,8 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
     #region GetCompanyIdentifiers
 
     [Theory]
-    [InlineData("DE", new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VAT_ID }, true)]
-    [InlineData("PT", new UniqueIdentifierId[] {}, true)]
+    [InlineData("DE", new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VAT_ID, UniqueIdentifierId.EORI }, true)]
+    [InlineData("PT", new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VAT_ID, UniqueIdentifierId.EORI }, true)]
     [InlineData("XY", null, false)]
     public async Task GetCompanyIdentifiers_ReturnsExpectedResult(string countryCode, IEnumerable<UniqueIdentifierId>? expectedIds, bool validCountry)
     {

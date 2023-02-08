@@ -86,12 +86,12 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, "623770c5-cf38-4b9f-9a35-f8b9ae972e2d").ConfigureAwait(false);
         
         // Assert
         result.Should().NotBe(default);
         result.ProviderDetailReturnData.Should().NotBeNull();
-        result.ProviderDetailReturnData.Id.Should().Be(_validDetailId);
+        result.ProviderDetailReturnData.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"));
         result.IsProviderCompany.Should().BeTrue();
     }
 
@@ -133,7 +133,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("3d8142f1-860b-48aa-8c2b-1ccb18699f66", CompanyRoleId.SERVICE_PROVIDER);
+        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", CompanyRoleId.SERVICE_PROVIDER);
 
         // Assert
         results.Should().NotBe(default);
@@ -148,7 +148,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("4b8f156e-5dfc-4a58-9384-1efb195c1c34", CompanyRoleId.SERVICE_PROVIDER);
+        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("ad56702b-5908-44eb-a668-9a11a0e100d6", CompanyRoleId.SERVICE_PROVIDER);
 
         // Assert
         results.Should().NotBe(default);
@@ -167,7 +167,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyIdByBpnAsync("CAXSDUMMYCATENAZZ").ConfigureAwait(false);
+        var results = await sut.GetCompanyIdByBpnAsync("BPNL00000003CRHK").ConfigureAwait(false);
 
         // Assert
         results.Should().NotBe(Guid.Empty);
@@ -202,7 +202,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNullOrEmpty();
-        results.Should().Be("CAXSDUMMYCATENAZZ");
+        results.Should().Be("BPNL00000003CRHK");
     }
      
     [Fact]
@@ -280,7 +280,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProviderCompanyDetailsExistsForUser("623770c5-cf38-4b9f-9a35-f8b9ae972e2d").ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailsExistsForUser("8be5ee49-4b9c-4008-b641-138305430cc4").ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
@@ -371,20 +371,18 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
-        var result = await sut.GetOwnCompanyDetailsAsync("623770c5-cf38-4b9f-9a35-f8b9ae972e2e").ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyDetailsAsync("502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
 
         result.Should().NotBeNull();
 
         result!.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
         result.Name.Should().Be("Catena-X");
-        result.ShortName.Should().Be("Cat-X");
-        result.BusinessPartnerNumber.Should().Be("CAXSDUMMYCATENAZZ");
+        result.ShortName.Should().Be("Catena-X");
+        result.BusinessPartnerNumber.Should().Be("BPNL00000003CRHK");
         result.CountryAlpha2Code.Should().Be("DE");
         result.City.Should().Be("Munich");
         result.StreetName.Should().Be("Street");
-        result.StreetAdditional.Should().Be("foo");
         result.StreetNumber.Should().Be("1");
-        result.Region.Should().Be("BY");
         result.ZipCode.Should().Be("00001");
     }
 

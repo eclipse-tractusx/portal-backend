@@ -37,7 +37,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
-    private readonly Guid _offerId = new("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5");
+    private readonly Guid _offerId = new("ac1cf001-7fbc-1f2f-817f-bce0000c0001");
 
     public ServiceRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -102,9 +102,9 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.Title.Should().Be("Newest Service");
-        result.ContactEmail.Should().Be("service-test@mail.com");
-        result.Provider.Should<string>().Be("Catena X");
+        result!.Title.Should().Be("Consulting Service - Data Readiness");
+        result.ContactEmail.Should().BeNull();
+        result.Provider.Should<string>().Be("Catena-X");
     }
 
     #endregion

@@ -82,9 +82,9 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetUploadedDocuments
 
     [Theory]
-    [InlineData("4829b64c-de6a-426c-81fc-c0bcf95bcb76", DocumentTypeId.CX_FRAME_CONTRACT, "623770c5-cf38-4b9f-9a35-f8b9ae972e2e", 2)]
-    [InlineData("1b86d973-3aac-4dcd-a9e9-0c222766202b", DocumentTypeId.CX_FRAME_CONTRACT, "4b8f156e-5dfc-4a58-9384-1efb195c1c34", 1)]
-    [InlineData("1b86d973-3aac-4dcd-a9e9-0c222766202b", DocumentTypeId.APP_CONTRACT, "4b8f156e-5dfc-4a58-9384-1efb195c1c34", 0)]
+    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9c", DocumentTypeId.CX_FRAME_CONTRACT, "555b0b81-6ead-4d3d-8d5d-41c07bb8cfbb", 2)]
+    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9f", DocumentTypeId.CX_FRAME_CONTRACT, "623770c5-cf38-4b9f-9a35-f8b9ae972e2d", 1)]
+    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9c", DocumentTypeId.APP_CONTRACT, "4a23930a-30b6-461c-9ad4-58d3e761a0b5", 0)]
     public async Task GetUploadedDocumentsAsync_ReturnsExpectedDocuments(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId, int count)
     {
         // Arrange
@@ -119,7 +119,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
     
         // Act
-        var result = await sut.GetUploadedDocumentsAsync(new Guid("4829b64c-de6a-426c-81fc-c0bcf95bcb76"), DocumentTypeId.CX_FRAME_CONTRACT, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetUploadedDocumentsAsync(new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb3"), DocumentTypeId.CX_FRAME_CONTRACT, Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
@@ -181,13 +181,13 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
     
         // Act
-        var results = await sut.GetDocumentSeedDataByIdAsync(new Guid("fda6c9cb-62be-4a98-99c1-d9c5a2df4aad")).ConfigureAwait(false);
+        var results = await sut.GetDocumentSeedDataByIdAsync(new Guid("00000000-0000-0000-0000-000000000001")).ConfigureAwait(false);
     
         // Assert
         results.Should().NotBeNull();
-        results!.DocumentStatusId.Should().Be(3);
-        results.DocumentTypeId.Should().Be(1);
-        results.DocumentName.Should().Be("test1.pdf");
+        results!.DocumentStatusId.Should().Be(2);
+        results.DocumentTypeId.Should().Be(6);
+        results.DocumentName.Should().Be("Default_App_Image");
     }
 
     [Fact]
@@ -208,10 +208,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetOfferImageDocumentContentAsync
 
     [Theory]
-    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4", "90a24c6d-1092-4590-ae89-a9d2bff1ea41", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE }, OfferTypeId.APP, true, true, true, true)]
-    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4", "90a24c6d-1092-4590-ae89-a9d2bff1ea41", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE }, OfferTypeId.SERVICE, true, true, true, false)]
-    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4", "90a24c6d-1092-4590-ae89-a9d2bff1ea41", new [] { DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP, true, true, false, true)]
-    [InlineData("deadbeef-0000-0000-0000-000000000000", "90a24c6d-1092-4590-ae89-a9d2bff1ea41", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE }, OfferTypeId.APP, true, false, true, false)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "fda6c9cb-62be-4a98-99c1-d9c5a2df4aaa", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP, true, true, true, true)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "fda6c9cb-62be-4a98-99c1-d9c5a2df4aab", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_DATA_DETAILS }, OfferTypeId.SERVICE, true, true, true, false)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "fda6c9cb-62be-4a98-99c1-d9c5a2df4aac", new [] { DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP, true, true, false, true)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "d6eb6ec2-24a6-40c5-becb-2142c62fb117", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE }, OfferTypeId.APP, true, false, true, false)]
     [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4", "deadbeef-0000-0000-0000-000000000000", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE }, OfferTypeId.APP, false, false, false, false)]
     public async Task GetOfferImageDocumentContentAsync_ReturnsExpectedResult(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, bool isDocumentExisting, bool isLinkedToOffer, bool isValidDocumentType, bool isValidOfferType)
     {

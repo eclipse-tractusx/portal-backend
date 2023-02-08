@@ -86,11 +86,11 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetConsentDetailData(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019911"), OfferTypeId.APP);
+        var result = await sut.GetConsentDetailData(new Guid("925d02e7-0ef4-4a47-a087-0bdf6af4f4f5"), OfferTypeId.SERVICE);
 
         // Assert
         result.Should().NotBeNull();
-        result!.ConsentStatus.Should().Be(ConsentStatusId.INACTIVE);
+        result!.ConsentStatus.Should().Be(ConsentStatusId.ACTIVE);
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Should().HaveCount(1);
         var changedEntity = changedEntries.Single();
         changedEntity.State.Should().Be(EntityState.Deleted);
-        changedEntity.Entity.Should().BeOfType<Consent>().Which.Comment.Should().Be("Just a test");
+        changedEntity.Entity.Should().BeOfType<Consent>();
     }
 
     #endregion

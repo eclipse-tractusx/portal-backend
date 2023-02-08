@@ -24,6 +24,9 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
@@ -65,7 +68,7 @@ public class TestDbFixture : IAsyncLifetime
         
         optionsBuilder.UseNpgsql(
             _container.ConnectionString,
-            x => x.MigrationsAssembly(typeof(BatchSeeder).Assembly.GetName().Name)
+            x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
         var context = new PortalDbContext(optionsBuilder.Options);
@@ -91,13 +94,21 @@ public class TestDbFixture : IAsyncLifetime
         
         optionsBuilder.UseNpgsql(
             _container.ConnectionString,
-            x => x.MigrationsAssembly(typeof(BatchSeeder).Assembly.GetName().Name)
+            x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
         var context = new PortalDbContext(optionsBuilder.Options);
         await context.Database.MigrateAsync();
-        BaseSeed.SeedBasedata().Invoke(context);
-        await context.SaveChangesAsync();
+
+        var seederOptions = Options.Create(new SeederSettings { TestDataEnvironments = new List<string> { "consortia", "test" } });
+        var insertSeeder = new BatchInsertSeeder(context,
+            LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<BatchInsertSeeder>(),
+            seederOptions);
+        await insertSeeder.ExecuteAsync(CancellationToken.None);
+        var updateSeeder = new BatchUpdateSeeder(context,
+            LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<BatchUpdateSeeder>(),
+            seederOptions);
+        await updateSeeder.ExecuteAsync(CancellationToken.None);
     }
 
     /// <inheritdoc />

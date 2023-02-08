@@ -37,7 +37,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
     private readonly TestDbFixture _dbTestDbFixture;
 
     private static readonly Guid ApplicationId = new("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
-    private static readonly Guid ApplicationWithExistingChecklistId = new("1b86d973-3aac-4dcd-a9e9-0c222766202b");
+    private static readonly Guid ApplicationWithExistingChecklistId = new("4f0146c6-32aa-4bb1-b844-df7e8babdcb6");
     
     public ApplicationChecklistRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -129,7 +129,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         var checklistData = await sut.GetChecklistDataAsync(ApplicationWithExistingChecklistId).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        checklistData.Should().HaveCount(6);
+        checklistData.Should().HaveCount(5);
     }
 
     [Fact]
@@ -156,10 +156,11 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var checklistData = await sut.GetChecklistProcessStepData().ToListAsync().ConfigureAwait(false);
+        var checklistData = await sut.GetAllChecklistProcessStepData().ToListAsync().ConfigureAwait(false);
 
         // Assert
-        checklistData.Should().HaveCount(2);
+        checklistData.Should().HaveCount(1);
+        checklistData.First().Checklist.Should().HaveCount(5);
     }
     
     #endregion
@@ -173,7 +174,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetChecklistProcessStepData(new Guid("1b86d973-3aac-4dcd-a9e9-0c222766202b"), 
+        var result = await sut.GetChecklistProcessStepData(new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb6"), 
             new[]
             {
                 ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
@@ -190,9 +191,15 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
             ).ConfigureAwait(false);
 
         // Assert
-        result.IsSubmitted.Should().BeTrue();
         result.IsValidApplicationId.Should().BeTrue();
-        result.Checklist.Should().HaveCount(5).And.AllSatisfy(x => x.StatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE));
+        result.IsSubmitted.Should().BeTrue();
+        result.Checklist.Should().HaveCount(5).And.Contain(new [] {
+            ( ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE ),
+            ( ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE ),
+            ( ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO ),
+            ( ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO ),
+            ( ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO ),
+        });
     }
 
     #endregion
