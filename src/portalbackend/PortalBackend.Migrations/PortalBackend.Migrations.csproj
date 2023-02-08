@@ -72,16 +72,8 @@
     <Content Include="Seeder\Data\agreement_assigned_company_roles.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Remove="Seeder\Data\agreement_assigned_offer_types.consortia.json" />
-    <Content Include="Seeder\Data\agreement_assigned_offer_types.consortia.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <None Remove="Seeder\Data\agreement_assigned_offers.json" />
     <Content Include="Seeder\Data\agreement_assigned_offers.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <None Remove="Seeder\Data\agreement_assigned_offers.consortia.json" />
-    <Content Include="Seeder\Data\agreement_assigned_offers.consortia.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Remove="Seeder\Data\agreements.json" />
@@ -362,6 +354,14 @@
     </Content>
     <None Remove="Seeder\Data\application_checklist.consortia.json" />
     <Content Include="Seeder\Data\application_checklist.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\agreement_assigned_offer_types.json" />
+    <Content Include="Seeder\Data\agreement_assigned_offer_types.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\agreement_assigned_offers.consortia.json" />
+    <Content Include="Seeder\Data\agreement_assigned_offers.consortia.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
