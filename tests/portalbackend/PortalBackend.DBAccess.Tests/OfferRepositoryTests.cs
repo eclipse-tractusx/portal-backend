@@ -18,9 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -29,7 +26,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
-using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -569,6 +565,24 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         deleted.Should().HaveSameCount(removedEntities);
         deleted.OrderBy(x => x.UseCaseId).Zip(removedEntities).Should().AllSatisfy(x => (x.First.AppId == x.Second.AppId && x.First.UseCaseId == x.Second.UseCaseId).Should().BeTrue());
    }
+
+    #endregion
+
+    #region GetProviderCompanyUserIdforOffer
+
+    [Fact]
+    public async Task GetProviderCompanyUserIdForOfferUntrackedAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetProviderCompanyUserIdForOfferUntrackedAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), "623770c5-cf38-4b9f-9a35-f8b9ae972e2e", OfferStatusId.CREATED, OfferTypeId.SERVICE);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990"));
+    }
 
     #endregion
 

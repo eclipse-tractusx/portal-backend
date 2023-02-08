@@ -226,7 +226,7 @@ public interface IOfferRepository
     /// <param name="offerStatusId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(bool OfferExists, Guid CompanyUserId)> GetProviderCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, OfferTypeId offerTypeId);
+    Task<(bool OfferExists, bool IsStatusCreated, Guid CompanyUserId)> GetProviderCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, OfferTypeId offerTypeId);
     
     /// <summary>
     /// Verify that user is linked to the appId ,offerstatus is in created state and roleId exist
