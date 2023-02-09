@@ -256,6 +256,10 @@
     <Content Include="Seeder\Data\offer_assigned_licenses.consortia.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Remove="Seeder\Data\offer_assigned_privacy_policies.consortia.json" />
+    <Content Include="Seeder\Data\offer_assigned_privacy_policies.consortia.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Remove="Seeder\Data\offer_descriptions.consortia.json" />
     <Content Include="Seeder\Data\offer_descriptions.consortia.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

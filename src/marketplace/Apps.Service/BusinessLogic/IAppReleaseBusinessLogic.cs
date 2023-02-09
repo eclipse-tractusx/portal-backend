@@ -155,6 +155,12 @@ public interface IAppReleaseBusinessLogic
     Task ApproveAppRequestAsync(Guid appId, string iamUserId);
 
     /// <summary>
+    /// Get All Privacy Policy
+    /// </summary>
+    /// <returns></returns>
+    Task<PrivacyPolicyData> GetPrivacyPolicyDataAsync();
+
+    /// <summary>
     /// Declines the app request
     /// </summary>
     /// <param name="appId">Id of the app</param>

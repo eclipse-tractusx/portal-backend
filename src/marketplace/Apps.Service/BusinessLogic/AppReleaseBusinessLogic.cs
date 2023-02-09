@@ -278,7 +278,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ControllerArgumentException("Use Case Ids must not be null or empty", nameof(appRequestModel.UseCaseIds));
         }
-        
+
         return this.CreateAppAsync(appRequestModel, iamUserId);
     }
 
@@ -317,6 +317,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
               (appId, c)));
         appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
               (appId, uc)));
+        appRepository.AddAppAssignedPrivacyPolicies(appRequestModel.PrivacyPolicies.Select(pp =>
+              (appId, pp)));
         var licenseId = appRepository.CreateOfferLicenses(appRequestModel.Price).Id;
         appRepository.CreateOfferAssignedLicense(appId, licenseId);
 
@@ -387,6 +389,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         appRepository.CreateDeleteAppAssignedUseCases(appId, appData.MatchingUseCases, appRequestModel.UseCaseIds);
 
+        appRepository.CreateDeleteAppAssignedPrivacyPolicies(appId, appData.MatchingPrivacyPolicies, appRequestModel.PrivacyPolicies);
+
         _offerService.CreateOrUpdateOfferLicense(appId, appRequestModel.Provider, appData.OfferLicense);
         
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -425,6 +429,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 return _settings.OfferStatusIds;
             }
         }       
+    }
+
+    /// <inheritdoc/>
+    public  Task<PrivacyPolicyData> GetPrivacyPolicyDataAsync()
+    {   
+        return Task.FromResult(new PrivacyPolicyData(Enum.GetValues<PrivacyPolicyId>()));
     }
 
     /// <inheritdoc />

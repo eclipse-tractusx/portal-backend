@@ -113,7 +113,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             result.Tags,
             result.IsSubscribed == default ? null : result.IsSubscribed,
             result.Languages,
-            result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName)))
+            result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))),
+            result.PrivacyPolicies
         );
     }
 

@@ -38,6 +38,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="ProviderUri"></param>
 /// <param name="ContactEmail"></param>
 /// <param name="ContactNumber"></param>
+/// <param name="PrivacyPolicies"></param>
 /// <returns></returns>
 public record OfferProviderData(
     string? Title,
@@ -54,7 +55,8 @@ public record OfferProviderData(
     string? ContactEmail,
     string? ContactNumber,
     IEnumerable<DocumentTypeData> Documents,
-    Guid? SalesManagerId
+    Guid? SalesManagerId,
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies
 );
 
 /// <summary>

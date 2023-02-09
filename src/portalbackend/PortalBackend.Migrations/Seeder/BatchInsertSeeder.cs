@@ -93,6 +93,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<NotificationTypeAssignedTopic>("notification_type_assigned_topic", x => new { x.NotificationTypeId, x.NotificationTopicId}, cancellationToken).ConfigureAwait(false);
         await SeedTable<CompanyIdentifier>("company_identifiers", x=>  new { x.CompanyId, x.UniqueIdentifierId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<CountryAssignedIdentifier>("country_assigned_identifiers", x => new { x.CountryAlpha2Code, x.UniqueIdentifierId }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<OfferAssignedPrivacyPolicy>("offer_assigned_privacy_policies", x => new { x.OfferId, x.PrivacyPolicyId }, cancellationToken).ConfigureAwait(false);
         
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");

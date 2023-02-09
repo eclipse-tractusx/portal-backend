@@ -37,7 +37,8 @@ public record OfferProviderResponse(
     string? ContactEmail, 
     string? ContactNumber, 
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
-    Guid? SalesManagerId
+    Guid? SalesManagerId,
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies
 );
 
 /// <summary>
