@@ -112,6 +112,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Offer> Offers { get; set; } = default!;
     public virtual DbSet<OfferAssignedDocument> OfferAssignedDocuments { get; set; } = default!;
     public virtual DbSet<OfferAssignedLicense> OfferAssignedLicenses { get; set; } = default!;
+    public virtual DbSet<OfferAssignedPrivacyPolicy> OfferAssignedPrivacyPolicies { get; set; } = default!;
     public virtual DbSet<OfferDescription> OfferDescriptions { get; set; } = default!;
     public virtual DbSet<OfferLicense> OfferLicenses { get; set; } = default!;
     public virtual DbSet<OfferStatus> OfferStatuses { get; set; } = default!;
@@ -123,6 +124,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<ProcessStepStatus> ProcessStepStatuses { get; set; } = default!;
     public virtual DbSet<ProcessStepType> ProcessStepTypes { get; set; } = default!;
     public virtual DbSet<ProviderCompanyDetail> ProviderCompanyDetails { get; set; } = default!;
+    public virtual DbSet<PrivacyPolicy> PrivacyPolicies { get; set; } = default!;
     public virtual DbSet<ServiceAssignedServiceType> ServiceAssignedServiceTypes { get; set; } = default!;
     public virtual DbSet<ServiceType> ServiceTypes { get; set; } = default!;
     public virtual DbSet<UniqueIdentifier> UniqueIdentifiers { get; set; } = default!;
@@ -1050,5 +1052,27 @@ public class PortalDbContext : DbContext
                     .Cast<ProcessStepTypeId>()
                     .Select(e => new ProcessStepType(e))
             );
+
+        modelBuilder.Entity<PrivacyPolicy>()
+            .HasData(
+                Enum.GetValues(typeof(PrivacyPolicyId))
+                    .Cast<PrivacyPolicyId>()
+                    .Select(e => new PrivacyPolicy(e))
+            );
+        
+        modelBuilder.Entity<OfferAssignedPrivacyPolicy>(entity =>
+        {
+            entity.HasKey(e => new { e.OfferId, e.PrivacyPolicyId });
+
+            entity.HasOne(d => d.Offer)
+                .WithMany(p => p!.OfferAssignedPrivacyPolicies)
+                .HasForeignKey(d => d.OfferId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.PrivacyPolicy)
+                .WithMany(p => p!.OfferAssignedPrivacyPolicies)
+                .HasForeignKey(d => d.PrivacyPolicyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
     }
 }

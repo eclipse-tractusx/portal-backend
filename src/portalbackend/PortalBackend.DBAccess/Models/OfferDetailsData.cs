@@ -96,10 +96,16 @@ public record OfferDetailsData(
     /// Languages that the app is available in.
     /// </summary>
     IEnumerable<string> Languages,
+
     /// <summary>
     /// document assigned to offer
     /// </summary>
-    IEnumerable<DocumentTypeData> Documents
+    IEnumerable<DocumentTypeData> Documents,
+    
+    /// <summary>
+    /// privacy policy assigned to offer
+    /// </summary>
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies
 );
 
 /// <summary>

@@ -330,6 +330,19 @@ public class AppReleaseProcessController : ControllerBase
     }
 
     /// <summary>
+    /// Retrieve Privacy Policies
+    /// </summary>
+    /// <returns>Collection of all Privacy Policy.</returns>
+    /// <remarks>Example: GET: /api/apps/appreleaseprocess/privacyPolicies</remarks>
+    /// <response code="200">Return the privacy policies</response>
+    [HttpGet]
+    [Route("privacyPolicies")]
+    [Authorize(Roles = "add_apps")]
+    [ProducesResponseType(typeof(PrivacyPolicyData), StatusCodes.Status200OK)]
+    public Task<PrivacyPolicyData> GetPrivacyPolicyDataAsync() =>
+        _appReleaseBusinessLogic.GetPrivacyPolicyDataAsync();
+
+    /// <summary>
     /// Declines the app request
     /// </summary>
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the app that should be declined</param>

@@ -41,6 +41,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="IsSubscribed">Whether app has been purchased by the user's company.</param>
 /// <param name="Languages">Languages that the app is available in.</param>
 /// <param name="Documents">documents assigned to offer</param>
+/// <param name="PrivacyPolicies">Privacy Policies assigned to offer</param>
 public record AppDetailResponse(
     Guid Id,
     string Title,
@@ -56,5 +57,6 @@ public record AppDetailResponse(
     IEnumerable<string> Tags,
     OfferSubscriptionStatusId? IsSubscribed,
     IEnumerable<string> Languages,
-    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents
+    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies
 );

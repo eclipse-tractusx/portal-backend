@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,17 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public record AppUpdateData(
-    OfferStatusId OfferState,
-    bool IsUserOfProvider,
-    IEnumerable<(string, string, string)> OfferDescriptions,
-    IEnumerable<(string Shortname, bool IsMatch)> Languages,
-    IEnumerable<Guid> MatchingUseCases, 
-    ValueTuple<Guid, string, bool> OfferLicense,
-    Guid? SalesManagerId,
-    IEnumerable<PrivacyPolicyId> MatchingPrivacyPolicies
-);
+public class PrivacyPolicy
+{
+    private PrivacyPolicy()
+    {
+        Label = null!;
+        OfferAssignedPrivacyPolicies = new HashSet<OfferAssignedPrivacyPolicy>();
+    }
+
+    public PrivacyPolicy(PrivacyPolicyId privacyPolicyId) : this()
+    {
+        Id = privacyPolicyId;
+        Label = privacyPolicyId.ToString();
+    }
+
+    public PrivacyPolicyId Id { get; private set; }
+
+    [MaxLength(255)]
+    public string Label { get; private set; }
+    public virtual ICollection<OfferAssignedPrivacyPolicy> OfferAssignedPrivacyPolicies { get; private set; }
+}
