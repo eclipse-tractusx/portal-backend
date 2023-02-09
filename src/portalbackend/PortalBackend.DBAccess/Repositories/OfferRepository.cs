@@ -346,7 +346,8 @@ public class OfferRepository : IOfferRepository
                 o.ProviderCompanyId,
                 o.ProviderCompany!.Name,
                 o.OfferDescriptions.Any(description => description.DescriptionLong == ""),
-                o.OfferDescriptions.Any(description => description.DescriptionShort == "")
+                o.OfferDescriptions.Any(description => description.DescriptionShort == ""),
+                o.UserRoles.Any()
             ))
             .SingleOrDefaultAsync();
 

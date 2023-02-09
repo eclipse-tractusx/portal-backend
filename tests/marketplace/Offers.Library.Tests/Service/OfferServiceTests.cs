@@ -850,21 +850,46 @@ public class OfferServiceTests
     }
 
     [Theory]
-    [InlineData(OfferTypeId.APP)]
-    [InlineData(OfferTypeId.SERVICE)]
-    public async Task SubmitOffer_WithInvalidOffer_ThrowsConflictException(OfferTypeId offerType)
+    [InlineData(null, "c8d4d854-8ac6-425f-bc5a-dbf457670732", false, false, true)]
+    [InlineData("name", null, false, false, true)]
+    [InlineData("name", "c8d4d854-8ac6-425f-bc5a-dbf457670732", true, false, true)]
+    [InlineData("name", "c8d4d854-8ac6-425f-bc5a-dbf457670732", false, true, true)]
+    [InlineData("name", "c8d4d854-8ac6-425f-bc5a-dbf457670732", false, false, false)]
+    public async Task SubmitOffer_WithInvalidOffer_ThrowsConflictException(string? name, string? providerCompanyId, bool isDescriptionLongNotSet, bool isDescriptionShortNotSet, bool hasUserRoles)
     {
         // Arrange
-        var notExistingOffer = _fixture.Create<Guid>();
-        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(notExistingOffer, offerType)).ReturnsLazily(() => new OfferReleaseData(null, null, "company", true, true));
+        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._,A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles));
+        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>._)).Returns(Guid.NewGuid());
 
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
         // Act
-        async Task Act() => await sut.SubmitOfferAsync(notExistingOffer, _iamUserId, offerType, new [] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
+        async Task Act() => await sut.SubmitOfferAsync(Guid.NewGuid(), _iamUserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
 
         // Assert
-        await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        result.Message.Should().StartWith("Missing  : ");
+    }
+
+    [Fact]
+    public async Task SubmitOffer_WithInvalidRequester_ThrowsConflictException()
+    {
+        // Arrange
+        var data = _fixture.Build<OfferReleaseData>()
+            .With(x => x.IsDescriptionLongNotSet, false)
+            .With(x => x.IsDescriptionShortNotSet, false)
+            .Create();
+        var userId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._,A<OfferTypeId>._)).Returns(data);
+        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>._)).Returns(Guid.Empty);
+        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitOfferAsync(Guid.NewGuid(), _iamUserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        result.Message.Should().StartWith($"keycloak user {_iamUserId} is not associated with any portal user");
     }
 
     [Theory]

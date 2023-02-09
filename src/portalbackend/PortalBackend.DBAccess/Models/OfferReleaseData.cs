@@ -28,10 +28,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="CompanyName"></param>
 /// <param name="IsDescriptionLongNotSet"></param>
 /// <param name="IsDescriptionShortNotSet"></param>
+/// <param name="Roles"></param>
 /// <returns></returns>
 public record OfferReleaseData(
     string? Name,
     Guid? ProviderCompanyId,
     string CompanyName,
     bool IsDescriptionLongNotSet,
-    bool IsDescriptionShortNotSet);
+    bool IsDescriptionShortNotSet,
+    bool HasUserRoles
+);

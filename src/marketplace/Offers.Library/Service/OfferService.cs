@@ -492,7 +492,7 @@ public class OfferService : IOfferService
             .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         if (requesterId == Guid.Empty)
         {
-            throw new ConflictException($"keycloak user ${iamUserId} is not associated with any portal user");
+            throw new ConflictException($"keycloak user {iamUserId} is not associated with any portal user");
         }            
 
         var notificationContent = new
@@ -510,8 +510,8 @@ public class OfferService : IOfferService
     private static void ValidateOfferDetails(OfferReleaseData offerDetails)
     {
         if (offerDetails.Name is not null && 
-            offerDetails.ProviderCompanyId is not null &&
-            offerDetails is { IsDescriptionLongNotSet: false, IsDescriptionShortNotSet: false }) return;
+            offerDetails.ProviderCompanyId is not null && 
+            offerDetails is { IsDescriptionLongNotSet: false, IsDescriptionShortNotSet: false, HasUserRoles: true }) return;
         
         var nullProperties = new List<string>();
         if (offerDetails.Name is null)
@@ -532,6 +532,11 @@ public class OfferService : IOfferService
         if (offerDetails.IsDescriptionShortNotSet)
         {
             nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.IsDescriptionShortNotSet)}");
+        }
+
+        if (!offerDetails.HasUserRoles)
+        {
+            nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.HasUserRoles)}");
         }
 
         throw new ConflictException($"Missing  : {string.Join(", ", nullProperties)}");
