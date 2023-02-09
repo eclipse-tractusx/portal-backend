@@ -142,8 +142,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     x.CompanyId,
                     x.RequesterId,
                     x.OfferId,
-                    x.Company.BusinessPartnerNumber,
                     x.Offer!.Name,
+                    x.Company.BusinessPartnerNumber,
                     x.Requester!.Email,
                     x.Requester.Firstname,
                     x.Requester.Lastname
