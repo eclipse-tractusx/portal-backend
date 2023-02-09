@@ -91,6 +91,12 @@ public class ServiceSettings
 
     [Required]
     public IDictionary<string,IEnumerable<string>> ITAdminRoles { get; init; } = null!;
+
+    /// <summary>
+    /// UserManagementAddress url required for subscription email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string UserManagementAddress { get; init; } = null!;
 }
 
 public static class ServiceSettingsExtension

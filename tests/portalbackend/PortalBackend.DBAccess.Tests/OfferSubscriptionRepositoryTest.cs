@@ -170,15 +170,18 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferDetailsAndCheckUser(new Guid("85064593-0aaa-48c4-95a2-2700223aca5e"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferDetailsAndCheckUser(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result.Should().NotBe(default);
-        result!.OfferId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce05748000d"));
-        result!.Status.Should().Be(OfferSubscriptionStatusId.ACTIVE);
-        result!.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
-        result!.CompanyName.Should().Be("Catena-X");
+        result!.OfferId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"));
+        result.Status.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+        result.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        result.CompanyName.Should().Be("Catena-X");
+        result.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
+        result.Bpn.Should().Be("BPNL00000003CRHK");
+        result.OfferName.Should().Be("Trace-X");
     }
 
     #endregion

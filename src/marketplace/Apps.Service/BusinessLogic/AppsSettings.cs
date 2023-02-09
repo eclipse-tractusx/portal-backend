@@ -136,6 +136,12 @@ public class AppsSettings
     /// <value></value>
     [Required]
     public IDictionary<string,IEnumerable<string>> ITAdminRoles { get; set; } = null!;
+
+    /// <summary>
+    /// UserManagementAddress url required for subscription email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string UserManagementAddress { get; init; } = null!;
 }
 
 /// <summary>
