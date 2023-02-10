@@ -18,14 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
@@ -216,5 +217,24 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync([FromBody] IEnumerable<string> bpns) =>
         _businessLogic.GetCompanyConnectorEndPointAsync(bpns);
-
+    
+    /// <summary>
+    /// Processes the clearinghouse self description push
+    /// </summary>
+    /// <param name="data">The response data for the self description</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// Example: POST: api/administration/connectors/clearinghouse/selfDescription <br />
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">The CompanyApplication is not in status SUBMITTED.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("clearinghouse/selfDescription")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> ProcessClearinghouseSelfDescription([FromBody] SelfDescriptionResponseData data, CancellationToken cancellationToken)
+    {
+        await _businessLogic.ProcessClearinghouseSelfDescription(data, cancellationToken).ConfigureAwait(false);
+        return NoContent();
+    }
 }

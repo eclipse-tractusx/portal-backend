@@ -45,6 +45,7 @@ public class SdFactoryServiceTests
     private readonly ICollection<Document> _documents;
     private readonly IOptions<SdFactorySettings> _options;
     private readonly ITokenService _tokenService;
+    private readonly SdFactoryService _service;
 
     public SdFactoryServiceTests()
     {
@@ -63,6 +64,7 @@ public class SdFactoryServiceTests
         });
         _tokenService = A.Fake<ITokenService>();
         SetupRepositoryMethods();
+        _service = new SdFactoryService(_tokenService, _options);
     }
 
     #endregion
@@ -74,60 +76,28 @@ public class SdFactoryServiceTests
     {
         // Arrange
         const string bpn = "BPNL000000000009";
-        const string contentJson = @"{
-          'id': 'http://sdhub.int.demo.catena-x.net/selfdescription/vc/62a86c917ed7226dae676c86',
-          '@context': [
-            'https://www.w3.org/2018/credentials/v1',
-            'https://abc.io/sd-document-v0.1.jsonld'
-          ],
-          'type': [
-            'VerifiableCredential',
-            'SD-document'
-          ],
-          'issuer': 'did:indy:idunion:test:JFcJRR9NSmtZaQGFMJuEjh',
-          'issuanceDate': '2022-06-14T11:10:09Z',
-          'expirationDate': '2022-09-12T11:10:09Z',
-          'credentialSubject': {
-            'bpn': 'BPNL000000000000',
-            'company_number': '123456',
-            'headquarter_country': 'DE',
-            'legal_country': 'DE',
-            'sd_type': 'connector',
-            'service_provider': 'http://demo.test.com',
-            'id': 'did:indy:idunion:test:123456789'
-          },
-          'proof': {
-            'type': 'Ed25519Signature2018',
-            'created': '2022-06-14T11:10:13Z',
-            'proofPurpose': 'assertionMethod',
-            'verificationMethod': 'did:indy:idunion:test:123456789#key-1',
-            'jws': 'this-is-a-super-secret-secret-not'
-          }
-        }";
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, contentJson.ToFormContent("application/vc+ld+json"));
+        var id = Guid.NewGuid();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
         CreateHttpClient(httpMessageHandlerMock);
-        var service = new SdFactoryService(_portalRepositories, _tokenService, _options);
 
         // Act
-        await service.RegisterConnectorAsync("https://connect-tor.com", bpn, CancellationToken.None).ConfigureAwait(false);
+        await _service.RegisterConnectorAsync(id, "https://connect-tor.com", bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        _documents.Should().HaveCount(1);
-        var document = _documents.Single();
-        document.DocumentName.Should().Be($"SelfDescription_Connector.json");
+        _documents.Should().BeEmpty();
     }
 
     [Fact]
     public async Task  RegisterConnectorAsync_WithInvalidData_ThrowsException()
     {
         // Arrange
+        var id = Guid.NewGuid();
         const string bpn = "BPNL000000000009";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         CreateHttpClient(httpMessageHandlerMock);
-        var service = new SdFactoryService(_portalRepositories, _tokenService, _options);
 
         // Act
-        async Task Action() => await service.RegisterConnectorAsync("https://connect-tor.com", bpn, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await _service.RegisterConnectorAsync(id, "https://connect-tor.com", bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);
@@ -143,60 +113,28 @@ public class SdFactoryServiceTests
     {
         // Arrange
         const string bpn = "BPNL000000000009";
-        const string contentJson = @"{
-          'id': 'http://sdhub.int.demo.catena-x.net/selfdescription/vc/62a86c917ed7226dae676c86',
-          '@context': [
-            'https://www.w3.org/2018/credentials/v1',
-            'https://abc.io/sd-document-v0.1.jsonld'
-          ],
-          'type': [
-            'VerifiableCredential',
-            'SD-document'
-          ],
-          'issuer': 'did:indy:idunion:test:JFcJRR9NSmtZaQGFMJuEjh',
-          'issuanceDate': '2022-06-14T11:10:09Z',
-          'expirationDate': '2022-09-12T11:10:09Z',
-          'credentialSubject': {
-            'bpn': 'BPNL000000000000',
-            'company_number': '123456',
-            'headquarter_country': 'DE',
-            'legal_country': 'DE',
-            'sd_type': 'connector',
-            'service_provider': 'http://demo.test.com',
-            'id': 'did:indy:idunion:test:123456789'
-          },
-          'proof': {
-            'type': 'Ed25519Signature2018',
-            'created': '2022-06-14T11:10:13Z',
-            'proofPurpose': 'assertionMethod',
-            'verificationMethod': 'did:indy:idunion:test:123456789#key-1',
-            'jws': 'this-is-a-super-secret-secret-not'
-          }
-        }";
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, contentJson.ToFormContent("application/vc+ld+json"));
+        var applicationId = Guid.NewGuid();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
         CreateHttpClient(httpMessageHandlerMock);
-        var service = new SdFactoryService(_portalRepositories, _tokenService, _options);
 
         // Act
-        await service.RegisterSelfDescriptionAsync(UniqueIdentifiers, "de", bpn, CancellationToken.None).ConfigureAwait(false);
+        await _service.RegisterSelfDescriptionAsync(applicationId, UniqueIdentifiers, "de", bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        _documents.Should().HaveCount(1);
-        var document = _documents.Single();
-        document.DocumentName.Should().Be($"SelfDescription_LegalPerson.json");
+        _documents.Should().BeEmpty();
     }
 
     [Fact]
     public async Task  RegisterSelfDescriptionAsync_WithInvalidData_ThrowsException()
     {
         // Arrange
+        var applicationId = Guid.NewGuid();
         const string bpn = "BPNL000000000009";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         CreateHttpClient(httpMessageHandlerMock);
-        var service = new SdFactoryService(_portalRepositories, _tokenService, _options);
 
         // Act
-        async Task Action() => await service.RegisterSelfDescriptionAsync(UniqueIdentifiers, "de", bpn, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await _service.RegisterSelfDescriptionAsync(applicationId, UniqueIdentifiers, "de", bpn, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);

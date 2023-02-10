@@ -60,6 +60,8 @@ public class Connector : IBaseEntity
 
     public bool? DapsRegistrationSuccessful { get; set; }
 
+    public string? SelfDescriptionMessage { get; set; }
+
     // Navigation properties
     public virtual ConnectorType? Type { get; set; }
     public virtual ConnectorStatus? Status { get; set; }

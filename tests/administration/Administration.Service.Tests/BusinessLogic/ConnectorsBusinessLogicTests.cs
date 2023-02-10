@@ -18,10 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -29,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -296,6 +299,62 @@ public class ConnectorsBusinessLogicTests
 
     #endregion
     
+    #region ProcessClearinghouseSelfDescription
+
+    [Fact]
+    public async Task ProcessClearinghouseSelfDescription_WithValidData_CallsExpected()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
+        A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId))
+            .ReturnsLazily(() => new ValueTuple<Guid, Guid?>(connectorId, null));
+
+        // Act
+        await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task ProcessClearinghouseSelfDescription_WithNotExistingApplication_ThrowsNotFoundException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
+        A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId))
+            .ReturnsLazily(() => new ValueTuple<Guid, Guid?>());
+        
+        // Act
+        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Connector {data.ExternalId} does not exist");
+    }
+
+    [Fact]
+    public async Task ProcessClearinghouseSelfDescription_WithExistingSelfDescriptionDocument_ThrowsConflictException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
+        A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId))
+            .ReturnsLazily(() => new ValueTuple<Guid, Guid?>(connectorId, Guid.NewGuid()));
+        
+        // Act
+        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Connector {data.ExternalId} already has a document assigned");
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupRepositoryMethods()
@@ -323,11 +382,11 @@ public class ConnectorsBusinessLogicTests
             })
             .Returns(new Connector(Guid.NewGuid(), null!, null!, null!));
 
-        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>?>._))
-            .Invokes((Guid connectorId, Action<Connector>? setOptionalParameters) =>
+        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>>._))
+            .Invokes((Guid connectorId, Action<Connector> setOptionalParameters) =>
             {
                 var connector = _connectors.First(x => x.Id == connectorId);
-                setOptionalParameters?.Invoke(connector);
+                setOptionalParameters.Invoke(connector);
             });
 
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(ExistingConnectorId, IamUserId))
@@ -349,8 +408,8 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _userRepository.GetServiceAccountCompany(A<string>.That.Not.Matches(x => x == TechnicalUserId)))
             .ReturnsLazily(() => Guid.Empty);
 
-        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<string>._, A<string>._, A<CancellationToken>._))
-            .ReturnsLazily(Guid.NewGuid);
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._))
+            .ReturnsLazily(() => Task.CompletedTask);
         
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);

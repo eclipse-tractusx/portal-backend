@@ -43,6 +43,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\checklist\Checklist.Config\Checklist.Config.csproj" />
+    <ProjectReference Include="..\..\externalsystems\Daps.Library\Daps.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
     <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />

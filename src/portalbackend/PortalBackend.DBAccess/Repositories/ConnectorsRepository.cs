@@ -115,10 +115,17 @@ public class ConnectorsRepository : IConnectorsRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Connector AttachAndModifyConnector(Guid connectorId, Action<Connector>? setOptionalParameters = null)
+    public Connector AttachAndModifyConnector(Guid connectorId, Action<Connector> setOptionalParameters)
     {
         var connector = _context.Connectors.Attach(new Connector(connectorId, null!, null!, null!)).Entity;
-        setOptionalParameters?.Invoke(connector);
+        setOptionalParameters.Invoke(connector);
         return connector;
     }
+
+    /// <inheritdoc />
+    public Task<(Guid ConnectorId, Guid? SelfDescriptionDocumentId)> GetConnectorDataById(Guid connectorId) =>
+        _context.Connectors
+            .Where(x => x.Id == connectorId)
+            .Select(x => new ValueTuple<Guid, Guid?>(x.Id, x.SelfDescriptionDocumentId))
+            .SingleOrDefaultAsync();
 }
