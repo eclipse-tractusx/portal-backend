@@ -24,7 +24,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #region CreateProcessStep
-    
+
     [Fact]
     public async Task CreateProcessStep_CreatesSuccessfully()
     {
@@ -44,11 +44,11 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntity.State.Should().Be(EntityState.Added);
         changedEntity.Entity.Should().BeOfType<ProcessStep>().Which.ProcessStepStatusId.Should().Be(ProcessStepStatusId.TODO);
     }
-    
+
     #endregion
 
     #region AttachAndModifyProcessStep
-    
+
     [Fact]
     public async Task AttachAndModifyProcessStep_WithExistingProcessStep_UpdatesStatus()
     {
@@ -77,7 +77,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntity.State.Should().Be(EntityState.Modified);
         changedEntity.Entity.Should().BeOfType<ProcessStep>().Which.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
     }
-    
+
     #endregion
 
     private async Task<(ProcessStepRepository sut, PortalDbContext dbContext)> CreateSutWithContext()
@@ -85,5 +85,12 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new ProcessStepRepository(context);
         return (sut, context);
+    }
+
+    private async Task<ProcessStepRepository> CreateSut()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var sut = new ProcessStepRepository(context);
+        return sut;
     }
 }

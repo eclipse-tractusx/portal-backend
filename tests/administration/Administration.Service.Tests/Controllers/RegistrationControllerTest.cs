@@ -133,11 +133,14 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
         var list = new List<ChecklistDetails>
         {
-            new(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE, null, false),
-            new(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE, null, false),
-            new(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.FAILED, "error occured", true),
-            new(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.IN_PROGRESS, null, true),
-            new(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.IN_PROGRESS, null, true),
+            new(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE, null, new List<ProcessStepTypeId>()),
+            new(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE, null, new List<ProcessStepTypeId>()),
+            new(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.FAILED, "error occured", new List<ProcessStepTypeId>
+                {
+                    ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET
+                }),
+            new(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.IN_PROGRESS, null, new List<ProcessStepTypeId>()),
+            new(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.IN_PROGRESS, null, new List<ProcessStepTypeId>()),
         };
         A.CallTo(() => _logic.GetChecklistForApplicationAsync(applicationId))
             .ReturnsLazily(() => list);
@@ -148,23 +151,89 @@ public class RegistrationControllerTest
         //Assert
         A.CallTo(() => _logic.GetChecklistForApplicationAsync(applicationId)).MustHaveHappenedOnceExactly();
         result.Should().NotBeNull().And.NotBeEmpty().And.HaveCount(5);
-        result.Where(x => x.Retriggerable).Should().HaveCount(3);
+        result.Where(x => x.RetriggerableProcessSteps.Any()).Should().HaveCount(1);
         result.Where(x => x.Status == ApplicationChecklistEntryStatusId.FAILED).Should().ContainSingle();
     }
 
     [Fact]
-    public async Task TriggerChecklist_ReturnsExpectedResult()
+    public async Task ReTriggerClearinghouse_ReturnsExpectedResult()
     {
         // Arrange
         var applicationId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, A<ApplicationChecklistEntryTypeId>._))
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, A<ApplicationChecklistEntryTypeId>._, A<ProcessStepTypeId>._))
             .ReturnsLazily(() => Task.CompletedTask);
         
         // Act
-        var result = await this._controller.TriggerChecklist(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE);
+        var result = await this._controller.RetriggerClearinghouseChecklist(applicationId).ConfigureAwait(false);
         
         // Assert
-        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task OverrideClearinghouse_ReturnsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, A<ApplicationChecklistEntryTypeId>._, A<ProcessStepTypeId>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+        
+        // Act
+        var result = await this._controller.OverrideClearinghouseChecklist(applicationId).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+    
+    [Fact]
+    public async Task TriggerIdentityWallet_ReturnsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, A<ApplicationChecklistEntryTypeId>._, A<ProcessStepTypeId>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+        
+        // Act
+        var result = await this._controller.TriggerIdentityWallet(applicationId);
+        
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+    
+    [Fact]
+    public async Task TriggerSelfDescription_ReturnsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, A<ApplicationChecklistEntryTypeId>._, A<ProcessStepTypeId>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+        
+        // Act
+        var result = await this._controller.TriggerSelfDescription(applicationId);
+        
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+    
+    [Theory]
+    [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH)]
+    public async Task TriggerBpn_ReturnsExpectedResult(ProcessStepTypeId processStepTypeId)
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, A<ApplicationChecklistEntryTypeId>._, A<ProcessStepTypeId>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+        
+        // Act
+        var result = await this._controller.TriggerBpn(applicationId, processStepTypeId);
+        
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, processStepTypeId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 }

@@ -125,21 +125,21 @@ public static class BaseSeed
         
         dbContext.ProcessSteps.AddRange(new List<ProcessStep>
         {
-            new (new Guid("b76c21e2-5480-4e74-b939-62e3817100fc"), ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL, ProcessStepStatusId.DONE),
-            new (new Guid("9a804509-1c6e-4d75-9657-a1fd52817b95"), ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepStatusId.DONE),
-            new (new Guid("ee5a6a76-fe21-4242-afb2-5b0ae070a7e7"), ProcessStepTypeId.CREATE_IDENTITY_WALLET, ProcessStepStatusId.DONE),
-            new (new Guid("bb772c1c-8b2e-4ea5-95db-6a61e653a37d"), ProcessStepTypeId.START_CLEARING_HOUSE, ProcessStepStatusId.DONE),
-            new (new Guid("b5e2b207-2fa3-4936-b3ca-406b87ca4234"), ProcessStepTypeId.END_CLEARING_HOUSE, ProcessStepStatusId.DONE),
-            new (new Guid("4e17a856-5851-43ef-b8b6-53f6c19e8e61"), ProcessStepTypeId.CREATE_SELF_DESCRIPTION_LP, ProcessStepStatusId.DONE),
-            new (new Guid("8a113543-70b0-439a-9324-46a7903bb682"), ProcessStepTypeId.ACTIVATE_APPLICATION, ProcessStepStatusId.DONE),
+            new (new Guid("b76c21e2-5480-4e74-b939-62e3817100fc"), ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL, ProcessStepStatusId.DONE, DateTimeOffset.UtcNow),
+            new (new Guid("9a804509-1c6e-4d75-9657-a1fd52817b95"), ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepStatusId.DONE, DateTimeOffset.UtcNow),
+            new (new Guid("ee5a6a76-fe21-4242-afb2-5b0ae070a7e7"), ProcessStepTypeId.CREATE_IDENTITY_WALLET, ProcessStepStatusId.DONE, DateTimeOffset.UtcNow),
+            new (new Guid("bb772c1c-8b2e-4ea5-95db-6a61e653a37d"), ProcessStepTypeId.START_CLEARING_HOUSE, ProcessStepStatusId.DONE, DateTimeOffset.UtcNow),
+            new (new Guid("b5e2b207-2fa3-4936-b3ca-406b87ca4234"), ProcessStepTypeId.END_CLEARING_HOUSE, ProcessStepStatusId.DONE, DateTimeOffset.UtcNow),
+            new (new Guid("4e17a856-5851-43ef-b8b6-53f6c19e8e61"), ProcessStepTypeId.START_SELF_DESCRIPTION_LP, ProcessStepStatusId.DONE, DateTimeOffset.UtcNow),
+            new (new Guid("8a113543-70b0-439a-9324-46a7903bb682"), ProcessStepTypeId.ACTIVATE_APPLICATION, ProcessStepStatusId.DONE, DateTimeOffset.UtcNow),
             
-            new (new Guid("24b9745b-7b2f-429b-83ca-937ae3cff7ae"), ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL, ProcessStepStatusId.DONE),
-            new (new Guid("44299c18-315c-4748-9e35-a0aafcda9795"), ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepStatusId.DONE),
-            new (new Guid("53612888-a32e-4fe1-a2df-28d6c24843d0"), ProcessStepTypeId.CREATE_IDENTITY_WALLET, ProcessStepStatusId.DONE),
-            new (new Guid("f9046b45-7c00-4113-a779-15a657515c86"), ProcessStepTypeId.START_CLEARING_HOUSE, ProcessStepStatusId.DONE),
+            new (new Guid("24b9745b-7b2f-429b-83ca-937ae3cff7ae"), ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL, ProcessStepStatusId.DONE, DateTimeOffset.UtcNow),
+            new (new Guid("44299c18-315c-4748-9e35-a0aafcda9795"), ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepStatusId.DONE, DateTimeOffset.UtcNow),
+            new (new Guid("53612888-a32e-4fe1-a2df-28d6c24843d0"), ProcessStepTypeId.CREATE_IDENTITY_WALLET, ProcessStepStatusId.DONE, DateTimeOffset.UtcNow),
+            new (new Guid("f9046b45-7c00-4113-a779-15a657515c86"), ProcessStepTypeId.START_CLEARING_HOUSE, ProcessStepStatusId.DONE, DateTimeOffset.UtcNow),
             
-            new (new Guid("48f35f84-8d98-4fbd-ba80-8cbce5eeadb5"), ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL, ProcessStepStatusId.TODO),
-            new (new Guid("7c077dd9-6e64-4d02-ac23-fe848ee94527"), ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepStatusId.TODO),
+            new (new Guid("48f35f84-8d98-4fbd-ba80-8cbce5eeadb5"), ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL, ProcessStepStatusId.TODO, DateTimeOffset.UtcNow),
+            new (new Guid("7c077dd9-6e64-4d02-ac23-fe848ee94527"), ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepStatusId.TODO, DateTimeOffset.UtcNow),
         });
         
         dbContext.ApplicationAssignedProcessSteps.AddRange(new List<ApplicationAssignedProcessStep>
