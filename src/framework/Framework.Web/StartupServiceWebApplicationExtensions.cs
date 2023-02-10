@@ -22,6 +22,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
@@ -34,11 +35,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 public static class StartupServiceWebApplicationExtensions
 {
     
-    public static WebApplication CreateApp<TProgram>(this WebApplication app, string apiPath, string version)
+    public static WebApplication CreateApp<TProgram>(this WebApplication app, string apiPath, string version, IHostEnvironment environment)
     {
-        var debugEnabled = app.Configuration.GetValue<bool?>("DebugEnabled") != null &&
-                           app.Configuration.GetValue<bool>("DebugEnabled");
-        if (debugEnabled)
+        if (environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
             var urlsToTrust = app.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
@@ -50,8 +49,7 @@ public static class StartupServiceWebApplicationExtensions
 
         var assemblyName = typeof(TProgram).Assembly.FullName?.Split(',')[0];
 
-        FlurlErrorHandler.ConfigureErrorHandler(app.Services.GetRequiredService<ILogger<TProgram>>(),
-            debugEnabled);
+        FlurlErrorHandler.ConfigureErrorHandler(app.Services.GetRequiredService<ILogger<TProgram>>(), environment.IsDevelopment());
 
         if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null &&
             app.Configuration.GetValue<bool>("SwaggerEnabled"))

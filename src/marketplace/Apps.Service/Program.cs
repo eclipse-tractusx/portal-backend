@@ -47,5 +47,5 @@ builder.Services.AddOfferSetupService();
 builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
 
 builder.Build()
-    .CreateApp<Program>("apps", VERSION)
+    .CreateApp<Program>("apps", VERSION, builder.Environment)
     .Run();

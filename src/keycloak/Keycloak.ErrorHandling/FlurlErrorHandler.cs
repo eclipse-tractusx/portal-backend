@@ -27,13 +27,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 
 public class FlurlErrorHandler
 {
-    public static void ConfigureErrorHandler(ILogger logger, bool debugEnabled)
+    public static void ConfigureErrorHandler(ILogger logger, bool isDevelopment)
     {
         FlurlHttp.Configure(settings => settings.OnError = (call) =>
         {
             var message = $"{call.HttpResponseMessage?.ReasonPhrase ?? "ReasonPhrase is null"}: {call.HttpRequestMessage.RequestUri}";
 
-            if (debugEnabled)
+            if (isDevelopment)
             {
                 var request = call.HttpRequestMessage == null ? "" : $"{call.HttpRequestMessage.Method} {call.HttpRequestMessage.RequestUri} HTTP/{call.HttpRequestMessage.Version}\n{call.HttpRequestMessage.Headers}\n";
                 var requestBody = call.RequestBody == null ? "\n" : call.RequestBody.ToString() + "\n\n";

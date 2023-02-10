@@ -21,7 +21,6 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Microsoft.Extensions.FileProviders;
 
 var VERSION = "v2";
 
@@ -34,5 +33,5 @@ builder.Services.AddTransient<INotificationBusinessLogic, NotificationBusinessLo
     .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
 
 builder.Build()
-    .CreateApp<Program>("notification", VERSION)
+    .CreateApp<Program>("notification", VERSION, builder.Environment)
     .Run();

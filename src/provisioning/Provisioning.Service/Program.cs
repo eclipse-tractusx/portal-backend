@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.FileProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
@@ -35,5 +34,5 @@ builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
 builder.Services.AddTransient<IClientBusinessLogic,ClientBusinessLogic>();
 
 builder.Build()
-    .CreateApp<Program>("provisioning", VERSION)
+    .CreateApp<Program>("provisioning", VERSION, builder.Environment)
     .Run();
