@@ -14,7 +14,8 @@
       "launchBrowser": true,
       "launchUrl": "weatherforecast",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Cors__AllowedOrigins__0": "http://localhost:3000"
       }
     },
     "Registration.Service": {
@@ -22,7 +23,8 @@
       "launchBrowser": true,
       "launchUrl": "api/registration/swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Cors__AllowedOrigins__0": "http://localhost:3000"
       },
       "applicationUrl": "https://localhost:5001;http://localhost:5000"
     },

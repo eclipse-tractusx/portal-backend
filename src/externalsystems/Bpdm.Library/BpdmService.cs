@@ -117,7 +117,7 @@ public class BpdmService : IBpdmService
                 )
             };
         
-            var result = await httpClient.PutAsJsonAsync("api/catena/input/legal-entities", requestData, _options, cancellationToken).ConfigureAwait(false);
+            var result = await httpClient.PutAsJsonAsync("/api/catena/input/legal-entities", requestData, _options, cancellationToken).ConfigureAwait(false);
             if (result.IsSuccessStatusCode)
                 return true;
 
@@ -136,7 +136,7 @@ public class BpdmService : IBpdmService
     public async Task<BpdmLegalEntityData?> FetchInputLegalEntity(string externalId, CancellationToken cancellationToken)
     {
         var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(false);
-        var result = await httpClient.GetAsync($"api/catena/input/legal-entities/{externalId}", cancellationToken).ConfigureAwait(false);
+        var result = await httpClient.GetAsync($"/api/catena/input/legal-entities/{externalId}", cancellationToken).ConfigureAwait(false);
         if (!result.IsSuccessStatusCode)
         {
             if (result.StatusCode == System.Net.HttpStatusCode.NotFound)
