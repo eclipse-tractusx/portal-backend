@@ -436,16 +436,16 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
     
     #endregion
     
-    #region GetCompanyIdForSubmittedApplication
+    #region GetCompanyIdSubmissionStatusForApplication
     
     [Fact]
-    public async Task GetCompanyIdForSubmittedApplication_WithExistingApplication_ReturnsExpected()
+    public async Task GetCompanyIdSubmissionStatusForApplication_WithExistingApplication_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
         
         // Act
-        var data = await sut.GetCompanyIdForSubmittedApplication(SubmittedApplicationWithBpn).ConfigureAwait(false);
+        var data = await sut.GetCompanyIdSubmissionStatusForApplication(SubmittedApplicationWithBpn).ConfigureAwait(false);
         
         // Assert
         data.Should().Be((true, new Guid("d14eba77-0b18-4e41-9d84-49ef875c0763"), true));
@@ -453,13 +453,13 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
 
     [Fact]
-    public async Task GetCompanyIdForSubmittedApplication_WithNotExistingApplication_ReturnsGuidEmpty()
+    public async Task GetCompanyIdSubmissionStatusForApplication_WithNotExistingApplication_ReturnsGuidEmpty()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
         
         // Act
-        var data = await sut.GetCompanyIdForSubmittedApplication(Guid.NewGuid()).ConfigureAwait(false);
+        var data = await sut.GetCompanyIdSubmissionStatusForApplication(Guid.NewGuid()).ConfigureAwait(false);
         
         // Assert
         data.Should().Be(((bool,Guid,bool))default);

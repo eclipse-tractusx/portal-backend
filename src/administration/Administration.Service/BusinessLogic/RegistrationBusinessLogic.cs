@@ -146,54 +146,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     .AsAsyncEnumerable()));
     }
 
-    public Task<bool> DeclinePartnerRequest(Guid applicationId)
-    {
-        if (applicationId == Guid.NewGuid())
-        {
-            throw new ArgumentNullException(nameof(applicationId));
-        }
-        return DeclinePartnerRequestInternal(applicationId);
-    }
-
-    private async Task<bool> DeclinePartnerRequestInternal(Guid applicationId)
-    {
-        var companyApplication = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyAndApplicationForSubmittedApplication(applicationId).ConfigureAwait(false);
-        if (companyApplication == null)
-        {
-            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
-        }
-        companyApplication.ApplicationStatusId = CompanyApplicationStatusId.DECLINED;
-        companyApplication.DateLastChanged = DateTimeOffset.UtcNow;
-        companyApplication.Company!.CompanyStatusId = CompanyStatusId.REJECTED;
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await PostRegistrationCancelEmailAsync(applicationId).ConfigureAwait(false);
-        return true;
-    }
-
-    private async Task PostRegistrationCancelEmailAsync(Guid applicationId)
-    {
-        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetUserRoleIdsUntrackedAsync(_settings.PartnerUserInitialRoles).ToListAsync().ConfigureAwait(false);
-
-        await foreach (var user in _portalRepositories.GetInstance<IApplicationRepository>().GetRegistrationDeclineEmailDataUntrackedAsync(applicationId, userRoleIds).ConfigureAwait(false))
-        {
-            var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
-
-            if (string.IsNullOrWhiteSpace(user.Email))
-            {
-                throw new ArgumentException($"user {userName} has no assigned email");
-            }
-
-            var mailParameters = new Dictionary<string, string>
-            {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
-                { "companyName", user.CompanyName }
-            };
-
-            await _mailingService.SendMails(user.Email, mailParameters, new List<string> { "EmailRegistrationDeclineTemplate" }).ConfigureAwait(false);
-        }
-    }
-
     public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null)
     {
         var applications = _portalRepositories.GetInstance<IApplicationRepository>().GetAllCompanyApplicationsDetailsQuery(companyName);
@@ -379,7 +331,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public async Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
         var result = await _portalRepositories.GetInstance<IApplicationRepository>()
-            .GetCompanyIdForSubmittedApplication(data.ExternalId)
+            .GetCompanyIdSubmissionStatusForApplication(data.ExternalId)
             .ConfigureAwait(false);
         if (!result.IsValidApplicationId)
         {
@@ -430,7 +382,63 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             approve && businessPartnerSuccess
                 ? new [] { ProcessStepTypeId.CREATE_IDENTITY_WALLET }
                 : null);
+
+        if (!approve)
+        {
+            await DeclinePartnerRequestInternal(applicationId).ConfigureAwait(false);
+        }
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await PostRegistrationCancelEmailAsync(applicationId, !approve).ConfigureAwait(false);
+    }
+
+    private async Task DeclinePartnerRequestInternal(Guid applicationId)
+    {
+        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+        var companyId = await applicationRepository.GetCompanyIdForSubmittedApplication(applicationId).ConfigureAwait(false);
+        if (companyId == Guid.Empty)
+        {
+            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
+        }
+        
+        applicationRepository.AttachAndModifyCompanyApplication(applicationId, application =>
+        {
+            application.ApplicationStatusId = CompanyApplicationStatusId.DECLINED;
+            application.DateLastChanged = DateTimeOffset.UtcNow;
+        });
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null, company =>
+        {
+            company.CompanyStatusId = CompanyStatusId.REJECTED;
+        });
+    }
+
+    private async Task PostRegistrationCancelEmailAsync(Guid applicationId, bool sendMail)
+    {
+        if (!sendMail)
+        {
+            return;
+        }
+
+        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
+            .GetUserRoleIdsUntrackedAsync(_settings.PartnerUserInitialRoles).ToListAsync().ConfigureAwait(false);
+
+        await foreach (var user in _portalRepositories.GetInstance<IApplicationRepository>().GetRegistrationDeclineEmailDataUntrackedAsync(applicationId, userRoleIds).ConfigureAwait(false))
+        {
+            var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
+
+            if (string.IsNullOrWhiteSpace(user.Email))
+            {
+                throw new ArgumentException($"user {userName} has no assigned email");
+            }
+
+            var mailParameters = new Dictionary<string, string>
+            {
+                { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
+                { "companyName", user.CompanyName }
+            };
+
+            await _mailingService.SendMails(user.Email, mailParameters, new List<string> { "EmailRegistrationDeclineTemplate" }).ConfigureAwait(false);
+        }
     }
 
     private static IEnumerable<CompanyApplicationStatusId> GetCompanyApplicationStatusIds(CompanyApplicationStatusFilter? companyApplicationStatusFilter = null)

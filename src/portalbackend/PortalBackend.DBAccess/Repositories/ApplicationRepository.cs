@@ -138,14 +138,7 @@ public class ApplicationRepository : IApplicationRepository
                     .Select(identifier => new ValueTuple<UniqueIdentifierId,string>(identifier.UniqueIdentifierId, identifier.Value))))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId) =>
-        _dbContext.CompanyApplications.Where(companyApplication =>
-            companyApplication.Id == applicationId
-            && companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Include(companyApplication => companyApplication.Company)
-            .SingleOrDefaultAsync();
-
-    public Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdForSubmittedApplication(Guid applicationId) =>
+    public Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdSubmissionStatusForApplication(Guid applicationId) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(companyApplication => companyApplication.Id == applicationId)
@@ -408,5 +401,16 @@ public class ApplicationRepository : IApplicationRepository
                             ace.Comment)),
                     x.ProcessSteps
                         .Select(ps => ps.ProcessStep!.ProcessStepTypeId)))
+            .SingleOrDefaultAsync();
+    
+    /// <summary>
+    /// Gets the company id for the submitted application
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    /// <returns>Returns the company id</returns>
+    public Task<Guid> GetCompanyIdForSubmittedApplication(Guid applicationId) =>
+        _dbContext.CompanyApplications
+            .Where(x => x.Id == applicationId && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
+            .Select(x => x.CompanyId)
             .SingleOrDefaultAsync();
 }
