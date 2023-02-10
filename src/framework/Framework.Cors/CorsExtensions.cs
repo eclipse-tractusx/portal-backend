@@ -38,11 +38,14 @@ public static class CorsExtensions
     public static void SetupCors(this CorsOptions corsOption, IConfigurationRoot configuration)
     {
         var corsConfig = configuration.Get<CorsConfiguration>();
-        corsOption.AddPolicy(AllowSpecificOrigins, policy =>
+        if (corsConfig.Cors != null && corsConfig.Cors.AllowedOrigins.Any())
         {
-            policy.WithOrigins(corsConfig.Cors.AllowedOrigins)
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-        });
+            corsOption.AddPolicy(AllowSpecificOrigins, policy =>
+            {
+                    policy.WithOrigins(corsConfig.Cors.AllowedOrigins)
+                                    .AllowAnyHeader()
+                                    .AllowAnyMethod();
+            });
+        }
     }
 }
