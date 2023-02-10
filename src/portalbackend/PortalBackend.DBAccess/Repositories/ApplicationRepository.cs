@@ -376,16 +376,27 @@ public class ApplicationRepository : IApplicationRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool Exists, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId, string? Comment)> ChecklistData)> GetApplicationChecklistData(Guid applicationId) =>
+    public Task<(bool Exists, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId, string? Comment)> ChecklistData, IEnumerable<ProcessStepTypeId> ProcessStepTypeIds)> GetApplicationChecklistData(Guid applicationId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         _dbContext.CompanyApplications
+            .AsSplitQuery()
             .Where(x => x.Id == applicationId)
-            .Select(x => new ValueTuple<bool, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId, string?)>>(
+            .Select(x => new
+            {
+                x.ApplicationChecklistEntries,
+                ProcessSteps = x.ApplicationAssignedProcessSteps
+                    .Where(ps =>
+                        ps.ProcessStep!.ProcessStepStatusId == ProcessStepStatusId.TODO &&
+                        processStepTypeIds.Contains(ps.ProcessStep.ProcessStepTypeId))
+            })
+            .Select(x => new ValueTuple<bool, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId, string?)>, IEnumerable<ProcessStepTypeId>>(
                     true,
                     x.ApplicationChecklistEntries
                         .Where(ace => ace.ApplicationChecklistEntryTypeId != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION)
                         .Select(ace => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId, string?>(
                             ace.ApplicationChecklistEntryTypeId,
                             ace.ApplicationChecklistEntryStatusId,
-                            ace.Comment))))
+                            ace.Comment)),
+                    x.ProcessSteps
+                        .Select(ps => ps.ProcessStep!.ProcessStepTypeId)))
             .SingleOrDefaultAsync();
 }

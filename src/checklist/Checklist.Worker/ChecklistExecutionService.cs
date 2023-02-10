@@ -54,7 +54,7 @@ public class ChecklistExecutionService
         ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
         ProcessStepTypeId.CREATE_IDENTITY_WALLET,
         ProcessStepTypeId.START_CLEARING_HOUSE,
-        ProcessStepTypeId.CREATE_SELF_DESCRIPTION_LP,
+        ProcessStepTypeId.START_SELF_DESCRIPTION_LP,
         ProcessStepTypeId.ACTIVATE_APPLICATION,
     }.ToImmutableArray();
 

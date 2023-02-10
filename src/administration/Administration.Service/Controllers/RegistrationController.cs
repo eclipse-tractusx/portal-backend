@@ -225,25 +225,108 @@ public class RegistrationController : ControllerBase
         _logic.GetChecklistForApplicationAsync(applicationId);
     
     /// <summary>
-    /// Retriggers the last failed step 
+    /// Retriggers the last failed to override the clearinghouse-result
     /// </summary>
     /// <param name="applicationId" example="">Id of the application that should be triggered</param>
-    /// <param name="entryTypeId">The entry type that should be restarted</param>
     /// <returns>NoContent</returns>
-    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger <br />
-    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger?checklistEntryTypeId=CLEARING_HOUSE <br />
+    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/override-clearinghouse
     /// <response code="200">the result as a boolean.</response>
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
     /// <response code="404">No application found for the applicationId.</response>
     [HttpPost]
     [Authorize(Roles = "approve_new_partner")]
-    [Route("application/{applicationId}/trigger")]
+    [Route("application/{applicationId}/override-clearinghouse")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> TriggerChecklist([FromRoute] Guid applicationId, [FromQuery] ApplicationChecklistEntryTypeId entryTypeId)
+    public async Task<NoContentResult> OverrideClearinghouseChecklist([FromRoute] Guid applicationId)
     {
-        await _logic.TriggerChecklistAsync(applicationId, entryTypeId).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step 
+    /// </summary>
+    /// <param name="applicationId" example="">Id of the application that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/retrigger-clearinghouse
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
+    /// <response code="404">No application found for the applicationId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("application/{applicationId}/retrigger-clearinghouse")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerClearinghouseChecklist([FromRoute] Guid applicationId)
+    {
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step 
+    /// </summary>
+    /// <param name="applicationId" example="">Id of the application that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger-identity-wallet<br />
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
+    /// <response code="404">No application found for the applicationId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("application/{applicationId}/trigger-identity-wallet")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> TriggerIdentityWallet([FromRoute] Guid applicationId)
+    {
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET).ConfigureAwait(false);
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// Retriggers the last failed step 
+    /// </summary>
+    /// <param name="applicationId" example="">Id of the application that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger-self-description <br />
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
+    /// <response code="404">No application found for the applicationId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("application/{applicationId}/trigger-self-description")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> TriggerSelfDescription([FromRoute] Guid applicationId)
+    {
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step 
+    /// </summary>
+    /// <param name="applicationId" example="">Id of the application that should be triggered</param>
+    /// <param name="processTypeId">Optional: The process type id that should be retriggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger-bpn <br />
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
+    /// <response code="404">No application found for the applicationId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("application/{applicationId}/trigger-bpn")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> TriggerBpn([FromRoute] Guid applicationId, [FromQuery] ProcessStepTypeId processTypeId)
+    {
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, processTypeId).ConfigureAwait(false);
         return NoContent();
     }
 }

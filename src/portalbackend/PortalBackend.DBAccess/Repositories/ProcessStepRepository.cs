@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -38,13 +39,14 @@ public class ProcessStepRepository : IProcessStepRepository
     }
 
     public ProcessStep CreateProcessStep(ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId) =>
-        _context.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId)).Entity;
+        _context.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, DateTimeOffset.UtcNow)).Entity;
 
     public void AttachAndModifyProcessStep(Guid processStepId, Action<ProcessStep>? initialize, Action<ProcessStep> modify)
     {
-        var step = new ProcessStep(processStepId, default, default);
+        var step = new ProcessStep(processStepId, default, default, default);
         initialize?.Invoke(step);
         _context.Attach(step);
+        step.DateLastChanged = DateTimeOffset.UtcNow;
         modify(step);
     }
 }

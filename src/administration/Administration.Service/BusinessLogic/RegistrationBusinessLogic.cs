@@ -316,42 +316,57 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public async Task<IEnumerable<ChecklistDetails>> GetChecklistForApplicationAsync(Guid applicationId)
     {
         var data = await _portalRepositories.GetInstance<IApplicationRepository>()
-            .GetApplicationChecklistData(applicationId)
+            .GetApplicationChecklistData(applicationId, Enum.GetValues<ApplicationChecklistEntryTypeId>().GetManualTriggerProcessStepIds())
             .ConfigureAwait(false);
         if (data == default)
         {
             throw new NotFoundException($"Application {applicationId} does not exists");
         }
 
-        return data.ChecklistData.Select(x => new ChecklistDetails(x.TypeId, x.StatusId, x.Comment, x.TypeId.IsAutomated()));
+        return data.ChecklistData
+            .OrderBy(x => x.TypeId)
+            .Select(x =>
+                new ChecklistDetails(
+                    x.TypeId, 
+                    x.StatusId, 
+                    x.Comment,
+                    data.ProcessStepTypeIds.Intersect(x.TypeId.GetManualTriggerProcessStepIds())));
     }
 
     /// <inheritdoc />
-    public async Task TriggerChecklistAsync(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId)
+    public Task TriggerChecklistAsync(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStepTypeId processStepTypeId)
     {
-        var manualProcessStep = entryTypeId.GetManualTriggerProcessStepId();
-        var nextProcessStep = entryTypeId.GetProcessStepForChecklistEntry();
-        if (manualProcessStep is null || nextProcessStep is null)
+        var possibleSteps = entryTypeId.GetManualTriggerProcessStepIds();
+        if (!possibleSteps.Contains(processStepTypeId))
         {
-            throw new ConflictException("The process can not be retriggered.");
+            throw new ControllerArgumentException($"The processStep {processStepTypeId} is not retriggerable");
         }
 
+        var nextStepData = processStepTypeId.GetNextProcessStepDataForManualTriggerProcessStepId();
+        if (nextStepData == default)
+        {
+            throw new UnexpectedConditionException($"While the processStep {processStepTypeId} is configured to be retriggerable there is no next step configured");
+        }
+        return TriggerChecklistInternal(applicationId, entryTypeId, processStepTypeId, nextStepData.ProcessStepTypeId, nextStepData.ChecklistEntryStatusId);
+    }
+    private async Task TriggerChecklistInternal(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStepTypeId processStepTypeId, ProcessStepTypeId nextProcessStepTypeId, ApplicationChecklistEntryStatusId checklistEntryStatusId)
+    {
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 entryTypeId,
                 new [] { ApplicationChecklistEntryStatusId.FAILED },
-                manualProcessStep.Value,
-                processStepTypeIds: new [] { nextProcessStep.Value })
+                processStepTypeId,
+                processStepTypeIds: new [] { nextProcessStepTypeId })
             .ConfigureAwait(false);
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
             item =>
             {
-                item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.TO_DO;
+                item.ApplicationChecklistEntryStatusId = checklistEntryStatusId;
             },
-            new [] { nextProcessStep.Value });
+            new [] { nextProcessStepTypeId });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

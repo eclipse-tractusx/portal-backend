@@ -56,11 +56,12 @@ public interface IRegistrationBusinessLogic
     /// <param name="applicationId">Id of the application</param>
     /// <returns>Returns the checklist details</returns>
     Task<IEnumerable<ChecklistDetails>> GetChecklistForApplicationAsync(Guid applicationId);
-    
+
     /// <summary>
     /// Regtrigger the failed checklist entry or the specific given checklist entry
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
-    /// <param name="entryTypeId">The checklist entry type that should be retriggert</param>
-    Task TriggerChecklistAsync(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId);
+    /// <param name="entryTypeId">The checklist entry type that should be retriggered</param>
+    /// <param name="processStepTypeId">The processTypeId that should be retriggered</param>
+    Task TriggerChecklistAsync(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStepTypeId processStepTypeId);
 }

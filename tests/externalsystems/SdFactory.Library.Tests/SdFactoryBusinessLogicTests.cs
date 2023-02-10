@@ -103,7 +103,7 @@ public class SdFactoryBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS },
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         var entity = _fixture.Build<Company>()
             .With(x => x.SelfDescriptionDocumentId, (Guid?)null)
             .Create();
@@ -142,7 +142,7 @@ public class SdFactoryBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE },
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         var entity = _fixture.Build<Company>()
             .With(x => x.SelfDescriptionDocumentId, (Guid?)null)
             .Create();
@@ -181,7 +181,7 @@ public class SdFactoryBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE },
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>());
 
@@ -204,7 +204,7 @@ public class SdFactoryBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE },
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>(CompanyId, null, CountryCode, new List<(UniqueIdentifierId Id, string Value)>()));
 

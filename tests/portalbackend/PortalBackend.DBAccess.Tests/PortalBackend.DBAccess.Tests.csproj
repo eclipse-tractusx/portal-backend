@@ -79,5 +79,13 @@
     <Content Include="Seeder\Data\documents.test.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Remove="Seeder\Data\process_steps.test.json" />
+    <Content Include="Seeder\Data\process_steps.test.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Seeder\Data\application_assigned_process_steps.test.json" />
+    <Content Include="Seeder\Data\application_assigned_process_steps.test.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

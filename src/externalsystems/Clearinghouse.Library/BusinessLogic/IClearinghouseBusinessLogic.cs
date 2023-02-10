@@ -27,6 +27,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogi
 
 public interface IClearinghouseBusinessLogic
 {
+    Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)> HandleClearinghouse(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
     Task ProcessEndClearinghouse(Guid applicationId, ClearinghouseResponseData data, CancellationToken cancellationToken);
-    Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)> HandleStartClearingHouse(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
 }

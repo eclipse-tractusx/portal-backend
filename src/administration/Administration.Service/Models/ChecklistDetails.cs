@@ -26,5 +26,5 @@ public record ChecklistDetails(
     ApplicationChecklistEntryTypeId Type,
     ApplicationChecklistEntryStatusId Status,
     string? Details,
-    bool Retriggerable
+    IEnumerable<ProcessStepTypeId> RetriggerableProcessSteps
 );

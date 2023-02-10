@@ -119,7 +119,9 @@ public class ApplicationActivationTests
         _settings.StartTime = TimeSpan.FromHours(4);
         _settings.EndTime = TimeSpan.FromHours(8);
         SetupFakes(new Dictionary<string, IEnumerable<string>>(), new List<UserRoleData>(), companyUserAssignedRole, companyUserAssignedBusinessPartner);
-        var context = new IChecklistService.WorkerChecklistProcessStepData(Id,
+        var context = new IChecklistService.WorkerChecklistProcessStepData(
+            Id,
+            default,
             new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
                 {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
@@ -163,7 +165,7 @@ public class ApplicationActivationTests
                 {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(Id, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IChecklistService.WorkerChecklistProcessStepData(Id, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
         A.CallTo(() => _dateTimeProvider.Now).Returns(new DateTime(2022, 01, 01, 0, 0, 0));
         _settings.StartTime = TimeSpan.FromHours(22);
@@ -212,7 +214,9 @@ public class ApplicationActivationTests
             {
                 setOptionalParameters.Invoke(company);
             });
-        var context = new IChecklistService.WorkerChecklistProcessStepData(Id,
+        var context = new IChecklistService.WorkerChecklistProcessStepData(
+            Id,
+            default,
             new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
                 {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
@@ -279,7 +283,9 @@ public class ApplicationActivationTests
             {
                 setOptionalParameters.Invoke(company);
             });
-        var context = new IChecklistService.WorkerChecklistProcessStepData(Id,
+        var context = new IChecklistService.WorkerChecklistProcessStepData(
+            Id,
+            default,
             new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
                 {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
@@ -328,7 +334,7 @@ public class ApplicationActivationTests
                 {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(Guid.Empty, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IChecklistService.WorkerChecklistProcessStepData(Guid.Empty, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
         async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
@@ -343,7 +349,9 @@ public class ApplicationActivationTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(applicationId,
+        var context = new IChecklistService.WorkerChecklistProcessStepData(
+            applicationId,
+            default,
             new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
                 {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
@@ -370,7 +378,9 @@ public class ApplicationActivationTests
     public async Task HandleApplicationActivation_WithCompanyWithoutBPN_ThrowsConflictException()
     {
         //Act
-        var context = new IChecklistService.WorkerChecklistProcessStepData(IdWithoutBpn,
+        var context = new IChecklistService.WorkerChecklistProcessStepData(
+            IdWithoutBpn,
+            default,
             new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
                 {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},

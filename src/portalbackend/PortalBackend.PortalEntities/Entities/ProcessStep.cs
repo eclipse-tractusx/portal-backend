@@ -25,11 +25,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ProcessStep : IBaseEntity
 {
-    public ProcessStep(Guid id, ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId)
+    public ProcessStep(Guid id, ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, DateTimeOffset dateCreated)
     {
         Id = id;
         ProcessStepTypeId = processStepTypeId;
         ProcessStepStatusId = processStepStatusId;
+        DateCreated = dateCreated;
     }
 
     public Guid Id { get; private set; }
@@ -38,6 +39,10 @@ public class ProcessStep : IBaseEntity
 
     public ProcessStepStatusId ProcessStepStatusId { get; set; }
 
+    public DateTimeOffset DateCreated { get; private set; }
+
+    public DateTimeOffset? DateLastChanged { get; set; }
+    
     // Navigation properties
     public virtual ProcessStepType? ProcessStepType { get; set; }
     public virtual ProcessStepStatus? ProcessStepStatus { get; set; }
