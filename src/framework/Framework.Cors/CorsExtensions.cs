@@ -38,7 +38,7 @@ public static class CorsExtensions
     public static void SetupCors(this CorsOptions corsOption, IConfigurationRoot configuration)
     {
         var corsConfig = configuration.Get<CorsConfiguration>();
-        if (corsConfig.Cors != null && corsConfig.Cors.AllowedOrigins.Any())
+        if (corsConfig.Cors?.AllowedOrigins?.Any() ?? false)
         {
             corsOption.AddPolicy(AllowSpecificOrigins, policy =>
             {
