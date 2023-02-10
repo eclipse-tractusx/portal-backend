@@ -35,8 +35,7 @@ public interface IApplicationRepository
     Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, string iamUserId);
     IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null, IEnumerable<CompanyApplicationStatusId>? applicationStatusIds = null);
     Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync (Guid applicationId, string iamUserId, Guid? companyId = null);
-    Task<CompanyApplication?> GetCompanyAndApplicationForSubmittedApplication(Guid applicationId);
-    Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdForSubmittedApplication(Guid applicationId);
+    Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdSubmissionStatusForApplication(Guid applicationId);
     Task<(Guid companyId, string? businessPartnerNumber)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId);
     Task<(Guid companyId, string companyName, string? businessPartnerNumber)> GetCompanyAndApplicationDetailsForCreateWalletAsync(Guid applicationId);
     IAsyncEnumerable<CompanyInvitedUserData> GetInvitedUsersDataByApplicationIdUntrackedAsync(Guid applicationId);
@@ -91,4 +90,11 @@ public interface IApplicationRepository
     /// <param name="applicationId">Id of the application</param>
     /// <returns>Returns the checklist data</returns>
     Task<(bool Exists, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId, string? Comment)> ChecklistData, IEnumerable<ProcessStepTypeId> ProcessStepTypeIds)> GetApplicationChecklistData(Guid applicationId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+
+    /// <summary>
+    /// Gets the id of the company for the submitted application
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    /// <returns>The id of the company for the given application</returns>
+    Task<Guid> GetCompanyIdForSubmittedApplication(Guid applicationId);
 }

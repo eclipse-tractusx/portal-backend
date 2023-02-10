@@ -67,6 +67,7 @@ public class RegistrationBusinessLogicTest
     private readonly IChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
+    private readonly IMailingService _mailingService;
 
     public RegistrationBusinessLogicTest()
     {
@@ -86,6 +87,7 @@ public class RegistrationBusinessLogicTest
         _clearinghouseBusinessLogic = A.Fake<IClearinghouseBusinessLogic>();
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
         _checklistService = A.Fake<IChecklistService>();
+        _mailingService = A.Fake<IMailingService>();
         var settings = A.Fake<RegistrationSettings>();
         settings.ApplicationsMaxPageSize = 15;
 
@@ -99,7 +101,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
             .ReturnsLazily(Guid.NewGuid);
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, A.Fake<IMailingService>(), _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _mailingService, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic);
     }
     
     #region GetCompanyApplicationDetailsAsync
@@ -409,7 +411,7 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
-        SetupForRegistrationVerification(entry);
+        SetupForRegistrationVerification(entry, _fixture.Create<CompanyApplication>(), _fixture.Create<Company>());
 
         // Act
         async Task Act() => await _logic.SetRegistrationVerification(IdWithBpn, false).ConfigureAwait(false);
@@ -424,7 +426,7 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
-        SetupForRegistrationVerification(entry);
+        SetupForRegistrationVerification(entry, _fixture.Create<CompanyApplication>(), _fixture.Create<Company>());
 
         // Act
         await _logic.SetRegistrationVerification(IdWithBpn, true, null).ConfigureAwait(false);
@@ -433,6 +435,9 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         entry.Comment.Should().BeNull();
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._)).MustNotHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, null, A<Action<Company>>._)).MustNotHaveHappened();
     }
     
     [Fact]
@@ -441,7 +446,9 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var comment = "application rejected because of reasons.";
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
-        SetupForRegistrationVerification(entry);
+        var company = new Company(CompanyId, null!, CompanyStatusId.PENDING, DateTimeOffset.UtcNow);
+        var application = new CompanyApplication(ApplicationId, company.Id, CompanyApplicationStatusId.SUBMITTED, DateTimeOffset.UtcNow);
+        SetupForRegistrationVerification(entry, application, company);
 
         // Act
         await _logic.SetRegistrationVerification(IdWithBpn, false, comment).ConfigureAwait(false);
@@ -450,6 +457,8 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         entry.Comment.Should().Be(comment);
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.FAILED);
+        company.CompanyStatusId.Should().Be(CompanyStatusId.REJECTED);
+        application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.DECLINED);
     }
 
     #endregion
@@ -583,7 +592,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
         var companyId = Guid.NewGuid();
-        A.CallTo(() => _applicationRepository.GetCompanyIdForSubmittedApplication(ApplicationId))
+        A.CallTo(() => _applicationRepository.GetCompanyIdSubmissionStatusForApplication(ApplicationId))
             .Returns((true, companyId, true));
         
         // Act
@@ -600,7 +609,7 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
-        A.CallTo(() => _applicationRepository.GetCompanyIdForSubmittedApplication(ApplicationId))
+        A.CallTo(() => _applicationRepository.GetCompanyIdSubmissionStatusForApplication(ApplicationId))
             .Returns(((bool,Guid,bool))default);
         
         // Act
@@ -616,7 +625,7 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
-        A.CallTo(() => _applicationRepository.GetCompanyIdForSubmittedApplication(ApplicationId))
+        A.CallTo(() => _applicationRepository.GetCompanyIdSubmissionStatusForApplication(ApplicationId))
             .Returns((true,Guid.NewGuid(),false));
         
         // Act
@@ -717,7 +726,7 @@ public class RegistrationBusinessLogicTest
             }.ToImmutableDictionary(), new List<ProcessStep>()));
     }
 
-    private void SetupForRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry)
+    private void SetupForRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry, CompanyApplication application, Company company)
     {
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>?>._))
             .Invokes((IChecklistService.ManualChecklistProcessStepData _, Action<ApplicationChecklistEntry> action, IEnumerable<ProcessStepTypeId>? _) =>
@@ -735,6 +744,20 @@ public class RegistrationBusinessLogicTest
             {
                 { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE }
             }.ToImmutableDictionary(), new List<ProcessStep>()));
+        
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
+            .Invokes((Guid _, Action<CompanyApplication> modify) =>
+            {
+                modify.Invoke(application);
+            });
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, null, A<Action<Company>>._))
+            .Invokes((Guid _, Action<Company>? _, Action<Company> modify) =>
+            {
+                modify.Invoke(company);
+            });
+
+        A.CallTo(() => _applicationRepository.GetCompanyIdForSubmittedApplication(IdWithBpn))
+            .ReturnsLazily(() => CompanyId);
     }
 
     private void SetupForUpdate(ApplicationChecklistEntry applicationChecklistEntry)

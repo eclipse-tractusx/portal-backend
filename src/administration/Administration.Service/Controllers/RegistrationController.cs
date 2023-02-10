@@ -88,22 +88,6 @@ public class RegistrationController : ControllerBase
         _logic.GetCompanyApplicationDetailsAsync(page, size,companyApplicationStatusFilter, companyName);
 
     /// <summary>
-    /// Decline the Partner Registration Request
-    /// </summary>
-    /// <param name="applicationId" example="31404026-64ee-4023-a122-3c7fc40e57b1">Company Application Id for which request will be declined</param>
-    /// <returns>Result as a boolean</returns>
-    /// <remarks>Example: PUT: api/administration/registration/application/31404026-64ee-4023-a122-3c7fc40e57b1/declineRequest</remarks>
-    /// <response code="200">Result as a boolean</response>
-    /// <response code="400">Either the Company Application was not in Submitted State, the Username has no assigned emailid or no applicationId was set.</response>
-    [HttpPut]
-    [Authorize(Roles = "decline_new_partner")]
-    [Route("application/{applicationId}/declineRequest")]
-    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public Task<bool> DeclinePartnerRequest([FromRoute] Guid applicationId) =>
-            _logic.DeclinePartnerRequest(applicationId);
-
-    /// <summary>
     /// fetch all applications details with company user details.
     /// </summary>
     /// <param name="page">Optional query parameter defining the page index start from 0</param>
