@@ -18,19 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using System.ComponentModel.DataAnnotations;
-
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-
-/// <summary>
-/// Settings used in business logic concerning daps.
-/// </summary>
-public class DapsSettings : KeyVaultAuthSettings
-{
-    /// <summary>
-    /// Daps endpoint.
-    /// </summary>
-    [Required]
-    public string DapsUrl { get; set; } = null!;
-}
+global using AutoFixture;
+global using AutoFixture.AutoFakeItEasy;
+global using FakeItEasy;
+global using FluentAssertions;
+global using Xunit;

@@ -145,6 +145,16 @@ public class ApplicationRepository : IApplicationRepository
             .Include(companyApplication => companyApplication.Company)
             .SingleOrDefaultAsync();
 
+    public Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdForSubmittedApplication(Guid applicationId) =>
+        _dbContext.CompanyApplications
+            .AsNoTracking()
+            .Where(companyApplication => companyApplication.Id == applicationId)
+            .Select(x => new ValueTuple<bool,Guid,bool>(
+                true,
+                x.CompanyId,
+                x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED))
+            .SingleOrDefaultAsync();
+
     /// <inheritdoc />
     public Task<(Guid companyId, string? businessPartnerNumber)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
         _dbContext.CompanyApplications.Where(companyApplication =>

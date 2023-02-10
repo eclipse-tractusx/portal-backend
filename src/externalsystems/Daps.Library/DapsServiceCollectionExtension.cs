@@ -18,31 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClient;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
 
 public static class DapsServiceCollectionExtension
 {
-    public static IServiceCollection AddDapsService(this IServiceCollection services, IConfigurationSection section)
+    public static IServiceCollection AddDapsService(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOptions<DapsSettings>()
-            .Bind(section)
+            .Bind(configuration.GetSection("Daps"))
             .ValidateOnStart();
         services.AddTransient<LoggingHandler<DapsService>>();
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<DapsSettings>>();
-        services.AddHttpClient(nameof(DapsService), c =>
-        {
-            c.BaseAddress = new Uri(settings.Value.DapsUrl);
-        }).AddHttpMessageHandler<LoggingHandler<DapsService>>();
-        services.AddHttpClient($"{nameof(DapsService)}Auth", c =>
-        {
-            c.BaseAddress = new Uri(settings.Value.KeycloakTokenAddress);
-        }).AddHttpMessageHandler<LoggingHandler<DapsService>>();
-        services.AddTransient<IDapsService, DapsService>();
+        services
+            .AddCustomHttpClientWithAuthentication<DapsService>(settings.Value.DapsUrl, settings.Value.KeycloakTokenAddress)
+            .AddTransient<IDapsService, DapsService>();
 
         return services;
     }

@@ -404,7 +404,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region GetCompanyAndApplicationDetailsForCreateWalletAsync
-
+    
     [Fact]
     public async Task GetCompanyAndApplicationDetailsForCreateWalletAsync_WithExistingApplication_ReturnsExpected()
     {
@@ -432,6 +432,37 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Assert
         data.Should().Be(default);
+    }
+    
+    #endregion
+    
+    #region GetCompanyIdForSubmittedApplication
+    
+    [Fact]
+    public async Task GetCompanyIdForSubmittedApplication_WithExistingApplication_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetCompanyIdForSubmittedApplication(SubmittedApplicationWithBpn).ConfigureAwait(false);
+        
+        // Assert
+        data.Should().Be((true, new Guid("d14eba77-0b18-4e41-9d84-49ef875c0763"), true));
+    }
+
+
+    [Fact]
+    public async Task GetCompanyIdForSubmittedApplication_WithNotExistingApplication_ReturnsGuidEmpty()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetCompanyIdForSubmittedApplication(Guid.NewGuid()).ConfigureAwait(false);
+        
+        // Assert
+        data.Should().Be(((bool,Guid,bool))default);
     }
     
     #endregion

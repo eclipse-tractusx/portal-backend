@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -81,4 +82,11 @@ public interface IConnectorsBusinessLogic
     /// <param name="cancellationToken"></param>
     /// <returns><c>true</c> if the call to daps was successful, otherwise <c>false</c>.</returns>
     Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, string accessToken, string iamUserId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Processes the clearinghouse self description
+    /// </summary>
+    /// <param name="data">The response data</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken);
 }

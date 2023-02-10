@@ -193,6 +193,38 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetConnectorDataById
+    
+    [Fact]
+    public async Task GetConnectorDataById_ReturnsExpectedAppCount()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetConnectorDataById(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.ConnectorId.Should().Be(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833"));
+        result.SelfDescriptionDocumentId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetConnectorDataById_WithoutExistingId_ReturnsDefault()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetConnectorDataById(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(default);
+    }
+
+    #endregion
+    
     private async Task<(ConnectorsRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

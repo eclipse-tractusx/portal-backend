@@ -32,6 +32,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.RegularExpressions;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -42,19 +44,22 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IMailingService _mailingService;
     private readonly IChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
+    private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
 
     public RegistrationBusinessLogic(
         IPortalRepositories portalRepositories, 
         IOptions<RegistrationSettings> configuration, 
         IMailingService mailingService,
         IChecklistService checklistService,
-        IClearinghouseBusinessLogic clearinghouseBusinessLogic)
+        IClearinghouseBusinessLogic clearinghouseBusinessLogic,
+        ISdFactoryBusinessLogic sdFactoryBusinessLogic)
     {
         _portalRepositories = portalRepositories;
         _settings = configuration.Value;
         _mailingService = mailingService;
         _checklistService = checklistService;
         _clearinghouseBusinessLogic = clearinghouseBusinessLogic;
+        _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
     }
 
     public Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId)
@@ -371,6 +376,25 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     }
 
     /// <inheritdoc />
+    public async Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken)
+    {
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>()
+            .GetCompanyIdForSubmittedApplication(data.ExternalId)
+            .ConfigureAwait(false);
+        if (!result.IsValidApplicationId)
+        {
+            throw new NotFoundException($"companyApplication {data.ExternalId} not found");
+        }
+        if (!result.IsSubmitted)
+        {
+            throw new ConflictException($"companyApplication {data.ExternalId} is not in status SUBMITTED");
+        }
+
+        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForApplication(data, result.CompanyId, cancellationToken).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     Task IRegistrationBusinessLogic.SetRegistrationVerification(Guid applicationId, bool approve, string? comment)
     {
         if (!approve && string.IsNullOrWhiteSpace(comment))
@@ -380,7 +404,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return SetRegistrationVerificationInternal(applicationId, approve, comment); 
     }
 
-    public async Task SetRegistrationVerificationInternal(Guid applicationId, bool approve, string? comment)
+    private async Task SetRegistrationVerificationInternal(Guid applicationId, bool approve, string? comment)
     {
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(

@@ -21,15 +21,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -233,10 +234,9 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             createdConnector.StatusId = dapsCallSuccessful ? ConnectorStatusId.ACTIVE : ConnectorStatusId.PENDING;
         }
 
-        var documentId = await _sdFactoryBusinessLogic
-            .RegisterConnectorAsync(connectorInputModel.ConnectorUrl, businessPartnerNumber, cancellationToken)
+        await _sdFactoryBusinessLogic
+            .RegisterConnectorAsync(createdConnector.Id, connectorInputModel.ConnectorUrl, businessPartnerNumber, cancellationToken)
             .ConfigureAwait(false);
-        createdConnector.SelfDescriptionDocumentId = documentId;
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return createdConnector.Id;
@@ -286,5 +286,25 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return dapsCallSuccessful;
+    }
+
+    /// <inheritdoc />
+    public async Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken)
+    {
+        var result = await _portalRepositories.GetInstance<IConnectorsRepository>()
+            .GetConnectorDataById(data.ExternalId)
+            .ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"Connector {data.ExternalId} does not exist");
+        }
+
+        if (result.SelfDescriptionDocumentId != null)
+        {
+            throw new ConflictException($"Connector {data.ExternalId} already has a document assigned");
+        }
+
+        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, cancellationToken).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.Collections.Immutable;
+using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
@@ -33,6 +34,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -63,6 +66,7 @@ public class RegistrationBusinessLogicTest
     private readonly ICompanyRepository _companyRepository;
     private readonly IChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
+    private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
 
     public RegistrationBusinessLogicTest()
     {
@@ -80,6 +84,7 @@ public class RegistrationBusinessLogicTest
 
         var options = A.Fake<IOptions<RegistrationSettings>>();
         _clearinghouseBusinessLogic = A.Fake<IClearinghouseBusinessLogic>();
+        _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
         _checklistService = A.Fake<IChecklistService>();
         var settings = A.Fake<RegistrationSettings>();
         settings.ApplicationsMaxPageSize = 15;
@@ -94,7 +99,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
             .ReturnsLazily(Guid.NewGuid);
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, A.Fake<IMailingService>(), _checklistService, _clearinghouseBusinessLogic);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, options, A.Fake<IMailingService>(), _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic);
     }
     
     #region GetCompanyApplicationDetailsAsync
@@ -566,6 +571,60 @@ public class RegistrationBusinessLogicTest
             .MustHaveHappenedOnceExactly();
         checklistEntry.ApplicationChecklistEntryStatusId.Should().Be(statusId);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
+    #region ProcessClearinghouseSelfDescription
+
+    [Fact]
+    public async Task ProcessClearinghouseSelfDescription_WithValidData_CallsExpected()
+    {
+        // Arrange
+        var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
+        var companyId = Guid.NewGuid();
+        A.CallTo(() => _applicationRepository.GetCompanyIdForSubmittedApplication(ApplicationId))
+            .Returns((true, companyId, true));
+        
+        // Act
+        await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForApplication(data, companyId, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task ProcessClearinghouseSelfDescription_WithNotExistingApplication_ThrowsNotFoundException()
+    {
+        // Arrange
+        var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
+        A.CallTo(() => _applicationRepository.GetCompanyIdForSubmittedApplication(ApplicationId))
+            .Returns(((bool,Guid,bool))default);
+        
+        // Act
+        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"companyApplication {ApplicationId} not found");
+    }
+
+    [Fact]
+    public async Task ProcessClearinghouseSelfDescription_WithNotSubmittedApplication_ThrowsConflictException()
+    {
+        // Arrange
+        var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
+        A.CallTo(() => _applicationRepository.GetCompanyIdForSubmittedApplication(ApplicationId))
+            .Returns((true,Guid.NewGuid(),false));
+        
+        // Act
+        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"companyApplication {ApplicationId} is not in status SUBMITTED");
     }
 
     [Theory]

@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -64,4 +65,11 @@ public interface IRegistrationBusinessLogic
     /// <param name="entryTypeId">The checklist entry type that should be retriggered</param>
     /// <param name="processStepTypeId">The processTypeId that should be retriggered</param>
     Task TriggerChecklistAsync(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStepTypeId processStepTypeId);
+
+    /// <summary>
+    /// Processes the clearinghouse self description
+    /// </summary>
+    /// <param name="data">The response data</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken);
 }
