@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.FileProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Config.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -46,5 +45,5 @@ builder.Services.AddChecklistCreation();
 builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address"));
 
 builder.Build()
-    .CreateApp<Program>("registration", VERSION)
+    .CreateApp<Program>("registration", VERSION, builder.Environment)
     .Run();
