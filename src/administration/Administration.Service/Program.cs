@@ -27,7 +27,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Microsoft.Extensions.FileProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 
@@ -80,5 +79,5 @@ builder.Services.AddDbContext<ProvisioningDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("ProvisioningDB")));
 
 builder.Build()
-    .CreateApp<Program>("administration", VERSION)
+    .CreateApp<Program>("administration", VERSION, builder.Environment)
     .Run();

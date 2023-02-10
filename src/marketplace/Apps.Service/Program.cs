@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.FileProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -48,5 +47,5 @@ builder.Services.AddOfferSetupService();
 builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
 
 builder.Build()
-    .CreateApp<Program>("apps", VERSION)
+    .CreateApp<Program>("apps", VERSION, builder.Environment)
     .Run();
