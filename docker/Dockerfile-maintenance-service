@@ -33,6 +33,8 @@ FROM build AS publish
 RUN dotnet publish "Maintenance.App.csproj" -c Release -o /app/publish
 
 FROM base AS final
+# temp fix for CVE-2023-0286
+RUN apk upgrade --no-cache libssl3 libcrypto3
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENV ASPNETCORE_URLS http://+:8080
