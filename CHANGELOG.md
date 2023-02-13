@@ -2,9 +2,36 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.0.0-RC8
+
+### Change
+* Registration Service: restructured endpoint GET api/registration/companyRoleAgreementData due to new db relationship for documents (see technical changes below) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* App Service:
+  * restructured endpoint GET: /api/apps/appreleaseprocess/agreementData due to new db relationship for documents (see technical changes below) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * added mandatory validation on app roles loaded for PUT: /api/apps/appreleaseprocess/{appId}/submit
+
+### Feature
+* Administration Service - application worker: 
+  * added retrigger functionality for application approval worker
+  * added automated process for bpdm data pull and push
+  * changed SD IF from synchron to async requests
+  * removed administration/registration/application/{applicationId}/declineRequest endpoint ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* Seeding data: added agreement_assigned_company_roles in the base image file
+* Offer (app) attribute released "Privacy_Policy" (new db tables; db relation updates; app endpoints enhanced with new attribute)
+
+### Technical Support
+* DB structure: agreement_assigned_document table relation updated to 1:n instead of n:m
+* Seeding process for static data added and unit tests released
+* enable registration and administration service to use config from env vars
+* temp fix for cve-2023-0286
+
+### Bugfix
+* Application approval checklist process handling fixed
+* Email "App Activation" - company name and URL attribute fixed
+
 ## 1.0.0-RC7
 
-### Changen
+### Change
 n/a
 
 ### Feature
