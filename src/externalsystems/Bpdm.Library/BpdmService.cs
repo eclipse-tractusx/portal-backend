@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 
@@ -31,7 +32,12 @@ public class BpdmService : IBpdmService
 {
     private readonly ITokenService _tokenService;
     private readonly BpdmServiceSettings _settings;
-    private readonly JsonSerializerOptions _options = new (){ PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private static readonly JsonSerializerOptions _options = new (){ PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+    static BpdmService()
+    {
+        _options.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
+    }
 
     public BpdmService(ITokenService tokenService, IOptions<BpdmServiceSettings> options)
     {
