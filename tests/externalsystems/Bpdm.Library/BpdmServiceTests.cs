@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
 
@@ -112,11 +113,13 @@ public class BpdmServiceTests
     public async Task FetchInputLegalEntity_WithValidResult_ReturnsExpected()
     {
         var data = _fixture.Create<BpdmLegalEntityData>();
+        var options = new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+        options.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
             data.ToJsonContent(
-                new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase },
+                options,
                 "application/json")
             );
         var httpClient = new HttpClient(httpMessageHandlerMock)
