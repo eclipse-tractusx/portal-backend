@@ -11,11 +11,11 @@ nuget/nuget/-/Newtonsoft.Json/13.0.2
 nuget/nuget/-/Npgsql/6.0.7
 nuget/nuget/-/Npgsql.EntityFrameworkCore.PostgreSQL/6.0.7
 nuget/nuget/-/Portable.BouncyCastle/1.8.10
-nuget/nuget/-/Swashbuckle.AspNetCore/6.3.1
-nuget/nuget/-/Swashbuckle.AspNetCore.Swagger/6.3.1
-nuget/nuget/-/Swashbuckle.AspNetCore.SwaggerGen/6.3.1
-nuget/nuget/-/Swashbuckle.AspNetCore.SwaggerUI/6.3.1
-nuget/nuget/-/SwashBuckle.AspNetCore/6.3.1
+nuget/nuget/-/Swashbuckle.AspNetCore/6.5.0
+nuget/nuget/-/Swashbuckle.AspNetCore.Swagger/6.5.0
+nuget/nuget/-/Swashbuckle.AspNetCore.SwaggerGen/6.5.0
+nuget/nuget/-/Swashbuckle.AspNetCore.SwaggerUI/6.5.0
+nuget/nuget/-/SwashBuckle.AspNetCore/6.5.0
 nuget/nuget/-/Newtonsoft.Json/12.0.2
 nuget/nuget/-/AutoFixture/4.17.0
 nuget/nuget/-/AutoFixture.AutoFakeItEasy/4.17.0
