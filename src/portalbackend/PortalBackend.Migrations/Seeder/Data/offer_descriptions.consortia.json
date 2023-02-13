@@ -50,7 +50,7 @@
   {
     "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
     "language_short_name": "en",
-    "description_long": "smart MOM (Manufacturing Operations Management) consolidates all production processes and systems for managing manufacturing processes in order to increase efficiency. The smart MOM solution from German Edge Cloud includes various services and enables a holistic production management. This includes, for example, the management of production processes including specific production rules, bill of materials (BOM), recipient data, resource/asset management and much more.",
+    "description_long": "ONCITE DPS with its solution smart MOM (Manufacturing Operations Management) consolidates all production processes and systems for managing manufacturing processes in order to increase efficiency. The smart MOM solution from German Edge Cloud includes various services and enables a holistic production management. This includes, for example, the management of production processes including specific production rules, bill of materials (BOM), recipient data, resource/asset management and much more. \n Smart MOM is part of the ONCITE Digital Production System (DPS), which can combine various MES (Manufacturing Execution System), MOM functionalities and integration services. Thus, smart MOM can use integrated data from various IT and OT systems (e.g., ERP, PLM, machine PLCs) of the customer’s environment by employing its integration services.",
     "description_short": "smart MOM can be operated as part of our scalable Edge Cloud data center “GEC Digital Production System”, which can combine various MES (Manufacturing Execution System), MOM functionalities and integration services. Thus, smart MOM can use integrated dat"
   },
   {
@@ -256,5 +256,17 @@
     "language_short_name": "en",
     "description_long": "SupplyOn Capacity Management supports suppliers to collect production capacity data in a simple and intuitive way and enables buyer and supplier users to compare it with demand data. This comparison is mainly done on a tactical and strategical level, in order to identify potential mismatches as early as possible.  The data is available in a consistent format and can be downloaded for further internal processing. In addition, the application supports an integrated collaboration between suppliers and buyers via commenting and built-in task management features.",
     "description_short": "Supports suppliers to collect production capacity data"
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0005",
+    "language_short_name": "de",
+    "description_long": "Die Digital Twin Registry bietet eine zentrale Informationsquelle („Telefonbuch“): Hier werden alle digitalen Zwillinge und deren Untermodelle registriert, die verschiedene Aspekte relevanter Informationen und Dienste innerhalb des Datenökosystems enthalten. Neben der Registrierung neuer digitaler Zwillinge können sie an dieser Stelle auch zusammen mit ihren Untermodellen gefunden und angezeigt werden. Digitale Zwillinge sind sowohl für Datenanbieter relevant, die die vereinbarten Daten in der vereinbarten Form liefern und über die Registry auffindbar machen, als auch für Daten- oder Servicekonsumenten, die auf Basis dieser Daten Mehrwertdienste anbieten und herausfinden können, welche Anbieter es gibt über die Registrierung.",
+    "description_short": "Zentrale Informationsquelle aller digitalen Zwillinge im Dataspace"
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0005",
+    "language_short_name": "en",
+    "description_long": "The Digital Twin Registry provides a central source of information („phone book“): all digital twins and their sub models, which contain various aspects of relevant information and services within the data ecosystem, are registered here. In addition to registering new digital twins, they can also be found and viewed at this point along with their sub models.  Digital twins are relevant both for data providers, who supply the agreed data in the agreed form and make it discoverable via the registry, and for data or service consumers, who can offer value-added services based on this data and find out which providers exist via the registry.",
+    "description_short": "Central source of information for all digital twins in the CX dataspace"
   }
 ]

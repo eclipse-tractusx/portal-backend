@@ -18,5 +18,9 @@
   {
     "service_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0004",
     "service_type_id": 2
+  },
+  {
+    "service_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0005",
+    "service_type_id": 2
   }
 ]
