@@ -338,7 +338,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var offerDetail = await sut.GetAppUpdateData(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfeb"), "3d8142f1-860b-48aa-8c2b-1ccb18699f65", new []{"de"}).ConfigureAwait(false);
+        var offerDetail = await sut.GetAppUpdateData(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfeb"), "502dabcf-01c7-47d9-a88e-0be4279097b5", new []{"de"}).ConfigureAwait(false);
 
         // Assert
         offerDetail.Should().NotBeNull();
@@ -395,11 +395,11 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetActiveServices
     
     [Theory]
-    [InlineData(ServiceOverviewSorting.ProviderAsc, new [] { "Consulting Service - Data Readiness", "Consulting Service - Data Hub", "Data Warehouse - Cloud", "Dataspace Connector Support", "SDE with EDC" }, new [] { "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Component for Digital Twins registration" })]
-    [InlineData(ServiceOverviewSorting.ProviderDesc, new [] { "SDE with EDC", "Consulting Service - Data Readiness", "Consulting Service - Data Hub", "Data Warehouse - Cloud", "Dataspace Connector Support" }, new [] { "Component for Digital Twins registration", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Lorem ipsum dolor sit amet, consectetur adipiscing elit." })]
-    [InlineData(ServiceOverviewSorting.ReleaseDateAsc, new [] { "SDE with EDC", "Consulting Service - Data Readiness", "Consulting Service - Data Hub", "Data Warehouse - Cloud", "Dataspace Connector Support" }, new [] { "Component for Digital Twins registration", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Lorem ipsum dolor sit amet, consectetur adipiscing elit." })]
-    [InlineData(ServiceOverviewSorting.ReleaseDateDesc, new [] { "Dataspace Connector Support", "Data Warehouse - Cloud", "Consulting Service - Data Hub", "Consulting Service - Data Readiness", "SDE with EDC" }, new [] { "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Component for Digital Twins registration" })]
-    public async Task GetActiveServices_ReturnsExpectedResult(ServiceOverviewSorting sorting, IEnumerable<string> names, IEnumerable<string> descriptions)
+    [InlineData(ServiceOverviewSorting.ProviderAsc)]
+    [InlineData(ServiceOverviewSorting.ProviderDesc)]
+//    [InlineData(ServiceOverviewSorting.ReleaseDateAsc)] TODO cannot test as data contains ambigous values of date_released
+//    [InlineData(ServiceOverviewSorting.ReleaseDateDesc)]
+    public async Task GetActiveServices_ReturnsExpectedResult(ServiceOverviewSorting sorting)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
@@ -409,18 +409,24 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         offerDetail.Should().NotBeNull();
-        offerDetail!.Count.Should().Be(names.Count());
-        offerDetail.Data.Should().HaveSameCount(names);
-        offerDetail.Data.Select(data => data.Title).Should().ContainInOrder(names);
-        offerDetail.Data.Select(data => data.Description).Should().ContainInOrder(descriptions);
+        offerDetail!.Count.Should().Be(6);
+        offerDetail.Data.Should().HaveCount(6);
+        if (sorting == ServiceOverviewSorting.ProviderAsc)
+        {
+            offerDetail.Data.Select(data => data.Provider).Should().BeInAscendingOrder();
+        }
+        if (sorting == ServiceOverviewSorting.ProviderDesc)
+        {
+            offerDetail.Data.Select(data => data.Provider).Should().BeInDescendingOrder();
+        }
     }
 
     [Theory]
-    [InlineData(ServiceTypeId.CONSULTANCE_SERVICE, 0, 2, 2, 2)]
+    [InlineData(ServiceTypeId.CONSULTANCE_SERVICE, 0, 2, 3, 2)]
     [InlineData(ServiceTypeId.DATASPACE_SERVICE, 0, 2, 3, 2)]
-    [InlineData(null, 0, 2, 5, 2)]
-    [InlineData(null, 1, 1, 5, 1)]
-    [InlineData(null, 2, 1, 5, 1)]
+    [InlineData(null, 0, 2, 6, 2)]
+    [InlineData(null, 1, 1, 6, 1)]
+    [InlineData(null, 2, 1, 6, 1)]
     public async Task GetActiveServices_WithExistingServiceAndServiceType_ReturnsExpectedResult(ServiceTypeId? serviceTypeId, int page, int size, int count, int numData)
     {
         // Arrange
@@ -506,11 +512,69 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetProvidedOffersData
 
     [Theory]
-    [InlineData(OfferTypeId.APP, "3d8142f1-860b-48aa-8c2b-1ccb18699f65", new [] { "d0d45a39-521f-4fa8-b8f4-146e20ce7575" })]
-    [InlineData(OfferTypeId.SERVICE, "3d8142f1-860b-48aa-8c2b-1ccb18699f65", new string[] {})]
-    [InlineData(OfferTypeId.CORE_COMPONENT, "3d8142f1-860b-48aa-8c2b-1ccb18699f65", new string[] {})]
-    [InlineData(OfferTypeId.APP, "no such user", new string[] { })]
-    public async Task GetProvidedOffersData_ReturnsExpectedResult(OfferTypeId offerTypeId, string iamUserId, IEnumerable<string> leadPictureIds)
+    [InlineData(
+        OfferTypeId.APP,
+        "502dabcf-01c7-47d9-a88e-0be4279097b5",
+        new [] {
+            "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+            "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+            "5cf74ef8-e0b7-4984-a872-474828beb5d3",
+            "5cf74ef8-e0b7-4984-a872-474828beb5d4",
+            "5cf74ef8-e0b7-4984-a872-474828beb5d5",
+            "5cf74ef8-e0b7-4984-a872-474828beb5d6",
+            "5cf74ef8-e0b7-4984-a872-474828beb5d9",
+            "a16e73b9-5277-4b69-9f8d-3b227495dfeb",
+            "ac1cf001-7fbc-1f2f-817f-bce0572c0007",
+            "f9cad59d-84b3-4880-a550-4072c26a6b93",
+        },
+        new [] {
+            "d6eb6ec2-24a6-40c5-becb-2142c62fb117",
+            "184cde16-52d4-4865-81f6-b5b45e3c9051",
+            "184cde16-52d4-4865-81f6-b5b45e3c9050",
+            "4487ce3a-2018-4e8f-82df-6d5f3440193a",
+            "8cd4d4a3-e57c-4e19-a8a3-5f2b4fdfb9ad",
+            "00af3c73-32ab-49c2-b02c-b65536a61aac",
+            "00000000-0000-0000-0000-000000000000",
+            "d0d45a39-521f-4fa8-b8f4-146e20ce7575",
+            "384fa860-c48a-4c1f-bbe5-8f47877ad37e",
+            "a221b9d8-e79a-43c4-9a25-edec28071c3c",
+        })]
+    [InlineData(
+        OfferTypeId.SERVICE,
+        "502dabcf-01c7-47d9-a88e-0be4279097b5",
+        new [] {
+            "ac1cf001-7fbc-1f2f-817f-bce0000c0001",
+            "ac1cf001-7fbc-1f2f-817f-bce0000c0002",
+            "ac1cf001-7fbc-1f2f-817f-bce0000c0003",
+            "ac1cf001-7fbc-1f2f-817f-bce0000c0004",
+            "ac1cf001-7fbc-1f2f-817f-bce0000c0005",
+        },
+        new [] {
+            "00000000-0000-0000-0000-000000000000",
+            "00000000-0000-0000-0000-000000000000",
+            "00000000-0000-0000-0000-000000000000",
+            "00000000-0000-0000-0000-000000000000",
+            "c6bc1f44-ad94-4478-b2b0-e741a77e83a9",
+        })]
+    [InlineData(
+        OfferTypeId.CORE_COMPONENT,
+        "502dabcf-01c7-47d9-a88e-0be4279097b5",
+        new [] {
+            "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+            "9b957704-3505-4445-822c-d7ef80f27fcd",
+            "9ef01c20-6d9d-41ef-b336-fa64e1e2e4c2",
+        },
+        new [] {
+            "00000000-0000-0000-0000-000000000000",
+            "00000000-0000-0000-0000-000000000000",
+            "00000000-0000-0000-0000-000000000000",
+        })]
+    [InlineData(
+        OfferTypeId.APP,
+        "no such user",
+        new string[] { },
+        new string[] { })]
+    public async Task GetProvidedOffersData_ReturnsExpectedResult(OfferTypeId offerTypeId, string iamUserId, IEnumerable<string> offerIds, IEnumerable<string> leadPictureIds)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
@@ -519,8 +583,16 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var providerAppData = await sut.GetProvidedOffersData(offerTypeId, iamUserId).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        providerAppData.Should().HaveSameCount(leadPictureIds);
-        providerAppData.OrderBy(item => item.LeadPictureId).Select(item => item.LeadPictureId).Should().ContainInOrder(leadPictureIds.Select(item => new Guid(item)).OrderBy(item => item));
+        providerAppData.Should().HaveSameCount(offerIds);
+        if (offerIds.Any())
+        {
+            providerAppData.Select(x => x.Id).Should().Contain(offerIds.Select(x => new Guid(x)));
+            providerAppData.Join(offerIds.Select(x => new Guid(x)).Zip(leadPictureIds.Select(x => new Guid(x))),data => data.Id, zip => zip.First, (data,zip) => (data,zip)).Should().AllSatisfy(x => x.data.LeadPictureId.Should().Be(x.zip.Second));
+        }
+        else
+        {
+            providerAppData.Should().BeEmpty();
+        }
     }
 
     #endregion

@@ -220,5 +220,95 @@
     "user_role": "Admin",
     "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0572c0007",
     "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51184",
+    "user_role": "mdata_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51185",
+    "user_role": "shiftplan_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51186",
+    "user_role": "idgenerator_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51187",
+    "user_role": "kpi_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51188",
+    "user_role": "testplan_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51189",
+    "user_role": "tnt-import_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51190",
+    "user_role": "prediction_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51191",
+    "user_role": "address_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51192",
+    "user_role": "mdc_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51193",
+    "user_role": "document_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51194",
+    "user_role": "smom_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51195",
+    "user_role": "attribute_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51196",
+    "user_role": "tnt_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51197",
+    "user_role": "configuration_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51198",
+    "user_role": "storage_user",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "last_editor_id": null
   }
 ]

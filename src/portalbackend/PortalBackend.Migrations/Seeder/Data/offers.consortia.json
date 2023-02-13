@@ -11,7 +11,7 @@
     "provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "offer_status_id": 3,
     "date_last_changed": "2022-03-24 18:01:33.348000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -27,7 +27,7 @@
     "provider_company_id": "dfd90abe-b20e-4aff-87c6-f30f2bf9b104",
     "offer_status_id": 3,
     "date_last_changed": "2022-03-24 18:01:33.384000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -43,7 +43,7 @@
     "provider_company_id": "0dcd8209-85e2-4073-b130-ac094fb47106",
     "offer_status_id": 3,
     "date_last_changed": "2022-03-24 18:01:33.375000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -59,7 +59,7 @@
     "provider_company_id": "0dcd8209-85e2-4073-b130-ac094fb47106",
     "offer_status_id": 3,
     "date_last_changed": "2022-03-24 18:01:33.380000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -75,7 +75,7 @@
     "provider_company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
     "offer_status_id": 3,
     "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -91,7 +91,7 @@
     "provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "offer_status_id": 3,
     "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -107,23 +107,23 @@
     "provider_company_id": "cac8fa6a-9db7-4bad-9cbd-56298b74bac2",
     "offer_status_id": 3,
     "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
   {
     "id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
-    "name": "Smart MOM",
+    "name": "ONCITE DPS | Solution Smart MOM",
     "date_created": "2022-03-24 18:01:33.388000 +00:00",
     "date_released": "2022-03-24 18:01:33.388000 +00:00",
     "marketing_url": null,
     "contact_email": "info@gec.io",
     "contact_number": "+49 69 24747180",
     "provider": "German Edge Cloud GmbH & Co. KG",
-    "provider_company_id": "fe55fe20-5f19-401e-91a2-dfa37b44a0be",
+    "provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "offer_status_id": 3,
     "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -139,7 +139,7 @@
     "provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "offer_status_id": 3,
     "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -155,7 +155,7 @@
     "provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "offer_status_id": 3,
     "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -171,7 +171,7 @@
     "provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "offer_status_id": 3,
     "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -187,7 +187,7 @@
     "provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "offer_status_id": 3,
     "date_last_changed": "2022-06-29 18:01:33.388000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -203,7 +203,7 @@
     "provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "offer_status_id": 3,
     "date_last_changed": "2022-06-29 18:01:33.388000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -219,7 +219,7 @@
     "provider_company_id": "0dcd8209-85e2-4073-b130-ac094fb47106",
     "offer_status_id": 3,
     "date_last_changed": "2022-06-29 18:01:33.388000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -235,7 +235,7 @@
     "provider_company_id": "dfd90abe-b20e-4aff-87c6-f30f2bf9b104",
     "offer_status_id": 3,
     "date_last_changed": "2022-08-28 00:00:00.000000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -251,7 +251,7 @@
     "provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "offer_status_id": 3,
     "date_last_changed": "2022-08-28 00:00:00.000000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -267,7 +267,7 @@
     "provider_company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
     "offer_status_id": 3,
     "date_last_changed": "2022-10-10 00:00:00.000000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   },
@@ -296,7 +296,7 @@
     "contact_email": null,
     "contact_number": null,
     "provider": "SupplyOn",
-    "provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88",
+    "provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "offer_status_id": 3,
     "date_last_changed": "2022-10-01 00:00:00.000000 +00:00",
     "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
@@ -368,6 +368,22 @@
     "last_editor_id": null
   },
   {
+	"id": "ac1cf001-7fbc-1f2f-817f-bce0000c0005",
+	"name": "Digital Twin Registry (FOSS)",
+	"date_created": "2023-01-01 00:00:00.000000 +00:00",
+	"date_released": "2023-01-01 00:00:00.000004 +00:00",
+	"marketing_url": null,
+	"contact_email": null,
+	"contact_number": null,
+	"provider": "Catena-X",
+	"provider_company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+	"offer_status_id": 3,
+	"date_last_changed": "2023-01-01 00:00:00.000000 +00:00",
+	"sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
+	"offer_type_id": 3,
+	"last_editor_id": null
+  },
+  {
     "id": "a16e73b9-5277-4b69-9f8d-3b227495dfec",
     "name": "Catena-X Xcelerator Share",
     "date_created": "2022-10-01 00:00:00.000000 +00:00",
@@ -379,7 +395,7 @@
     "provider_company_id": "dfd90abe-b20e-4aff-87c6-f30f2bf9b104",
     "offer_status_id": 3,
     "date_last_changed": "2022-10-01 00:00:00.000000 +00:00",
-    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
     "last_editor_id": null
   }
