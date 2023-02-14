@@ -32,5 +32,4 @@ public interface IChecklistService
     Task<ManualChecklistProcessStepData> VerifyChecklistEntryAndProcessSteps(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, IEnumerable<ApplicationChecklistEntryStatusId> entryStatusIds, ProcessStepTypeId processStepTypeId, IEnumerable<ApplicationChecklistEntryTypeId>? entryTypeIds = null, IEnumerable<ProcessStepTypeId>? processStepTypeIds = null);
     void SkipProcessSteps(ManualChecklistProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds);
     void FinalizeChecklistEntryAndProcessSteps(ManualChecklistProcessStepData context, Action<ApplicationChecklistEntry> modifyApplicationChecklistEntry, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds);
-    bool ScheduleProcessSteps(WorkerChecklistProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds);
 }

@@ -106,8 +106,7 @@ public class ChecklistExecutionService
                 .CreateMissingChecklistItems(applicationId, checklistEntries.Select(entry => entry.TypeId)).ConfigureAwait(false)).ToList();
             checklistEntries = checklistEntries.Concat(createdEntries);
 
-            var newSteps = checklistCreationService
-                .CreateInitialProcessSteps(applicationId, createdEntries).ToList();
+            var newSteps = checklistCreationService.CreateInitialProcessSteps(applicationId, createdEntries);
             processSteps = processSteps.Concat(newSteps.IntersectBy(_automaticProcessStepTypeIds, processStep => processStep.ProcessStepTypeId));
 
             await checklistRepositories.SaveAsync().ConfigureAwait(false);
