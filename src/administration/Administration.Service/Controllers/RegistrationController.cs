@@ -175,7 +175,7 @@ public class RegistrationController : ControllerBase
     /// <param name="responseData">Response data from clearinghouse</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>NoContent</returns>
-    /// Example: POST: api/administration/registration/clearinghouse/4f0146c6-32aa-4bb1-b844-df7e8babdcb4
+    /// Example: POST: api/administration/registration/clearinghouse
     /// <response code="200">the result as a boolean.</response>
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the clearing_house process is not in status IN_PROGRESS.</response>
     /// <response code="404">No application found for the bpn.</response>

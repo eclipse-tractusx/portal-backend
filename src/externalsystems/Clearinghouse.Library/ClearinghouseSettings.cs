@@ -30,4 +30,7 @@ public class ClearinghouseSettings : KeyVaultAuthSettings
 {
     [Required(AllowEmptyStrings = false)]
     public string BaseAddress { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)] 
+    public string CallbackUrl { get; set; } = null!;
 }
