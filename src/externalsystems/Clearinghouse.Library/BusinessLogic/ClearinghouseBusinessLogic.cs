@@ -101,7 +101,7 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
         var transferData = new ClearinghouseTransferData(
             data.ParticipantDetails,
             new IdentityDetails(decentralizedIdentifier, data.UniqueIds),
-            $"{_settings.BaseAddress}/api/v1/validation/callback",
+            _settings.CallbackUrl,
             overwrite);
 
         await _clearinghouseService.TriggerCompanyDataPost(transferData, cancellationToken).ConfigureAwait(false);

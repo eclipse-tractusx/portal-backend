@@ -71,7 +71,7 @@ public class ClearinghouseBusinessLogicTests
 
         _logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _custodianBusinessLogic, _checklistService, Options.Create(new ClearinghouseSettings
         {
-            BaseAddress = "https://testurl.com"
+            CallbackUrl = "https://api.com"
         }));
     }
     
