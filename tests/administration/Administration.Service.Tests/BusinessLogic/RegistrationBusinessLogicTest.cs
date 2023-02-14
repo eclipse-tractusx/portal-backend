@@ -362,8 +362,8 @@ public class RegistrationBusinessLogicTest
             .Returns(Enumerable.Repeat(ApplicationId, 1).ToAsyncEnumerable());
         
         // Act
-        var data = _fixture.Create<ClearinghouseResponseData>();
-        await _logic.ProcessClearinghouseResponseAsync(BusinessPartnerNumber, data, CancellationToken.None).ConfigureAwait(false);
+        var data = new ClearinghouseResponseData(BusinessPartnerNumber, ClearinghouseResponseStatus.CONFIRM, null);
+        await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _clearinghouseBusinessLogic.ProcessEndClearinghouse(ApplicationId, data, A<CancellationToken>._))
@@ -378,8 +378,8 @@ public class RegistrationBusinessLogicTest
             .Returns(new []{ CompanyId, Guid.NewGuid() }.ToAsyncEnumerable());
         
         // Act
-        var data = _fixture.Create<ClearinghouseResponseData>();
-        async Task Act() => await _logic.ProcessClearinghouseResponseAsync(BusinessPartnerNumber, data, CancellationToken.None).ConfigureAwait(false);
+        var data = new ClearinghouseResponseData(BusinessPartnerNumber, ClearinghouseResponseStatus.CONFIRM, null);
+        async Task Act() => await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -394,8 +394,8 @@ public class RegistrationBusinessLogicTest
             .Returns(Enumerable.Empty<Guid>().ToAsyncEnumerable());
         
         // Act
-        var data = _fixture.Create<ClearinghouseResponseData>();
-        async Task Act() => await _logic.ProcessClearinghouseResponseAsync(BusinessPartnerNumber, data, CancellationToken.None).ConfigureAwait(false);
+        var data = new ClearinghouseResponseData(BusinessPartnerNumber, ClearinghouseResponseStatus.CONFIRM, null);
+        async Task Act() => await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);

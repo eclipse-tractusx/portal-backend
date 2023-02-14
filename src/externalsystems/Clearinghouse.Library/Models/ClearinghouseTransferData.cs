@@ -25,7 +25,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 
 public record ClearinghouseTransferData(
     [property: JsonPropertyName("participantDetails")] ParticipantDetails ParticipantDetails,
-    [property: JsonPropertyName("identityDetails")] IdentityDetails IdentityDetails);
+    [property: JsonPropertyName("identityDetails")] IdentityDetails IdentityDetails,
+    [property: JsonPropertyName("callbackUrl")] string CallbackUrl,
+    [property: JsonPropertyName("exceptProfile")] bool ExceptProfile);
 
 public record IdentityDetails(
     [property: JsonPropertyName("did")] string Did,

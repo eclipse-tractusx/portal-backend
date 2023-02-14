@@ -172,7 +172,6 @@ public class RegistrationController : ControllerBase
     /// <summary>
     /// Processes the clearinghouse response
     /// </summary>
-    /// <param name="bpn" example="">Id of the application that should be approved</param>
     /// <param name="responseData">Response data from clearinghouse</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>NoContent</returns>
@@ -182,13 +181,13 @@ public class RegistrationController : ControllerBase
     /// <response code="404">No application found for the bpn.</response>
     [HttpPost]
     [Authorize(Roles = "approve_new_partner")]
-    [Route("clearinghouse/{bpn}")]
+    [Route("clearinghouse")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> ProcessClearinghouseResponse([FromRoute] string bpn, [FromBody] ClearinghouseResponseData responseData, CancellationToken cancellationToken)
+    public async Task<NoContentResult> ProcessClearinghouseResponse([FromBody] ClearinghouseResponseData responseData, CancellationToken cancellationToken)
     {
-        await _logic.ProcessClearinghouseResponseAsync(bpn, responseData, cancellationToken).ConfigureAwait(false);
+        await _logic.ProcessClearinghouseResponseAsync(responseData, cancellationToken).ConfigureAwait(false);
         return NoContent();
     }
     

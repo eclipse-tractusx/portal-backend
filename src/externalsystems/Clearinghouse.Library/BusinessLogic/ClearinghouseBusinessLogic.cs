@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
@@ -35,13 +36,20 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
     private readonly IClearinghouseService _clearinghouseService;
     private readonly ICustodianBusinessLogic _custodianBusinessLogic;
     private readonly IChecklistService _checklistService;
+    private readonly ClearinghouseSettings _settings;
 
-    public ClearinghouseBusinessLogic(IPortalRepositories portalRepositories, IClearinghouseService clearinghouseService, ICustodianBusinessLogic custodianBusinessLogic, IChecklistService checklistService)
+    public ClearinghouseBusinessLogic(
+        IPortalRepositories portalRepositories,
+        IClearinghouseService clearinghouseService,
+        ICustodianBusinessLogic custodianBusinessLogic,
+        IChecklistService checklistService,
+        IOptions<ClearinghouseSettings> options)
     {
         _portalRepositories = portalRepositories;
         _clearinghouseService = clearinghouseService;
         _custodianBusinessLogic = custodianBusinessLogic;
         _checklistService = checklistService;
+        _settings = options.Value;
     }
 
     public async Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)> HandleClearinghouse(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
@@ -55,10 +63,9 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
         {
             throw new ConflictException($"Decentralized Identifier for application {context.ApplicationId} is not set");
         }
-
-        await TriggerCompanyDataPost(context.ApplicationId, walletData.Did, cancellationToken).ConfigureAwait(false);
-
+        
         var overwrite = context.ProcessStepTypeId == ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE;
+        await TriggerCompanyDataPost(context.ApplicationId, walletData.Did, overwrite, cancellationToken).ConfigureAwait(false);
 
         return (
             entry => entry.ApplicationChecklistEntryStatusId =
@@ -72,7 +79,7 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
             true);
     }
 
-    private async Task TriggerCompanyDataPost(Guid applicationId, string decentralizedIdentifier, CancellationToken cancellationToken)
+    private async Task TriggerCompanyDataPost(Guid applicationId, string decentralizedIdentifier, bool overwrite, CancellationToken cancellationToken)
     {
         var data = await _portalRepositories.GetInstance<IApplicationRepository>()
             .GetClearinghouseDataForApplicationId(applicationId).ConfigureAwait(false);
@@ -93,7 +100,9 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
 
         var transferData = new ClearinghouseTransferData(
             data.ParticipantDetails,
-            new IdentityDetails(decentralizedIdentifier, data.UniqueIds));
+            new IdentityDetails(decentralizedIdentifier, data.UniqueIds),
+            $"{_settings.BaseAddress}/api/v1/validation/callback",
+            overwrite);
 
         await _clearinghouseService.TriggerCompanyDataPost(transferData, cancellationToken).ConfigureAwait(false);
     }

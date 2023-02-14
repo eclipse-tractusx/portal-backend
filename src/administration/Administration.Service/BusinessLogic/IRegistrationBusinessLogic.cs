@@ -45,10 +45,9 @@ public interface IRegistrationBusinessLogic
     /// <summary>
     /// Processes the clearinghouse response
     /// </summary>
-    /// <param name="bpn">the bpn of the company</param>
     /// <param name="data">the response data</param>
     /// <param name="cancellationToken">cancellation token</param>
-    Task ProcessClearinghouseResponseAsync(string bpn, ClearinghouseResponseData data, CancellationToken cancellationToken);
+    Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets the checklist details for the given application
