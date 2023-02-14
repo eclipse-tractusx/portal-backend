@@ -107,11 +107,6 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
 
         var legalEntity = await _bpdmService.FetchInputLegalEntity(context.ApplicationId.ToString(), cancellationToken).ConfigureAwait(false);
 
-        if (legalEntity == null)
-        {
-            throw new ConflictException($"legal-entity not found in bpdm for application {context.ApplicationId}");
-        }
-
         if (string.IsNullOrEmpty(legalEntity.Bpn))
         {
             return (null,null,false);

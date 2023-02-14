@@ -25,15 +25,31 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 [Serializable]
 public class ServiceException : Exception
 {
-    public HttpStatusCode StatusCode { get; set; }
+    public HttpStatusCode? StatusCode { get; }
+    public bool IsRecoverable { get; }
 
-    public ServiceException(string message, HttpStatusCode httpStatusCode = HttpStatusCode.BadRequest) : base(message)
+    public ServiceException(string message, bool isRecoverable = false) : base(message)
     {
-        StatusCode = httpStatusCode;
+        StatusCode = null;
+        IsRecoverable = isRecoverable;
     }
-    public ServiceException(string message, System.Exception inner, HttpStatusCode httpStatusCode = HttpStatusCode.BadRequest) : base(message, inner)
+
+    public ServiceException(string message, HttpStatusCode httpStatusCode, bool isRecoverable = false) : base(message)
     {
         StatusCode = httpStatusCode;
+        IsRecoverable = isRecoverable;
+    }
+
+    public ServiceException(string message, System.Exception inner, bool isRecoverable = false) : base(message, inner)
+    {
+        StatusCode = null;
+        IsRecoverable = isRecoverable;
+    }
+
+    public ServiceException(string message, System.Exception inner, HttpStatusCode httpStatusCode, bool isRecoverable = false) : base(message, inner)
+    {
+        StatusCode = httpStatusCode;
+        IsRecoverable = isRecoverable;
     }
 
     protected ServiceException(

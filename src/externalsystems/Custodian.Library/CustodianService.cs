@@ -21,8 +21,8 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 
@@ -49,12 +49,8 @@ public class CustodianService : ICustodianService
         var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
         const string walletUrl = "/api/wallets";
 
-        var result = await httpClient.PostAsync(walletUrl, stringContent, cancellationToken).ConfigureAwait(false);
-
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new ServiceException("Access to Custodian Failed with Status Code {StatusCode}", result.StatusCode);
-        }
+        var result = await httpClient.PostAsync(walletUrl, stringContent, cancellationToken)
+            .CatchingIntoServiceExceptionFor("custodian-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
         return await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -64,12 +60,8 @@ public class CustodianService : ICustodianService
     {
         var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
 
-        var result = await httpClient.GetAsync($"/api/wallets/{bpn}", cancellationToken).ConfigureAwait(false);
-        if (!result.IsSuccessStatusCode)
-        {
-            throw new ServiceException("Error on retrieving Wallets HTTP Response Code {StatusCode}",
-                result.StatusCode);
-        }
+        var result = await httpClient.GetAsync($"/api/wallets/{bpn}", cancellationToken)
+            .CatchingIntoServiceExceptionFor("custodian-get", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
         using var responseStream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         try

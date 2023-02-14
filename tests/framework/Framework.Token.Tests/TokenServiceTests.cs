@@ -82,8 +82,8 @@ public class TokenServiceTests
         var error = await Assert.ThrowsAsync<ServiceException>(act).ConfigureAwait(false);
 
         error.Should().NotBeNull();
+        error.Message.Should().Be($"call to external system token-post failed with statuscode");
         error.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
-        error.Message.Should().Be($"Get Token Call for {nameof(TokenService)}Auth was not successful");
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class TokenServiceTests
 
         error.Should().NotBeNull();
         error.InnerException.Should().Be(_testException);
-        error.Message.Should().Be($"Get Token Call for {nameof(TokenService)}Auth threw exception");
+        error.Message.Should().Be($"call to external system token-post failed");
     }
 
     #endregion

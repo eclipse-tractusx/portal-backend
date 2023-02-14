@@ -102,7 +102,7 @@ public class BpdmServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().Contain("Bpdm Service Call failed");
+        ex.Message.Should().Contain("call to external system bpdm-put-legal-entities failed with statuscode");
     }
 
     #endregion
@@ -196,10 +196,11 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        var result = await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
+        var Act = () => sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None);
 
         // Assert
-        result.Should().BeNull();
+        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        result.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -219,7 +220,7 @@ public class BpdmServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().StartWith("Access to external system bpdm failed with Status Code BadRequest");
+        ex.Message.Should().StartWith("call to external system bpdm-get-legal-entities failed with statuscode");
     }
 
     #endregion

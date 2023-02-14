@@ -87,7 +87,11 @@ public class GeneralHttpErrorHandler
             {
                 statusCode = HttpStatusCode.BadGateway;
                 var serviceStatus = (error as ServiceException)!.StatusCode;
-                messageFunc = error => (error.Source, new [] { $"remote service returned status code: {(int)serviceStatus} {serviceStatus}", error.Message } );
+                messageFunc = error => (error.Source, new [] {
+                    serviceStatus == null
+                        ? $"remote service call failed"
+                        : $"remote service returned status code: {(int)serviceStatus} {serviceStatus}",
+                    error.Message } );
             }
             else if (error is UnsupportedMediaTypeException)
             {

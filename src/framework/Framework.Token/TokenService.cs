@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -54,35 +54,21 @@ public class TokenService : ITokenService
     
     private async Task<string?> GetTokenAsync(GetTokenSettings settings, CancellationToken cancellationToken)
     {
-        try
+        var formParameters = new Dictionary<string, string>
         {
-            var formParameters = new Dictionary<string, string>
-            {
-                {"username", settings.Username},
-                {"password", settings.Password},
-                {"client_id", settings.ClientId},
-                {"grant_type", settings.GrantType},
-                {"client_secret", settings.ClientSecret},
-                {"scope", settings.Scope}
-            };
-            var content = new FormUrlEncodedContent(formParameters);
-            var response = await _httpClientFactory.CreateClient(settings.HttpClientName).PostAsync("", content, cancellationToken).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new ServiceException($"Get Token Call for {settings.HttpClientName} was not successful", response.StatusCode);
-            }
+            {"username", settings.Username},
+            {"password", settings.Password},
+            {"client_id", settings.ClientId},
+            {"grant_type", settings.GrantType},
+            {"client_secret", settings.ClientSecret},
+            {"scope", settings.Scope}
+        };
+        var content = new FormUrlEncodedContent(formParameters);
+        var response = await _httpClientFactory.CreateClient(settings.HttpClientName).PostAsync("", content, cancellationToken)
+            .CatchingIntoServiceExceptionFor("token-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
-            using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var responseObject = await JsonSerializer.DeserializeAsync<AuthResponse>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
-            return responseObject?.AccessToken;
-        }
-        catch (Exception ex)
-        {
-            if (ex is ServiceException)
-            {
-                throw;
-            }
-            throw new ServiceException($"Get Token Call for {settings.HttpClientName} threw exception", ex);
-        }
+        using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var responseObject = await JsonSerializer.DeserializeAsync<AuthResponse>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return responseObject?.AccessToken;
     }
 }

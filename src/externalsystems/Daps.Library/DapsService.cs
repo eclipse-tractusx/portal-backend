@@ -20,7 +20,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 
@@ -55,28 +55,17 @@ public class DapsService : IDapsService
     {
         var httpClient = await _tokenService.GetAuthorizedClient<DapsService>(_settings, cancellationToken).ConfigureAwait(false);
 
-        try
-        {
-            using var stream = formFile.OpenReadStream();
+        using var stream = formFile.OpenReadStream();
 
-            var multiPartStream = new MultipartFormDataContent();
-            multiPartStream.Add(new StreamContent(stream), "file", formFile.FileName);
-            multiPartStream.Add(new StringContent(clientName), "clientName");
-            multiPartStream.Add(new StringContent(BaseSecurityProfile), "securityProfile");
-            multiPartStream.Add(new StringContent(UrlHelper.AppendToPathEncoded(connectorUrl, businessPartnerNumber)), "referringConnector");
+        var multiPartStream = new MultipartFormDataContent();
+        multiPartStream.Add(new StreamContent(stream), "file", formFile.FileName);
+        multiPartStream.Add(new StringContent(clientName), "clientName");
+        multiPartStream.Add(new StringContent(BaseSecurityProfile), "securityProfile");
+        multiPartStream.Add(new StringContent(UrlHelper.AppendToPathEncoded(connectorUrl, businessPartnerNumber)), "referringConnector");
 
-            var response = await httpClient.PostAsync(string.Empty, multiPartStream, cancellationToken)
-                .ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new ServiceException("Daps Service Call failed", response.StatusCode);
-            }
+        await httpClient.PostAsync(string.Empty, multiPartStream, cancellationToken)
+            .CatchingIntoServiceExceptionFor("daps-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
-            return true;
-        }
-        catch (Exception ex)
-        {
-            throw new ServiceException("Daps Service Call failed", ex);
-        }
+        return true;
     }
 }

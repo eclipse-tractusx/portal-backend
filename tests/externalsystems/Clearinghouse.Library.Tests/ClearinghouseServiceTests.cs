@@ -100,7 +100,8 @@ public class ClearinghouseServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().Contain("Clearinghouse Service Call failed with StatusCode");
+        ex.Message.Should().Contain("call to external system clearinghouse-post failed with statuscode");
+        ex.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -108,7 +109,8 @@ public class ClearinghouseServiceTests
     {
         // Arrange
         var data = _fixture.Create<ClearinghouseTransferData>();
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, null, new Exception("random exception"));
+        var error = new Exception("random exception");
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, null, error);
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
@@ -120,7 +122,8 @@ public class ClearinghouseServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().Contain("Clearinghouse Service Call failed");
+        ex.Message.Should().Contain("call to external system clearinghouse-post failed");
+        ex.InnerException.Should().Be(error);
     }
 
     #endregion
