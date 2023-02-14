@@ -202,7 +202,8 @@ public class ClearinghouseBusinessLogicTests
         entry.ApplicationChecklistEntryStatusId.Should().Be(statusId);
         A.CallTo(() => _clearinghouseService.TriggerCompanyDataPost(A<ClearinghouseTransferData>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _checklistService.ScheduleProcessSteps(context, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Single() == expectedProcessTypeId))).MustHaveHappenedOnceExactly();
+        result.Item2.Should().HaveCount(1);
+        result.Item2.Should().Contain(expectedProcessTypeId);
         result.Item3.Should().BeTrue();
     }
 

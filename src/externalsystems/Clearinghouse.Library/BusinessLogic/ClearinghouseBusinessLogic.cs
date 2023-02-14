@@ -60,18 +60,15 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
 
         var overwrite = context.ProcessStepTypeId == ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE;
 
-        _checklistService.ScheduleProcessSteps(
-            context,
-            new [] {
-                overwrite
-                    ? ProcessStepTypeId.START_SELF_DESCRIPTION_LP
-                    : ProcessStepTypeId.END_CLEARING_HOUSE });
         return (
             entry => entry.ApplicationChecklistEntryStatusId =
                 overwrite
                     ? ApplicationChecklistEntryStatusId.DONE
                     : ApplicationChecklistEntryStatusId.IN_PROGRESS,
-            null,
+            new [] {
+                overwrite
+                    ? ProcessStepTypeId.START_SELF_DESCRIPTION_LP
+                    : ProcessStepTypeId.END_CLEARING_HOUSE },
             true);
     }
 

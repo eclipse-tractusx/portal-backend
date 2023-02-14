@@ -182,7 +182,9 @@ public class ChecklistProcessor : IChecklistProcessor
         var modified = false;
         foreach (var nextStepTypeId in nextSteps.Except(context.AllSteps.Keys))
         {
-            context.AllSteps.Add(nextStepTypeId, new[] { context.ProcessStepRepository.CreateProcessStep(nextStepTypeId, ProcessStepStatusId.TODO) });
+            var processStep = context.ProcessStepRepository.CreateProcessStep(nextStepTypeId, ProcessStepStatusId.TODO);
+            context.ChecklistRepository.CreateApplicationAssignedProcessStep(context.ApplicationId, processStep.Id);
+            context.AllSteps.Add(nextStepTypeId, new[] { processStep });
             if (_checklistHandlerService.IsManualProcessStep(nextStepTypeId))
             {
                 context.ManualStepTypeIds.Add(nextStepTypeId);
