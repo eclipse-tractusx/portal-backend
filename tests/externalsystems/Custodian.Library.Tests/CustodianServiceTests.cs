@@ -103,7 +103,8 @@ public class CustodianServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().Contain("Access to Custodian Failed with Status");
+        ex.Message.Should().Contain("call to external system custodian-post failed with statuscode");
+        ex.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     #endregion

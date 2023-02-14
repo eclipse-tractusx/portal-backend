@@ -161,7 +161,7 @@ public class ChecklistProcessor : IChecklistProcessor
     }
 
     private static (ProcessStepStatusId,Action<ApplicationChecklistEntry>?) ProcessError(Exception ex) =>
-        ex is not ServiceException { StatusCode: HttpStatusCode.ServiceUnavailable } or HttpRequestException
+        ex is not ServiceException { IsRecoverable: true }
             ? ( ProcessStepStatusId.FAILED,
                 item => {
                     item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;

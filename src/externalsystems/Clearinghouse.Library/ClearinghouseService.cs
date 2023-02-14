@@ -21,7 +21,7 @@
 using System.Net.Http.Json;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
@@ -42,21 +42,7 @@ public class ClearinghouseService : IClearinghouseService
     {
         var httpClient = await _tokenService.GetAuthorizedClient<ClearinghouseService>(_settings, cancellationToken).ConfigureAwait(false);
 
-        try
-        {
-            var result = await httpClient.PostAsJsonAsync("/api/v1/validation", data, cancellationToken).ConfigureAwait(false);
-            if (!result.IsSuccessStatusCode)
-            {
-                throw new ServiceException("Clearinghouse Service Call failed with StatusCode", result.StatusCode);
-            }
-        }
-        catch (Exception ex)
-        {
-            if (ex is ServiceException)
-            {
-                throw;
-            }
-            throw new ServiceException("Clearinghouse Service Call failed.", ex);
-        }
+        await httpClient.PostAsJsonAsync("/api/v1/validation", data, cancellationToken)
+            .CatchingIntoServiceExceptionFor("clearinghouse-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
     }
 }

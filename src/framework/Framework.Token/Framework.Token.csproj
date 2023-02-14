@@ -30,6 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
     <ProjectReference Include="..\Framework.Models\Framework.Models.csproj" />
+    <ProjectReference Include="..\Framework.HttpClient\Framework.HttpClient.csproj" />
   </ItemGroup>
 
   <ItemGroup>

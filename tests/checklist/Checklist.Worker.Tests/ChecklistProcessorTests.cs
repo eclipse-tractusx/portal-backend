@@ -494,7 +494,7 @@ public class ChecklistProcessorTests
     }
 
     [Fact]
-    public async Task ProcessChecklist_DefaultServiceError_ReturnsExpected()
+    public async Task ProcessChecklist_DefaultRecoverableServiceError_ReturnsExpected()
     {
         // Arrange
         var checklist = Enum.GetValues<ApplicationChecklistEntryTypeId>()
@@ -512,7 +512,7 @@ public class ChecklistProcessorTests
         var message = _fixture.Create<string>();
 
         A.CallTo(() => _secondProcessFunc(A<IChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
-            .Throws(new ServiceException(message, System.Net.HttpStatusCode.ServiceUnavailable));
+            .Throws(new ServiceException(message, System.Net.HttpStatusCode.ServiceUnavailable, true));
 
         var modifiedEntries = new List<ApplicationChecklistEntry>();
 
@@ -561,6 +561,74 @@ public class ChecklistProcessorTests
         A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._,A<ProcessStepStatusId>._)).MustNotHaveHappened();
         A.CallTo(() => _applicationChecklistRepository.CreateApplicationAssignedProcessStep(A<Guid>._,A<Guid>._)).MustNotHaveHappened();
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task ProcessChecklist_DefaultUnrecoverableServiceError_ReturnsExpected()
+    {
+        // Arrange
+        var checklist = Enum.GetValues<ApplicationChecklistEntryTypeId>()
+            .Select(typeId => _fixture
+                .Build<(ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId)>()
+                .With(x => x.Item1, typeId)
+                .With(x => x.Item2, ApplicationChecklistEntryStatusId.TO_DO)
+                .Create())
+            .ToImmutableArray();
+
+        var processSteps = new [] {
+            ProcessStepTypeId.ACTIVATE_APPLICATION
+        }.Select(steptTypeId => new ProcessStep(Guid.NewGuid(), steptTypeId, ProcessStepStatusId.TODO, DateTimeOffset.UtcNow)).ToImmutableArray();
+
+        var message = _fixture.Create<string>();
+
+        A.CallTo(() => _secondProcessFunc(A<IChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+            .Throws(new ServiceException(message, System.Net.HttpStatusCode.ServiceUnavailable, false));
+
+        var modifiedEntries = new List<ApplicationChecklistEntry>();
+
+        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._,A<ApplicationChecklistEntryTypeId>._,A<Action<ApplicationChecklistEntry>>._))
+            .ReturnsLazily((Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, Action<ApplicationChecklistEntry> setFields) =>
+            {
+                var entry = new ApplicationChecklistEntry(applicationId, entryTypeId, default, default);
+                setFields(entry);
+                modifiedEntries.Add(entry);
+                return entry;
+            });
+
+        var modifiedSteps = new List<ProcessStep>();
+
+        A.CallTo(()=> _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+            .Invokes((Guid processStepId, Action<ProcessStep> initialize, Action<ProcessStep> modify) =>
+            {
+                var step = new ProcessStep(processStepId, default, default, default);
+                initialize?.Invoke(step);
+                modify(step);
+                modifiedSteps.Add(step);
+            });
+
+        // Act
+        var result = await _processor.ProcessChecklist(Guid.NewGuid(), checklist, processSteps, CancellationToken.None).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result.Should().Contain((ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.FAILED));
+
+        modifiedEntries.Should().HaveCount(1);
+        modifiedEntries.Single().Should().Match<ApplicationChecklistEntry>(entry => entry.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && entry.Comment != null && entry.Comment.Contains($"ServiceException: {message}"));
+
+        modifiedSteps.Should().HaveCount(1);
+        modifiedSteps.Single().Should().Match<ProcessStep>(step => step.ProcessStepStatusId == ProcessStepStatusId.FAILED);
+
+        A.CallTo(() => _firstProcessFunc(A<IChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+            .MustNotHaveHappened();
+
+        A.CallTo(() => _secondProcessFunc(A<IChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => _errorFunc(A<Exception>._, A<IChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+            .MustNotHaveHappened();
+
+        A.CallTo(()=> _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

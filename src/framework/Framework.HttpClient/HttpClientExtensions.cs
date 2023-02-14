@@ -21,7 +21,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClient;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 
 public static class HttpClientExtensions
 {

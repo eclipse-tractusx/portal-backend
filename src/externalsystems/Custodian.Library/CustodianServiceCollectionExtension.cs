@@ -22,7 +22,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClient;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;

@@ -278,8 +278,8 @@ public class BpdmBusinessLogicTests
         async Task Act() => await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"legal-entity not found in bpdm for application {context.ApplicationId}");
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+        ex.Message.Should().Be($"not found");
     }
 
     [Fact]
@@ -415,7 +415,7 @@ public class BpdmBusinessLogicTests
             .ReturnsLazily(() => new ValueTuple<Guid, BpdmData>());
 
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithStateCreated.ToString()), A<CancellationToken>._))
-            .ReturnsLazily(() => (BpdmLegalEntityData?) null);
+            .ThrowsAsync(new ServiceException("not found", System.Net.HttpStatusCode.NotFound));
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithoutZipCode.ToString()), A<CancellationToken>._))
             .ReturnsLazily(() => _fixture.Build<BpdmLegalEntityData>().With(x => x.Bpn, (string?)null).Create());
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithBpn.ToString()), A<CancellationToken>._))
