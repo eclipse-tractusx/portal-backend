@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.Collections.Immutable;
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
@@ -68,7 +69,10 @@ public class ClearinghouseBusinessLogicTests
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
 
-        _logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _custodianBusinessLogic, _checklistService);
+        _logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _custodianBusinessLogic, _checklistService, Options.Create(new ClearinghouseSettings
+        {
+            BaseAddress = "https://testurl.com"
+        }));
     }
     
     #region HandleStartClearingHouse

@@ -117,14 +117,14 @@ public class RegistrationControllerTest
         //Arrange
         var bpn = _fixture.Create<string>();
         var data = _fixture.Create<ClearinghouseResponseData>();
-        A.CallTo(() => _logic.ProcessClearinghouseResponseAsync(bpn, data, A<CancellationToken>._))
+        A.CallTo(() => _logic.ProcessClearinghouseResponseAsync(data, A<CancellationToken>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
-        var result = await this._controller.ProcessClearinghouseResponse(bpn, data, CancellationToken.None).ConfigureAwait(false);
+        var result = await this._controller.ProcessClearinghouseResponse(data, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.ProcessClearinghouseResponseAsync(bpn, data, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 

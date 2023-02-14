@@ -23,5 +23,6 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 
 public record ClearinghouseResponseData(
+    [property: JsonPropertyName("bpn")] string BusinessPartnerNumber,
     [property: JsonPropertyName("status")] ClearinghouseResponseStatus Status,
     [property: JsonPropertyName("message")] string? Message);
