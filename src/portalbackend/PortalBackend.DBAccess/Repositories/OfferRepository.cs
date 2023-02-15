@@ -509,4 +509,29 @@ public class OfferRepository : IOfferRepository
             initialPrivacyPolicy,
             modifyPrivacyPolicy,
             privacyPolicy => new OfferAssignedPrivacyPolicy(appId, privacyPolicy));
+    
+    ///<inheritdoc/>
+    public Task<InReviewOfferData?> GetinReviewAppDataByIdAsync(Guid Id, OfferTypeId offerTypeId) =>
+        _context.Offers.AsNoTracking()
+            .AsSplitQuery()
+            .Where(offer => offer.Id == Id && offer.OfferTypeId == offerTypeId && offer.OfferStatusId == OfferStatusId.IN_REVIEW)
+            .Select(offer =>  
+                new InReviewOfferData(
+                    offer.Id,
+                    offer.Name,
+                    offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE).Select(document => document.Id).FirstOrDefault(),
+                    offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_IMAGE).Select(document => document.Id),
+                    offer.Provider,
+                    offer.UseCases.Select(uc => uc.Name),
+                    offer.OfferDescriptions.Select(od => new OfferDescriptionData(od.LanguageShortName, od.DescriptionLong, od.DescriptionShort)),
+                    offer.Documents.Where(d => d.DocumentTypeId != DocumentTypeId.APP_IMAGE && d.DocumentTypeId != DocumentTypeId.APP_LEADIMAGE)
+                        .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
+                    offer.UserRoles.Select(ur => ur.UserRoleText),
+                    offer.SupportedLanguages.Select(lang => lang.ShortName),
+                    offer.MarketingUrl,
+                    offer.ContactEmail,
+                    offer.ContactNumber,
+                    offer.OfferLicenses.Select(license => license.Licensetext).FirstOrDefault(),
+                    offer.Tags.Select(t => t.Name)))
+            .SingleOrDefaultAsync();
 }

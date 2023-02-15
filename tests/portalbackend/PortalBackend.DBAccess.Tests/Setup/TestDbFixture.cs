@@ -46,6 +46,7 @@ public class TestDbFixture : IAsyncLifetime
                 Database = "test_db",
                 Username = "postgres",
                 Password = "postgres",
+                Environments = { {"Include Error Detail", "true"} }
             })
             .WithImage("postgres")
             .WithCleanUp(true)
