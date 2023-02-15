@@ -88,6 +88,9 @@
 	 <None Update="EmailTemplates\app_request_decline.html">
 	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	 </None>
+	 <None Update="EmailTemplates\new_user_account_ownidp.html">
+	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	 </None>
   </ItemGroup>
 
 <ItemGroup>
