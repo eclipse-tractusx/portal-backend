@@ -360,4 +360,21 @@ public class AppReleaseProcessControllerTest
         A.CallTo(() => _logic.DeclineAppRequestAsync(appId, IamUserId, data)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
+
+    [Fact]
+    public async Task GetinReviewAppDetailsByIdAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var data = new InReviewAppDetails(appId,"Catena-X",default,null!,null!,null!,null!,null!,null!,null!,null!,null!,null!,null!,null!);
+        A.CallTo(() => _logic.GetinReviewAppDetailsByIdAsync(appId))
+            .ReturnsLazily(() => data);
+        
+        //Act
+        var result = await this._controller.GetinReviewAppDetailsByIdAsync(appId);
+
+        //Assert
+        result.Should().NotBeNull();
+        result.Title.Should().Be("Catena-X");
+    }
 }
