@@ -239,7 +239,7 @@ public class OfferService : IOfferService
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var userRoles = await userRolesRepository.GetUserRolesForOfferIdAsync(offerDetails.OfferId).ConfigureAwait(false);
         var redirectUrl = data.OfferUrl.EndsWith("/") ? $"{data.OfferUrl}*" : $"{data.OfferUrl}/*";
-        var clientId = await _provisioningManager.SetupClientAsync(redirectUrl, userRoles).ConfigureAwait(false);
+        var clientId = await _provisioningManager.SetupClientAsync(redirectUrl, data.OfferUrl, userRoles).ConfigureAwait(false);
         var iamClient = _portalRepositories.GetInstance<IClientRepository>().CreateClient(clientId);
         
         var appInstance = _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstance(offerDetails.OfferId, iamClient.Id);
