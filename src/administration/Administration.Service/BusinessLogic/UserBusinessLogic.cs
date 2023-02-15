@@ -188,12 +188,13 @@ public class UserBusinessLogic : IUserBusinessLogic
             { "url", _settings.Portal.BasePortalAddress },
         };
 
-        var mailTemplates = new List<string>() { "NewUserTemplate" };
+        var mailTemplates = companyNameIdpAliasData.IsSharedIdp
+            ? new [] { "NewUserTemplate", "NewUserPasswordTemplate" }
+            : new [] { "NewUserOwnIdpTemplate" };
 
         if (companyNameIdpAliasData.IsSharedIdp)
         {
             mailParameters["password"] = result.Password;
-            mailTemplates.Add("NewUserPasswordTemplate");
         }
 
         try
