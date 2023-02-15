@@ -133,7 +133,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var offers = await sut.GetAllActiveAppsAsync(null).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        offers.Should().HaveCount(19);
+        offers.Should().HaveCount(20);
     }
 
     #endregion
@@ -409,8 +409,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         offerDetail.Should().NotBeNull();
-        offerDetail!.Count.Should().Be(6);
-        offerDetail.Data.Should().HaveCount(6);
+        offerDetail!.Count.Should().Be(7);
+        offerDetail.Data.Should().HaveCount(7);
         if (sorting == ServiceOverviewSorting.ProviderAsc)
         {
             offerDetail.Data.Select(data => data.Provider).Should().BeInAscendingOrder();
@@ -424,9 +424,9 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Theory]
     [InlineData(ServiceTypeId.CONSULTANCE_SERVICE, 0, 2, 3, 2)]
     [InlineData(ServiceTypeId.DATASPACE_SERVICE, 0, 2, 3, 2)]
-    [InlineData(null, 0, 2, 6, 2)]
-    [InlineData(null, 1, 1, 6, 1)]
-    [InlineData(null, 2, 1, 6, 1)]
+    [InlineData(null, 0, 2, 7, 2)]
+    [InlineData(null, 1, 1, 7, 1)]
+    [InlineData(null, 2, 1, 7, 1)]
     public async Task GetActiveServices_WithExistingServiceAndServiceType_ReturnsExpectedResult(ServiceTypeId? serviceTypeId, int page, int size, int count, int numData)
     {
         // Arrange
@@ -526,6 +526,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             "a16e73b9-5277-4b69-9f8d-3b227495dfeb",
             "ac1cf001-7fbc-1f2f-817f-bce0572c0007",
             "f9cad59d-84b3-4880-a550-4072c26a6b93",
+            "99c5fd12-8085-4de2-abfd-215e1ee4baa4",
+            "99c5fd12-8085-4de2-abfd-215e1ee4baa6",
         },
         new [] {
             "d6eb6ec2-24a6-40c5-becb-2142c62fb117",
@@ -538,6 +540,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             "d0d45a39-521f-4fa8-b8f4-146e20ce7575",
             "384fa860-c48a-4c1f-bbe5-8f47877ad37e",
             "a221b9d8-e79a-43c4-9a25-edec28071c3c",
+            "00000000-0000-0000-0000-000000000000",
+            "00000000-0000-0000-0000-000000000000",
         })]
     [InlineData(
         OfferTypeId.SERVICE,
@@ -548,6 +552,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             "ac1cf001-7fbc-1f2f-817f-bce0000c0003",
             "ac1cf001-7fbc-1f2f-817f-bce0000c0004",
             "ac1cf001-7fbc-1f2f-817f-bce0000c0005",
+            "99c5fd12-8085-4de2-abfd-215e1ee4baa5",
         },
         new [] {
             "00000000-0000-0000-0000-000000000000",
@@ -555,6 +560,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             "00000000-0000-0000-0000-000000000000",
             "00000000-0000-0000-0000-000000000000",
             "c6bc1f44-ad94-4478-b2b0-e741a77e83a9",
+            "00000000-0000-0000-0000-000000000000",
         })]
     [InlineData(
         OfferTypeId.CORE_COMPONENT,
@@ -653,6 +659,28 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
+    }
+
+    #endregion
+
+    #region GetInReviewAppData
+    
+    [Fact]
+    public async Task GetInReviewAppDataByIdAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var InReviewAppofferDetail = await sut.GetinReviewAppDataByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA6"), OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        InReviewAppofferDetail.Should().NotBeNull();
+        InReviewAppofferDetail!.title.Should().Be("Latest Service");
+        InReviewAppofferDetail!.Documents.Should().NotBeNull();
+        var documenttypeId = InReviewAppofferDetail!.Documents.Select(x => x.documentTypeId);
+        documenttypeId.Should().NotContain(DocumentTypeId.APP_LEADIMAGE);
+        documenttypeId.Should().NotContain(DocumentTypeId.APP_IMAGE);
     }
 
     #endregion

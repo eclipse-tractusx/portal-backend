@@ -362,4 +362,22 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.DeclineAppRequestAsync(appId, userId, data)).ConfigureAwait(false);
         return NoContent();
     }
+
+    /// <summary>
+    /// Gets InReview app details for an app referenced by id.
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the app to retrieve.</param>
+    /// <returns>InReviewAppDetails ViewNodel for requested application.</returns>
+    /// <remarks>Example: GET: /api/apps/appreleaseprocess/inReview/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
+    /// <response code="200">Returns the requested app details.</response>
+    /// <response code="400">If sub claim is empty/invalid.</response>
+    /// <response code="404">App not found.</response>
+    [HttpGet]
+    [Route("inReview/{appId}")]
+    [Authorize(Roles = "approve_app_release,decline_app_release")]
+    [ProducesResponseType(typeof(AppDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<InReviewAppDetails> GetinReviewAppDetailsByIdAsync([FromRoute] Guid appId) =>
+        await _appReleaseBusinessLogic.GetinReviewAppDetailsByIdAsync(appId);
 }
