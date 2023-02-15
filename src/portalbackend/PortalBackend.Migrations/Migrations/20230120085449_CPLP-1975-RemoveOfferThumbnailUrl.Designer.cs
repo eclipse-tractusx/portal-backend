@@ -22,6 +22,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -31,9 +32,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230120085449_CPLP-1975-RemoveOfferThumbnailUrl")]
+    partial class CPLP1975RemoveOfferThumbnailUrl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -508,10 +510,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_last_changed");
 
-                    b.Property<Guid?>("DocumentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("document_id");
-
                     b.Property<Guid>("IssuerCompanyId")
                         .HasColumnType("uuid")
                         .HasColumnName("issuer_company_id");
@@ -531,9 +529,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.HasIndex("AgreementCategoryId")
                         .HasDatabaseName("ix_agreements_agreement_category_id");
-
-                    b.HasIndex("DocumentId")
-                        .HasDatabaseName("ix_agreements_document_id");
 
                     b.HasIndex("IssuerCompanyId")
                         .HasDatabaseName("ix_agreements_issuer_company_id");
@@ -561,6 +556,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasDatabaseName("ix_agreement_assigned_company_roles_company_role_id");
 
                     b.ToTable("agreement_assigned_company_roles", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementAssignedDocument", b =>
+                {
+                    b.Property<Guid>("AgreementId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("agreement_id");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("document_id");
+
+                    b.HasKey("AgreementId", "DocumentId")
+                        .HasName("pk_agreement_assigned_documents");
+
+                    b.HasIndex("DocumentId")
+                        .HasDatabaseName("ix_agreement_assigned_documents_document_id");
+
+                    b.ToTable("agreement_assigned_documents", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementAssignedOffer", b =>
@@ -707,26 +721,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("app_languages", "portal");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationAssignedProcessStep", b =>
-                {
-                    b.Property<Guid>("CompanyApplicationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("company_application_id");
-
-                    b.Property<Guid>("ProcessStepId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("process_step_id");
-
-                    b.HasKey("CompanyApplicationId", "ProcessStepId")
-                        .HasName("pk_application_assigned_process_steps");
-
-                    b.HasIndex("ProcessStepId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_application_assigned_process_steps_process_step_id");
-
-                    b.ToTable("application_assigned_process_steps", "portal");
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntry", b =>
                 {
                     b.Property<Guid>("ApplicationId")
@@ -847,11 +841,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 5,
                             Label = "SELF_DESCRIPTION_LP"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Label = "APPLICATION_ACTIVATION"
                         });
                 });
 
@@ -929,126 +918,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 3,
                             Label = "DELETE"
-                        });
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.BpdmIdentifier", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_bpdm_identifiers");
-
-                    b.ToTable("bpdm_identifiers", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "EU_VAT_ID_DE"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "CH_UID"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Label = "EU_VAT_ID_FR"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Label = "FR_SIREN"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Label = "EU_VAT_ID_AT"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Label = "DE_BNUM"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Label = "CZ_ICO"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Label = "EU_VAT_ID_CZ"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Label = "EU_VAT_ID_PL"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Label = "EU_VAT_ID_BE"
-                        },
-                        new
-                        {
-                            Id = 11,
-                            Label = "EU_VAT_ID_CH"
-                        },
-                        new
-                        {
-                            Id = 12,
-                            Label = "EU_VAT_ID_DK"
-                        },
-                        new
-                        {
-                            Id = 13,
-                            Label = "EU_VAT_ID_ES"
-                        },
-                        new
-                        {
-                            Id = 14,
-                            Label = "EU_VAT_ID_GB"
-                        },
-                        new
-                        {
-                            Id = 15,
-                            Label = "EU_VAT_ID_NO"
-                        },
-                        new
-                        {
-                            Id = 16,
-                            Label = "BE_ENT_NO"
-                        },
-                        new
-                        {
-                            Id = 17,
-                            Label = "CVR_DK"
-                        },
-                        new
-                        {
-                            Id = 18,
-                            Label = "ID_CRN"
-                        },
-                        new
-                        {
-                            Id = 19,
-                            Label = "NO_ORGID"
-                        },
-                        new
-                        {
-                            Id = 20,
-                            Label = "LEI_ID"
                         });
                 });
 
@@ -1781,10 +1650,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("self_description_document_id");
 
-                    b.Property<string>("SelfDescriptionMessage")
-                        .HasColumnType("text")
-                        .HasColumnName("self_description_message");
-
                     b.Property<int>("StatusId")
                         .HasColumnType("integer")
                         .HasColumnName("status_id");
@@ -2051,15 +1916,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("integer")
                         .HasColumnName("unique_identifier_id");
 
-                    b.Property<int?>("BpdmIdentifierId")
-                        .HasColumnType("integer")
-                        .HasColumnName("bpdm_identifier_id");
-
                     b.HasKey("CountryAlpha2Code", "UniqueIdentifierId")
                         .HasName("pk_country_assigned_identifiers");
-
-                    b.HasIndex("BpdmIdentifierId")
-                        .HasDatabaseName("ix_country_assigned_identifiers_bpdm_identifier_id");
 
                     b.HasIndex("UniqueIdentifierId")
                         .HasDatabaseName("ix_country_assigned_identifiers_unique_identifier_id");
@@ -2844,25 +2702,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("offer_assigned_licenses", "portal");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferAssignedPrivacyPolicy", b =>
-                {
-                    b.Property<Guid>("OfferId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("offer_id");
-
-                    b.Property<int>("PrivacyPolicyId")
-                        .HasColumnType("integer")
-                        .HasColumnName("privacy_policy_id");
-
-                    b.HasKey("OfferId", "PrivacyPolicyId")
-                        .HasName("pk_offer_assigned_privacy_policies");
-
-                    b.HasIndex("PrivacyPolicyId")
-                        .HasDatabaseName("ix_offer_assigned_privacy_policies_privacy_policy_id");
-
-                    b.ToTable("offer_assigned_privacy_policies", "portal");
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferDescription", b =>
                 {
                     b.Property<Guid>("OfferId")
@@ -2893,6 +2732,32 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasDatabaseName("ix_offer_descriptions_language_short_name");
 
                     b.ToTable("offer_descriptions", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferDetailImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("image_url");
+
+                    b.Property<Guid>("OfferId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offer_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_offer_detail_images");
+
+                    b.HasIndex("OfferId")
+                        .HasDatabaseName("ix_offer_detail_images_offer_id");
+
+                    b.ToTable("offer_detail_images", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferLicense", b =>
@@ -3100,241 +2965,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 3,
                             Label = "SERVICE"
-                        });
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.PrivacyPolicy", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_privacy_policies");
-
-                    b.ToTable("privacy_policies", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "COMPANY_DATA"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "USER_DATA"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Label = "LOCATION"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Label = "BROWSER_HISTORY"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Label = "NONE"
-                        });
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProcessStep", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("DateCreated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_created");
-
-                    b.Property<DateTimeOffset?>("DateLastChanged")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_last_changed");
-
-                    b.Property<int>("ProcessStepStatusId")
-                        .HasColumnType("integer")
-                        .HasColumnName("process_step_status_id");
-
-                    b.Property<int>("ProcessStepTypeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("process_step_type_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_process_steps");
-
-                    b.HasIndex("ProcessStepStatusId")
-                        .HasDatabaseName("ix_process_steps_process_step_status_id");
-
-                    b.HasIndex("ProcessStepTypeId")
-                        .HasDatabaseName("ix_process_steps_process_step_type_id");
-
-                    b.ToTable("process_steps", "portal");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProcessStepStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_process_step_statuses");
-
-                    b.ToTable("process_step_statuses", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "TODO"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "DONE"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Label = "SKIPPED"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Label = "FAILED"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Label = "DUPLICATE"
-                        });
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProcessStepType", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_process_step_types");
-
-                    b.ToTable("process_step_types", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "VERIFY_REGISTRATION"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "CREATE_BUSINESS_PARTNER_NUMBER_PUSH"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Label = "CREATE_BUSINESS_PARTNER_NUMBER_PULL"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Label = "CREATE_BUSINESS_PARTNER_NUMBER_MANUAL"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Label = "CREATE_IDENTITY_WALLET"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Label = "RETRIGGER_IDENTITY_WALLET"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Label = "START_CLEARING_HOUSE"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Label = "RETRIGGER_CLEARING_HOUSE"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Label = "END_CLEARING_HOUSE"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Label = "START_SELF_DESCRIPTION_LP"
-                        },
-                        new
-                        {
-                            Id = 11,
-                            Label = "RETRIGGER_SELF_DESCRIPTION_LP"
-                        },
-                        new
-                        {
-                            Id = 12,
-                            Label = "ACTIVATE_APPLICATION"
-                        },
-                        new
-                        {
-                            Id = 13,
-                            Label = "RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH"
-                        },
-                        new
-                        {
-                            Id = 14,
-                            Label = "RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL"
-                        },
-                        new
-                        {
-                            Id = 15,
-                            Label = "OVERRIDE_BUSINESS_PARTNER_NUMBER"
-                        },
-                        new
-                        {
-                            Id = 16,
-                            Label = "TRIGGER_OVERRIDE_CLEARING_HOUSE"
-                        },
-                        new
-                        {
-                            Id = 17,
-                            Label = "START_OVERRIDE_CLEARING_HOUSE"
-                        },
-                        new
-                        {
-                            Id = 18,
-                            Label = "FINISH_SELF_DESCRIPTION_LP"
                         });
                 });
 
@@ -3631,11 +3261,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_agreements_agreement_categories_agreement_category_id");
 
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "Document")
-                        .WithMany("Agreements")
-                        .HasForeignKey("DocumentId")
-                        .HasConstraintName("fk_agreements_documents_document_id");
-
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "IssuerCompany")
                         .WithMany("Agreements")
                         .HasForeignKey("IssuerCompanyId")
@@ -3648,8 +3273,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasConstraintName("fk_agreements_use_cases_use_case_id");
 
                     b.Navigation("AgreementCategory");
-
-                    b.Navigation("Document");
 
                     b.Navigation("IssuerCompany");
 
@@ -3673,6 +3296,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Agreement");
 
                     b.Navigation("CompanyRole");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementAssignedDocument", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Agreement", "Agreement")
+                        .WithMany()
+                        .HasForeignKey("AgreementId")
+                        .IsRequired()
+                        .HasConstraintName("fk_agreement_assigned_documents_agreements_agreement_id");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .IsRequired()
+                        .HasConstraintName("fk_agreement_assigned_documents_documents_document_id");
+
+                    b.Navigation("Agreement");
+
+                    b.Navigation("Document");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementAssignedOffer", b =>
@@ -3770,25 +3412,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("App");
 
                     b.Navigation("Language");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationAssignedProcessStep", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", "CompanyApplication")
-                        .WithMany("ApplicationAssignedProcessSteps")
-                        .HasForeignKey("CompanyApplicationId")
-                        .IsRequired()
-                        .HasConstraintName("fk_application_assigned_process_steps_company_applications_com");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProcessStep", "ProcessStep")
-                        .WithOne("ApplicationAssignedProcessStep")
-                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationAssignedProcessStep", "ProcessStepId")
-                        .IsRequired()
-                        .HasConstraintName("fk_application_assigned_process_steps_process_steps_process_st");
-
-                    b.Navigation("CompanyApplication");
-
-                    b.Navigation("ProcessStep");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntry", b =>
@@ -4272,11 +3895,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CountryAssignedIdentifier", b =>
                 {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.BpdmIdentifier", "BpdmIdentifier")
-                        .WithMany("CountryAssignedIdentifiers")
-                        .HasForeignKey("BpdmIdentifierId")
-                        .HasConstraintName("fk_country_assigned_identifiers_bpdm_identifiers_bpdm_identifi");
-
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Country", "Country")
                         .WithMany("CountryAssignedIdentifiers")
                         .HasForeignKey("CountryAlpha2Code")
@@ -4288,8 +3906,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("UniqueIdentifierId")
                         .IsRequired()
                         .HasConstraintName("fk_country_assigned_identifiers_unique_identifiers_unique_iden");
-
-                    b.Navigation("BpdmIdentifier");
 
                     b.Navigation("Country");
 
@@ -4514,25 +4130,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("OfferLicense");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferAssignedPrivacyPolicy", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer", "Offer")
-                        .WithMany("OfferAssignedPrivacyPolicies")
-                        .HasForeignKey("OfferId")
-                        .IsRequired()
-                        .HasConstraintName("fk_offer_assigned_privacy_policies_offers_offer_id");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.PrivacyPolicy", "PrivacyPolicy")
-                        .WithMany("OfferAssignedPrivacyPolicies")
-                        .HasForeignKey("PrivacyPolicyId")
-                        .IsRequired()
-                        .HasConstraintName("fk_offer_assigned_privacy_policies_privacy_policies_privacy_po");
-
-                    b.Navigation("Offer");
-
-                    b.Navigation("PrivacyPolicy");
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferDescription", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
@@ -4548,6 +4145,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasConstraintName("fk_offer_descriptions_offers_offer_id");
 
                     b.Navigation("Language");
+
+                    b.Navigation("Offer");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferDetailImage", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer", "Offer")
+                        .WithMany("OfferDetailImages")
+                        .HasForeignKey("OfferId")
+                        .IsRequired()
+                        .HasConstraintName("fk_offer_detail_images_offers_offer_id");
 
                     b.Navigation("Offer");
                 });
@@ -4596,27 +4204,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasConstraintName("fk_offer_tags_offers_offer_id");
 
                     b.Navigation("Offer");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProcessStep", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProcessStepStatus", "ProcessStepStatus")
-                        .WithMany("ProcessSteps")
-                        .HasForeignKey("ProcessStepStatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_process_steps_process_step_statuses_process_step_status_id");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProcessStepType", "ProcessStepType")
-                        .WithMany("ProcessSteps")
-                        .HasForeignKey("ProcessStepTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_process_steps_process_step_types_process_step_type_id");
-
-                    b.Navigation("ProcessStepStatus");
-
-                    b.Navigation("ProcessStepType");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProviderCompanyDetail", b =>
@@ -4758,11 +4345,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("ApplicationChecklistEntries");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.BpdmIdentifier", b =>
-                {
-                    b.Navigation("CountryAssignedIdentifiers");
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", b =>
                 {
                     b.Navigation("Agreements");
@@ -4792,8 +4374,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", b =>
                 {
-                    b.Navigation("ApplicationAssignedProcessSteps");
-
                     b.Navigation("ApplicationChecklistEntries");
 
                     b.Navigation("Invitations");
@@ -4898,8 +4478,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
-                    b.Navigation("Agreements");
-
                     b.Navigation("Companies");
 
                     b.Navigation("Connector");
@@ -4968,9 +4546,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("ConsentAssignedOffers");
 
-                    b.Navigation("OfferAssignedPrivacyPolicies");
-
                     b.Navigation("OfferDescriptions");
+
+                    b.Navigation("OfferDetailImages");
 
                     b.Navigation("OfferSubscriptions");
 
@@ -5003,26 +4581,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("AgreementAssignedOfferTypes");
 
                     b.Navigation("Offers");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.PrivacyPolicy", b =>
-                {
-                    b.Navigation("OfferAssignedPrivacyPolicies");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProcessStep", b =>
-                {
-                    b.Navigation("ApplicationAssignedProcessStep");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProcessStepStatus", b =>
-                {
-                    b.Navigation("ProcessSteps");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProcessStepType", b =>
-                {
-                    b.Navigation("ProcessSteps");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UniqueIdentifier", b =>
