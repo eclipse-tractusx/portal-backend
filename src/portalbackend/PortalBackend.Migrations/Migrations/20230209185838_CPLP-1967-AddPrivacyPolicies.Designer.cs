@@ -22,6 +22,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -31,9 +32,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230209185838_CPLP-1967-AddPrivacyPolicies")]
+    partial class CPLP1967AddPrivacyPolicies
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1781,10 +1783,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("self_description_document_id");
 
-                    b.Property<string>("SelfDescriptionMessage")
-                        .HasColumnType("text")
-                        .HasColumnName("self_description_message");
-
                     b.Property<int>("StatusId")
                         .HasColumnType("integer")
                         .HasColumnName("status_id");
@@ -3155,14 +3153,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateTimeOffset>("DateCreated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_created");
-
-                    b.Property<DateTimeOffset?>("DateLastChanged")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_last_changed");
-
                     b.Property<int>("ProcessStepStatusId")
                         .HasColumnType("integer")
                         .HasColumnName("process_step_status_id");
@@ -3294,7 +3284,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 10,
-                            Label = "START_SELF_DESCRIPTION_LP"
+                            Label = "CREATE_SELF_DESCRIPTION_LP"
                         },
                         new
                         {
@@ -3305,36 +3295,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 12,
                             Label = "ACTIVATE_APPLICATION"
-                        },
-                        new
-                        {
-                            Id = 13,
-                            Label = "RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH"
-                        },
-                        new
-                        {
-                            Id = 14,
-                            Label = "RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL"
-                        },
-                        new
-                        {
-                            Id = 15,
-                            Label = "OVERRIDE_BUSINESS_PARTNER_NUMBER"
-                        },
-                        new
-                        {
-                            Id = 16,
-                            Label = "TRIGGER_OVERRIDE_CLEARING_HOUSE"
-                        },
-                        new
-                        {
-                            Id = 17,
-                            Label = "START_OVERRIDE_CLEARING_HOUSE"
-                        },
-                        new
-                        {
-                            Id = 18,
-                            Label = "FINISH_SELF_DESCRIPTION_LP"
                         });
                 });
 
