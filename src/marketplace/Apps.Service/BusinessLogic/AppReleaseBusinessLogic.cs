@@ -440,4 +440,31 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc />
     public Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data) => 
         _offerService.DeclineOfferAsync(appId, iamUserId, data, OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.AppOverviewAddress);
+
+    /// <inheritdoc />
+    public async Task<InReviewAppDetails> GetinReviewAppDetailsByIdAsync(Guid appId)
+    {
+        var result = await _portalRepositories.GetInstance<IOfferRepository>()
+            .GetinReviewAppDataByIdAsync(appId, OfferTypeId.APP).ConfigureAwait(false);
+        
+        if(result == default)
+            throw new NotFoundException($"App {appId} not found or Incorrect Status");
+        
+        return new InReviewAppDetails(
+            result.id,
+            result.title ?? Constants.ErrorString,
+            result.leadPictureId,
+            result.images,
+            result.Provider,
+            result.UseCases,
+            result.Description,
+            result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))),
+            result.Roles,
+            result.Languages,
+            result.ProviderUri ?? Constants.ErrorString,
+            result.ContactEmail,
+            result.ContactNumber,
+            result.Price ?? Constants.ErrorString,
+            result.Tags);
+    }
 }

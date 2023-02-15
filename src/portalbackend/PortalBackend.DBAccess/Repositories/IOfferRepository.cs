@@ -336,4 +336,11 @@ public interface IOfferRepository
     /// <param name="modifyPrivacyPolicy"></param>
     /// <returns></returns>
     void CreateDeleteAppAssignedPrivacyPolicies(Guid appId, IEnumerable<PrivacyPolicyId> initialPrivacyPolicy, IEnumerable<PrivacyPolicyId> modifyPrivacyPolicy);
+
+    /// <summary>
+    /// Gets InReview Offer Data for App by ID
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name ="iamUserId"></param>
+    Task<InReviewOfferData?> GetinReviewAppDataByIdAsync(Guid Id, OfferTypeId offerTypeId);
 }
