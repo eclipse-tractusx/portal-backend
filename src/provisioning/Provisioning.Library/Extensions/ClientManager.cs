@@ -91,11 +91,15 @@ public partial class ProvisioningManager
         await keycloak.CreateClientAsync(realm,newClient).ConfigureAwait(false);
     }
 
-    private async Task<string> CreateCentralOIDCClientAsync(string clientId, string redirectUri)
+    private async Task<string> CreateCentralOIDCClientAsync(string clientId, string redirectUri, string? baseUrl)
     {
         var newClient = Clone(_Settings.CentralOIDCClient);
         newClient.ClientId = clientId;
         newClient.RedirectUris = Enumerable.Repeat<string>(redirectUri, 1);
+        if (!string.IsNullOrEmpty(baseUrl))
+        {
+            newClient.BaseUrl = baseUrl;
+        }
         var newClientId = await _CentralIdp.CreateClientAndRetrieveClientIdAsync(_Settings.CentralRealm, newClient).ConfigureAwait(false);
         if (newClientId == null)
         {
