@@ -68,6 +68,7 @@ public class RegistrationBusinessLogicTest
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly IMailingService _mailingService;
+    private IDocumentRepository _documentRepository;
 
     public RegistrationBusinessLogicTest()
     {
@@ -79,6 +80,7 @@ public class RegistrationBusinessLogicTest
         _portalRepositories = A.Fake<IPortalRepositories>();
         _applicationRepository = A.Fake<IApplicationRepository>();
         _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
+        _documentRepository = A.Fake<IDocumentRepository>();
         _processStepRepository = A.Fake<IProcessStepRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
@@ -93,6 +95,7 @@ public class RegistrationBusinessLogicTest
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_applicationChecklistRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
@@ -675,6 +678,43 @@ public class RegistrationBusinessLogicTest
         ex.Message.Should().Be($"The processStep {stepId} is not retriggerable");
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    #endregion
+
+    #region GetDocumentAsync
+    
+    [Fact]
+    public async Task GetDocumentAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
+            .ReturnsLazily(() => new Document(documentId, content, content, "test.pdf", DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT));
+        
+        // Act
+        var result = await _logic.GetDocumentAsync(documentId).ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeNull();
+        result.fileName.Should().Be("test.pdf");
+    }
+    
+    [Fact]
+    public async Task GetDocumentAsync_WithNotExistingDocument_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
+            .ReturnsLazily(() => (Document?)null);
+        
+        // Act
+        async Task Act() => await _logic.GetDocumentAsync(documentId).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Document {documentId} does not exist");
     }
 
     #endregion

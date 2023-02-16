@@ -320,6 +320,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new UnexpectedConditionException($"document content should never be null");
         }
-        return (document.Content, document.FileName.MapToImageContentType(), document.FileName);
+        return (document.Content, document.FileName.MapToContentType(), document.FileName);
     }
 }
