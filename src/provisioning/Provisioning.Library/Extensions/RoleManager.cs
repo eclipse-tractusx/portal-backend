@@ -72,12 +72,13 @@ public partial class ProvisioningManager
             if (clientId == null || !roles.Any())
             {
                 yield return (Client: client, Roles: Enumerable.Empty<string>());
+                continue;
             }
             
             IEnumerable<string> assigned;
             try
             {
-                await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId!, roles).ConfigureAwait(false);
+                await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
                 assigned = roles.Select(role => role.Name);
             }
             catch (Exception)

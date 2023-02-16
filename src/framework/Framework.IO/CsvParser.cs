@@ -107,15 +107,15 @@ public static class CsvParser
         {
             await foreach (var (processed,error) in processLines(ParseCsvLinesAsync(reader, parseLineAsync, error => { numLines++; errors.Add((numLines, error)); })))
             {
+                numLines++;
                 if (error != null)
                 {
-                    errors.Add((numLines+1, error));
+                    errors.Add((numLines, error));
                 }
                 if (processed)
                 {
                     numProcessed++;
                 }
-                numLines++;
             }
         }
         catch(Exception e)
