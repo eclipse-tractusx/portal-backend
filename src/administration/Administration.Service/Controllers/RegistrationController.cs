@@ -332,4 +332,21 @@ public class RegistrationController : ControllerBase
         await _logic.ProcessClearinghouseSelfDescription(data, cancellationToken).ConfigureAwait(false);
         return NoContent();
     }
+    
+    /// <summary>
+    /// Retrieves a specific document for the given id.
+    /// </summary>
+    /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3">Id of the document to get.</param>
+    /// <returns>Returns the file.</returns>
+    /// <remarks>Example: GET: /api/administration/registration/documents/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
+    /// <response code="200">Returns the file.</response>
+    [HttpGet]
+    [Route("documents/{documentId}")]
+    [Authorize(Roles = "approve_new_partner")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
+    {
+        var (fileName, content, contentType) = await _logic.GetDocumentAsync(documentId).ConfigureAwait(false);
+        return File(content, contentType, fileName);
+    }
 }

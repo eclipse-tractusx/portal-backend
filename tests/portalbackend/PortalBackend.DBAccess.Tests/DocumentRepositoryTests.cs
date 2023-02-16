@@ -129,6 +129,97 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetDocumentDataAndIsCompanyUserAsync_ReturnsExpectedDocuments
+
+    [Fact]
+    public async Task GetDocumentDataAndIsCompanyUserAsync_WithValidData_ReturnsExpectedDocument()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(new Guid("00000000-0000-0000-0000-000000000001"), "502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
+    
+        // Assert
+        result.Should().NotBe(default);
+        result.FileName.Should().Be("Default_App_Image");
+        result.IsUserInCompany.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetDocumentDataAndIsCompanyUserAsync_WithWrongUserData_ReturnsIsUserInCompanyFalse()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(new Guid("00000000-0000-0000-0000-000000000001"), "4a23930a-30b6-461c-9ad4-58d3e761a0b5").ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.FileName.Should().Be("Default_App_Image");
+        result.IsUserInCompany.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetDocumentDataAndIsCompanyUserAsync_WithNotExistingDocument_ReturnsDefault()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(Guid.NewGuid(), "502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(default);
+    }
+
+    #endregion
+
+    #region GetDocumentDataAndIsCompanyUserAsync_ReturnsExpectedDocuments
+
+    [Fact]
+    public async Task GetDocumentDataByIdAndTypeAsync_WithValidData_ReturnsExpectedDocument()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetDocumentDataByIdAndTypeAsync(new Guid("00000000-0000-0000-0000-000000000001"), DocumentTypeId.APP_LEADIMAGE).ConfigureAwait(false);
+    
+        // Assert
+        result.Should().NotBe(default);
+        result.FileName.Should().Be("Default_App_Image");
+    }
+
+    [Fact]
+    public async Task GetDocumentDataByIdAndTypeAsync_WithWrongType_ReturnsDefault()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetDocumentDataByIdAndTypeAsync(new Guid("00000000-0000-0000-0000-000000000001"), DocumentTypeId.APP_IMAGE).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(default);
+    }
+
+    [Fact]
+    public async Task GetDocumentDataByIdAndTypeAsync_WithNotExistingDocument_ReturnsDefault()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetDocumentDataByIdAndTypeAsync(Guid.NewGuid(), DocumentTypeId.APP_LEADIMAGE).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(default);
+    }
+
+    #endregion
+
     #region AttachAndModifyDocument
 
     [Fact]
@@ -172,7 +263,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region Seed Data
+    #region GetDocumentSeedDataByIdAsync
 
     [Fact]
     public async Task GetDocumentSeedDataByIdAsync_ReturnsExpectedDocuments()

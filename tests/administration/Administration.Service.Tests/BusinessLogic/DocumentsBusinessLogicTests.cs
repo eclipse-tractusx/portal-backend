@@ -18,22 +18,26 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Flurl.Http;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
 public class DocumentsBusinessLogicTests
 {
     private static readonly Guid ValidDocumentId = Guid.NewGuid();
+    private static readonly string IamUserId = Guid.NewGuid().ToString();
     private readonly IFixture _fixture;
     private readonly IDocumentRepository _documentRepository;
     private IPortalRepositories _portalRepositories;
     private readonly IOptions<DocumentSettings> _options;
+    private readonly DocumentsBusinessLogic _sut;
 
     public DocumentsBusinessLogicTests()
     {
@@ -48,6 +52,9 @@ public class DocumentsBusinessLogicTests
         {
             EnableSeedEndpoint = true
         });
+
+        A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
+        _sut = new DocumentsBusinessLogic(_portalRepositories, _options);
     }
 
     #region GetSeedData
@@ -100,6 +107,91 @@ public class DocumentsBusinessLogicTests
 
     #endregion
     
+    #region GetDocumentAsync
+    
+    [Fact]
+    public async Task GetDocumentAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        SetupFakesForGetDocument();
+        
+        // Act
+        var result = await _sut.GetDocumentAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeNull();
+        result.fileName.Should().Be("test.pdf");
+    }
+    
+    [Fact]
+    public async Task GetDocumentAsync_WithNotExistingDocument_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        SetupFakesForGetDocument();
+        
+        // Act
+        async Task Act() => await _sut.GetDocumentAsync(documentId, IamUserId).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Document {documentId} does not exist");
+    }
+
+    [Fact]
+    public async Task GetDocumentAsync_WithWrongUser_ThrowsForbiddenException()
+    {
+        // Arrange
+        SetupFakesForGetDocument();
+        
+        // Act
+        async Task Act() => await _sut.GetDocumentAsync(ValidDocumentId, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be("User is not allowed to access the document");
+    }
+
+    #endregion
+    
+    #region GetDocumentAsync
+    
+    [Fact]
+    public async Task GetSelfDescriptionDocumentAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentDataByIdAndTypeAsync(ValidDocumentId, DocumentTypeId.SELF_DESCRIPTION))
+            .ReturnsLazily(() => new ValueTuple<byte[], string>(content, "test.json"));
+
+        
+        // Act
+        var result = await _sut.GetSelfDescriptionDocumentAsync(ValidDocumentId).ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeNull();
+        result.fileName.Should().Be("test.json");
+    }
+    
+    [Fact]
+    public async Task GetSelfDescriptionDocumentAsync_WithNotExistingDocument_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentDataByIdAndTypeAsync(documentId, DocumentTypeId.SELF_DESCRIPTION))
+            .ReturnsLazily(() => new ValueTuple<byte[], string>());
+        
+        // Act
+        async Task Act() => await _sut.GetSelfDescriptionDocumentAsync(documentId).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Self description document {documentId} does not exist");
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupFakesForGetSeedData()
@@ -108,8 +200,17 @@ public class DocumentsBusinessLogicTests
             .Returns(_fixture.Create<DocumentSeedData>());
         A.CallTo(() => _documentRepository.GetDocumentSeedDataByIdAsync(A<Guid>.That.Not.Matches(x => x == ValidDocumentId)))
             .Returns((DocumentSeedData?)null);
+    }
 
-        A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
+    private void SetupFakesForGetDocument()
+    {
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(ValidDocumentId, IamUserId))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, bool>(content, "test.pdf", true));
+        A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(A<Guid>.That.Not.Matches(x => x == ValidDocumentId), IamUserId))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, bool>());
+        A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(ValidDocumentId, A<string>.That.Not.Matches(x => x == IamUserId)))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, bool>(content, "test.pdf", false));
     }
 
     #endregion
