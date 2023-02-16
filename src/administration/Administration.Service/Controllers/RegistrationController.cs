@@ -25,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
@@ -180,7 +179,7 @@ public class RegistrationController : ControllerBase
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the clearing_house process is not in status IN_PROGRESS.</response>
     /// <response code="404">No application found for the bpn.</response>
     [HttpPost]
-    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Roles = "update_application_checklist_value")]
     [Route("clearinghouse")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -323,7 +322,7 @@ public class RegistrationController : ControllerBase
     /// <response code="200">the result as a boolean.</response>
     /// <response code="400">The CompanyApplication is not in status SUBMITTED.</response>
     [HttpPost]
-    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Roles = "update_application_checklist_value")]
     [Route("clearinghouse/selfDescription")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
