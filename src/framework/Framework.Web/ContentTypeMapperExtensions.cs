@@ -27,7 +27,7 @@ public static class ContentTypeMapperExtensions
 {
     private static Regex extensionPattern = new Regex(@"\.[a-zA-Z]{3,4}$", RegexOptions.None, TimeSpan.FromSeconds(1));
 
-    public static string MapToImageContentType(this string filename)
+    public static string MapToContentType(this string filename)
     {
         var match = extensionPattern.Match(filename);
         if (match.Success)
@@ -41,6 +41,8 @@ public static class ContentTypeMapperExtensions
                 ".svg"  => "image/svg+xml",
                 ".tif"  => "image/tiff",
                 ".tiff" => "image/tiff",
+                ".pdf" => "application/pdf",
+                ".json" => "application/json",
                 _ => throw new UnsupportedMediaTypeException($"extension {match.Value} doesn't belong to a supported image type")
             };
         }

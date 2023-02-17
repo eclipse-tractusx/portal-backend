@@ -25,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
@@ -180,7 +179,7 @@ public class RegistrationController : ControllerBase
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the clearing_house process is not in status IN_PROGRESS.</response>
     /// <response code="404">No application found for the bpn.</response>
     [HttpPost]
-    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Roles = "update_application_checklist_value")]
     [Route("clearinghouse")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -323,7 +322,7 @@ public class RegistrationController : ControllerBase
     /// <response code="200">the result as a boolean.</response>
     /// <response code="400">The CompanyApplication is not in status SUBMITTED.</response>
     [HttpPost]
-    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Roles = "update_application_checklist_value")]
     [Route("clearinghouse/selfDescription")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -332,5 +331,22 @@ public class RegistrationController : ControllerBase
     {
         await _logic.ProcessClearinghouseSelfDescription(data, cancellationToken).ConfigureAwait(false);
         return NoContent();
+    }
+    
+    /// <summary>
+    /// Retrieves a specific document for the given id.
+    /// </summary>
+    /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3">Id of the document to get.</param>
+    /// <returns>Returns the file.</returns>
+    /// <remarks>Example: GET: /api/administration/registration/documents/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
+    /// <response code="200">Returns the file.</response>
+    [HttpGet]
+    [Route("documents/{documentId}")]
+    [Authorize(Roles = "approve_new_partner")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
+    {
+        var (fileName, content, contentType) = await _logic.GetDocumentAsync(documentId).ConfigureAwait(false);
+        return File(content, contentType, fileName);
     }
 }

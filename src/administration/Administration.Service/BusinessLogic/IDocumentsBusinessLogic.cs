@@ -27,7 +27,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// </summary>
 public interface IDocumentsBusinessLogic
 {
-    Task<(string fileName, byte[] content)> GetDocumentAsync(Guid documentId, string iamUserId);
+    /// <summary>
+    /// Gets the document with the given id
+    /// </summary>
+    /// <param name="documentId">Id of the document to get</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the filename and content of the file</returns>
+    Task<(string fileName, byte[] content, string contentType)> GetDocumentAsync(Guid documentId, string iamUserId);
+
+    /// <summary>
+    /// Gets the selfdescription document with the given id
+    /// </summary>
+    /// <param name="documentId">Id of the document to get</param>
+    /// <returns>Returns the filename and content of the file</returns>
+    Task<(string fileName, byte[] content)> GetSelfDescriptionDocumentAsync(Guid documentId);
     
     /// <summary>
     /// Deletes the document and the corresponding consent from the persistence layer.

@@ -22,14 +22,15 @@ public class DocumentsControllerTests
     }
 
     [Fact]
-    public async Task CreateServiceProviderCompanyDetail_WithValidData_ReturnsOk()
+    public async Task GetDocumentContentFileAsync_WithValidData_ReturnsOk()
     {
         //Arrange
         const string fileName = "test.pdf";
+        const string contentType = "application/pdf";
         var id = Guid.NewGuid();
         var content = Encoding.UTF8.GetBytes("This is just test content");
         A.CallTo(() => _logic.GetDocumentAsync(id, IamUserId))
-            .ReturnsLazily(() => (fileName, content));
+            .ReturnsLazily(() => (fileName, content, contentType));
 
         //Act
         await this._controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
@@ -38,6 +39,23 @@ public class DocumentsControllerTests
         A.CallTo(() => _logic.GetDocumentAsync(id, IamUserId)).MustHaveHappenedOnceExactly();
     }
     
+    [Fact]
+    public async Task GetSelfDescriptionDocumentsAsync_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        const string fileName = "self_description.json";
+        var id = Guid.NewGuid();
+        var content = Encoding.UTF8.GetBytes("This is just test content");
+        A.CallTo(() => _logic.GetSelfDescriptionDocumentAsync(id))
+            .ReturnsLazily(() => (fileName, content));
+
+        //Act
+        await this._controller.GetSelfDescriptionDocumentsAsync(id).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetSelfDescriptionDocumentAsync(id)).MustHaveHappenedOnceExactly();
+    }
+
     [Fact]
     public async Task GetDocumentSeedData_WithValidId_ReturnsData()
     {
