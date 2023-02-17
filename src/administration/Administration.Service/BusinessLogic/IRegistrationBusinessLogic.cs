@@ -70,4 +70,11 @@ public interface IRegistrationBusinessLogic
     /// <param name="data">The response data</param>
     /// <param name="cancellationToken">CancellationToken</param>
     Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Gets the document with the given id
+    /// </summary>
+    /// <param name="documentId">Id of the document to get</param>
+    /// <returns>Returns the filename and content of the file</returns>
+    Task<(string fileName, byte[] content, string contentType)> GetDocumentAsync(Guid documentId);
 }

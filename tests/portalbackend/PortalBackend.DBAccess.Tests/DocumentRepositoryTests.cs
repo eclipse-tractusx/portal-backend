@@ -60,7 +60,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var content = Encoding.UTF8.GetBytes(test);
 
         // Act
-        var result = sut.CreateDocument("New Document", content, content, DocumentTypeId.APP_DATA_DETAILS, doc =>
+        var result = sut.CreateDocument("New Document", content, content, DocumentTypeId.APP_CONTRACT, doc =>
         {
             doc.DocumentStatusId = DocumentStatusId.INACTIVE;
         });
@@ -68,7 +68,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
-        result.DocumentTypeId.Should().Be(DocumentTypeId.APP_DATA_DETAILS);
+        result.DocumentTypeId.Should().Be(DocumentTypeId.APP_CONTRACT);
         result.DocumentStatusId.Should().Be(DocumentStatusId.INACTIVE);
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
@@ -129,6 +129,97 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetDocumentDataAndIsCompanyUserAsync_ReturnsExpectedDocuments
+
+    [Fact]
+    public async Task GetDocumentDataAndIsCompanyUserAsync_WithValidData_ReturnsExpectedDocument()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(new Guid("00000000-0000-0000-0000-000000000001"), "502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
+    
+        // Assert
+        result.Should().NotBe(default);
+        result.FileName.Should().Be("Default_App_Image");
+        result.IsUserInCompany.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetDocumentDataAndIsCompanyUserAsync_WithWrongUserData_ReturnsIsUserInCompanyFalse()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(new Guid("00000000-0000-0000-0000-000000000001"), "4a23930a-30b6-461c-9ad4-58d3e761a0b5").ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.FileName.Should().Be("Default_App_Image");
+        result.IsUserInCompany.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetDocumentDataAndIsCompanyUserAsync_WithNotExistingDocument_ReturnsDefault()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(Guid.NewGuid(), "502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(default);
+    }
+
+    #endregion
+
+    #region GetDocumentDataAndIsCompanyUserAsync_ReturnsExpectedDocuments
+
+    [Fact]
+    public async Task GetDocumentDataByIdAndTypeAsync_WithValidData_ReturnsExpectedDocument()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetDocumentDataByIdAndTypeAsync(new Guid("00000000-0000-0000-0000-000000000001"), DocumentTypeId.APP_LEADIMAGE).ConfigureAwait(false);
+    
+        // Assert
+        result.Should().NotBe(default);
+        result.FileName.Should().Be("Default_App_Image");
+    }
+
+    [Fact]
+    public async Task GetDocumentDataByIdAndTypeAsync_WithWrongType_ReturnsDefault()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetDocumentDataByIdAndTypeAsync(new Guid("00000000-0000-0000-0000-000000000001"), DocumentTypeId.APP_IMAGE).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(default);
+    }
+
+    [Fact]
+    public async Task GetDocumentDataByIdAndTypeAsync_WithNotExistingDocument_ReturnsDefault()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetDocumentDataByIdAndTypeAsync(Guid.NewGuid(), DocumentTypeId.APP_LEADIMAGE).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(default);
+    }
+
+    #endregion
+
     #region AttachAndModifyDocument
 
     [Fact]
@@ -172,7 +263,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region Seed Data
+    #region GetDocumentSeedDataByIdAsync
 
     [Fact]
     public async Task GetDocumentSeedDataByIdAsync_ReturnsExpectedDocuments()
@@ -209,7 +300,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     [Theory]
     [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "fda6c9cb-62be-4a98-99c1-d9c5a2df4aaa", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP, true, true, true, true)]
-    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "fda6c9cb-62be-4a98-99c1-d9c5a2df4aab", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_DATA_DETAILS }, OfferTypeId.SERVICE, true, true, true, false)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "246e3b20-899e-40d2-8d0d-cd9b4ced332c", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.CX_FRAME_CONTRACT }, OfferTypeId.SERVICE, true, true, true, false)]
     [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "fda6c9cb-62be-4a98-99c1-d9c5a2df4aac", new [] { DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP, true, true, false, true)]
     [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "d6eb6ec2-24a6-40c5-becb-2142c62fb117", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE }, OfferTypeId.APP, true, false, true, false)]
     [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4", "deadbeef-0000-0000-0000-000000000000", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE }, OfferTypeId.APP, false, false, false, false)]

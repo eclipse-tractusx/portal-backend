@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -253,5 +254,23 @@ public class RegistrationControllerTest
         // Assert
         A.CallTo(() => _logic.ProcessClearinghouseSelfDescription(data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task GetDocumentContentFileAsync_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        const string fileName = "test.pdf";
+        const string contentType = "application/pdf";
+        var id = Guid.NewGuid();
+        var content = Encoding.UTF8.GetBytes("This is just test content");
+        A.CallTo(() => _logic.GetDocumentAsync(id))
+            .ReturnsLazily(() => (fileName, content, contentType));
+
+        //Act
+        await this._controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetDocumentAsync(id)).MustHaveHappenedOnceExactly();
     }
 }

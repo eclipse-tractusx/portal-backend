@@ -20,28 +20,35 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Runtime.CompilerServices;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 {
     private readonly IUserProvisioningService _userProvisioningService;
+    private readonly IMailingService _mailingService;
     private readonly UserSettings _settings;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="userProvisioningService">User Provisioning Service</param>
+    /// <param name="mailingService">Mailing Service</param>
     /// <param name="settings">Settings</param>
     public UserUploadBusinessLogic(
         IUserProvisioningService userProvisioningService,
+        IMailingService mailingService,
         IOptions<UserSettings> settings)
     {
         _userProvisioningService = userProvisioningService;
+        _mailingService = mailingService;
         _settings = settings.Value;
     }
 
@@ -55,7 +62,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
 
         var validRoleData = new List<UserRoleData>();
 
@@ -75,16 +82,76 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     parsed.ProviderUserName,
                     parsed.ProviderUserId);
             },
-            lines =>
-                _userProvisioningService
+            lines => (companyNameIdpAliasData.IsSharedIdp
+                ? _userProvisioningService
                     .CreateOwnCompanyIdpUsersAsync(
                         companyNameIdpAliasData,
                         lines,
                         cancellationToken)
+                : CreateOwnCompanyIdpUsersWithEmailAsync(
+                        nameCreatedBy,
+                        companyNameIdpAliasData,
+                        lines,
+                        cancellationToken))
                     .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
             cancellationToken).ConfigureAwait(false);
 
         return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
+    }
+
+    async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersWithEmailAsync(string nameCreatedBy, CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (companyNameIdpAliasData.IsSharedIdp)
+        {
+            throw new UnexpectedConditionException($"unexpected call to {nameof(CreateOwnCompanyIdpUsersWithEmailAsync)} for shared-idp");
+        }
+
+        UserCreationRoleDataIdpInfo? userCreationInfo = null;
+
+        await foreach (var result in
+            _userProvisioningService
+                .CreateOwnCompanyIdpUsersAsync(
+                    companyNameIdpAliasData,
+                    userCreationInfos
+                        .Select(info =>
+                        {
+                            userCreationInfo = info;
+                            return info;
+                        }),
+                    cancellationToken)
+                .WithCancellation(cancellationToken)
+                .ConfigureAwait(false))
+        {
+            if (userCreationInfo == null)
+            {
+                throw new UnexpectedConditionException("userCreationInfo should never be null here");
+            }
+            if(result.Error != null || result.CompanyUserId == Guid.Empty || string.IsNullOrEmpty(userCreationInfo.Email))
+            {
+                yield return result;
+                continue;
+            }
+
+            var mailParameters = new Dictionary<string,string>()
+            {
+                { "nameCreatedBy", nameCreatedBy },
+                { "url", _settings.Portal.BasePortalAddress },
+            };
+
+            var mailTemplates = new [] { "NewUserOwnIdpTemplate" };
+
+            Exception? mailError;
+            try
+            {
+                await _mailingService.SendMails(userCreationInfo.Email, mailParameters, mailTemplates).ConfigureAwait(false);
+                mailError = null;
+            }
+            catch(Exception e)
+            {
+                mailError = e;
+            }
+            yield return (result.CompanyUserId, result.UserName, result.Password, mailError);
+        }
     }
 
     private static (string FirstName, string LastName, string Email, string ProviderUserName, string ProviderUserId, IEnumerable<string> Roles) ParseUploadOwnIdpUsersCSVLine(string line, bool isSharedIdp)

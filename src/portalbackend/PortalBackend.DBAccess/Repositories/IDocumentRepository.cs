@@ -66,6 +66,22 @@ public interface IDocumentRepository
     Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, string iamUserId);
 
     /// <summary>
+    /// Get the document data and checks if the user 
+    /// </summary>
+    /// <param name="documentId">id of the document</param>
+    /// <param name="iamUserId">id of the iamUser</param>
+    /// <returns>Returns the document data</returns>
+    Task<(byte[]? Content, string FileName, bool IsUserInCompany)> GetDocumentDataAndIsCompanyUserAsync(Guid documentId, string iamUserId);
+
+    /// <summary>
+    /// Gets the document data for the given id and type
+    /// </summary>
+    /// <param name="documentId">id of the document</param>
+    /// <param name="documentTypeId">type of the document</param>
+    /// <returns>Returns the document data</returns>
+    Task<(byte[] Content, string FileName)> GetDocumentDataByIdAndTypeAsync(Guid documentId, DocumentTypeId documentTypeId);
+    
+    /// <summary>
     ///Deleting document record and document file from the portal db/document storage location
     /// </summary>
     /// <param name="documentId">The documentId that should be removed</param>
