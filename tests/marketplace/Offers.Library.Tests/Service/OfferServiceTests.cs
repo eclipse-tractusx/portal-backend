@@ -707,6 +707,7 @@ public class OfferServiceTests
     [Fact]
     public void UpsertRemoveOfferDescription_ReturnsExpected()
     {
+        // Arrange
         var seedOfferId = _fixture.Create<Guid>();
         var seed = new Dictionary<(Guid,string),OfferDescription>() {
             {(seedOfferId, "de"), new OfferDescription(seedOfferId, "de", _fixture.Create<string>(), _fixture.Create<string>())},
@@ -721,55 +722,22 @@ public class OfferServiceTests
             new Localization("fr", _fixture.Create<string>(), _fixture.Create<string>()),
             new Localization("sk", _fixture.Create<string>(), _fixture.Create<string>()),
             new Localization("se", _fixture.Create<string>(), _fixture.Create<string>()),
+            new Localization("it", null!,null!)
         };
 
-        var existingDescriptions = seed.Select((x) => x.Value).Select(y => (y.LanguageShortName, y.DescriptionLong, y.DescriptionShort)).ToList();
+        var existingDescriptions = seed.Select((x) => x.Value).Select(y => new OfferDescriptionData(y.LanguageShortName, y.DescriptionLong, y.DescriptionShort)).ToList();
 
-        A.CallTo(() => _offerRepository.AddOfferDescriptions(A<IEnumerable<(Guid offerId, string languageShortName, string descriptionLong, string descriptionShort)>>._))
-            .Invokes((IEnumerable<(Guid offerId, string languageShortName, string descriptionLong, string descriptionShort)> offerDescriptions) =>
-                {
-                    foreach (var x in offerDescriptions)
-                    {
-                        seed[(x.offerId, x.languageShortName)] = new OfferDescription(x.offerId, x.languageShortName, x.descriptionLong, x.descriptionShort);
-                    }
-                });
-
-        A.CallTo(() => _offerRepository.RemoveOfferDescriptions(A<IEnumerable<(Guid offerId, string languageShortName)>>._))
-            .Invokes((IEnumerable<(Guid offerId, string languageShortName)> offerDescriptionIds) =>
-            {
-                foreach (var x in offerDescriptionIds)
-                {
-                    seed.Remove((x.offerId, x.languageShortName));
-                }
-            });
-
-        A.CallTo(() => _offerRepository.AttachAndModifyOfferDescription(A<Guid>._, A<string>._, A<Action<OfferDescription>>._)) 
-            .Invokes((Guid offerId, string languageShortName, Action<OfferDescription> setOptionalParameters) => 
-            {
-                if (!seed.TryGetValue((offerId, languageShortName), out var offerDescription))
-                {
-                    offerDescription = new OfferDescription(offerId, languageShortName, null!, null!);
-                    seed[(offerId, languageShortName)] = offerDescription;
-                }
-               
-                setOptionalParameters.Invoke(offerDescription);
-            });
+        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(seedOfferId, existingDescriptions, 
+            updateDescriptions.Select(x => new ValueTuple<string, string, string>(x.LanguageCode, x.LongDescription, x.ShortDescription))));
 
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
+        // Act
         sut.UpsertRemoveOfferDescription(seedOfferId, updateDescriptions, existingDescriptions);
 
-        A.CallTo(() => _offerRepository.AddOfferDescriptions(A<IEnumerable<(Guid offerId, string languageShortName, string descriptionLong, string descriptionShort)>>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.RemoveOfferDescriptions(A<IEnumerable<(Guid offerId, string languageShortName)>>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.AttachAndModifyOfferDescription(A<Guid>._, A<string>._, A<Action<OfferDescription>>._)) 
-            .MustHaveHappenedTwiceExactly();
-
-        seed.Should().HaveSameCount(updateDescriptions);
-        updateDescriptions.Should().AllSatisfy(x => seed.Should().ContainKey((seedOfferId, x.LanguageCode)));
-        updateDescriptions.Should().AllSatisfy(x => seed[(seedOfferId, x.LanguageCode)].DescriptionLong.Should().BeSameAs(x.LongDescription));
-        updateDescriptions.Should().AllSatisfy(x => seed[(seedOfferId, x.LanguageCode)].DescriptionShort.Should().BeSameAs(x.ShortDescription));
+        // Assert
+        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(A<Guid>._,A<IEnumerable<OfferDescriptionData>>._
+            ,A<IEnumerable<(string, string, string)>>._)).MustHaveHappened();
     }
 
     #endregion

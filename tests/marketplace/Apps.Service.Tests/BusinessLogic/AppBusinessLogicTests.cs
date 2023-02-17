@@ -23,7 +23,6 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -610,6 +609,173 @@ public class AppBusinessLogicTests
 
     #endregion
     
+    #region  AppDescription
+
+    [Fact]
+    public async Task GetAppUpdateDescritionByIdAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var offerDescription = _fixture.CreateMany<OfferDescriptionData>(3);
+        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: offerDescription);
+
+        A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
+            .ReturnsLazily(() => appDescriptionData);
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+
+        // Act
+        var result = await sut.GetAppUpdateDescritionByIdAsync(appId, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Select(x => x.languageCode).Should().Contain(offerDescription.Select(od => od.languageCode));
+    }
+
+    [Fact]    
+    public async Task GetAppUpdateDescritionByIdAsync_ThrowsNotFoundException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+
+        A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
+            .ReturnsLazily(() => ((bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<OfferDescriptionData> OfferDescriptionDatas))default);
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+
+        // Act
+        async Task Act() => await sut.GetAppUpdateDescritionByIdAsync(appId, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"App {appId} does not exist.");  
+    }
+
+    [Fact]    
+    public async Task GetAppUpdateDescritionByIdAsync_ThrowsConflictException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var offerDescription = _fixture.CreateMany<OfferDescriptionData>(3);
+        var appDescriptionData = (IsStatusActive: false, IsProviderCompanyUser: true, OfferDescriptionDatas: offerDescription);
+
+        A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
+            .ReturnsLazily(() => appDescriptionData);
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+
+        // Act
+        async Task Act() => await sut.GetAppUpdateDescritionByIdAsync(appId, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"App {appId} is in InCorrect Status");  
+    }
+
+    [Fact]    
+    public async Task GetAppUpdateDescritionByIdAsync_ThrowsForbiddenException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var offerDescription = _fixture.CreateMany<OfferDescriptionData>(3);
+        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: false, OfferDescriptionDatas: offerDescription);
+
+        A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
+            .ReturnsLazily(() => appDescriptionData);
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+
+        // Act
+        async Task Act() => await sut.GetAppUpdateDescritionByIdAsync(appId, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"user {IamUserId} is not a member of the providercompany of App {appId}");  
+    }
+
+    [Fact]
+    public async Task CreateOrUpdateAppDescriptionByIdAsync_withExistingDescriptionData_ExpectedCall()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var existingOfferDescriptions = new OfferDescriptionData[] {
+            new ("en", _fixture.Create<string>(), _fixture.Create<string>()),
+            new ("de", _fixture.Create<string>(), _fixture.Create<string>())
+        };
+        var updateDescriptionData =  new LocalizedDescription[] {
+            new ("en", _fixture.Create<string>(), _fixture.Create<string>()),
+            new ("de", _fixture.Create<string>(), _fixture.Create<string>())
+        };
+        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: existingOfferDescriptions);
+
+        A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
+            .ReturnsLazily(() => appDescriptionData);
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+
+        // Act
+        await sut.CreateOrUpdateAppDescriptionByIdAsync(appId, IamUserId, updateDescriptionData).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(appId, existingOfferDescriptions, A<IEnumerable<(string,string,string)>>.That.IsSameSequenceAs(updateDescriptionData.Select(x => new ValueTuple<string,string,string>(x.LanguageCode, x.LongDescription, x.ShortDescription)))))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task CreateOrUpdateAppDescriptionByIdAsync_withEmptyExistingDescriptionData_ExpectedCall()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+
+        var updateDescriptionData =  new LocalizedDescription[] {
+            new ("en", _fixture.Create<string>(), _fixture.Create<string>()),
+            new ("de", _fixture.Create<string>(), _fixture.Create<string>())
+            };
+        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: Array.Empty<OfferDescriptionData>());
+
+        A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
+            .ReturnsLazily(() => appDescriptionData);
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+
+        // Act
+        await sut.CreateOrUpdateAppDescriptionByIdAsync(appId, IamUserId, updateDescriptionData).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(appId, A<IEnumerable<OfferDescriptionData>>.That.IsEmpty(), A<IEnumerable<(string,string,string)>>.That.IsSameSequenceAs(updateDescriptionData.Select(x => new ValueTuple<string,string,string>(x.LanguageCode, x.LongDescription, x.ShortDescription)))))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task CreateOrUpdateAppDescriptionByIdAsync_withNullDescriptionData_ThowsUnexpectedConditionException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var updateDescriptionData =  new []{
+            new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
+            new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
+            };
+        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<OfferDescriptionData>)null!);
+
+        A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
+            .ReturnsLazily(() => appDescriptionData);
+
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+
+        // Act
+        var Act = () => sut.CreateOrUpdateAppDescriptionByIdAsync(appId, IamUserId, updateDescriptionData);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be("offerDescriptionDatas should never be null here");
+        
+        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(A<Guid>._, A<IEnumerable<OfferDescriptionData>>._, A<IEnumerable<(string,string,string)>>._)) 
+            .MustNotHaveHappened();
+
+    }
+    
+    #endregion
+
     private (CompanyUser, IamUser) CreateTestUserPair()
     {
         var companyUser = _fixture.Build<CompanyUser>()
