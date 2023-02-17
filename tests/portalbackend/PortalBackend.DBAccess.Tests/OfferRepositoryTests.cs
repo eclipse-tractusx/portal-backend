@@ -213,29 +213,6 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     
     #endregion
 
-    #region Delete Offer
-    
-    [Fact]
-    public async Task DeleteOffer_WithExistingOffer_RemovesOffer()
-    {
-        // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
-
-        // Act
-        sut.DeleteOffer(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"));
-
-        // Assert
-        var changeTracker = dbContext.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        var changedEntity = changedEntries.Single();
-        changedEntity.State.Should().Be(EntityState.Deleted);
-    }
-
-    #endregion
-    
     #region Create Offer
 
     [Fact]
@@ -681,6 +658,136 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var documenttypeId = InReviewAppofferDetail!.Documents.Select(x => x.documentTypeId);
         documenttypeId.Should().NotContain(DocumentTypeId.APP_LEADIMAGE);
         documenttypeId.Should().NotContain(DocumentTypeId.APP_IMAGE);
+    }
+
+    #endregion
+
+    #region OfferDescription
+
+    [Fact]
+    public async Task GetActiveOfferDescriptionDataByIdAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        //Act
+        var result = await sut.GetActiveOfferDescriptionDataByIdAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfeb"), OfferTypeId.APP, "502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.IsStatusActive.Should().BeTrue();
+        result.IsProviderCompanyUser.Should().BeTrue();
+        result.OfferDescriptionDatas.Should().NotBeNull();
+        result.OfferDescriptionDatas!.Select(od => od.languageCode).Should().Contain("en");
+    }
+
+    [Fact]
+    public async Task GetActiveOfferDescriptionDataByIdAsync_InvalidUser_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        //Act
+        var result = await sut.GetActiveOfferDescriptionDataByIdAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfeb"), OfferTypeId.APP, "invalid user").ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.IsStatusActive.Should().BeTrue();
+        result.IsProviderCompanyUser.Should().BeFalse();
+        result.OfferDescriptionDatas.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateUpdateDeleteOfferDescriptions_Changed_ReturnsExpectedResult()
+    {
+        // Arrange
+        var appId = new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
+        var existingOfferDescription = new [] { 
+            new OfferDescriptionData("en", "some long Description for testing","some short Description for testing"),
+            new OfferDescriptionData("de", "some long Description for testing","some short Description for testing")
+        };
+        var modifedOfferDescription = new [] { 
+            ("en", "some long Description in english, for testing","some short Description in english for testing"),
+            ("de", "some long Description in germen, for testing","some short Description in germen for testing")
+        };
+
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        //Act
+        sut.CreateUpdateDeleteOfferDescriptions(appId,existingOfferDescription,modifedOfferDescription);
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(2);
+        changedEntries.Should().AllSatisfy(entry => entry.State.Should().Be(EntityState.Modified));
+        changedEntries.Select(x => x.Entity).Should().AllBeOfType<OfferDescription>();
+        changedEntries.Select(x => x.Entity).Cast<OfferDescription>().Select(x => (x.LanguageShortName, x.DescriptionLong, x.DescriptionShort)).Should().Contain(modifedOfferDescription);
+    }
+
+    [Fact]
+    public async Task CreateUpdateDeleteOfferDescriptions_added_ReturnsExpectedResult()
+    {
+        // Arrange
+        var appId = new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
+        var newOfferDescriptionEntry = ("es", "newly added long Description for testing", "newly added short Description for testing");
+        var existingOfferDescription = new [] { 
+            new OfferDescriptionData("en", "some long Description for testing","some short Description for testing"),
+            new OfferDescriptionData("de", "some long Description for testing","some short Description for testing")
+        };
+        var modifedOfferDescription = new [] { 
+            ("en", "some long Description for testing","some short Description for testing"),
+            ("de", "some long Description for testing","some short Description for testing"),
+            newOfferDescriptionEntry
+        };
+
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        //Act
+        sut.CreateUpdateDeleteOfferDescriptions(appId,existingOfferDescription,modifedOfferDescription);
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Should().AllSatisfy(entry => entry.State.Should().Be(EntityState.Added));
+        changedEntries.Select(x => x.Entity).Should().AllBeOfType<OfferDescription>();
+        changedEntries.Select(x => x.Entity).Cast<OfferDescription>().Select(x => (x.LanguageShortName, x.DescriptionLong, x.DescriptionShort)).Should().Contain(new [] { newOfferDescriptionEntry });
+    }
+
+    [Fact]
+    public async Task CreateUpdateDeleteOfferDescriptions_Deleted_ReturnsExpectedResult()
+    {
+        // Arrange
+        var appId = new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
+        var existingOfferDescriptions = new [] { 
+            new OfferDescriptionData("en", "some long Description for testing","some short Description for testing"),
+            new OfferDescriptionData("de", "some long Description for testing","some short Description for testing")
+        };
+        var modifedOfferDescriptions = new [] { ("de", "modified long Description for testing","modified short Description for testing") };
+
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        //Act
+        sut.CreateUpdateDeleteOfferDescriptions(appId,existingOfferDescriptions,modifedOfferDescriptions);
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(2);
+        changedEntries.Select(x => x.Entity).Should().AllBeOfType<OfferDescription>();
+        var deletedEntities = changedEntries.Where(x => x.State == EntityState.Deleted).Select(x => (OfferDescription)x.Entity);
+        deletedEntities.Should().HaveCount(1);
+        deletedEntities.Select(x => x.LanguageShortName).Should().Contain(new [] { "en" });
+        var modifiedEntities = changedEntries.Where(x => x.State == EntityState.Modified).Select(x => (OfferDescription)x.Entity);
+        modifiedEntities.Should().HaveCount(1);
+        modifiedEntities.Select(x => (x.LanguageShortName, x.DescriptionLong, x.DescriptionShort)).Should().Contain(modifedOfferDescriptions);
     }
 
     #endregion

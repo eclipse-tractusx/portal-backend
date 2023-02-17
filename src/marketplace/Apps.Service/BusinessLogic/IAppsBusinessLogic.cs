@@ -161,4 +161,19 @@ public interface IAppsBusinessLogic
     /// <param name="cancellationToken"></param>
     /// <returns>byte Array Content</returns>
     Task<(byte[] Content, string ContentType, string FileName)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Get OfferDescription by appId
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    Task<IEnumerable<OfferDescriptionData>> GetAppUpdateDescritionByIdAsync(Guid appId, string iamUserId);
+
+    /// <summary>
+    /// Create or Update OfferDescription by appId
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="offerDescriptionDatas">OfferDescription Data</param>
+    Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas);
 }
