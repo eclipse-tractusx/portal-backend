@@ -342,4 +342,39 @@ public class AppsControllerTests
         //Assert
         A.CallTo(() => _logic.GetAppImageDocumentContentAsync(A<Guid>._ , A<Guid>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
+
+    [Fact]
+    public async Task GetAppUpdateDescriptionsAsync_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var offerDescriptionData = _fixture.CreateMany<OfferDescriptionData>(3);
+
+        A.CallTo(() => _logic.GetAppUpdateDescritionByIdAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(() => offerDescriptionData);
+        
+        //Act
+        var result = await this._controller.GetAppUpdateDescriptionsAsync(appId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAppUpdateDescritionByIdAsync(A<Guid>._, A<string>._)).MustHaveHappened();
+    }
+
+    [Fact]
+    public async Task CreateOrUpdateAppDescriptionsAsync_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
+
+        A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<string>._, A<IEnumerable<LocalizedDescription>>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+        
+        //Act
+        var result = await this._controller.CreateOrUpdateAppDescriptionsByIdAsync(appId,offerDescriptionData).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<string>._, A<IEnumerable<LocalizedDescription>>._)).MustHaveHappened();
+        result.Should().BeOfType<NoContentResult>(); 
+    }
 }
