@@ -685,6 +685,26 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetOfferReleaseDataById
+    
+    [Fact]
+    public async Task GetOfferReleaseDataByIdAsync_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferReleaseDataByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"),OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Name.Should().Be("Latest App");
+        result!.CompanyName.Should().Be("Catena-X");
+        result!.ProviderCompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+    }
+
+    #endregion
+
     #region Setup
     
     private async Task<OfferRepository> CreateSut()
