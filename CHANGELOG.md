@@ -2,6 +2,31 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.0.0-RC9
+
+### Change
+* Seeding: updated base data image
+* Autosetup functionality: autoset base url inside the new created keycloak client
+* Administration Service
+  * user management: user account creation email enabled for ownIdP and bulk user account creation
+* App Service
+  * app service enhanced by a new endpoint for the operator to get details of the app under review
+
+### Feature
+* Application Checklist Worker ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * Clearinghouse interface enhanced and further defined to enable full functionlity with VC approval and SD creation
+* Document endpoints reworked in the business logic regarding access permissions of users to documents; additionall two new endpoints release to view SD documents and operator endpoint for application linked documents ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+
+### Technical Support
+* Application Checklist Worker
+  * unify service call error handling across the application checklist processes
+
+### Bugfix
+* Application Checklist Worker
+  * bpdm data push converted from enum to unique identifier string value
+  * checklist-worker fix checklist-processor failure on creation of subsequent process-steps
+* Email content for app subscription activation fixed with user specific values and app name
+
 ## 1.0.0-RC8
 
 ### Change
