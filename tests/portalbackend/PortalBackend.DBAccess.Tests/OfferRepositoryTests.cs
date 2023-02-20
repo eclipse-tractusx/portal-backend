@@ -505,6 +505,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             "f9cad59d-84b3-4880-a550-4072c26a6b93",
             "99c5fd12-8085-4de2-abfd-215e1ee4baa4",
             "99c5fd12-8085-4de2-abfd-215e1ee4baa6",
+            "99c5fd12-8085-4de2-abfd-215e1ee4baa7",
         },
         new [] {
             "d6eb6ec2-24a6-40c5-becb-2142c62fb117",
@@ -517,6 +518,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             "d0d45a39-521f-4fa8-b8f4-146e20ce7575",
             "384fa860-c48a-4c1f-bbe5-8f47877ad37e",
             "a221b9d8-e79a-43c4-9a25-edec28071c3c",
+            "00000000-0000-0000-0000-000000000000",
             "00000000-0000-0000-0000-000000000000",
             "00000000-0000-0000-0000-000000000000",
         })]
