@@ -322,4 +322,48 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         }
         return (document.Content, document.FileName.MapToContentType(), document.FileName);
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<OfferDescriptionData>> GetAppUpdateDescritionByIdAsync(Guid appId, string iamUserId)
+    {        
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        return await ValidateAndGetAppDescription(appId, iamUserId, offerRepository);        
+    }
+
+    /// <inheritdoc />
+    public async Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas)
+    {
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+
+        offerRepository.CreateUpdateDeleteOfferDescriptions(appId,
+            await ValidateAndGetAppDescription(appId, iamUserId, offerRepository),
+            offerDescriptionDatas.Select(od => new ValueTuple<string,string, string>(od.LanguageCode,od.LongDescription,od.ShortDescription)));
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    private static async Task<IEnumerable<OfferDescriptionData>> ValidateAndGetAppDescription(Guid appId, string iamUserId, IOfferRepository offerRepository)
+    {
+        var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, iamUserId).ConfigureAwait(false);
+        if(result == default)
+        {
+            throw new NotFoundException($"App {appId} does not exist.");
+        }
+
+        if(!result.IsStatusActive)
+        {
+            throw new ConflictException($"App {appId} is in InCorrect Status");
+        }
+
+        if(!result.IsProviderCompanyUser)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of App {appId}");
+        }
+
+        if (result.OfferDescriptionDatas == null)
+        {
+            throw new UnexpectedConditionException("offerDescriptionDatas should never be null here");
+        }
+        return result.OfferDescriptionDatas;
+    }
 }

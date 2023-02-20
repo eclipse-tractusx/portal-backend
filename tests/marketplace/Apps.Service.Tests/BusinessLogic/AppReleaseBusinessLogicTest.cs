@@ -358,7 +358,7 @@ public class AppReleaseBusinessLogicTest
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerService.UpsertRemoveOfferDescription(_existingAppId, A<IEnumerable<Localization>>.That.IsSameSequenceAs(new Localization("de", "Long description", "desc")), A<IEnumerable<(string LanguageShorName, string DescriptionLong, string DescriptionShort)>>._))
+        A.CallTo(() => _offerService.UpsertRemoveOfferDescription(_existingAppId, A<IEnumerable<Localization>>.That.IsSameSequenceAs(new Localization("de", "Long description", "desc")), A<IEnumerable<OfferDescriptionData>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.AddAppLanguages(A<IEnumerable<(Guid appId, string languageShortName)>>._))
             .MustHaveHappenedOnceExactly();
@@ -686,11 +686,11 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _offerRepository.GetAppUpdateData(_notExistingAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._))
             .ReturnsLazily(() => (AppUpdateData?)null);
         A.CallTo(() => _offerRepository.GetAppUpdateData(_activeAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._))
-            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(), null, Array.Empty<PrivacyPolicyId>()));
+            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<OfferDescriptionData>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(), null, Array.Empty<PrivacyPolicyId>()));
         A.CallTo(() => _offerRepository.GetAppUpdateData(_differentCompanyAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._))
-            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, false, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(), null, Array.Empty<PrivacyPolicyId>()));
+            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, false, Array.Empty<OfferDescriptionData>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(), null, Array.Empty<PrivacyPolicyId>()));
         A.CallTo(() => _offerRepository.GetAppUpdateData(_existingAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._))
-            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, true, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false), null, Array.Empty<PrivacyPolicyId>()));
+            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, true, Array.Empty<OfferDescriptionData>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false), null, Array.Empty<PrivacyPolicyId>()));
         A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).Returns(_companyUser.CompanyId);
         
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);

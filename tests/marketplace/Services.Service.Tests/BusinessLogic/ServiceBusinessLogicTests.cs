@@ -511,7 +511,7 @@ public class ServiceBusinessLogicTests
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerService.UpsertRemoveOfferDescription(A<Guid>._, A<IEnumerable<Localization>>._, A<IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)>>._))
+        A.CallTo(() => _offerService.UpsertRemoveOfferDescription(A<Guid>._, A<IEnumerable<Localization>>._, A<IEnumerable<OfferDescriptionData>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerService.CreateOrUpdateOfferLicense(A<Guid>._, A<string>._, A<(Guid offerLicenseId, string price, bool assignedToMultipleOffers)>._))
             .MustHaveHappenedOnceExactly();
@@ -603,11 +603,11 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_notExistingServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUser.UserEntityId))
             .ReturnsLazily(() => (ServiceUpdateData?)null);
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_activeServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUser.UserEntityId))
-            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<(string, string, string)>(), null));
+            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<OfferDescriptionData>(), null));
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_differentCompanyServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUser.UserEntityId))
-            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<(string, string, string)>(), null));
+            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<OfferDescriptionData>(), null));
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_existingServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUser.UserEntityId))
-            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, true, Enumerable.Repeat(new ValueTuple<ServiceTypeId, bool>(ServiceTypeId.DATASPACE_SERVICE, false), 1), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false), Array.Empty<(string, string, string)>(), Guid.NewGuid()));
+            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, true, Enumerable.Repeat(new ValueTuple<ServiceTypeId, bool>(ServiceTypeId.DATASPACE_SERVICE, false), 1), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false), Array.Empty<OfferDescriptionData>(), Guid.NewGuid()));
         A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).Returns(_companyUser.CompanyId);
     }
 
