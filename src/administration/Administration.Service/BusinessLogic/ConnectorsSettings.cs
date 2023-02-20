@@ -38,6 +38,12 @@ public class ConnectorsSettings
     /// </summary>
     [Required]
     public IEnumerable<string> ValidCertificationContentTypes { get; set; } = null!;
+
+    /// <summary>
+    /// Url to display the self description document
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string SelfDescriptionDocumentUrl { get; set; } = null!;
 }
 
 public static class ConnectorsSettingsExtensions

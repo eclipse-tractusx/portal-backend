@@ -227,7 +227,7 @@ public class ConnectorsController : ControllerBase
     /// <response code="200">the result as a boolean.</response>
     /// <response code="400">The CompanyApplication is not in status SUBMITTED.</response>
     [HttpPost]
-    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Roles = "submit_connector_sd")]
     [Route("clearinghouse/selfDescription")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

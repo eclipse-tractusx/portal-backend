@@ -41,7 +41,6 @@ public class SdFactoryService : ISdFactoryService
     /// </summary>
     /// <param name="tokenService">Access to the token service</param>
     /// <param name="options">The options</param>
-    /// <param name="portalRepositories">Access to the portalRepositories</param>
     public SdFactoryService(
         ITokenService tokenService,
         IOptions<SdFactorySettings> options)
@@ -51,7 +50,7 @@ public class SdFactoryService : ISdFactoryService
     }
 
     /// <inheritdoc />
-    public async Task RegisterConnectorAsync(Guid connectorId, string connectorUrl, string businessPartnerNumber, CancellationToken cancellationToken)
+    public async Task RegisterConnectorAsync(Guid connectorId, string selfDescriptionDocumentUrl, string businessPartnerNumber, CancellationToken cancellationToken)
     {
         var httpClient = await _tokenService.GetAuthorizedClient<SdFactoryService>(_settings, cancellationToken)
             .ConfigureAwait(false);
@@ -59,7 +58,7 @@ public class SdFactoryService : ISdFactoryService
         var requestModel = new ConnectorSdFactoryRequestModel(
             connectorId.ToString(),
             SdFactoryRequestModelSdType.ServiceOffering,
-            connectorUrl,
+            selfDescriptionDocumentUrl,
             string.Empty,
             string.Empty,
             string.Empty,
