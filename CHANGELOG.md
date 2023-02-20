@@ -14,8 +14,8 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ### Feature
 * Application Checklist Worker ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
-  * Clearinghouse interface enhanced and further defined to enable full functionlity with VC approval and SD creation
-* Document endpoints reworked in the business logic regarding access permissions of users to documents; additionall two new endpoints release to view SD documents and operator endpoint for application linked documents ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * Clearinghouse interface enhanced and further defined to enable full functionality with VC approval and SD creation
+* Document endpoints reworked in the business logic regarding access permissions of users to documents; additionally two new endpoints release to view SD documents and operator endpoint for application linked documents ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
 
 ### Technical Support
 * Application Checklist Worker
