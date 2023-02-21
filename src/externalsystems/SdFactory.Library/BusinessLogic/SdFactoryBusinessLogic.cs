@@ -163,11 +163,13 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
     {
         using var sha512Hash = SHA512.Create();
         using var ms = new MemoryStream();
-        using var writer = new Utf8JsonWriter(ms);
-        data.Content!.WriteTo(writer);
+        using var writer = new Utf8JsonWriter(ms, new JsonWriterOptions {Indented = true});
+        var jsonDocument = JsonDocument.Parse(data.Content!);
+        jsonDocument.WriteTo(writer);
+
         await writer.FlushAsync(cancellationToken);
-        var hash = await sha512Hash.ComputeHashAsync(ms, cancellationToken);
-        var documentContent = ms.GetBuffer();
+        var documentContent = ms.ToArray();
+        var hash = sha512Hash.ComputeHash(documentContent);
 
         var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(
             $"SelfDescription_{title}.json",

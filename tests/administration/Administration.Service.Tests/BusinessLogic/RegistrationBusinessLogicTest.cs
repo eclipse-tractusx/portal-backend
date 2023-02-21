@@ -593,7 +593,7 @@ public class RegistrationBusinessLogicTest
     public async Task ProcessClearinghouseSelfDescription_WithValidData_CallsExpected()
     {
         // Arrange
-        var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
+        var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         var companyId = Guid.NewGuid();
         A.CallTo(() => _applicationRepository.GetCompanyIdSubmissionStatusForApplication(ApplicationId))
             .Returns((true, companyId, true));
@@ -611,7 +611,7 @@ public class RegistrationBusinessLogicTest
     public async Task ProcessClearinghouseSelfDescription_WithNotExistingApplication_ThrowsNotFoundException()
     {
         // Arrange
-        var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
+        var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         A.CallTo(() => _applicationRepository.GetCompanyIdSubmissionStatusForApplication(ApplicationId))
             .Returns(((bool,Guid,bool))default);
         
@@ -627,7 +627,7 @@ public class RegistrationBusinessLogicTest
     public async Task ProcessClearinghouseSelfDescription_WithNotSubmittedApplication_ThrowsConflictException()
     {
         // Arrange
-        var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
+        var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         A.CallTo(() => _applicationRepository.GetCompanyIdSubmissionStatusForApplication(ApplicationId))
             .Returns((true,Guid.NewGuid(),false));
         
