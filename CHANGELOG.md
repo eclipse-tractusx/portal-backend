@@ -2,6 +2,26 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.0.0-RC10
+
+### Change
+* Seeding: updated base data image
+
+### Feature
+n/a
+
+### Technical Support
+* readme files updated and example values added
+
+### Bugfix
+* Self Description encoding fixed to improve readability of the json file
+* Administration Service
+  * decline registration endpoint enhanced by sending rejection message (if added) inside the email template to the respective company user
+  * updated permissions for clearinghouse-self-description endpoints (controller: registration & connector)
+  * TRIGGER_OVERRIDE_CLEARING_HOUSE step removed from SD checklist flow and added to clearinghouse process
+  * Checklist Handler updated by adding missing process steps for manual process flow
+* Seeding - fixed incorrect registration role name
+
 ## 1.0.0-RC9
 
 ### Change
