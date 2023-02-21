@@ -338,7 +338,7 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
+        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId))
             .ReturnsLazily(() => new ValueTuple<Guid, Guid?>(connectorId, null));
 
@@ -356,7 +356,7 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
+        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId))
             .ReturnsLazily(() => new ValueTuple<Guid, Guid?>());
         
@@ -373,7 +373,7 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
+        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId))
             .ReturnsLazily(() => new ValueTuple<Guid, Guid?>(connectorId, Guid.NewGuid()));
         
