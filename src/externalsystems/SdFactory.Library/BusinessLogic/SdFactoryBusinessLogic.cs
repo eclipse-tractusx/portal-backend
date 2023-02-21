@@ -47,13 +47,10 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
     /// <inheritdoc />
     public Task RegisterConnectorAsync(
         Guid connectorId, 
-        string connectorUrl,
+        string selfDescriptionDocumentUrl,
         string businessPartnerNumber,
-        CancellationToken cancellationToken)
-    {
-        return _sdFactoryService.RegisterConnectorAsync(connectorId, connectorUrl, businessPartnerNumber,
-            cancellationToken);
-    }
+        CancellationToken cancellationToken) =>
+        _sdFactoryService.RegisterConnectorAsync(connectorId, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken);
 
     /// <inheritdoc />
     public async Task<(Action<ApplicationChecklistEntry>?, IEnumerable<ProcessStepTypeId>?, bool)> StartSelfDescriptionRegistration(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
@@ -63,7 +60,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 
         return (
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
-            new [] { ProcessStepTypeId.END_CLEARING_HOUSE },
+            new [] { ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP },
             true
         );
     }
@@ -166,11 +163,13 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
     {
         using var sha512Hash = SHA512.Create();
         using var ms = new MemoryStream();
-        using var writer = new Utf8JsonWriter(ms);
-        data.Content!.WriteTo(writer);
+        using var writer = new Utf8JsonWriter(ms, new JsonWriterOptions {Indented = true});
+        var jsonDocument = JsonDocument.Parse(data.Content!);
+        jsonDocument.WriteTo(writer);
+
         await writer.FlushAsync(cancellationToken);
-        var hash = await sha512Hash.ComputeHashAsync(ms, cancellationToken);
-        var documentContent = ms.GetBuffer();
+        var documentContent = ms.ToArray();
+        var hash = sha512Hash.ComputeHash(documentContent);
 
         var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(
             $"SelfDescription_{title}.json",

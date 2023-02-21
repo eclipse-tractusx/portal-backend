@@ -26,9 +26,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 public static class ApplicationChecklistEntryTypeIdExtensions
 {
     private static readonly ImmutableDictionary<ApplicationChecklistEntryTypeId,IEnumerable<ProcessStepTypeId>> _manualProcessStepIds = new (ApplicationChecklistEntryTypeId EntryTypeId, IEnumerable<ProcessStepTypeId> StepTypeId)[] {
-            (ApplicationChecklistEntryTypeId.CLEARING_HOUSE, new [] { ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE }),
+            (ApplicationChecklistEntryTypeId.CLEARING_HOUSE, new [] { ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE, ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE }),
             (ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new [] { ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET }),
-            (ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, new [] { ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP, ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE }),
+            (ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, new [] { ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP }),
             (ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, new [] { ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL }),
         }.ToImmutableDictionary(x => x.EntryTypeId, x => x.StepTypeId);
 
