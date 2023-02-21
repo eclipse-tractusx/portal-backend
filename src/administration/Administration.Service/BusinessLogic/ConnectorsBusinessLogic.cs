@@ -130,20 +130,26 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         await CheckLocationExists(location);
 
         var companyId = await GetCompanyOfUserOrTechnicalUser(iamUserId).ConfigureAwait(false);
-        var providerBpn = await _portalRepositories
+        var result = await _portalRepositories
             .GetInstance<ICompanyRepository>()
-            .GetCompanyBpnByIdAsync(companyId)
+            .GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(companyId)
             .ConfigureAwait(false);
 
-        if (string.IsNullOrEmpty(providerBpn))
+        if (string.IsNullOrEmpty(result.Bpn))
         {
             throw new UnexpectedConditionException($"provider company {companyId} has no businessPartnerNumber assigned");
+        }
+
+        if (result.SelfDescriptionDocumentId is null)
+        {
+            throw new UnexpectedConditionException($"provider company {companyId} has no self description document");
         }
 
         var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.COMPANY_CONNECTOR, location, companyId, companyId);
         return await CreateAndRegisterConnectorAsync(
             connectorRequestModel,
-            providerBpn,
+            result.Bpn,
+            result.SelfDescriptionDocumentId.Value,
             certificate,
             cancellationToken).ConfigureAwait(false);
     }
@@ -154,20 +160,26 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         var (name, connectorUrl, location, providerBpn, certificate) = connectorInputModel;
         await CheckLocationExists(location).ConfigureAwait(false);
 
-        var providerId = await _portalRepositories
+        var result = await _portalRepositories
             .GetInstance<ICompanyRepository>()
-            .GetCompanyIdByBpnAsync(providerBpn)
+            .GetCompanyIdAndSelfDescriptionDocumentByBpnAsync(providerBpn)
             .ConfigureAwait(false);
 
-        if (providerId == Guid.Empty)
+        if (result == default)
         {
             throw new ControllerArgumentException($"Company {providerBpn} does not exist", nameof(providerBpn));
         }
 
-        var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.CONNECTOR_AS_A_SERVICE, location, providerId, companyId);
+        if (result.SelfDescriptionDocumentId is null)
+        {
+            throw new UnexpectedConditionException($"provider company {result.CompanyId} has no self description document");
+        }
+
+        var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.CONNECTOR_AS_A_SERVICE, location, result.CompanyId, companyId);
         return await CreateAndRegisterConnectorAsync(
             connectorRequestModel,
             providerBpn,
+            result.SelfDescriptionDocumentId!.Value,
             certificate,
             cancellationToken).ConfigureAwait(false);
     }
@@ -199,6 +211,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     private async Task<Guid> CreateAndRegisterConnectorAsync(
         ConnectorRequestModel connectorInputModel,
         string businessPartnerNumber,
+        Guid selfDescriptionDocumentId,
         IFormFile? file,
         CancellationToken cancellationToken)
     {
@@ -234,8 +247,9 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             createdConnector.StatusId = dapsCallSuccessful ? ConnectorStatusId.ACTIVE : ConnectorStatusId.PENDING;
         }
 
+        var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{selfDescriptionDocumentId}";
         await _sdFactoryBusinessLogic
-            .RegisterConnectorAsync(createdConnector.Id, connectorInputModel.ConnectorUrl, businessPartnerNumber, cancellationToken)
+            .RegisterConnectorAsync(createdConnector.Id, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken)
             .ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
