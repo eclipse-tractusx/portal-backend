@@ -462,6 +462,16 @@ public class OfferService : IOfferService
 
         ValidateOfferDetails(offerDetails);
 
+        if(offerDetails.DocumentStatusDatas.Any())
+        {
+            var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+            foreach(var documentStatusData in offerDetails.DocumentStatusDatas)
+            {
+                documentRepository.AttachAndModifyDocument(documentStatusData!.DocumentId,
+                A => {A.DocumentStatusId = documentStatusData.StatusId;},
+                A => {A.DocumentStatusId = DocumentStatusId.LOCKED;});
+            }
+        }
         offerRepository.AttachAndModifyOffer(offerId, offer =>
         {
             offer.OfferStatusId = OfferStatusId.IN_REVIEW;

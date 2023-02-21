@@ -36,5 +36,6 @@ public record OfferReleaseData(
     string CompanyName,
     bool IsDescriptionLongNotSet,
     bool IsDescriptionShortNotSet,
-    bool HasUserRoles
+    bool HasUserRoles,
+    IEnumerable<DocumentStatusData?> DocumentStatusDatas
 );
