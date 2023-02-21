@@ -14,7 +14,7 @@ n/a
 * readme files updated and example values added
 
 ### Bugfix
-* Self Description encoding fixed to improve readablity of the json file
+* Self Description encoding fixed to improve readability of the json file
 * Administration Service
   * decline registration endpoint enhanced by sending rejection message (if added) inside the email template to the respective company user
   * updated permissions for clearinghouse-self-description endpoints (controller: registration & connector)
