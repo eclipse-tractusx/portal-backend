@@ -156,7 +156,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Assert
         bpn.Should().Be("BPNL00000003LLHB");
-        existingChecklistEntryTypeIds.Should().HaveCount(5);
+        existingChecklistEntryTypeIds.Should().HaveCount(6);
     }
 
     [Fact]
