@@ -58,34 +58,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Seeder\Data\offer_subscriptions.test.json" />
-    <Content Include="Seeder\Data\offer_subscriptions.test.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <None Remove="Seeder\Data\notifications.test.json" />
-    <Content Include="Seeder\Data\notifications.test.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <None Remove="Seeder\Data\company_users.test.json" />
-    <Content Include="Seeder\Data\company_users.test.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <None Remove="Seeder\Data\consents.test.json" />
-    <Content Include="Seeder\Data\consents.test.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <None Remove="Seeder\Data\invitations.test.json" />
-    <None Remove="Seeder\Data\documents.test.json" />
-    <Content Include="Seeder\Data\documents.test.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <None Remove="Seeder\Data\process_steps.test.json" />
-    <Content Include="Seeder\Data\process_steps.test.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <None Remove="Seeder\Data\application_assigned_process_steps.test.json" />
-    <Content Include="Seeder\Data\application_assigned_process_steps.test.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Seeder\Data\**" LinkBase="Seeder\Data" CopyToOutputDirectory="Always" />
   </ItemGroup>
 </Project>
