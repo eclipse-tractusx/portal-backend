@@ -505,6 +505,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             "f9cad59d-84b3-4880-a550-4072c26a6b93",
             "99c5fd12-8085-4de2-abfd-215e1ee4baa4",
             "99c5fd12-8085-4de2-abfd-215e1ee4baa6",
+            "99c5fd12-8085-4de2-abfd-215e1ee4baa7",
         },
         new [] {
             "d6eb6ec2-24a6-40c5-becb-2142c62fb117",
@@ -517,6 +518,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             "d0d45a39-521f-4fa8-b8f4-146e20ce7575",
             "384fa860-c48a-4c1f-bbe5-8f47877ad37e",
             "a221b9d8-e79a-43c4-9a25-edec28071c3c",
+            "00000000-0000-0000-0000-000000000000",
             "00000000-0000-0000-0000-000000000000",
             "00000000-0000-0000-0000-000000000000",
         })]
@@ -788,8 +790,29 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var modifiedEntities = changedEntries.Where(x => x.State == EntityState.Modified).Select(x => (OfferDescription)x.Entity);
         modifiedEntities.Should().HaveCount(1);
         modifiedEntities.Select(x => (x.LanguageShortName, x.DescriptionLong, x.DescriptionShort)).Should().Contain(modifedOfferDescriptions);
+
     }
 
+    #endregion
+
+    #region GetOfferReleaseDataById
+    
+    [Fact]
+    public async Task GetOfferReleaseDataByIdAsync_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferReleaseDataByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"),OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Name.Should().Be("Latest App");
+        result!.CompanyName.Should().Be("Catena-X");
+        result!.ProviderCompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+    }
+    
     #endregion
 
     #region Setup

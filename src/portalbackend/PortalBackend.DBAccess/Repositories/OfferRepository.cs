@@ -336,7 +336,9 @@ public class OfferRepository : IOfferRepository
                 o.ProviderCompany!.Name,
                 o.OfferDescriptions.Any(description => description.DescriptionLong == ""),
                 o.OfferDescriptions.Any(description => description.DescriptionShort == ""),
-                o.UserRoles.Any()
+                o.UserRoles.Any(),
+                o.Documents.Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED)
+                    .Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId))
             ))
             .SingleOrDefaultAsync();
 
