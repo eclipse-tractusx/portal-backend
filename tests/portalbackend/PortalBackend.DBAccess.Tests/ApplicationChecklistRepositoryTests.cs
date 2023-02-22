@@ -129,7 +129,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         var checklistData = await sut.GetChecklistDataAsync(ApplicationWithExistingChecklistId).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        checklistData.Should().HaveCount(5);
+        checklistData.Should().HaveCount(6);
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
 
         // Assert
         checklistData.Should().HaveCount(1);
-        checklistData.First().Checklist.Should().HaveCount(5);
+        checklistData.First().Checklist.Should().HaveCount(6);
     }
     
     #endregion
