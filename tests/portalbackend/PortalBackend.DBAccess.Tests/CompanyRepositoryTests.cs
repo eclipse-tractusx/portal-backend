@@ -158,7 +158,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
     
-    #region GetCompanyIdByBpn
+    #region GetCompanyIdAndSelfDescriptionDocumentByBpnAsync
     
     [Fact]
     public async Task GetCompanyIdByBpn_WithValidData_ReturnsExpected()
@@ -167,11 +167,13 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyIdByBpnAsync("BPNL00000003CRHK").ConfigureAwait(false);
+        var result = await sut.GetCompanyIdAndSelfDescriptionDocumentByBpnAsync("BPNL00000003CRHK").ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBe(Guid.Empty);
-        results.Should().Be("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
+        result.Should().NotBe(default);
+        result.CompanyId.Should().NotBe(Guid.Empty);
+        result.CompanyId.Should().Be("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
+        result.SelfDescriptionDocumentId.Should().BeNull();
     }
      
     [Fact]
@@ -181,15 +183,15 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyIdByBpnAsync("NOTEXISTING").ConfigureAwait(false);
+        var results = await sut.GetCompanyIdAndSelfDescriptionDocumentByBpnAsync("NOTEXISTING").ConfigureAwait(false);
 
         // Assert
-        results.Should().Be(Guid.Empty);
+        results.Should().Be(default);
     }
 
     #endregion
 
-    #region GetCompanyBpnById
+    #region GetCompanyBpnAndSelfDescriptionDocumentByIdAsync
     
     [Fact]
     public async Task GetCompanyBpnByIdAsync_WithValidData_ReturnsExpected()
@@ -198,11 +200,12 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyBpnByIdAsync(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
+        var results = await sut.GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBeNullOrEmpty();
-        results.Should().Be("BPNL00000003CRHK");
+        results.Should().NotBe(default);
+        results.Bpn.Should().NotBeNullOrEmpty();
+        results.Bpn.Should().Be("BPNL00000003CRHK");
     }
      
     [Fact]
@@ -212,10 +215,10 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyBpnByIdAsync(Guid.NewGuid()).ConfigureAwait(false);
+        var results = await sut.GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        results.Should().BeNull();
+        results.Should().Be(default);
     }
 
     #endregion
@@ -266,6 +269,57 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Should().HaveCount(1);
         var entry = changedEntries.Single();
         entry.Entity.Should().BeOfType<ProviderCompanyDetail>().Which.AutoSetupUrl.Should().Be(url);
+        entry.State.Should().Be(Microsoft.EntityFrameworkCore.EntityState.Unchanged);
+    }
+
+    #endregion
+
+    #region AttachAndModifyAddress
+
+    [Fact]
+    public async Task AttachAndModifyAddress_Changed_ReturnsExpectedResult()
+    {
+        // Arrange
+        const string city = "Munich";
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyAddress(new Guid("b4db3945-19a7-4a50-97d6-e66e8dfd04fb"),
+            address => { address.City = null!; },
+            address => { address.City = city; });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<Address>().Which.City.Should().Be(city);
+        var entry = changedEntries.Single();
+        entry.Entity.Should().BeOfType<Address>().Which.City.Should().Be(city);
+        entry.State.Should().Be(Microsoft.EntityFrameworkCore.EntityState.Modified);
+    }
+
+    [Fact]
+    public async Task AttachAndModifyAddress_Unchanged_ReturnsExpectedResult()
+    {
+        // Arrange
+        const string city = "Munich";
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyAddress(new Guid("b4db3945-19a7-4a50-97d6-e66e8dfd04fb"),
+            address => { address.City = city; },
+            address => { address.City = city; });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeFalse();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var entry = changedEntries.Single();
+        entry.Entity.Should().BeOfType<Address>().Which.City.Should().Be(city);
         entry.State.Should().Be(Microsoft.EntityFrameworkCore.EntityState.Unchanged);
     }
 

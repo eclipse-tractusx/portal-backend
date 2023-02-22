@@ -42,14 +42,17 @@ public class ChecklistHandlerService : IChecklistHandlerService
     private readonly ImmutableDictionary<ProcessStepTypeId, IChecklistHandlerService.ProcessStepExecution> _stepExecutions;
 
     private static readonly IEnumerable<ProcessStepTypeId> _manuelProcessSteps = new [] {
-        ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL,
-        ProcessStepTypeId.END_CLEARING_HOUSE,
         ProcessStepTypeId.VERIFY_REGISTRATION,
+        ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL,
         ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET,
         ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE,
+        ProcessStepTypeId.END_CLEARING_HOUSE,
         ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP,
+        ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
+        ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
         ProcessStepTypeId.OVERRIDE_BUSINESS_PARTNER_NUMBER,
-        ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE
+        ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE,
+        ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP
     };
 
     /// <inheritdoc />

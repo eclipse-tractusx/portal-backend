@@ -27,4 +27,4 @@ public record SelfDescriptionResponseData(
     [property: JsonPropertyName("externalId")] Guid ExternalId,
     [property: JsonPropertyName("status")] SelfDescriptionStatus Status,
     [property: JsonPropertyName("message")] string? Message,
-    [property: JsonPropertyName("selfDescriptionDocument")] JsonDocument? Content);
+    [property: JsonPropertyName("selfDescriptionDocument")] string? Content);
