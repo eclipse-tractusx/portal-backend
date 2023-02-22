@@ -244,7 +244,7 @@ public class RegistrationControllerTest
     public async Task ProcessClearinghouseSelfDescription_ReturnsExpectedResult()
     {
         // Arrange
-        var data = new SelfDescriptionResponseData(Guid.NewGuid(), SelfDescriptionStatus.Confirm, null, JsonDocument.Parse("{ \"test\": true }"));
+        var data = new SelfDescriptionResponseData(Guid.NewGuid(), SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         A.CallTo(() => _logic.ProcessClearinghouseSelfDescription(data, A<CancellationToken>._))
             .ReturnsLazily(() => Task.CompletedTask);
         

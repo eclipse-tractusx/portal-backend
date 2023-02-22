@@ -72,9 +72,9 @@ public class CompanyRepository : ICompanyRepository
         return address;
     }
 
-    public void AttachAndModifyAddress(Guid AddressId, Action<Address>? initialize, Action<Address> modify)
+    public void AttachAndModifyAddress(Guid addressId, Action<Address>? initialize, Action<Address> modify)
     {
-        var address = new Address(AddressId, null!, null!, null!, default);
+        var address = new Address(addressId, null!, null!, null!, default);
         initialize?.Invoke(address);
         _context.Attach(address);
         modify(address);
@@ -100,11 +100,11 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<Guid> GetCompanyIdByBpnAsync(string businessPartnerNumber) =>
+    public Task<(Guid CompanyId, Guid? SelfDescriptionDocumentId)> GetCompanyIdAndSelfDescriptionDocumentByBpnAsync(string businessPartnerNumber) =>
         _context.Companies
         .AsNoTracking()
         .Where(company => company.BusinessPartnerNumber == businessPartnerNumber)
-        .Select(company => company.Id)
+        .Select(company => new ValueTuple<Guid, Guid?>(company.Id, company.SelfDescriptionDocumentId))
         .SingleOrDefaultAsync();
 
     public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
@@ -177,9 +177,9 @@ public class CompanyRepository : ICompanyRepository
     }
     
     /// <inheritdoc />
-    public Task<string?> GetCompanyBpnByIdAsync(Guid companyId) =>
+    public Task<(string? Bpn, Guid? SelfDescriptionDocumentId)> GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(Guid companyId) =>
         _context.Companies.AsNoTracking()
             .Where(x => x.Id == companyId)
-            .Select(x => x.BusinessPartnerNumber)
+            .Select(x => new ValueTuple<string?, Guid?>(x.BusinessPartnerNumber, x.SelfDescriptionDocumentId))
             .SingleOrDefaultAsync();
 }
