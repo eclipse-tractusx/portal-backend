@@ -77,7 +77,7 @@ public class ChecklistProcessor : IChecklistProcessor
             _portalRepositories.GetInstance<IApplicationChecklistRepository>(),
             _portalRepositories.GetInstance<IProcessStepRepository>());
 
-        _logger.LogInformation("Found {StepsCount} possible steps for application {ApplicationId}", context.WorkerStepTypeIds.Count, applicationId);
+        _logger.LogInformation("Found {AllStepsCount} steps. {StepsCount} of them are eligible to run automatically for application {ApplicationId}", allSteps.Count, context.WorkerStepTypeIds.Count, applicationId);
 
         while (context.WorkerStepTypeIds.TryDequeue(out var stepTypeId))
         {
