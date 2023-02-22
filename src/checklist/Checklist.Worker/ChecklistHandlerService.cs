@@ -48,8 +48,6 @@ public class ChecklistHandlerService : IChecklistHandlerService
         ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE,
         ProcessStepTypeId.END_CLEARING_HOUSE,
         ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP,
-        ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
-        ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
         ProcessStepTypeId.OVERRIDE_BUSINESS_PARTNER_NUMBER,
         ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE,
         ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP
