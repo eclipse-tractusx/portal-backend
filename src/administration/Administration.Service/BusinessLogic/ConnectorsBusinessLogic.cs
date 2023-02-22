@@ -296,6 +296,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         connectorsRepository.AttachAndModifyConnector(connectorId, con =>
         {
             con.DapsRegistrationSuccessful = dapsCallSuccessful;
+            con.StatusId = dapsCallSuccessful ? ConnectorStatusId.ACTIVE : ConnectorStatusId.PENDING;
         });
         
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
