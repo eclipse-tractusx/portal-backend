@@ -390,7 +390,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await PostRegistrationCancelEmailAsync(applicationId, !approve).ConfigureAwait(false);
+        await PostRegistrationCancelEmailAsync(applicationId, comment, !approve).ConfigureAwait(false);
     }
 
     private async Task DeclinePartnerRequestInternal(Guid applicationId)
@@ -413,7 +413,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         });
     }
 
-    private async Task PostRegistrationCancelEmailAsync(Guid applicationId, bool sendMail)
+    private async Task PostRegistrationCancelEmailAsync(Guid applicationId, string? comment, bool sendMail)
     {
         if (!sendMail)
         {
@@ -423,6 +423,11 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
             .GetUserRoleIdsUntrackedAsync(_settings.PartnerUserInitialRoles).ToListAsync().ConfigureAwait(false);
 
+        if (string.IsNullOrWhiteSpace(comment))
+        {
+            throw new ConflictException("No comment set.");
+        }
+        
         await foreach (var user in _portalRepositories.GetInstance<IApplicationRepository>().GetRegistrationDeclineEmailDataUntrackedAsync(applicationId, userRoleIds).ConfigureAwait(false))
         {
             var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
@@ -435,7 +440,8 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             var mailParameters = new Dictionary<string, string>
             {
                 { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
-                { "companyName", user.CompanyName }
+                { "companyName", user.CompanyName },
+                { "declineComment", comment}
             };
 
             await _mailingService.SendMails(user.Email, mailParameters, new List<string> { "EmailRegistrationDeclineTemplate" }).ConfigureAwait(false);

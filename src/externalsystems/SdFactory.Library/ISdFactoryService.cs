@@ -32,11 +32,11 @@ public interface ISdFactoryService
     /// Registers the Connector at the connectorsSdFactory
     /// </summary>
     /// <param name="connectorId">Id of the connector</param>
-    /// <param name="connectorUrl">the url of the connector</param>
+    /// <param name="selfDescriptionDocumentUrl">the url of the connector</param>
     /// <param name="businessPartnerNumber">the bpn</param>
     /// <param name="cancellationToken"></param>
     /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task RegisterConnectorAsync(Guid connectorId, string connectorUrl, string businessPartnerNumber, CancellationToken cancellationToken);
+    Task RegisterConnectorAsync(Guid connectorId, string selfDescriptionDocumentUrl, string businessPartnerNumber, CancellationToken cancellationToken);
 
     Task RegisterSelfDescriptionAsync(Guid applicationId, IEnumerable<(UniqueIdentifierId Id, string Value)> uniqueIdentifiers, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken);
 }

@@ -80,7 +80,6 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
         {
             throw new NotFoundException($"Self description document {documentId} does not exist");
         }
-
         return (documentDetails.FileName, documentDetails.Content);
     }
 

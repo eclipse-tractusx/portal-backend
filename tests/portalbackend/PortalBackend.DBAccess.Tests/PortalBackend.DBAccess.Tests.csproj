@@ -53,6 +53,7 @@
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <None Remove="Seeder\Data\offer_subscriptions.test.json" />
     <Content Include="Seeder\Data\offer_subscriptions.test.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -85,5 +86,8 @@
     <Content Include="Seeder\Data\offers.test.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+=======
+    <Content Include="Seeder\Data\**" LinkBase="Seeder\Data" CopyToOutputDirectory="Always" />
+>>>>>>> main
   </ItemGroup>
 </Project>
