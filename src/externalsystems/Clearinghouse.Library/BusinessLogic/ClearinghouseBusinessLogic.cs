@@ -68,14 +68,8 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
         await TriggerCompanyDataPost(context.ApplicationId, walletData.Did, overwrite, cancellationToken).ConfigureAwait(false);
 
         return (
-            entry => entry.ApplicationChecklistEntryStatusId =
-                overwrite
-                    ? ApplicationChecklistEntryStatusId.DONE
-                    : ApplicationChecklistEntryStatusId.IN_PROGRESS,
-            new [] {
-                overwrite
-                    ? ProcessStepTypeId.START_SELF_DESCRIPTION_LP
-                    : ProcessStepTypeId.END_CLEARING_HOUSE },
+            entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
+            new [] { ProcessStepTypeId.END_CLEARING_HOUSE },
             true);
     }
 
