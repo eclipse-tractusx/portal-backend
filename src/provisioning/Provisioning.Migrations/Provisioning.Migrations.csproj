@@ -22,6 +22,7 @@
 
   <PropertyGroup>
     <AssemblyName>Org.CatenaX.Ng.Portal.Backend.Provisioning.Migrations</AssemblyName>
+    <RootNamespace>Org.CatenaX.Ng.Portal.Backend.Provisioning.Migrations</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -57,5 +58,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Remove="efbundle.exe" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Migrations" />
   </ItemGroup>
 </Project>
