@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,19 +21,10 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Microsoft.Extensions.FileProviders;
 
 var VERSION = "v2";
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes")
-{
-    var provider = new PhysicalFileProvider("/app/secrets");
-    builder.Configuration.AddJsonFile(provider, "appsettings.json", false, false);
-}
 
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
                 .AddPortalRepositories(builder.Configuration);
@@ -42,5 +33,5 @@ builder.Services.AddTransient<INotificationBusinessLogic, NotificationBusinessLo
     .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
 
 builder.Build()
-    .CreateApp<Program>("notification", VERSION)
+    .CreateApp<Program>("notification", VERSION, builder.Environment)
     .Run();

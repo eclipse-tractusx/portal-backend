@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,11 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -35,15 +36,44 @@ public class ServiceAccountRepository : IServiceAccountRepository
         _dbContext = portalDbContext;
     }
 
-    public CompanyServiceAccount CreateCompanyServiceAccount(Guid companyId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description) =>
-        _dbContext.CompanyServiceAccounts.Add(
+    public CompanyServiceAccount CreateCompanyServiceAccount(
+        Guid companyId,
+        CompanyServiceAccountStatusId companyServiceAccountStatusId,
+        string name,
+        string description,
+        CompanyServiceAccountTypeId companyServiceAccountTypeId,
+        Action<CompanyServiceAccount>? setOptionalParameters = null)
+    {
+        var serviceAccount = _dbContext.CompanyServiceAccounts.Add(
             new CompanyServiceAccount(
                 Guid.NewGuid(),
                 companyId,
                 companyServiceAccountStatusId,
                 name,
                 description,
-                DateTimeOffset.UtcNow)).Entity;
+                DateTimeOffset.UtcNow,
+                companyServiceAccountTypeId)).Entity;
+        setOptionalParameters?.Invoke(serviceAccount);
+        return serviceAccount;
+    }
+
+    public void AttachAndModifyCompanyServiceAccount(
+        Guid id,
+        Action<CompanyServiceAccount>? initialize,
+        Action<CompanyServiceAccount> modify)
+    {
+        var companyServiceAccount = new CompanyServiceAccount(
+            id,
+            Guid.Empty,
+            default,
+            null!,
+            null!,
+            default,
+            default);
+        initialize?.Invoke(companyServiceAccount);
+        _dbContext.Attach(companyServiceAccount);
+        modify(companyServiceAccount);
+    }
 
     public IamServiceAccount CreateIamServiceAccount(string clientId, string clientClientId, string userEntityId, Guid companyServiceAccountId) =>
         _dbContext.IamServiceAccounts.Add(
@@ -70,10 +100,14 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
                 && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
-                && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
-            .Select(serviceAccount =>
-                new CompanyServiceAccountWithRoleDataClientId(
-                    serviceAccount,
+                && serviceAccount.ServiceAccountOwner!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+            .Select(serviceAccount => new CompanyServiceAccountWithRoleDataClientId(
+                    serviceAccount.Id,
+                    serviceAccount.CompanyServiceAccountStatusId,
+                    serviceAccount.Name,
+                    serviceAccount.Description,
+                    serviceAccount.CompanyServiceAccountTypeId,
+                    serviceAccount.OfferSubscriptionId,
                     serviceAccount.IamServiceAccount!.ClientId,
                     serviceAccount.IamServiceAccount.ClientClientId,
                     serviceAccount.CompanyServiceAccountAssignedRoles
@@ -89,7 +123,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
                 && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
-                && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                && serviceAccount.ServiceAccountOwner!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
             .Include(serviceAccount => serviceAccount.IamServiceAccount)
             .Include(serviceAccount => serviceAccount.CompanyServiceAccountAssignedRoles)
             .SingleOrDefaultAsync();
@@ -100,7 +134,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
                 && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
-                && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                && serviceAccount.ServiceAccountOwner!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
             .Select(serviceAccount => new CompanyServiceAccountDetailedData(
                     serviceAccount.Id,
                     serviceAccount.IamServiceAccount!.ClientId,
@@ -113,14 +147,27 @@ public class ServiceAccountRepository : IServiceAccountRepository
                         .Select(userRole => new UserRoleData(
                             userRole!.Id,
                             userRole.Offer!.AppInstances.First().IamClient!.ClientClientId,
-                            userRole.UserRoleText))))
+                            userRole.UserRoleText)),
+                    serviceAccount.CompanyServiceAccountTypeId,
+                    serviceAccount.OfferSubscriptionId))
             .SingleOrDefaultAsync();
 
-    public IQueryable<CompanyServiceAccount> GetOwnCompanyServiceAccountsUntracked(string adminUserId) =>
-        _dbContext.Companies
-            .AsNoTracking()
-            .Where(company =>
-                company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
-            .SelectMany(company => company.CompanyServiceAccounts)
-            .Where(serviceAccount => serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE);
+    public Func<int,int,Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(string adminUserId) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            _dbContext.CompanyServiceAccounts
+                .AsNoTracking()
+                .Where(serviceAccount =>
+                    serviceAccount.ServiceAccountOwner!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId) &&
+                    serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE)
+                .GroupBy(serviceAccount => serviceAccount.ServiceAccountOwnerId),
+            serviceAccounts => serviceAccounts.OrderBy(serviceAccount => serviceAccount.Name),
+            serviceAccount => new CompanyServiceAccountData(
+                        serviceAccount.Id,
+                        serviceAccount.IamServiceAccount!.ClientClientId,
+                        serviceAccount.Name,
+                        serviceAccount.CompanyServiceAccountTypeId,
+                        serviceAccount.OfferSubscriptionId)
+        ).SingleOrDefaultAsync();
 }

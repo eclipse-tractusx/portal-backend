@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -24,18 +24,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// Data Object for the Offer Release data
 /// </summary>
 /// <param name="Name"></param>
-/// <param name="ThumbnailUrl"></param>
-/// <param name="SalesManagerId"></param>
 /// <param name="ProviderCompanyId"></param>
 /// <param name="CompanyName"></param>
 /// <param name="IsDescriptionLongNotSet"></param>
 /// <param name="IsDescriptionShortNotSet"></param>
+/// <param name="Roles"></param>
 /// <returns></returns>
 public record OfferReleaseData(
     string? Name,
-    string? ThumbnailUrl,
-    Guid? SalesManagerId,
     Guid? ProviderCompanyId,
     string CompanyName,
     bool IsDescriptionLongNotSet,
-    bool IsDescriptionShortNotSet);
+    bool IsDescriptionShortNotSet,
+    bool HasUserRoles
+);

@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,16 +20,12 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
-using Castle.Core.Logging;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
-using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -41,7 +37,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
-    private readonly Guid _offerId = new("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5");
+    private readonly Guid _offerId = new("ac1cf001-7fbc-1f2f-817f-bce0000c0001");
 
     public ServiceRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -80,24 +76,6 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetActiveServices
-
-    [Fact]
-    public async Task GetActiveServices_ReturnsExpectedAppCount()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetActiveServicesPaginationSource(null, null)(0, 15).ConfigureAwait(false);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Count.Should().Be(1);
-    }
-
-    #endregion
-
     #region GetServiceDetailByIdUntrackedAsync
 
     [Fact]
@@ -124,9 +102,9 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.Title.Should().Be("Newest Service");
-        result.ContactEmail.Should().Be("service-test@mail.com");
-        result.Provider.Should<string>().Be("Catena X");
+        result!.Title.Should().Be("Consulting Service - Data Readiness");
+        result.ContactEmail.Should().BeNull();
+        result.Provider.Should<string>().Be("Catena-X");
     }
 
     #endregion

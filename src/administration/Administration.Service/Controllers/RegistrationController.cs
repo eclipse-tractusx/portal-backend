@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,13 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
@@ -57,10 +60,10 @@ public class RegistrationController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_submitted_applications")]
     [Route("application/{applicationId}/companyDetailsWithAddress")]
-    [ProducesResponseType(typeof(CompanyWithAddress), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CompanyWithAddressData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<CompanyWithAddress> GetCompanyWithAddressAsync([FromRoute] Guid applicationId) =>
+    public Task<CompanyWithAddressData> GetCompanyWithAddressAsync([FromRoute] Guid applicationId) =>
         _logic.GetCompanyWithAddressAsync(applicationId);
     
     /// <summary>
@@ -68,10 +71,11 @@ public class RegistrationController : ControllerBase
     /// </summary>
     /// <param name="page">page index start from 0</param>
     /// <param name="size">size to get number of records</param>
+    /// <param name="companyApplicationStatusFilter">Search by company applicationstatus</param>
     /// <param name="companyName">search by company name</param>
     /// <returns>Company Application Details</returns>
     /// <remarks>
-    /// Example: GET: api/administration/registration/applications?companyName=Car&amp;page=0&amp;size=4 <br />
+    /// Example: GET: api/administration/registration/applications?companyName=Car&amp;page=0&amp;size=4&amp;companyApplicationStatus=Closed <br />
     /// Example: GET: api/administration/registration/applications?page=0&amp;size=4
     /// </remarks>
     /// <response code="200">Result as a Company Application Details</response>
@@ -79,47 +83,8 @@ public class RegistrationController : ControllerBase
     [Authorize(Roles = "view_submitted_applications")]
     [Route("applications")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyApplicationDetails>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery]int page, [FromQuery]int size, [FromQuery]string? companyName = null) =>
-        _logic.GetCompanyApplicationDetailsAsync(page, size, companyName);
-
-    /// <summary>
-    /// Approves the partner request
-    /// </summary>
-    /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application that should be approved</param>
-    /// <param name="cancellationToken">Cancellation Token</param>
-    /// <returns>the result as a boolean</returns>
-    /// Example: PUT: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/approveRequest
-    /// <response code="200">the result as a boolean.</response>
-    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, the BusinessPartnerNumber (bpn) for the given CompanyApplications company is empty or no applicationId was set.</response>
-    /// <response code="404">Application ID not found.</response>
-    /// <response code="500">Internal Server Error.</response>
-    /// <response code="502">Bad Gateway Service Error.</response>
-    [HttpPut]
-    [Authorize(Roles = "approve_new_partner")]
-    [Route("application/{applicationId}/approveRequest")]
-    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public Task<bool> ApprovePartnerRequest([FromRoute] Guid applicationId, CancellationToken cancellationToken) =>
-        this.WithIamUserAndBearerToken((auth) => _logic.ApprovePartnerRequest(auth.iamUserId, auth.bearerToken, applicationId, cancellationToken));
-
-    /// <summary>
-    /// Decline the Partner Registration Request
-    /// </summary>
-    /// <param name="applicationId" example="31404026-64ee-4023-a122-3c7fc40e57b1">Company Application Id for which request will be declined</param>
-    /// <returns>Result as a boolean</returns>
-    /// <remarks>Example: PUT: api/administration/registration/application/31404026-64ee-4023-a122-3c7fc40e57b1/declineRequest</remarks>
-    /// <response code="200">Result as a boolean</response>
-    /// <response code="400">Either the Company Application was not in Submitted State, the Username has no assigned emailid or no applicationId was set.</response>
-    [HttpPut]
-    [Authorize(Roles = "decline_new_partner")]
-    [Route("application/{applicationId}/declineRequest")]
-    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public Task<bool> DeclinePartnerRequest([FromRoute] Guid applicationId) =>
-            _logic.DeclinePartnerRequest(applicationId);
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery] int page, [FromQuery] int size, [FromQuery] CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, [FromQuery] string? companyName = null) =>
+        _logic.GetCompanyApplicationDetailsAsync(page, size,companyApplicationStatusFilter, companyName);
 
     /// <summary>
     /// fetch all applications details with company user details.
@@ -158,30 +123,230 @@ public class RegistrationController : ControllerBase
     public Task UpdateCompanyBpn([FromRoute] Guid applicationId, [FromRoute] string bpn) =>
         _logic.UpdateCompanyBpn(applicationId, bpn);
 
+    /// <summary>
+    /// Approves the registration verification for the application with the given id
+    /// </summary>
+    /// <param name="applicationId">Id of the application that should be approved</param>
+    /// <remarks>
+    /// Example: GET: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/approve
+    /// </remarks>
+    /// <response code="204">Successfully approved the application</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, or there is no checklist entry of type Registration_Verification.</response>
+    /// <response code="404">Application ID not found.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("applications/{applicationId}/approve")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> ApproveApplication([FromRoute] Guid applicationId)
+    {
+        await _logic.SetRegistrationVerification(applicationId, true).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Declines the registration verification for the application with the given id
+    /// </summary>
+    /// <param name="applicationId">Id of the application that should be declined</param>
+    /// <param name="data">Comment to explain why the application got declined</param>
+    /// <remarks>
+    /// Example: GET: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/decline
+    /// </remarks>
+    /// <response code="204">Successfully declined the application</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, or there is no checklist entry of type Registration_Verification.</response>
+    /// <response code="404">Application ID not found.</response>
+    [HttpPost]
+    [Authorize(Roles = "decline_new_partner")]
+    [Route("applications/{applicationId}/decline")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> DeclineApplication([FromRoute] Guid applicationId, [FromBody] RegistrationDeclineData data)
+    {
+        await _logic.SetRegistrationVerification(applicationId, false, data.Comment).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Processes the clearinghouse response
+    /// </summary>
+    /// <param name="responseData">Response data from clearinghouse</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/clearinghouse
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the clearing_house process is not in status IN_PROGRESS.</response>
+    /// <response code="404">No application found for the bpn.</response>
+    [HttpPost]
+    [Authorize(Roles = "update_application_checklist_value")]
+    [Route("clearinghouse")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> ProcessClearinghouseResponse([FromBody] ClearinghouseResponseData responseData, CancellationToken cancellationToken)
+    {
+        await _logic.ProcessClearinghouseResponseAsync(responseData, cancellationToken).ConfigureAwait(false);
+        return NoContent();
+    }
     
     /// <summary>
-    /// Approves the partner request
+    /// Gets the information of an applications checklist
     /// </summary>
-    /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application that should be approved</param>
-    /// <param name="cancellationToken">Cancellation Token</param>
-    /// <returns>the result as a boolean</returns>
-    /// Example: PUT: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/approveRequest
-    /// <response code="200">the result as a boolean.</response>
-    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, the BusinessPartnerNumber (bpn) for the given CompanyApplications company is empty or no applicationId was set.</response>
+    /// <param name="applicationId">Id of the application the checklist should be provided for</param>
+    /// <remarks>
+    /// Example: GET: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/checklistDetails
+    /// </remarks>
+    /// <response code="200">The checklist information for the application</response>
     /// <response code="404">Application ID not found.</response>
-    /// <response code="500">Internal Server Error.</response>
-    /// <response code="502">Bad Gateway Service Error.</response>
-    [HttpPut]
+    [HttpGet]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("applications/{applicationId}/checklistDetails")]
+    [ProducesResponseType(typeof(ChecklistDetails), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<IEnumerable<ChecklistDetails>> GetChecklistForApplication([FromRoute] Guid applicationId) =>
+        _logic.GetChecklistForApplicationAsync(applicationId);
+    
+    /// <summary>
+    /// Retriggers the last failed to override the clearinghouse-result
+    /// </summary>
+    /// <param name="applicationId" example="">Id of the application that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/override-clearinghouse
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
+    /// <response code="404">No application found for the applicationId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("application/{applicationId}/override-clearinghouse")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> OverrideClearinghouseChecklist([FromRoute] Guid applicationId)
+    {
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step 
+    /// </summary>
+    /// <param name="applicationId" example="">Id of the application that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/retrigger-clearinghouse
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
+    /// <response code="404">No application found for the applicationId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("application/{applicationId}/retrigger-clearinghouse")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerClearinghouseChecklist([FromRoute] Guid applicationId)
+    {
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step 
+    /// </summary>
+    /// <param name="applicationId" example="">Id of the application that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger-identity-wallet<br />
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
+    /// <response code="404">No application found for the applicationId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("application/{applicationId}/trigger-identity-wallet")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> TriggerIdentityWallet([FromRoute] Guid applicationId)
+    {
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET).ConfigureAwait(false);
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// Retriggers the last failed step 
+    /// </summary>
+    /// <param name="applicationId" example="">Id of the application that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger-self-description <br />
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
+    /// <response code="404">No application found for the applicationId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Route("application/{applicationId}/trigger-self-description")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> TriggerSelfDescription([FromRoute] Guid applicationId)
+    {
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step 
+    /// </summary>
+    /// <param name="applicationId" example="">Id of the application that should be triggered</param>
+    /// <param name="processTypeId">Optional: The process type id that should be retriggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger-bpn <br />
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
+    /// <response code="404">No application found for the applicationId.</response>
+    [HttpPost]
     [Authorize(Roles = "approve_new_partner")]
     [Route("application/{applicationId}/trigger-bpn")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public async Task<NoContentResult> TriggerBpnDataPush([FromRoute] Guid applicationId, CancellationToken cancellationToken)
+    public async Task<NoContentResult> TriggerBpn([FromRoute] Guid applicationId, [FromQuery] ProcessStepTypeId processTypeId)
     {
-        await this.WithIamUserId(user => _logic.TriggerBpnDataPushAsync(user, applicationId, cancellationToken)).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, processTypeId).ConfigureAwait(false);
         return NoContent();
+    }
+
+    /// <summary>
+    /// Processes the clearinghouse self description push
+    /// </summary>
+    /// <param name="data">The response data for the self description</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// Example: POST: api/administration/registration/clearinghouse/selfDescription <br />
+    /// <response code="200">the result as a boolean.</response>
+    /// <response code="400">The CompanyApplication is not in status SUBMITTED.</response>
+    [HttpPost]
+    [Authorize(Roles = "update_application_checklist_value")]
+    [Route("clearinghouse/selfDescription")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> ProcessClearinghouseSelfDescription([FromBody] SelfDescriptionResponseData data, CancellationToken cancellationToken)
+    {
+        await _logic.ProcessClearinghouseSelfDescription(data, cancellationToken).ConfigureAwait(false);
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// Retrieves a specific document for the given id.
+    /// </summary>
+    /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3">Id of the document to get.</param>
+    /// <returns>Returns the file.</returns>
+    /// <remarks>Example: GET: /api/administration/registration/documents/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
+    /// <response code="200">Returns the file.</response>
+    [HttpGet]
+    [Route("documents/{documentId}")]
+    [Authorize(Roles = "approve_new_partner")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
+    {
+        var (fileName, content, contentType) = await _logic.GetDocumentAsync(documentId).ConfigureAwait(false);
+        return File(content, contentType, fileName);
     }
 }

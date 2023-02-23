@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -142,8 +142,8 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Count.Should().Be(6);
-        results!.Data.Count().Should().Be(6);
+        results!.Count.Should().Be(10);
+        results.Data.Count().Should().Be(10);
         results.Data.Should().AllBeOfType<NotificationDetailData>();
     }
 
@@ -158,7 +158,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(6);
+        results!.Data.Count().Should().Be(10);
         results!.Data.Should().BeInAscendingOrder(detailData => detailData.Created);
     }
 
@@ -173,7 +173,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(6);
+        results!.Data.Count().Should().Be(10);
         results.Data.Should().BeInDescendingOrder(detailData => detailData.Created);
     }
 
@@ -188,7 +188,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(6);
+        results!.Data.Count().Should().Be(10);
         results.Data.Should().BeInAscendingOrder(detailData => detailData.IsRead);
     }
 
@@ -203,7 +203,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(6);
+        results!.Data.Count().Should().Be(10);
         results.Data.Should().BeInDescendingOrder(detailData => detailData.IsRead);
     }
 
@@ -220,7 +220,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(3);
+        results!.Data.Count().Should().Be(5);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == false));
     }
 
@@ -237,7 +237,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(3);
+        results!.Data.Count().Should().Be(5);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true));
     }
 
@@ -267,7 +267,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(2);
+        results!.Data.Count().Should().Be(1);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true && x.TypeId == NotificationTypeId.ACTION));
     }
 
@@ -282,7 +282,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(2);
+        results!.Data.Count().Should().Be(9);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.NotificationTopic == NotificationTopicId.INFO));
     }
 
@@ -298,7 +298,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut
-            .GetNotificationByIdAndIamUserIdUntrackedAsync(new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), IamUserId)
+            .GetNotificationByIdAndIamUserIdUntrackedAsync(new Guid("b753cd7f-24c7-44a7-a88e-08ed00c31600"), IamUserId)
             .ConfigureAwait(false);
         
         // Assert
@@ -323,7 +323,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
             .ConfigureAwait(false);
 
         // Assert
-        results.Count.Should().Be(3);
+        results.Count.Should().Be(5);
     }
 
     [Fact]
@@ -338,7 +338,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
             .ConfigureAwait(false);
 
         // Assert
-        results.Count.Should().Be(6);
+        results.Count.Should().Be(10);
     }
 
     #endregion
@@ -357,7 +357,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
             .ConfigureAwait(false);
 
         // Assert
-        results.Count.Should().Be(4);
+        results.Count.Should().Be(3);
     }
 
     #endregion
@@ -372,7 +372,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .CheckNotificationExistsByIdAndIamUserIdAsync(new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), IamUserId)
+            .CheckNotificationExistsByIdAndIamUserIdAsync(new Guid("b753cd7f-24c7-44a7-a88e-08ed00c31600"), IamUserId)
             .ConfigureAwait(false);
 
         // Assert

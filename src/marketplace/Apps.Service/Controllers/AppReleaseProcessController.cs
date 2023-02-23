@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -80,7 +80,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <param name="document"></param>
     /// <param name="cancellationToken"></param>
     /// <remarks>Example: PUT: /api/apps/appreleaseprocess/updateappdoc/{appId}/documentType/{documentTypeId}/documents</remarks>
-    /// <response code="200">Successfully uploaded the document</response>
+    /// <response code="204">Successfully uploaded the document</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="404">App does not exist.</response>
     /// <response code="403">The user is not assigned with the app.</response>
@@ -90,13 +90,16 @@ public class AppReleaseProcessController : ControllerBase
     [Authorize(Roles = "app_management")]
     [Consumes("multipart/form-data")]
     [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
-    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
-    public Task<int> UpdateAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
-         this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.CreateAppDocumentAsync(appId, documentTypeId, document, iamUserId, cancellationToken));
+    public async Task<NoContentResult> UpdateAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
+    {
+        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.CreateAppDocumentAsync(appId, documentTypeId, document, iamUserId, cancellationToken));
+        return NoContent();
+    }
     
     /// <summary>
     /// Add role and role description for App 
@@ -124,8 +127,8 @@ public class AppReleaseProcessController : ControllerBase
     [HttpGet]
     [Route("agreementData")]
     [Authorize(Roles = "edit_apps")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<AgreementData>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync() =>
+    [ProducesResponseType(typeof(IAsyncEnumerable<AgreementDocumentData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync() =>
         _appReleaseBusinessLogic.GetOfferAgreementDataAsync();
     
     /// <summary>
@@ -255,6 +258,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <param name="page">page index start from 0</param>
     /// <param name="size">size to get number of records</param>
     /// <param name="sorting">sort by</param>
+    /// <param name="offerStatusIdFilter">Filter by offerStatusId</param>
     /// <returns>Collection of all in review status marketplace apps.</returns>
     /// <remarks>Example: GET: /api/apps/appreleaseprocess/inReview</remarks>
     /// <response code="200">Returns the list of all in review status marketplace apps.</response>
@@ -262,8 +266,8 @@ public class AppReleaseProcessController : ControllerBase
     [Route("inReview")]
     [Authorize(Roles = "approve_app_release,decline_app_release")]
     [ProducesResponseType(typeof(Pagination.Response<InReviewAppData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null) =>
-        _appReleaseBusinessLogic.GetAllInReviewStatusAppsAsync(page, size, sorting);
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, OfferStatusIdFilter? offerStatusIdFilter = null) =>
+        _appReleaseBusinessLogic.GetAllInReviewStatusAppsAsync(page, size, sorting, offerStatusIdFilter);
 
     /// <summary>
     /// Submit an app for release
@@ -275,7 +279,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="404">App does not exist.</response>
     [HttpPut]
     [Route("{appId}/submit")]
-    [Authorize(Roles = "add_app")]
+    [Authorize(Roles = "add_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -322,6 +326,40 @@ public class AppReleaseProcessController : ControllerBase
     public async Task<NoContentResult> ApproveAppRequest([FromRoute] Guid appId)
     {
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.ApproveAppRequestAsync(appId, userId)).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retrieve Privacy Policies
+    /// </summary>
+    /// <returns>Collection of all Privacy Policy.</returns>
+    /// <remarks>Example: GET: /api/apps/appreleaseprocess/privacyPolicies</remarks>
+    /// <response code="200">Return the privacy policies</response>
+    [HttpGet]
+    [Route("privacyPolicies")]
+    [Authorize(Roles = "add_apps")]
+    [ProducesResponseType(typeof(PrivacyPolicyData), StatusCodes.Status200OK)]
+    public Task<PrivacyPolicyData> GetPrivacyPolicyDataAsync() =>
+        _appReleaseBusinessLogic.GetPrivacyPolicyDataAsync();
+
+    /// <summary>
+    /// Declines the app request
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the app that should be declined</param>
+    /// <param name="data">the data of the decline request</param>
+    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/decline</remarks>
+    /// <response code="204">NoContent.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    /// <response code="404">If app does not exists.</response>
+    [HttpPut]
+    [Route("{appId:guid}/declineApp")]
+    [Authorize(Roles = "decline_app_release")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> DeclineAppRequest([FromRoute] Guid appId, [FromBody] OfferDeclineRequest data)
+    {
+        await this.WithIamUserId(userId => _appReleaseBusinessLogic.DeclineAppRequestAsync(appId, userId, data)).ConfigureAwait(false);
         return NoContent();
     }
 }

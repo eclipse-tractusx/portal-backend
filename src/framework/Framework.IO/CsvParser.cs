@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -107,15 +107,15 @@ public static class CsvParser
         {
             await foreach (var (processed,error) in processLines(ParseCsvLinesAsync(reader, parseLineAsync, error => { numLines++; errors.Add((numLines, error)); })))
             {
+                numLines++;
                 if (error != null)
                 {
-                    errors.Add((numLines+1, error));
+                    errors.Add((numLines, error));
                 }
                 if (processed)
                 {
                     numProcessed++;
                 }
-                numLines++;
             }
         }
         catch(Exception e)

@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,11 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using FakeItEasy;
-using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -34,7 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Xunit;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic.Tests;
 
@@ -65,7 +60,6 @@ public class InvitationBusinessLogicTests
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-
 
         _provisioningManager = A.Fake<IProvisioningManager>();
         _userProvisioningService = A.Fake<IUserProvisioningService>();
@@ -98,6 +92,9 @@ public class InvitationBusinessLogicTests
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.organisationName, _companyName)
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
+            .With(x => x.email, _fixture.CreateEmail())
             .Create();
 
         var sut = new InvitationBusinessLogic(
@@ -137,6 +134,8 @@ public class InvitationBusinessLogicTests
         SetupFakes(true);
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
             .With(x => x.email, "")
             .Create();
 
@@ -164,6 +163,9 @@ public class InvitationBusinessLogicTests
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.organisationName, "")
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
+            .With(x => x.email, _fixture.CreateEmail())
             .Create();
 
         var sut = new InvitationBusinessLogic(
@@ -190,6 +192,9 @@ public class InvitationBusinessLogicTests
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.organisationName, _companyName)
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
+            .With(x => x.email, _fixture.CreateEmail())
             .Create();
 
         var invalidUserId = _fixture.Create<string>();
@@ -224,6 +229,9 @@ public class InvitationBusinessLogicTests
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.organisationName, _companyName)
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
+            .With(x => x.email, _fixture.CreateEmail())
             .Create();
 
         var sut = new InvitationBusinessLogic(
@@ -252,6 +260,9 @@ public class InvitationBusinessLogicTests
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.organisationName, _companyName)
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
+            .With(x => x.email, _fixture.CreateEmail())
             .Create();
 
         var sut = new InvitationBusinessLogic(

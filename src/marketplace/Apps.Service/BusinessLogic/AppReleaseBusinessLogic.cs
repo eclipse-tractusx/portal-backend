@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -29,9 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Security.Cryptography;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
@@ -72,17 +70,13 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ControllerArgumentException("Language Code must not be empty");
         }
-        if (updateModel.Images.Any(image => string.IsNullOrWhiteSpace(image)))
-        {
-            throw new ControllerArgumentException("ImageUrl must not be empty");
-        }
         return EditAppAsync(appId, updateModel, userId);
     }
 
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var appResult = await appRepository.GetAppDetailsForUpdateAsync(appId, userId).ConfigureAwait(false);
+        var appResult = await appRepository.GetOfferDetailsForUpdateAsync(appId, userId, OfferTypeId.APP).ConfigureAwait(false);
         if (appResult == default)
         {
             throw new NotFoundException($"app {appId} does not exist");
@@ -112,79 +106,15 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         });
 
         _offerService.UpsertRemoveOfferDescription(appId, updateModel.Descriptions, appResult.Descriptions);
-        UpsertRemoveAppDetailImage(appId, updateModel.Images, appResult.ImageUrls, appRepository);
-        
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private static void UpsertRemoveAppDetailImage(Guid appId, IEnumerable<string> UpdateUrls, IEnumerable<(Guid Id, string Url)> ExistingImages, IOfferRepository appRepository)
-    {
-        appRepository.AddAppDetailImages(
-            UpdateUrls.Except(ExistingImages.Select(image => image.Url))
-                .Select(url => new ValueTuple<Guid,string>(appId, url))
-        );
-
-        appRepository.RemoveOfferDetailImages(
-            ExistingImages.ExceptBy(UpdateUrls, image => image.Url)
-                .Select(image => image.Id)
-        );
-    }
-
     /// <inheritdoc/>
-    public Task<int> CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
-    {
-        if (appId == Guid.Empty)
-        {
-            throw new ControllerArgumentException($"AppId must not be empty");
-        }
-        if (!_settings.DocumentTypeIds.Contains(documentTypeId))
-        {
-            throw new ControllerArgumentException($"documentType must be either: {string.Join(",", _settings.DocumentTypeIds)}");
-        }
-        if (string.IsNullOrEmpty(document.FileName))
-        {
-            throw new ControllerArgumentException("File name is must not be null");
-        }
-        // Check if document is a pdf,jpeg and png file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
-        if (!_settings.ContentTypeSettings.Contains(document.ContentType))
-        {
-            throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType :{string.Join(",", _settings.ContentTypeSettings)} are allowed.");
-        }
-        return UploadAppDoc(appId, documentTypeId, document, iamUserId, cancellationToken);
-    }
-
-    private async Task<int> UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
-    {
-        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(appId, iamUserId, OfferStatusId.CREATED, OfferTypeId.APP).ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new NotFoundException($"app {appId} does not exist");
-        }
-        var companyUserId = result.CompanyUserId;
-        if (companyUserId == Guid.Empty)
-        {
-            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of app {appId}");
-        }
-        var documentName = document.FileName;
-        using var sha512Hash = SHA512.Create();
-        using var ms = new MemoryStream((int)document.Length);
-
-        await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
-        var hash = sha512Hash.ComputeHash(ms);
-        var documentContent = ms.GetBuffer();
-        if (ms.Length != document.Length || documentContent.Length != document.Length)
-        {
-            throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
-        }
-        
-        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, documentTypeId, x =>
-        {
-            x.CompanyUserId = companyUserId;
-        });
-        _portalRepositories.GetInstance<IOfferRepository>().CreateOfferAssignedDocument(appId, doc.Id);
-        return await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
+    public Task CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken) =>
+        UploadAppDoc(appId, documentTypeId, document, iamUserId, OfferTypeId.APP, cancellationToken);
+    
+    private async Task UploadAppDoc (Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
+        await _offerService.UploadDocumentAsync(appId, documentTypeId, document, iamUserId, offerTypeId, _settings.DocumentTypeIds, _settings.ContentTypeSettings, cancellationToken).ConfigureAwait(false);
     
     /// <inheritdoc/>
     public Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string iamUserId)
@@ -276,7 +206,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync()=>
+    public IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync()=>
         _offerService.GetOfferTypeAgreementsAsync(OfferTypeId.APP);
 
     /// <inheritdoc/>
@@ -348,7 +278,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ControllerArgumentException("Use Case Ids must not be null or empty", nameof(appRequestModel.UseCaseIds));
         }
-        
+
         return this.CreateAppAsync(appRequestModel, iamUserId);
     }
 
@@ -374,7 +304,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         var appId = appRepository.CreateOffer(appRequestModel.Provider, OfferTypeId.APP, app =>
         {
             app.Name = appRequestModel.Title;
-            app.ThumbnailUrl = appRequestModel.LeadPictureUri;
             app.ProviderCompanyId = companyId;
             app.OfferStatusId = OfferStatusId.CREATED;
             if (appRequestModel.SalesManagerId.HasValue)
@@ -388,6 +317,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
               (appId, c)));
         appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
               (appId, uc)));
+        appRepository.AddAppAssignedPrivacyPolicies(appRequestModel.PrivacyPolicies.Select(pp =>
+              (appId, pp)));
         var licenseId = appRepository.CreateOfferLicenses(appRequestModel.Price).Id;
         appRepository.CreateOfferAssignedLicense(appId, licenseId);
 
@@ -409,8 +340,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             .GetAppUpdateData(
                 appId,
                 iamUserId,
-                appRequestModel.SupportedLanguageCodes,
-                appRequestModel.UseCaseIds)
+                appRequestModel.SupportedLanguageCodes)
             .ConfigureAwait(false);
         if (appData is null)
         {
@@ -446,7 +376,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         app =>
         {
             app.Name = appRequestModel.Title;
-            app.ThumbnailUrl = appRequestModel.LeadPictureUri;
             app.OfferStatusId = OfferStatusId.CREATED;
             app.Provider = appRequestModel.Provider;
             app.SalesManagerId = appRequestModel.SalesManagerId;
@@ -458,12 +387,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         _offerService.UpsertRemoveOfferDescription(appId, appRequestModel.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), appData.OfferDescriptions);
         UpdateAppSupportedLanguages(appId, newSupportedLanguages, appData.Languages.Where(x => !x.IsMatch).Select(x => x.Shortname), appRepository);
 
-        var newUseCases = appRequestModel.UseCaseIds.Except(appData.MatchingUseCases);
-        if (newUseCases.Any())
-        {
-            appRepository.AddAppAssignedUseCases(appRequestModel.UseCaseIds.Select(uc =>
-                (appId, uc)));
-        }
+        appRepository.CreateDeleteAppAssignedUseCases(appId, appData.MatchingUseCases, appRequestModel.UseCaseIds);
+
+        appRepository.CreateDeleteAppAssignedPrivacyPolicies(appId, appData.MatchingPrivacyPolicies, appRequestModel.PrivacyPolicies);
 
         _offerService.CreateOrUpdateOfferLicense(appId, appRequestModel.Provider, appData.OfferLicense);
         
@@ -477,16 +403,41 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting) =>
+    public Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting, OfferStatusIdFilter? offerStatusIdFilter) =>
         Pagination.CreateResponseAsync(page, size, 15,
             _portalRepositories.GetInstance<IOfferRepository>()
-                .GetAllInReviewStatusAppsAsync(_settings.OfferStatusIds, sorting ?? OfferSorting.DateDesc));
+                .GetAllInReviewStatusAppsAsync(GetOfferStatusIds(offerStatusIdFilter), sorting ?? OfferSorting.DateDesc));
 
     /// <inheritdoc/>
     public Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId) => 
-        _offerService.SubmitOfferAsync(appId, iamUserId, OfferTypeId.APP, _settings.SubmitAppNotificationTypeIds, _settings.CompanyAdminRoles);
+        _offerService.SubmitOfferAsync(appId, iamUserId, OfferTypeId.APP, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles);
     
     /// <inheritdoc/>
     public Task ApproveAppRequestAsync(Guid appId, string iamUserId) =>
         _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, (_settings.ApproveAppUserRoles));
+    
+    private IEnumerable<OfferStatusId> GetOfferStatusIds(OfferStatusIdFilter? offerStatusIdFilter)
+    {
+        switch(offerStatusIdFilter)
+        {
+            case OfferStatusIdFilter.InReview :
+            {
+               return new []{ OfferStatusId.IN_REVIEW };
+            }
+            default :
+            {
+                return _settings.OfferStatusIds;
+            }
+        }       
+    }
+
+    /// <inheritdoc/>
+    public  Task<PrivacyPolicyData> GetPrivacyPolicyDataAsync()
+    {   
+        return Task.FromResult(new PrivacyPolicyData(Enum.GetValues<PrivacyPolicyId>()));
+    }
+
+    /// <inheritdoc />
+    public Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data) => 
+        _offerService.DeclineOfferAsync(appId, iamUserId, data, OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.AppOverviewAddress);
 }

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Checklist.Worker": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

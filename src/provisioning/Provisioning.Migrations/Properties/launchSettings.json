@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Provisioning.Migrations": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

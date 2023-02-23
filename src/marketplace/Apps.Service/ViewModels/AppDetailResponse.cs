@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -28,8 +28,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// </summary>
 /// <param name="Id">ID of the app.</param>
 /// <param name="Title">Title or name of the app.</param>
-/// <param name="LeadPictureUri">Uri to app's lead picture.</param>
-/// <param name="DetailPictureUris">List of URIs to app's secondary pictures.</param>
+/// <param name="LeadPictureId">Uri to app's lead picture.</param>
+/// <param name="Images">List of Images to app's secondary pictures.</param>
 /// <param name="ProviderUri">Uri to provider's marketing presence.</param>
 /// <param name="Provider">Provider of the app.</param>
 /// <param name="ContactEmail">Email address of the app's primary contact.</param>
@@ -41,11 +41,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="IsSubscribed">Whether app has been purchased by the user's company.</param>
 /// <param name="Languages">Languages that the app is available in.</param>
 /// <param name="Documents">documents assigned to offer</param>
+/// <param name="PrivacyPolicies">Privacy Policies assigned to offer</param>
 public record AppDetailResponse(
     Guid Id,
     string Title,
-    string LeadPictureUri,
-    IEnumerable<string> DetailPictureUris,
+    Guid LeadPictureId,
+    IEnumerable<Guid> Images,
     string ProviderUri,
     string Provider,
     string? ContactEmail,
@@ -56,5 +57,6 @@ public record AppDetailResponse(
     IEnumerable<string> Tags,
     OfferSubscriptionStatusId? IsSubscribed,
     IEnumerable<string> Languages,
-    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents
+    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies
 );

@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -72,12 +72,13 @@ public partial class ProvisioningManager
             if (clientId == null || !roles.Any())
             {
                 yield return (Client: client, Roles: Enumerable.Empty<string>());
+                continue;
             }
             
             IEnumerable<string> assigned;
             try
             {
-                await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId!, roles).ConfigureAwait(false);
+                await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
                 assigned = roles.Select(role => role.Name);
             }
             catch (Exception)

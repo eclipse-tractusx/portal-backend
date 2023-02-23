@@ -355,7 +355,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"companyId\": \"{{companyId}}\",\n    \"bpn\": \"ASDF12345\",\n    \"name\": \"A CompanyName\",\n    \"shortName\": \"myCorp\",\n    \"city\": \"Berlin\",\n    \"region\": \"Brandenburg\",\n    \"streetadditional\": \"none\",\n    \"streetname\": \"MyStreet\",\n    \"streetnumber\": \"0815\",\n    \"zipcode\": \"01234\",\n    \"countryAlpha2Code\": \"DE\",\n    \"taxId\": \"0123456\"\n}",
+					"raw": "{\n    \"companyId\": \"{{companyId}}\",\n    \"bpn\": \"ASDF12345\",\n    \"name\": \"A CompanyName\",\n    \"shortName\": \"myCorp\",\n    \"city\": \"Berlin\",\n    \"region\": \"Brandenburg\",\n    \"streetadditional\": \"none\",\n    \"streetname\": \"MyStreet\",\n    \"streetnumber\": \"0815\",\n    \"zipcode\": \"01234\",\n    \"countryAlpha2Code\": \"DE\",\n}",
 					"options": {
 						"raw": {
 							"language": "json"

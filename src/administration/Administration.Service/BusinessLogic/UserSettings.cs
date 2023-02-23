@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -48,12 +48,12 @@ public class UserSetting
 {
     public UserSetting()
     {
-        KeyCloakClientID = null!;
+        KeycloakClientID = null!;
         BasePortalAddress = null!;
     }
 
     [Required(AllowEmptyStrings = false)]
-    public string KeyCloakClientID { get; set; }
+    public string KeycloakClientID { get; set; }
 
     [Required(AllowEmptyStrings = false)]
     public string BasePortalAddress { get; set; }

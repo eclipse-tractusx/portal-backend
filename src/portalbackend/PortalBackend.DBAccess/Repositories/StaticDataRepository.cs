@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -59,4 +60,27 @@ public class StaticDataRepository : IStaticDataRepository
                     )
                 ))
             .AsAsyncEnumerable();
+
+    ///<inheritdoc />
+    public Task<(IEnumerable<UniqueIdentifierId> IdentifierIds, bool IsValidCountryCode)> GetCompanyIdentifiers(string alpha2Code) =>
+        _dbContext.Countries
+            .AsNoTracking()
+            .Where(country => country.Alpha2Code == alpha2Code)
+            .Select(country => new ValueTuple<IEnumerable<UniqueIdentifierId>, bool>
+                (
+                   country.CountryAssignedIdentifiers.Select(countryAssignedIdentifier => countryAssignedIdentifier.UniqueIdentifierId),
+                   true
+                ))
+            .SingleOrDefaultAsync();
+    
+    public Task<(bool IsValidCountry, IEnumerable<(BpdmIdentifierId BpdmIdentifierId, UniqueIdentifierId UniqueIdentifierId)> Identifiers)> GetCountryAssignedIdentifiers(IEnumerable<BpdmIdentifierId> bpdmIdentifierIds, string countryAlpha2Code) =>
+        _dbContext.Countries
+            .AsNoTracking()
+            .Where(country => country.Alpha2Code == countryAlpha2Code)
+            .Select(country => new ValueTuple<bool,IEnumerable<(BpdmIdentifierId,UniqueIdentifierId)>>(
+                true,
+                country.CountryAssignedIdentifiers
+                    .Where(identifier => identifier.BpdmIdentifierId != null && bpdmIdentifierIds.Contains(identifier.BpdmIdentifierId.Value))
+                    .Select(identifier => new ValueTuple<BpdmIdentifierId,UniqueIdentifierId>(identifier.BpdmIdentifierId!.Value, identifier.UniqueIdentifierId))))
+            .SingleOrDefaultAsync();
 }

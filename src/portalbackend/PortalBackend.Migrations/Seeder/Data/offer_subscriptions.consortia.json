@@ -1,0 +1,202 @@
+[
+  {
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0572c0007",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "56d878d9-9574-4673-b32a-ebf5753042f5",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05748000d",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "b1964680-474d-45dd-b1c4-91f39f9a4c48",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0573f0009",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "56faf2e0-88ec-4ee5-a736-6c52688250f8",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05744000b",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "0b2ca541-206d-48ad-bc02-fb61fbcb5552",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0574c000f",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "1ab2e5e1-df8f-496b-aa12-c11067805992",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "offer_id": "f9cad59d-84b3-4880-a550-4072c26a6b93",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "02d5575d-b110-43f0-b0dd-53dbc37147dc",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "offer_id": "8488044e-b8df-403a-9cbd-16dad7e4a08c",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "34a93025-18de-4c7a-8677-0fd9801248d1",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "028265dd-82a8-4924-ab9a-a7b47dc2adfd",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "93eecd4e-ca47-4dd2-85bf-775ea72eb312",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d3",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "846ec83b-4b84-4c29-b7ce-3e57d7405844",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0572c0007",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05748000d",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "85064593-0aaa-48c4-95a2-2700223aca5e",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0573f0009",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "60f00bd0-98fe-4ed3-ad3b-90045921660c",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05744000b",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "d65e367c-0968-4be9-bd2a-6c3d6339d65c",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0574c000f",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "1d28a224-6293-4148-8b60-6714a0f1465d",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "offer_id": "f9cad59d-84b3-4880-a550-4072c26a6b93",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "6da4b991-b594-4b80-933a-26383d6d465f",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "offer_id": "8488044e-b8df-403a-9cbd-16dad7e4a08c",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "4ba33360-72e6-4a56-a253-59761d694d2c",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "4d44eb62-7ac8-4a4a-a0d0-fc3daca5edd5",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "11fd3bb9-6922-4b36-bc28-d30aded20231",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  },
+  {
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d3",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "1ab6c7c9-ff68-47da-aad4-b88d83b757cd",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
+  }
+]

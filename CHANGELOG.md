@@ -2,6 +2,219 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.0.0-RC10
+
+### Change
+* Seeding: updated base data image
+
+### Feature
+n/a
+
+### Technical Support
+* readme files updated and example values added
+
+### Bugfix
+* Self Description encoding fixed to improve readability of the json file
+* Administration Service
+  * decline registration endpoint enhanced by sending rejection message (if added) inside the email template to the respective company user
+  * updated permissions for clearinghouse-self-description endpoints (controller: registration & connector)
+  * TRIGGER_OVERRIDE_CLEARING_HOUSE step removed from SD checklist flow and added to clearinghouse process
+  * Checklist Handler updated by adding missing process steps for manual process flow
+* Seeding - fixed incorrect registration role name
+
+## 1.0.0-RC9
+
+### Change
+* Seeding: updated base data image
+* Autosetup functionality: autoset base url inside the new created keycloak client
+* Administration Service
+  * user management: user account creation email enabled for ownIdP and bulk user account creation
+* App Service
+  * app service enhanced by a new endpoint for the operator to get details of the app under review
+
+### Feature
+* Application Checklist Worker ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * Clearinghouse interface enhanced and further defined to enable full functionality with VC approval and SD creation
+* Document endpoints reworked in the business logic regarding access permissions of users to documents; additionally two new endpoints release to view SD documents and operator endpoint for application linked documents ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+
+### Technical Support
+* Application Checklist Worker
+  * unify service call error handling across the application checklist processes
+
+### Bugfix
+* Application Checklist Worker
+  * bpdm data push converted from enum to unique identifier string value
+  * checklist-worker fix checklist-processor failure on creation of subsequent process-steps
+* Email content for app subscription activation fixed with user specific values and app name
+
+## 1.0.0-RC8
+
+### Change
+* Registration Service: restructured endpoint GET api/registration/companyRoleAgreementData due to new db relationship for documents (see technical changes below) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* App Service:
+  * restructured endpoint GET: /api/apps/appreleaseprocess/agreementData due to new db relationship for documents (see technical changes below) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * added mandatory validation on app roles loaded for PUT: /api/apps/appreleaseprocess/{appId}/submit
+
+### Feature
+* Administration Service - application worker: 
+  * added retrigger functionality for application approval worker
+  * added automated process for bpdm data pull and push
+  * changed SD IF from synchron to async requests
+  * removed administration/registration/application/{applicationId}/declineRequest endpoint ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* Seeding data: added agreement_assigned_company_roles in the base image file
+* Offer (app) attribute released "Privacy_Policy" (new db tables; db relation updates; app endpoints enhanced with new attribute)
+
+### Technical Support
+* DB structure: agreement_assigned_document table relation updated to 1:n instead of n:m
+* Seeding process for static data added and unit tests released
+* enable registration and administration service to use config from env vars
+* temp fix for cve-2023-0286
+
+### Bugfix
+* Application approval checklist process handling fixed
+* Email "App Activation" - company name and URL attribute fixed
+
+## 1.0.0-RC7
+
+### Change
+n/a
+
+### Feature
+n/a
+
+### Technical Support
+* enable provisioning, appmarketplace and services service to use config from env vars
+
+### Bugfix
+* double creation of notifications for app activation fixed
+* registration approval: removing the company user assigned roles for a specific client id while activating the company
+
+## 1.0.0-RC6
+
+### Change
+* Apps & Service Services: auto set the releaseDate of an offer with the approval endpoint
+* App Service:
+  * POST endpoint to upload documents for services in currently under creation
+  * Endpoint controller switch of /app/decline from apps to appReleaseProcess ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* Checklist-Worker for Registration Service: updates implemented (full feature delivery still ongoing)
+
+### Feature
+n/a
+
+### Technical Support
+* enable migrations, portal maintenance and checklist-worker jobs as well as notification service to use config from env vars
+* remove initdb container setup - replaced by configmap in portal helm chart
+
+### Bugfix
+n/a
+
+## 1.0.0-RC5
+
+### Change
+* Identity Provider mappers "tenant" auto created for new identity provider created via administration service and registration service removed
+* Identity provider mappers "username" and "organisation" added company idp registration endpoints
+* Services Service - added document types and ids inside response of GET services/{serviceID}
+
+### Feature
+* Registration Service: add unique-identifiers to GET /CompanyWithAddress registration endpoint
+* Administration Service
+  * Further enhancements on the company application approval worker by including auto approval and sd factory jobs
+
+### Technical Support
+n/a
+
+### Bugfix
+* Welcome email "Join Now" button hyperlink added
+* Username added inside the 'app subscription activation email'
+* Switched long to short description attribute inside the GET services/active
+
+## 1.0.0-RC4
+
+### Change
+* Registration Service: new GET endpoint released for /legalEntityAddress/{bpn} with reworked and enhanced response body to support legal entity address and unique identifier handling
+* Administration Service: 
+  * POST & PUT endpoints for service provider url merged into PUT
+  * user creation endpoint - role attribute mandatorily set - minimum one role is mandatory
+* DB offer attribute "thumbnailUrl" removed and impacted endpoints updated ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+
+### Feature
+* Administration Service: Gaia-X Compliance release preparation with new wallet endpoint to create MIW for new CX members
+
+### Technical Support
+* Checklist worker enabled to support future application checklist process planned for R#3.0 with automatic process trigger based on configured application status sets
+* IdP creation logic - identity provider mapper "tenant" decommissioned
+
+### Bugfix
+* n/a
+
+## 1.0.0-RC3
+
+### Change
+* n/a
+
+### Feature
+* Registration service: GET and POST endpoints for applications enhanced by company unique identifier
+* Marketplace service: new endpoint to fetch app documents got released
+
+### Technical Support
+* n/a
+
+### Bugfix
+* Marketplace service: GET /app/details updated to exclude app images from document response
+
+## 1.0.0-RC2
+
+### Change
+* n/a
+
+### Feature
+* Registration service new endpoints for unique identifiers released (GET & POST)
+
+### Technical Support
+* Migration base image data load extended by country_assigned_unique_identifiers
+* Migration base image data load updates for countries and documents
+
+### Bugfix
+* App Release endpoints for updating app details and validation for submitting apps fixed/changed
+* Get /services/active response fix for shortDescription
+
+
+## 1.0.0-RC1
+
+### Change
+* Service Provider Detail Endpoints - ID deleted from path url; information fetched from user token
+* GET company application filters enabled
+* App LeadPicture (GET /api/apps/{appId} & GET /api/apps/appreleaseprocess/{appId}/appStatus) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* App LeadImage/Thumbnail URL got exchanged from a document name to an document id to be able to fetch the image from the portal.documents table
+
+
+### Feature
+* App Service
+  * enable filtering for app approval management function GET /inReview - (marketplace service; controller: appreleaseprocess)
+  * app deactivation endpoint created to enable marketplace deactivations - (marketplace service; controller: apps)
+* Registration Service
+  * enhanced business logic of POST /submitregistration by locking application related documents
+* Administration Service
+  * enhanced endpoint for GET /registration/applications by adding applied company roles
+  * enhanced endpoint for GET /companyDetailswithAddress by adding applied company roles, agreement consent status and invited users
+* Service cutting features - Service Account creation logic got updated after db attribute enhancement (see technical support section) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * Administration Service POST /owncompany/serviceaccounts business logic updated to handle service_account_type and subscription_id
+  * Administration Service GET /owncompany/serviceaccounts business logic and response body updated to handle service_account_type, subscription_id and  offer_name
+  * Service Service POST/autosetup business logic updated to handle service_account_type and store subscription_id
+
+### Technical Support
+* Migration: Data Seeding for db enabled with initial base data files for all db tables ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat) The data seeding enables delta data load
+* Db tables for unique identifier handling of companies added (portal.unique_identifiers; portal.country_assigned_identifiers; portal.company_identifiers)
+* Db attribute enhancement for company_service_accounts ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* Remove migration dev history by merging migration files to provide one initial release 1.0.0-RC1 db migration ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* Remove companies.tax_id attribute from portal db, data load files & api response
+* Email image urls of static images changed to new repo
+
+### Bugfix
+* Email template layout fixed for /nextsteps.html & /appprovider_subscription_request.html
+* Email parameter update for /declineappsubscription template
+* Registration service POST /application/{applicationId}/companyDetailsWithAddress address storing and overwrite logic fixed
+
 ## 0.10.0
 
 ### Change

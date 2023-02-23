@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.FileProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
@@ -28,14 +27,6 @@ var VERSION = "v2";
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Kubernetes")
-{
-    var provider = new PhysicalFileProvider("/app/secrets");
-    builder.Configuration.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: false);
-}
-
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
                 .AddPortalRepositories(builder.Configuration)
                 .AddProvisioningManager(builder.Configuration);
@@ -43,5 +34,5 @@ builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
 builder.Services.AddTransient<IClientBusinessLogic,ClientBusinessLogic>();
 
 builder.Build()
-    .CreateApp<Program>("provisioning", VERSION)
+    .CreateApp<Program>("provisioning", VERSION, builder.Environment)
     .Run();

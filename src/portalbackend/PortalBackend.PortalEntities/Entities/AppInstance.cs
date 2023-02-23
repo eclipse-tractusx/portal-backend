@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,9 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class AppInstance
+public class AppInstance : IBaseEntity
 {
     private AppInstance()
     {
@@ -35,8 +37,8 @@ public class AppInstance
     }
 
     public Guid Id { get; set; }
-    public Guid AppId { get; private set; }
-    public Guid IamClientId { get; private set; }
+    public Guid AppId { get; set; }
+    public Guid IamClientId { get; set; }
 
     // Navigation properties
     public virtual Offer? App { get; private set; }

@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -47,13 +48,13 @@ public class ServiceAccountCreation : IServiceAccountCreation
 
     /// <inheritdoc />
     public async Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, List<UserRoleData> userRoleData)> CreateServiceAccountAsync(
-        string name, 
-        string description, 
-        IamClientAuthMethod iamClientAuthMethod,
-        IEnumerable<Guid> userRoleIds, 
+        ServiceAccountCreationInfo creationData,
         Guid companyId,
-        IEnumerable<string> bpns)
+        IEnumerable<string> bpns,
+        CompanyServiceAccountTypeId companyServiceAccountTypeId,
+        Action<CompanyServiceAccount>? setOptionalParameter = null)
     {
+        var (name, description, iamClientAuthMethod, userRoleIds) = creationData;
         var serviceAccountsRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
 
         var userRoleData = await _portalRepositories.GetInstance<IUserRolesRepository>()
@@ -94,7 +95,9 @@ public class ServiceAccountCreation : IServiceAccountCreation
             companyId,
             CompanyServiceAccountStatusId.ACTIVE,
             name,
-            description);
+            description,
+            companyServiceAccountTypeId,
+            setOptionalParameter);
 
         serviceAccountsRepository.CreateIamServiceAccount(
             serviceAccountData.InternalClientId,

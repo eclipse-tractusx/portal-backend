@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -27,7 +27,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// </summary>
 /// <param name="Title"></param>
 /// <param name="Provider"></param>
-/// <param name="LeadPictureUri"></param>
+/// <param name="LeadPictureId"></param>
 /// <param name="ProviderName"></param>
 /// <param name="UseCase"></param>
 /// <param name="Descriptions"></param>
@@ -38,8 +38,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="ProviderUri"></param>
 /// <param name="ContactEmail"></param>
 /// <param name="ContactNumber"></param>
+/// <param name="PrivacyPolicies"></param>
 /// <returns></returns>
-public record OfferProviderData(string? Title, string Provider, string? LeadPictureUri, string? ProviderName, IEnumerable<string> UseCase, IEnumerable<OfferDescriptionData> Descriptions, IEnumerable<AgreementAssignedOfferData> Agreements, IEnumerable<string> SupportedLanguageCodes, string? Price, IEnumerable<string> Images, string? ProviderUri, string? ContactEmail, string? ContactNumber, IEnumerable<DocumentTypeData> Documents, Guid? SalesManagerId);
+public record OfferProviderData(
+    string? Title,
+    string Provider,
+    Guid LeadPictureId,
+    string? ProviderName,
+    IEnumerable<string> UseCase,
+    IEnumerable<OfferDescriptionData> Descriptions,
+    IEnumerable<AgreementAssignedOfferData> Agreements,
+    IEnumerable<string> SupportedLanguageCodes,
+    string? Price,
+    IEnumerable<Guid> Images,
+    string? ProviderUri,
+    string? ContactEmail,
+    string? ContactNumber,
+    IEnumerable<DocumentTypeData> Documents,
+    Guid? SalesManagerId,
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies
+);
 
 /// <summary>
 /// Model for Offer Description
@@ -48,7 +66,11 @@ public record OfferProviderData(string? Title, string Provider, string? LeadPict
 /// <param name="longDescription"></param>
 /// <param name="shortDescription"></param>
 /// <returns></returns>
-public record OfferDescriptionData(string languageCode, string longDescription, string shortDescription);
+public record OfferDescriptionData(
+    string languageCode,
+    string longDescription,
+    string shortDescription
+);
 
 /// <summary>
 /// 
@@ -56,4 +78,8 @@ public record OfferDescriptionData(string languageCode, string longDescription, 
 /// <param name="AgreementId"></param>
 /// <param name="AgreementName"></param>
 /// <returns></returns>
-public record AgreementAssignedOfferData(Guid AgreementId, string? AgreementName, ConsentStatusId? ConsentStatusId);
+public record AgreementAssignedOfferData(
+    Guid AgreementId,
+    string? AgreementName,
+    ConsentStatusId? ConsentStatusId
+);

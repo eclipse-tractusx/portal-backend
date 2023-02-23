@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -29,7 +29,6 @@ public partial class ProvisioningSettings
     public string CentralRealm { get; set; } = null!;
     public string IdpPrefix { get; set; }
     public string ClientPrefix { get; set; }
-    public string MappedIdpAttribute { get; set; }
     public string MappedCompanyAttribute { get; set; }
     public string MappedBpnAttribute { get; set; }
     public string UserNameMapperTemplate { get; set; }

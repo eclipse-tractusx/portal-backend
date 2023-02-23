@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -32,6 +32,14 @@ public static class HttpExtensions
         var options = new JsonSerializerOptions();
         options.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
         return await JsonSerializer.DeserializeAsync<T>(responseStream, options).ConfigureAwait(false) ?? throw new InvalidOperationException();
+    }
+
+    public static HttpContent ToJsonContent(this object data, JsonSerializerOptions options, string contentType)
+    {
+        var json = JsonSerializer.Serialize(data, options);
+        HttpContent content = new StringContent(json);
+        content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+        return content;
     }
     
     public static HttpContent ToFormContent(this string stringContent, string contentType)

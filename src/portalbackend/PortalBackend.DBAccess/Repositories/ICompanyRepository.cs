@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -36,10 +36,14 @@ public interface ICompanyRepository
     /// <returns>Created company entity.</returns>
     Company CreateCompany(string companyName);
 
-    void AttachAndModifyCompany(Guid companyId, Action<Company> setOptionalParameters);
+    void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify);
 
-    Address CreateAddress(string city, string streetname, string countryAlpha2Code);
-    
+    Address CreateAddress(string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters = null);
+
+    void AttachAndModifyAddress(Guid addressId, Action<Address>? initialize, Action<Address> modify);
+
+    void CreateUpdateDeleteIdentifiers(Guid companyId, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> initialItems, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> modifiedItems);
+
     Task<(string CompanyName, Guid CompanyId)> GetCompanyNameIdUntrackedAsync(string iamUserId);
 
     /// <summary>
@@ -47,14 +51,14 @@ public interface ICompanyRepository
     /// </summary>
     /// <param name="businessPartnerNumber">The business partner number</param>
     /// <returns>the company id or guid empty if not found</returns>
-    Task<Guid> GetCompanyIdByBpnAsync(string businessPartnerNumber);
+    Task<(Guid CompanyId, Guid? SelfDescriptionDocumentId)> GetCompanyIdAndSelfDescriptionDocumentByBpnAsync(string businessPartnerNumber);
 
     /// <summary>
     /// Get all member companies bpn
     /// </summary>
     /// <returns> Business partner numbers of all active companies</returns>
     IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync();
-    Task<CompanyWithAddress?> GetOwnCompanyDetailsAsync(string iamUserId);
+    Task<CompanyAddressDetailData?> GetOwnCompanyDetailsAsync(string iamUserId);
 
     /// <summary>
     /// Checks whether the iamUser is assigned to the company and the company exists
@@ -64,7 +68,7 @@ public interface ICompanyRepository
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
     Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(string iamUserId, CompanyRoleId companyRoleId);
 
-    Task<(bool IsValidServicProviderDetailsId, bool IsSameCompany)> CheckProviderCompanyDetailsExistsForUser(string iamUserId, Guid providerCompanyDetailsId);
+    Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(string iamUserId);
     
     /// <summary>
     /// Creates service provider company details
@@ -77,31 +81,24 @@ public interface ICompanyRepository
     /// <summary>
     /// Gets the service provider company details data
     /// </summary>
-    /// <param name="providerDetailDataId">Id of the details</param>
+    /// <param name="companyRoleId">Id of the details</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the details data</returns>
-    Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany, bool IsCompanyUser)> GetProviderCompanyDetailAsync(Guid providerDetailDataId, CompanyRoleId companyRoleId, string iamUserId);
+    Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, string iamUserId);
     
     /// <summary>
     /// Updates the service provider company details
     /// </summary>
     /// <param name="providerCompanyDetailId">Id of the service provider company details</param>
-    /// <param name="setOptionalParameters">sets the fields that should be updated.</param>
+    /// <param name="initialize">sets the fields that should be initialized.</param>
+    /// <param name="modify">sets the fields that should be updated.</param>
     /// <returns></returns>
-    void AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail> setOptionalParameters);
+    void AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail> initialize, Action<ProviderCompanyDetail> modify);
 
     /// <summary>
     /// Gets the business partner number for the given id
     /// </summary>
     /// <param name="companyId">Id of the company</param>
     /// <returns>Returns the business partner number</returns>
-    Task<string?> GetCompanyBpnByIdAsync(Guid companyId);
-
-    /// <summary>
-    /// Gets the bpdm data for the given application
-    /// </summary>
-    /// <param name="iamUserId">Id of the user</param>
-    /// <param name="applicationId">Id of the application</param>
-    /// <returns>Returns the bpdm data</returns>
-    Task<BpdmData?> GetBpdmDataForApplicationAsync(string iamUserId, Guid applicationId);
+    Task<(string? Bpn, Guid? SelfDescriptionDocumentId)> GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(Guid companyId);
 }

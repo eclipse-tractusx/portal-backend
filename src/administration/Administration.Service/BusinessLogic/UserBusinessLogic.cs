@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -76,7 +76,22 @@ public class UserBusinessLogic : IUserBusinessLogic
         _settings = settings.Value;
     }
 
-    public async IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, string iamUserId)
+    public IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, string iamUserId)
+    {
+        var noUserNameAndEmail = userList.Where(user => string.IsNullOrEmpty(user.userName) && string.IsNullOrEmpty(user.eMail));
+        if (noUserNameAndEmail.Any())
+        {
+            throw new ControllerArgumentException($"userName and eMail must not both be empty '{string.Join(", ", noUserNameAndEmail.Select(user => string.Join(" ", new []{ user.firstName, user.lastName }.Where(x => x != null))))}'");
+        }
+        var noRoles = userList.Where(user => !user.Roles.Any());
+        if (noRoles.Any())
+        {
+            throw new ControllerArgumentException($"at least one role must be specified for users '{string.Join(", ", noRoles.Select(user => user.userName ?? user.eMail ))}'");
+        }
+        return CreateOwnCompanyUsersInternalAsync(userList, iamUserId);
+    }
+
+    private async IAsyncEnumerable<string> CreateOwnCompanyUsersInternalAsync(IEnumerable<UserCreationInfo> userList, string iamUserId)
     {
         var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(iamUserId).ConfigureAwait(false);
 
@@ -137,7 +152,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         {
             Task.FromResult(Enumerable.Empty<UserRoleData>());
         }
-        return _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeyCloakClientID, roles, iamUserId);
+        return _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, roles, iamUserId);
     }
 
     public async Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo, string iamUserId)
@@ -173,12 +188,13 @@ public class UserBusinessLogic : IUserBusinessLogic
             { "url", _settings.Portal.BasePortalAddress },
         };
 
-        var mailTemplates = new List<string>() { "NewUserTemplate" };
+        var mailTemplates = companyNameIdpAliasData.IsSharedIdp
+            ? new [] { "NewUserTemplate", "NewUserPasswordTemplate" }
+            : new [] { "NewUserOwnIdpTemplate" };
 
         if (companyNameIdpAliasData.IsSharedIdp)
         {
             mailParameters["password"] = result.Password;
-            mailTemplates.Add("NewUserPasswordTemplate");
         }
 
         try

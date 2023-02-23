@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -68,5 +68,12 @@ public interface IConnectorsRepository
     /// <param name="connectorId">Id of the connector</param>
     /// <param name="setOptionalParameters">Action to set the parameters</param>
     /// <returns>The updated connector</returns>
-    Connector AttachAndModifyConnector(Guid connectorId, Action<Connector>? setOptionalParameters = null);
+    Connector AttachAndModifyConnector(Guid connectorId, Action<Connector> setOptionalParameters);
+
+    /// <summary>
+    /// Checks whether the connector exists
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    /// <returns><c>true</c> if the connector exists, otherwise <c>false</c></returns>
+    Task<(Guid ConnectorId, Guid? SelfDescriptionDocumentId)> GetConnectorDataById(Guid connectorId);
 }

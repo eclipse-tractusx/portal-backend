@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -30,17 +30,14 @@ public interface IServiceProviderBusinessLogic
     /// <summary>
     /// Gets the service provider company details
     /// </summary>
-    /// <param name="serviceProviderDetailDataId">Id of the service provider details</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>The detail data</returns>
-    Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, string iamUserId);
+    Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(string iamUserId);
 
     /// <summary>
-    /// Creates service provider company details
+    /// Sets service provider company details
     /// </summary>
     /// <param name="data">Detail data for the service provider</param>
     /// <param name="iamUserId">Id of the iam user</param>
-    Task<Guid> CreateServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId);
-
-    Task UpdateServiceProviderCompanyDetailsAsync(Guid serviceProviderDetailDataId, ServiceProviderDetailData data, string iamUserId);
+    Task SetServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId);
 }

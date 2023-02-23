@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -129,7 +129,7 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="userId">IAM ID of the user to retrieve own company app.</param>
     /// <returns>Async enumberable of company owned apps data</returns>
-    IAsyncEnumerable<AllAppData> GetCompanyProvidedAppsDataForUserAsync(string userId);
+    IAsyncEnumerable<AllOfferData> GetCompanyProvidedAppsDataForUserAsync(string userId);
 
     /// <summary>
     /// Auto setup the app.
@@ -147,10 +147,18 @@ public interface IAppsBusinessLogic
     IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId);
 
     /// <summary>
-    /// Declines the app request
+    /// Deactivate Offer Status by appId
     /// </summary>
     /// <param name="appId">Id of the app</param>
     /// <param name="iamUserId">Id of the iamUser</param>
-    /// <param name="data">The decline request data</param>
-    Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data);
+    public Task DeactivateOfferbyAppIdAsync(Guid appId, string iamUserId);
+
+    /// <summary>
+    /// Retrieve Document Content for document type "App Lead Image" and "App Image" by ID
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="documentId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>byte Array Content</returns>
+    Task<(byte[] Content, string ContentType, string FileName)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken);
 }

@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -60,10 +60,6 @@ public class AppReleaseProcessControllerTest
             {
                 new("en", "This is a long description", "description")
             },
-            new[]
-            {
-                "https://test.com/image.jpg"
-            },
             "https://test.provider.com",
             null,
             null);
@@ -87,7 +83,7 @@ public class AppReleaseProcessControllerTest
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         A.CallTo(() => _logic.CreateAppDocumentAsync(A<Guid>._, A<DocumentTypeId>._, A<FormFile>._, A<string>._, A<CancellationToken>._))
-            .Returns(1);
+            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         await this._controller.UpdateAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None).ConfigureAwait(false);
@@ -123,7 +119,7 @@ public class AppReleaseProcessControllerTest
     public async Task GetOfferAgreementData_ReturnsExpectedResult()
     {
         //Arrange
-        var data = _fixture.CreateMany<AgreementData>(5).ToAsyncEnumerable();
+        var data = _fixture.CreateMany<AgreementDocumentData>(5).ToAsyncEnumerable();
         A.CallTo(() => _logic.GetOfferAgreementDataAsync())
             .Returns(data);
 
@@ -249,7 +245,6 @@ public class AppReleaseProcessControllerTest
         var data = new AppRequestModel(
             "Test",
             "Test Provider",
-            "https://test.de",
             Guid.NewGuid(),
             new []
             {
@@ -263,7 +258,11 @@ public class AppReleaseProcessControllerTest
             {
                 "https://test.com/image.jpg"
             },
-            "19€");
+            "19€",
+            new[]
+            {
+                PrivacyPolicyId.COMPANY_DATA 
+            });
         A.CallTo(() => _logic.UpdateAppReleaseAsync(A<Guid>._, A<AppRequestModel>._, A<string>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
@@ -280,14 +279,14 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var paginationResponse = new Pagination.Response<InReviewAppData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<InReviewAppData>(5));
-        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(A<int>._, A<int>._,A<OfferSorting?>._))
+        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(A<int>._, A<int>._,A<OfferSorting?>._,null))
             .ReturnsLazily(() => paginationResponse);
 
         //Act
         var result = await this._controller.GetAllInReviewStatusAppsAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(0, 15, null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetAllInReviewStatusAppsAsync(0, 15, null, null)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
 
@@ -329,7 +328,7 @@ public class AppReleaseProcessControllerTest
         }
     }
 
-     [Fact]
+    [Fact]
     public async Task ApproveAppRequest_ReturnsExpectedCount()
     {
         //Arrange
@@ -343,5 +342,22 @@ public class AppReleaseProcessControllerTest
         //Assert
         A.CallTo(() => _logic.ApproveAppRequestAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
+    }
+
+     [Fact]
+    public async Task DeclineAppRequest_ReturnsNoContent()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var data = new OfferDeclineRequest("Just a test");
+        A.CallTo(() => _logic.DeclineAppRequestAsync(A<Guid>._, A<string>._, A<OfferDeclineRequest>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.DeclineAppRequest(appId, data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.DeclineAppRequestAsync(appId, IamUserId, data)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 }

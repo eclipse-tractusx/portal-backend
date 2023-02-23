@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,12 +19,12 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -53,35 +53,6 @@ public class UserRepository : IUserRepository
                 ApplicationStatus = companyApplication.ApplicationStatusId
             })
             .AsAsyncEnumerable();
-
-    public Task<RegistrationData?> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes) =>
-        _dbContext.IamUsers
-            .AsNoTracking()
-            .Where(iamUser =>
-                iamUser.UserEntityId == iamUserId
-                && iamUser.CompanyUser!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-            .Select(iamUser => iamUser.CompanyUser!.Company)
-            .Select(company => new RegistrationData(
-                company!.Id,
-                company.Name,
-                company.CompanyAssignedRoles!.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                company.CompanyUsers.SelectMany(companyUser => companyUser!.Documents!.Where(document=>documentTypes.Contains(document.DocumentTypeId)).Select(document => new RegistrationDocumentNames(document.DocumentName))),
-                company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
-                    .Select(consent => new AgreementConsentStatusForRegistrationData(
-                        consent.AgreementId, consent.ConsentStatusId)))
-            {
-                City = company.Address!.City,
-                Streetname = company.Address.Streetname,
-                CountryAlpha2Code = company.Address.CountryAlpha2Code,
-                BusinessPartnerNumber = company.BusinessPartnerNumber,
-                Shortname = company.Shortname,
-                Region = company.Address.Region,
-                Streetadditional = company.Address.Streetadditional,
-                Streetnumber = company.Address.Streetnumber,
-                Zipcode = company.Address.Zipcode,
-                CountryDe = company.Address.Country!.CountryNameDe,
-                TaxId = company.TaxId
-            }).SingleOrDefaultAsync();
 
     public CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId,
         CompanyUserStatusId companyUserStatusId, Guid lastEditorId) =>
@@ -122,7 +93,6 @@ public class UserRepository : IUserRepository
         string? email = null,
         IEnumerable<CompanyUserStatusId>? statusIds = null)
         {
-        char[] escapeChar = { '%', '_', '[', ']', '^' };
         return _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.IamUser!.UserEntityId == adminUserId)
             .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
@@ -131,7 +101,7 @@ public class UserRepository : IUserRepository
                 (!companyUserId.HasValue || companyUser.Id == companyUserId.Value) &&
                 (firstName == null || companyUser.Firstname == firstName) &&
                 (lastName == null || companyUser.Lastname == lastName) &&
-                (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email.Trim(escapeChar)}%")) &&
+                (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email.EscapeForILike()}%")) &&
                 (statusIds == null || statusIds.Contains(companyUser.CompanyUserStatusId)));
         }
 
@@ -328,9 +298,9 @@ public class UserRepository : IUserRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser, string CompanyShortName, Guid CompanyId)> GetCompanyUserWithIamUserCheckAndCompanyShortName(string iamUserId, Guid? salesManagerId) => 
+    public IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser, string CompanyName, Guid CompanyId)> GetCompanyUserWithIamUserCheckAndCompanyName(string iamUserId, Guid? salesManagerId) => 
         _dbContext.CompanyUsers.Where(x => x.IamUser!.UserEntityId == iamUserId || (salesManagerId.HasValue && x.Id == salesManagerId.Value))
-            .Select(companyUser => new ValueTuple<Guid, bool, string, Guid>(companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId, companyUser.Company!.Shortname!, companyUser.CompanyId))
+            .Select(companyUser => new ValueTuple<Guid, bool, string, Guid>(companyUser.Id, companyUser.IamUser!.UserEntityId == iamUserId, companyUser.Company!.Name, companyUser.CompanyId))
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
@@ -357,21 +327,21 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<string> GetCompanyUserEmailForCompanyAndRoleId(IEnumerable<Guid> userRoleIds, Guid companyId) =>
+    public IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForCompanyAndRoleId(IEnumerable<Guid> userRoleIds, Guid companyId) =>
         _dbContext.CompanyUsers
-            .Where(x => 
+            .Where(x =>
                 x.CompanyId == companyId &&
-                x.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && 
+                x.CompanyUserStatusId == CompanyUserStatusId.ACTIVE &&
                 x.UserRoles.Any(ur => userRoleIds.Contains(ur.Id)) &&
                 x.Email != null)
-            .Select(x => x.Email!)
+            .Select(x => new ValueTuple<string, string?, string?>(x.Email!, x.Firstname, x.Lastname))
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
     public Task<Guid> GetServiceAccountCompany(string iamUserId) =>
         _dbContext.IamServiceAccounts
             .Where(x => x.UserEntityId == iamUserId)
-            .Select(x => x.CompanyServiceAccount!.CompanyId)
+            .Select(x => x.CompanyServiceAccount!.ServiceAccountOwnerId)
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -424,14 +394,7 @@ public class UserRepository : IUserRepository
         IEnumerable<CompanyUserStatusId> companyUserStatusIds,
         CompanyUserFilter filter)
     {
-        var regex = new Regex(@"(?=[\%\\_])", RegexOptions.IgnorePatternWhitespace);
-
         var (firstName, lastName, email, roleName, hasRole) = filter;
-
-        firstName = firstName == null ? null : regex.Replace(firstName, @"\"); 
-        lastName = lastName == null ? null : regex.Replace(lastName!, @"\"); 
-        email = email == null ? null : regex.Replace(email!, @"\"); 
-        roleName = roleName == null ? null : regex.Replace(roleName!, @"\");
 
         return (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
@@ -441,10 +404,10 @@ public class UserRepository : IUserRepository
                                     companyUser.Company!.OfferSubscriptions.Any(subscription => subscription.OfferId == appId && subscriptionStatusIds.Contains(subscription.OfferSubscriptionStatusId)))
                 .SelectMany(companyUser => companyUser.Company!.CompanyUsers)
                 .Where(companyUser => 
-                    (firstName == null || EF.Functions.ILike(companyUser.Firstname!, $"%{firstName}%")) &&
-                    (lastName == null || EF.Functions.ILike(companyUser.Lastname!, $"%{lastName}%")) &&
-                    (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email}%")) &&
-                    (roleName == null || companyUser.UserRoles.Any(userRole => userRole.OfferId == appId && EF.Functions.ILike(userRole.UserRoleText, $"%{roleName}%"))) &&
+                    (firstName == null || EF.Functions.ILike(companyUser.Firstname!, $"%{firstName.EscapeForILike()}%")) &&
+                    (lastName == null || EF.Functions.ILike(companyUser.Lastname!, $"%{lastName.EscapeForILike()}%")) &&
+                    (email == null || EF.Functions.ILike(companyUser.Email!, $"%{email.EscapeForILike()}%")) &&
+                    (roleName == null || companyUser.UserRoles.Any(userRole => userRole.OfferId == appId && EF.Functions.ILike(userRole.UserRoleText, $"%{roleName.EscapeForILike()}%"))) &&
                     (!hasRole.HasValue || !hasRole.Value || companyUser.UserRoles.Any(userRole => userRole.Offer!.Id == appId)) &&
                     (!hasRole.HasValue || hasRole.Value || companyUser.UserRoles.All(userRole => userRole.Offer!.Id != appId)) &&
                     companyUserStatusIds.Contains(companyUser.CompanyUserStatusId))

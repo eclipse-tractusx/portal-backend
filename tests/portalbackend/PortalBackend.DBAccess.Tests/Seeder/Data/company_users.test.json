@@ -1,0 +1,14 @@
+[
+  {
+    "id": "cd436931-8399-4c1d-bd81-7dffb298c7ca",
+    "date_created": "2022-03-24 18:01:33.570000 +00:00",
+    "date_last_changed": "2022-03-24 18:01:33.570000 +00:00",
+    "email": "inactive-user@mail.com",
+    "firstname": "User",
+    "lastlogin": null,
+    "lastname": "Inactive",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "company_user_status_id": 2,
+    "last_editor_id": null
+  }
+]

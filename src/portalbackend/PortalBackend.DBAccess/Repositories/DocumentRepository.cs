@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -92,8 +92,29 @@ public class DocumentRepository : IDocumentRepository
     public Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, string iamUserId) =>
         this._dbContext.Documents
             .Where(x => x.Id == documentId)
-            .Select(x => ((Guid DocumentId, bool IsSameUser))new (x.Id, x.CompanyUser!.IamUser!.UserEntityId == iamUserId))
+            .Select(x => new ValueTuple<Guid, bool>(x.Id, x.CompanyUser!.IamUser!.UserEntityId == iamUserId))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(byte[]? Content, string FileName, bool IsUserInCompany)> GetDocumentDataAndIsCompanyUserAsync(Guid documentId, string iamUserId) =>
+        this._dbContext.Documents
+            .Where(x => x.Id == documentId)
+            .Select(x => new {
+                Document = x,
+                IsUserInSameCompany = x.CompanyUser!.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)
+            })
+            .Select(x => new ValueTuple<byte[]?, string, bool>(
+                x.IsUserInSameCompany ? x.Document.DocumentContent : null,
+                x.Document.DocumentName,
+                x.IsUserInSameCompany))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(byte[] Content, string FileName)> GetDocumentDataByIdAndTypeAsync(Guid documentId, DocumentTypeId documentTypeId) =>
+        _dbContext.Documents
+        .Where(x => x.Id == documentId && x.DocumentTypeId == documentTypeId)
+        .Select(x => new ValueTuple<byte[], string>(x.DocumentContent, x.DocumentName))
+        .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public void RemoveDocument(Guid documentId) => 
@@ -119,4 +140,53 @@ public class DocumentRepository : IDocumentRepository
                 x.Document.DocumentTypeId,
                 x.Applications.Any(companyApplication => applicationStatusIds.Contains(companyApplication.ApplicationStatusId))))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public void AttachAndModifyDocument(Guid documentId, Action<Document>? initialize, Action<Document> modify)
+    {
+        var document = new Document(documentId, null!, null!, null!, default, default, default);
+        initialize?.Invoke(document);
+        _dbContext.Attach(document);
+        modify(document);
+    }
+
+    /// <inheritdoc />
+    public Task<DocumentSeedData?> GetDocumentSeedDataByIdAsync(Guid documentId) =>
+        _dbContext.Documents
+            .AsNoTracking()
+            .Where(x => x.Id == documentId)
+            .Select(doc => new DocumentSeedData(
+                doc.Id,
+                doc.DateCreated,
+                doc.DocumentName,
+                (int)doc.DocumentTypeId,
+                doc.CompanyUserId,
+                doc.DocumentHash,
+                doc.DocumentContent,
+                (int)doc.DocumentStatusId))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
+        _dbContext.Documents
+            .Where(document => document.Id == documentId)
+            .Select(document => new {
+                Offer = document.Offers.SingleOrDefault(offer => offer.Id == offerId),
+                Document = document
+            })
+            .Select(x => new {
+                IsValidDocumentType = documentTypeIds.Contains(x.Document.DocumentTypeId),
+                IsDocumentLinkedToOffer = x.Offer != null,
+                IsValidOfferType = x.Offer!.OfferTypeId == offerTypeId,
+                Document = x.Document
+            })
+            .Select(x => new ValueTuple<bool, bool, bool, byte[]?, bool, string>(
+                x.IsValidDocumentType,
+                x.IsDocumentLinkedToOffer,
+                x.IsValidOfferType,
+                x.IsValidDocumentType && x.IsDocumentLinkedToOffer && x.IsValidOfferType ? x.Document.DocumentContent : null,
+                true,
+                x.Document.DocumentName
+            ))
+            .SingleOrDefaultAsync(cancellationToken);
 }

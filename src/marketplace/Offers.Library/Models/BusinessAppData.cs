@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,4 +23,4 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 /// <summary>
 /// Basic model for data needed in business application display.
 /// </summary>
-public record BusinessAppData(Guid Id, string Name, string Uri, string LeadPictureUri, string Provider);
+public record BusinessAppData(Guid Id, string Name, string Uri, Guid LeadPictureId, string Provider);

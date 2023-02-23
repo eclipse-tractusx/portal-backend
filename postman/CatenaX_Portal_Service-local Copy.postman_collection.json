@@ -107,7 +107,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"title\": \"First test service\",\r\n  \"price\": \"42\",\r\n   \"thumbnailUrl\": \"\",\r\n   \"contactEmail\": \"info@tester.de\",\r\n   \"salesManager\": \"ac1cf001-7fbc-1f2f-817f-bce058020001\",\r\n    \"descriptions\": [\r\n        {\r\n            \"languageCode\": \"de\",\r\n            \"description\" : \"Das ist ein neuer service\"\r\n        },\r\n        {\r\n            \"languageCode\": \"en\",\r\n            \"description\" : \"Thats a new service\"\r\n        }\r\n    ]\r\n}",
+					"raw": "{\r\n  \"title\": \"First test service\",\r\n  \"price\": \"42\",\r\n   \"contactEmail\": \"info@tester.de\",\r\n   \"salesManager\": \"ac1cf001-7fbc-1f2f-817f-bce058020001\",\r\n    \"descriptions\": [\r\n        {\r\n            \"languageCode\": \"de\",\r\n            \"description\" : \"Das ist ein neuer service\"\r\n        },\r\n        {\r\n            \"languageCode\": \"en\",\r\n            \"description\" : \"Thats a new service\"\r\n        }\r\n    ]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"

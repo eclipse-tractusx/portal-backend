@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -66,6 +66,22 @@ public interface IDocumentRepository
     Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, string iamUserId);
 
     /// <summary>
+    /// Get the document data and checks if the user 
+    /// </summary>
+    /// <param name="documentId">id of the document</param>
+    /// <param name="iamUserId">id of the iamUser</param>
+    /// <returns>Returns the document data</returns>
+    Task<(byte[]? Content, string FileName, bool IsUserInCompany)> GetDocumentDataAndIsCompanyUserAsync(Guid documentId, string iamUserId);
+
+    /// <summary>
+    /// Gets the document data for the given id and type
+    /// </summary>
+    /// <param name="documentId">id of the document</param>
+    /// <param name="documentTypeId">type of the document</param>
+    /// <returns>Returns the document data</returns>
+    Task<(byte[] Content, string FileName)> GetDocumentDataByIdAndTypeAsync(Guid documentId, DocumentTypeId documentTypeId);
+    
+    /// <summary>
     ///Deleting document record and document file from the portal db/document storage location
     /// </summary>
     /// <param name="documentId">The documentId that should be removed</param>
@@ -78,4 +94,29 @@ public interface IDocumentRepository
     /// <param name="iamUserId"></param>
     /// <param name="applicationStatusIds"></param>
     Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, string iamUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
+
+    /// <summary>
+    /// Attaches the document and sets the optional parameters
+    /// </summary>
+    /// <param name="documentId">Id of the document</param>
+    /// <param name="initialize">Action to initialize the entity with values before the change</param>
+    /// <param name="modify">Action to set the values that are subject to change</param>
+    void AttachAndModifyDocument(Guid documentId, Action<Document>? initialize, Action<Document> modify);
+
+    /// <summary>
+    /// Gets the document seed data for the given id
+    /// </summary>
+    /// <param name="documentId">Id of the document</param>
+    /// <returns>The document seed data</returns>
+    Task<DocumentSeedData?> GetDocumentSeedDataByIdAsync(Guid documentId);
+
+    /// <summary>
+    /// Retrieve Document TypeId , Content and validate app link to document
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="documentId"></param>
+    /// <param name="appDocumentTypeIds"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken);
 }

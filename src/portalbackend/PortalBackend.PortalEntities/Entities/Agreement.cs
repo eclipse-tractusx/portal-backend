@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,10 +20,11 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class Agreement
+public class Agreement : IBaseEntity
 {
     private Agreement()
     {
@@ -32,7 +33,6 @@ public class Agreement
         AgreementAssignedCompanyRoles = new HashSet<AgreementAssignedCompanyRole>();
         AgreementAssignedOffers = new HashSet<AgreementAssignedOffer>();
         AgreementAssignedOfferTypes = new HashSet<AgreementAssignedOfferType>();
-        Documents = new HashSet<Document>();
     }
 
     public Agreement(Guid id, AgreementCategoryId agreementCategoryId, string name, DateTimeOffset dateCreated) : this()
@@ -61,6 +61,8 @@ public class Agreement
 
     public Guid? UseCaseId { get; set; }
 
+    public Guid? DocumentId { get; set; }
+
     // Navigation properties
     public virtual AgreementCategory? AgreementCategory { get; set; }
     public virtual Company? IssuerCompany { get; set; }
@@ -69,5 +71,5 @@ public class Agreement
     public virtual ICollection<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; private set; }
     public virtual ICollection<AgreementAssignedOffer> AgreementAssignedOffers { get; private set; }
     public virtual ICollection<AgreementAssignedOfferType> AgreementAssignedOfferTypes { get; private set; }
-    public virtual ICollection<Document> Documents { get; private set; }
+    public virtual Document? Document { get; set; }
 }

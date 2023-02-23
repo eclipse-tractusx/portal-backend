@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -56,7 +56,7 @@ public interface IAgreementRepository
     /// </summary>
     /// <param name="categoryId"></param>
     /// <returns></returns>
-    IAsyncEnumerable<AgreementData> GetAgreementDataForOfferType(OfferTypeId offerTypeId);
+    IAsyncEnumerable<AgreementDocumentData> GetAgreementDataForOfferType(OfferTypeId offerTypeId);
 
     /// <summary>
     /// Return matching Agreement and Consent for agreement category app_contract and offer id

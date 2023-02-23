@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,11 +22,13 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record AppUpdateData
-(OfferStatusId OfferState,
+public record AppUpdateData(
+    OfferStatusId OfferState,
     bool IsUserOfProvider,
     IEnumerable<(string, string, string)> OfferDescriptions,
     IEnumerable<(string Shortname, bool IsMatch)> Languages,
     IEnumerable<Guid> MatchingUseCases, 
     ValueTuple<Guid, string, bool> OfferLicense,
-    Guid? SalesManagerId);
+    Guid? SalesManagerId,
+    IEnumerable<PrivacyPolicyId> MatchingPrivacyPolicies
+);

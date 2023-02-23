@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 Microsoft and BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,18 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-using System.Net;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
 {
@@ -60,9 +59,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <param name="authorization">the authorization</param>
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>Returns a List with one company</returns>
-        /// <remarks>Example: Get: /api/registration/company/{bpn}CAXSDUMMYCATENAZZ</remarks>
+        /// <remarks>Example: GET /api/registration/company/{bpn}CAXSDUMMYCATENAZZ</remarks>
         /// <response code="200">Returns the company</response>
         /// <response code="503">The requested service responded with the given error.</response>
+        [Obsolete($"use {nameof(GetCompanyBpdmDetailDataAsync)} instead")]
         [HttpGet]
         [Authorize(Roles = "add_company_data")]
         [Route("company/{bpn}")]
@@ -71,6 +71,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
         public IAsyncEnumerable<FetchBusinessPartnerDto> GetOneObjectAsync([FromRoute] string bpn, [FromHeader] string authorization, CancellationToken cancellationToken) => 
             _registrationBusinessLogic.GetCompanyByIdentifierAsync(bpn, authorization.Split(" ")[1], cancellationToken);
+
+        /// <summary>
+        /// Gets legal entity and address data from bpdm by its bpn
+        /// </summary>
+        /// <param name="bpn" example="BPNL000000055EPN">The bpn to get the company for</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>Returns a List with one company</returns>
+        /// <remarks>Example: Get: /api/registration/legalEntityAddress/BPNL000000055EPN</remarks>
+        /// <response code="200">Returns the company</response>
+        /// <response code="503">The requested service responded with the given error.</response>
+        [HttpGet]
+        [Authorize(Roles = "add_company_data")]
+        [Route("legalEntityAddress/{bpn}")]
+        [ProducesResponseType(typeof(BpdmLegalAddressDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+        public Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataAsync([FromRoute] string bpn, CancellationToken cancellationToken) => 
+            this.WithBearerToken(token => _registrationBusinessLogic.GetCompanyBpdmDetailDataByBusinessPartnerNumber(bpn, token, cancellationToken));
 
         /// <summary>
         /// Uploads a document
@@ -116,7 +134,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
             var (fileName, content) = await this.WithIamUserId(user => _registrationBusinessLogic.GetDocumentContentAsync(documentId, user));
             return File(content, "application/pdf", fileName);
         }
-        
+
         /// <summary>
         /// Gets documents for a specific document type and application
         /// </summary>
@@ -146,7 +164,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(List<string>), (int)HttpStatusCode.OK)]
         public IAsyncEnumerable<string> GetClientRolesComposite() =>
             _registrationBusinessLogic.GetClientRolesCompositeAsync();
-            
+
         /// <summary>
         /// Gets the applications with each status
         /// </summary>
@@ -204,16 +222,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/companyDetailsWithAddress")]
-        [ProducesResponseType(typeof(CompanyWithAddress), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CompanyDetailData), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public Task<CompanyWithAddress> GetCompanyWithAddressAsync([FromRoute] Guid applicationId) =>
-            _registrationBusinessLogic.GetCompanyWithAddressAsync(applicationId);
+        public Task<CompanyDetailData> GetCompanyDetailDataAsync([FromRoute] Guid applicationId) =>
+            this.WithIamUserId(iamUserId =>
+                _registrationBusinessLogic.GetCompanyDetailData(applicationId, iamUserId));
 
         /// <summary>
         /// Sets the company with its address for the given application id
         /// </summary>
         /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application to set the company for.</param>
-        /// <param name="companyWithAddress">The company with its address</param>
+        /// <param name="companyDetailData">The company with its address</param>
         /// <remarks>Example: Post: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyDetailsWithAddress</remarks>
         /// <response code="200">Successfully set the company with its address</response>
         /// <response code="400">A request parameter was incorrect.</response>
@@ -224,9 +243,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public Task SetCompanyWithAddressAsync([FromRoute] Guid applicationId, [FromBody] CompanyWithAddress companyWithAddress) =>
+        public Task SetCompanyDetailDataAsync([FromRoute] Guid applicationId, [FromBody] CompanyDetailData companyDetailData) =>
             this.WithIamUserId(iamUserId =>
-                _registrationBusinessLogic.SetCompanyWithAddressAsync(applicationId, companyWithAddress, iamUserId));
+                _registrationBusinessLogic.SetCompanyDetailDataAsync(applicationId, companyDetailData, iamUserId));
 
         /// <summary>
         /// Invites the given user to the given application
@@ -300,8 +319,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <summary>
         /// Submits a registration
         /// </summary>
+        /// <param name="applicationId" example="4f0146c6-32aa-4bb1-b844-df7e8babdcb4">Id of the application to submit registration</param>
         /// <returns>Returns ok</returns>
-        /// <remarks>Example: Post: /api/registration/submitregistration</remarks>
+        /// <remarks>Example: Post: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/submitRegistration</remarks>
         /// <response code="200">Successfully submitted the registration</response>
         [HttpPost]
         [Authorize(Roles = "submit_registration")]
@@ -349,12 +369,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <remarks>Example: Get: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/registrationData</remarks>
         /// <response code="200">Returns the registration data</response>
         /// <response code="403">The user id is not associated with CompanyApplication.</response>
+        /// <response code="404">The application does not exist.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
         [Route("application/{applicationId}/registrationData")]
-        [ProducesResponseType(typeof(RegistrationData), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CompanyRegistrationData), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-         public Task<RegistrationData> GetRegistrationDataAsync([FromRoute] Guid applicationId) =>
+         public Task<CompanyRegistrationData> GetRegistrationDataAsync([FromRoute] Guid applicationId) =>
             this.WithIamUserId(iamUserId => 
                 _registrationBusinessLogic.GetRegistrationDataAsync(applicationId,iamUserId));
 
@@ -371,7 +393,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(IAsyncEnumerable<CompanyRolesDetails>), StatusCodes.Status200OK)]
         public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync([FromQuery] string? languageShortName = null) =>
             _registrationBusinessLogic.GetCompanyRoles(languageShortName);
-        
+
         /// <summary>
         /// Deletes the document with the given id
         /// </summary>
@@ -394,5 +416,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
             await this.WithIamUserId(iamUserId => _registrationBusinessLogic.DeleteRegistrationDocumentAsync(documentId, iamUserId));
             return NoContent();
         }
+
+        /// <summary>
+        ///  Gets the company Identifier for Country Alpha2Code
+        /// </summary>
+        /// <param name="alpha2Code">Country Alpha2Code</param>
+        /// <remarks>Example: Get: /api/registration/company/country/{alpha2Code}/uniqueidentifiers</remarks>
+        /// <response code="200">Returns the Company Identifier data</response>
+        /// <response code="404">The Unique Identifier for Country was not found.</response>
+        /// <returns></returns>
+        [HttpGet]
+        [Authorize(Roles = "view_registration")]
+        [Route("company/country/{alpha2Code}/uniqueidentifiers")]
+        [ProducesResponseType(typeof(IEnumerable<UniqueIdentifierData>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public  Task<IEnumerable<UniqueIdentifierData>> GetCompanyIdentifiers([FromRoute] string alpha2Code) =>
+            _registrationBusinessLogic.GetCompanyIdentifiers(alpha2Code);
     }
 }

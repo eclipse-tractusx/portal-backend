@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -91,11 +91,15 @@ public partial class ProvisioningManager
         await keycloak.CreateClientAsync(realm,newClient).ConfigureAwait(false);
     }
 
-    private async Task<string> CreateCentralOIDCClientAsync(string clientId, string redirectUri)
+    private async Task<string> CreateCentralOIDCClientAsync(string clientId, string redirectUri, string? baseUrl)
     {
         var newClient = Clone(_Settings.CentralOIDCClient);
         newClient.ClientId = clientId;
         newClient.RedirectUris = Enumerable.Repeat<string>(redirectUri, 1);
+        if (!string.IsNullOrEmpty(baseUrl))
+        {
+            newClient.BaseUrl = baseUrl;
+        }
         var newClientId = await _CentralIdp.CreateClientAndRetrieveClientIdAsync(_Settings.CentralRealm, newClient).ConfigureAwait(false);
         if (newClientId == null)
         {

@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 Microsoft and BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -24,7 +24,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -34,6 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
@@ -46,6 +46,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
+    private readonly IChecklistCreationService _checklistService;
+
+    private static readonly Regex bpnRegex = new Regex(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
 
     public RegistrationBusinessLogic(
         IOptions<RegistrationSettings> settings,
@@ -54,7 +57,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IProvisioningManager provisioningManager,
         IUserProvisioningService userProvisioningService,
         ILogger<RegistrationBusinessLogic> logger,
-        IPortalRepositories portalRepositories)
+        IPortalRepositories portalRepositories,
+        IChecklistCreationService checklistService)
     {
         _settings = settings.Value;
         _mailingService = mailingService;
@@ -63,20 +67,117 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _userProvisioningService = userProvisioningService;
         _logger = logger;
         _portalRepositories = portalRepositories;
+        _checklistService = checklistService;
     }
 
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
-        _portalRepositories.GetInstance<IUserRolesRepository>().GetClientRolesCompositeAsync(_settings.KeyCloakClientID);
+        _portalRepositories.GetInstance<IUserRolesRepository>().GetClientRolesCompositeAsync(_settings.KeycloakClientID);
 
+    [Obsolete($"use {nameof(GetCompanyBpdmDetailDataByBusinessPartnerNumber)} instead")]
     public IAsyncEnumerable<FetchBusinessPartnerDto> GetCompanyByIdentifierAsync(string companyIdentifier, string token, CancellationToken cancellationToken)
     {
-        var regex = new Regex(@"(\w|\d){16}");
-        if (!regex.IsMatch(companyIdentifier))
+        if (!bpnRegex.IsMatch(companyIdentifier))
         {
-            throw new ArgumentException("BPN must contain exactly 16 digits or letters.", nameof(companyIdentifier));
+            throw new ControllerArgumentException("BPN must contain exactly 16 digits or letters.", nameof(companyIdentifier));
         }
 
         return _bpnAccess.FetchBusinessPartner(companyIdentifier, token, cancellationToken);
+    }
+
+    public Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataByBusinessPartnerNumber(string businessPartnerNumber, string token, CancellationToken cancellationToken)
+    {
+        if (!bpnRegex.IsMatch(businessPartnerNumber))
+        {
+            throw new ControllerArgumentException("BPN must contain exactly 16 digits or letters.", nameof(businessPartnerNumber));
+        }
+        return GetCompanyBpdmDetailDataByBusinessPartnerNumberInternal(businessPartnerNumber, token, cancellationToken);
+    }
+
+    private async Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataByBusinessPartnerNumberInternal(string businessPartnerNumber, string token, CancellationToken cancellationToken)
+    {
+        var legalEntity = await _bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, cancellationToken).ConfigureAwait(false);
+        if (!businessPartnerNumber.Equals(legalEntity.Bpn, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ConflictException("Bpdm did return incorrect bpn legal-entity-data");
+        }
+        BpdmLegalEntityAddressDto? legalEntityAddress;
+        try
+        {
+            legalEntityAddress = await _bpnAccess.FetchLegalEntityAddressByBpn(businessPartnerNumber, token, cancellationToken).SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch(InvalidOperationException)
+        {
+            throw new ConflictException($"bpdm returned more than a single legalEntityAddress for {businessPartnerNumber}");
+        }
+        if (legalEntityAddress == null)
+        {
+            throw new ConflictException($"bpdm returned no legalEntityAddress for {businessPartnerNumber}");
+        }
+        if (!businessPartnerNumber.Equals(legalEntityAddress.LegalEntity, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ConflictException("Bpdm did return incorrect bpn address-data");
+        }
+
+        var legalAddress = legalEntityAddress.LegalAddress;
+
+        var country = legalAddress.Country.TechnicalKey;
+
+        var bpdmIdentifiers = ParseBpdmIdentifierDtos(legalEntity.Identifiers).ToList();
+        var assignedIdentifiersResult = await _portalRepositories.GetInstance<IStaticDataRepository>()
+            .GetCountryAssignedIdentifiers(bpdmIdentifiers.Select(x => x.BpdmIdentifierId), country).ConfigureAwait(false);
+
+        if (!assignedIdentifiersResult.IsValidCountry)
+        {
+            throw new ConflictException($"Bpdm did return invalid country {country} in address-data");
+        }
+
+        var portalIdentifiers = assignedIdentifiersResult.Identifiers.Join(
+                bpdmIdentifiers,
+                assignedIdentifier => assignedIdentifier.BpdmIdentifierId,
+                bpdmIdentifier => bpdmIdentifier.BpdmIdentifierId,
+                (countryIdentifier, bpdmIdentifier) => (countryIdentifier.UniqueIdentifierId, bpdmIdentifier.Value));
+
+        TItem? SingleOrDefaultChecked<TItem>(IEnumerable<TItem> items, string itemName)
+        {
+            try
+            {
+                return items.SingleOrDefault();
+            } catch (InvalidOperationException)
+            {
+                throw new ConflictException($"bpdm returned more than a single {itemName} in legal entity for {businessPartnerNumber}");
+            }
+        }
+
+        BpdmNameDto? name = SingleOrDefaultChecked(legalEntity.Names, nameof(name));
+        string? administrativeArea = SingleOrDefaultChecked(legalAddress.AdministrativeAreas, nameof(administrativeArea))?.Value;
+        string? postCode = SingleOrDefaultChecked(legalAddress.PostCodes, nameof(postCode))?.Value;
+        string? locality = SingleOrDefaultChecked(legalAddress.Localities, nameof(locality))?.Value;
+        BpdmThoroughfareDto? thoroughfare = SingleOrDefaultChecked(legalAddress.Thoroughfares, nameof(thoroughfare));
+
+        return new CompanyBpdmDetailData(
+            businessPartnerNumber,
+            country,
+            name?.Value ?? "",
+            name?.ShortName ?? "",
+            locality ?? "",
+            thoroughfare?.Value ?? "",
+            administrativeArea,
+            null, // TODO clarify how to map from bpdm data
+            thoroughfare?.Number,
+            postCode,
+            portalIdentifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value))
+        );
+    }
+
+    private static IEnumerable<(BpdmIdentifierId BpdmIdentifierId, string Value)> ParseBpdmIdentifierDtos(IEnumerable<BpdmIdentifierDto> bpdmIdentifierDtos)
+    {
+        foreach (var identifier in bpdmIdentifierDtos)
+        {
+            if (Enum.TryParse<BpdmIdentifierId>(identifier.Type.TechnicalKey, out var bpdmIdentifierId))
+            {
+                yield return (bpdmIdentifierId, identifier.Value);
+            }
+        }
     }
 
     public async Task<int> UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, string iamUserId, CancellationToken cancellationToken)
@@ -153,85 +254,187 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
     }
 
-    public async Task<CompanyWithAddress> GetCompanyWithAddressAsync(Guid applicationId)
+    public async Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId, string iamUserId)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyWithAdressUntrackedAsync(applicationId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationDetailDataAsync(applicationId, iamUserId).ConfigureAwait(false);
         if (result == null)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} not found");
         }
-        return result;
+        if (result.CompanyUserId == Guid.Empty)
+        {
+            throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
+        }
+        return new CompanyDetailData(
+            result.CompanyId,
+            result.Name,
+            result.City ?? "",
+            result.Streetname ?? "",
+            result.CountryAlpha2Code ?? "",
+            result.BusinessPartnerNumber,
+            result.ShortName,
+            result.Region,
+            result.Streetadditional,
+            result.Streetnumber,
+            result.Zipcode,
+            result.CountryNameDe,
+            result.UniqueIds.Select(id => new CompanyUniqueIdData(id.UniqueIdentifierId, id.Value))
+        );
     }
 
-    public Task SetCompanyWithAddressAsync(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId)
+    public Task SetCompanyDetailDataAsync(Guid applicationId, CompanyDetailData companyDetails, string iamUserId)
     {
-        if (string.IsNullOrWhiteSpace(companyWithAddress.Name))
+        if (string.IsNullOrWhiteSpace(companyDetails.Name))
         {
-            throw new ControllerArgumentException("Name must not be empty", nameof(companyWithAddress.Name));
+            throw new ControllerArgumentException("Name must not be empty", nameof(companyDetails.Name));
         }
-        if (string.IsNullOrWhiteSpace(companyWithAddress.City))
+        if (string.IsNullOrWhiteSpace(companyDetails.City))
         {
-            throw new ControllerArgumentException("City must not be empty", nameof(companyWithAddress.City));
+            throw new ControllerArgumentException("City must not be empty", nameof(companyDetails.City));
         }
-        if (string.IsNullOrWhiteSpace(companyWithAddress.StreetName))
+        if (string.IsNullOrWhiteSpace(companyDetails.StreetName))
         {
-            throw new ControllerArgumentException("Streetname must not be empty", nameof(companyWithAddress.StreetName));
+            throw new ControllerArgumentException("Streetname must not be empty", nameof(companyDetails.StreetName));
         }
-        if (companyWithAddress.CountryAlpha2Code.Length != 2)
+        if (companyDetails.CountryAlpha2Code.Length != 2)
         {
-            throw new ControllerArgumentException("CountryAlpha2Code must be 2 chars", nameof(companyWithAddress.CountryAlpha2Code));
+            throw new ControllerArgumentException("CountryAlpha2Code must be 2 chars", nameof(companyDetails.CountryAlpha2Code));
         }
-        return SetCompanyWithAddressInternal(applicationId, companyWithAddress, iamUserId);
+        var emptyIds = companyDetails.UniqueIds.Where(uniqueId => string.IsNullOrWhiteSpace(uniqueId.Value));
+        if (emptyIds.Any())
+        {
+            throw new ControllerArgumentException($"uniqueIds must not contain empty values: '{string.Join(", ", emptyIds.Select(uniqueId => uniqueId.UniqueIdentifierId))}'", nameof(companyDetails.UniqueIds));
+        }
+        var distinctIds = companyDetails.UniqueIds.DistinctBy(uniqueId => uniqueId.UniqueIdentifierId);
+        if (distinctIds.Count() < companyDetails.UniqueIds.Count())
+        {
+            var duplicateIds = companyDetails.UniqueIds.Except(distinctIds);
+            throw new ControllerArgumentException($"uniqueIds must not contain duplicate types: '{string.Join(", ", duplicateIds.Select(uniqueId => uniqueId.UniqueIdentifierId))}'", nameof(companyDetails.UniqueIds));
+        }
+        return SetCompanyDetailDataInternal(applicationId, companyDetails, iamUserId);
     }
 
-    private async Task SetCompanyWithAddressInternal(Guid applicationId, CompanyWithAddress companyWithAddress, string iamUserId)
+    private async Task SetCompanyDetailDataInternal(Guid applicationId, CompanyDetailData companyDetails, string iamUserId)
     {
+        await ValidateCountryAssignedIdentifiers(companyDetails).ConfigureAwait(false);
+
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+        var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+
+        var companyApplicationData = await GetAndValidateApplicationData(applicationId, companyDetails, iamUserId, applicationRepository).ConfigureAwait(false);
+
+        var addressId = CreateOrModifyAddress(companyApplicationData, companyDetails, companyRepository);
+
+        ModifyCompany(addressId, companyApplicationData, companyDetails, companyRepository);
+
+        companyRepository.CreateUpdateDeleteIdentifiers(companyDetails.CompanyId, companyApplicationData.UniqueIds, companyDetails.UniqueIds.Select(x => (x.UniqueIdentifierId, x.Value)));
+
+        UpdateApplicationStatus(applicationId, companyApplicationData.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository);
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    private async Task ValidateCountryAssignedIdentifiers(CompanyDetailData companyDetails)
+    {
+        if (companyDetails.UniqueIds.Any())
+        {
+            var assignedIdentifiers = await _portalRepositories.GetInstance<ICountryRepository>()
+                .GetCountryAssignedIdentifiers(
+                    companyDetails.CountryAlpha2Code,
+                    companyDetails.UniqueIds.Select(uniqueId => uniqueId.UniqueIdentifierId))
+                .ConfigureAwait(false);
+
+            if (!assignedIdentifiers.IsValidCountry)
+            {
+                throw new ControllerArgumentException($"{companyDetails.CountryAlpha2Code} is not a valid country-code", nameof(companyDetails.UniqueIds));
+            }
+            if (assignedIdentifiers.UniqueIdentifierIds.Count() < companyDetails.UniqueIds.Count())
+            {
+                var invalidIds = companyDetails.UniqueIds.ExceptBy(assignedIdentifiers.UniqueIdentifierIds, uniqueId => uniqueId.UniqueIdentifierId);
+                throw new ControllerArgumentException($"invalid uniqueIds for country {companyDetails.CountryAlpha2Code}: '{string.Join(", ", invalidIds.Select(uniqueId => uniqueId.UniqueIdentifierId))}'", nameof(companyDetails.UniqueIds));
+            }
+        }
+    }
+
+    private static async Task<CompanyApplicationDetailData> GetAndValidateApplicationData(Guid applicationId, CompanyDetailData companyDetails, string iamUserId, IApplicationRepository applicationRepository)
+    {
         var companyApplicationData = await applicationRepository
-            .GetCompanyApplicationWithCompanyAdressUserDataAsync(applicationId, companyWithAddress.CompanyId, iamUserId)
+            .GetCompanyApplicationDetailDataAsync(applicationId, iamUserId, companyDetails.CompanyId)
             .ConfigureAwait(false);
+
         if (companyApplicationData == null)
         {
             throw new NotFoundException(
-                $"CompanyApplication {applicationId} for CompanyId {companyWithAddress.CompanyId} not found");
+                $"CompanyApplication {applicationId} for CompanyId {companyDetails.CompanyId} not found");
         }
 
         if (companyApplicationData.CompanyUserId == Guid.Empty)
         {
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
         }
+        return companyApplicationData;
+    }
 
-        var company = companyApplicationData.CompanyApplication.Company!;
-
-        company.BusinessPartnerNumber = companyWithAddress.BusinessPartnerNumber;
-        company.Name = companyWithAddress.Name;
-        company.Shortname = companyWithAddress.Shortname;
-        company.TaxId = companyWithAddress.TaxId;
-        if (company.Address == null)
+    private static Guid CreateOrModifyAddress(CompanyApplicationDetailData initialData, CompanyDetailData modifyData, ICompanyRepository companyRepository)
+    {
+        if (initialData.AddressId.HasValue)
         {
-            company.Address = _portalRepositories.GetInstance<ICompanyRepository>().CreateAddress(
-                companyWithAddress.City,
-                companyWithAddress.StreetName,
-                companyWithAddress.CountryAlpha2Code
+            companyRepository.AttachAndModifyAddress(
+                initialData.AddressId.Value,
+                a => {
+                    a.City = initialData.City!;
+                    a.Streetname = initialData.Streetname!;
+                    a.CountryAlpha2Code = initialData.CountryAlpha2Code!;
+                    a.Zipcode = initialData.Zipcode;
+                    a.Region = initialData.Region;
+                    a.Streetadditional = initialData.Streetadditional;
+                    a.Streetnumber = initialData.Streetnumber;
+                },
+                a => {
+                    a.City = modifyData.City;
+                    a.Streetname = modifyData.StreetName;
+                    a.CountryAlpha2Code = modifyData.CountryAlpha2Code;
+                    a.Zipcode = modifyData.ZipCode;
+                    a.Region = modifyData.Region;
+                    a.Streetadditional = modifyData.StreetAdditional;
+                    a.Streetnumber = modifyData.StreetNumber;
+                }
             );
+            return initialData.AddressId.Value;
         }
         else
         {
-            company.Address.City = companyWithAddress.City;
-            company.Address.Streetname = companyWithAddress.StreetName;
-            company.Address.CountryAlpha2Code = companyWithAddress.CountryAlpha2Code;
+            return companyRepository.CreateAddress(
+                modifyData.City,
+                modifyData.StreetName,
+                modifyData.CountryAlpha2Code,
+                a => {
+                    a.Zipcode = modifyData.ZipCode;
+                    a.Region = modifyData.Region;
+                    a.Streetadditional = modifyData.StreetAdditional;
+                    a.Streetnumber = modifyData.StreetNumber;
+                }
+            ).Id;
         }
-
-        company.Address.Zipcode = companyWithAddress.Zipcode;
-        company.Address.Region = companyWithAddress.Region;
-        company.Address.Streetadditional = companyWithAddress.Streetadditional;
-        company.Address.Streetnumber = companyWithAddress.Streetnumber;
-        company.CompanyStatusId = CompanyStatusId.PENDING;
-
-        UpdateApplicationStatus(applicationId, companyApplicationData.CompanyApplication.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository);
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
+
+    private static void ModifyCompany(Guid addressId, CompanyApplicationDetailData initialData, CompanyDetailData modifyData, ICompanyRepository companyRepository) =>
+        companyRepository.AttachAndModifyCompany(
+            modifyData.CompanyId,
+            c => {
+                c.BusinessPartnerNumber = initialData.BusinessPartnerNumber;
+                c.Name = initialData.Name;
+                c.Shortname = initialData.ShortName;
+                c.CompanyStatusId = initialData.CompanyStatusId;
+                c.AddressId = initialData.AddressId;
+            },
+            c => {
+                c.BusinessPartnerNumber = modifyData.BusinessPartnerNumber;
+                c.Name = modifyData.Name;
+                c.Shortname = modifyData.ShortName;
+                c.CompanyStatusId = CompanyStatusId.PENDING;
+                c.AddressId = addressId;
+            });
 
     public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, string iamUserId)
     {
@@ -256,7 +459,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         if (userCreationInfo.Roles.Any())
         {
             var clientRoles = new Dictionary<string,IEnumerable<string>> {
-                { _settings.KeyCloakClientID, userCreationInfo.Roles }
+                { _settings.KeycloakClientID, userCreationInfo.Roles }
             };
             userRoleDatas = await _userProvisioningService.GetRoleDatas(clientRoles).ToListAsync().ConfigureAwait(false);
         }
@@ -418,12 +621,27 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new NotFoundException($"application {applicationId} does not exist");
         }
+
         if (applicationUserData.CompanyUserId == Guid.Empty)
         {
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
         }
+         
+        if (applicationUserData.DocumentDatas.Any())
+        {
+            var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+            foreach(var document in applicationUserData.DocumentDatas) 
+            {
+                documentRepository.AttachAndModifyDocument(
+                    document.DocumentId,
+                    doc => doc.DocumentStatusId = document.StatusId,
+                    doc => doc.DocumentStatusId = DocumentStatusId.LOCKED);
+            }
+        }
 
         UpdateApplicationStatus(applicationId, applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration, applicationRepository);
+        await _checklistService.CreateInitialChecklistAsync(applicationId);
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         var mailParameters = new Dictionary<string, string>
@@ -433,7 +651,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         if (applicationUserData.Email != null)
         {
-            await _mailingService.SendMails(applicationUserData.Email, mailParameters, new List<string> { "SubmitRegistrationTemplate" });
+            await _mailingService.SendMails(applicationUserData.Email, mailParameters, new [] { "SubmitRegistrationTemplate" });
         }
         else
         {
@@ -447,7 +665,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         await foreach (var item in _portalRepositories.GetInstance<IInvitationRepository>().GetInvitedUserDetailsUntrackedAsync(applicationId).ConfigureAwait(false))
         {
-            var userRoles = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeyCloakClientID).ConfigureAwait(false);
+            var userRoles = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeycloakClientID).ConfigureAwait(false);
             yield return new InvitedUser(
                 item.InvitationStatus,
                 item.EmailId,
@@ -488,14 +706,39 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<RegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId)
+    public async Task<CompanyRegistrationData> GetRegistrationDataAsync(Guid applicationId, string iamUserId)
     {
-        var registrationData = await _portalRepositories.GetInstance<IUserRepository>().GetRegistrationDataUntrackedAsync(applicationId, iamUserId, _settings.DocumentTypeIds).ConfigureAwait(false);
-        if (registrationData == null)
+        var (isValidApplicationId, isSameCompanyUser, data) = await _portalRepositories.GetInstance<IApplicationRepository>().GetRegistrationDataUntrackedAsync(applicationId, iamUserId, _settings.DocumentTypeIds).ConfigureAwait(false);
+        if (!isValidApplicationId)
+        {
+            throw new NotFoundException($"application {applicationId} does not exist");
+        }
+        if (!isSameCompanyUser)
         {
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
         }
-        return registrationData;
+        if (data == null)
+        {
+            throw new UnexpectedConditionException($"registrationData should never be null for application {applicationId}");
+        }
+        return new CompanyRegistrationData(
+            data.CompanyId,
+            data.Name,
+            data.BusinessPartnerNumber,
+            data.ShortName,
+            data.City,
+            data.Region,
+            data.StreetAdditional,
+            data.StreetName,
+            data.StreetNumber,
+            data.ZipCode,
+            data.CountryAlpha2Code,
+            data.CountryDe,
+            data.CompanyRoleIds,
+            data.AgreementConsentStatuses.Select(consentStatus => new AgreementConsentStatusForRegistrationData(consentStatus.AgreementId, consentStatus.ConsentStatusId)),
+            data.DocumentNames.Select(name => new RegistrationDocumentNames(name)),
+            data.Identifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value))
+        );
     }
 
     public IAsyncEnumerable<CompanyRolesDetails> GetCompanyRoles(string? languageShortName = null) =>
@@ -614,6 +857,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 {
                     ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
                 });
+
                 break;
             }
         }
@@ -652,5 +896,16 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         return true;
+    }
+
+    public async Task<IEnumerable<UniqueIdentifierData>> GetCompanyIdentifiers(string alpha2Code)
+    {
+        var uniqueIdentifierData = await _portalRepositories.GetInstance<IStaticDataRepository>().GetCompanyIdentifiers(alpha2Code).ConfigureAwait(false);
+        
+        if(!uniqueIdentifierData.IsValidCountryCode)
+        {
+            throw new NotFoundException($"invalid country code {alpha2Code}");
+        }
+        return uniqueIdentifierData.IdentifierIds.Select(identifierId => new UniqueIdentifierData((int)identifierId, identifierId));
     }
 }

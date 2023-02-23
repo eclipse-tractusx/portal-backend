@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -62,7 +62,7 @@ public interface IOfferRepository
     /// </summary>
     /// <param name="languageShortName">The optional language shortName</param>
     /// <returns>Returns a async enumerable of (Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName)</returns>
-    IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName);
+    IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, Guid LeadPictureId, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName);
 
     /// <summary>
     /// Gets the details of an app by its id
@@ -109,6 +109,8 @@ public interface IOfferRepository
     /// <param name="appUseCases">The use cases that should be added to the database</param>
     void AddAppAssignedUseCases(IEnumerable<(Guid appId, Guid useCaseId)> appUseCases);
 
+    void CreateDeleteAppAssignedUseCases(Guid appId, IEnumerable<Guid> initialUseCases, IEnumerable<Guid> modifyUseCases);
+
     /// <summary>
     /// Adds <see cref="OfferDescription"/>s to the database
     /// </summary>
@@ -136,7 +138,7 @@ public interface IOfferRepository
     /// </summary>
     /// <param name="iamUserId">IAM ID of the user to retrieve own company app.</param>
     /// <returns>Return Async Enumerable of App Data</returns>
-    IAsyncEnumerable<AllAppData> GetProvidedAppsData(string iamUserId);
+    IAsyncEnumerable<AllOfferData> GetProvidedOffersData(OfferTypeId offerTypeId, string iamUserId);
     
     /// <summary>
     /// Gets the client roles for a specific app
@@ -155,17 +157,8 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <returns>ValueTuple, first item is true if the app is in status CREATED,
     /// second item is true if the user is eligible to edit it</returns>
-    Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> Descriptions, IEnumerable<(Guid Id, string Url)> ImageUrls)> GetAppDetailsForUpdateAsync(Guid appId, string userId);
+    Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, string userId, OfferTypeId offerTypeId);
     
-    /// <summary>
-    /// Add App Detail Images
-    /// </summary>
-    /// <param name="appImages"></param>
-    void AddAppDetailImages(IEnumerable<(Guid appId, string imageUrl)> appImages);
-
-    void RemoveOfferDetailImages(IEnumerable<Guid> imageIds);
-
-    /// <summary>
     /// Get Offer Release data by Offer Id
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
@@ -233,7 +226,7 @@ public interface IOfferRepository
     /// <param name="offerStatusId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(bool OfferExists, Guid CompanyUserId)> GetProviderCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, OfferTypeId offerTypeId);
+    Task<(bool OfferExists, bool IsStatusCreated, Guid CompanyUserId)> GetProviderCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, OfferTypeId offerTypeId);
     
     /// <summary>
     /// Verify that user is linked to the appId ,offerstatus is in created state and roleId exist
@@ -256,8 +249,7 @@ public interface IOfferRepository
     Task<AppUpdateData?> GetAppUpdateData(
         Guid appId,
         string iamUserId,
-        IEnumerable<string> languageCodes,
-        IEnumerable<Guid> useCaseIds);
+        IEnumerable<string> languageCodes);
 
     /// <summary>
     /// Updates the licenseText of the given offerLicense
@@ -319,5 +311,29 @@ public interface IOfferRepository
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="offerType">Type of the offer</param>
     /// <returns>Returns the data needed to decline an offer</returns>
-    Task<(string? OfferName, OfferStatusId OfferStatus, Guid? CompanyId, bool IsUserOfProvider)> GetOfferDeclineDataAsync(Guid offerId, string iamUserId, OfferTypeId offerType);
+    Task<(string? OfferName, OfferStatusId OfferStatus, Guid? CompanyId)> GetOfferDeclineDataAsync(Guid offerId, string iamUserId, OfferTypeId offerType);
+    
+    /// <summary>
+    /// Retireve and Validate Offer Status for App
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name ="iamUserId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task<(bool IsStatusActive, bool IsUserCompanyProvider)> GetOfferActiveStatusDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId);
+    
+    /// <summary>
+    /// Adds <see cref="OfferAssignedPrivacyPolicy"/>s to the database
+    /// </summary>
+    /// <param name="privacyPolicies">The privacy policies that should be added to the database</param>
+    void AddAppAssignedPrivacyPolicies(IEnumerable<(Guid appId, PrivacyPolicyId privacyPolicy)> privacyPolicies);
+    
+    /// <summary>
+    /// Add offer Id and privacy policy Id in Offer Assigned Privacy Policies table 
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="initialPrivacyPolicy"></param>
+    /// <param name="modifyPrivacyPolicy"></param>
+    /// <returns></returns>
+    void CreateDeleteAppAssignedPrivacyPolicies(Guid appId, IEnumerable<PrivacyPolicyId> initialPrivacyPolicy, IEnumerable<PrivacyPolicyId> modifyPrivacyPolicy);
 }

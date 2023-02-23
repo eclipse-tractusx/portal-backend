@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,7 +19,8 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
@@ -29,18 +30,16 @@ public interface IServiceAccountCreation
     /// <summary>
     /// Creates the technical user account and stores the client in the service account table
     /// </summary>
-    /// <param name="name">Name of the technical user</param>
-    /// <param name="description">description for the service account table</param>
-    /// <param name="iamClientAuthMethod">Method of the iam client authentication</param>
-    /// <param name="userRoleIds">Ids of the user roles that should be assigned</param>
+    /// <param name="creationData">Creation Data</param>
     /// <param name="companyId">Id of the company the technical user is created for</param>
     /// <param name="bpns">Optional list of bpns to set for the user</param>
+    /// <param name="companyServiceAccountTypeId">The type of the created service account</param>
+    /// <param name="setOptionalParameter"></param>
     /// <returns>Returns information about the created technical user</returns>
     Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, List<UserRoleData> userRoleData)> CreateServiceAccountAsync(
-        string name, 
-        string description, 
-        IamClientAuthMethod iamClientAuthMethod, 
-        IEnumerable<Guid> userRoleIds, 
+        ServiceAccountCreationInfo creationData,
         Guid companyId,
-        IEnumerable<string> bpns);
+        IEnumerable<string> bpns,
+        CompanyServiceAccountTypeId companyServiceAccountTypeId,
+        Action<CompanyServiceAccount>? setOptionalParameter = null);
 }
