@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -33,7 +33,7 @@ public class AppsSettings
     /// </summary>
     /// <value></value>
     [Required]
-    public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
+    public IDictionary<string,IEnumerable<string>> CatenaAdminRoles { get; set; } = null!;
 
     /// <summary>
     /// Notification Type Id
@@ -122,6 +122,26 @@ public class AppsSettings
     /// Max page size for pagination
     /// </summary>
     public int ApplicationsMaxPageSize { get; set; }
+    
+    /// <summary>
+    /// Document Type Id for App Image
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<DocumentTypeId> AppImageDocumentTypeIds { get; set; } = null!;
+
+    /// <summary>
+    /// IT Admin Roles
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IDictionary<string,IEnumerable<string>> ITAdminRoles { get; set; } = null!;
+
+    /// <summary>
+    /// UserManagementAddress url required for subscription email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string UserManagementAddress { get; init; } = null!;
 }
 
 /// <summary>

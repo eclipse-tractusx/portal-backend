@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -257,7 +257,7 @@ public class AppsControllerTests
     public async Task GetAppDataAsync_ReturnsExpectedCount()
     {
         //Arrange
-        var data = new AsyncEnumerableStub<AllAppData>(_fixture.CreateMany<AllAppData>(5));
+        var data = new AsyncEnumerableStub<AllOfferData>(_fixture.CreateMany<AllOfferData>(5));
         A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(A<string>._))
             .Returns(data.AsAsyncEnumerable());
 
@@ -266,7 +266,7 @@ public class AppsControllerTests
 
         //Assert
         A.CallTo(() => _logic.GetCompanyProvidedAppsDataForUserAsync(IamUserId)).MustHaveHappenedOnceExactly();
-        result.Should().HaveCount(5);
+        result.Should().HaveSameCount(data);
     }
     
     [Fact]
@@ -307,21 +307,39 @@ public class AppsControllerTests
         Assert.IsType<OfferAutoSetupResponseData>(result);
         result.Should().Be(responseData);
     }
-        
+
     [Fact]
-    public async Task DeclineAppRequest_ReturnsNoContent()
+    public async Task DeactivateApp_ReturnsNoContent()
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        var data = new OfferDeclineRequest("Just a test");
-        A.CallTo(() => _logic.DeclineAppRequestAsync(A<Guid>._, A<string>._, A<OfferDeclineRequest>._))
+        A.CallTo(() => _logic.DeactivateOfferbyAppIdAsync(A<Guid>._, A<string>._))
             .ReturnsLazily(() => Task.CompletedTask);
+        
+        //Act
+        var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);
+        
+        //Assert
+        A.CallTo(() => _logic.DeactivateOfferbyAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>(); 
+    }
+
+    [Fact]
+    public async Task GetAppImageDocumentContentAsync_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var content = _fixture.Create<byte[]>();
+        var fileName = _fixture.Create<string>();
+        
+        A.CallTo(() => _logic.GetAppImageDocumentContentAsync(A<Guid>._ , A<Guid>._, A<CancellationToken>._))
+            .ReturnsLazily(() => (content,"image/png",fileName));
 
         //Act
-        var result = await this._controller.DeclineAppRequest(appId, data).ConfigureAwait(false);
+        var result = await this._controller.GetAppImageDocumentContentAsync(appId,documentId,CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.DeclineAppRequestAsync(appId, IamUserId, data)).MustHaveHappenedOnceExactly();
-        result.Should().BeOfType<NoContentResult>();
+        A.CallTo(() => _logic.GetAppImageDocumentContentAsync(A<Guid>._ , A<Guid>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 }

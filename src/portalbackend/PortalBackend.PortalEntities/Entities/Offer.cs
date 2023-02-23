@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,11 +22,12 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditOffer20221013))]
-public class Offer : IAuditableV1
+[AuditEntityV1(typeof(AuditOffer20230119))]
+public class Offer : IAuditableV1, IBaseEntity
 {
     private Offer()
     {
@@ -34,7 +35,6 @@ public class Offer : IAuditableV1
         OfferType = null!;
         AgreementAssignedOffers = new HashSet<AgreementAssignedOffer>();
         OfferDescriptions = new HashSet<OfferDescription>();
-        OfferDetailImages = new HashSet<OfferDetailImage>();
         Companies = new HashSet<Company>();
         OfferSubscriptions = new HashSet<OfferSubscription>();
         OfferLicenses = new HashSet<OfferLicense>();
@@ -47,6 +47,7 @@ public class Offer : IAuditableV1
         AppInstances = new HashSet<AppInstance>();
         ConsentAssignedOffers = new HashSet<ConsentAssignedOffer>();
         ServiceTypes = new HashSet<ServiceType>();
+        OfferAssignedPrivacyPolicies = new HashSet<OfferAssignedPrivacyPolicy>();
     }
 
     public Offer(Guid id, string provider, DateTimeOffset dateCreated, OfferTypeId offerTypeId) : this()
@@ -65,9 +66,6 @@ public class Offer : IAuditableV1
     public DateTimeOffset DateCreated { get; private set; }
 
     public DateTimeOffset? DateReleased { get; set; }
-
-    [MaxLength(255)]
-    public string? ThumbnailUrl { get; set; }
 
     [MaxLength(255)]
     public string? MarketingUrl { get; set; }
@@ -100,7 +98,6 @@ public class Offer : IAuditableV1
     public virtual OfferStatus? OfferStatus{ get; set; }
     public virtual ICollection<AgreementAssignedOffer> AgreementAssignedOffers { get; private set; }
     public virtual ICollection<OfferDescription> OfferDescriptions { get; private set; }
-    public virtual ICollection<OfferDetailImage> OfferDetailImages { get; private set; }
     public virtual ICollection<AppInstance> AppInstances { get; private set; }
     public virtual ICollection<OfferLicense> OfferLicenses { get; private set; }
     public virtual ICollection<Company> Companies { get; private set; }
@@ -115,4 +112,5 @@ public class Offer : IAuditableV1
     public virtual ICollection<UserRole> UserRoles { get; private set; }
     public virtual ICollection<ConsentAssignedOffer> ConsentAssignedOffers { get; private set; }
     public virtual ICollection<ServiceType> ServiceTypes { get; private set; }
+    public virtual ICollection<OfferAssignedPrivacyPolicy> OfferAssignedPrivacyPolicies { get; private set; }
 }

@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 
@@ -27,9 +28,10 @@ public class PortalRepositories : IPortalRepositories
 {
     private readonly PortalDbContext _dbContext;
 
-    private static readonly IReadOnlyDictionary<Type, Func<PortalDbContext, Object>> _types = new Dictionary<Type, Func<PortalDbContext, Object>> {
+    private static readonly ImmutableDictionary<Type, Func<PortalDbContext, Object>> _types = new Dictionary<Type, Func<PortalDbContext, Object>> {
         { typeof(IAgreementRepository), context => new AgreementRepository(context) },
         { typeof(IApplicationRepository), context => new ApplicationRepository(context) },
+        { typeof(IApplicationChecklistRepository), context => new ApplicationChecklistRepository(context) },
         { typeof(IAppInstanceRepository), context => new AppInstanceRepository(context) },
         { typeof(IAppSubscriptionDetailRepository), context => new AppSubscriptionDetailRepository(context) },
         { typeof(IClientRepository), context => new ClientRepository(context) },
@@ -46,12 +48,13 @@ public class PortalRepositories : IPortalRepositories
         { typeof(INotificationRepository), context => new NotificationRepository(context) },
         { typeof(IOfferRepository), context => new OfferRepository(context) },
         { typeof(IOfferSubscriptionsRepository), context => new OfferSubscriptionsRepository(context) },
+        { typeof(IProcessStepRepository), context => new ProcessStepRepository(context) },
         { typeof(IServiceAccountRepository), context => new ServiceAccountRepository(context) },
         { typeof(IStaticDataRepository), context => new StaticDataRepository(context) },
         { typeof(IUserBusinessPartnerRepository), context => new UserBusinessPartnerRepository(context) },
         { typeof(IUserRepository), context => new UserRepository(context) },
         { typeof(IUserRolesRepository), context => new UserRolesRepository(context) },
-    };
+    }.ToImmutableDictionary();
 
     public PortalRepositories(PortalDbContext portalDbContext)
     {
@@ -104,4 +107,6 @@ public class PortalRepositories : IPortalRepositories
     
 
     public Task<int> SaveAsync() => _dbContext.SaveChangesAsync();
+    
+    public void Clear() => _dbContext.ChangeTracker.Clear();
 }

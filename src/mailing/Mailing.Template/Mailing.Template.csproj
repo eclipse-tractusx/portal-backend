@@ -1,6 +1,6 @@
 <!--
-- Copyright (c) 2021,2022 BMW Group AG
-- Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+- Copyright (c) 2021, 2023 BMW Group AG
+- Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
 - information regarding copyright ownership.
@@ -28,11 +28,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.2" />
+    <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -85,6 +86,9 @@
 	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	 </None>
 	 <None Update="EmailTemplates\app_request_decline.html">
+	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	 </None>
+	 <None Update="EmailTemplates\new_user_account_ownidp.html">
 	   <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	 </None>
   </ItemGroup>

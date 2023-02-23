@@ -1,0 +1,26 @@
+[
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1010",
+    "company_role_id": 1
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1011",
+    "company_role_id": 2
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1013",
+    "company_role_id": 1
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1017",
+    "company_role_id": 3
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1090",
+    "company_role_id": 1
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1091",
+    "company_role_id": 2
+  }
+]

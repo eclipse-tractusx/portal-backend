@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,10 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using FakeItEasy;
-using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -29,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -60,32 +55,73 @@ public class ServiceProviderBusinessLogicTest
         SetupRepositories();
     }
         
-    #region Create ServiceProviderCompanyDetails
+    #region Set ServiceProviderCompanyDetails
         
     [Fact]
-    public async Task CreateServiceProviderCompanyDetailsAsync_WithValidData_ReturnsExpectedResult()
+    public async Task SetServiceProviderCompanyDetailsAsync_EmptyServiceProviderDetailsId_ReturnsExpectedResult()
     {
         //Arrange
         var serviceProviderDetailData = new ServiceProviderDetailData("https://www.service-url.com");
         var sut = _fixture.Create<ServiceProviderBusinessLogic>();
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(IamUserId))
+            .Returns((Guid.Empty,null!));
             
         //Act
-        await sut.CreateServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
+        await sut.SetServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
 
         //Assert
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._,A<string>._)).MustHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._,A<Action<ProviderCompanyDetail>>._,A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
         _serviceProviderDetails.Should().ContainSingle();
     }
 
     [Fact]
-    public async Task CreateServiceProviderCompanyDetailsAsync_WithUnknownUser_ThrowsException()
+    public async Task SetServiceProviderCompanyDetailsAsync_WithServiceProviderDetailsId_ReturnsExpectedResult()
+    {
+        //Arrange
+        var detailsId = Guid.NewGuid();
+        var existingUrl = _fixture.Create<string>();
+        var changedUrl = "https://www.service-url.com";
+        var serviceProviderDetailData = new ServiceProviderDetailData(changedUrl);
+        var sut = _fixture.Create<ServiceProviderBusinessLogic>();
+
+        ProviderCompanyDetail? initialDetail = null;
+        ProviderCompanyDetail? modifyDetail = null;
+
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(IamUserId))
+            .Returns((detailsId, existingUrl));
+
+        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._,A<Action<ProviderCompanyDetail>>._,A<Action<ProviderCompanyDetail>>._))
+            .Invokes((Guid id, Action<ProviderCompanyDetail> initialize, Action<ProviderCompanyDetail> modifiy) => {
+                initialDetail = new ProviderCompanyDetail(id, Guid.Empty, null!, default);
+                modifyDetail = new ProviderCompanyDetail(id, Guid.Empty, null!, default);
+                initialize(initialDetail);
+                modifiy(modifyDetail);
+            });
+
+        //Act
+        await sut.SetServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._,A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(detailsId, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
+        initialDetail.Should().NotBeNull();
+        initialDetail!.AutoSetupUrl.Should().Be(existingUrl);
+        modifyDetail.Should().NotBeNull();
+        modifyDetail!.AutoSetupUrl.Should().Be(changedUrl);
+    }
+
+    [Fact]
+    public async Task SetServiceProviderCompanyDetailsAsync_WithUnknownUser_ThrowsException()
     {
         //Arrange
         var serviceProviderDetailData = new ServiceProviderDetailData("https://www.service-url.com");
         var sut = _fixture.Create<ServiceProviderBusinessLogic>();
             
         //Act
-        async Task Action() => await sut.CreateServiceProviderCompanyDetailsAsync(serviceProviderDetailData, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        async Task Action() => await sut.SetServiceProviderCompanyDetailsAsync(serviceProviderDetailData, Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         //Assert
         await Assert.ThrowsAsync<ConflictException>(Action);
@@ -94,14 +130,14 @@ public class ServiceProviderBusinessLogicTest
     }
 
     [Fact]
-    public async Task CreateServiceProviderCompanyDetailsAsync_WithHttpUrl_ThrowsException()
+    public async Task SetServiceProviderCompanyDetailsAsync_WithHttpUrl_ThrowsException()
     {
         //Arrange
         var serviceProviderDetailData = new ServiceProviderDetailData("http://www.service-url.com");
         var sut = _fixture.Create<ServiceProviderBusinessLogic>();
             
         //Act
-        async Task Action() => await sut.CreateServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
+        async Task Action() => await sut.SetServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -111,14 +147,14 @@ public class ServiceProviderBusinessLogicTest
     }
 
     [Fact]
-    public async Task CreateServiceProviderCompanyDetailsAsync_WithEmptyUrl_ThrowsException()
+    public async Task SetServiceProviderCompanyDetailsAsync_WithEmptyUrl_ThrowsException()
     {
         //Arrange
         var serviceProviderDetailData = new ServiceProviderDetailData(string.Empty);
         var sut = _fixture.Create<ServiceProviderBusinessLogic>();
             
         //Act
-        async Task Action() => await sut.CreateServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
+        async Task Action() => await sut.SetServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -128,14 +164,14 @@ public class ServiceProviderBusinessLogicTest
     }
 
     [Fact]
-    public async Task CreateServiceProviderCompanyDetailsAsync_WithToLongUrl_ThrowsException()
+    public async Task SetServiceProviderCompanyDetailsAsync_WithToLongUrl_ThrowsException()
     {
         //Arrange
         var serviceProviderDetailData = new ServiceProviderDetailData("https://www.super-duper-long-url-which-is-actually-to-long-to-be-valid-but-it-is-not-long-enough-yet-so-add-a-few-words.com");
         var sut = _fixture.Create<ServiceProviderBusinessLogic>();
             
         //Act
-        async Task Action() => await sut.CreateServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
+        async Task Action() => await sut.SetServiceProviderCompanyDetailsAsync(serviceProviderDetailData, IamUserId).ConfigureAwait(false);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -149,115 +185,44 @@ public class ServiceProviderBusinessLogicTest
     #region Get ServiceProviderCompanyDetails
         
     [Fact]
-    public async Task GetServiceProviderCompanyDetailsAsync_WithValidIdAndUser_ReturnsDetails()
+    public async Task GetServiceProviderCompanyDetailsAsync_WithValidUser_ReturnsDetails()
     {
         //Arrange
         var sut = _fixture.Create<ServiceProviderBusinessLogic>();
             
         //Act
-        var result = await sut.GetServiceProviderCompanyDetailsAsync(ExistingDetailId, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetServiceProviderCompanyDetailsAsync(IamUserId).ConfigureAwait(false);
 
         //Assert
         result.Should().NotBeNull();
     }
 
     [Fact]
-    public async Task GetServiceProviderCompanyDetailsAsync_WithInvalidServiceProviderDetailDataId_ThrowsException()
+    public async Task GetServiceProviderCompanyDetailsAsync_WithInvalidUser_ThrowsException()
     {
         //Arrange
         var sut = _fixture.Create<ServiceProviderBusinessLogic>();
             
         //Act
-        async Task Action() => await sut.GetServiceProviderCompanyDetailsAsync(Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+        async Task Action() => await sut.GetServiceProviderCompanyDetailsAsync(Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         //Assert
-        await Assert.ThrowsAsync<NotFoundException>(Action);
-    }
-
-    #endregion
-
-    #region Update ServiceProviderCompanyDetails
-        
-    [Fact]
-    public async Task UpdateServiceProviderCompanyDetailsAsync_WithValidData_ReturnsExpectedResult()
-    {
-        //Arrange
-        var serviceProviderDetailData = new ServiceProviderDetailData("https://www.service-url.com");
-        var sut = _fixture.Create<ServiceProviderBusinessLogic>();
-            
-        //Act
-        await sut.UpdateServiceProviderCompanyDetailsAsync(ExistingServiceProviderCompanyDetailId, serviceProviderDetailData, IamUserId).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
+        await Assert.ThrowsAsync<ConflictException>(Action);
     }
 
     [Fact]
-    public async Task UpdateServiceProviderCompanyDetailsAsync_WithUnknownUser_ThrowsException()
+    public async Task GetServiceProviderCompanyDetailsAsync_WithInvalidServiceProvider_ThrowsException()
     {
         //Arrange
-        var serviceProviderDetailData = new ServiceProviderDetailData("https://www.service-url.com");
-        var serviceProviderDetailDataId = Guid.NewGuid();
         var sut = _fixture.Create<ServiceProviderBusinessLogic>();
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, IamUserId))
+            .ReturnsLazily(() => (new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"),false));
             
         //Act
-        async Task Action() => await sut.UpdateServiceProviderCompanyDetailsAsync(serviceProviderDetailDataId, serviceProviderDetailData, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        async Task Action() => await sut.GetServiceProviderCompanyDetailsAsync(IamUserId).ConfigureAwait(false);
 
         //Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"ServiceProviderDetailData {serviceProviderDetailDataId} does not exists.");
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-    }
-
-    [Fact]
-    public async Task UpdateServiceProviderCompanyDetailsAsync_WithHttpUrl_ThrowsException()
-    {
-        //Arrange
-        var serviceProviderDetailData = new ServiceProviderDetailData("http://www.service-url.com");
-        var sut = _fixture.Create<ServiceProviderBusinessLogic>();
-            
-        //Act
-        async Task Action() => await sut.UpdateServiceProviderCompanyDetailsAsync(ExistingServiceProviderCompanyDetailId, serviceProviderDetailData, IamUserId).ConfigureAwait(false);
-
-        //Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("Url");
-        _serviceProviderDetails.Should().BeEmpty();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-    }
-
-    [Fact]
-    public async Task UpdateServiceProviderCompanyDetailsAsync_WithEmptyUrl_ThrowsException()
-    {
-        //Arrange
-        var serviceProviderDetailData = new ServiceProviderDetailData(string.Empty);
-        var sut = _fixture.Create<ServiceProviderBusinessLogic>();
-            
-        //Act
-        async Task Action() => await sut.UpdateServiceProviderCompanyDetailsAsync(ExistingServiceProviderCompanyDetailId, serviceProviderDetailData, IamUserId).ConfigureAwait(false);
-
-        //Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("Url");
-        _serviceProviderDetails.Should().BeEmpty();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-    }
-
-    [Fact]
-    public async Task UpdateServiceProviderCompanyDetailsAsync_WithToLongUrl_ThrowsException()
-    {
-        //Arrange
-        var serviceProviderDetailData = new ServiceProviderDetailData("https://www.super-duper-long-url-which-is-actually-to-long-to-be-valid-but-it-is-not-long-enough-yet-so-add-a-few-words.com");
-        var sut = _fixture.Create<ServiceProviderBusinessLogic>();
-            
-        //Act
-        async Task Action() => await sut.UpdateServiceProviderCompanyDetailsAsync(ExistingServiceProviderCompanyDetailId, serviceProviderDetailData, IamUserId).ConfigureAwait(false);
-
-        //Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("Url");
-        _serviceProviderDetails.Should().BeEmpty();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        await Assert.ThrowsAsync<ForbiddenException>(Action);
     }
 
     #endregion
@@ -280,19 +245,15 @@ public class ServiceProviderBusinessLogicTest
                 _serviceProviderDetails.Add(providerCompanyDetail);
             });
         
-        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<Guid>.That.Matches(x => x == ExistingDetailId), A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<string>.That.Matches(x => x == IamUserId)))
-            .ReturnsLazily(() => (new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"),true,true));
-        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<Guid>.That.Not.Matches(x => x == ExistingDetailId), A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<string>.That.Matches(x => x == IamUserId)))
-            .ReturnsLazily(() => ((ProviderDetailReturnData,bool,bool))default);
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<string>.That.Matches(x => x == IamUserId)))
+            .ReturnsLazily(() => (new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"),true));
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<string>.That.Not.Matches(x => x == IamUserId)))
+            .ReturnsLazily(() => ((ProviderDetailReturnData,bool))default);
         
-        A.CallTo(() => _companyRepository.CheckProviderCompanyDetailsExistsForUser(A<string>.That.Matches(x => x == IamUserId), A<Guid>.That.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
-            .ReturnsLazily(() => (true,true));
-        A.CallTo(() => _companyRepository.CheckProviderCompanyDetailsExistsForUser(A<string>.That.Not.Matches(x => x == IamUserId), A<Guid>.That.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
-            .ReturnsLazily(() => (true,false));
-        A.CallTo(() => _companyRepository.CheckProviderCompanyDetailsExistsForUser(A<string>.That.Matches(x => x == IamUserId), A<Guid>.That.Not.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
-            .ReturnsLazily(() => ((bool,bool))default);
-        A.CallTo(() => _companyRepository.CheckProviderCompanyDetailsExistsForUser(A<string>.That.Not.Matches(x => x == IamUserId), A<Guid>.That.Not.Matches(x => x == ExistingServiceProviderCompanyDetailId)))
-            .ReturnsLazily(() => ((bool,bool))default);
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(A<string>.That.Matches(x => x == IamUserId)))
+            .ReturnsLazily(() => (Guid.NewGuid(), _fixture.Create<string>()));
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(A<string>.That.Not.Matches(x => x == IamUserId)))
+            .Returns((Guid.Empty, null!));
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         _fixture.Inject(_portalRepositories);

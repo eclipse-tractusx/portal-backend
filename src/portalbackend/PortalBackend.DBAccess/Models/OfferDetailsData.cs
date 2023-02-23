@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -38,14 +38,14 @@ public record OfferDetailsData(
     string? Title,
 
     /// <summary>
-    /// Uri to app's lead picture.
+    /// Id of the Lead Image.
     /// </summary>
-    string? LeadPictureUri,
+    Guid LeadPictureId,
 
     /// <summary>
-    /// List of URIs to app's secondary pictures.
+    /// List of Images to app's secondary pictures.
     /// </summary>
-    IEnumerable<string> DetailPictureUris,
+    IEnumerable<Guid> Images,
 
     /// <summary>
     /// Uri to provider's marketing presence.
@@ -96,10 +96,16 @@ public record OfferDetailsData(
     /// Languages that the app is available in.
     /// </summary>
     IEnumerable<string> Languages,
+
     /// <summary>
     /// document assigned to offer
     /// </summary>
-    IEnumerable<DocumentTypeData> Documents
+    IEnumerable<DocumentTypeData> Documents,
+    
+    /// <summary>
+    /// privacy policy assigned to offer
+    /// </summary>
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies
 );
 
 /// <summary>

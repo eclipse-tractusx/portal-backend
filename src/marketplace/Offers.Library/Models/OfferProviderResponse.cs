@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,19 +25,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 public record OfferProviderResponse(
     string? Title, 
     string Provider, 
-    string? LeadPictureUri, 
+    Guid LeadPictureId, 
     string? ProviderName, 
     IEnumerable<string> UseCase, 
     IEnumerable<OfferDescriptionData> Descriptions, 
     IEnumerable<OfferAgreement> Agreements, 
     IEnumerable<string> SupportedLanguageCodes, 
     string? Price, 
-    IEnumerable<string> Images, 
+    IEnumerable<Guid> Images, 
     string? ProviderUri, 
     string? ContactEmail, 
     string? ContactNumber, 
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
-    Guid? SalesManagerId
+    Guid? SalesManagerId,
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies
 );
 
 /// <summary>

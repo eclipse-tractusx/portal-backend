@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -24,16 +24,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyUserAssignedBusinessPartner
 {
+    public CompanyUserAssignedBusinessPartner()
+    {
+        BusinessPartnerNumber = null!;
+    }
+
     public CompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber)
+        :base()
     {
         CompanyUserId = companyUserId;
         BusinessPartnerNumber = businessPartnerNumber;
     }
 
-    public Guid CompanyUserId;
+    public Guid CompanyUserId { get; set; }
 
     [MaxLength(20)]
-    public string BusinessPartnerNumber;
+    public string BusinessPartnerNumber { get; set; }
 
     // Navigation properties
     public virtual CompanyUser? CompanyUser { get; set; }

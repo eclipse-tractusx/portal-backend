@@ -1,6 +1,6 @@
 <!--
-- Copyright (c) 2021,2022 BMW Group AG
-- Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+- Copyright (c) 2021, 2023 BMW Group AG
+- Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
 - information regarding copyright ownership.
@@ -28,11 +28,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+    <ProjectReference Include="..\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SwashBuckle.AspNetCore" Version="6.3.1" />
+    <PackageReference Include="SwashBuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
 </Project>

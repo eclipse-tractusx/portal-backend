@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -27,20 +27,6 @@ using Microsoft.Extensions.FileProviders;
 
 var host = Host.CreateDefaultBuilder(args)
     .UseSystemd()
-    .ConfigureAppConfiguration(cfg =>
-    {
-        // Read configuration for configuring logger.
-        var environmentName = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
-
-        // Build a config object, using env vars and JSON providers.
-        if (environmentName == "Kubernetes")
-        {
-            var provider = new PhysicalFileProvider("/app/secrets");
-            cfg.AddJsonFile(provider, "appsettings.json", optional: false, reloadOnChange: true);
-        }
-
-        cfg.AddUserSecrets(Assembly.GetExecutingAssembly());
-    })
     .ConfigureServices((hostContext, services) =>
     {
         services.AddDbContext<PortalDbContext>(o =>

@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,8 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -32,28 +35,54 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class DocumentsBusinessLogic : IDocumentsBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
+    private readonly DocumentSettings _settings;
 
     /// <summary>
     /// Creates a new instance <see cref="DocumentsBusinessLogic"/>
     /// </summary>
-    public DocumentsBusinessLogic(IPortalRepositories portalRepositories)
+    public DocumentsBusinessLogic(IPortalRepositories portalRepositories, IOptions<DocumentSettings> options)
     {
-    
         _portalRepositories = portalRepositories;
+        _settings = options.Value;
     }
 
     /// <inheritdoc />
-    public async Task<(string fileName, byte[] content)> GetDocumentAsync(Guid documentId, string iamUserId)
+    public async Task<(string fileName, byte[] content, string contentType)> GetDocumentAsync(Guid documentId, string iamUserId)
     {
-        var document = await this._portalRepositories.GetInstance<IDocumentRepository>().GetDocumentByIdAsync(documentId).ConfigureAwait(false);
-        if (document is null)
+        var documentDetails = await _portalRepositories.GetInstance<IDocumentRepository>()
+            .GetDocumentDataAndIsCompanyUserAsync(documentId, iamUserId)
+            .ConfigureAwait(false);
+        if (documentDetails == default)
         {
-            throw new NotFoundException("No document with the given id was found.");
+            throw new NotFoundException($"Document {documentId} does not exist");
         }
 
-        return (document.DocumentName, document.DocumentContent);
+        if (!documentDetails.IsUserInCompany)
+        {
+            throw new ForbiddenException("User is not allowed to access the document");
+        }
+
+        if (documentDetails.Content == null)
+        {
+            throw new UnexpectedConditionException("documentContent should never be null here");
+        }
+
+        return (documentDetails.FileName, documentDetails.Content, documentDetails.FileName.MapToContentType());
     }
-    
+
+    /// <inheritdoc />
+    public async Task<(string fileName, byte[] content)> GetSelfDescriptionDocumentAsync(Guid documentId)
+    {
+        var documentDetails = await _portalRepositories.GetInstance<IDocumentRepository>()
+            .GetDocumentDataByIdAndTypeAsync(documentId, DocumentTypeId.SELF_DESCRIPTION)
+            .ConfigureAwait(false);
+        if (documentDetails == default)
+        {
+            throw new NotFoundException($"Self description document {documentId} does not exist");
+        }
+        return (documentDetails.FileName, documentDetails.Content);
+    }
+
     /// <inheritdoc />
     public async Task<bool> DeleteDocumentAsync(Guid documentId, string iamUserId)
     {
@@ -83,5 +112,24 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
 
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
         return true;
+    }
+
+    /// <inheritdoc />
+    public async Task<DocumentSeedData> GetSeedData(Guid documentId)
+    {
+        if (!_settings.EnableSeedEndpoint)
+        {
+            throw new ForbiddenException("Endpoint can only be used on dev environment");
+        }
+
+        var document = await _portalRepositories.GetInstance<IDocumentRepository>()
+            .GetDocumentSeedDataByIdAsync(documentId)
+            .ConfigureAwait(false);
+        if (document == null)
+        {
+            throw new NotFoundException($"Document {documentId} does not exists.");
+        }
+
+        return document;
     }
 }

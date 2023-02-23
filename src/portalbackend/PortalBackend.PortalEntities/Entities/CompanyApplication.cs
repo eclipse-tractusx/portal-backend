@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,16 +20,19 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 [AuditEntityV1(typeof(AuditCompanyApplication20221005))]
-public class CompanyApplication : IAuditableV1
+public class CompanyApplication : IAuditableV1, IBaseEntity
 {
     protected CompanyApplication()
     {
         Invitations = new HashSet<Invitation>();
+        ApplicationChecklistEntries = new HashSet<ApplicationChecklistEntry>();
+        ApplicationAssignedProcessSteps = new HashSet<ApplicationAssignedProcessStep>();
     }
 
     public CompanyApplication(Guid id, Guid companyId, CompanyApplicationStatusId applicationStatusId, DateTimeOffset dateCreated) : this()
@@ -55,4 +58,6 @@ public class CompanyApplication : IAuditableV1
     public virtual CompanyApplicationStatus? ApplicationStatus { get; set; }
     public virtual Company? Company { get;  set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }
+    public virtual ICollection<ApplicationChecklistEntry> ApplicationChecklistEntries { get; private set; }
+    public virtual ICollection<ApplicationAssignedProcessStep> ApplicationAssignedProcessSteps { get; private set; }
 }

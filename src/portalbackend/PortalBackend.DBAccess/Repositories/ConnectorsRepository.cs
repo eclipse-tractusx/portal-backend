@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -51,7 +51,18 @@ public class ConnectorsRepository : IConnectorsRepository
             .AsNoTracking()
             .Where(connector => connector.Id == connectorId)
             .Select(connector => new ValueTuple<ConnectorData, bool>(
-                new ConnectorData(connector.Name, connector.Location!.Alpha2Code, connector.Id, connector.TypeId, connector.StatusId, connector.DapsRegistrationSuccessful),
+                new ConnectorData(
+                    connector.Name,
+                    connector.Location!.Alpha2Code,
+                    connector.Id,
+                    connector.TypeId,
+                    connector.StatusId,
+                    connector.DapsRegistrationSuccessful,
+                    connector.HostId,
+                    connector.Host!.Name,
+                    connector.SelfDescriptionDocumentId,
+                    connector.SelfDescriptionDocument!.DocumentName
+                ),
                 connector.Provider!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUser)
             ))
             .SingleOrDefaultAsync();
@@ -104,10 +115,17 @@ public class ConnectorsRepository : IConnectorsRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Connector AttachAndModifyConnector(Guid connectorId, Action<Connector>? setOptionalParameters = null)
+    public Connector AttachAndModifyConnector(Guid connectorId, Action<Connector> setOptionalParameters)
     {
         var connector = _context.Connectors.Attach(new Connector(connectorId, null!, null!, null!)).Entity;
-        setOptionalParameters?.Invoke(connector);
+        setOptionalParameters.Invoke(connector);
         return connector;
     }
+
+    /// <inheritdoc />
+    public Task<(Guid ConnectorId, Guid? SelfDescriptionDocumentId)> GetConnectorDataById(Guid connectorId) =>
+        _context.Connectors
+            .Where(x => x.Id == connectorId)
+            .Select(x => new ValueTuple<Guid, Guid?>(x.Id, x.SelfDescriptionDocumentId))
+            .SingleOrDefaultAsync();
 }

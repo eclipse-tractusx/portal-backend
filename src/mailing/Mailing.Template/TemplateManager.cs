@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -30,6 +30,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
 public class TemplateManager : ITemplateManager
 {
     private readonly TemplateSettings _settings;
+
+    private static readonly Regex _templateMatcherExpression = new Regex(@"\{(\w+)\}", RegexOptions.None, TimeSpan.FromSeconds(1)); // to replace any text surrounded by { and }
 
     public TemplateManager(IOptions<TemplateSettings> templateSettings)
     {
@@ -78,8 +80,7 @@ public class TemplateManager : ITemplateManager
     }
 
     private static string ReplaceValues(string template, IDictionary<string,string> parameters) => 
-        Regex.Replace(
+        _templateMatcherExpression.Replace(
             template,
-            @"\{(\w+)\}", //replaces any text surrounded by { and }
             m => parameters.TryGetValue(m.Groups[1].Value, out var value) ? value : "null");
 }

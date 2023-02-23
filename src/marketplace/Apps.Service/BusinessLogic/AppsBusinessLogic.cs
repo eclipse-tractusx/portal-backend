@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,6 +23,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -72,7 +73,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     app.ShortDescription ?? Constants.ErrorString,
                     app.VendorCompanyName,
                     app.LicenseText ?? Constants.ErrorString,
-                    app.ThumbnailUrl ?? Constants.ErrorString,
+                    app.LeadPictureId,
                     app.UseCaseNames));
 
     /// <inheritdoc/>
@@ -84,7 +85,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     x.SubscriptionId,
                     x.OfferName ?? Constants.ErrorString,
                     x.SubscriptionUrl,
-                    x.ThumbnailUrl ?? Constants.ErrorString,
+                    x.LeadPictureId,
                     x.Provider));
 
     /// <inheritdoc/>
@@ -100,8 +101,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         return new AppDetailResponse(
             result.Id,
             result.Title ?? Constants.ErrorString,
-            result.LeadPictureUri ?? Constants.ErrorString,
-            result.DetailPictureUris,
+            result.LeadPictureId,
+            result.Images,
             result.ProviderUri ?? Constants.ErrorString,
             result.Provider,
             result.ContactEmail,
@@ -112,7 +113,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             result.Tags,
             result.IsSubscribed == default ? null : result.IsSubscribed,
             result.Languages,
-            result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName)))
+            result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))),
+            result.PrivacyPolicies
         );
     }
 
@@ -176,8 +178,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             throw new NotFoundException($"App {appId} does not exist.");
         }
 
-        var (subscriptionId, subscriptionStatusId, requesterId, appName, companyUserId, email, firstname) = assignedAppData;
-
+        var (subscriptionId, subscriptionStatusId, requesterId, appName, companyUserId, requesterData) = assignedAppData;
         if(companyUserId == Guid.Empty)
         {
             throw new ControllerArgumentException("Missing permission: The user's company does not provide the requested app so they cannot activate it.");
@@ -211,16 +212,18 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     AppName = appName
                 });
             });
-        
-        if (!string.IsNullOrWhiteSpace(email))
+
+        var userName = string.Join(" ", new[] { requesterData.Firstname, requesterData.Lastname }); 
+
+        if (!string.IsNullOrWhiteSpace(requesterData.Email))
         {
             var mailParams = new Dictionary<string, string>
             {
-                { "offerCustomerName", firstname ?? "User" },
+                { "offerCustomerName", !string.IsNullOrWhiteSpace(userName) ? userName : "App Owner" },
                 { "offerName", appName },
                 { "url", _settings.BasePortalAddress },
             };
-            await _mailingService.SendMails(email, mailParams, new List<string> { "subscription-activation" }).ConfigureAwait(false);
+            await _mailingService.SendMails(requesterData.Email, mailParams, new List<string> { "subscription-activation" }).ConfigureAwait(false);
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -255,7 +258,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             app.Name = appInputModel.Title;
             app.MarketingUrl = appInputModel.ProviderUri;
-            app.ThumbnailUrl = appInputModel.LeadPictureUri;
             app.ContactEmail = appInputModel.ContactEmail;
             app.ContactNumber = appInputModel.ContactNumber;
             app.ProviderCompanyId = appInputModel.ProviderCompanyId;
@@ -278,18 +280,46 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<AllAppData> GetCompanyProvidedAppsDataForUserAsync(string userId)=>
-        _portalRepositories.GetInstance<IOfferRepository>().GetProvidedAppsData(userId);
+    public IAsyncEnumerable<AllOfferData> GetCompanyProvidedAppsDataForUserAsync(string userId) =>
+        _portalRepositories.GetInstance<IOfferRepository>().GetProvidedOffersData(OfferTypeId.APP, userId);
     
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId) =>
-        _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.CompanyAdminRoles, iamUserId, OfferTypeId.APP, _settings.BasePortalAddress);
+        _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.ITAdminRoles, iamUserId, OfferTypeId.APP, _settings.UserManagementAddress);
 
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId) =>
         _offerService.GetOfferAgreementsAsync(appId, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data) => 
-        _offerService.DeclineOfferAsync(appId, iamUserId, data, OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.AppOverviewAddress);
+    public Task DeactivateOfferbyAppIdAsync(Guid appId, string iamUserId) =>
+        _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
+
+    /// <inheritdoc />
+    public async Task<(byte[] Content, string ContentType, string FileName)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken)
+    {
+        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+        var document = await documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken).ConfigureAwait(false);
+        if (!document.IsDocumentExisting)
+        {
+            throw new NotFoundException($"document {documentId} does not exist");
+        }
+        if (!document.IsValidDocumentType)
+        {
+            throw new ControllerArgumentException($"Document {documentId} can not get retrieved. Document type not supported.");
+        }
+        if (!document.IsValidOfferType)
+        {
+            throw new ControllerArgumentException($"offer {appId} is not an app");
+        }
+        if (!document.IsDocumentLinkedToOffer)
+        {
+            throw new ControllerArgumentException($"Document {documentId} and app id {appId} do not match.");
+        }
+        if (document.Content == null)
+        {
+            throw new UnexpectedConditionException($"document content should never be null");
+        }
+        return (document.Content, document.FileName.MapToContentType(), document.FileName);
+    }
 }

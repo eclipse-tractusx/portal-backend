@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -32,7 +32,7 @@ public class ServiceSettings
     public int ApplicationsMaxPageSize { get; init; }
 
     [Required]
-    public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; init; } = null!;
+    public IDictionary<string,IEnumerable<string>> CatenaAdminRoles { get; init; } = null!;
     
     [Required]
     public IDictionary<string,IEnumerable<string>> ServiceAccountRoles { get; init; } = null!;
@@ -75,6 +75,28 @@ public class ServiceSettings
     [Required]
     public IDictionary<string, IEnumerable<string>> ApproveServiceUserRoles { get; init; } = null!;
 
+    /// <summary>
+    /// Document Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; } = null!;
+
+    /// <summary>
+    /// Document Content Type Settings
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<string> ContentTypeSettings { get; set; } = null!;
+
+    [Required]
+    public IDictionary<string,IEnumerable<string>> ITAdminRoles { get; init; } = null!;
+
+    /// <summary>
+    /// UserManagementAddress url required for subscription email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string UserManagementAddress { get; init; } = null!;
 }
 
 public static class ServiceSettingsExtension

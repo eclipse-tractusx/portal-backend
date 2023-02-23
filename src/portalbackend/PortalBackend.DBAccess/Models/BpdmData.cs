@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,11 +25,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <summary>
 /// View model of an application's detailed data for the bpdm.
 /// </summary>
-/// <param name="ApplicationStatusId">Status of the application.</param>
+/// <param name="CompanyId">Id of the company.</param>
 /// <param name="CompanyName">Name of the company.</param>
+/// <param name="ShortName">ShortName of the company.</param>
+/// <param name="BusinessPartnerNumber">BusinessPartnerNumber of the company.</param>
 /// <param name="AlphaCode2">AlphaCode 2 of the company.</param>
 /// <param name="ZipCode">Zipcode of the company's address.</param>
 /// <param name="City">City of the company's address.</param>
-/// <param name="Street">Street of the company's address.</param>
-/// <param name="IsUserInCompany"><c>true</c> if the user is part of the company, otherwise <c>false</c>.</param>
-public record BpdmData(CompanyApplicationStatusId ApplicationStatusId, string CompanyName, string AlphaCode2, string? ZipCode, string City, string Street, bool IsUserInCompany);
+/// <param name="StreetName">Street of the company's address.</param>
+/// <param name="StreetNumber">Number in Street of the company's address.</param>
+/// <param name="Region">Region of the company's address.</param>
+/// <param name="Identifiers">Unique-identifiers of the company mapped to Bpdm identifier keys</param>
+public record BpdmData(
+    string CompanyName,
+    string? ShortName,
+    string? BusinessPartnerNumber,
+    string? Alpha2Code,
+    string? ZipCode,
+    string? City,
+    string? StreetName,
+    string? StreetNumber,
+    string? Region,
+    IEnumerable<(BpdmIdentifierId UniqueIdentifierId, string Value)> Identifiers
+);

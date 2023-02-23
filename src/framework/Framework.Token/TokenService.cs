@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,7 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
@@ -32,37 +34,41 @@ public class TokenService : ITokenService
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<string?> GetTokenAsync(GetTokenSettings settings, CancellationToken cancellationToken)
+    public async Task<HttpClient> GetAuthorizedClient<T>(KeyVaultAuthSettings settings, CancellationToken cancellationToken)
     {
-        try
-        {
-            var formParameters = new Dictionary<string, string>
-            {
-                {"username", settings.Username},
-                {"password", settings.Password},
-                {"client_id", settings.ClientId},
-                {"grant_type", settings.GrantType},
-                {"client_secret", settings.ClientSecret},
-                {"scope", settings.Scope}
-            };
-            var content = new FormUrlEncodedContent(formParameters);
-            var response = await _httpClientFactory.CreateClient(settings.HttpClientName).PostAsync("", content, cancellationToken).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new ServiceException($"Get Token Call for {settings.HttpClientName} was not successful", response.StatusCode);
-            }
+        var tokenParameters = new GetTokenSettings(
+            $"{typeof(T).Name}Auth",
+            settings.Username,
+            settings.Password,
+            settings.ClientId,
+            settings.GrantType,
+            settings.ClientSecret,
+            settings.Scope);
 
-            using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var responseObject = await JsonSerializer.DeserializeAsync<AuthResponse>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
-            return responseObject?.AccessToken;
-        }
-        catch (Exception ex)
+        var token = await this.GetTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(false);
+
+        var httpClient = _httpClientFactory.CreateClient(typeof(T).Name);
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return httpClient;
+    }
+    
+    private async Task<string?> GetTokenAsync(GetTokenSettings settings, CancellationToken cancellationToken)
+    {
+        var formParameters = new Dictionary<string, string>
         {
-            if (ex is ServiceException)
-            {
-                throw;
-            }
-            throw new ServiceException($"Get Token Call for {settings.HttpClientName} threw exception", ex);
-        }
+            {"username", settings.Username},
+            {"password", settings.Password},
+            {"client_id", settings.ClientId},
+            {"grant_type", settings.GrantType},
+            {"client_secret", settings.ClientSecret},
+            {"scope", settings.Scope}
+        };
+        var content = new FormUrlEncodedContent(formParameters);
+        var response = await _httpClientFactory.CreateClient(settings.HttpClientName).PostAsync("", content, cancellationToken)
+            .CatchingIntoServiceExceptionFor("token-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+
+        using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var responseObject = await JsonSerializer.DeserializeAsync<AuthResponse>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return responseObject?.AccessToken;
     }
 }

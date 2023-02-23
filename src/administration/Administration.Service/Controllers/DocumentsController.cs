@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
@@ -31,7 +32,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 /// </summary>
 [Route("api/administration/[controller]")]
 [ApiController]
-[Produces("application/json")]
 [Consumes("application/json")]
 public class DocumentsController : ControllerBase
 {
@@ -56,12 +56,28 @@ public class DocumentsController : ControllerBase
     [HttpGet]
     [Route("{documentId}")]
     [Authorize(Roles = "view_documents")]
-    [Produces("application/pdf")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
     {
-        var (fileName, content) = await this.WithIamUserId(adminId => _businessLogic.GetDocumentAsync(documentId, adminId)).ConfigureAwait(false);
-        return File(content, "application/pdf", fileName);
+        var (fileName, content, contentType) = await this.WithIamUserId(iamUserId => _businessLogic.GetDocumentAsync(documentId, iamUserId).ConfigureAwait(false));
+        return File(content, contentType, fileName);
+    }
+
+    /// <summary>
+    /// Retrieves a specific document for the given id.
+    /// </summary>
+    /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3">Id of the document to get.</param>
+    /// <returns>Returns the file.</returns>
+    /// <remarks>Example: GET: /api/administration/documents/selfDescription/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
+    /// <response code="200">Returns the file.</response>
+    [HttpGet]
+    [Route("selfDescription/{documentId}")]
+    [Authorize(Roles = "view_documents")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult> GetSelfDescriptionDocumentsAsync([FromRoute] Guid documentId)
+    {
+        var (fileName, content) = await _businessLogic.GetSelfDescriptionDocumentAsync(documentId).ConfigureAwait(false);
+        return File(content, "application/json", fileName);
     }
 
     /// <summary>
@@ -77,10 +93,33 @@ public class DocumentsController : ControllerBase
     [HttpDelete]
     [Authorize(Roles = "delete_documents")]
     [Route("{documentId}")]
+    [Produces("application/json")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<bool> DeleteDocumentAsync([FromRoute] Guid documentId) => 
         this.WithIamUserId(userId => _businessLogic.DeleteDocumentAsync(documentId, userId));
+
+    /// <summary>
+    /// Gets the json the seed data for a specific document
+    /// </summary>
+    /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3"></param>
+    /// <returns></returns>
+    /// <remarks>
+    /// Example: GET: /api/registration/documents/{documentId}/seeddata
+    /// <br /> <b>this endpoint can only be used in the dev environment!</b>
+    /// </remarks>
+    /// <response code="200">Successfully deleted the document</response>
+    /// <response code="403">Call was made from a non dev environment</response>
+    /// <response code="404">The document was not found.</response>
+    [HttpGet]
+    [Authorize(Roles = "debug_download_documents")]
+    [Route("{documentId}/seeddata")]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<DocumentSeedData> GetDocumentSeedData([FromRoute] Guid documentId) =>
+        _businessLogic.GetSeedData(documentId);
 }

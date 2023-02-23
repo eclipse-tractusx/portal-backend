@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="ShortDescription">Short description.</param>
 /// <param name="Provider">Provider.</param>
 /// <param name="Price">Price.</param>
-/// <param name="LeadPictureUri">Lead pircture URI.</param>
+/// <param name="LeadPictureId">Lead pircture Id.</param>
 /// <param name="UseCases">The apps use cases.</param>
 public record AppData(
     Guid Id,
@@ -36,5 +36,5 @@ public record AppData(
     string ShortDescription,
     string Provider,
     string Price,
-    string LeadPictureUri,
+    Guid LeadPictureId,
     IEnumerable<string> UseCases);

@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -232,4 +232,25 @@ public class UserRolesRepository : IUserRolesRepository
             }
         }
     }
+
+    public IAsyncEnumerable<(string ClientClientId, IEnumerable<(Guid UserRoleId, string UserRoleText)> UserRoles)> GetUserRolesByClientId(IEnumerable<string> iamClientIds) =>
+        _dbContext.AppInstances
+            .AsNoTracking()
+            .Where(instance => iamClientIds.Contains(instance.IamClient!.ClientClientId))
+            .Select(instance => new ValueTuple<string,IEnumerable<(Guid,string)>>(
+                instance.IamClient!.ClientClientId,
+                instance.App!.UserRoles.Select(role => new ValueTuple<Guid,string>(role.Id, role.UserRoleText))))
+            .ToAsyncEnumerable();
+
+    public IAsyncEnumerable<(Guid CompanyUserId, string UserEntityId, IEnumerable<Guid> UserRoleIds)> GetUserWithUserRolesForApplicationId(Guid applicationId, IEnumerable<Guid> userRoleIds) =>
+        _dbContext.CompanyApplications
+            .AsNoTracking()
+            .Where(application => application.Id == applicationId)
+            .SelectMany(application => application.Company!.CompanyUsers)
+            .Where(user => user.CompanyUserAssignedRoles.Any(assigned => userRoleIds.Contains(assigned.UserRoleId)))
+            .Select(user => new ValueTuple<Guid, string, IEnumerable<Guid>>(
+                user.Id,
+                user.IamUser!.UserEntityId,
+                user.CompanyUserAssignedRoles.Where(assigned => userRoleIds.Contains(assigned.UserRoleId)).Select(assigned => assigned.UserRoleId)))
+            .ToAsyncEnumerable();
 }

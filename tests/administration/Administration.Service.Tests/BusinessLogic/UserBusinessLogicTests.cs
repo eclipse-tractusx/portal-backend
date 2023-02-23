@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,10 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using FakeItEasy;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
@@ -37,7 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using Xunit;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic.Tests;
 
@@ -114,7 +110,13 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(true);
 
-        var userList = _fixture.Create<IEnumerable<UserCreationInfo>>();
+        var userList = new [] {
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo()
+        };
 
         var sut = new UserBusinessLogic(
             null!,
@@ -136,19 +138,87 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
+    public async Task TestUserCreation_NoUserNameAndEmail_Throws()
+    {
+        SetupFakesForUserCreation(true);
+
+        var nullUserName = _fixture.Build<UserCreationInfo>().With(x => x.userName, (string?)null).Create();
+        var nullEmail = _fixture.Build<UserCreationInfo>().With(x => x.eMail, (string?)null).Create();
+        var nullUserNameEmail = _fixture.Build<UserCreationInfo>().With(x => x.eMail, (string?)null).With(x => x.userName, (string?)null).Create();
+
+        var userList = new [] {
+            CreateUserCreationInfo(),
+            nullUserName,
+            CreateUserCreationInfo(),
+            nullEmail,
+            CreateUserCreationInfo(),
+            nullUserNameEmail,
+            CreateUserCreationInfo()
+        };
+
+        var sut = new UserBusinessLogic(
+            null!,
+            _userProvisioningService,
+            null!,
+            _portalRepositories,
+            _mailingService,
+            _logger,
+            _options);
+
+        var Act = async () => await sut.CreateOwnCompanyUsersAsync(userList, _iamUserId).ToListAsync().ConfigureAwait(false);
+
+        var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+
+        result.Message.Should().Be($"userName and eMail must not both be empty '{nullUserNameEmail.firstName} {nullUserNameEmail.lastName}'");
+    }
+
+    [Fact]
+    public async Task TestUserCreation_NoRoles_Throws()
+    {
+        SetupFakesForUserCreation(true);
+
+        var noRoles = _fixture.Build<UserCreationInfo>().With(x => x.Roles, Enumerable.Empty<string>()).Create();
+        var noRolesNoUserName = _fixture.Build<UserCreationInfo>().With(x => x.Roles, Enumerable.Empty<string>()).With(x => x.userName, (string?)null).Create();
+
+        var userList = new [] {
+            CreateUserCreationInfo(),
+            noRoles,
+            CreateUserCreationInfo(),
+            noRolesNoUserName,
+            CreateUserCreationInfo()
+        };
+
+        var sut = new UserBusinessLogic(
+            null!,
+            _userProvisioningService,
+            null!,
+            _portalRepositories,
+            _mailingService,
+            _logger,
+            _options);
+
+        var Act = async () => await sut.CreateOwnCompanyUsersAsync(userList, _iamUserId).ToListAsync().ConfigureAwait(false);
+
+        var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+
+        result.Message.Should().Be($"at least one role must be specified for users '{noRoles.userName}, {noRolesNoUserName.eMail}'");
+    }
+
+    [Fact]
     public async Task TestUserCreationCreationError()
     {
         SetupFakesForUserCreation(true);
 
-        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+        var userCreationInfo = CreateUserCreationInfo();
+
         var error = _fixture.Create<TestException>();
 
         var userList = new [] {
-            _fixture.Create<UserCreationInfo>(),
-            _fixture.Create<UserCreationInfo>(),
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo(),
             userCreationInfo,
-            _fixture.Create<UserCreationInfo>(),
-            _fixture.Create<UserCreationInfo>()
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo()
         };
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
@@ -190,15 +260,15 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(true);
 
-        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+        var userCreationInfo = CreateUserCreationInfo();
         var expected = _fixture.Create<TestException>();
 
         var userList = new [] {
-            _fixture.Create<UserCreationInfo>(),
-            _fixture.Create<UserCreationInfo>(),
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo(),
             userCreationInfo,
-            _fixture.Create<UserCreationInfo>(),
-            _fixture.Create<UserCreationInfo>()
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo()
         };
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
@@ -237,15 +307,15 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(true);
 
-        var userCreationInfo = _fixture.Create<UserCreationInfo>();
+        var userCreationInfo = CreateUserCreationInfo();
         var error = _fixture.Create<TestException>();
 
         var userList = new [] {
-            _fixture.Create<UserCreationInfo>(),
-            _fixture.Create<UserCreationInfo>(),
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo(),
             userCreationInfo,
-            _fixture.Create<UserCreationInfo>(),
-            _fixture.Create<UserCreationInfo>()
+            CreateUserCreationInfo(),
+            CreateUserCreationInfo()
         };
 
         A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail),A<IDictionary<string,string>>._,A<List<string>>._))
@@ -278,7 +348,7 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(false);
 
-        var userCreationInfoIdp = _fixture.Create<UserCreationInfoIdp>();
+        var userCreationInfoIdp = CreateUserCreationInfoIdp();
 
         var sut = new UserBusinessLogic(
             null!,
@@ -300,7 +370,7 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(false);
 
-        var userCreationInfoIdp = _fixture.Create<UserCreationInfoIdp>();
+        var userCreationInfoIdp = CreateUserCreationInfoIdp();
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == userCreationInfoIdp.FirstName))).ReturnsLazily(
             (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
@@ -329,7 +399,7 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(false);
 
-        var userCreationInfoIdp = _fixture.Create<UserCreationInfoIdp>();
+        var userCreationInfoIdp = CreateUserCreationInfoIdp();
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == userCreationInfoIdp.FirstName))).Throws(_error);
 
@@ -354,7 +424,7 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(false);
 
-        var userCreationInfoIdp = _fixture.Create<UserCreationInfoIdp>();
+        var userCreationInfoIdp = CreateUserCreationInfoIdp();
 
         A.CallTo(() => _mailingService.SendMails(A<string>._,A<IDictionary<string,string>>._,A<IEnumerable<string>>._)).Throws(_error);
 
@@ -1251,6 +1321,20 @@ public class UserBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
     }
 
+    private UserCreationInfo CreateUserCreationInfo() => 
+        _fixture.Build<UserCreationInfo>()
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
+            .With(x => x.eMail, _fixture.CreateEmail())
+            .Create();
+
+    private UserCreationInfoIdp CreateUserCreationInfoIdp() => 
+        _fixture.Build<UserCreationInfoIdp>()
+            .With(x => x.FirstName, _fixture.CreateName())
+            .With(x => x.LastName, _fixture.CreateName())
+            .With(x => x.Email, _fixture.CreateEmail())
+            .Create();
+
     #endregion
 
     [Serializable]
@@ -1262,34 +1346,5 @@ public class UserBusinessLogicTests
         protected TestException(
             System.Runtime.Serialization.SerializationInfo info,
             System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
-
-    public interface IMockLogger<T>
-    {
-        void Log(LogLevel logLevel, Exception? exception, string logMessage);
-    }
-
-    public class MockLogger<T> : ILogger<T>
-    {
-        private readonly IMockLogger<T> _logger;
-
-        public MockLogger(IMockLogger<T> logger)
-        {
-            _logger = logger;
-        }
-
-        public IDisposable BeginScope<TState>(TState state) => new TestDisposable();
-
-        public bool IsEnabled(LogLevel logLevel) => true;
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState,Exception?,string> formatter) =>
-            _logger.Log(logLevel,exception,formatter(state,exception));
-        
-        public class TestDisposable : IDisposable
-        {
-            public void Dispose() {
-                GC.SuppressFinalize(this);
-            }
-        }
     }
 }

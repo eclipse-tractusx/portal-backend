@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -35,16 +35,16 @@ public class Language
         SupportingApps = new HashSet<Offer>();
     }
 
-    public Language(string languageShortName, string longNameDe, string longNameEn) : this()
+    public Language(string shortName, string longNameDe, string longNameEn) : this()
     {
-        ShortName = languageShortName;
+        ShortName = shortName;
         LongNameDe = longNameDe;
         LongNameEn = longNameEn;
     }
 
     [Key]
     [StringLength(2, MinimumLength = 2)]
-    public string ShortName { get; private set; }
+    public string ShortName { get; set; }
 
     [MaxLength(255)]
     public string LongNameDe { get; set; }

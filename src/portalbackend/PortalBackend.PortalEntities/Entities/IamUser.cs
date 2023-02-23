@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class IamUser
 {
-    private IamUser()
+    public IamUser()
     {
         UserEntityId = null!;
     }
@@ -37,9 +37,9 @@ public class IamUser
 
     [Key]
     [MaxLength(36)]
-    public string UserEntityId { get; private set; }
+    public string UserEntityId { get; set; }
 
-    public Guid CompanyUserId { get; private set; }
+    public Guid CompanyUserId { get; set; }
 
     // Navigation properties
     public virtual CompanyUser? CompanyUser { get; set; }

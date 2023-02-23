@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -60,8 +60,6 @@ public partial class ProvisioningManager : IProvisioningManager
 
         await UpdateCentralIdentityProviderUrlsAsync(idpName, await sharedKeycloak.GetOpenIDConfigurationAsync(idpName).ConfigureAwait(false)).ConfigureAwait(false);
 
-        await CreateCentralIdentityProviderTenantMapperAsync(idpName).ConfigureAwait(false);
-
         await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false);
 
         await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false);
@@ -81,11 +79,15 @@ public partial class ProvisioningManager : IProvisioningManager
         await DeleteSharedIdpServiceAccountAsync(sharedKeycloak, alias);
     }
 
-    public async Task<string> CreateOwnIdpAsync(string displayName, IamIdentityProviderProtocol providerProtocol)
+    public async Task<string> CreateOwnIdpAsync(string displayName, string organisationName, IamIdentityProviderProtocol providerProtocol)
     {
         var idpName = await GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
 
         await CreateCentralIdentityProviderAsync(idpName, displayName, GetIdentityProviderTemplate(providerProtocol)).ConfigureAwait(false);
+
+        await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false);
+
+        await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false);
 
         return idpName;
     }
@@ -108,13 +110,9 @@ public partial class ProvisioningManager : IProvisioningManager
         return userIdCentral;
     }
 
-    public IEnumerable<(string AttributeName,IEnumerable<string> AttributeValues)> GetStandardAttributes(string? alias = null, string? organisationName = null, string? businessPartnerNumber = null)
+    public IEnumerable<(string AttributeName,IEnumerable<string> AttributeValues)> GetStandardAttributes(string? organisationName = null, string? businessPartnerNumber = null)
     {
         var attributes = new List<(string,IEnumerable<string>)>();
-        if (alias != null)
-        {
-            attributes.Add(new (_Settings.MappedIdpAttribute, Enumerable.Repeat<string>(alias,1)));
-        }
         if (organisationName != null)
         {
             attributes.Add(new (_Settings.MappedCompanyAttribute, Enumerable.Repeat<string>(organisationName,1)));
@@ -126,10 +124,10 @@ public partial class ProvisioningManager : IProvisioningManager
         return attributes;
     }
 
-    public async Task<string> SetupClientAsync(string redirectUrl, IEnumerable<string>? optionalRoleNames = null)
+    async Task<string> IProvisioningManager.SetupClientAsync(string redirectUrl, string? baseUrl, IEnumerable<string>? optionalRoleNames)
     {
         var clientId = await GetNextClientIdAsync().ConfigureAwait(false);
-        var internalId = await CreateCentralOIDCClientAsync(clientId, redirectUrl).ConfigureAwait(false);
+        var internalId = await CreateCentralOIDCClientAsync(clientId, redirectUrl, baseUrl).ConfigureAwait(false);
         await CreateCentralOIDCClientAudienceMapperAsync(internalId, clientId).ConfigureAwait(false);
         if (optionalRoleNames != null && optionalRoleNames.Any())
         {

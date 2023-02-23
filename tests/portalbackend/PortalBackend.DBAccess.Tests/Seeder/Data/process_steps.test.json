@@ -1,0 +1,56 @@
+﻿[
+  {
+    "id": "c4b810b7-f9ee-4310-8af0-c5c1595842c3",
+    "process_step_type_id": 1,
+    "process_step_status_id": 1,
+    "date_created": "2022-03-24 18:01:33.306000 +00:00"
+  },
+  {
+    "id": "e3b22eff-0073-4efc-8aef-c8036a873348",
+    "process_step_type_id": 1,
+    "process_step_status_id": 1,
+    "date_created": "2022-03-24 18:01:33.306000 +00:00"
+  },
+  {
+    "id": "f98e8e09-9fa2-4492-9bb0-7f63d929c103",
+    "process_step_type_id": 1,
+    "process_step_status_id": 2,
+    "date_created": "2022-03-24 18:01:33.306000 +00:00"
+  },
+  {
+    "id": "1f9b8804-b530-4ca2-b4c6-d0628a3f1ce9",
+    "process_step_type_id": 2,
+    "process_step_status_id": 2,
+    "date_created": "2022-03-24 18:01:33.306000 +00:00"
+  },
+  {
+    "id": "d82f13b0-9499-4529-b5b3-2db0735326e8",
+    "process_step_type_id": 3,
+    "process_step_status_id": 2,
+    "date_created": "2022-03-24 18:01:33.306000 +00:00"
+  },
+  {
+    "id": "f3a7e25f-95b7-4b17-bcab-f8d589ab74c6",
+    "process_step_type_id": 4,
+    "process_step_status_id": 2,
+    "date_created": "2022-03-24 18:01:33.306000 +00:00"
+  },
+  {
+    "id": "f587dad7-d1e6-46c0-8b38-1cfaeaefb5bb",
+    "process_step_type_id": 5,
+    "process_step_status_id": 2,
+    "date_created": "2022-03-24 18:01:33.306000 +00:00"
+  },
+  {
+    "id": "bc121fd3-910c-46ab-97ea-478e771625ee",
+    "process_step_type_id": 1,
+    "process_step_status_id": 2,
+    "date_created": "2022-03-24 18:01:33.306000 +00:00"
+  },
+  {
+    "id": "af6db451-945a-4e48-b890-a6b27b680215",
+    "process_step_type_id": 2,
+    "process_step_status_id": 4,
+    "date_created": "2022-03-24 18:01:33.306000 +00:00"
+  }
+]

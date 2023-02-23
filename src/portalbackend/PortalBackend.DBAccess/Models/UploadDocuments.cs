@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -31,15 +31,4 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
 
         public string DocumentName { get;}
     }
-
-    public class RegistrationDocumentNames
-    {
-        public RegistrationDocumentNames(string documentName)
-        {
-            DocumentName = documentName;
-        }
-    
-        public string DocumentName { get; set;}
-    }
-    
 }

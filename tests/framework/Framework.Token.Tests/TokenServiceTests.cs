@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,27 +18,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using FakeItEasy;
-using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
 using System.Text.Json;
-using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Token.Tests;
 
 public class TokenServiceTests
 {
     private readonly string _accessToken;
-    private readonly string _httpClientName;
     private readonly CancellationToken _cancellationToken;
     private readonly TestException _testException;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IFixture _fixture;
+    private readonly Uri _validBaseAddress = new("https://validurl.com");
 
     public TokenServiceTests()
     {
@@ -48,79 +44,82 @@ public class TokenServiceTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _accessToken = _fixture.Create<string>();
-        _httpClientName  = _fixture.Create<string>();
         _cancellationToken = new CancellationToken();
         _testException = _fixture.Create<TestException>();
 
         _httpClientFactory = A.Fake<IHttpClientFactory>();
     }
 
-    #region GetTokenAsync
+    #region GetAuthorizedClient
 
     [Fact]
-    public async void GetTokenAsyncSuccess()
+    public async Task GetAuthorizedClient_Success()
     {
         var authResponse = JsonSerializer.Serialize(_fixture.Build<AuthResponse>().With(x => x.AccessToken, _accessToken).Create());
-        SetupHttpClient(new HttpMessageHandlerMock(HttpStatusCode.OK, authResponse.ToFormContent("application/json")));
+        SetupForGetAuthorized<TokenService>(new HttpMessageHandlerMock(HttpStatusCode.OK, authResponse.ToFormContent("application/json")));
 
-        var settings = _fixture.Build<GetTokenSettings>().With(x => x.HttpClientName, _httpClientName).Create();
+        var settings = _fixture.Create<KeyVaultAuthSettings>();
 
         var sut = new TokenService(_httpClientFactory);
 
-        var result = await sut.GetTokenAsync(settings, _cancellationToken).ConfigureAwait(false);
+        var result = await sut.GetAuthorizedClient<TokenService>(settings, _cancellationToken).ConfigureAwait(false);
 
         result.Should().NotBeNull();
-        result.Should().Be(_accessToken);
+        result.BaseAddress.Should().Be(_validBaseAddress);
     }
 
     [Fact]
-    public async void GetTokenAsyncHttpClientError500_Throws()
+    public async Task GetAuthorizedClient_HttpClientError500_Throws()
     {
         var errorResponse = JsonSerializer.Serialize(_fixture.Create<ErrorResponse>());
-        SetupHttpClient(new HttpMessageHandlerMock(HttpStatusCode.InternalServerError, errorResponse.ToFormContent("application/json")));
-
-        var settings = _fixture.Build<GetTokenSettings>().With(x => x.HttpClientName, _httpClientName).Create();
+        SetupForGetAuthorized<TokenService>(new HttpMessageHandlerMock(HttpStatusCode.InternalServerError, errorResponse.ToFormContent("application/json")));
+        var settings = _fixture.Create<KeyVaultAuthSettings>();
 
         var sut = new TokenService(_httpClientFactory);
 
-        var act = () => sut.GetTokenAsync(settings, _cancellationToken);
+        var act = () => sut.GetAuthorizedClient<TokenService>(settings, _cancellationToken);
 
         var error = await Assert.ThrowsAsync<ServiceException>(act).ConfigureAwait(false);
 
         error.Should().NotBeNull();
+        error.Message.Should().Be($"call to external system token-post failed with statuscode 500");
         error.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
-        error.Message.Should().Be($"Get Token Call for {_httpClientName} was not successful");
     }
 
     [Fact]
-    public async void GetTokenAsyncHttpClientThrows_Throws()
+    public async Task GetAuthorizedClient_HttpClientThrows_Throws()
     {
-        SetupHttpClient(new HttpMessageHandlerMock(HttpStatusCode.InternalServerError, ex: _testException));
-
-        var settings = _fixture.Build<GetTokenSettings>().With(x => x.HttpClientName, _httpClientName).Create();
+        SetupForGetAuthorized<TokenService>(new HttpMessageHandlerMock(HttpStatusCode.InternalServerError, ex: _testException));
+        var settings = _fixture.Create<KeyVaultAuthSettings>();
 
         var sut = new TokenService(_httpClientFactory);
 
-        var act = () => sut.GetTokenAsync(settings, _cancellationToken);
+        var act = () => sut.GetAuthorizedClient<TokenService>(settings, _cancellationToken);
 
         var error = await Assert.ThrowsAsync<ServiceException>(act).ConfigureAwait(false);
 
         error.Should().NotBeNull();
         error.InnerException.Should().Be(_testException);
-        error.Message.Should().Be($"Get Token Call for {_httpClientName} threw exception");
+        error.Message.Should().Be($"call to external system token-post failed");
     }
 
     #endregion
 
     #region Setup
 
-    private void SetupHttpClient(HttpMessageHandler httpMessageHandler)
+    private void SetupForGetAuthorized<T>(HttpMessageHandler httpMessageHandler)
     {
-        var httpClient = new HttpClient(httpMessageHandler)
+        var httpClientAuth = new HttpClient(httpMessageHandler)
         {
             BaseAddress = _fixture.Create<Uri>()
         };
-        A.CallTo(() => _httpClientFactory.CreateClient(_httpClientName))
+        var httpClient = new HttpClient(httpMessageHandler)
+        {
+            BaseAddress = _validBaseAddress
+        };
+        A.CallTo(() => _httpClientFactory.CreateClient($"{typeof(T).Name}Auth"))
+            .Returns(httpClientAuth);
+        A.CallTo(() => _httpClientFactory.CreateClient(typeof(T).Name))
             .Returns(httpClient);
     }
 

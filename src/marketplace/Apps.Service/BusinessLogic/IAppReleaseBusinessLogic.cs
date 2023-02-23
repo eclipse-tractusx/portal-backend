@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -49,7 +49,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<int> CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
+    Task CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
     
     /// <summary>
     /// Add User Role for App
@@ -64,7 +64,7 @@ public interface IAppReleaseBusinessLogic
     /// Return Agreements for App_Contract Category
     /// </summary>
     /// <returns></returns>
-    IAsyncEnumerable<AgreementData> GetOfferAgreementDataAsync();
+    IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync();
 
     /// <summary>
     /// Return Offer Agreement Consent
@@ -127,7 +127,7 @@ public interface IAppReleaseBusinessLogic
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.
     /// </summary>
-    Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting);
+    Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting, OfferStatusIdFilter? offerStatusIdFilter);
 
     /// <summary>
     /// Update app status and create notification
@@ -153,4 +153,18 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task ApproveAppRequestAsync(Guid appId, string iamUserId);
+
+    /// <summary>
+    /// Get All Privacy Policy
+    /// </summary>
+    /// <returns></returns>
+    Task<PrivacyPolicyData> GetPrivacyPolicyDataAsync();
+
+    /// <summary>
+    /// Declines the app request
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="data">The decline request data</param>
+    Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data);
 }

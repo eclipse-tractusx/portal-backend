@@ -1,6 +1,6 @@
 ﻿/********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -89,7 +89,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.GetOfferSubscriptionStateForCompanyAsync(
-            new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), 
+            new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), 
             new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), 
             OfferTypeId.APP).ConfigureAwait(false);
 
@@ -97,7 +97,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result.Should().NotBe(default);
         result.offerSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
-        result.offerSubscriptionId.Should().Be(new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"));
+        result.offerSubscriptionId.Should().Be(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"));
     }
 
     [Fact]
@@ -127,12 +127,12 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetAllBusinessAppDataForUserIdAsync("3d8142f1-860b-48aa-8c2b-1ccb18699f65").ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllBusinessAppDataForUserIdAsync("502dabcf-01c7-47d9-a88e-0be4279097b5").ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNullOrEmpty();
         result.Should().HaveCount(1);
-        result.First().SubscriptionUrl.Should().Be("https://url.test-app.com");
+        result.First().SubscriptionUrl.Should().Be("https://ec-qas.d13fe27.kyma.ondemand.com");
     }
 
     #endregion
@@ -150,7 +150,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync("623770c5-cf38-4b9f-9a35-f8b9ae972e2e", OfferTypeId.SERVICE, sorting, OfferSubscriptionStatusId.ACTIVE)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync("8be5ee49-4b9c-4008-b641-138305430cc4", OfferTypeId.SERVICE, sorting, OfferSubscriptionStatusId.ACTIVE)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -161,6 +161,31 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     
     #endregion
     
+    #region GetOfferDetailsAndCheckUser
+
+    [Fact]
+    public async Task GetOfferDetailsAndCheckUser_WithValidUserandSubscriptionId_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferDetailsAndCheckUser(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().NotBe(default);
+        result!.OfferId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"));
+        result.Status.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+        result.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        result.CompanyName.Should().Be("Catena-X");
+        result.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
+        result.Bpn.Should().Be("BPNL00000003CRHK");
+        result.OfferName.Should().Be("Trace-X");
+    }
+
+    #endregion
+
     #region Setup
     
     private async Task<(OfferSubscriptionsRepository, PortalDbContext)> CreateSut()

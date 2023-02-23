@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -44,23 +45,19 @@ public interface IConnectorsBusinessLogic
     /// Add a connector to persistence layer and calls the sd factory service with connector parameters.
     /// </summary>
     /// <param name="connectorInputModel">Connector parameters for creation.</param>
-    /// <param name="accessToken">Bearer token to be used for authorizing the sd factory request.</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="cancellationToken"></param>
     /// <returns>View model of created connector.</returns>
-    Task<ConnectorData> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string accessToken,
-        string iamUserId, CancellationToken cancellationToken);
+    Task<Guid> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Add a managed connector to persistence layer and calls the sd factory service with connector parameters.
     /// </summary>
     /// <param name="connectorInputModel">Connector parameters for creation.</param>
-    /// <param name="accessToken">Bearer token to be used for authorizing the sd factory request.</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="cancellationToken"></param>
     /// <returns>View model of created connector.</returns>
-    Task<ConnectorData> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, string accessToken,
-        string iamUserId, CancellationToken cancellationToken);
+    Task<Guid> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Remove a connector from persistence layer by id.
@@ -85,4 +82,11 @@ public interface IConnectorsBusinessLogic
     /// <param name="cancellationToken"></param>
     /// <returns><c>true</c> if the call to daps was successful, otherwise <c>false</c>.</returns>
     Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, string accessToken, string iamUserId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Processes the clearinghouse self description
+    /// </summary>
+    /// <param name="data">The response data</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken);
 }
