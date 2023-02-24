@@ -470,14 +470,13 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
     
     /// <inheritdoc />
-    public Task<(string? OfferName, OfferStatusId OfferStatus, Guid? CompanyId, bool IsUserOfProvider)> GetOfferDeclineDataAsync(Guid offerId, string iamUserId, OfferTypeId offerType) =>
+    public Task<(string? OfferName, OfferStatusId OfferStatus, Guid? CompanyId)> GetOfferDeclineDataAsync(Guid offerId, string iamUserId, OfferTypeId offerType) =>
         _context.Offers
             .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerType)
-            .Select(offer => new ValueTuple<string?, OfferStatusId, Guid?, bool>(
+            .Select(offer => new ValueTuple<string?, OfferStatusId, Guid?>(
                 offer.Name, 
                 offer.OfferStatusId,
-                offer.ProviderCompanyId,
-                offer.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
+                offer.ProviderCompanyId))
             .SingleOrDefaultAsync();
 
     ///<inheritdoc/>

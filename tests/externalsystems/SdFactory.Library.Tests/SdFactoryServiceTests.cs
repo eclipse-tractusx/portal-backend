@@ -101,7 +101,7 @@ public class SdFactoryServiceTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);
-        exception.Message.Should().Be("call to external system sd-factory-connector-post failed with statuscode");
+        exception.Message.Should().Be("call to external system sd-factory-connector-post failed with statuscode 400");
         exception.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -139,7 +139,7 @@ public class SdFactoryServiceTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);
-        exception.Message.Should().Be($"call to external system sd-factory-selfdescription-post failed with statuscode");
+        exception.Message.Should().Be($"call to external system sd-factory-selfdescription-post failed with statuscode 400");
         exception.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 

@@ -82,7 +82,7 @@ public class TokenServiceTests
         var error = await Assert.ThrowsAsync<ServiceException>(act).ConfigureAwait(false);
 
         error.Should().NotBeNull();
-        error.Message.Should().Be($"call to external system token-post failed with statuscode");
+        error.Message.Should().Be($"call to external system token-post failed with statuscode 500");
         error.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
     }
 
