@@ -1023,7 +1023,7 @@ public class OfferServiceTests
         // Arrange
         var notExistingOffer = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, _iamUserId, offerTypeId))
-            .ReturnsLazily(() => new ValueTuple<string? , OfferStatusId, Guid?, bool>());
+            .ReturnsLazily(() => new ValueTuple<string? , OfferStatusId, Guid?>());
 
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
@@ -1037,32 +1037,12 @@ public class OfferServiceTests
     [Theory]
     [InlineData(OfferTypeId.APP)]
     [InlineData(OfferTypeId.SERVICE)]
-    public async Task DeclineOfferAsync_WithNotAssignedUser_ThrowsControllerArgumentException(OfferTypeId offerTypeId)
-    {
-        // Arrange
-        var notExistingOffer = _fixture.Create<Guid>();
-        A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, _iamUserId, offerTypeId))
-            .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?, bool>("test", OfferStatusId.IN_REVIEW, Guid.NewGuid(), false));
-
-        var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
-
-        // Act
-        async Task Act() => await sut.DeclineOfferAsync(notExistingOffer, _iamUserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be($"{offerTypeId} not found. Either not existing or no permission for change.");
-    }
-
-    [Theory]
-    [InlineData(OfferTypeId.APP)]
-    [InlineData(OfferTypeId.SERVICE)]
     public async Task DeclineOfferAsync_WithWrongStatus_ThrowsConflictException(OfferTypeId offerTypeId)
     {
         // Arrange
         var notExistingOffer = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, _iamUserId, offerTypeId))
-            .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?, bool>("test", OfferStatusId.CREATED, Guid.NewGuid(), true));
+            .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?>("test", OfferStatusId.CREATED, Guid.NewGuid()));
 
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
@@ -1082,7 +1062,7 @@ public class OfferServiceTests
         // Arrange
         var notExistingOffer = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, _iamUserId, offerTypeId))
-            .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?, bool>(null, OfferStatusId.IN_REVIEW, Guid.NewGuid(), true));
+            .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?>(null, OfferStatusId.IN_REVIEW, Guid.NewGuid()));
 
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
@@ -1102,7 +1082,7 @@ public class OfferServiceTests
         // Arrange
         var notExistingOffer = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, _iamUserId, offerTypeId))
-            .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?, bool>("test", OfferStatusId.IN_REVIEW, null, true));
+            .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?>("test", OfferStatusId.IN_REVIEW, null));
 
         var sut = new OfferService(_portalRepositories, null!, null!, null!, null!);
 
@@ -1125,7 +1105,7 @@ public class OfferServiceTests
         var recipients = new Dictionary<string, IEnumerable<string>>(){{"Test", new []{"Abc"}}};
         var roleIds = _fixture.Create<IEnumerable<Guid>>();
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(offerId, _iamUserId, offerTypeId))
-            .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?, bool>("test", OfferStatusId.IN_REVIEW, Guid.NewGuid(), true));
+            .ReturnsLazily(() => new ValueTuple<string?, OfferStatusId, Guid?>("test", OfferStatusId.IN_REVIEW, Guid.NewGuid()));
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._))
             .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
             {
