@@ -17,7 +17,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-// See https://aka.ms/new-console-template for more information
 
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;

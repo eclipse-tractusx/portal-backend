@@ -32,8 +32,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230213100306_CPLP-1834-AddRemoveDocumentTypeS")]
-    partial class CPLP1834AddRemoveDocumentTypeS
+    [Migration("20230224124051_CPLP1834-AddRemoveDocumentTypes")]
+    partial class CPLP1834AddRemoveDocumentTypes
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
