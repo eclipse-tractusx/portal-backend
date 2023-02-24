@@ -296,6 +296,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    
     #region GetOfferImageDocumentContentAsync
 
     [Theory]
@@ -328,6 +329,28 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.IsValidOfferType.Should().Be(isValidOfferType);
     }
 
+    #endregion
+
+    #region GetAppDocumentsAsync
+
+    [Theory]
+    [InlineData("31d4f694-a97d-46a7-aec0-e70141bf5402","2f1efa5c-60bd-405b-95ac-365009d7f3fd", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP)]
+    public async Task GetAppDocumentsAsync_ReturnsExpectedResult(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetAppDocumentsAsync(documentId,iamUserId, documentTypeIds, offerTypeId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.OfferData.Should().ContainSingle();
+        result.IsDocumentTypeMatch.Should().Be(true);
+        var offer = result.OfferData.Single();
+        offer.OfferId.Should().Be(new Guid("5cf74ef8-e0b7-4984-a872-474828beb510"));
+    }
+    
     #endregion
 
     #region Setup    

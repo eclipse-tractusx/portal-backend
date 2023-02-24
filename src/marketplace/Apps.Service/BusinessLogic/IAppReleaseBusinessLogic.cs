@@ -173,4 +173,12 @@ public interface IAppReleaseBusinessLogic
     /// </summary>
     /// <param name="appId">Id of the app</param>
     Task<InReviewAppDetails> GetinReviewAppDetailsByIdAsync(Guid appId);
+
+    /// <summary>
+    /// Delete the App Document
+    /// </summary>
+    /// <param name="documentId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task DeleteAppDocumentsAsync(Guid documentId, string iamUserId);
 }

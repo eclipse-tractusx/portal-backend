@@ -558,4 +558,8 @@ public class OfferRepository : IOfferRepository
                     entity.DescriptionLong = modified.LongDescription;
                     entity.DescriptionShort = modified.ShortDescription;
                 });
+
+    /// <inheritdoc />
+    public void RemoveOfferAssignedDocument(Guid offerId, Guid documentId) => 
+        _context.OfferAssignedDocuments.Remove(new OfferAssignedDocument(offerId, documentId));
 }
