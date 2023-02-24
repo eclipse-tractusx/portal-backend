@@ -76,8 +76,8 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Region.Should().BeNull();
         result.Zipcode.Should().Be("00001");
 
-        result.AgreementsData.Should().HaveCount(5);
-        result.AgreementsData.Where(x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER).Should().HaveCount(2);
+        result.AgreementsData.Should().HaveCount(4);
+        result.AgreementsData.Where(x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER).Should().HaveCount(1);
         result.AgreementsData.Where(x => x.CompanyRoleId == CompanyRoleId.ACTIVE_PARTICIPANT).Should().HaveCount(3);
 
         result.InvitedCompanyUserData.Should().BeEmpty();
