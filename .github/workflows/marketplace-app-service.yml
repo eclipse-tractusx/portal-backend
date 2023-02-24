@@ -35,7 +35,7 @@ on:
       - 'docker/Dockerfile-marketplace-app-service'
 
     branches:
-      - 'main'
+      - 'dev'
   workflow_dispatch:
 
 env:

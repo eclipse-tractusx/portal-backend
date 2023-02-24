@@ -35,7 +35,7 @@ on:
       - 'docker/Dockerfile-registration-service'
 
     branches:
-      - 'main'
+      - 'dev'
   workflow_dispatch:
 
 env:
