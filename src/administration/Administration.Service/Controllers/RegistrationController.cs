@@ -128,7 +128,7 @@ public class RegistrationController : ControllerBase
     /// </summary>
     /// <param name="applicationId">Id of the application that should be approved</param>
     /// <remarks>
-    /// Example: GET: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/approve
+    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/approve
     /// </remarks>
     /// <response code="204">Successfully approved the application</response>
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, or there is no checklist entry of type Registration_Verification.</response>
@@ -151,7 +151,7 @@ public class RegistrationController : ControllerBase
     /// <param name="applicationId">Id of the application that should be declined</param>
     /// <param name="data">Comment to explain why the application got declined</param>
     /// <remarks>
-    /// Example: GET: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/decline
+    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/decline
     /// </remarks>
     /// <response code="204">Successfully declined the application</response>
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED, or there is no checklist entry of type Registration_Verification.</response>
@@ -175,7 +175,7 @@ public class RegistrationController : ControllerBase
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>NoContent</returns>
     /// Example: POST: api/administration/registration/clearinghouse
-    /// <response code="200">the result as a boolean.</response>
+    /// <response code="204">Empty response on success.</response>
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the clearing_house process is not in status IN_PROGRESS.</response>
     /// <response code="404">No application found for the bpn.</response>
     [HttpPost]
@@ -213,7 +213,7 @@ public class RegistrationController : ControllerBase
     /// <param name="applicationId" example="">Id of the application that should be triggered</param>
     /// <returns>NoContent</returns>
     /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/override-clearinghouse
-    /// <response code="200">the result as a boolean.</response>
+    /// <response code="204">Empty response on success.</response>
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
     /// <response code="404">No application found for the applicationId.</response>
     [HttpPost]
@@ -234,7 +234,7 @@ public class RegistrationController : ControllerBase
     /// <param name="applicationId" example="">Id of the application that should be triggered</param>
     /// <returns>NoContent</returns>
     /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/retrigger-clearinghouse
-    /// <response code="200">the result as a boolean.</response>
+    /// <response code="204">Empty response on success.</response>
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
     /// <response code="404">No application found for the applicationId.</response>
     [HttpPost]
@@ -255,7 +255,7 @@ public class RegistrationController : ControllerBase
     /// <param name="applicationId" example="">Id of the application that should be triggered</param>
     /// <returns>NoContent</returns>
     /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger-identity-wallet<br />
-    /// <response code="200">the result as a boolean.</response>
+    /// <response code="204">Empty response on success.</response>
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
     /// <response code="404">No application found for the applicationId.</response>
     [HttpPost]
@@ -276,7 +276,7 @@ public class RegistrationController : ControllerBase
     /// <param name="applicationId" example="">Id of the application that should be triggered</param>
     /// <returns>NoContent</returns>
     /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger-self-description <br />
-    /// <response code="200">the result as a boolean.</response>
+    /// <response code="204">Empty response on success.</response>
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
     /// <response code="404">No application found for the applicationId.</response>
     [HttpPost]
@@ -298,7 +298,7 @@ public class RegistrationController : ControllerBase
     /// <param name="processTypeId">Optional: The process type id that should be retriggered</param>
     /// <returns>NoContent</returns>
     /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger-bpn <br />
-    /// <response code="200">the result as a boolean.</response>
+    /// <response code="204">Empty response on success.</response>
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
     /// <response code="404">No application found for the applicationId.</response>
     [HttpPost]
@@ -319,8 +319,9 @@ public class RegistrationController : ControllerBase
     /// <param name="data">The response data for the self description</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// Example: POST: api/administration/registration/clearinghouse/selfDescription <br />
-    /// <response code="200">the result as a boolean.</response>
+    /// <response code="204">Empty response on success.</response>
     /// <response code="400">The CompanyApplication is not in status SUBMITTED.</response>
+    /// <response code="404">Record not found.</response>
     [HttpPost]
     [Authorize(Roles = "update_application_checklist_value")]
     [Route("clearinghouse/selfDescription")]
@@ -340,10 +341,12 @@ public class RegistrationController : ControllerBase
     /// <returns>Returns the file.</returns>
     /// <remarks>Example: GET: /api/administration/registration/documents/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
     /// <response code="200">Returns the file.</response>
+    /// <response code="404">Record not found.</response>
     [HttpGet]
     [Route("documents/{documentId}")]
     [Authorize(Roles = "approve_new_partner")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
     {
         var (fileName, content, contentType) = await _logic.GetDocumentAsync(documentId).ConfigureAwait(false);

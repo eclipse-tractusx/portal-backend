@@ -53,13 +53,12 @@ public class CompanyDataController : ControllerBase
     /// <returns>the company with its address</returns>
     /// <remarks>Example: GET: api/administration/companydata/ownCompanyDetails</remarks>
     /// <response code="200">Returns the company with its address.</response>
-    /// <response code="400">No company data was found.</response>
+    /// <response code="409">user is not associated with  company.</response>
     [HttpGet]
     [Authorize(Roles = "view_company_data")]
     [Route("ownCompanyDetails")]
     [ProducesResponseType(typeof(CompanyAddressDetailData), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync() =>
         this.WithIamUserId(iamUserId =>_logic.GetOwnCompanyDetailsAsync(iamUserId));
 }

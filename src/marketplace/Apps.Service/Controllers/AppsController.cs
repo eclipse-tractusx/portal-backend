@@ -87,13 +87,11 @@ public class AppsController : ControllerBase
     /// <returns>AppDetailsViewModel for requested application.</returns>
     /// <remarks>Example: GET: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
     /// <response code="200">Returns the requested app details.</response>
-    /// <response code="400">If sub claim is empty/invalid.</response>
     /// <response code="404">App not found.</response>
     [HttpGet]
     [Route("{appId}", Name = nameof(GetAppDetailsByIdAsync))]
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(typeof(AppDetailResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<AppDetailResponse> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null) =>
         this.WithIamUserId(userId => _appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang));
@@ -171,12 +169,10 @@ public class AppsController : ControllerBase
     /// </summary>
     /// <remarks>Example: GET: /api/apps/subscribed/subscription-status</remarks>
     /// <response code="200">Returns list of applicable app subscription statuses.</response>
-    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
     [Route("subscribed/subscription-status")]
     [Authorize(Roles = "view_subscription")]
     [ProducesResponseType(typeof(IAsyncEnumerable<(Guid AppId, OfferSubscriptionStatusId AppSubscriptionStatus)>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<AppWithSubscriptionStatus> GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync() =>
         this.WithIamUserId(userId => _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(userId));
 
@@ -185,12 +181,10 @@ public class AppsController : ControllerBase
     /// </summary>
     /// <remarks>Example: GET: /api/apps/provided/subscription-status</remarks>
     /// <response code="200">Returns list of applicable app subscription statuses.</response>
-    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
     [Route("provided/subscription-status")]
     [Authorize(Roles = "view_app_subscription")]
     [ProducesResponseType(typeof(Pagination.Response<OfferCompanySubscriptionStatusData>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null) =>
         this.WithIamUserId(userId => _appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(page, size, userId, sorting, statusId));
 
@@ -203,12 +197,16 @@ public class AppsController : ControllerBase
     /// <response code="204">App was successfully subscribed to.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     /// <response code="404">If appId does not exist.</response>
+    /// <response code="409"></response>
+    /// <response code="500">Internal Server Error</response>
     [HttpPost]
     [Route("{appId}/subscribe")]
     [Authorize(Roles = "subscribe_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId, [FromBody] IEnumerable<OfferAgreementConsentData> offerAgreementConsentData)
     {
         await this.WithIamUserAndBearerToken(auth => _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, offerAgreementConsentData, auth.iamUserId, auth.bearerToken));
@@ -237,12 +235,16 @@ public class AppsController : ControllerBase
     /// <response code="204">App subscription was successfully activated.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="404">App does not exist.</response>
+    /// <response code="409">App Name not set.</response>
+    /// <response code="500">Internal Server Error.</response>
     [HttpPut]
     [Route("{appId}/subscription/company/{companyId}/activate")]
     [Authorize(Roles = "activate_subscription")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> ActivateCompanyAppSubscriptionAsync([FromRoute] Guid appId, [FromRoute] Guid companyId) 
     {
         await this.WithIamUserId(userId => _appsBusinessLogic.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, companyId, userId)).ConfigureAwait(false);
@@ -280,7 +282,6 @@ public class AppsController : ControllerBase
     [Route("provided")]
     [Authorize(Roles = "app_management")]
     [ProducesResponseType(typeof(IAsyncEnumerable<AllOfferData>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public IAsyncEnumerable<AllOfferData> GetAppDataAsync()=>
         this.WithIamUserId(userId => _appsBusinessLogic.GetCompanyProvidedAppsDataForUserAsync(userId));
 
@@ -308,12 +309,16 @@ public class AppsController : ControllerBase
     /// <response code="204">The App Successfully Deactivated</response>
     /// <response code="400">invalid or user does not exist.</response>
     /// <response code="404">If app does not exists.</response>
+    /// <response code="403">Missing Permission</response>
+    /// <response code="409">Offer is in incorrect state</response>
     [HttpPut]
     [Route("{appId:guid}/deactivateApp")]
     [Authorize(Roles = "edit_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
     {
         await this.WithIamUserId(userId => _appsBusinessLogic.DeactivateOfferbyAppIdAsync(appId,userId)).ConfigureAwait(false);
@@ -330,7 +335,7 @@ public class AppsController : ControllerBase
     /// <response code="200">Returns the document Content</response>
     /// <response code="400">Document / App id not found or document type not supported.</response>
     /// <response code="404">document not found.</response>
-    /// <response code="409">document content should not null.</response>
+    /// <response code="415">UnSupported Media Type.</response>
     [HttpGet]
     [Authorize(Roles = "view_documents")]
     [Route("{appId}/appImages/{documentId}")]
@@ -338,7 +343,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<FileResult> GetAppImageDocumentContentAsync([FromRoute] Guid appId, [FromRoute] Guid documentId, CancellationToken cancellationToken)
     {
         var (content, contentType, fileName) = await _appsBusinessLogic.GetAppImageDocumentContentAsync(appId, documentId, cancellationToken).ConfigureAwait(false);

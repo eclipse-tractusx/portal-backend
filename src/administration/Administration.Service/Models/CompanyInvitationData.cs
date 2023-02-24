@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using System.ComponentModel;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models
 {
@@ -36,16 +37,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models
         }
 
         [JsonPropertyName("userName")]
-        public string? userName { get; set; }        
+        public string? userName { get; set; }   
+
+        [DefaultValue("string")]   
         [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
         [JsonPropertyName("firstName")]
         public string firstName { get; set; }
+
+        [DefaultValue("string")]
         [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
         [JsonPropertyName("lastName")]
         public string lastName { get; set; }
+
+        [DefaultValue("string")]
         [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
         [JsonPropertyName("email")]
         public string email { get; set; }
+
         [JsonPropertyName("organisationName")]
         public string organisationName { get; set; }
     }

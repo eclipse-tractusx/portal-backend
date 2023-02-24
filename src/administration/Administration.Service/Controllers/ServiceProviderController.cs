@@ -32,14 +32,14 @@ public class ServiceProviderController : ControllerBase
     /// <response code="200">The service provider details.</response>
     /// <response code="400">The given data are incorrect.</response>
     /// <response code="403">The calling users company is not a service-provider</response>
-    /// <response code="404">Service Provider was not found.</response>
+    /// <response code="409">User is not assigned to company.</response>
     [HttpGet]
     [Route("owncompany", Name = nameof(GetServiceProviderCompanyDetail))]
     [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(ProviderDetailReturnData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<ProviderDetailReturnData> GetServiceProviderCompanyDetail() =>
         this.WithIamUserId(iamUserId => _logic.GetServiceProviderCompanyDetailsAsync(iamUserId));
     
@@ -49,7 +49,7 @@ public class ServiceProviderController : ControllerBase
     /// <param name="data">Service provider detail data</param>
     /// <returns></returns>
     /// <remarks>Example: PUT: api/administration/serviceprovider/owncompany</remarks>
-    /// <response code="200">Sets the Service Provider Details data successfully.</response>
+    /// <response code="204">Empty response on success.</response>
     /// <response code="400">The given data are incorrect.</response>
     /// <response code="404">Service Provider was not found.</response>
     [HttpPut]
