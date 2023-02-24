@@ -24,13 +24,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
-    public partial class CPLP1834AddRemoveDocumentTypeS : Migration
+    public partial class CPLP1834AddRemoveDocumentTypes : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DELETE FROM portal.offer_assigned_documents WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4);");
-            migrationBuilder.Sql("DELETE FROM portal.documents WHERE document_type_id = 4;");
-
             migrationBuilder.UpdateData(
                 schema: "portal",
                 table: "document_types",
@@ -63,9 +60,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "document_types",
                 keyColumn: "id",
                 keyValue: 11);
-
-            migrationBuilder.Sql("DELETE FROM portal.offer_assigned_documents WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4);");
-            migrationBuilder.Sql("DELETE FROM portal.documents WHERE document_type_id = 4;");
 
             migrationBuilder.UpdateData(
                 schema: "portal",
