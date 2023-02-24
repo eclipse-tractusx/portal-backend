@@ -60,12 +60,16 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="204">App was successfully updated.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="404">App does not exist.</response>
+    /// <response code="403">User does not have edit permission.</response>
+    /// <response code="409">App is in incorrect state.</response>
     [HttpPut]
     [Route("updateapp/{appId}")]
     [Authorize(Roles = "app_management")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateApp([FromRoute] Guid appId, [FromBody] AppEditableDetail updateModel) 
     {
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppAsync(appId, updateModel, userId)).ConfigureAwait(false);
@@ -84,6 +88,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="404">App does not exist.</response>
     /// <response code="403">The user is not assigned with the app.</response>
+    /// <response code="409">Offer is in incorrect state.</response>
     /// <response code="415">Only PDF files are supported.</response>
     [HttpPut]
     [Route("updateappdoc/{appId}/documentType/{documentTypeId}/documents")]
@@ -94,6 +99,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<NoContentResult> UpdateAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {
@@ -110,12 +116,14 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="404">App does not exist.</response>
     /// <response code="200">created role and role description successfully.</response>
+    /// <response code="403">User not associated with provider company</response>
     [HttpPost]
     [Route("{appId}/role")]
     [Authorize(Roles = "edit_apps")]
     [ProducesResponseType(typeof(IEnumerable<AppRoleData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<IEnumerable<AppRoleData>> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)=>
          await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, appAssignedDesc, iamUserId)).ConfigureAwait(false);
 
@@ -138,11 +146,13 @@ public class AppReleaseProcessController : ControllerBase
     /// <remarks>Example: GET: /api/apps/appreleaseprocess/consent/{appId}</remarks>
     /// <response code="200">Returns the Offer Agreement Consent data</response>
     /// <response code="404">App does not exist.</response>
+    /// <response code="403">User not associated with offer.</response>
     [HttpGet]
     [Route("consent/{appId}")]
     [Authorize(Roles = "edit_apps")]
     [ProducesResponseType(typeof(OfferAgreementConsent), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<OfferAgreementConsent> GetOfferAgreementConsentById([FromRoute] Guid appId) =>
         this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetOfferAgreementConsentById(appId, iamUserId));
 
@@ -155,12 +165,14 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="200">Successfully submitted consent to agreements</response>
     /// <response code="403">Either the user was not found or the user is not assignable to the given application.</response>
     /// <response code="404">App does not exist.</response>
+    /// <response code="400">App Id is incorrect.</response>
     [HttpPost]
     [Authorize(Roles = "edit_apps")]
     [Route("consent/{appId}/agreementConsents")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<int> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid appId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
         this.WithIamUserId(iamUserId =>
             _appReleaseBusinessLogic.SubmitOfferConsentAsync(appId, offerAgreementConsents, iamUserId));
@@ -172,11 +184,13 @@ public class AppReleaseProcessController : ControllerBase
     /// <remarks>Example: GET: /api/apps/appreleaseprocess/{appId}/appStatus</remarks>
     /// <response code="200">Return the Offer and status data</response>
     /// <response code="404">App does not exist.</response>
+    /// <response code="403">User not associated with provider company.</response>
     [HttpGet]
     [Route("{appId}/appStatus")]
     [Authorize(Roles = "app_management")]
     [ProducesResponseType(typeof(OfferProviderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<OfferProviderResponse> GetAppDetailsForStatusAsync([FromRoute] Guid appId) =>
         this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppDetailsForStatusAsync(appId, iamUserId));
     
@@ -188,11 +202,15 @@ public class AppReleaseProcessController : ControllerBase
     /// <remarks>Example: DELETE: /api/apps/appreleaseprocess/{appId}/role/{roleId}</remarks>
     /// <response code="204">Empty response on success.</response>
     /// <response code="404">Record not found.</response>
+    /// <response code="400">Input is incorrect</response>
+    /// <response code="403">User is not associated with provider company</response>
     [HttpDelete]
     [Route("{appId}/role/{roleId}")]
     [Authorize(Roles = "edit_apps")]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<NoContentResult> DeleteAppRoleAsync([FromRoute] Guid appId, [FromRoute] Guid roleId)
     {
         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.DeleteAppRoleAsync(appId, roleId, iamUserId));
@@ -218,13 +236,14 @@ public class AppReleaseProcessController : ControllerBase
     /// <returns>ID of created application.</returns> 
     /// <remarks>Example: POST: /api/apps/appreleaseprocess/createapp</remarks>
     /// <response code="201">Returns created app's ID.</response>
-    /// <response code="404">Language Code or Use Case or CompanyId does not exist.</response>
+    /// <response code="400">Language Code or Use Case or CompanyId is incorrect</response>
+    /// <response code="403">User is not associated with provider company.</response>
     [HttpPost]
     [Route("createapp")]
     [Authorize(Roles = "add_apps")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status403Forbidden)]
     public async Task<CreatedAtRouteResult> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
     {
         var appId = await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddAppAsync(appRequestModel, iamUserId).ConfigureAwait(false));
@@ -239,13 +258,18 @@ public class AppReleaseProcessController : ControllerBase
     /// <returns>ID of updated application.</returns> 
     /// <remarks>Example: PUT: /api/apps/appreleaseprocess/15507472-dfdc-4885-b165-8d4a8970a3e2</remarks>
     /// <response code="201">Returns created app's ID.</response>
-    /// <response code="404">Language Code or Use Case or CompanyId does not exist.</response>
+    /// <response code="404">App does not exist </response>
+    /// <response code="400">Language Code or Use Case or CompanyId is incorrect</response>
+    /// <response code="403">User don't have permission to change the app.</response>
+    /// <response code="409">Offer is in inCorrect State.</response>
     [HttpPut]
     [Route("{appId}")]
     [Authorize(Roles = "edit_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateAppRelease([FromRoute] Guid appId, [FromBody] AppRequestModel appRequestModel)
     {
         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.UpdateAppReleaseAsync(appId, appRequestModel, iamUserId).ConfigureAwait(false));
@@ -277,12 +301,14 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="204">The app was successfully submitted for release.</response>
     /// <response code="400">Either the sub claim is empty/invalid, user does not exist or the subscription might not have the correct status or the companyID is incorrect.</response>
     /// <response code="404">App does not exist.</response>
+    /// <response code="409">User not associated with company</response>
     [HttpPut]
     [Route("{appId}/submit")]
     [Authorize(Roles = "add_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> SubmitAppReleaseRequest([FromRoute] Guid appId)
     {
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.SubmitAppReleaseRequestAsync(appId, userId)).ConfigureAwait(false);
@@ -298,12 +324,16 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="404">App does not exist.</response>
     /// <response code="200">created role and role description successfully.</response>
+    /// <response code="403">User not associated with provider company.</response>
+    /// <response code="409">App provider company not set.</response>
     [HttpPost]
     [Route("{appId}/role/activeapp")]
     [Authorize(Roles = "edit_apps")]
     [ProducesResponseType(typeof(IEnumerable<AppRoleData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<IEnumerable<AppRoleData>> AddActiveAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)=>
          await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddActiveAppUserRoleAsync(appId, appAssignedDesc, iamUserId)).ConfigureAwait(false);
     
@@ -314,14 +344,14 @@ public class AppReleaseProcessController : ControllerBase
     /// <remarks>Example: PUT: /api/apps/appreleaseprocess/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/approveApp</remarks>
     /// <response code="204">The app was successfully submitted to Active State.</response>
     /// <response code="409">App is in InCorrect Status</response>
-    /// <response code="403">User is not allowed to change the app.</response>
+    /// <response code="500">Internal Server Error.</response>
     /// <response code="404">App does not exist.</response>
     [HttpPut]
     [Route("{appId}/approveApp")]
     [Authorize(Roles = "approve_app_release")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> ApproveAppRequest([FromRoute] Guid appId)
     {
@@ -347,16 +377,22 @@ public class AppReleaseProcessController : ControllerBase
     /// </summary>
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the app that should be declined</param>
     /// <param name="data">the data of the decline request</param>
-    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/decline</remarks>
+    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/declineApp</remarks>
     /// <response code="204">NoContent.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     /// <response code="404">If app does not exists.</response>
+    /// <response code="403">User does not have permission to change the app</response>
+    /// <response code="409">Offer is in incorrect state</response>
+    /// <response code="500">Internal Server Error</response>
     [HttpPut]
     [Route("{appId:guid}/declineApp")]
     [Authorize(Roles = "decline_app_release")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<NoContentResult> DeclineAppRequest([FromRoute] Guid appId, [FromBody] OfferDeclineRequest data)
     {
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.DeclineAppRequestAsync(appId, userId, data)).ConfigureAwait(false);

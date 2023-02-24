@@ -74,6 +74,7 @@ public class ConnectorsController : ControllerBase
     /// <remarks>Example: GET: /api/administration/connectors/5636F9B9-C3DE-4BA5-8027-00D17A2FECFB</remarks>
     /// <response code="200">Returns details of the requested connector.</response>
     /// <response code="404">Connector ID not found.</response>
+    /// <response code="403">user does not belong to company of companyUserId.</response>
     [HttpGet]
     [Route("{connectorId}", Name = nameof(GetCompanyConnectorByIdForCurrentUserAsync))]
     [Authorize(Roles = "view_connectors")]
@@ -108,7 +109,7 @@ public class ConnectorsController : ControllerBase
     /// <param name="connectorInputModel">Input model of the connector to be created.</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>View model of the created connector.</returns>
-    /// <remarks>Example: POST: /api/administration/connectors</remarks>
+    /// <remarks>Example: POST: /api/administration/connectors/daps</remarks>
     /// <response code="201">Returns a view model of the created connector.</response>
     /// <response code="400">Input parameter are invalid.</response>
     /// <response code="503">Access to SD factory failed with the given status code.</response>
@@ -149,7 +150,7 @@ public class ConnectorsController : ControllerBase
     /// <param name="connectorInputModel">Input model of the connector to be created.</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>View model of the created connector.</returns>
-    /// <remarks>Example: POST: /api/administration/connectors/managed</remarks>
+    /// <remarks>Example: POST: /api/administration/connectors/managed-daps</remarks>
     /// <response code="201">Returns a view model of the created connector.</response>
     /// <response code="400">Input parameter are invalid.</response>
     /// <response code="503">Access to SD factory failed with the given status code.</response>
@@ -177,6 +178,7 @@ public class ConnectorsController : ControllerBase
     /// <response code="400">Input parameter are invalid.</response>
     /// <response code="404">Connector was not found.</response>
     /// <response code="503">Access to SD factory failed with the given status code.</response>
+    /// <response code="403">user does not belong to company of companyUserId.</response>
     [HttpPost]
     [Route("trigger-daps/{connectorId:guid}")]
     [Authorize(Roles = "add_connectors")]
@@ -184,6 +186,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<bool> TriggerDapsAuth([FromRoute] Guid connectorId, [FromForm] IFormFile certificate, CancellationToken cancellationToken) =>
         await this.WithIamUserAndBearerToken(auth => _businessLogic.TriggerDapsAsync(connectorId, certificate, auth.bearerToken, auth.iamUserId, cancellationToken)).ConfigureAwait(false);
 
@@ -224,13 +227,14 @@ public class ConnectorsController : ControllerBase
     /// <param name="data">The response data for the self description</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// Example: POST: api/administration/connectors/clearinghouse/selfDescription <br />
-    /// <response code="200">the result as a boolean.</response>
-    /// <response code="400">The CompanyApplication is not in status SUBMITTED.</response>
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="409">Connector has document assigned.</response>
+    /// <response code="404">Record Not Found.</response>
     [HttpPost]
     [Authorize(Roles = "submit_connector_sd")]
     [Route("clearinghouse/selfDescription")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ProcessClearinghouseSelfDescription([FromBody] SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {

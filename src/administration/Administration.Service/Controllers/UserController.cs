@@ -105,18 +105,19 @@ public class UserController : ControllerBase
     /// <param name="userToCreate">properties and identityprovider link data for the user to create</param>
     /// <returns>the id of the newly created company-user</returns>
     /// <remarks>
-    /// Example: POST: api/administration/users/identityprovider/owncompany/identityprovider/{identityProviderId}/users
+    /// Example: POST: api/administration/users/owncompany/identityprovider/{identityProviderId}/users
     /// </remarks>
-    /// <response code="200">Returns a file of users.</response>
-    /// <response code="400">user is not associated with a company.</response>
-    /// <response code="415">Content type didn't match the expected value.</response>
-    /// <response code="502">Bad Gateway Service Error.</response>
+    /// <response code="201">Record Created Successfully</response>
+    /// <response code="400">Input is incorrect.</response>
+    /// <response code="500">Unexpected Error</response>
+    /// <response code="404">No Record Found.</response>
+    /// <response code="409">Company Name is null.</response>
     [HttpPost]
     [Authorize(Roles = "add_user_account")]
     [Route("owncompany/identityprovider/{identityProviderId}/users")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<CreatedAtRouteResult> CreateOwnIdpOwnCompanyUser([FromBody] UserCreationInfoIdp userToCreate, [FromRoute] Guid identityProviderId)
@@ -133,7 +134,7 @@ public class UserController : ControllerBase
     /// <param name="cancellationToken">the CancellationToken for this request (provided by the Controller)</param>
     /// <returns>Returns a status of the document processing</returns>
     /// <remarks>
-    /// Example: POST: api/administration/users/identityprovider/owncompany/identityprovider/{identityProviderId}/usersfile
+    /// Example: POST: api/administration/users/owncompany/identityprovider/{identityProviderId}/usersfile
     /// </remarks>
     /// <response code="200">Returns a file of users.</response>
     /// <response code="400">user is not associated with a company.</response>
@@ -210,7 +211,7 @@ public class UserController : ControllerBase
     /// <param name="offerId"></param>
     /// <param name="roles"></param>
     /// <returns></returns>
-    /// <remarks>Example: PUT: api/administration/user/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
+    /// <remarks>Example: PUT: api/administration/user/owncompany/users/{companyUserId}/coreoffers/{offerId}/roles</remarks>
     /// <response code="200">Roles got successfully updated user account.</response>
     /// <response code="400">Invalid User roles for client</response>
     /// <response code="404">User not found</response>
@@ -230,7 +231,7 @@ public class UserController : ControllerBase
     /// <param name="companyUserId"></param>
     /// <param name="roles"></param>
     /// <returns></returns>
-    /// <remarks>Example: PUT: api/administration/user/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
+    /// <remarks>Example: PUT: api/administration/user/owncompany/users/{companyUserId}/apps/{appId}/roles</remarks>
     /// <response code="200">Roles got successfully updated user account.</response>
     /// <response code="400">Invalid User roles for client</response>
     /// <response code="404">User not found</response>
@@ -322,7 +323,17 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task<bool> ResetOwnCompanyUserPassword([FromRoute] Guid companyUserId) =>
         this.WithIamUserId(adminUserId => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, adminUserId));
-
+    
+    /// <summary>
+    /// Gets the core offer roles
+    /// </summary>
+    /// <param name="languageShortName" example="DE">The shortname of the user role description"</param>
+    /// <remarks>
+    /// Example: GET: api/administration/user/owncompany/roles/coreoffers <br />
+    /// Example: GET: api/administration/user/owncompany/roles/coreoffers?languageShortName=DE
+    /// </remarks>
+    /// <returns>Returns a collection of offer role infos</returns>
+    /// <response code="200">A list of OfferRoleInfos.</response>
     [HttpGet]
     [Authorize(Roles = "view_client_roles")]
     [Route("owncompany/roles/coreoffers")]
@@ -336,7 +347,7 @@ public class UserController : ControllerBase
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the app which roles should be returned.</param>
     /// <param name="languageShortName">OPTIONAL: The language short name.</param>
     /// <returns>Returns the client roles for the given app.</returns>
-    /// <remarks>Example: GET: api/administration/user/owncompany/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
+    /// <remarks>Example: GET: api/administration/user/owncompany/roles/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
     /// <response code="200">Returns the client roles.</response>
     /// <response code="400">The language does not exist.</response>
     /// <response code="404">The app was not found.</response>
@@ -353,7 +364,7 @@ public class UserController : ControllerBase
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the app which roles should be returned.</param>
     /// <param name="languageShortName">OPTIONAL: The language short name.</param>
     /// <returns>Returns the client roles for the given app.</returns>
-    /// <remarks>Example: GET: api/administration/user/owncompany/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
+    /// <remarks>Example: GET: api/administration/user/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
     /// <response code="200">Returns the client roles.</response>
     /// <response code="400">The language does not exist.</response>
     /// <response code="404">The app was not found.</response>
@@ -409,12 +420,13 @@ public class UserController : ControllerBase
     /// <remarks>Example: DELETE: api/administration/user/ownUser/ac1cf001-7fbc-1f2f-817f-bce0575a0011</remarks>
     /// <response code="200">Successfully deleted the user.</response>
     /// <response code="403">Invalid or not existing user id.</response>
-    /// <response code="404">User is not existing/found.</response>
+    /// <response code="409">User is not associated with company.</response>
     [HttpDelete]
     [Authorize(Roles = "delete_own_user_account")]
     [Route("ownUser/{companyUserId}")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<int> DeleteOwnUser([FromRoute] Guid companyUserId) =>
         this.WithIamUserId(iamUserId => _logic.DeleteOwnUserAsync(companyUserId, iamUserId));
 
@@ -489,16 +501,18 @@ public class UserController : ControllerBase
     /// </summary>
     /// <param name="companyUserId" example="4f06431c-25ae-40ad-9cac-9dee8fe4754d">ID of the company user to be deleted.</param>
     /// <param name="businessPartnerNumber" example="CAXSDUMMYTESTCX1">BPN to be deleted.</param>
-    /// <remarks>Example: DELETE: /api/administration/user/owncompany/users/4f06431c-25ae-40ad-9cac-9dee8fe4754d/userBusinessPartnerNumbers/CAXSDUMMYTESTCX1</remarks>
+    /// <remarks>Example: DELETE: /api/administration/user/owncompany/users/4f06431c-25ae-40ad-9cac-9dee8fe4754d/businessPartnerNumbers/CAXSDUMMYTESTCX1</remarks>
     /// <response code="200">Empty response on success.</response>
     /// <response code="403">ForbiddenException if both users does not belongs to same company</response>
     /// <response code="404">Record not found.</response>
+    /// <response code="409">User is not associated in keycloak.</response>
     [HttpDelete]
     [Authorize(Roles = "modify_user_account")]
     [Route("owncompany/users/{companyUserId}/businessPartnerNumbers/{businessPartnerNumber}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<int> DeleteOwnCompanyUserBusinessPartnerNumber([FromRoute] Guid companyUserId, [FromRoute] string businessPartnerNumber) =>
         this.WithIamUserId(adminUserId => _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId));
 }
