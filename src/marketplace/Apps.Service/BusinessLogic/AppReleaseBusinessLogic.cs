@@ -391,7 +391,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         appRepository.CreateDeleteAppAssignedPrivacyPolicies(appId, appData.MatchingPrivacyPolicies, appRequestModel.PrivacyPolicies);
 
-        _offerService.CreateOrUpdateOfferLicense(appId, appRequestModel.Provider, appData.OfferLicense);
+        _offerService.CreateOrUpdateOfferLicense(appId, appRequestModel.Price, appData.OfferLicense);
         
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
