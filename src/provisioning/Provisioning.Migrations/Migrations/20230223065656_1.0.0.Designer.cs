@@ -32,8 +32,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
 {
     [DbContext(typeof(ProvisioningDbContext))]
-    [Migration("20230105115124_1.0.0-RC1")]
-    partial class _100RC1
+    [Migration("20230223065656_1.0.0")]
+    partial class _100
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

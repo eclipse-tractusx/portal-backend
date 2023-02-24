@@ -601,11 +601,6 @@ public class OfferService : IOfferService
             throw new NotFoundException($"{offerType} {offerId} does not exist");
         }
 
-        if (!declineData.IsUserOfProvider)
-        {
-            throw new ForbiddenException($"{offerType} not found. Either not existing or no permission for change.");
-        }
-
         if (declineData.OfferStatus != OfferStatusId.IN_REVIEW)
         {
             throw new ConflictException($"{offerType} must be in status {OfferStatusId.IN_REVIEW}");
