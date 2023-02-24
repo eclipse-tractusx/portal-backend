@@ -17,50 +17,57 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
- 
-using System;
+
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
-    public partial class CPLP1976RemoveAppDetailImages : Migration
+    public partial class CPLP1834AddRemoveDocumentTypes : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "offer_detail_images",
-                schema: "portal");
+            migrationBuilder.UpdateData(
+                schema: "portal",
+                table: "document_types",
+                keyColumn: "id",
+                keyValue: 4,
+                column: "label",
+                value: "CONFORMITY_APPROVAL_REGISTRATION");
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "document_types",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 10, "CONFORMITY_APPROVAL_CONNECTOR" },
+                    { 11, "CONFORMITY_APPROVAL_BUSINESS_APPS" }
+                });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "offer_detail_images",
+            migrationBuilder.DeleteData(
                 schema: "portal",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    offer_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    image_url = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_offer_detail_images", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_offer_detail_images_offers_offer_id",
-                        column: x => x.offer_id,
-                        principalSchema: "portal",
-                        principalTable: "offers",
-                        principalColumn: "id");
-                });
+                table: "document_types",
+                keyColumn: "id",
+                keyValue: 10);
 
-            migrationBuilder.CreateIndex(
-                name: "ix_offer_detail_images_offer_id",
+            migrationBuilder.DeleteData(
                 schema: "portal",
-                table: "offer_detail_images",
-                column: "offer_id");
+                table: "document_types",
+                keyColumn: "id",
+                keyValue: 11);
+
+            migrationBuilder.UpdateData(
+                schema: "portal",
+                table: "document_types",
+                keyColumn: "id",
+                keyValue: 4,
+                column: "label",
+                value: "APP_DATA_DETAILS");
         }
     }
 }

@@ -17,7 +17,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-// See https://aka.ms/new-console-template for more information
 
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -26,7 +25,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
-    public partial class _100RC1 : Migration
+    public partial class _100 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -44,6 +43,32 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_agreement_categories", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "application_checklist_statuses",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_application_checklist_statuses", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "application_checklist_types",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_application_checklist_types", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -154,7 +179,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateTable(
-                name: "audit_offer20221013",
+                name: "audit_offer20230119",
                 schema: "portal",
                 columns: table => new
                 {
@@ -163,7 +188,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     name = table.Column<string>(type: "text", nullable: true),
                     date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     date_released = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    thumbnail_url = table.Column<string>(type: "text", nullable: true),
                     marketing_url = table.Column<string>(type: "text", nullable: true),
                     contact_email = table.Column<string>(type: "text", nullable: true),
                     contact_number = table.Column<string>(type: "text", nullable: true),
@@ -180,7 +204,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_audit_offer20221013", x => x.audit_v1id);
+                    table.PrimaryKey("pk_audit_offer20230119", x => x.audit_v1id);
                 });
 
             migrationBuilder.CreateTable(
@@ -213,6 +237,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_audit_user_role20221017", x => x.audit_v1id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "bpdm_identifiers",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_bpdm_identifiers", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -505,6 +542,45 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateTable(
+                name: "privacy_policies",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_privacy_policies", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "process_step_statuses",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_process_step_statuses", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "process_step_types",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false),
+                    label = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_process_step_types", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "service_types",
                 schema: "portal",
                 columns: table => new
@@ -679,24 +755,61 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateTable(
-                name: "country_assigned_identifier",
+                name: "process_steps",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    process_step_type_id = table.Column<int>(type: "integer", nullable: false),
+                    process_step_status_id = table.Column<int>(type: "integer", nullable: false),
+                    date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_process_steps", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_process_steps_process_step_statuses_process_step_status_id",
+                        column: x => x.process_step_status_id,
+                        principalSchema: "portal",
+                        principalTable: "process_step_statuses",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_process_steps_process_step_types_process_step_type_id",
+                        column: x => x.process_step_type_id,
+                        principalSchema: "portal",
+                        principalTable: "process_step_types",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "country_assigned_identifiers",
                 schema: "portal",
                 columns: table => new
                 {
                     country_alpha2code = table.Column<string>(type: "character(2)", maxLength: 2, nullable: false),
-                    unique_identifier_id = table.Column<int>(type: "integer", nullable: false)
+                    unique_identifier_id = table.Column<int>(type: "integer", nullable: false),
+                    bpdm_identifier_id = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_country_assigned_identifier", x => new { x.country_alpha2code, x.unique_identifier_id });
+                    table.PrimaryKey("pk_country_assigned_identifiers", x => new { x.country_alpha2code, x.unique_identifier_id });
                     table.ForeignKey(
-                        name: "fk_country_assigned_identifier_countries_country_alpha2code",
+                        name: "fk_country_assigned_identifiers_bpdm_identifiers_bpdm_identifi",
+                        column: x => x.bpdm_identifier_id,
+                        principalSchema: "portal",
+                        principalTable: "bpdm_identifiers",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_country_assigned_identifiers_countries_country_alpha2code",
                         column: x => x.country_alpha2code,
                         principalSchema: "portal",
                         principalTable: "countries",
                         principalColumn: "alpha2code");
                     table.ForeignKey(
-                        name: "fk_country_assigned_identifier_unique_identifiers_unique_ident",
+                        name: "fk_country_assigned_identifiers_unique_identifiers_unique_iden",
                         column: x => x.unique_identifier_id,
                         principalSchema: "portal",
                         principalTable: "unique_identifiers",
@@ -797,19 +910,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateTable(
-                name: "agreement_assigned_documents",
-                schema: "portal",
-                columns: table => new
-                {
-                    agreement_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    document_id = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_agreement_assigned_documents", x => new { x.agreement_id, x.document_id });
-                });
-
-            migrationBuilder.CreateTable(
                 name: "agreement_assigned_offer_types",
                 schema: "portal",
                 columns: table => new
@@ -853,7 +953,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     agreement_type = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     issuer_company_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    use_case_id = table.Column<Guid>(type: "uuid", nullable: true)
+                    use_case_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    document_id = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -951,6 +1052,56 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         principalSchema: "portal",
                         principalTable: "app_instances",
                         principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "application_assigned_process_steps",
+                schema: "portal",
+                columns: table => new
+                {
+                    company_application_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    process_step_id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_application_assigned_process_steps", x => new { x.company_application_id, x.process_step_id });
+                    table.ForeignKey(
+                        name: "fk_application_assigned_process_steps_process_steps_process_st",
+                        column: x => x.process_step_id,
+                        principalSchema: "portal",
+                        principalTable: "process_steps",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "application_checklist",
+                schema: "portal",
+                columns: table => new
+                {
+                    application_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    application_checklist_entry_type_id = table.Column<int>(type: "integer", nullable: false),
+                    date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    application_checklist_entry_status_id = table.Column<int>(type: "integer", nullable: false),
+                    comment = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_application_checklist", x => new { x.application_id, x.application_checklist_entry_type_id });
+                    table.ForeignKey(
+                        name: "fk_application_checklist_application_checklist_statuses_applic",
+                        column: x => x.application_checklist_entry_status_id,
+                        principalSchema: "portal",
+                        principalTable: "application_checklist_statuses",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_application_checklist_application_checklist_types_applicati",
+                        column: x => x.application_checklist_entry_type_id,
+                        principalSchema: "portal",
+                        principalTable: "application_checklist_types",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1330,7 +1481,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     date_released = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    thumbnail_url = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     marketing_url = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     contact_email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     contact_number = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
@@ -1387,7 +1537,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     host_id = table.Column<Guid>(type: "uuid", nullable: true),
                     self_description_document_id = table.Column<Guid>(type: "uuid", nullable: true),
                     location_id = table.Column<string>(type: "character(2)", maxLength: 2, nullable: false),
-                    daps_registration_successful = table.Column<bool>(type: "boolean", nullable: true)
+                    daps_registration_successful = table.Column<bool>(type: "boolean", nullable: true),
+                    self_description_message = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1558,6 +1709,31 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateTable(
+                name: "offer_assigned_privacy_policies",
+                schema: "portal",
+                columns: table => new
+                {
+                    offer_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    privacy_policy_id = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_offer_assigned_privacy_policies", x => new { x.offer_id, x.privacy_policy_id });
+                    table.ForeignKey(
+                        name: "fk_offer_assigned_privacy_policies_offers_offer_id",
+                        column: x => x.offer_id,
+                        principalSchema: "portal",
+                        principalTable: "offers",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_offer_assigned_privacy_policies_privacy_policies_privacy_po",
+                        column: x => x.privacy_policy_id,
+                        principalSchema: "portal",
+                        principalTable: "privacy_policies",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "offer_descriptions",
                 schema: "portal",
                 columns: table => new
@@ -1578,26 +1754,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         principalColumn: "short_name");
                     table.ForeignKey(
                         name: "fk_offer_descriptions_offers_offer_id",
-                        column: x => x.offer_id,
-                        principalSchema: "portal",
-                        principalTable: "offers",
-                        principalColumn: "id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "offer_detail_images",
-                schema: "portal",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    offer_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    image_url = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_offer_detail_images", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_offer_detail_images_offers_offer_id",
                         column: x => x.offer_id,
                         principalSchema: "portal",
                         principalTable: "offers",
@@ -1947,6 +2103,32 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.InsertData(
                 schema: "portal",
+                table: "application_checklist_statuses",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 1, "TO_DO" },
+                    { 2, "IN_PROGRESS" },
+                    { 3, "DONE" },
+                    { 4, "FAILED" }
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "application_checklist_types",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 1, "REGISTRATION_VERIFICATION" },
+                    { 2, "BUSINESS_PARTNER_NUMBER" },
+                    { 3, "IDENTITY_WALLET" },
+                    { 4, "CLEARING_HOUSE" },
+                    { 5, "SELF_DESCRIPTION_LP" },
+                    { 6, "APPLICATION_ACTIVATION" }
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
                 table: "audit_operation",
                 columns: new[] { "id", "label" },
                 values: new object[,]
@@ -1954,6 +2136,34 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     { 1, "INSERT" },
                     { 2, "UPDATE" },
                     { 3, "DELETE" }
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "bpdm_identifiers",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 1, "EU_VAT_ID_DE" },
+                    { 2, "CH_UID" },
+                    { 3, "EU_VAT_ID_FR" },
+                    { 4, "FR_SIREN" },
+                    { 5, "EU_VAT_ID_AT" },
+                    { 6, "DE_BNUM" },
+                    { 7, "CZ_ICO" },
+                    { 8, "EU_VAT_ID_CZ" },
+                    { 9, "EU_VAT_ID_PL" },
+                    { 10, "EU_VAT_ID_BE" },
+                    { 11, "EU_VAT_ID_CH" },
+                    { 12, "EU_VAT_ID_DK" },
+                    { 13, "EU_VAT_ID_ES" },
+                    { 14, "EU_VAT_ID_GB" },
+                    { 15, "EU_VAT_ID_NO" },
+                    { 16, "BE_ENT_NO" },
+                    { 17, "CVR_DK" },
+                    { 18, "ID_CRN" },
+                    { 19, "NO_ORGID" },
+                    { 20, "LEI_ID" }
                 });
 
             migrationBuilder.InsertData(
@@ -2185,6 +2395,58 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.InsertData(
                 schema: "portal",
+                table: "privacy_policies",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 1, "COMPANY_DATA" },
+                    { 2, "USER_DATA" },
+                    { 3, "LOCATION" },
+                    { 4, "BROWSER_HISTORY" },
+                    { 5, "NONE" }
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "process_step_statuses",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 1, "TODO" },
+                    { 2, "DONE" },
+                    { 3, "SKIPPED" },
+                    { 4, "FAILED" },
+                    { 5, "DUPLICATE" }
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "process_step_types",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 1, "VERIFY_REGISTRATION" },
+                    { 2, "CREATE_BUSINESS_PARTNER_NUMBER_PUSH" },
+                    { 3, "CREATE_BUSINESS_PARTNER_NUMBER_PULL" },
+                    { 4, "CREATE_BUSINESS_PARTNER_NUMBER_MANUAL" },
+                    { 5, "CREATE_IDENTITY_WALLET" },
+                    { 6, "RETRIGGER_IDENTITY_WALLET" },
+                    { 7, "START_CLEARING_HOUSE" },
+                    { 8, "RETRIGGER_CLEARING_HOUSE" },
+                    { 9, "END_CLEARING_HOUSE" },
+                    { 10, "START_SELF_DESCRIPTION_LP" },
+                    { 11, "RETRIGGER_SELF_DESCRIPTION_LP" },
+                    { 12, "ACTIVATE_APPLICATION" },
+                    { 13, "RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH" },
+                    { 14, "RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL" },
+                    { 15, "OVERRIDE_BUSINESS_PARTNER_NUMBER" },
+                    { 16, "TRIGGER_OVERRIDE_CLEARING_HOUSE" },
+                    { 17, "START_OVERRIDE_CLEARING_HOUSE" },
+                    { 18, "FINISH_SELF_DESCRIPTION_LP" }
+                });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
                 table: "service_types",
                 columns: new[] { "id", "label" },
                 values: new object[,]
@@ -2219,12 +2481,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "company_role_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_agreement_assigned_documents_document_id",
-                schema: "portal",
-                table: "agreement_assigned_documents",
-                column: "document_id");
-
-            migrationBuilder.CreateIndex(
                 name: "ix_agreement_assigned_offer_types_offer_type_id",
                 schema: "portal",
                 table: "agreement_assigned_offer_types",
@@ -2241,6 +2497,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "agreements",
                 column: "agreement_category_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_agreements_document_id",
+                schema: "portal",
+                table: "agreements",
+                column: "document_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_agreements_issuer_company_id",
@@ -2290,6 +2552,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "app_subscription_details",
                 column: "offer_subscription_id",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_application_assigned_process_steps_process_step_id",
+                schema: "portal",
+                table: "application_assigned_process_steps",
+                column: "process_step_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_application_checklist_application_checklist_entry_status_id",
+                schema: "portal",
+                table: "application_checklist",
+                column: "application_checklist_entry_status_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_application_checklist_application_checklist_entry_type_id",
+                schema: "portal",
+                table: "application_checklist",
+                column: "application_checklist_entry_type_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_companies_address_id",
@@ -2492,9 +2773,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "document_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_country_assigned_identifier_unique_identifier_id",
+                name: "ix_country_assigned_identifiers_bpdm_identifier_id",
                 schema: "portal",
-                table: "country_assigned_identifier",
+                table: "country_assigned_identifiers",
+                column: "bpdm_identifier_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_country_assigned_identifiers_unique_identifier_id",
+                schema: "portal",
+                table: "country_assigned_identifiers",
                 column: "unique_identifier_id");
 
             migrationBuilder.CreateIndex(
@@ -2625,16 +2912,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "offer_license_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_offer_assigned_privacy_policies_privacy_policy_id",
+                schema: "portal",
+                table: "offer_assigned_privacy_policies",
+                column: "privacy_policy_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_offer_descriptions_language_short_name",
                 schema: "portal",
                 table: "offer_descriptions",
                 column: "language_short_name");
-
-            migrationBuilder.CreateIndex(
-                name: "ix_offer_detail_images_offer_id",
-                schema: "portal",
-                table: "offer_detail_images",
-                column: "offer_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_offer_subscriptions_company_id",
@@ -2685,6 +2972,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "sales_manager_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_process_steps_process_step_status_id",
+                schema: "portal",
+                table: "process_steps",
+                column: "process_step_status_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_process_steps_process_step_type_id",
+                schema: "portal",
+                table: "process_steps",
+                column: "process_step_type_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_provider_company_details_company_id",
                 schema: "portal",
                 table: "provider_company_details",
@@ -2731,24 +3030,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 principalColumn: "id");
 
             migrationBuilder.AddForeignKey(
-                name: "fk_agreement_assigned_documents_agreements_agreement_id",
-                schema: "portal",
-                table: "agreement_assigned_documents",
-                column: "agreement_id",
-                principalSchema: "portal",
-                principalTable: "agreements",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_agreement_assigned_documents_documents_document_id",
-                schema: "portal",
-                table: "agreement_assigned_documents",
-                column: "document_id",
-                principalSchema: "portal",
-                principalTable: "documents",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
                 name: "fk_agreement_assigned_offer_types_agreements_agreement_id",
                 schema: "portal",
                 table: "agreement_assigned_offer_types",
@@ -2782,6 +3063,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "issuer_company_id",
                 principalSchema: "portal",
                 principalTable: "companies",
+                principalColumn: "id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_agreements_documents_document_id",
+                schema: "portal",
+                table: "agreements",
+                column: "document_id",
+                principalSchema: "portal",
+                principalTable: "documents",
                 principalColumn: "id");
 
             migrationBuilder.AddForeignKey(
@@ -2822,6 +3112,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 principalColumn: "id");
 
             migrationBuilder.AddForeignKey(
+                name: "fk_application_assigned_process_steps_company_applications_com",
+                schema: "portal",
+                table: "application_assigned_process_steps",
+                column: "company_application_id",
+                principalSchema: "portal",
+                principalTable: "company_applications",
+                principalColumn: "id");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_application_checklist_company_applications_application_id",
+                schema: "portal",
+                table: "application_checklist",
+                column: "application_id",
+                principalSchema: "portal",
+                principalTable: "company_applications",
+                principalColumn: "id");
+
+            migrationBuilder.AddForeignKey(
                 name: "fk_companies_documents_self_description_document_id",
                 schema: "portal",
                 table: "companies",
@@ -2854,11 +3162,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_user_assigned_role20221018 (\"company_user_id\", \"user_role_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.company_user_id, \r\n  NEW.user_role_id, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE AFTER UPDATE\r\nON portal.company_user_assigned_roles\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_COMPANYUSERASSIGNEDROLE();");
 
-            migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_OFFER() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_OFFER$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer20221013 (\"id\", \"name\", \"date_created\", \"date_released\", \"thumbnail_url\", \"marketing_url\", \"contact_email\", \"contact_number\", \"provider\", \"offer_type_id\", \"sales_manager_id\", \"provider_company_id\", \"offer_status_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT OLD.id, \r\n  OLD.name, \r\n  OLD.date_created, \r\n  OLD.date_released, \r\n  OLD.thumbnail_url, \r\n  OLD.marketing_url, \r\n  OLD.contact_email, \r\n  OLD.contact_number, \r\n  OLD.provider, \r\n  OLD.offer_type_id, \r\n  OLD.sales_manager_id, \r\n  OLD.provider_company_id, \r\n  OLD.offer_status_id, \r\n  OLD.date_last_changed, \r\n  OLD.last_editor_id, \r\n  gen_random_uuid(), \r\n  3, \r\n  CURRENT_DATE, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_OFFER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_OFFER AFTER DELETE\r\nON portal.offers\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_OFFER();");
+            migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_OFFER() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_OFFER$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer20230119 (\"id\", \"name\", \"date_created\", \"date_released\", \"marketing_url\", \"contact_email\", \"contact_number\", \"provider\", \"offer_type_id\", \"sales_manager_id\", \"provider_company_id\", \"offer_status_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT OLD.id, \r\n  OLD.name, \r\n  OLD.date_created, \r\n  OLD.date_released, \r\n  OLD.marketing_url, \r\n  OLD.contact_email, \r\n  OLD.contact_number, \r\n  OLD.provider, \r\n  OLD.offer_type_id, \r\n  OLD.sales_manager_id, \r\n  OLD.provider_company_id, \r\n  OLD.offer_status_id, \r\n  OLD.date_last_changed, \r\n  OLD.last_editor_id, \r\n  gen_random_uuid(), \r\n  3, \r\n  CURRENT_DATE, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_OFFER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_OFFER AFTER DELETE\r\nON portal.offers\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_OFFER();");
 
-            migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_OFFER() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_OFFER$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer20221013 (\"id\", \"name\", \"date_created\", \"date_released\", \"thumbnail_url\", \"marketing_url\", \"contact_email\", \"contact_number\", \"provider\", \"offer_type_id\", \"sales_manager_id\", \"provider_company_id\", \"offer_status_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.name, \r\n  NEW.date_created, \r\n  NEW.date_released, \r\n  NEW.thumbnail_url, \r\n  NEW.marketing_url, \r\n  NEW.contact_email, \r\n  NEW.contact_number, \r\n  NEW.provider, \r\n  NEW.offer_type_id, \r\n  NEW.sales_manager_id, \r\n  NEW.provider_company_id, \r\n  NEW.offer_status_id, \r\n  NEW.date_last_changed, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_OFFER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_OFFER AFTER INSERT\r\nON portal.offers\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_OFFER();");
+            migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_OFFER() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_OFFER$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer20230119 (\"id\", \"name\", \"date_created\", \"date_released\", \"marketing_url\", \"contact_email\", \"contact_number\", \"provider\", \"offer_type_id\", \"sales_manager_id\", \"provider_company_id\", \"offer_status_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.name, \r\n  NEW.date_created, \r\n  NEW.date_released, \r\n  NEW.marketing_url, \r\n  NEW.contact_email, \r\n  NEW.contact_number, \r\n  NEW.provider, \r\n  NEW.offer_type_id, \r\n  NEW.sales_manager_id, \r\n  NEW.provider_company_id, \r\n  NEW.offer_status_id, \r\n  NEW.date_last_changed, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_OFFER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_OFFER AFTER INSERT\r\nON portal.offers\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_OFFER();");
 
-            migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_OFFER() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_OFFER$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer20221013 (\"id\", \"name\", \"date_created\", \"date_released\", \"thumbnail_url\", \"marketing_url\", \"contact_email\", \"contact_number\", \"provider\", \"offer_type_id\", \"sales_manager_id\", \"provider_company_id\", \"offer_status_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.name, \r\n  NEW.date_created, \r\n  NEW.date_released, \r\n  NEW.thumbnail_url, \r\n  NEW.marketing_url, \r\n  NEW.contact_email, \r\n  NEW.contact_number, \r\n  NEW.provider, \r\n  NEW.offer_type_id, \r\n  NEW.sales_manager_id, \r\n  NEW.provider_company_id, \r\n  NEW.offer_status_id, \r\n  NEW.date_last_changed, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_OFFER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_OFFER AFTER UPDATE\r\nON portal.offers\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_OFFER();");
+            migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_OFFER() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_OFFER$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer20230119 (\"id\", \"name\", \"date_created\", \"date_released\", \"marketing_url\", \"contact_email\", \"contact_number\", \"provider\", \"offer_type_id\", \"sales_manager_id\", \"provider_company_id\", \"offer_status_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.name, \r\n  NEW.date_created, \r\n  NEW.date_released, \r\n  NEW.marketing_url, \r\n  NEW.contact_email, \r\n  NEW.contact_number, \r\n  NEW.provider, \r\n  NEW.offer_type_id, \r\n  NEW.sales_manager_id, \r\n  NEW.provider_company_id, \r\n  NEW.offer_status_id, \r\n  NEW.date_last_changed, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_OFFER$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_OFFER AFTER UPDATE\r\nON portal.offers\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_OFFER();");
 
             migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer_subscription20221005 (\"id\", \"company_id\", \"offer_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT OLD.id, \r\n  OLD.company_id, \r\n  OLD.offer_id, \r\n  OLD.offer_subscription_status_id, \r\n  OLD.display_name, \r\n  OLD.description, \r\n  OLD.requester_id, \r\n  OLD.last_editor_id, \r\n  gen_random_uuid(), \r\n  3, \r\n  CURRENT_DATE, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION AFTER DELETE\r\nON portal.offer_subscriptions\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION();");
 
@@ -2923,16 +3231,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "addresses");
 
             migrationBuilder.DropForeignKey(
-                name: "fk_companies_documents_self_description_document_id",
+                name: "fk_company_users_companies_company_id",
                 schema: "portal",
-                table: "companies");
+                table: "company_users");
 
             migrationBuilder.DropTable(
                 name: "agreement_assigned_company_roles",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "agreement_assigned_documents",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -2956,6 +3260,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
+                name: "application_assigned_process_steps",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "application_checklist",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
                 name: "audit_app_subscription_detail20221118",
                 schema: "portal");
 
@@ -2976,7 +3288,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "audit_offer20221013",
+                name: "audit_offer20230119",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -3044,7 +3356,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "country_assigned_identifier",
+                name: "country_assigned_identifiers",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -3080,11 +3392,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "offer_descriptions",
+                name: "offer_assigned_privacy_policies",
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "offer_detail_images",
+                name: "offer_descriptions",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -3116,6 +3428,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
+                name: "process_steps",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "application_checklist_statuses",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "application_checklist_types",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
                 name: "company_roles",
                 schema: "portal");
 
@@ -3129,6 +3453,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.DropTable(
                 name: "consents",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "bpdm_identifiers",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -3164,6 +3492,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
+                name: "privacy_policies",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
                 name: "service_types",
                 schema: "portal");
 
@@ -3181,6 +3513,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.DropTable(
                 name: "iam_clients",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "process_step_statuses",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "process_step_types",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -3240,6 +3580,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
+                name: "companies",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "addresses",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "company_statuses",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
                 name: "documents",
                 schema: "portal");
 
@@ -3256,19 +3608,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
-                name: "companies",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
                 name: "company_user_statuses",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "addresses",
-                schema: "portal");
-
-            migrationBuilder.DropTable(
-                name: "company_statuses",
                 schema: "portal");
         }
     }

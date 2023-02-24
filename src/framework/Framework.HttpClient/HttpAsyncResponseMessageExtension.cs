@@ -31,7 +31,7 @@ public static class HttpAsyncResponseMessageExtension
             var message = await response.ConfigureAwait(false);
             if (!message.IsSuccessStatusCode)
             {
-                throw new ServiceException($"call to external system {systemName} failed with statuscode", message.StatusCode, (recoverOptions & RecoverOptions.RESPONSE_RECEIVED) == RecoverOptions.RESPONSE_RECEIVED);
+                throw new ServiceException($"call to external system {systemName} failed with statuscode {(int)message.StatusCode}", message.StatusCode, (recoverOptions & RecoverOptions.RESPONSE_RECEIVED) == RecoverOptions.RESPONSE_RECEIVED);
             }
             return message;
         }
@@ -39,7 +39,7 @@ public static class HttpAsyncResponseMessageExtension
         {
             throw e.StatusCode == null
                 ? new ServiceException($"call to external system {systemName} failed", e, (recoverOptions & RecoverOptions.REQUEST_EXCEPTION) == RecoverOptions.REQUEST_EXCEPTION)
-                : new ServiceException($"call to external system {systemName} failed with statuscode", e, e.StatusCode.Value, (recoverOptions & RecoverOptions.REQUEST_EXCEPTION) == RecoverOptions.REQUEST_EXCEPTION);
+                : new ServiceException($"call to external system {systemName} failed with statuscode {(int)e.StatusCode.Value}", e, e.StatusCode.Value, (recoverOptions & RecoverOptions.REQUEST_EXCEPTION) == RecoverOptions.REQUEST_EXCEPTION);
         }
         catch(TaskCanceledException e)
         {
