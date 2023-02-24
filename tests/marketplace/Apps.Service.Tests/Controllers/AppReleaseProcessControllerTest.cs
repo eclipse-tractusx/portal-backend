@@ -377,4 +377,22 @@ public class AppReleaseProcessControllerTest
         result.Should().NotBeNull();
         result.Title.Should().Be("Catena-X");
     }
+
+    [Fact]
+    public async Task DeleteAppDocumentsAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var documentId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        A.CallTo(() => _logic.DeleteAppDocumentsAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(()=> Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.DeleteAppDocumentsAsync(documentId).ConfigureAwait(false);
+        
+        // Assert 
+        Assert.IsType<NoContentResult>(result);
+        A.CallTo(() => _logic.DeleteAppDocumentsAsync(documentId, IamUserId))
+            .MustHaveHappenedOnceExactly();
+    }
 }

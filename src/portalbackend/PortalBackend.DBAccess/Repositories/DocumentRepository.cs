@@ -189,4 +189,27 @@ public class DocumentRepository : IDocumentRepository
                 x.Document.DocumentName
             ))
             .SingleOrDefaultAsync(cancellationToken);
+
+    /// <inheritdoc />
+    public Task<(IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)> OfferData, bool IsDocumentTypeMatch, DocumentStatusId DocumentStatusId, bool IsProviderCompanyUser)> GetAppDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId) =>
+        _dbContext.Documents
+            .Where(document => document.Id == documentId)
+            .Select(document => new {
+                Offers = document.Offers,
+                Document = document
+            })
+            .Select(x => new {
+                IsOfferAssignedDocument = x.Offers.Any(),
+                OfferData =  x.Offers.Select(o => new ValueTuple<OfferStatusId, Guid, bool>(o.OfferStatusId, o.Id, o.OfferTypeId == offerTypeId)),
+                IsDocumentTypeMatch = documentTypeIds.Contains(x.Document.DocumentTypeId),
+                DocumentStatus = x.Document.DocumentStatusId,
+                IsProviderCompanyUser = x.Document.CompanyUser!.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)
+            })
+            .Select(x => new ValueTuple<IEnumerable<ValueTuple<OfferStatusId, Guid, bool>>, bool, DocumentStatusId, bool>(
+                x.OfferData,
+                x.IsDocumentTypeMatch,
+                x.DocumentStatus,
+                x.IsProviderCompanyUser
+            ))
+            .SingleOrDefaultAsync();
 }

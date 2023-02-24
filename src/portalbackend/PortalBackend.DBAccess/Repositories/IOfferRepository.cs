@@ -355,4 +355,11 @@ public interface IOfferRepository
     /// <param name="modifiedItems"></param>
     /// <returns></returns>
     void CreateUpdateDeleteOfferDescriptions(Guid offerId, IEnumerable<OfferDescriptionData> initialItems, IEnumerable<(string LanguageCode, string LongDescription, string ShortDescription)> modifiedItems);
+
+    /// <summary>
+    /// Delete the OfferAssignedDocument 
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="documentId"></param>
+    void RemoveOfferAssignedDocument(Guid offerId, Guid documentId);
 }
