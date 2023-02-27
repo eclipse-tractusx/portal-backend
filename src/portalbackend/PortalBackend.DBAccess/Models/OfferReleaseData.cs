@@ -17,6 +17,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -28,7 +29,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="CompanyName"></param>
 /// <param name="IsDescriptionLongNotSet"></param>
 /// <param name="IsDescriptionShortNotSet"></param>
-/// <param name="Roles"></param>
+/// <param name="HasUserRoles"></param>
+/// <param name="DocumentStatusDatas"></param>
+/// <param name="DocumentTypeIds"></param>
 /// <returns></returns>
 public record OfferReleaseData(
     string? Name,
@@ -37,5 +40,6 @@ public record OfferReleaseData(
     bool IsDescriptionLongNotSet,
     bool IsDescriptionShortNotSet,
     bool HasUserRoles,
-    IEnumerable<DocumentStatusData?> DocumentStatusDatas
+    IEnumerable<DocumentStatusData?> DocumentStatusDatas,
+    IEnumerable<DocumentTypeId> DocumentTypeIds
 );

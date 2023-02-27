@@ -456,7 +456,7 @@ public class AppReleaseBusinessLogicTest
                     _iamUser.UserEntityId,
                     OfferTypeId.APP,
                     A<IEnumerable<NotificationTypeId>>._,
-                    A<IDictionary<string, IEnumerable<string>>>._))
+                    A<IDictionary<string, IEnumerable<string>>>._,A<IEnumerable<DocumentTypeId>>._))
             .MustHaveHappenedOnceExactly();
     }
 
