@@ -151,7 +151,7 @@ public class AppsSettings
     public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds { get; set; } = null!;
     
     /// <summary>
-    /// Document Type Id for Submit App
+    /// Document Type Id to be deleted
     /// </summary>
     /// <value></value>
     [Required]
