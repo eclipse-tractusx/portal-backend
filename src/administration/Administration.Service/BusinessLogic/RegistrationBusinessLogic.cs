@@ -231,7 +231,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
-                new [] { ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.IN_PROGRESS },
+                new [] { ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.IN_PROGRESS, ApplicationChecklistEntryStatusId.FAILED },
                 ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL,
                 entryTypeIds: new [] { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION },
                 processStepTypeIds: new [] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL, ProcessStepTypeId.CREATE_IDENTITY_WALLET })
