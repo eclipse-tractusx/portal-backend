@@ -39,7 +39,8 @@ public class ChecklistCreationService : IChecklistCreationService
     {
         var (bpn, existingChecklistEntryTypeIds) = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpnAndChecklistCheckForApplicationIdAsync(applicationId).ConfigureAwait(false);
         var entries = CreateEntries(applicationId, existingChecklistEntryTypeIds, bpn);
-        CreateInitialProcessSteps(applicationId, entries);
+        var process = _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST);
+        CreateInitialProcessSteps(process.Id, entries);
     }
 
     /// <inheritdoc />
@@ -72,17 +73,12 @@ public class ChecklistCreationService : IChecklistCreationService
             _ => ApplicationChecklistEntryStatusId.TO_DO
         };
 
-    public IEnumerable<ProcessStep> CreateInitialProcessSteps(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId)> checklistEntries)
+    public IEnumerable<ProcessStep> CreateInitialProcessSteps(Guid processId, IEnumerable<(ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId)> checklistEntries)
     {
-        var applicationChecklistRepository = _portalRepositories.GetInstance<IApplicationChecklistRepository>();
-        return CreateInitialProcessStepsInternal(checklistEntries).Select(processStep => 
-        {
-            applicationChecklistRepository.CreateApplicationAssignedProcessStep(applicationId, processStep.Id);
-            return processStep;
-        }).ToList();
+        return CreateInitialProcessStepsInternal(processId, checklistEntries).ToList();
     }
 
-    private IEnumerable<ProcessStep> CreateInitialProcessStepsInternal(IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> checklistEntries)
+    private IEnumerable<ProcessStep> CreateInitialProcessStepsInternal(Guid processId, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> checklistEntries)
     {
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
         foreach (var (entryTypeId, statusId) in checklistEntries)
@@ -90,15 +86,35 @@ public class ChecklistCreationService : IChecklistCreationService
             switch(entryTypeId)
             {
                 case ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION:
-                    yield return processStepRepository.CreateProcessStep(ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepStatusId.TODO);
+                    yield return processStepRepository.CreateProcessStep(ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepStatusId.TODO, processId);
                     break;
                 case ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER when (statusId == ApplicationChecklistEntryStatusId.TO_DO):
-                    yield return processStepRepository.CreateProcessStep(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH, ProcessStepStatusId.TODO);
-                    yield return processStepRepository.CreateProcessStep(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL, ProcessStepStatusId.TODO);
+                    yield return processStepRepository.CreateProcessStep(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH, ProcessStepStatusId.TODO, processId);
+                    yield return processStepRepository.CreateProcessStep(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL, ProcessStepStatusId.TODO, processId);
                     break;
                 default: // IDENTITY_WALLET, CLEARING_HOUSE and SELF_DESCRIPTION_LP start defered.
                     break;
             }
         }
     }
+
+    public IEnumerable<ProcessStepTypeId> GetInitialProcessStepTypeIds(IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> checklistEntries)
+    {
+        foreach (var (entryTypeId, statusId) in checklistEntries)
+        {
+            switch(entryTypeId)
+            {
+                case ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION:
+                    yield return ProcessStepTypeId.VERIFY_REGISTRATION;
+                    break;
+                case ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER when (statusId == ApplicationChecklistEntryStatusId.TO_DO):
+                    yield return ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH;
+                    yield return ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL;
+                    break;
+                default: // IDENTITY_WALLET, CLEARING_HOUSE and SELF_DESCRIPTION_LP start defered.
+                    break;
+            }
+        }
+    }
+
 }

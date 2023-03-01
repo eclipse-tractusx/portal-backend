@@ -22,7 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Executor;
 
 /// <summary>
 /// Service that organizes the mapping of checklist ProcessStepExecutions to ProcessStepTypes
@@ -51,5 +51,5 @@ public interface IChecklistHandlerService
     /// returns whether a ProcessStepTypeId shall be executed automatically by the ChecklistProcessor
     /// </summary>
     /// <param name="stepTypeId">ProcessStepTypeId</param>
-    bool IsManualProcessStep(ProcessStepTypeId stepTypeId);
+    bool IsExecutableProcessStep(ProcessStepTypeId stepTypeId);
 }

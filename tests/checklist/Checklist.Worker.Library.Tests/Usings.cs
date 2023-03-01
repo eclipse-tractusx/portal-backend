@@ -18,19 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Laraue.EfCoreTriggers.PostgreSql.Extensions;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-
-public static class PortalRepositoriesStartupServiceExtensions
-{
-    public static IServiceCollection AddPortalRepositories(this IServiceCollection services, IConfiguration configuration) =>
-        services.AddScoped<IPortalRepositories, PortalRepositories>()
-            .AddDbContext<PortalDbContext>(o => o
-                    .UseNpgsql(configuration.GetConnectionString("PortalDB"))
-                    .UsePostgreSqlTriggers());
-}
+global using AutoFixture;
+global using AutoFixture.AutoFakeItEasy;
+global using FakeItEasy;
+global using FluentAssertions;
+global using Xunit;

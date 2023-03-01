@@ -41,6 +41,7 @@ public class SdFactoryBusinessLogicTests
     private const string CountryCode = "DE";
     private const string Bpn = "BPNL000000000009";
     private static readonly Guid ApplicationId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
+    private static readonly Guid ProcessId = Guid.NewGuid();
     private static readonly Guid CompanyId = new("b4697623-dd87-410d-abb8-6d4f4d87ab58");
     private static readonly IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers = new List<(UniqueIdentifierId Id, string Value)>
     {
@@ -451,7 +452,7 @@ public class SdFactoryBusinessLogicTests
                 ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP,
                 null,
                 new[] {ProcessStepTypeId.START_SELF_DESCRIPTION_LP}))
-            .ReturnsLazily(() => new IChecklistService.ManualChecklistProcessStepData(ApplicationId, Guid.NewGuid(),
+            .ReturnsLazily(() => new IChecklistService.ManualChecklistProcessStepData(ApplicationId, ProcessId, Guid.NewGuid(),
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
                 ImmutableDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>.Empty,
                 new List<ProcessStep>()));

@@ -366,7 +366,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var data = await sut.GetApplicationChecklistData(SubmittedApplicationWithBpn, Enum.GetValues<ProcessStepTypeId>()).ConfigureAwait(false);
+        var data = await sut.GetApplicationChecklistData(new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb6"), Enum.GetValues<ProcessStepTypeId>()).ConfigureAwait(false);
 
         // Assert
         data.Exists.Should().BeTrue();
@@ -381,7 +381,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var data = await sut.GetApplicationChecklistData(SubmittedApplicationWithBpn, Enumerable.Empty<ProcessStepTypeId>()).ConfigureAwait(false);
+        var data = await sut.GetApplicationChecklistData(new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb6"), Enumerable.Empty<ProcessStepTypeId>()).ConfigureAwait(false);
 
         // Assert
         data.Should().NotBe(default);

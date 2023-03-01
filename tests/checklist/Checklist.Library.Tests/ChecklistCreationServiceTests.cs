@@ -186,6 +186,39 @@ public class ChecklistCreationServiceTests
     }
 
     #endregion
+
+    #region GetInitialProcessStepTypeIds
+
+    [Theory]
+    [InlineData(new [] { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION }, new [] { ApplicationChecklistEntryStatusId.TO_DO }, new [] { ProcessStepTypeId.VERIFY_REGISTRATION })]
+    [InlineData(new [] { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER }, new [] { ApplicationChecklistEntryStatusId.TO_DO }, new [] {
+            ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
+            ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL,
+         })]
+    [InlineData(new [] { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER }, new [] { ApplicationChecklistEntryStatusId.IN_PROGRESS }, new ProcessStepTypeId[] { })]
+    [InlineData(new [] {
+            ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION,
+            ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
+            ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
+            ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
+        }, new [] { ApplicationChecklistEntryStatusId.TO_DO }, new ProcessStepTypeId[] { })]
+    public void GetInitialProcessStepsTypeIds_ReturnsExcpected(IEnumerable<ApplicationChecklistEntryTypeId> entryTypes, IEnumerable<ApplicationChecklistEntryStatusId> entryStatus, IEnumerable<ProcessStepTypeId> stepTypeIds)
+    {
+        // Arrange
+        var entries = entryTypes.Zip(entryStatus, (type, status) => (type, status));
+        // Act
+        var result = _service.GetInitialProcessStepTypeIds(entries);
+        // Assert
+        if (stepTypeIds.Any())
+        {
+            result.Should().HaveSameCount(stepTypeIds).And.Contain(stepTypeIds);
+        }
+        else{
+            result.Should().BeEmpty();
+        }
+    }
+
+    #endregion
     
     #region Setup
 
