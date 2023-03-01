@@ -386,10 +386,10 @@ public class ApplicationRepository : IApplicationRepository
             .Select(x => new
             {
                 x.ApplicationChecklistEntries,
-                ProcessSteps = x.ApplicationAssignedProcessSteps
-                    .Where(ps =>
-                        ps.ProcessStep!.ProcessStepStatusId == ProcessStepStatusId.TODO &&
-                        processStepTypeIds.Contains(ps.ProcessStep.ProcessStepTypeId))
+                ProcessSteps = x.ChecklistProcess!.ProcessSteps
+                    .Where(step =>
+                        step.ProcessStepStatusId == ProcessStepStatusId.TODO &&
+                        processStepTypeIds.Contains(step.ProcessStepTypeId))
             })
             .Select(x => new ValueTuple<bool, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId, string?)>, IEnumerable<ProcessStepTypeId>>(
                     true,
@@ -400,7 +400,7 @@ public class ApplicationRepository : IApplicationRepository
                             ace.ApplicationChecklistEntryStatusId,
                             ace.Comment)),
                     x.ProcessSteps
-                        .Select(ps => ps.ProcessStep!.ProcessStepTypeId)))
+                        .Select(ps => ps.ProcessStepTypeId)))
             .SingleOrDefaultAsync();
     
     /// <summary>

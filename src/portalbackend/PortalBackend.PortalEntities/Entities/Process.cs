@@ -23,31 +23,24 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class ProcessStep : IBaseEntity
+public class Process : IBaseEntity
 {
-    public ProcessStep(Guid id, ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId, DateTimeOffset dateCreated)
+    private Process()
+    {
+        ProcessSteps = new HashSet<ProcessStep>();
+    }
+
+    public Process(Guid id, ProcessTypeId processTypeId) : this()
     {
         Id = id;
-        ProcessStepTypeId = processStepTypeId;
-        ProcessStepStatusId = processStepStatusId;
-        ProcessId = processId;
-        DateCreated = dateCreated;
+        ProcessTypeId = processTypeId;
     }
 
     public Guid Id { get; private set; }
+    public ProcessTypeId ProcessTypeId { get; set; }
 
-    public ProcessStepTypeId ProcessStepTypeId { get; private set; }
-
-    public ProcessStepStatusId ProcessStepStatusId { get; set; }
-
-    public Guid ProcessId { get; private set; }
-
-    public DateTimeOffset DateCreated { get; private set; }
-
-    public DateTimeOffset? DateLastChanged { get; set; }
-    
     // Navigation properties
-    public virtual ProcessStepType? ProcessStepType { get; private set; }
-    public virtual ProcessStepStatus? ProcessStepStatus { get; set; }
-    public virtual Process? Process { get; private set; }
+    public virtual ProcessType? ProcessType { get; set; }
+    public virtual CompanyApplication? CompanyApplication { get; set; }
+    public virtual ICollection<ProcessStep> ProcessSteps { get; private set; }
 }

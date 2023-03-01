@@ -94,7 +94,6 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<CompanyIdentifier>("company_identifiers", x=>  new { x.CompanyId, x.UniqueIdentifierId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<CountryAssignedIdentifier>("country_assigned_identifiers", x => new { x.CountryAlpha2Code, x.UniqueIdentifierId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferAssignedPrivacyPolicy>("offer_assigned_privacy_policies", x => new { x.OfferId, x.PrivacyPolicyId }, cancellationToken).ConfigureAwait(false);
-        await SeedTable<ApplicationAssignedProcessStep>("application_assigned_process_steps", x => new { x.CompanyApplicationId, x.ProcessStepId }, cancellationToken).ConfigureAwait(false);
         
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
@@ -125,6 +124,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<AppSubscriptionDetail>("app_subscription_details", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<UseCase>("use_cases", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<ProcessStep>("process_steps", cancellationToken).ConfigureAwait(false);
+        await SeedTableForBaseEntity<Process>("processes", cancellationToken).ConfigureAwait(false);
     }
 
     private async Task SeedTableForBaseEntity<T>(string fileName, CancellationToken cancellationToken) where T : class, IBaseEntity

@@ -41,5 +41,6 @@ public interface IChecklistCreationService
     /// <param name="existingChecklistEntryTypeIds">The currently existing <see cref="ApplicationChecklistEntryTypeId"/></param>
     /// <returns>The created ChecklistApplication Items</returns>
     Task<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>> CreateMissingChecklistItems(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> existingChecklistEntryTypeIds);
-    IEnumerable<ProcessStep> CreateInitialProcessSteps(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> checklistEntries);
+    IEnumerable<ProcessStep> CreateInitialProcessSteps(Guid processId, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> checklistEntries);
+    IEnumerable<ProcessStepTypeId> GetInitialProcessStepTypeIds(IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> checklistEntries);
 }

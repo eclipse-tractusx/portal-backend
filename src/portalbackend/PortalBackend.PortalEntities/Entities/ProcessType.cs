@@ -18,36 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class ProcessStep : IBaseEntity
+public class ProcessType
 {
-    public ProcessStep(Guid id, ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId, DateTimeOffset dateCreated)
+    private ProcessType()
     {
-        Id = id;
-        ProcessStepTypeId = processStepTypeId;
-        ProcessStepStatusId = processStepStatusId;
-        ProcessId = processId;
-        DateCreated = dateCreated;
+        this.Label = null!;
+        this.Processes = new HashSet<Process>();
     }
 
-    public Guid Id { get; private set; }
+    public ProcessType(ProcessTypeId processTypeId) : this()
+    {
+        Id = processTypeId;
+        Label = processTypeId.ToString();
+    }
 
-    public ProcessStepTypeId ProcessStepTypeId { get; private set; }
+    public ProcessTypeId Id { get; private set; }
 
-    public ProcessStepStatusId ProcessStepStatusId { get; set; }
+    [MaxLength(255)]
+    public string Label { get; private set; }
 
-    public Guid ProcessId { get; private set; }
-
-    public DateTimeOffset DateCreated { get; private set; }
-
-    public DateTimeOffset? DateLastChanged { get; set; }
-    
     // Navigation properties
-    public virtual ProcessStepType? ProcessStepType { get; private set; }
-    public virtual ProcessStepStatus? ProcessStepStatus { get; set; }
-    public virtual Process? Process { get; private set; }
+    public virtual ICollection<Process> Processes { get; private set; }
 }

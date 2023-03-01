@@ -28,6 +28,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// </summary>
 public interface IProcessStepRepository
 {
-    ProcessStep CreateProcessStep(ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId);
+    Process CreateProcess(ProcessTypeId processTypeId);
+    ProcessStep CreateProcessStep(ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId);
+    IEnumerable<ProcessStep> CreateProcessStepRange(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
     void AttachAndModifyProcessStep(Guid processStepId, Action<ProcessStep>? initialize, Action<ProcessStep> modify);
+    IAsyncEnumerable<(Guid ProcessId, ProcessTypeId ProcessTypeId)> GetActiveProcesses(IEnumerable<ProcessTypeId> processTypeIds);
+    IAsyncEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId)> GetProcessStepData(Guid processId);
 }

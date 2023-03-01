@@ -54,7 +54,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
     public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
     public virtual DbSet<ApplicationChecklistEntry> ApplicationChecklist { get; set; } = default!;
-    public virtual DbSet<ApplicationAssignedProcessStep> ApplicationAssignedProcessSteps { get; set; } = default!;
     public virtual DbSet<ApplicationChecklistEntryStatus> ApplicationChecklistStatuses { get; set; } = default!;
     public virtual DbSet<ApplicationChecklistEntryType> ApplicationChecklistTypes { get; set; } = default!;
     public virtual DbSet<AppSubscriptionDetail> AppSubscriptionDetails { get; set; } = default!;
@@ -62,6 +61,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditOffer20230119> AuditOffer20230119 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyApplication20230214> AuditCompanyApplication20230214 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
     public virtual DbSet<AuditUserRole20221017> AuditUserRole20221017 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole20221018> AuditCompanyUserAssignedRole20221018 { get; set; } = default!;
@@ -120,9 +120,11 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferType> OfferTypes { get; set; } = default!;
     public virtual DbSet<OfferSubscription> OfferSubscriptions { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
+    public virtual DbSet<Process> Processes { get; set; } = default!;
     public virtual DbSet<ProcessStep> ProcessSteps { get; set; } = default!;
     public virtual DbSet<ProcessStepStatus> ProcessStepStatuses { get; set; } = default!;
     public virtual DbSet<ProcessStepType> ProcessStepTypes { get; set; } = default!;
+    public virtual DbSet<ProcessType> ProcessTypes { get; set; } = default!;
     public virtual DbSet<ProviderCompanyDetail> ProviderCompanyDetails { get; set; } = default!;
     public virtual DbSet<PrivacyPolicy> PrivacyPolicies { get; set; } = default!;
     public virtual DbSet<ServiceAssignedServiceType> ServiceAssignedServiceTypes { get; set; } = default!;
@@ -535,7 +537,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<CompanyApplication,AuditCompanyApplication20221005>();
+            entity.HasAuditV1Triggers<CompanyApplication,AuditCompanyApplication20230214>();
         });
 
         modelBuilder.Entity<CompanyApplicationStatus>()
@@ -1023,21 +1025,25 @@ public class PortalDbContext : DbContext
                     .Cast<BpdmIdentifierId>()
                     .Select(e => new BpdmIdentifier(e))
             );
-        
-        modelBuilder.Entity<ApplicationAssignedProcessStep>(entity =>
-        {
-            entity.HasKey(e => new { e.CompanyApplicationId, e.ProcessStepId });
 
-            entity.HasOne(d => d.ProcessStep)
-                .WithOne(d => d.ApplicationAssignedProcessStep)
-                .HasForeignKey<ApplicationAssignedProcessStep>(d => d.ProcessStepId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            
-            entity.HasOne(d => d.CompanyApplication)
-                .WithMany(p => p.ApplicationAssignedProcessSteps)
-                .HasForeignKey(d => d.CompanyApplicationId )
-                .OnDelete(DeleteBehavior.ClientSetNull);
-        });
+        modelBuilder.Entity<Process>()
+            .HasOne(d => d.ProcessType)
+            .WithMany(p => p!.Processes)
+            .HasForeignKey(d => d.ProcessTypeId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
+
+        modelBuilder.Entity<ProcessStep>()
+            .HasOne(d => d.Process)
+            .WithMany(p => p!.ProcessSteps)
+            .HasForeignKey(d => d.ProcessId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
+
+        modelBuilder.Entity<ProcessType>()
+            .HasData(
+                Enum.GetValues(typeof(ProcessTypeId))
+                    .Cast<ProcessTypeId>()
+                    .Select(e => new ProcessType(e))
+            );
 
         modelBuilder.Entity<ProcessStepStatus>()
             .HasData(

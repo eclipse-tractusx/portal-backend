@@ -38,15 +38,51 @@ public class ProcessStepRepository : IProcessStepRepository
         _context = portalDbContext;
     }
 
-    public ProcessStep CreateProcessStep(ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId) =>
-        _context.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, DateTimeOffset.UtcNow)).Entity;
+    public Process CreateProcess(ProcessTypeId processTypeId) =>
+        _context.Add(new Process(Guid.NewGuid(), processTypeId)).Entity;
+
+    public ProcessStep CreateProcessStep(ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) =>
+        _context.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow)).Entity;
+
+    public IEnumerable<ProcessStep> CreateProcessStepRange(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
+    {
+        var processSteps = processStepTypeIds.Select(stepTypeId => new ProcessStep(Guid.NewGuid(), stepTypeId, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow)).ToList();
+        _context.AddRange(processSteps);
+        return processSteps;
+    }
 
     public void AttachAndModifyProcessStep(Guid processStepId, Action<ProcessStep>? initialize, Action<ProcessStep> modify)
     {
-        var step = new ProcessStep(processStepId, default, default, default);
+        var step = new ProcessStep(processStepId, default, default, Guid.Empty, default);
         initialize?.Invoke(step);
         _context.Attach(step);
         step.DateLastChanged = DateTimeOffset.UtcNow;
         modify(step);
     }
+
+    public IAsyncEnumerable<(Guid ProcessId, ProcessTypeId ProcessTypeId)> GetActiveProcesses(IEnumerable<ProcessTypeId> processTypeIds) =>
+        _context.Processes
+            .AsNoTracking()
+            .Where(process =>
+                processTypeIds.Contains(process.ProcessTypeId) &&
+                process.ProcessSteps.Any(step => step.ProcessStepStatusId == ProcessStepStatusId.TODO))
+            .Select(process =>
+                new ValueTuple<Guid,ProcessTypeId>(
+                    process.Id,
+                    process.ProcessTypeId
+                ))
+            .AsAsyncEnumerable();
+
+    public IAsyncEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId)> GetProcessStepData(Guid processId) =>
+        _context.ProcessSteps
+            .AsNoTracking()
+            .Where(step =>
+                step.ProcessId == processId &&
+                step.ProcessStepStatusId == ProcessStepStatusId.TODO)
+            .OrderBy(step => step.ProcessStepTypeId)
+            .Select(step =>
+                new ValueTuple<Guid,ProcessStepTypeId>(
+                    step.Id,
+                    step.ProcessStepTypeId))
+            .AsAsyncEnumerable();
 }
