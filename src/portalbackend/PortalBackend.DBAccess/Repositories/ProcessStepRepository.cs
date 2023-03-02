@@ -60,12 +60,12 @@ public class ProcessStepRepository : IProcessStepRepository
         modify(step);
     }
 
-    public IAsyncEnumerable<(Guid ProcessId, ProcessTypeId ProcessTypeId)> GetActiveProcesses(IEnumerable<ProcessTypeId> processTypeIds) =>
+    public IAsyncEnumerable<(Guid ProcessId, ProcessTypeId ProcessTypeId)> GetActiveProcesses(IEnumerable<ProcessTypeId> processTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         _context.Processes
             .AsNoTracking()
             .Where(process =>
                 processTypeIds.Contains(process.ProcessTypeId) &&
-                process.ProcessSteps.Any(step => step.ProcessStepStatusId == ProcessStepStatusId.TODO))
+                process.ProcessSteps.Any(step => processStepTypeIds.Contains(step.ProcessStepTypeId) && step.ProcessStepStatusId == ProcessStepStatusId.TODO))
             .Select(process =>
                 new ValueTuple<Guid,ProcessTypeId>(
                     process.Id,

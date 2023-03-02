@@ -177,7 +177,7 @@ public class ProcessExecutorTests
     {
         // Arrange
         var processId = Guid.NewGuid();
-        var processStepData = _fixture.CreateMany<ProcessStepTypeId>(3).OrderBy(x => x).Select(stepTypeId => (Id: Guid.NewGuid(), StepTypeId: stepTypeId)).ToImmutableArray();
+        var processStepData = _fixture.CreateMany<ProcessStepTypeId>(3).Select(stepTypeId => (Id: Guid.NewGuid(), StepTypeId: stepTypeId)).OrderBy(x => x.StepTypeId).ToImmutableArray();
 
         A.CallTo(() => _processStepRepository.GetProcessStepData(processId))
             .Returns(processStepData.ToAsyncEnumerable());
@@ -238,7 +238,7 @@ public class ProcessExecutorTests
     {
         // Arrange
         var processId = Guid.NewGuid();
-        var processStepData = _fixture.CreateMany<ProcessStepTypeId>().OrderBy(x => x).Select(stepTypeId => (Guid.NewGuid(),stepTypeId)).ToImmutableArray();
+        var processStepData = _fixture.CreateMany<ProcessStepTypeId>().Select(stepTypeId => (Id: Guid.NewGuid(),StepTypeId: stepTypeId)).OrderBy(x => x.StepTypeId).ToImmutableArray();
 
         A.CallTo(() => _processStepRepository.GetProcessStepData(processId))
             .Returns(processStepData.ToAsyncEnumerable());
@@ -273,7 +273,7 @@ public class ProcessExecutorTests
         // Arrange
         var processId = Guid.NewGuid();
         var stepTypeId = _fixture.Create<ProcessStepTypeId>();
-        var processStepData = _fixture.CreateMany<Guid>(3).Select(x => (Id: x, StepTypeId: stepTypeId)).ToImmutableArray();
+        var processStepData = _fixture.CreateMany<Guid>(3).Select(x => (Id: x, StepTypeId: stepTypeId)).OrderBy(x => x.StepTypeId).ToImmutableArray();
 
         A.CallTo(() => _processStepRepository.GetProcessStepData(processId))
             .Returns(processStepData.ToAsyncEnumerable());
@@ -512,7 +512,7 @@ public class ProcessExecutorTests
     {
         // Arrange
         var processId = Guid.NewGuid();
-        var processStepData = _fixture.CreateMany<ProcessStepTypeId>(3).Select(stepTypeId => (Id: Guid.NewGuid(), StepTypeId: stepTypeId)).ToImmutableArray();
+        var processStepData = _fixture.CreateMany<ProcessStepTypeId>(3).Select(stepTypeId => (Id: Guid.NewGuid(), StepTypeId: stepTypeId)).OrderBy(x => x.StepTypeId).ToImmutableArray();
         var skipStepTypeIds = processStepData.Skip(1).Select(x => x.StepTypeId).ToImmutableArray();
 
         A.CallTo(() => _processStepRepository.GetProcessStepData(processId))
@@ -578,7 +578,7 @@ public class ProcessExecutorTests
     {
         // Arrange
         var processId = Guid.NewGuid();
-        var processStepData = _fixture.CreateMany<ProcessStepTypeId>(3).Select(stepTypeId => (Id: Guid.NewGuid(), StepTypeId: stepTypeId)).ToImmutableArray();
+        var processStepData = _fixture.CreateMany<ProcessStepTypeId>(3).Select(stepTypeId => (Id: Guid.NewGuid(), StepTypeId: stepTypeId)).OrderBy(x => x.StepTypeId).ToImmutableArray();
         var error = _fixture.Create<TestException>();
 
         A.CallTo(() => _processStepRepository.GetProcessStepData(processId))
@@ -632,7 +632,7 @@ public class ProcessExecutorTests
     {
         // Arrange
         var processId = Guid.NewGuid();
-        var processStepData = _fixture.CreateMany<ProcessStepTypeId>().OrderBy(x => x).Select(stepTypeId => (Guid.NewGuid(),stepTypeId)).ToImmutableArray();
+        var processStepData = _fixture.CreateMany<ProcessStepTypeId>().Select(stepTypeId => (Id: Guid.NewGuid(),StepTypeId: stepTypeId)).OrderBy(x => x.StepTypeId).ToImmutableArray();
         var error = _fixture.Create<SystemException>();
 
         A.CallTo(() => _processStepRepository.GetProcessStepData(processId))

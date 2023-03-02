@@ -49,6 +49,8 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
     }
 
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.APPLICATION_CHECKLIST;
+    public bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId) => _checklistHandlerService.IsExecutableProcessStep(processStepTypeId);
+    public IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds() => _checklistHandlerService.GetExecutableStepTypeIds();
 
     public async Task<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
@@ -162,9 +164,4 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
                 item => {
                     item.Comment = string.IsNullOrEmpty(ex.Message) ? ex.ToString() : ex.Message;
                 });
-
-    public bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId)
-    {
-        return _checklistHandlerService.IsExecutableProcessStep(processStepTypeId);
-    }
 }

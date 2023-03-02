@@ -362,7 +362,7 @@ public class UserBusinessLogicTests
         var result = await sut.CreateOwnCompanyIdpUserAsync(_identityProviderId, userCreationInfoIdp, _iamUserId).ConfigureAwait(false);
         result.Should().NotBe(Guid.Empty);
         A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfoIdp.Email),A<IDictionary<string,string>>.That.Matches(x => x["companyName"] == _displayName),A<IEnumerable<string>>._)).MustHaveHappened();
-        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();        
+        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -440,7 +440,7 @@ public class UserBusinessLogicTests
         var result = await sut.CreateOwnCompanyIdpUserAsync(_identityProviderId, userCreationInfoIdp, _iamUserId).ConfigureAwait(false);
         result.Should().NotBe(Guid.Empty);
         A.CallTo(() => _mailingService.SendMails(A<string>._,A<IDictionary<string,string>>._,A<IEnumerable<string>>._)).MustHaveHappened();
-        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappened();        
+        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappened();
     }
 
     #endregion
@@ -976,7 +976,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length-1);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
 
-        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error),_error,A<string>.That.IsEqualTo($"Error while deleting companyUser {invalidUserId} from shared idp {sharedIdpAlias}"))).MustHaveHappened();
+        A.CallTo(() => _mockLogger.Log(LogLevel.Error, _error, $"Error while deleting companyUser {invalidUserId} from shared idp {sharedIdpAlias}")).MustHaveHappened();
     }
 
     [Fact]
@@ -1033,7 +1033,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length-1);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
 
-        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error),_error,A<string>.That.IsEqualTo($"Error while deleting companyUser {invalidUserId}"))).MustHaveHappened();
+        A.CallTo(() => _mockLogger.Log(LogLevel.Error, _error, $"Error while deleting companyUser {invalidUserId}")).MustHaveHappened();
     }
 
     #endregion

@@ -52,4 +52,9 @@ public interface IChecklistHandlerService
     /// </summary>
     /// <param name="stepTypeId">ProcessStepTypeId</param>
     bool IsExecutableProcessStep(ProcessStepTypeId stepTypeId);
+
+    /// <summary>
+    /// returns the ProcessStepTypeIds that shall be executed automatically by the ChecklistProcessor
+    /// </summary>
+    IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds();
 }

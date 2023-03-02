@@ -31,4 +31,5 @@ public interface IProcessTypeExecutor
     Task<StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken);
     bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId);
     ProcessTypeId GetProcessTypeId();
+    IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds();
 }
