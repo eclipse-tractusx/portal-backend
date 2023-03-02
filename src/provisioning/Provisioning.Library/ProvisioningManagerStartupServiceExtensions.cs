@@ -36,7 +36,7 @@ public static class ProvisioningManagerStartupServiceExtensions
             .ConfigureKeycloakSettingsMap(configuration.GetSection("Keycloak"))
             .AddTransient<IProvisioningManager, ProvisioningManager>()
             .ConfigureProvisioningSettings(configuration.GetSection("Provisioning"))
-            .AddTransient<IServiceAccountCreation, ServiceAccountCreation>();
+            .AddServiceAccountCreation(configuration.GetSection("Provisioning"));
 
         var connectionString = configuration.GetConnectionString("ProvisioningDB");
         if (!string.IsNullOrWhiteSpace(connectionString))

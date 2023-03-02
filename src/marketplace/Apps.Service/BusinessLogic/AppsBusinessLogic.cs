@@ -45,6 +45,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly AppsSettings _settings;
     private readonly IOfferService _offerService;
+    private readonly IOfferSetupService _offerSetupService;
     private readonly IMailingService _mailingService;
 
     /// <summary>
@@ -53,13 +54,21 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerSubscriptionService">OfferSubscription Service.</param>
     /// <param name="offerService">Offer service</param>
+    /// <param name="offerSetupService">Offer Setup Service</param>
     /// <param name="settings">Settings</param>
     /// <param name="mailingService">Mailing service</param>
-    public AppsBusinessLogic(IPortalRepositories portalRepositories, IOfferSubscriptionService offerSubscriptionService, IOfferService offerService, IOptions<AppsSettings> settings, IMailingService mailingService)
+    public AppsBusinessLogic(
+        IPortalRepositories portalRepositories,
+        IOfferSubscriptionService offerSubscriptionService,
+        IOfferService offerService,
+        IOfferSetupService offerSetupService,
+        IOptions<AppsSettings> settings,
+        IMailingService mailingService)
     {
         _portalRepositories = portalRepositories;
         _offerSubscriptionService = offerSubscriptionService;
         _offerService = offerService;
+        _offerSetupService = offerSetupService;
         _mailingService = mailingService;
         _settings = settings.Value;
     }
@@ -213,7 +222,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                 });
             });
 
-        var userName = string.Join(" ", new[] { requesterData.Firstname, requesterData.Lastname }); 
+        var userName = string.Join(" ", requesterData.Firstname, requesterData.Lastname); 
 
         if (!string.IsNullOrWhiteSpace(requesterData.Email))
         {
@@ -285,7 +294,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId) =>
-        _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.ITAdminRoles, iamUserId, OfferTypeId.APP, _settings.UserManagementAddress);
+        _offerSetupService.AutoSetupOfferAsync(data, _settings.ServiceAccountRoles, _settings.ITAdminRoles, iamUserId, OfferTypeId.APP, _settings.UserManagementAddress);
 
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId) =>

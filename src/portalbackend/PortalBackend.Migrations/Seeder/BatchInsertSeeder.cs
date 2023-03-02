@@ -86,7 +86,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<OfferAssignedLicense>("offer_assigned_licenses", x => new { x.OfferId, x.OfferLicenseId}, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferDescription>("offer_descriptions", x => new { AppId = x.OfferId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferTag>("offer_tags", x => new { AppId = x.OfferId, x.Name }, cancellationToken).ConfigureAwait(false);
-        await SeedTable<ServiceAssignedServiceType>("service_assigned_service_types", x => new { x.ServiceId, x.ServiceTypeId}, cancellationToken).ConfigureAwait(false);
+        await SeedTable<ServiceDetail>("service_details", x => new { x.ServiceId, x.ServiceTypeId}, cancellationToken).ConfigureAwait(false);
         await SeedTable<UserRoleAssignedCollection>("user_role_assigned_collections", x => new { x.UserRoleId, x.UserRoleCollectionId}, cancellationToken).ConfigureAwait(false);
         await SeedTable<UserRoleCollectionDescription>("user_role_collection_descriptions", x => new { x.UserRoleCollectionId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedTable<UserRoleDescription>("user_role_descriptions", x => new { x.UserRoleId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);

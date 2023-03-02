@@ -18,24 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-
-public class ServiceAssignedServiceType
-{
-    private ServiceAssignedServiceType() {}
-
-    public ServiceAssignedServiceType(Guid serviceId, ServiceTypeId serviceTypeId)
-    {
-        ServiceId = serviceId;
-        ServiceTypeId = serviceTypeId;
-    }
-
-    public Guid ServiceId { get; private set; }
-    public ServiceTypeId ServiceTypeId { get; private set; }
-
-    // Navigation properties
-    public virtual Offer? Service { get; private set; }
-    public virtual ServiceType? ServiceType { get; private set; }
-}
+global using AutoFixture;
+global using AutoFixture.AutoFakeItEasy;
+global using FakeItEasy;
+global using FluentAssertions;
+global using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+global using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+global using Xunit;

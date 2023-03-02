@@ -18,30 +18,29 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class ServiceType
+public class ServiceDetail
 {
-    private ServiceType()
+    private ServiceDetail() {}
+
+    public ServiceDetail(Guid serviceId, ServiceTypeId serviceTypeId, bool technicalUserNeeded)
     {
-        Label = null!;
-        ServiceDetails = new HashSet<ServiceDetail>();
+        ServiceId = serviceId;
+        ServiceTypeId = serviceTypeId;
+        TechnicalUserNeeded = technicalUserNeeded;
     }
 
-    public ServiceType(ServiceTypeId offerTypeId) : this()
-    {
-        Id = offerTypeId;
-        Label = offerTypeId.ToString();
-    }
+    public Guid ServiceId { get; private set; }
 
-    public ServiceTypeId Id { get; private set; }
+    public ServiceTypeId ServiceTypeId { get; private set; }
 
-    [MaxLength(255)]
-    public string Label { get; private set; }
+    public bool TechnicalUserNeeded { get; set; }
 
     // Navigation properties
-    public virtual ICollection<ServiceDetail> ServiceDetails { get; private set; }
+    public virtual Offer? Service { get; private set; }
+
+    public virtual ServiceType? ServiceType { get; private set; }
 }

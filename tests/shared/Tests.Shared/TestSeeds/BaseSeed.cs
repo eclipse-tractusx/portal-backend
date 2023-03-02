@@ -294,9 +294,9 @@ public static class BaseSeed
             new(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("06b243a4-ba51-4bf3-bc40-5d79a2231b90"))
         });
 
-        dbContext.ServiceAssignedServiceTypes.AddRange(new List<ServiceAssignedServiceType>
+        dbContext.ServiceDetails.AddRange(new List<ServiceDetail>
         {
-            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.CONSULTANCE_SERVICE)
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.CONSULTANCE_SERVICE, false)
         });
 
         dbContext.OfferAssignedDocuments.AddRange(new List<OfferAssignedDocument>
