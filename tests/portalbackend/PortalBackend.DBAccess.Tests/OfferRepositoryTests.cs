@@ -815,6 +815,181 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     
     #endregion
 
+    [Fact]
+    public async Task RemoveOfferAssignedLicenses_WithExisting_OfferAssignedLicense()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        IEnumerable<(Guid, Guid)> offerAssignedLicenseData = new[] { (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("6ca00fc6-4c82-47d8-8616-059ebe65232b")) };
+        // Act
+        sut.RemoveOfferAssignedLicenses(offerAssignedLicenseData);
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Deleted);
+    }
+
+    [Fact]
+    public async Task RemoveOfferAssignedUseCases_WithExisting_OfferAssignedUseCase()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        IEnumerable<(Guid, Guid)> offerAssignedUseCaseData = new[] { (new Guid("5cf74ef8-e0b7-4984-a872-474828beb510"), new Guid("6909ccc7-37c8-4088-99ab-790f20702460")) };
+        // Act
+        sut.RemoveOfferAssignedUseCases(offerAssignedUseCaseData);
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Deleted);
+    }
+
+    [Fact]
+    public async Task RemoveOfferAssignedPrivacyPolicies_WithExisting_OfferAssignedPrivacyPolicy()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        IEnumerable<(Guid, PrivacyPolicyId)> offerAssignedPrivacyPolicyData = new[] { (new Guid("a9112853-75ac-4967-9844-7478536e5111"), PrivacyPolicyId.COMPANY_DATA) };
+        // Act
+        sut.RemoveOfferAssignedPrivacyPolicies(offerAssignedPrivacyPolicyData);
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Deleted);
+    }
+
+    [Fact]
+    public async Task RemoveOfferAssignedDocuments_WithExisting_OfferAssignedDocument()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        IEnumerable<(Guid, Guid)> offerAssignedDocumentsData = new[] { (new Guid("ac1cf001-7fbc-1f2f-817f-bce0574c000f"), new Guid("0e062e49-54ab-47a3-a217-d3f09fbe0459")) };
+        // Act
+        sut.RemoveOfferAssignedDocuments(offerAssignedDocumentsData);
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Deleted);
+    }
+
+    [Fact]
+    public async Task RemoveOfferTags_WithExisting_OfferTag()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        IEnumerable<(Guid, string)> offerTagsData = new[] { (new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d1"), "Traceability") };
+        // Act
+        sut.RemoveOfferTags(offerTagsData);
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Deleted);
+    }
+
+    [Fact]
+    public async Task RemoveOfferDescriptions_WithExisting_OfferDescription()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        IEnumerable<(Guid,string)> offerDescriptionLanguages = new[] { (new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2"), "de") };
+        // Act
+        sut.RemoveOfferDescriptions(offerDescriptionLanguages);
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Deleted);
+    }
+
+    [Fact]
+    public async Task RemoveOffer_WithExisting_Offer()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        sut.RemoveOffer(new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2"));
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Deleted);
+    }
+    
+    [Theory]
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfeb", OfferTypeId.APP, "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferStatusId.ACTIVE, true, true, true, true, true)]
+    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", OfferTypeId.APP, "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferStatusId.ACTIVE, false, false, false, false, false)]
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfeb", OfferTypeId.SERVICE, "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferStatusId.ACTIVE, true, false, true, true, false)]
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfeb", OfferTypeId.APP, "no-valid-user", OfferStatusId.ACTIVE, true, true, true, false, false)]
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfeb", OfferTypeId.APP, "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferStatusId.CREATED, true, true, false, true, false)]
+    public async Task GetAppUntrackedAsync_ReturnsExpectedResult(Guid offerId, OfferTypeId offerTypeId, string iamUserId, OfferStatusId offerStatusId, bool isValidApp, bool isOfferType, bool isOfferStatus, bool isCompanyUser, bool hasData)
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act 
+        var result = await sut.GetAppDeleteDataAsync(offerId, offerTypeId, iamUserId, offerStatusId).ConfigureAwait(false);
+
+        // Assert
+        result.IsValidApp.Should().Be(isValidApp);
+        result.IsOfferType.Should().Be(isOfferType);
+        result.IsOfferStatus.Should().Be(isOfferStatus);
+        result.IsProviderCompanyUser.Should().Be(isCompanyUser);
+        if (hasData)
+        {
+            result.DeleteData.Should().NotBeNull();
+            result.DeleteData!.DocumentIdStatus.Should().NotBeEmpty();
+            result.DeleteData.OfferLicenseIds.Should().NotBeEmpty();
+            result.DeleteData.UseCaseIds.Should().NotBeEmpty();
+            result.DeleteData.PolicyIds.Should().BeEmpty();
+            result.DeleteData.LanguageCodes.Should().NotBeEmpty();
+            result.DeleteData.TagNames.Should().NotBeEmpty();
+            result.DeleteData.DescriptionLanguageShortNames.Should().NotBeEmpty();
+        }
+        else
+        {
+            result.DeleteData.Should().BeNull();
+        }
+    }
+
     #region Setup
     
     private async Task<OfferRepository> CreateSut()

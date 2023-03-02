@@ -516,6 +516,41 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         _portalRepositories.GetInstance<IOfferRepository>().RemoveOfferAssignedDocument(offer.OfferId, documentId);
         _portalRepositories.GetInstance<IDocumentRepository>().RemoveDocument(documentId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-      
+    }
+    
+    /// <inheritdoc />
+    public async Task DeleteAppAsync(Guid appId, string iamUserId)
+    {
+        var (isValidApp, isOfferType, isOfferStatus, isProviderCompanyUser, appData) = await _portalRepositories.GetInstance<IOfferRepository>().GetAppDeleteDataAsync(appId, OfferTypeId.APP, iamUserId, OfferStatusId.CREATED).ConfigureAwait(false);
+        if (!isValidApp)
+        {
+            throw new NotFoundException($"App {appId} does not exist");
+        }
+        if (!isProviderCompanyUser)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of app {appId}");
+        }
+        if (!isOfferStatus)
+        {
+            throw new ConflictException($"App {appId} is not in Created State");
+        }
+        if (!isOfferType)
+        {
+            throw new ConflictException($"offer {appId} is not offerType APP");
+        }
+        if (appData==null)
+        {
+            throw new UnexpectedConditionException("appData should never be null here");
+        }
+        _portalRepositories.GetInstance<IOfferRepository>().RemoveOfferAssignedLicenses(appData.OfferLicenseIds.Select(licenseId => (appId, licenseId)));
+        _portalRepositories.GetInstance<IOfferRepository>().RemoveOfferAssignedUseCases(appData.UseCaseIds.Select(useCaseId => (appId, useCaseId)));
+        _portalRepositories.GetInstance<IOfferRepository>().RemoveOfferAssignedPrivacyPolicies(appData.PolicyIds.Select(policyId => (appId, policyId)));
+        _portalRepositories.GetInstance<IDocumentRepository>().RemoveDocuments(appData.DocumentIdStatus.Where(x => x.DocumentStatusId != DocumentStatusId.LOCKED).Select(x => x.DocumentId));
+        _portalRepositories.GetInstance<IOfferRepository>().RemoveOfferAssignedDocuments(appData.DocumentIdStatus.Select(x => (appId, x.DocumentId)));
+        _portalRepositories.GetInstance<IOfferRepository>().RemoveAppLanguages(appData.LanguageCodes.Select(language => (appId, language)));
+        _portalRepositories.GetInstance<IOfferRepository>().RemoveOfferTags(appData.TagNames.Select(tagName => (appId, tagName)));
+        _portalRepositories.GetInstance<IOfferRepository>().RemoveOfferDescriptions(appData.DescriptionLanguageShortNames.Select(languageShortName => (appId, languageShortName)));
+        _portalRepositories.GetInstance<IOfferRepository>().RemoveOffer(appId);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

@@ -352,6 +352,26 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
     
     #endregion
+    
+    [Fact]
+    public async Task RemovedDocuments_WithExisting_Document()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        
+        IEnumerable<Guid> documentIds = new [] { (new Guid("184cde16-52d4-4865-81f6-b5b45e3c9051")) };
+        // Act
+        sut.RemoveDocuments(documentIds);
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Deleted);
+    }
 
     #region Setup    
 

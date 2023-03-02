@@ -897,6 +897,89 @@ public class AppReleaseBusinessLogicTest
 
     #endregion
 
+    #region DeleteApp
+    
+    [Fact]
+    public async Task DeleteAppAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var appDeleteData = _fixture.Create<AppDeleteData>();
+        
+        A.CallTo(() => _offerRepository.GetAppDeleteDataAsync(appId, OfferTypeId.APP, IamUserId, OfferStatusId.CREATED))
+            .Returns((true,true,true,true,appDeleteData));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, _notificationService);
+
+        //Act
+        await sut.DeleteAppAsync(appId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        A.CallTo(() => _offerRepository.GetAppDeleteDataAsync(appId, OfferTypeId.APP, IamUserId, OfferStatusId.CREATED))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferAssignedLicenses(A<IEnumerable<(Guid,Guid)>>.That.Matches((IEnumerable<(Guid OfferId,Guid LicenceId)> offerLicenseIds) =>
+            offerLicenseIds.All(x => x.OfferId == appId) && offerLicenseIds.Select(x => x.LicenceId).SequenceEqual(appDeleteData.OfferLicenseIds)))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferAssignedUseCases(A<IEnumerable<(Guid,Guid)>>.That.Matches((IEnumerable<(Guid OfferId, Guid UseCaseId)> offerUseCaseIds) =>
+            offerUseCaseIds.All(x => x.OfferId == appId) && offerUseCaseIds.Select(x => x.UseCaseId).SequenceEqual(appDeleteData.UseCaseIds)))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferAssignedPrivacyPolicies(A<IEnumerable<(Guid,PrivacyPolicyId)>>.That.Matches((IEnumerable<(Guid OfferId,PrivacyPolicyId PolicyId)> offerPolicyIds) =>
+            offerPolicyIds.All(x => x.OfferId == appId) && offerPolicyIds.Select(x => x.PolicyId).SequenceEqual(appDeleteData.PolicyIds)))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferAssignedDocuments(A<IEnumerable<(Guid,Guid)>>.That.Matches((IEnumerable<(Guid OfferId,Guid DocumentId)> offerDocIds) =>
+            offerDocIds.All(x => x.OfferId == appId) && offerDocIds.Select(x => x.DocumentId).SequenceEqual(appDeleteData.DocumentIdStatus.Select(x => x.DocumentId))))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveAppLanguages(A<IEnumerable<(Guid,string)>>.That.Matches((IEnumerable<(Guid OfferId,string Language)> offerLanguages) =>
+            offerLanguages.All(x => x.OfferId == appId) && offerLanguages.Select(x => x.Language).SequenceEqual(appDeleteData.LanguageCodes)))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferTags(A<IEnumerable<(Guid, string)>>.That.Matches((IEnumerable<(Guid OfferId,string Tag)> offerTags) =>
+            offerTags.All(x => x.OfferId == appId) && offerTags.Select(x => x.Tag).SequenceEqual(appDeleteData.TagNames)))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferDescriptions(A<IEnumerable<(Guid,string)>>.That.Matches((IEnumerable<(Guid OfferId,string Langugage)> descriptionLanguages) =>
+            descriptionLanguages.All(x => x.OfferId == appId) && descriptionLanguages.Select(x => x.Langugage).SequenceEqual(appDeleteData.DescriptionLanguageShortNames)))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.RemoveDocuments(A<IEnumerable<Guid>>.That.IsSameSequenceAs(appDeleteData.DocumentIdStatus.Where(x => x.DocumentStatusId != DocumentStatusId.LOCKED).Select(x => x.DocumentId)))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOffer(appId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+    
+    [Fact]
+    public async Task DeleteAppAsync_WithNoProviderCompanyUser_ThrowsForbiddenException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var appDeleteData = _fixture.Create<AppDeleteData>();
+        
+        A.CallTo(() => _offerRepository.GetAppDeleteDataAsync(appId, OfferTypeId.APP, IamUserId, OfferStatusId.CREATED))
+            .Returns((true, true, true, false, appDeleteData));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, _notificationService);
+
+        //Act
+        async Task Act() =>  await sut.DeleteAppAsync(appId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"user {IamUserId} is not a member of the providercompany of app {appId}");
+    }
+
+    [Fact]
+    public async Task DeleteAppAsync_WithInvalidOfferStatus_ThrowsConflictException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var appDeleteData = _fixture.Create<AppDeleteData>();
+        
+        A.CallTo(() => _offerRepository.GetAppDeleteDataAsync(appId, OfferTypeId.APP, IamUserId, OfferStatusId.CREATED))
+            .Returns((true, true, false, true, appDeleteData));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, _notificationService);
+
+        //Act
+        async Task Act() =>  await sut.DeleteAppAsync(appId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"App {appId} is not in Created State");
+    }
+
+    #endregion 
+
     #region Setup
 
     private void SetupUpdateApp()

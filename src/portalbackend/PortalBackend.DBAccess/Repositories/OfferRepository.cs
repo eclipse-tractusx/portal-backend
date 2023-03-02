@@ -561,4 +561,62 @@ public class OfferRepository : IOfferRepository
     /// <inheritdoc />
     public void RemoveOfferAssignedDocument(Guid offerId, Guid documentId) => 
         _context.OfferAssignedDocuments.Remove(new OfferAssignedDocument(offerId, documentId));
+    
+    ///<inheritdoc/>
+    public Task<(bool IsValidApp,bool IsOfferType,bool IsOfferStatus,bool IsProviderCompanyUser,AppDeleteData? DeleteData)> GetAppDeleteDataAsync(Guid offerId, OfferTypeId offerTypeId, string userId, OfferStatusId offerStatusId) =>
+        _context.Offers
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(offer => offer.Id == offerId)
+            .Select(offer => new {
+                Offer = offer,
+                IsOfferTypeId = offer.OfferTypeId == offerTypeId,
+                IsOfferStatusId = offer.OfferStatusId == offerStatusId,
+                IsProviderCompanyUser = offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
+            })
+            .Select(x => new ValueTuple<bool,bool,bool,bool,AppDeleteData?>(
+                true,
+                x.IsOfferTypeId,
+                x.IsOfferStatusId,
+                x.IsProviderCompanyUser,
+                x.IsOfferTypeId && x.IsOfferStatusId && x.IsProviderCompanyUser
+                    ? new AppDeleteData(
+                        x.Offer.OfferLicenses.Select(offerlicense =>offerlicense.Id),
+                        x.Offer.UseCases.Select(uc => uc.Id),
+                        x.Offer.OfferAssignedPrivacyPolicies.Select(pp=>pp.PrivacyPolicyId),
+                        x.Offer.Documents.Select(doc => new ValueTuple<Guid,DocumentStatusId>(doc.Id, doc.DocumentStatusId)),
+                        x.Offer.SupportedLanguages.Select(sl => sl.ShortName),
+                        x.Offer.Tags.Select(offerTag=>offerTag.Name),
+                        x.Offer.OfferDescriptions.Select(description => description.LanguageShortName))
+                    : null
+            ))
+            .SingleOrDefaultAsync();
+    
+    ///<inheritdoc/>
+    public void RemoveOfferAssignedLicenses(IEnumerable<(Guid OfferId, Guid LicenseId)> offerLicenseIds) =>
+        _context.OfferAssignedLicenses.RemoveRange(offerLicenseIds.Select(offerLicenseId => new OfferAssignedLicense(offerLicenseId.OfferId, offerLicenseId.LicenseId)));
+    
+    ///<inheritdoc/>
+    public void RemoveOfferAssignedUseCases(IEnumerable<(Guid OfferId, Guid UseCaseId)> offerUseCaseIds) =>
+        _context.AppAssignedUseCases.RemoveRange(offerUseCaseIds.Select(offerUseCaseId => new AppAssignedUseCase(offerUseCaseId.OfferId, offerUseCaseId.UseCaseId)));
+    
+    ///<inheritdoc/>
+    public void RemoveOfferAssignedPrivacyPolicies(IEnumerable<(Guid OfferId, PrivacyPolicyId PrivacyPolicyId)> offerPrivacyPolicyIds) =>
+        _context.OfferAssignedPrivacyPolicies.RemoveRange(offerPrivacyPolicyIds.Select(offerPrivacyPolicyId => new OfferAssignedPrivacyPolicy(offerPrivacyPolicyId.OfferId, offerPrivacyPolicyId.PrivacyPolicyId)));
+    
+    ///<inheritdoc/>
+    public void RemoveOfferAssignedDocuments(IEnumerable<(Guid OfferId, Guid DocumentId)> offerDocumentIds) =>
+        _context.OfferAssignedDocuments.RemoveRange(offerDocumentIds.Select(offerDocumentId => new OfferAssignedDocument(offerDocumentId.OfferId, offerDocumentId.DocumentId)));
+    
+    ///<inheritdoc/>
+    public void RemoveOfferTags(IEnumerable<(Guid OfferId, string TagName)> offerTagNames) =>
+        _context.OfferTags.RemoveRange(offerTagNames.Select(offerTagName => new OfferTag(offerTagName.OfferId, offerTagName.TagName)));
+    
+    ///<inheritdoc/>
+    public void RemoveOfferDescriptions(IEnumerable<(Guid OfferId, string LanguageShortName)> offerLanguageShortNames) =>
+        _context.OfferDescriptions.RemoveRange(offerLanguageShortNames.Select(offerLanguageShortName => new OfferDescription(offerLanguageShortName.OfferId, offerLanguageShortName.LanguageShortName, null!, null!)));
+    
+    ///<inheritdoc/>
+    public void RemoveOffer(Guid offerId) => 
+        _context.Offers.Remove(new Offer(offerId, null!, default, default));   
 }

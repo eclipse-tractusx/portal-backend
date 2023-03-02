@@ -440,4 +440,26 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.DeleteAppDocumentsAsync(documentId, iamUserId));
         return NoContent();
     }
+    
+    /// <summary>
+    /// Delete App by Id
+    /// </summary>
+    /// <param name="appId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">ID of the app to be deleted.</param>
+    /// <remarks>Example: DELETE: /api/apps/appreleaseprocess/{appId}</remarks>
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">Record not found.</response>
+    /// <response code="400">Input is incorrect.</response>
+    /// <response code="403">User is not associated with provider company.</response>
+    [HttpDelete]
+    [Route("{appId}")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> DeleteAppAsync([FromRoute] Guid appId)
+    {
+        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.DeleteAppAsync(appId, iamUserId));
+        return NoContent();
+    }
 }
