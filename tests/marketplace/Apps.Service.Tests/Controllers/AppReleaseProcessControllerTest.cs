@@ -395,4 +395,21 @@ public class AppReleaseProcessControllerTest
         A.CallTo(() => _logic.DeleteAppDocumentsAsync(documentId, IamUserId))
             .MustHaveHappenedOnceExactly();
     }
+
+    [Fact]
+    public async Task DeleteAppAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.DeleteAppAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(()=> Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.DeleteAppAsync(appId).ConfigureAwait(false);
+        
+        // Assert 
+        Assert.IsType<NoContentResult>(result);
+        A.CallTo(() => _logic.DeleteAppAsync(appId, IamUserId))
+            .MustHaveHappenedOnceExactly();
+    }
 }

@@ -181,4 +181,12 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task DeleteAppDocumentsAsync(Guid documentId, string iamUserId);
+
+    ///<summary>
+    /// Delete App
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task DeleteAppAsync(Guid appId, string iamUserId);
 }

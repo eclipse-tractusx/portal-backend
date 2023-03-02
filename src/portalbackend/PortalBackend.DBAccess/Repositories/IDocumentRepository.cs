@@ -129,4 +129,10 @@ public interface IDocumentRepository
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task<(IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)> OfferData, bool IsDocumentTypeMatch, DocumentStatusId DocumentStatusId, bool IsProviderCompanyUser)> GetAppDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// Delete List Of Document
+    /// </summary>
+    /// <param name="documentIds"></param>
+    void RemoveDocuments(IEnumerable<Guid> documentIds);
 }

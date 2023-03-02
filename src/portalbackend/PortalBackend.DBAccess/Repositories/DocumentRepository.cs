@@ -212,4 +212,8 @@ public class DocumentRepository : IDocumentRepository
                 x.IsProviderCompanyUser
             ))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public void RemoveDocuments(IEnumerable<Guid> documentIds) => 
+        _dbContext.Documents.RemoveRange(documentIds.Select(documentId=> new Document(documentId, null!, null!, null!, default, default, default)));
 }

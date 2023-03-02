@@ -362,4 +362,54 @@ public interface IOfferRepository
     /// <param name="offerId"></param>
     /// <param name="documentId"></param>
     void RemoveOfferAssignedDocument(Guid offerId, Guid documentId);
+    
+    /// Verify that user is linked to the appId ,offerstatus is in created state
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userId"></param>
+    /// <param name="offerStatusId"></param>
+    /// <returns></returns>
+    Task<(bool IsValidApp,bool IsOfferType,bool IsOfferStatus,bool IsProviderCompanyUser,AppDeleteData? DeleteData)> GetAppDeleteDataAsync(Guid offerId, OfferTypeId offerTypeId, string userId, OfferStatusId offerStatusId);
+    
+    /// <summary>
+    /// Delete Offer Assigned Licenses
+    /// </summary>
+    /// <param name="offerLicenseIds"></param>
+    void RemoveOfferAssignedLicenses(IEnumerable<(Guid OfferId, Guid LicenseId)> offerLicenseIds);
+
+    /// <summary>
+    /// Delete Offer Assigned Use Cases
+    /// </summary>
+    /// <param name="offerUseCaseIds"></param>
+    void RemoveOfferAssignedUseCases(IEnumerable<(Guid OfferId, Guid UseCaseId)> offerUseCaseIds);
+
+    /// <summary>
+    /// Delete Offer Assigned Privacy Policies
+    /// </summary>
+    /// <param name="offerPrivacyPolicyIds"></param>
+    void RemoveOfferAssignedPrivacyPolicies(IEnumerable<(Guid OfferId, PrivacyPolicyId PrivacyPolicyId)> offerPrivacyPolicyIds);
+
+    /// <summary>
+    /// Delete Offer Assigned Documents
+    /// </summary>
+    /// <param name="offerDocumentIds"></param>
+    void RemoveOfferAssignedDocuments(IEnumerable<(Guid OfferId, Guid DocumentId)> offerDocumentIds);
+
+    /// <summary>
+    /// Delete Offer Tags
+    /// </summary>
+    /// <param name="offerTagNames"></param>
+    void RemoveOfferTags(IEnumerable<(Guid OfferId, string TagName)> offerTagNames);
+
+    /// <summary>
+    /// Delete Offer Description
+    /// </summary>
+    /// <param name="offerLanguageShortNames"></param>
+     void RemoveOfferDescriptions(IEnumerable<(Guid OfferId, string LanguageShortName)> offerLanguageShortNames);
+
+     /// <summary>
+     /// Delete Offer
+     /// </summary>
+     /// <param name="offerIds"></param>
+     void RemoveOffer(Guid offerId);
 }
