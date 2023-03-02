@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,30 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
-public class ServiceType
+public static class ServiceAccountCreationExtensions
 {
-    private ServiceType()
+    public static IServiceCollection AddServiceAccountCreation(this IServiceCollection services, IConfigurationSection section)
     {
-        Label = null!;
-        ServiceDetails = new HashSet<ServiceDetail>();
+        services.AddOptions<ServiceAccountCreationSettings>()
+            .Bind(section)
+            .ValidateOnStart();
+
+        services
+            .AddTransient<IServiceAccountCreation, ServiceAccountCreation>();
+
+        return services;
     }
-
-    public ServiceType(ServiceTypeId offerTypeId) : this()
-    {
-        Id = offerTypeId;
-        Label = offerTypeId.ToString();
-    }
-
-    public ServiceTypeId Id { get; private set; }
-
-    [MaxLength(255)]
-    public string Label { get; private set; }
-
-    // Navigation properties
-    public virtual ICollection<ServiceDetail> ServiceDetails { get; private set; }
 }

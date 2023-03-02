@@ -28,12 +28,9 @@ public static class OfferSetupServiceCollectionExtension
 {
     public static IServiceCollection AddOfferSetupService(this IServiceCollection services)
     {
-        services.AddTransient<LoggingHandler<OfferSetupService>>();
-        services.AddHttpClient(nameof(OfferSetupService), c =>
-        {
-        }).AddHttpMessageHandler<LoggingHandler<OfferSetupService>>();
-        services.AddTransient<IOfferSetupService, OfferSetupService>();
-
-        return services;
+        services
+            .AddTransient<LoggingHandler<OfferSetupService>>()
+            .AddHttpClient(nameof(OfferSetupService)).AddHttpMessageHandler<LoggingHandler<OfferSetupService>>();
+        return services.AddTransient<IOfferSetupService, OfferSetupService>();
     }
 }

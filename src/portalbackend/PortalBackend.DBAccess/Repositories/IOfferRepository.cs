@@ -264,10 +264,10 @@ public interface IOfferRepository
     /// Adds the service types to the service
     /// </summary>
     /// <param name="serviceAssignedServiceTypes"></param>
-    void AddServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceAssignedServiceTypes);
+    void AddServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId, bool technicalUserNeeded)> serviceAssignedServiceTypes);
 
     /// <summary>
-    /// Removes <see cref="ServiceAssignedServiceType"/>s to the database
+    /// Removes <see cref="ServiceDetail"/>s to the databasethe database
     /// </summary>
     /// <param name="serviceAssignedServiceTypes">serviceIds and serviceTypeIds of the assigned service types to be removed from the database</param>
     void RemoveServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceAssignedServiceTypes);
@@ -334,9 +334,9 @@ public interface IOfferRepository
     /// <summary>
     /// Gets InReview Offer Data for App by ID
     /// </summary>
-    /// <param name="appId"></param>
-    /// <param name ="iamUserId"></param>
-    Task<InReviewOfferData?> GetinReviewAppDataByIdAsync(Guid Id, OfferTypeId offerTypeId);
+    /// <param name="id"></param>
+    /// <param name ="offerTypeId"></param>
+    Task<InReviewOfferData?> GetInReviewAppDataByIdAsync(Guid id, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets Offer Descriptions Data for Apps

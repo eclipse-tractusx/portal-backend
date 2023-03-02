@@ -333,7 +333,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
 
         // Act
-        sut.AddServiceAssignedServiceTypes(new [] { (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.DATASPACE_SERVICE) });
+        sut.AddServiceAssignedServiceTypes(new [] { (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.DATASPACE_SERVICE, true) });
 
         // Assert
         var changeTracker = context.ChangeTracker;
@@ -341,7 +341,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<ServiceAssignedServiceType>().Which.ServiceTypeId.Should().Be(ServiceTypeId.DATASPACE_SERVICE);
+        changedEntries.Single().Entity.Should().BeOfType<ServiceDetail>().Which.ServiceTypeId.Should().Be(ServiceTypeId.DATASPACE_SERVICE);
     }
 
     #endregion
@@ -651,7 +651,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var InReviewAppofferDetail = await sut.GetinReviewAppDataByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA6"), OfferTypeId.APP).ConfigureAwait(false);
+        var InReviewAppofferDetail = await sut.GetInReviewAppDataByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA6"), OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         InReviewAppofferDetail.Should().NotBeNull();

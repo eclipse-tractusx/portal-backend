@@ -20,11 +20,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.17.0" />
     <PackageReference Include="AutoFixture.AutoFakeItEasy" Version="4.17.0" />
@@ -41,6 +43,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\marketplace\Offers.Library\Offers.Library.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />

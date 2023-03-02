@@ -127,7 +127,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<ProcessType> ProcessTypes { get; set; } = default!;
     public virtual DbSet<ProviderCompanyDetail> ProviderCompanyDetails { get; set; } = default!;
     public virtual DbSet<PrivacyPolicy> PrivacyPolicies { get; set; } = default!;
-    public virtual DbSet<ServiceAssignedServiceType> ServiceAssignedServiceTypes { get; set; } = default!;
+    public virtual DbSet<ServiceDetail> ServiceDetails { get; set; } = default!;
     public virtual DbSet<ServiceType> ServiceTypes { get; set; } = default!;
     public virtual DbSet<UniqueIdentifier> UniqueIdentifiers { get; set; } = default!;
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
@@ -341,24 +341,6 @@ public class PortalDbContext : DbContext
                     j =>
                     {
                         j.HasKey(e => new { e.OfferId, e.DocumentId });
-                    });
-
-            entity.HasMany(p => p.ServiceTypes)
-                .WithMany(p => p.Services)
-                .UsingEntity<ServiceAssignedServiceType>(
-                    j => j
-                        .HasOne(d => d.ServiceType!)
-                        .WithMany()
-                        .HasForeignKey(d => d.ServiceTypeId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j => j
-                        .HasOne(d => d.Service!)
-                        .WithMany()
-                        .HasForeignKey(d => d.ServiceId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j =>
-                    {
-                        j.HasKey(e => new { e.ServiceId, e.ServiceTypeId });
                     });
 
             entity.HasMany(p => p.OfferSubscriptions)
@@ -1078,6 +1060,21 @@ public class PortalDbContext : DbContext
             entity.HasOne(d => d.PrivacyPolicy)
                 .WithMany(p => p!.OfferAssignedPrivacyPolicies)
                 .HasForeignKey(d => d.PrivacyPolicyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<ServiceDetail>(entity =>
+        {
+            entity.HasKey(e => new {e.ServiceId, e.ServiceTypeId});
+
+            entity.HasOne(e => e.ServiceType)
+                .WithMany(e => e.ServiceDetails)
+                .HasForeignKey(e => e.ServiceTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(e => e.Service)
+                .WithMany(e => e.ServiceDetails)
+                .HasForeignKey(e => e.ServiceId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }

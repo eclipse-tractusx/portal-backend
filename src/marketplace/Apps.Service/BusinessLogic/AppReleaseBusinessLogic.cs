@@ -267,7 +267,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId)
     {
-        var emptyLanguageCodes = appRequestModel.SupportedLanguageCodes.Where(item => String.IsNullOrWhiteSpace(item));
+        var emptyLanguageCodes = appRequestModel.SupportedLanguageCodes.Where(string.IsNullOrWhiteSpace);
         if (emptyLanguageCodes.Any())
         {
             throw new ControllerArgumentException("Language Codes must not be null or empty", nameof(appRequestModel.SupportedLanguageCodes)); 
@@ -442,10 +442,10 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         _offerService.DeclineOfferAsync(appId, iamUserId, data, OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.AppOverviewAddress);
 
     /// <inheritdoc />
-    public async Task<InReviewAppDetails> GetinReviewAppDetailsByIdAsync(Guid appId)
+    public async Task<InReviewAppDetails> GetInReviewAppDetailsByIdAsync(Guid appId)
     {
         var result = await _portalRepositories.GetInstance<IOfferRepository>()
-            .GetinReviewAppDataByIdAsync(appId, OfferTypeId.APP).ConfigureAwait(false);
+            .GetInReviewAppDataByIdAsync(appId, OfferTypeId.APP).ConfigureAwait(false);
         
         if(result == default)
             throw new NotFoundException($"App {appId} not found or Incorrect Status");

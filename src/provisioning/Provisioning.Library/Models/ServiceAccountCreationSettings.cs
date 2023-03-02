@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -19,29 +19,11 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
-public class ServiceType
+public class ServiceAccountCreationSettings
 {
-    private ServiceType()
-    {
-        Label = null!;
-        ServiceDetails = new HashSet<ServiceDetail>();
-    }
-
-    public ServiceType(ServiceTypeId offerTypeId) : this()
-    {
-        Id = offerTypeId;
-        Label = offerTypeId.ToString();
-    }
-
-    public ServiceTypeId Id { get; private set; }
-
-    [MaxLength(255)]
-    public string Label { get; private set; }
-
-    // Navigation properties
-    public virtual ICollection<ServiceDetail> ServiceDetails { get; private set; }
+    [Required(AllowEmptyStrings = false)]
+    public string ServiceAccountClientPrefix { get; set; } = null!;
 }

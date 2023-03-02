@@ -414,8 +414,8 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(AppDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<InReviewAppDetails> GetinReviewAppDetailsByIdAsync([FromRoute] Guid appId) =>
-        await _appReleaseBusinessLogic.GetinReviewAppDetailsByIdAsync(appId);
+    public async Task<InReviewAppDetails> GetInReviewAppDetailsByIdAsync([FromRoute] Guid appId) =>
+        await _appReleaseBusinessLogic.GetInReviewAppDetailsByIdAsync(appId);
 
     /// <summary>
     /// Delete Document Assigned to Offer

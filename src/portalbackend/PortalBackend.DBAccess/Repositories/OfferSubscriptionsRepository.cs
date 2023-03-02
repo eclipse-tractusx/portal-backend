@@ -146,7 +146,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     x.Company.BusinessPartnerNumber,
                     x.Requester!.Email,
                     x.Requester.Firstname,
-                    x.Requester.Lastname
+                    x.Requester.Lastname,
+                    x.Offer.OfferTypeId == OfferTypeId.APP || x.Offer.ServiceDetails.Any(st => st.TechnicalUserNeeded)
             ))
             .SingleOrDefaultAsync();
 

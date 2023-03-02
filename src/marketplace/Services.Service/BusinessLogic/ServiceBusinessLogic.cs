@@ -39,6 +39,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferService _offerService;
     private readonly IOfferSubscriptionService _offerSubscriptionService;
+    private readonly IOfferSetupService _offerSetupService;
     private readonly ServiceSettings _settings;
 
     /// <summary>
@@ -47,16 +48,19 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerService">Access to the offer service</param>
     /// <param name="offerSubscriptionService">Service for Company to manage offer subscriptions</param>
+    /// <param name="offerSetupService">Offer Setup Service</param>
     /// <param name="settings">Access to the settings</param>
     public ServiceBusinessLogic(
         IPortalRepositories portalRepositories,
         IOfferService offerService,
         IOfferSubscriptionService offerSubscriptionService,
+        IOfferSetupService offerSetupService,
         IOptions<ServiceSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _offerService = offerService;
         _offerSubscriptionService = offerSubscriptionService;
+        _offerSetupService = offerSetupService;
         _settings = settings.Value;
     }
 
@@ -133,7 +137,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, string iamUserId) =>
-        _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.ITAdminRoles, iamUserId, OfferTypeId.SERVICE, _settings.UserManagementAddress);
+        _offerSetupService.AutoSetupOfferAsync(data, _settings.ServiceAccountRoles, _settings.ITAdminRoles, iamUserId, OfferTypeId.SERVICE, _settings.UserManagementAddress);
 
     /// <inheritdoc />
     public async Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, string iamUserId)
@@ -180,7 +184,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService.CreateOrUpdateOfferLicense(serviceId, data.Price, serviceData.OfferLicense);
         var newServiceTypes = data.ServiceTypeIds
             .Except(serviceData.ServiceTypeIds.Where(x => x.IsMatch).Select(x => x.ServiceTypeId))
-            .Select(sti => (serviceId, sti));
+            .Select(sti => (serviceId, sti, sti == ServiceTypeId.DATASPACE_SERVICE)); // TODO (PS): Must be refactored, customer needs to define whether the service needs a technical User
         var serviceTypeIdsToRemove = serviceData.ServiceTypeIds
             .Where(x => !x.IsMatch)
             .Select(sti => (serviceId, sti.ServiceTypeId));
@@ -192,7 +196,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
     
-    private static void UpdateAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> newServiceTypes, IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceTypeIdsToRemove, IOfferRepository appRepository)
+    private static void UpdateAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId, bool technicalUserNeeded)> newServiceTypes, IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceTypeIdsToRemove, IOfferRepository appRepository)
     {
         appRepository.AddServiceAssignedServiceTypes(newServiceTypes);
         appRepository.RemoveServiceAssignedServiceTypes(serviceTypeIdsToRemove);

@@ -96,18 +96,6 @@ public interface IOfferService
     Task<int> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
-    /// Auto setup the service.
-    /// </summary>
-    /// <param name="data">The offer subscription id and url for the service</param>
-    /// <param name="serviceAccountRoles">Roles that will be assigned to the service account</param>
-    /// <param name="companyAdminRoles">Roles that will be assigned to the company admin</param>
-    /// <param name="iamUserId">Id of the iam user</param>
-    /// <param name="offerTypeId">OfferTypeId of offer to be created</param>
-    /// <param name="basePortalAddress">Address of the portal</param>
-    /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> iTAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress);
-
-    /// <summary>
     /// Creates a new service offering
     /// </summary>
     /// <param name="data">The data to create the service offering</param>

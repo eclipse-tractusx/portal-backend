@@ -18,10 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using FakeItEasy;
-using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Xunit;
 using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO.Tests;
