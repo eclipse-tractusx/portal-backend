@@ -72,7 +72,7 @@ public class ProcessExecutionServiceTests
     public async Task ExecuteAsync_WithNoPendingItems_NoServiceCall()
     {
         // Arrange
-        A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._))
+        A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(Array.Empty<(Guid ProcessId, ProcessTypeId)>().ToAsyncEnumerable());
 
         // Act
@@ -88,7 +88,7 @@ public class ProcessExecutionServiceTests
     {
         // Arrange
         var processData = _fixture.CreateMany<(Guid ProcessId, ProcessTypeId)>().ToImmutableArray();
-        A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._))
+        A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(processData.ToAsyncEnumerable());
 
         A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
@@ -111,7 +111,7 @@ public class ProcessExecutionServiceTests
     {
         // Arrange
         var processData = _fixture.CreateMany<(Guid ProcessId, ProcessTypeId)>().ToImmutableArray();
-        A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._))
+        A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(processData.ToAsyncEnumerable());
 
         A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
@@ -133,8 +133,9 @@ public class ProcessExecutionServiceTests
     public async Task ExecuteAsync_WithException_LogsError()
     {
         // Arrange
-        var processData = _fixture.CreateMany<(Guid ProcessId, ProcessTypeId)>().ToImmutableArray();
-        A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._))
+        var processData = _fixture.CreateMany<(Guid ProcessId, ProcessTypeId ProcessTypeId)>().ToImmutableArray();
+        var error = new Exception("Only a test");
+        A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(processData.ToAsyncEnumerable());
         A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
             .Throws(() => new Exception("Only a test"));
@@ -143,7 +144,30 @@ public class ProcessExecutionServiceTests
         await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
+        Environment.ExitCode.Should().Be(0);
+        A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.Matches(e => e.Message == error.Message), $"error processing process {processData[0].ProcessId} type {processData[0].ProcessTypeId}: {error.Message}")).MustHaveHappened();
+        A.CallTo(() => _mockLogger.Log(LogLevel.Error, A<Exception>._, A<string>._)).MustNotHaveHappened();        
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithSystemException_Exits()
+    {
+        // Arrange
+        var processData = _fixture.CreateMany<(Guid ProcessId, ProcessTypeId)>().ToImmutableArray();
+        var error = new SystemException("unrecoverable failure");
+        A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(processData.ToAsyncEnumerable());
+        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
+            .Throws(() => new SystemException("unrecoverable failure"));
+
+        // Act
+        await _service.ExecuteAsync(CancellationToken.None);
+
+        // Assert
         Environment.ExitCode.Should().Be(1);
+        A.CallTo(() => _mockLogger.Log(LogLevel.Error, A<Exception>.That.Matches(e => e.Message == error.Message), $"processing failed with following Exception {error.Message}")).MustHaveHappened();
+        A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>._, A<string>._)).MustNotHaveHappened();        
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 }

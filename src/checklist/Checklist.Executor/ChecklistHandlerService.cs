@@ -81,8 +81,8 @@ public class ChecklistHandlerService : IChecklistHandlerService
     }
 
     /// <inheritdoc />
-    public bool IsExecutableProcessStep(ProcessStepTypeId stepTypeId)
-    {
-        return _stepExecutions.ContainsKey(stepTypeId);
-    }
+    public bool IsExecutableProcessStep(ProcessStepTypeId stepTypeId) =>_stepExecutions.ContainsKey(stepTypeId);
+
+    /// <inheritdoc />
+    public IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds() => _stepExecutions.Keys;
 }

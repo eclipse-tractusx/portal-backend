@@ -40,6 +40,7 @@ public class ProcessExecutor : IProcessExecutor
     }
 
     public IEnumerable<ProcessTypeId> GetRegisteredProcessTypeIds() => _executors.Keys;
+    public IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds() => _executors.Values.SelectMany(executor => executor.GetExecutableStepTypeIds());
 
     public async IAsyncEnumerable<bool> ExecuteProcess(Guid processId, ProcessTypeId processTypeId, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -50,8 +51,8 @@ public class ProcessExecutor : IProcessExecutor
 
         var allSteps = await _processStepRepository
             .GetProcessStepData(processId)
-            .GroupBy(x => x.ProcessStepTypeId, x => x.ProcessStepId)
-            .ToDictionaryAsync(g => g.Key, g => g.ToEnumerable(), cancellationToken)
+            .PreSortedGroupBy(x => x.ProcessStepTypeId, x => x.ProcessStepId)
+            .ToDictionaryAsync(g => g.Key, g => g.AsEnumerable(), cancellationToken)
             .ConfigureAwait(false);
 
         var context = new ProcessContext(
@@ -162,7 +163,7 @@ public class ProcessExecutor : IProcessExecutor
 
         public bool TryGetNext(out ProcessStepTypeId item)
         {
-            var enumerator = _items.GetEnumerator();
+            using var enumerator = _items.GetEnumerator();
             if (!enumerator.MoveNext())
             {
                 item = default;

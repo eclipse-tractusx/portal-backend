@@ -153,10 +153,20 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var processTypeIds = new [] { ProcessTypeId.APPLICATION_CHECKLIST };
+        var processStepTypeIds = new [] {
+            ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
+            ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
+            ProcessStepTypeId.CREATE_IDENTITY_WALLET,
+            ProcessStepTypeId.START_CLEARING_HOUSE,
+            ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE,
+            ProcessStepTypeId.START_SELF_DESCRIPTION_LP,
+            ProcessStepTypeId.ACTIVATE_APPLICATION,
+        };
+
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetActiveProcesses(processTypeIds).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetActiveProcesses(processTypeIds, processStepTypeIds).ToListAsync().ConfigureAwait(false);
         result.Should().HaveCount(1)
             .And.Satisfy(
                 x => x.ProcessId == new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe") && x.ProcessTypeId == ProcessTypeId.APPLICATION_CHECKLIST

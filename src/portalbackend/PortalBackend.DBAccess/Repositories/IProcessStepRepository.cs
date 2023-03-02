@@ -32,6 +32,6 @@ public interface IProcessStepRepository
     ProcessStep CreateProcessStep(ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId);
     IEnumerable<ProcessStep> CreateProcessStepRange(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
     void AttachAndModifyProcessStep(Guid processStepId, Action<ProcessStep>? initialize, Action<ProcessStep> modify);
-    IAsyncEnumerable<(Guid ProcessId, ProcessTypeId ProcessTypeId)> GetActiveProcesses(IEnumerable<ProcessTypeId> processTypeIds);
+    IAsyncEnumerable<(Guid ProcessId, ProcessTypeId ProcessTypeId)> GetActiveProcesses(IEnumerable<ProcessTypeId> processTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds);
     IAsyncEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId)> GetProcessStepData(Guid processId);
 }

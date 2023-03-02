@@ -61,25 +61,32 @@ public class ProcessExecutionService
             using var outerLoopScope = _serviceScopeFactory.CreateScope();
             var outerLoopRepositories = outerLoopScope.ServiceProvider.GetRequiredService<IPortalRepositories>();
 
-            var activeProcesses = outerLoopRepositories.GetInstance<IProcessStepRepository>().GetActiveProcesses(processExecutor.GetRegisteredProcessTypeIds());
+            var activeProcesses = outerLoopRepositories.GetInstance<IProcessStepRepository>().GetActiveProcesses(processExecutor.GetRegisteredProcessTypeIds(), processExecutor.GetExecutableStepTypeIds());
             await foreach (var (processId, processTypeId) in activeProcesses.WithCancellation(stoppingToken).ConfigureAwait(false))
             {
-                await foreach (var modified in processExecutor.ExecuteProcess(processId, processTypeId, stoppingToken).WithCancellation(stoppingToken).ConfigureAwait(false))
+                try
                 {
-                    if (modified)
+                    await foreach (var modified in processExecutor.ExecuteProcess(processId, processTypeId, stoppingToken).WithCancellation(stoppingToken).ConfigureAwait(false))
                     {
-                        await executorRepositories.SaveAsync().ConfigureAwait(false);
-                    }
+                        if (modified)
+                        {
+                            await executorRepositories.SaveAsync().ConfigureAwait(false);
+                        }
 
-                    executorRepositories.Clear();
+                        executorRepositories.Clear();
+                    }
+                    _logger.LogInformation("finished processing process {processId} type {processType}", processId, processTypeId);
                 }
-                _logger.LogInformation("finished processing process {processId} type {processType}", processId, processTypeId);
+                catch(Exception ex) when (ex is not SystemException)
+                {
+                    _logger.LogInformation(ex, "error processing process {processId} type {processType}: {message}", processId, processTypeId, ex.Message);
+                }
             }
         }
         catch (Exception ex)
         {
             Environment.ExitCode = 1;
-            _logger.LogError("processing failed with following Exception {ExceptionMessage}", ex.Message);
+            _logger.LogError(ex, "processing failed with following Exception {ExceptionMessage}", ex.Message);
         }
     }
 }

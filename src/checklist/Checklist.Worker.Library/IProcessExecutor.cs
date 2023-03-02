@@ -26,4 +26,5 @@ public interface IProcessExecutor
 {
     IAsyncEnumerable<bool> ExecuteProcess(Guid processId, ProcessTypeId processTypeId, CancellationToken cancellationToken);
     IEnumerable<ProcessTypeId> GetRegisteredProcessTypeIds();
+    IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds();
 }
