@@ -22,4 +22,4 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record AppWithSubscriptionStatus(Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatus);
+public record AppWithSubscriptionStatus(Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatus, string? Name, string Provider);
