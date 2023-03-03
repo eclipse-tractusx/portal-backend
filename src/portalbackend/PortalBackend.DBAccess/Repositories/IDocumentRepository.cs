@@ -118,7 +118,7 @@ public interface IDocumentRepository
     /// <param name="appDocumentTypeIds"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken);
+    Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, bool IsInactive, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Fetch the App Document belongs to same company

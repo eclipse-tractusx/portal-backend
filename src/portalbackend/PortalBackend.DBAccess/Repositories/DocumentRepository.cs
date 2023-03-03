@@ -167,7 +167,7 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
+    public Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, bool IsInactive, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
         _dbContext.Documents
             .Where(document => document.Id == documentId)
             .Select(document => new {
@@ -178,13 +178,15 @@ public class DocumentRepository : IDocumentRepository
                 IsValidDocumentType = documentTypeIds.Contains(x.Document.DocumentTypeId),
                 IsDocumentLinkedToOffer = x.Offer != null,
                 IsValidOfferType = x.Offer!.OfferTypeId == offerTypeId,
+                IsInactive = x.Document.DocumentStatusId == DocumentStatusId.INACTIVE,
                 Document = x.Document
             })
-            .Select(x => new ValueTuple<bool, bool, bool, byte[]?, bool, string>(
+            .Select(x => new ValueTuple<bool,bool,bool,bool,byte[]?,bool,string>(
                 x.IsValidDocumentType,
                 x.IsDocumentLinkedToOffer,
                 x.IsValidOfferType,
-                x.IsValidDocumentType && x.IsDocumentLinkedToOffer && x.IsValidOfferType ? x.Document.DocumentContent : null,
+                x.IsInactive,
+                x.IsValidDocumentType && x.IsDocumentLinkedToOffer && x.IsValidOfferType && !x.IsInactive ? x.Document.DocumentContent : null,
                 true,
                 x.Document.DocumentName
             ))

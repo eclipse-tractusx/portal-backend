@@ -339,7 +339,7 @@ public class AppsController : ControllerBase
     [HttpGet]
     [Authorize(Roles = "view_documents")]
     [Route("{appId}/appImages/{documentId}")]
-    [Produces("image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/tiff")]    
+    [Produces("image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/tiff", "application/pdf")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
