@@ -325,6 +325,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new ControllerArgumentException($"Document {documentId} and app id {appId} do not match.");
         }
+        if (document.IsInactive)
+        {
+            throw new ConflictException($"Document {documentId} is in status INACTIVE");
+        }
         if (document.Content == null)
         {
             throw new UnexpectedConditionException($"document content should never be null");

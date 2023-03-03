@@ -377,4 +377,23 @@ public class AppsControllerTests
         A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<string>._, A<IEnumerable<LocalizedDescription>>._)).MustHaveHappened();
         result.Should().BeOfType<NoContentResult>(); 
     }
+
+    [Fact]
+    public async Task GetAppImageDocumentTypePdfContentAsync_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var content = _fixture.Create<byte[]>();
+        var fileName = _fixture.Create<string>();
+
+        A.CallTo(() => _logic.GetAppImageDocumentContentAsync(A<Guid>._, A<Guid>._, A<CancellationToken>._))
+            .ReturnsLazily(() => (content, "application/pdf", fileName));
+
+        //Act
+        var result = await this._controller.GetAppImageDocumentContentAsync(appId, documentId, CancellationToken.None).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAppImageDocumentContentAsync(A<Guid>._, A<Guid>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
 }

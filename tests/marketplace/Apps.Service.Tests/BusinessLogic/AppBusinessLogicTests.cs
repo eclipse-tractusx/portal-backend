@@ -419,7 +419,7 @@ public class AppBusinessLogicTests
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
         A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((true, true, true, data, true, fileName));
+            .Returns((true, true, true, false, data, true, fileName));
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, Options.Create(settings), null!);
 
@@ -445,7 +445,7 @@ public class AppBusinessLogicTests
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
         A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((true, true, true, data, true, fileName));
+            .Returns((true, true, true, false, data, true, fileName));
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, Options.Create(settings), null!);
 
@@ -459,7 +459,7 @@ public class AppBusinessLogicTests
     }
 
     [Fact]
-    public async Task GetAppImageDocumentContentAsync_ForDocumentIdNotExist_ThrowsArgumentException()
+    public async Task GetAppImageDocumentContentAsync_ForDocumentIdNotExist_ThrowsNotFoundException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
@@ -471,7 +471,7 @@ public class AppBusinessLogicTests
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
         A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((true, true, true, null, false,fileName));
+            .Returns((true, true, true, false, null, false,fileName));
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
 
@@ -496,7 +496,7 @@ public class AppBusinessLogicTests
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
         A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((false, true, true, null, true, fileName));
+            .Returns((false, true, true, false, null, true, fileName));
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
 
@@ -521,7 +521,7 @@ public class AppBusinessLogicTests
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
         A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((true, true, false, null, true, fileName));
+            .Returns((true, true, false, false, null, true, fileName));
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
 
@@ -546,7 +546,7 @@ public class AppBusinessLogicTests
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
         A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((true, false, true, null, true, fileName));
+            .Returns((true, false, true, false, null, true, fileName));
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
 
@@ -557,9 +557,9 @@ public class AppBusinessLogicTests
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be($"Document {documentId} and app id {appId} do not match.");
     }
-    
+
     [Fact]
-    public async Task GetAppImageDocumentContentAsync_WithContentNull_ThrowsArgumentException()
+    public async Task GetAppImageDocumentContentAsync_WithInvalidStatus_ThrowsConflictException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
@@ -571,7 +571,32 @@ public class AppBusinessLogicTests
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
         A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((true, true, true, null, true, fileName));
+            .Returns((true, true, true, true, null, true, fileName));
+
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
+
+        // Act
+        async Task Act() => await sut.GetAppImageDocumentContentAsync(appId, documentId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Document {documentId} is in status INACTIVE");
+    }
+
+    [Fact]
+    public async Task GetAppImageDocumentContentAsync_WithContentNull_ThrowsUnexpectedConditionException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var data = _fixture.Create<byte[]>();
+        var fileName = _fixture.Create<string>()+".jpeg";;
+        var settings = new AppsSettings
+        {
+            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
+        };
+        A.CallTo(() => _documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
+            .Returns((true, true, true, false, null, true, fileName));
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
 
