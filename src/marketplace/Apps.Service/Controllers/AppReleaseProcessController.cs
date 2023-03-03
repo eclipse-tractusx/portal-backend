@@ -411,7 +411,7 @@ public class AppReleaseProcessController : ControllerBase
     [HttpGet]
     [Route("inReview/{appId}")]
     [Authorize(Roles = "approve_app_release,decline_app_release")]
-    [ProducesResponseType(typeof(AppDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(InReviewAppDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<InReviewAppDetails> GetInReviewAppDetailsByIdAsync([FromRoute] Guid appId) =>
