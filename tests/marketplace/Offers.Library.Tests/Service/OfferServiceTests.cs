@@ -650,7 +650,7 @@ public class OfferServiceTests
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        result.Message.Should().StartWith($"invalid DocumenType: [{String.Join(", ", DocumentTypeId.SELF_DESCRIPTION)}]");
+        result.Message.Should().StartWith($"Conformity_Approval_Business_Apps,  APP_LEADIMAGE, APP_IMAGE are mandatory document type");
     }
 
     [Theory]
