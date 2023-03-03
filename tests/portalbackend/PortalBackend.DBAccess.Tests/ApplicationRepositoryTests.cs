@@ -18,13 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -305,8 +301,8 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetCompanyAndApplicationDetailsForApprovalAsync(SubmittedApplicationWithBpn).ConfigureAwait(false);
         
         // Assert
-        data.companyId.Should().Be(CompanyId);
-        data.businessPartnerNumber.Should().NotBeNullOrEmpty().And.Be("BPNL00000003LLHB");
+        data.CompanyId.Should().Be(CompanyId);
+        data.BusinessPartnerNumber.Should().NotBeNullOrEmpty().And.Be("BPNL00000003LLHB");
     }
 
     [Fact]
@@ -415,9 +411,9 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetCompanyAndApplicationDetailsForCreateWalletAsync(SubmittedApplicationWithBpn).ConfigureAwait(false);
         
         // Assert
-        data.companyId.Should().Be(new Guid("d14eba77-0b18-4e41-9d84-49ef875c0763"));
-        data.businessPartnerNumber.Should().Be("BPNL00000003LLHB");
-        data.companyName.Should().Be("Dummy Corp. 1");
+        data.CompanyId.Should().Be(new Guid("d14eba77-0b18-4e41-9d84-49ef875c0763"));
+        data.BusinessPartnerNumber.Should().Be("BPNL00000003LLHB");
+        data.CompanyName.Should().Be("Dummy Corp. 1");
     }
 
 
