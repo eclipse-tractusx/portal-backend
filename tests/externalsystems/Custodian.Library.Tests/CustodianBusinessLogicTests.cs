@@ -257,9 +257,9 @@ public class CustodianBusinessLogicTests
     private void SetupForCreateWallet()
     {
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(IdWithoutBpn))
-            .Returns(new ValueTuple<Guid, string, string?>(CompanyId, ValidCompanyName, null));
+            .Returns((CompanyId, ValidCompanyName, null));
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(IdWithBpn))
-            .ReturnsLazily(() => new ValueTuple<Guid, string, string?>(CompanyId, ValidCompanyName, ValidBpn));
+            .Returns((CompanyId, ValidCompanyName, ValidBpn));
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(A<Guid>.That.Not.Matches(x => x == IdWithBpn || x == IdWithoutBpn)))
             .Returns(((Guid, string, string?))default);
 

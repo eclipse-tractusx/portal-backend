@@ -83,7 +83,7 @@ public class ApplicationActivationService : IApplicationActivationService
         {
             throw new ConflictException($"CompanyApplication {context.ApplicationId} is not in status SUBMITTED");
         }
-        var (companyId, businessPartnerNumber) = result;
+        var (companyId, businessPartnerNumber, iamIdpAliasse) = result;
 
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
@@ -93,7 +93,8 @@ public class ApplicationActivationService : IApplicationActivationService
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var assignedRoles = await AssignRolesAndBpn(context.ApplicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(false);
         await RemoveRegistrationRoles(context.ApplicationId, userRolesRepository).ConfigureAwait(false);
-
+        await SetTheme(iamIdpAliasse).ConfigureAwait(false);
+        
         applicationRepository.AttachAndModifyCompanyApplication(context.ApplicationId, ca =>
         {
             ca.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
@@ -204,6 +205,14 @@ public class ApplicationActivationService : IApplicationActivationService
             await _provisioningManager.DeleteClientRolesFromCentralUserAsync(userData.UserEntityId, roleNamesToDelete)
                 .ConfigureAwait(false);
             userRolesRepository.DeleteCompanyUserAssignedRoles(userData.UserRoleIds.Select(roleId => (userData.CompanyUserId, roleId)));
+        }
+    }
+
+    private async Task SetTheme(IEnumerable<string> iamIdpAliasse)
+    {
+        foreach (var alias in iamIdpAliasse)
+        {
+            await _provisioningManager.UpdateSharedRealmTheme(alias, _settings.LoginTheme).ConfigureAwait(false);
         }
     }
 
