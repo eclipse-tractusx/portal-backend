@@ -26,7 +26,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 
@@ -52,7 +51,7 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
         _settings = options.Value;
     }
 
-    public async Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)> HandleClearinghouse(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    public async Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> HandleClearinghouse(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         if (context.ProcessStepTypeId is not ProcessStepTypeId.START_CLEARING_HOUSE and not ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE)
         {
@@ -67,9 +66,10 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
         var overwrite = context.ProcessStepTypeId == ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE;
         await TriggerCompanyDataPost(context.ApplicationId, walletData.Did, overwrite, cancellationToken).ConfigureAwait(false);
 
-        return (
+        return new IChecklistService.WorkerChecklistProcessStepExecutionResult(
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
             new [] { ProcessStepTypeId.END_CLEARING_HOUSE },
+            null,
             true);
     }
 

@@ -408,53 +408,61 @@ public class RegistrationBusinessLogicTest
     #endregion
     
     #region SetRegistrationVerification
-    
-    [Fact]
-    public async Task SetRegistrationVerification_WithDeclineButNoMessageSet_ThrowsConflictException()
-    {
-        // Arrange
-        var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
-        SetupForRegistrationVerification(entry, _fixture.Create<CompanyApplication>(), _fixture.Create<Company>());
-
-        // Act
-        async Task Act() => await _logic.SetRegistrationVerification(IdWithBpn, false).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("Application is denied but no comment set.");
-    }
 
     [Fact]
     public async Task SetRegistrationVerification_WithApproval_CallsExpected()
     {
         // Arrange
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
-        SetupForRegistrationVerification(entry, _fixture.Create<CompanyApplication>(), _fixture.Create<Company>());
+        SetupForApproveRegistrationVerification(entry);
 
         // Act
-        await _logic.SetRegistrationVerification(IdWithBpn, true, null).ConfigureAwait(false);
+        await _logic.ApproveRegistrationVerification(IdWithBpn).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         entry.Comment.Should().BeNull();
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
-        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._)).MustNotHaveHappened();
-        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, null, A<Action<Company>>._)).MustNotHaveHappened();
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(
+            A<IChecklistService.ManualChecklistProcessStepData>._, 
+            A<Action<ApplicationChecklistEntry>>._,
+            A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.CREATE_IDENTITY_WALLET) == 1)))
+            .MustHaveHappenedOnceExactly();
     }
     
     [Fact]
-    public async Task SetRegistrationVerification_WithDecline_StateAndCommentSetCorrectly()
+    public async Task SetRegistrationVerification_WithBpnNotDone_CallsExpected()
     {
         // Arrange
-        var comment = "application rejected because of reasons.";
+        var entry = new ApplicationChecklistEntry(IdWithoutBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        SetupForApproveRegistrationVerification(entry);
+
+        // Act
+        await _logic.ApproveRegistrationVerification(IdWithoutBpn).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        entry.Comment.Should().BeNull();
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, null)).MustHaveHappenedOnceExactly();
+    }
+
+    [Theory]
+    [InlineData(ApplicationChecklistEntryStatusId.TO_DO, ProcessStepStatusId.TODO)]
+    [InlineData(ApplicationChecklistEntryStatusId.DONE, ProcessStepStatusId.DONE)]
+    public async Task DeclineRegistrationVerification_WithDecline_StateAndCommentSetCorrectly(ApplicationChecklistEntryStatusId checklistStatusId, ProcessStepStatusId processStepStatusId)
+    {
+        // Arrange
+        const string comment = "application rejected because of reasons.";
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         var company = new Company(CompanyId, null!, CompanyStatusId.PENDING, DateTimeOffset.UtcNow);
         var application = new CompanyApplication(ApplicationId, company.Id, CompanyApplicationStatusId.SUBMITTED, DateTimeOffset.UtcNow);
-        SetupForRegistrationVerification(entry, application, company);
+        SetupForDeclineRegistrationVerification(entry, application, company, checklistStatusId, processStepStatusId);
 
         // Act
-        await _logic.SetRegistrationVerification(IdWithBpn, false, comment).ConfigureAwait(false);
+        await _logic.DeclineRegistrationVerification(IdWithBpn, comment).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -462,6 +470,10 @@ public class RegistrationBusinessLogicTest
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.FAILED);
         company.CompanyStatusId.Should().Be(CompanyStatusId.REJECTED);
         application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.DECLINED);
+        A.CallTo(() => _checklistService.SkipProcessSteps(
+                A<IChecklistService.ManualChecklistProcessStepData>._,
+                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Single() == ProcessStepTypeId.VERIFY_REGISTRATION)))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -767,7 +779,7 @@ public class RegistrationBusinessLogicTest
             }.ToImmutableDictionary(), new List<ProcessStep>()));
     }
 
-    private void SetupForRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry, CompanyApplication application, Company company)
+    private void SetupForApproveRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry)
     {
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>?>._))
             .Invokes((IChecklistService.ManualChecklistProcessStepData _, Action<ApplicationChecklistEntry> action, IEnumerable<ProcessStepTypeId>? _) =>
@@ -785,7 +797,40 @@ public class RegistrationBusinessLogicTest
             {
                 { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE }
             }.ToImmutableDictionary(), new List<ProcessStep>()));
+
+        A.CallTo(() => _applicationRepository.GetCompanyIdForSubmittedApplication(IdWithBpn))
+            .ReturnsLazily(() => CompanyId);
+    }
+
+    private void SetupForDeclineRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry, CompanyApplication application, Company company, ApplicationChecklistEntryStatusId checklistStatusId, ProcessStepStatusId processStepStatusId)
+    {
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>?>._))
+            .Invokes((IChecklistService.ManualChecklistProcessStepData _, Action<ApplicationChecklistEntry> action, IEnumerable<ProcessStepTypeId>? _) =>
+            {
+                action.Invoke(applicationChecklistEntry);
+            });
         
+        A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(IdWithoutBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, A<ProcessStepTypeId>._, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
+            .ReturnsLazily(() => new IChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, Guid.NewGuid(), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
+            {
+                { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO }
+            }.ToImmutableDictionary(), new List<ProcessStep>()));
+        A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, A<ProcessStepTypeId>._, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
+            .ReturnsLazily(() => new IChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, Guid.NewGuid(), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
+            {
+                { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE }
+            }.ToImmutableDictionary(), new List<ProcessStep>()));
+
+        A.CallTo(() => _applicationRepository.GetCompanyIdForSubmittedApplication(IdWithBpn))
+            .ReturnsLazily(() => CompanyId);
+        
+        
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>?>._))
+            .Invokes((IChecklistService.ManualChecklistProcessStepData _, Action<ApplicationChecklistEntry> action, IEnumerable<ProcessStepTypeId>? _) =>
+            {
+                action.Invoke(applicationChecklistEntry);
+            });
+
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
             .Invokes((Guid _, Action<CompanyApplication> modify) =>
             {
@@ -796,21 +841,6 @@ public class RegistrationBusinessLogicTest
             {
                 modify.Invoke(company);
             });
-
-        A.CallTo(() => _applicationRepository.GetCompanyIdForSubmittedApplication(IdWithBpn))
-            .ReturnsLazily(() => CompanyId);
-    }
-
-    private void SetupForUpdate(ApplicationChecklistEntry applicationChecklistEntry)
-    {
-        A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._))
-            .Invokes((Guid _, ApplicationChecklistEntryTypeId _, Action<ApplicationChecklistEntry> setFields) =>
-            {
-                applicationChecklistEntry.DateLastChanged = DateTimeOffset.UtcNow;
-                setFields.Invoke(applicationChecklistEntry);
-            });
-
-        A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_applicationChecklistRepository);
     }
 
     #endregion

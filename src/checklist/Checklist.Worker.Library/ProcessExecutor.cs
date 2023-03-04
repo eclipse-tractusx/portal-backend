@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Runtime.CompilerServices;
 using System.Collections.Immutable;
+using Microsoft.Extensions.Logging;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker.Library;
 
@@ -32,11 +33,13 @@ public class ProcessExecutor : IProcessExecutor
 {
     private readonly ImmutableDictionary<ProcessTypeId,IProcessTypeExecutor> _executors; 
     private readonly IProcessStepRepository _processStepRepository;
+    private readonly ILogger<ProcessExecutor> _logger;
 
-    public ProcessExecutor(IEnumerable<IProcessTypeExecutor> executors, IPortalRepositories portalRepositories)
+    public ProcessExecutor(IEnumerable<IProcessTypeExecutor> executors, IPortalRepositories portalRepositories, ILogger<ProcessExecutor> logger)
     {
         _processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
         _executors = executors.ToImmutableDictionary(executor => executor.GetProcessTypeId());
+        _logger = logger;
     }
 
     public IEnumerable<ProcessTypeId> GetRegisteredProcessTypeIds() => _executors.Keys;
@@ -122,7 +125,13 @@ public class ProcessExecutor : IProcessExecutor
         var modified = false;
         foreach (var skipStepTypeId in skipStepTypeIds)
         {
-            modified |= SetProcessStepStatus(skipStepTypeId, ProcessStepStatusId.SKIPPED, context);
+            var skippedStep = SetProcessStepStatus(skipStepTypeId, ProcessStepStatusId.SKIPPED, context);
+            if (skippedStep)
+            {
+                _logger.LogInformation("Skipped step {SkipStepTypeId} for process {ProcessId}", skipStepTypeId, context.ProcessId);
+            }
+
+            modified |= skippedStep;
         }
         return modified;
     }

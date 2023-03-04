@@ -94,7 +94,7 @@ public class RegistrationControllerTest
         var result = await this._controller.ApproveApplication(applicationId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.SetRegistrationVerification(applicationId, true, null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.ApproveRegistrationVerification(applicationId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -108,7 +108,7 @@ public class RegistrationControllerTest
         var result = await this._controller.DeclineApplication(applicationId, new RegistrationDeclineData("test")).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.SetRegistrationVerification(applicationId, false, "test")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeclineRegistrationVerification(applicationId, "test")).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 

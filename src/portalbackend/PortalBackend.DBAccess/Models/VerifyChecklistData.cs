@@ -18,15 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
-using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public interface ISdFactoryBusinessLogic
-{
-    Task RegisterConnectorAsync(Guid connectorId, string selfDescriptionDocumentUrl, string businessPartnerNumber, CancellationToken cancellationToken);
-    Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> StartSelfDescriptionRegistration(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
-    Task ProcessFinishSelfDescriptionLpForApplication(SelfDescriptionResponseData data, Guid companyId, CancellationToken cancellationToken);
-    Task ProcessFinishSelfDescriptionLpForConnector(SelfDescriptionResponseData data, CancellationToken cancellationToken);
-}
+public record VerifyChecklistData(
+    bool IsSubmitted,
+    Guid? ProcessId,
+    IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>? Checklist,
+    IEnumerable<ProcessStep>? ProcessSteps);

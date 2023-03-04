@@ -24,13 +24,13 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
+using Microsoft.Extensions.Logging;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker.Library.Tests;
 
 public class ProcessExecutorTests
 {
     private readonly IProcessTypeExecutor _processTypeExecutor;
-    private readonly IPortalRepositories _portalRepositories;
     private readonly IProcessStepRepository _processStepRepository;
     private readonly IProcessExecutor _sut;
     private readonly IFixture _fixture;
@@ -43,11 +43,12 @@ public class ProcessExecutorTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _processTypeExecutor = A.Fake<IProcessTypeExecutor>();
-
-        _portalRepositories = A.Fake<IPortalRepositories>();
         _processStepRepository = A.Fake<IProcessStepRepository>();
 
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>())
+        var portalRepositories = A.Fake<IPortalRepositories>();
+        var logger = A.Fake<ILogger<ProcessExecutor>>();
+
+        A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository>())
             .Returns(_processStepRepository);
 
         A.CallTo(() => _processTypeExecutor.GetProcessTypeId())
@@ -55,7 +56,8 @@ public class ProcessExecutorTests
         
         _sut = new ProcessExecutor(
             new [] { _processTypeExecutor },
-            _portalRepositories);
+            portalRepositories,
+            logger);
     }
 
     #region GetRegisteredProcessTypeIds

@@ -87,6 +87,7 @@ public class ChecklistCreationService : IChecklistCreationService
             {
                 case ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION:
                     yield return processStepRepository.CreateProcessStep(ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepStatusId.TODO, processId);
+                    yield return processStepRepository.CreateProcessStep(ProcessStepTypeId.DECLINE_APPLICATION, ProcessStepStatusId.TODO, processId);
                     break;
                 case ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER when (statusId == ApplicationChecklistEntryStatusId.TO_DO):
                     yield return processStepRepository.CreateProcessStep(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH, ProcessStepStatusId.TODO, processId);
