@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,29 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
 /// <summary>
-/// Model for Input Role
+/// Business logic for handling app change-related operations. Includes persistence layer access.
 /// </summary>
-/// <param name="Role"></param>
-/// <param name="Descriptions"></param>
-/// <returns></returns>
-public record AppUserRole(string Role, IEnumerable<AppUserRoleDescription> Descriptions);
-
-/// <summary>
-/// Model for Role Description
-/// </summary>
-/// <param name="LanguageCode"></param>
-/// <param name="Description"></param>
-/// <returns></returns>
-public record AppUserRoleDescription(string LanguageCode, string Description);
-
-/// <summary>
-/// Model for Role Data
-/// </summary>
-/// <param name="RoleId"></param>
-/// <param name="RoleName"></param>
-/// <returns></returns>
-public record AppRoleData(Guid RoleId, string RoleName);
-
+public interface IAppChangeBusinessLogic
+{
+      /// <summary>
+      /// Add User Role for Active App and creates a notification
+      /// </summary>
+      /// <param name="appId"></param>
+      /// <param name="appUserRolesDescription"></param>
+      /// <param name="iamUserId"></param>
+      /// <returns>List of the created AppRoles</returns>
+      Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, string iamUserId);
+}

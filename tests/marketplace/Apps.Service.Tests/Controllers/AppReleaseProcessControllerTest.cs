@@ -307,28 +307,6 @@ public class AppReleaseProcessControllerTest
     }
 
     [Fact]
-    public async Task AddActiveAppUserRole_ReturnsExpectedCount()
-    {
-        var appId = _fixture.Create<Guid>();
-        var iamUserId = _fixture.Create<string>();
-
-        var appUserRoles = _fixture.CreateMany<AppUserRole>(3);
-        var appRoleData = _fixture.CreateMany<AppRoleData>(3);
-        A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles, iamUserId))
-            .Returns(appRoleData);
-
-        //Act
-        var result = await this._controller.AddActiveAppUserRole(appId, appUserRoles).ConfigureAwait(false);
-        foreach (var item in result)
-        {
-            //Assert
-            A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles, iamUserId)).MustHaveHappenedOnceExactly();
-            Assert.NotNull(item);
-            Assert.IsType<AppRoleData>(item);
-        }
-    }
-
-    [Fact]
     public async Task ApproveAppRequest_ReturnsExpectedCount()
     {
         //Arrange

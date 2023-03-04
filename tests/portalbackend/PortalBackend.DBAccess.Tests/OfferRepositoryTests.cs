@@ -815,6 +815,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     
     #endregion
 
+    #region RemoveOfferAssignedLicenses
+
     [Fact]
     public async Task RemoveOfferAssignedLicenses_WithExisting_OfferAssignedLicense()
     {
@@ -989,6 +991,74 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             result.DeleteData.Should().BeNull();
         }
     }
+
+    #endregion
+
+    #region GetInsertActiveAppUserRoleDataAsync
+    
+    [Fact]
+    public async Task GetInsertActiveAppUserRoleDataAsync_WithValidUserAndApp_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetInsertActiveAppUserRoleDataAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"),"502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.OfferExists.Should().BeTrue();
+        result.AppName.Should().Be("Latest App");
+        result.ProviderCompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        result.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
+        result.ClientClientIds.Should().BeEmpty();
+    }
+    
+    [Fact]
+    public async Task GetInsertActiveAppUserRoleDataAsync_WithNotExistingApp_ReturnsDefault()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetInsertActiveAppUserRoleDataAsync(Guid.NewGuid(),"502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(default);
+    }
+
+    [Fact]
+    public async Task GetInsertActiveAppUserRoleDataAsync_WithNotExistingUser_CompanyUserIdIsNull()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetInsertActiveAppUserRoleDataAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"),Guid.NewGuid().ToString(), OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.OfferExists.Should().BeTrue();
+        result.AppName.Should().Be("Latest App");
+        result.ProviderCompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        result.CompanyUserId.Should().Be(Guid.Empty);
+        result.ClientClientIds.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetInsertActiveAppUserRoleDataAsync_WithWrongOfferType_ReturnsDefault()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetInsertActiveAppUserRoleDataAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"),"502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.SERVICE).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(default);
+    }
+
+    #endregion
 
     #region Setup
     

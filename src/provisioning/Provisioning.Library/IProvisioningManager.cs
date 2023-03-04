@@ -31,6 +31,7 @@ public interface IProvisioningManager
     Task<string> CreateSharedRealmUserAsync(string realm, UserProfile profile);
     Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes);
     IAsyncEnumerable<(string Client, IEnumerable<string> Roles)> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames);
+    Task AddRolesToClientAsync(string clientName, IEnumerable<string> roleNames);
     Task<string> CreateOwnIdpAsync(string displayName, string organisationName, IamIdentityProviderProtocol providerProtocol);
     Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId);
     IAsyncEnumerable<IdentityProviderLink> GetProviderUserLinkDataForCentralUserIdAsync(string userId);

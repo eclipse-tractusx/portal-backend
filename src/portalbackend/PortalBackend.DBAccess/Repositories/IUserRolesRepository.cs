@@ -25,13 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public interface IUserRolesRepository
 {
-    /// <summary>
-    /// Add User Role for App Id
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="role"></param>
-    /// <returns></returns>
-    UserRole CreateAppUserRole(Guid appId, string role);
+    IEnumerable<UserRole> CreateAppUserRoles(IEnumerable<(Guid AppId, string Role)> appIdRoles);
 
     /// <summary>
     /// Delete an existing User Role
@@ -40,14 +34,7 @@ public interface IUserRolesRepository
     /// <returns></returns>
     UserRole DeleteUserRole(Guid roleId);
 
-    /// <summary>
-    /// Add User Role for App Description
-    /// </summary>
-    /// <param name="roleId"></param>
-    /// <param name="languageCode"></param>
-    /// <param name="description"></param>
-    /// <returns></returns>
-    UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description);
+    IEnumerable<UserRoleDescription> CreateAppUserRoleDescriptions(IEnumerable<(Guid RoleId, string LanguageCode, string Description)> roleLanguageDescriptions);
     CompanyUserAssignedRole CreateCompanyUserAssignedRole(Guid companyUserId, Guid companyUserRoleId);
     CompanyUserAssignedRole DeleteCompanyUserAssignedRole(Guid companyUserId, Guid userRoleId);
     void DeleteCompanyUserAssignedRoles(IEnumerable<(Guid CompanyUserId, Guid UserRoleId)> companyUserAssignedRoleIds);
