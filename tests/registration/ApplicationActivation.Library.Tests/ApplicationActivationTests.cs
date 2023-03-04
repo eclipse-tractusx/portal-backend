@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections.Immutable;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
@@ -32,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.Tests;
 
@@ -230,7 +230,7 @@ public class ApplicationActivationTests
             new List<ProcessStepTypeId>());
 
         //Act
-        await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
@@ -250,6 +250,12 @@ public class ApplicationActivationTests
         _notifications.Should().HaveCount(5);
         companyApplication.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.CONFIRMED);
         company.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
+        var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, default);
+        result.ModifyChecklistEntry!.Invoke(entry);
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+        result.ScheduleStepTypeIds.Should().BeNull();
+        result.SkipStepTypeIds.Should().HaveCount(Enum.GetValues<ProcessStepTypeId>().Length - 1);
+        result.Modified.Should().BeTrue();
     }
 
     [Fact]
@@ -299,7 +305,7 @@ public class ApplicationActivationTests
             new List<ProcessStepTypeId>());
 
         //Act
-        await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
@@ -320,6 +326,12 @@ public class ApplicationActivationTests
         _notifications.Should().HaveCount(5);
         companyApplication.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.CONFIRMED);
         company.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
+        var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, default);
+        result.ModifyChecklistEntry!.Invoke(entry);
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+        result.ScheduleStepTypeIds.Should().BeNull();
+        result.SkipStepTypeIds.Should().HaveCount(Enum.GetValues<ProcessStepTypeId>().Length - 1);
+        result.Modified.Should().BeTrue();
     }
 
     [Fact]

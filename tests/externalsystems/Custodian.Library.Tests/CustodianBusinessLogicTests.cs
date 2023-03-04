@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections.Immutable;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -26,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Tests;
 
@@ -117,9 +117,10 @@ public class CustodianBusinessLogicTests
         var result = await _logic.CreateIdentityWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        result.Item1.Should().BeNull();
-        result.Item2.Should().BeNull();
-        result.Item3.Should().BeFalse();
+        result.ModifyChecklistEntry.Should().BeNull();
+        result.ScheduleStepTypeIds.Should().BeNull();
+        result.SkipStepTypeIds.Should().BeNull();
+        result.Modified.Should().BeFalse();
         A.CallTo(() =>  _custodianService.CreateWalletAsync(A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
@@ -140,7 +141,7 @@ public class CustodianBusinessLogicTests
         var result = await _logic.CreateIdentityWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        result.Item3.Should().BeTrue();
+        result.Modified.Should().BeTrue();
         A.CallTo(() =>  _custodianService.CreateWalletAsync(A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
@@ -162,7 +163,7 @@ public class CustodianBusinessLogicTests
         var result = await _logic.CreateIdentityWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        result.Item3.Should().BeTrue();
+        result.Modified.Should().BeTrue();
         A.CallTo(() =>  _custodianService.CreateWalletAsync(A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
@@ -234,8 +235,10 @@ public class CustodianBusinessLogicTests
         // Assert
         result.Should().NotBe(default);
 
-        var (action, stepTypeIds, modified) = result;
+        var (action, stepTypeIds, stepsToSkip, modified) = result;
 
+        stepsToSkip.Should().BeNull();
+        
         modified.Should().BeTrue();
 
         stepTypeIds.Should().NotBeNull();

@@ -160,8 +160,8 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
             ).ConfigureAwait(false);
 
         // Assert
-        result.IsValidApplicationId.Should().BeTrue();
-        result.IsSubmitted.Should().BeTrue();
+        result.Should().NotBeNull();
+        result!.IsSubmitted.Should().BeTrue();
         result.Checklist.Should().HaveCount(5).And.Contain(new [] {
             ( ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE ),
             ( ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE ),
@@ -174,6 +174,32 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         result.ProcessSteps!.Select(step => (step.ProcessStepTypeId, step.ProcessStepStatusId, step.ProcessId)).Should().Contain( new [] {
             (ProcessStepTypeId.START_CLEARING_HOUSE, ProcessStepStatusId.TODO, new Guid ("1f9a3232-9772-4ecb-8f50-c16e97772dfe")),
         });
+    }
+
+    [Fact]
+    public async Task GetChecklistProcessStepData_WithNotExisting_ReturnsNull()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetChecklistProcessStepData(Guid.NewGuid(),
+            new[]
+            {
+                ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
+                ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+                ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
+                ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
+                ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
+            },
+            new []
+            {
+                ProcessStepTypeId.START_CLEARING_HOUSE,
+            }
+        ).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
     }
 
     #endregion

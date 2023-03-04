@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Executor;
@@ -37,8 +36,8 @@ public interface IChecklistHandlerService
     /// <param name="ErrorFunc">the function to be executed in case ProcessFunc threw an application-exception (optional)</param>
     record ProcessStepExecution(
         ApplicationChecklistEntryTypeId EntryTypeId,
-        Func<IChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)>> ProcessFunc,
-        Func<Exception,IChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)>>? ErrorFunc
+        Func<IChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<IChecklistService.WorkerChecklistProcessStepExecutionResult>> ProcessFunc,
+        Func<Exception,IChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<IChecklistService.WorkerChecklistProcessStepExecutionResult>>? ErrorFunc
     );
 
     /// <summary>

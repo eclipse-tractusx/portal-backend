@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -76,7 +77,7 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public Task<(bool IsValidApplicationId, bool IsSubmitted, Guid? ProcessId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>? Checklist, IEnumerable<ProcessStep>? ProcessSteps)> GetChecklistProcessStepData(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> entryTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+    public Task<VerifyChecklistData?> GetChecklistProcessStepData(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> entryTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         _portalDbContext.CompanyApplications
             .AsNoTracking()
             .AsSplitQuery()
@@ -85,8 +86,7 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
                 Application = application,
                 IsSubmitted = application.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED
             })
-            .Select(x => new ValueTuple<bool,bool,Guid?,IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>?, IEnumerable<ProcessStep>?>(
-                true,
+            .Select(x => new VerifyChecklistData(
                 x.IsSubmitted,
                 x.Application.ChecklistProcessId,
                 x.IsSubmitted

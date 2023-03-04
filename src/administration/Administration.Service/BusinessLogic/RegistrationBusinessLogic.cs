@@ -26,15 +26,15 @@ using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.RegularExpressions;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
+using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -231,10 +231,22 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
-                new [] { ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.IN_PROGRESS, ApplicationChecklistEntryStatusId.FAILED },
+                new [] {
+                    ApplicationChecklistEntryStatusId.TO_DO,
+                    ApplicationChecklistEntryStatusId.IN_PROGRESS,
+                    ApplicationChecklistEntryStatusId.FAILED
+                },
                 ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL,
-                entryTypeIds: new [] { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION },
-                processStepTypeIds: new [] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL, ProcessStepTypeId.CREATE_IDENTITY_WALLET })
+                entryTypeIds: new [] {
+                    ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION
+                },
+                processStepTypeIds: new [] {
+                    ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
+                    ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
+                    ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL,
+                    ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH,
+                    ProcessStepTypeId.CREATE_IDENTITY_WALLET
+                })
             .ConfigureAwait(false);
 
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null, 
@@ -242,7 +254,14 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         var registrationValidationFailed = context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.FAILED;
 
-        _checklistService.SkipProcessSteps(context, new [] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL });
+        _checklistService.SkipProcessSteps(
+            context,
+            new [] {
+                ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
+                ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
+                ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL,
+                ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH
+            });
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
@@ -348,16 +367,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     }
 
     /// <inheritdoc />
-    Task IRegistrationBusinessLogic.SetRegistrationVerification(Guid applicationId, bool approve, string? comment)
-    {
-        if (!approve && string.IsNullOrWhiteSpace(comment))
-        {
-            throw new ControllerArgumentException("Application is denied but no comment set.");
-        }
-        return SetRegistrationVerificationInternal(applicationId, approve, comment); 
-    }
-
-    private async Task SetRegistrationVerificationInternal(Guid applicationId, bool approve, string? comment)
+    public async Task ApproveRegistrationVerification(Guid applicationId)
     {
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(
@@ -375,34 +385,45 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             context,
             entry =>
             {
-                entry.ApplicationChecklistEntryStatusId = approve
-                    ? ApplicationChecklistEntryStatusId.DONE
-                    : ApplicationChecklistEntryStatusId.FAILED;
-                entry.Comment = comment;
+                entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
             },
-            approve && businessPartnerSuccess
+            businessPartnerSuccess
                 ? new [] { ProcessStepTypeId.CREATE_IDENTITY_WALLET }
                 : null);
 
-        if (!approve)
-        {
-            await DeclinePartnerRequestInternal(applicationId).ConfigureAwait(false);
-        }
-
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await PostRegistrationCancelEmailAsync(applicationId, comment, !approve).ConfigureAwait(false);
     }
 
-    private async Task DeclinePartnerRequestInternal(Guid applicationId)
+    public async Task DeclineRegistrationVerification(Guid applicationId, string comment)
     {
-        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var companyId = await applicationRepository.GetCompanyIdForSubmittedApplication(applicationId).ConfigureAwait(false);
+        var companyId = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyIdForSubmittedApplication(applicationId).ConfigureAwait(false);
         if (companyId == Guid.Empty)
         {
             throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
         }
-        
-        applicationRepository.AttachAndModifyCompanyApplication(applicationId, application =>
+
+        var context = await _checklistService
+            .VerifyChecklistEntryAndProcessSteps(
+                applicationId,
+                ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+                new [] { ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.DONE },
+                ProcessStepTypeId.DECLINE_APPLICATION,
+                null,
+                new [] { ProcessStepTypeId.VERIFY_REGISTRATION, })
+            .ConfigureAwait(false);
+
+        _checklistService.SkipProcessSteps(context, new [] { ProcessStepTypeId.VERIFY_REGISTRATION });
+
+        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+            context,
+            entry =>
+            {
+                entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
+                entry.Comment = comment;
+            },
+            null);
+
+        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
         {
             application.ApplicationStatusId = CompanyApplicationStatusId.DECLINED;
             application.DateLastChanged = DateTimeOffset.UtcNow;
@@ -411,15 +432,13 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             company.CompanyStatusId = CompanyStatusId.REJECTED;
         });
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await PostRegistrationCancelEmailAsync(applicationId, comment).ConfigureAwait(false);
     }
 
-    private async Task PostRegistrationCancelEmailAsync(Guid applicationId, string? comment, bool sendMail)
+    private async Task PostRegistrationCancelEmailAsync(Guid applicationId, string comment)
     {
-        if (!sendMail)
-        {
-            return;
-        }
-
         var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
             .GetUserRoleIdsUntrackedAsync(_settings.PartnerUserInitialRoles).ToListAsync().ConfigureAwait(false);
 
