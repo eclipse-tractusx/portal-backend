@@ -111,7 +111,7 @@ public class AppReleaseProcessController : ControllerBase
     /// Add role and role description for App 
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="appAssignedDesc"></param>
+    /// <param name="userRoles"></param>
     /// <remarks>Example: POST: /api/apps/appreleaseprocess/{appId}/role</remarks>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="404">App does not exist.</response>
@@ -124,8 +124,8 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IEnumerable<AppRoleData>> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)=>
-         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, appAssignedDesc, iamUserId)).ConfigureAwait(false);
+    public async Task<IEnumerable<AppRoleData>> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> userRoles)=>
+         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, userRoles, iamUserId)).ConfigureAwait(false);
 
     /// <summary>
     /// Return Agreement Data for offer_type_id App
@@ -314,28 +314,6 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.SubmitAppReleaseRequestAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();
     }
-    
-    /// <summary>
-    /// dd role and role description for Active App 
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="appAssignedDesc"></param>
-    /// <remarks>Example: POST: /api/apps/appreleaseprocess/{appId}/role/activeapp</remarks>
-    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
-    /// <response code="404">App does not exist.</response>
-    /// <response code="200">created role and role description successfully.</response>
-    /// <response code="403">User not associated with provider company.</response>
-    /// <response code="409">App provider company not set.</response>
-    [HttpPost]
-    [Route("{appId}/role/activeapp")]
-    [Authorize(Roles = "edit_apps")]
-    [ProducesResponseType(typeof(IEnumerable<AppRoleData>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<IEnumerable<AppRoleData>> AddActiveAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> appAssignedDesc)=>
-         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddActiveAppUserRoleAsync(appId, appAssignedDesc, iamUserId)).ConfigureAwait(false);
     
     /// <summary>
     /// Approve App to change status from IN_REVIEW to Active and create notification

@@ -35,29 +35,23 @@ public class UserRolesRepository : IUserRolesRepository
         _dbContext = portalDbContext;
     }
 
-    ///<inheritdoc/>
-    public UserRole CreateAppUserRole(Guid appId, string role) =>
-        _dbContext.UserRoles.Add(
-            new UserRole(
-                Guid.NewGuid(),
-                role,
-                appId
-            ))
-            .Entity;
+    public IEnumerable<UserRole> CreateAppUserRoles(IEnumerable<(Guid AppId, string Role)> appIdRoles)
+    {
+        var appRoles = appIdRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToList();
+        _dbContext.AddRange(appRoles);
+        return appRoles;
+    }
     
     ///<inheritdoc/>
     public UserRole DeleteUserRole(Guid roleId) =>
         _dbContext.Remove(new UserRole(roleId,null!,Guid.Empty)).Entity;
 
-    ///<inheritdoc/>
-    public UserRoleDescription CreateAppUserRoleDescription(Guid roleId, string languageCode, string description) =>
-        _dbContext.UserRoleDescriptions.Add(
-            new UserRoleDescription(
-                roleId,
-                languageCode,
-                description
-            ))
-            .Entity;
+    public IEnumerable<UserRoleDescription> CreateAppUserRoleDescriptions(IEnumerable<(Guid RoleId, string LanguageCode, string Description)> roleLanguageDescriptions)
+    {
+        var roleDescriptions = roleLanguageDescriptions.Select(x => new UserRoleDescription(x.RoleId, x.LanguageCode, x.Description)).ToList();
+        _dbContext.AddRange(roleDescriptions);
+        return roleDescriptions;
+    }
 
     public CompanyUserAssignedRole CreateCompanyUserAssignedRole(Guid companyUserId, Guid userRoleId) =>
         _dbContext.CompanyUserAssignedRoles.Add(
