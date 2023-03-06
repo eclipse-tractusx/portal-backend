@@ -817,6 +817,139 @@ public class AppBusinessLogicTests
     
     #endregion
 
+  #region  CreateOfferAssignedAppLeadImageDocumentById
+
+    [Fact]
+    public async Task CreateOfferAssignedAppLeadImageDocumentById_ExpectedCalls()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<Guid>().ToString();
+        var documentId = _fixture.Create<Guid>();
+        var documentStatusData = _fixture.CreateMany<DocumentStatusData>(2);
+        var companyUserId =  _fixture.Create<Guid>();
+        var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
+        var documents = new List<Document>();
+        var offerAssignedDocuments = new List<OfferAssignedDocument>();
+
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP))
+            .ReturnsLazily(() => (true, companyUserId, documentStatusData));
+
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<DocumentTypeId>._,A<Action<Document>?>._))
+            .Invokes((string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentType, Action<Document>? setupOptionalFields) =>
+            {
+                var document = new Document(documentId, documentContent, hash, documentName, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, documentType);
+                setupOptionalFields?.Invoke(document);
+                documents.Add(document);
+            });
+
+        A.CallTo(() => _offerRepository.CreateOfferAssignedDocument(A<Guid>._, A<Guid>._))
+            .Invokes((Guid offerId, Guid docId) =>
+            {
+                var offerAssignedDocument = new OfferAssignedDocument(offerId, docId);
+                offerAssignedDocuments.Add(offerAssignedDocument);
+            });
+
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+
+        // Act
+        await sut.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, file, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<DocumentTypeId>._,A<Action<Document>?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.CreateOfferAssignedDocument(A<Guid>._, A<Guid>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferAssignedDocument(A<Guid>._,A<Guid>._)).MustHaveHappenedTwiceExactly();
+        A.CallTo(() => _documentRepository.RemoveDocument(A<Guid>._)).MustHaveHappenedTwiceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        documents.Should().HaveCount(1);
+        offerAssignedDocuments.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task CreateOfferAssignedAppLeadImageDocumentById_ThrowsUnsupportedMediaTypeException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<Guid>().ToString();
+        var appLeadImageContentTypes = new [] {"image/jpeg","image/png"};
+        var file = FormFileHelper.GetFormFile("Test File", "TestImage.pdf", "application/pdf");
+
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+
+        // Act
+        var Act = () => sut.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, file, CancellationToken.None);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"Document type not supported. File with contentType :{string.Join(",", appLeadImageContentTypes)} are allowed.");
+    }
+
+    [Fact]
+    public async Task CreateOfferAssignedAppLeadImageDocumentById_ThrowsConflictException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<Guid>().ToString();
+        var companyUserId = _fixture.Create<Guid>();
+        var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
+
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP))
+            .ReturnsLazily(() => (false, companyUserId, null!));
+
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+
+        // Act
+        var Act = () => sut.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, file, CancellationToken.None);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be("offerStatus is in incorrect State");
+    }
+
+    [Fact]
+    public async Task CreateOfferAssignedAppLeadImageDocumentById_ThrowsForbiddenException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<Guid>().ToString();
+        var companyUserId = _fixture.Create<Guid>();
+        var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
+
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP))
+            .ReturnsLazily(() => (true, Guid.Empty, null!));
+
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+
+        // Act
+        async Task Act() => await sut.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, file, CancellationToken.None);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"user {iamUserId} is not a member of the provider company of App {appId}");
+    }
+
+    [Fact]
+    public async Task CreateOfferAssignedAppLeadImageDocumentById_ThrowsNotFoundException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var iamUserId = _fixture.Create<Guid>().ToString();
+        var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
+
+        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP))
+            .ReturnsLazily(() => new ValueTuple<bool,Guid,IEnumerable<DocumentStatusData>>());
+
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+
+        // Act
+        async Task Act() => await sut.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, file, CancellationToken.None);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"App {appId} does not exist.");
+    }
+    #endregion
+
     private (CompanyUser, IamUser) CreateTestUserPair()
     {
         var companyUser = _fixture.Build<CompanyUser>()

@@ -176,4 +176,13 @@ public interface IAppsBusinessLogic
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="offerDescriptionDatas">OfferDescription Data</param>
     Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas);
+
+    /// <summary>
+    /// Create OfferAssigned AppLeadImage Document by appId
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="document">Document Data</param>
+    /// <param name="cancellationToken">cancellationToken</param>
+    Task CreatOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken);
 }
