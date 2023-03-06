@@ -330,7 +330,7 @@ public class OfferService : IOfferService
     /// <inheritdoc/>
     public async Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds)
     {
-        var offerDetails = await GetOfferReleaseData(offerId, offerTypeId);
+        var offerDetails = await GetOfferReleaseData(offerId, offerTypeId).ConfigureAwait(false);
 
         var isvalidDocumentType = submitAppDocumentTypeIds.All(x=> offerDetails.DocumentTypeIds.Contains(x));
         if (!isvalidDocumentType)
@@ -338,14 +338,14 @@ public class OfferService : IOfferService
             throw new ConflictException($"{string.Join(",", submitAppDocumentTypeIds)} are mandatory document types");
         }
        
-        await SubmitAppServiceAsync(offerId, iamUserId, notificationTypeIds, catenaAdminRoles, offerDetails);
+        await SubmitAppServiceAsync(offerId, iamUserId, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(false);
     }
     
     /// <inheritdoc/>
     public async Task SubmitServiceAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> catenaAdminRoles)
     {
-        var offerDetails = await GetOfferReleaseData(offerId, offerTypeId);
-        await SubmitAppServiceAsync(offerId, iamUserId, notificationTypeIds, catenaAdminRoles, offerDetails);
+        var offerDetails = await GetOfferReleaseData(offerId, offerTypeId).ConfigureAwait(false);
+        await SubmitAppServiceAsync(offerId, iamUserId, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(false);
     }
 
     private async Task<OfferReleaseData> GetOfferReleaseData(Guid offerId, OfferTypeId offerTypeId)
@@ -359,8 +359,6 @@ public class OfferService : IOfferService
         return offerDetails;
     }
 
-       
-    
     private async Task SubmitAppServiceAsync(Guid offerId, string iamUserId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, OfferReleaseData offerDetails)
     {
          GetAndValidateOfferDetails(offerDetails);
