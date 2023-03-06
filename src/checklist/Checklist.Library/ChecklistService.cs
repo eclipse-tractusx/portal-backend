@@ -88,15 +88,15 @@ public sealed class ChecklistService : IChecklistService
                 .AttachAndModifyApplicationChecklist(context.ApplicationId, context.EntryTypeId, modifyApplicationChecklistEntry);
         }
         processStepRepository.AttachAndModifyProcessStep(context.ProcessStepId, null, step => step.ProcessStepStatusId = ProcessStepStatusId.DONE);
-        if (nextProcessStepTypeIds == null)
+        if (nextProcessStepTypeIds == null || !nextProcessStepTypeIds.Any())
         {
             return;
         }
 
-        foreach (var processStepTypeId in nextProcessStepTypeIds.Except(context.ProcessSteps.Select(step => step.ProcessStepTypeId)))
-        {
-            processStepRepository.CreateProcessStep(processStepTypeId, ProcessStepStatusId.TODO, context.ProcessId);
-        }
+        processStepRepository.CreateProcessStepRange(
+            nextProcessStepTypeIds
+                .Except(context.ProcessSteps.Select(step => step.ProcessStepTypeId))
+                .Select(stepTypeId => (stepTypeId, ProcessStepStatusId.TODO, context.ProcessId)));
     }
 
     public Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> HandleServiceErrorAsync(Exception exception, ProcessStepTypeId manualProcessTriggerStep)

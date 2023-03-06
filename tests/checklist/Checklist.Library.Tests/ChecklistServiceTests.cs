@@ -348,14 +348,13 @@ public class ChecklistServiceTests
                 modify(modifiedProcessStep);
             });
 
-        var newProcessSteps = new List<ProcessStep>();
+        IEnumerable<ProcessStep>? newProcessSteps = null;
 
-        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._,A<ProcessStepStatusId>._,A<Guid>._))
-            .ReturnsLazily((ProcessStepTypeId stepTypeId, ProcessStepStatusId statusId, Guid processId) =>
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId,ProcessStepStatusId,Guid)>>._))
+            .ReturnsLazily((IEnumerable<(ProcessStepTypeId StepTypeId, ProcessStepStatusId StepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                var step = new ProcessStep(Guid.NewGuid(),stepTypeId,statusId, processId, DateTimeOffset.UtcNow);
-                newProcessSteps.Add(step);
-                return step;
+                newProcessSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.StepTypeId, x.StepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList();
+                return newProcessSteps;
             });
 
         var nextProcessStepTypeIds = Enum.GetValues<ProcessStepTypeId>().Except(context.ProcessSteps.Select(step => step.ProcessStepTypeId)).ToImmutableArray();
@@ -371,8 +370,8 @@ public class ChecklistServiceTests
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._,A<Action<ProcessStep>>._,A<Action<ProcessStep>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._,A<ProcessStepStatusId>._,processId))
-            .MustHaveHappened(nextProcessStepTypeIds.Length,Times.Exactly);
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId,ProcessStepStatusId,Guid)>>._))
+            .MustHaveHappenedOnceExactly();
 
         modifiedChecklistEntry.Should().NotBeNull();
         modifiedChecklistEntry!.ApplicationChecklistEntryTypeId.Should().Be(context.EntryTypeId);
@@ -382,9 +381,14 @@ public class ChecklistServiceTests
         modifiedProcessStep!.Id.Should().Be(context.ProcessStepId);
         modifiedProcessStep.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
 
-        newProcessSteps.Select(step => (step.ProcessStepTypeId, step.ProcessStepStatusId, step.ProcessId))
-            .Should().HaveSameCount(nextProcessStepTypeIds)
-            .And.Contain(nextProcessStepTypeIds.Select(stepTypeId => (stepTypeId, ProcessStepStatusId.TODO, processId)));
+        newProcessSteps.Should().NotBeNull()
+            .And.HaveCount(nextProcessStepTypeIds.Length)
+            .And.AllSatisfy(
+                x => {
+                    x.ProcessId.Should().Be(processId);
+                    x.ProcessStepStatusId.Should().Be(ProcessStepStatusId.TODO);
+                });
+        newProcessSteps!.Select(x => x.ProcessStepTypeId).Should().Contain(nextProcessStepTypeIds);
     }
 
     [Fact]
@@ -411,14 +415,13 @@ public class ChecklistServiceTests
                 modify(modifiedProcessStep);
             });
 
-        var newProcessSteps = new List<ProcessStep>();
+        IEnumerable<ProcessStep>? newProcessSteps = null;
 
-        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._,A<ProcessStepStatusId>._,A<Guid>._))
-            .ReturnsLazily((ProcessStepTypeId stepTypeId, ProcessStepStatusId statusId, Guid processId) =>
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId,ProcessStepStatusId,Guid)>>._))
+            .ReturnsLazily((IEnumerable<(ProcessStepTypeId StepTypeId, ProcessStepStatusId StepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                var step = new ProcessStep(Guid.NewGuid(),stepTypeId,statusId, processId, DateTimeOffset.UtcNow);
-                newProcessSteps.Add(step);
-                return step;
+                newProcessSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.StepTypeId, x.StepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList();
+                return newProcessSteps;
             });
 
         var nextProcessStepTypeIds = Enum.GetValues<ProcessStepTypeId>().Except(context.ProcessSteps.Select(step => step.ProcessStepTypeId)).ToImmutableArray();
@@ -434,16 +437,21 @@ public class ChecklistServiceTests
             .MustNotHaveHappened();
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._,A<Action<ProcessStep>>._,A<Action<ProcessStep>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._,A<ProcessStepStatusId>._,processId))
-            .MustHaveHappened(nextProcessStepTypeIds.Length,Times.Exactly);
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId,ProcessStepStatusId,Guid)>>._))
+            .MustHaveHappenedOnceExactly();
 
         modifiedProcessStep.Should().NotBeNull();
         modifiedProcessStep!.Id.Should().Be(context.ProcessStepId);
         modifiedProcessStep.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
 
-        newProcessSteps.Select(step => (step.ProcessStepTypeId, step.ProcessStepStatusId, step.ProcessId))
-            .Should().HaveSameCount(nextProcessStepTypeIds)
-            .And.Contain(nextProcessStepTypeIds.Select(stepTypeId => (stepTypeId, ProcessStepStatusId.TODO, processId)));
+        newProcessSteps.Should().NotBeNull()
+            .And.HaveCount(nextProcessStepTypeIds.Length)
+            .And.AllSatisfy(
+                x => {
+                    x.ProcessId.Should().Be(processId);
+                    x.ProcessStepStatusId.Should().Be(ProcessStepStatusId.TODO);
+                });
+        newProcessSteps!.Select(x => x.ProcessStepTypeId).Should().Contain(nextProcessStepTypeIds);
     }
 
     [Fact]
@@ -490,7 +498,7 @@ public class ChecklistServiceTests
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._,A<Action<ProcessStep>>._,A<Action<ProcessStep>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._,A<ProcessStepStatusId>._,A<Guid>._))
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId,ProcessStepStatusId,Guid)>>._))
             .MustNotHaveHappened();
 
         modifiedChecklistEntry.Should().NotBeNull();

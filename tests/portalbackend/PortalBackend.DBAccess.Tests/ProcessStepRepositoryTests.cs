@@ -52,33 +52,6 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region CreateProcessStep
-
-    [Fact]
-    public async Task CreateProcessStep_CreatesSuccessfully()
-    {
-        // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
-        var changeTracker = dbContext.ChangeTracker;
-
-        // Act
-        var result = sut.CreateProcessStep(ProcessStepTypeId.ACTIVATE_APPLICATION, ProcessStepStatusId.TODO, new Guid("c9aaa06c-15ad-4de7-8e42-ab3b5f4a74d4"));
-
-        // Assert
-        changeTracker.HasChanges().Should().BeTrue();
-        changeTracker.Entries().Should().HaveCount(1)
-            .And.AllSatisfy(x =>
-            {
-                x.State.Should().Be(EntityState.Added);
-                x.Entity.Should().BeOfType<ProcessStep>();
-            });
-        changeTracker.Entries().Select(x => x.Entity).Cast<ProcessStep>()
-            .Should().Satisfy(
-                x => x.Id == result.Id && x.ProcessStepTypeId == ProcessStepTypeId.ACTIVATE_APPLICATION && x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessId == new Guid("c9aaa06c-15ad-4de7-8e42-ab3b5f4a74d4"));
-    }
-
-    #endregion
-
     #region CreateProcessStepRange
 
     [Fact]
@@ -92,7 +65,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = dbContext.ChangeTracker;
 
         // Act
-        var result = sut.CreateProcessStepRange(processId, processStepTypeIds);
+        var result = sut.CreateProcessStepRange(processStepTypeIds.Select(processStepTypeId => (processStepTypeId, ProcessStepStatusId.TODO, processId)));
 
         // Assert
         changeTracker.HasChanges().Should().BeTrue();
