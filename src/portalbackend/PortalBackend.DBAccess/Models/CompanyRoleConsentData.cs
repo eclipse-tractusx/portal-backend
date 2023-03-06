@@ -18,13 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public interface ICompanyDataBusinessLogic
-{
-    Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync(string iamUserId);
+public record CompanyRoleConsentData(string CompanyRoles,bool CompanyRolesActive,IEnumerable<ConsentAgreementData> Agreements);
 
-    IAsyncEnumerable<CompanyRoleConsentData> GetCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId);
-}
+public record ConsentAgreementData(Guid AgreementId, string AgreementName, ConsentStatusId? ConsentStatus);

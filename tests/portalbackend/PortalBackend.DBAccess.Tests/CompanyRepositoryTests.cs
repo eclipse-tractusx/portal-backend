@@ -442,6 +442,27 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetCompanyRoleAndConsentAgreement
+
+    [Fact]
+    public async Task GetCompanyRoleAndConsentAgreementDetailsAsync_ReturnsExpected()
+    {
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        var result = sut.GetCompanyRoleAndConsentAgreementDetailsAsync("502dabcf-01c7-47d9-a88e-0be4279097b5");
+
+        result.Should().NotBeNull();
+        var data = await result.FirstAsync();
+        var companyRole = data!.CompanyRoles;
+        var isActiveCompanyRole = data.CompanyRolesActive;
+        var agreement = data.Agreements.First();
+        companyRole.Should().Be("ACTIVE_PARTICIPANT");
+        isActiveCompanyRole.Should().BeTrue();
+        agreement.AgreementId.Should().Be(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1090"));
+    }
+
+    #endregion
+
     #region Setup
     
     private async Task<(CompanyRepository, PortalDbContext)> CreateSut()
