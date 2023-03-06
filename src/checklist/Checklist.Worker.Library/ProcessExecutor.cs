@@ -105,7 +105,7 @@ public class ProcessExecutor : IProcessExecutor
         {
             return false;
         }
-        foreach (var newStep in _processStepRepository.CreateProcessStepRange(context.ProcessId, newStepTypeIds))
+        foreach (var newStep in _processStepRepository.CreateProcessStepRange(newStepTypeIds.Select(stepTypeId => (stepTypeId, ProcessStepStatusId.TODO, context.ProcessId))))
         {
             context.AllSteps.Add(newStep.ProcessStepTypeId, new [] { newStep.Id });
             if (context.Executor.IsExecutableStepTypeId(newStep.ProcessStepTypeId))
