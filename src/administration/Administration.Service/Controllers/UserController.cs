@@ -105,7 +105,7 @@ public class UserController : ControllerBase
     /// <param name="userToCreate">properties and identityprovider link data for the user to create</param>
     /// <returns>the id of the newly created company-user</returns>
     /// <remarks>
-    /// Example: POST: api/administration/users/owncompany/identityprovider/{identityProviderId}/users
+    /// Example: POST: api/administration/user/owncompany/identityprovider/{identityProviderId}/users
     /// </remarks>
     /// <response code="201">Record Created Successfully</response>
     /// <response code="400">Input is incorrect.</response>
@@ -134,7 +134,7 @@ public class UserController : ControllerBase
     /// <param name="cancellationToken">the CancellationToken for this request (provided by the Controller)</param>
     /// <returns>Returns a status of the document processing</returns>
     /// <remarks>
-    /// Example: POST: api/administration/users/owncompany/identityprovider/{identityProviderId}/usersfile
+    /// Example: POST: api/administration/user/owncompany/identityprovider/{identityProviderId}/usersfile
     /// </remarks>
     /// <response code="200">Returns a file of users.</response>
     /// <response code="400">user is not associated with a company.</response>

@@ -366,6 +366,34 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
+    public async Task TestCreateOwnCompanyIdpUserNoRolesThrowsArgumentException()
+    {
+        SetupFakesForUserCreation(false);
+
+        var userCreationInfoIdp = _fixture.Build<UserCreationInfoIdp>()
+            .With(x => x.FirstName, _fixture.CreateName())
+            .With(x => x.LastName, _fixture.CreateName())
+            .With(x => x.Email, _fixture.CreateEmail())
+            .With(x => x.Roles, Enumerable.Empty<string>())
+            .Create();
+
+        var sut = new UserBusinessLogic(
+            null!,
+            _userProvisioningService,
+            null!,
+            null!,
+            _mailingService,
+            _logger,
+            _options);
+
+        Task Act() => sut.CreateOwnCompanyIdpUserAsync(_identityProviderId, userCreationInfoIdp, _iamUserId);
+
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be("at least one role must be specified (Parameter 'Roles')");
+        error.ParamName.Should().Be("Roles");
+    }
+
+    [Fact]
     public async Task TestCreateOwnCompanyIdpUserAsyncError()
     {
         SetupFakesForUserCreation(false);

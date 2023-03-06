@@ -160,6 +160,11 @@ public class UserBusinessLogic : IUserBusinessLogic
         var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
         var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
 
+        if (!userCreationInfo.Roles.Any())
+        {
+            throw new ControllerArgumentException($"at least one role must be specified", nameof(userCreationInfo.Roles));
+        }
+
         var roleDatas = await GetOwnCompanyUserRoleData(userCreationInfo.Roles, iamUserId).ConfigureAwait(false);
 
         var result = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
@@ -169,7 +174,7 @@ public class UserBusinessLogic : IUserBusinessLogic
                     userCreationInfo.FirstName,
                     userCreationInfo.LastName,
                     userCreationInfo.Email,
-                    roleDatas ?? Enumerable.Empty<UserRoleData>(),
+                    roleDatas,
                     userCreationInfo.UserName,
                     userCreationInfo.UserId
                 ),1).ToAsyncEnumerable())
