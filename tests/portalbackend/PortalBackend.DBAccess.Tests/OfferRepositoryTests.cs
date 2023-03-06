@@ -1060,6 +1060,29 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetOfferAssignedAppLeadImageDocumentById
+
+    [Fact]
+    public async Task GetOfferAssignedAppLeadImageDocumentsByIdAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferAssignedAppLeadImageDocumentsByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0573f0009"), "ad56702b-5908-44eb-a668-9a11a0e100d6", OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce0575a0011"));
+        result.IsStatusActive.Should().BeTrue();
+        var documentId = result.documentStatusDatas.Select(x => x.DocumentId);
+        var documentStatus = result.documentStatusDatas.Select(x => x.StatusId);
+        documentId.Should().Contain(new Guid("caa8013f-7875-4175-a4c4-361ada12c70c"));
+        documentStatus.Should().Contain(DocumentStatusId.LOCKED);
+    }
+    
+    #endregion
+
     #region Setup
     
     private async Task<OfferRepository> CreateSut()
