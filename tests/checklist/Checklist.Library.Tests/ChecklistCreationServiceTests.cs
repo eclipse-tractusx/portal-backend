@@ -20,9 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Tests;
 
@@ -34,8 +32,7 @@ public class ChecklistCreationServiceTests
     private readonly IPortalRepositories _portalRepositories;
     private readonly IApplicationRepository _applicationRepository;
     private readonly IApplicationChecklistRepository _applicationChecklistRepository;
-    private readonly IProcessStepRepository _processStepRepository;
-    private readonly ChecklistCreationService _service;
+    private readonly IChecklistCreationService _service;
 
     public ChecklistCreationServiceTests()
     {
@@ -48,7 +45,6 @@ public class ChecklistCreationServiceTests
         
         _applicationRepository = A.Fake<IApplicationRepository>();
         _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
 
         _service = new ChecklistCreationService(_portalRepositories);
     }
@@ -61,71 +57,28 @@ public class ChecklistCreationServiceTests
         // Arrange
         SetupFakesForCreate();
 
-        var utcNow = DateTimeOffset.UtcNow;
-
-        Process? process = null;
-
-        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
-            .ReturnsLazily((ProcessTypeId processTypeId) =>
-            {
-                process = new Process(Guid.NewGuid(), processTypeId);
-                return process;
-            });
-
-        CompanyApplication? application = null;
-
-        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
-            .Invokes((Guid applicationId, Action<CompanyApplication> setOptionalParameters) =>
-            {
-                application = new CompanyApplication(applicationId, Guid.Empty, default, default);
-                setOptionalParameters(application);
-            });
-
-        IEnumerable<ProcessStep>? processSteps = null;
-
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId,ProcessStepStatusId,Guid)>>._))
-            .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
-            {
-                processSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, utcNow)).ToImmutableArray();
-                return processSteps;
-            });
-
         // Act
-        await _service.CreateInitialChecklistAsync(ApplicationWithBpnId).ConfigureAwait(false);
+        var result = await _service.CreateInitialChecklistAsync(ApplicationWithBpnId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
             ApplicationWithBpnId,
             A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>
                 .That
-                .Matches(x => 
-                    x.Count(y => y.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.DONE) == 1)))
+                .Matches(x =>
+                    x.Count() == Enum.GetValues<ApplicationChecklistEntryTypeId>().Length &&
+                    x.Count(y => y.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.DONE) == 1 &&
+                    x.Count(y => y.TypeId != ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.TO_DO) == 5)))
             .MustHaveHappenedOnceExactly();
         
-        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
-            .MustHaveHappenedOnceExactly();
-        
-        process.Should().NotBeNull();
-        process!.ProcessTypeId.Should().Be(ProcessTypeId.APPLICATION_CHECKLIST);
-
-        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
-            .MustHaveHappenedOnceExactly();
-
-        application.Should().NotBeNull();
-        application!.ChecklistProcessId.Should().Be(process!.Id);
-
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId,ProcessStepStatusId,Guid)>>._))
-            .MustHaveHappenedOnceExactly();
-        
-        processSteps.Should().NotBeNull()
-            .And.AllSatisfy(x =>
-                {
-                    x.ProcessId.Should().Be(process.Id);
-                    x.ProcessStepStatusId.Should().Be(ProcessStepStatusId.TODO);
-                })
+        result.Should().HaveCount(Enum.GetValues<ApplicationChecklistEntryTypeId>().Length)
             .And.Satisfy(
-                x => x.ProcessStepTypeId == ProcessStepTypeId.VERIFY_REGISTRATION,
-                x => x.ProcessStepTypeId == ProcessStepTypeId.DECLINE_APPLICATION
+                x => x.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && x.StatusId == ApplicationChecklistEntryStatusId.DONE,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.IDENTITY_WALLET && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.CLEARING_HOUSE && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO
             );
     }
 
@@ -135,73 +88,27 @@ public class ChecklistCreationServiceTests
         // Arrange
         SetupFakesForCreate();
 
-        var utcNow = DateTimeOffset.UtcNow;
-
-        Process? process = null;
-
-        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
-            .ReturnsLazily((ProcessTypeId processTypeId) =>
-            {
-                process = new Process(Guid.NewGuid(), processTypeId);
-                return process;
-            });
-
-        CompanyApplication? application = null;
-
-        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
-            .Invokes((Guid applicationId, Action<CompanyApplication> setOptionalParameters) =>
-            {
-                application = new CompanyApplication(applicationId, Guid.Empty, default, default);
-                setOptionalParameters(application);
-            });
-
-        IEnumerable<ProcessStep>? processSteps = null;
-
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId,ProcessStepStatusId,Guid)>>._))
-            .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
-            {
-                processSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, utcNow)).ToImmutableArray();
-                return processSteps;
-            });
-
         // Act
-        await _service.CreateInitialChecklistAsync(ApplicationWithoutBpnId).ConfigureAwait(false);
+        var result = await _service.CreateInitialChecklistAsync(ApplicationWithoutBpnId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
             ApplicationWithoutBpnId,
             A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>
                 .That
-                .Matches(x => 
-                    x.Count(y => y.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.TO_DO) == 1)))
+                .Matches(x =>
+                    x.Count() == Enum.GetValues<ApplicationChecklistEntryTypeId>().Length &&
+                    x.All(y => y.StatusId == ApplicationChecklistEntryStatusId.TO_DO))))
             .MustHaveHappenedOnceExactly();
         
-        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
-            .MustHaveHappenedOnceExactly();
-        
-        process.Should().NotBeNull();
-        process!.ProcessTypeId.Should().Be(ProcessTypeId.APPLICATION_CHECKLIST);
-
-        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
-            .MustHaveHappenedOnceExactly();
-
-        application.Should().NotBeNull();
-        application!.ChecklistProcessId.Should().Be(process!.Id);
-
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId,ProcessStepStatusId,Guid)>>._))
-            .MustHaveHappenedOnceExactly();
-        
-        processSteps.Should().NotBeNull()
-            .And.AllSatisfy(x =>
-                {
-                    x.ProcessId.Should().Be(process.Id);
-                    x.ProcessStepStatusId.Should().Be(ProcessStepStatusId.TODO);
-                })
+        result.Should().HaveSameCount(Enum.GetValues<ApplicationChecklistEntryTypeId>())
             .And.Satisfy(
-                x => x.ProcessStepTypeId == ProcessStepTypeId.VERIFY_REGISTRATION,
-                x => x.ProcessStepTypeId == ProcessStepTypeId.DECLINE_APPLICATION,
-                x => x.ProcessStepTypeId == ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
-                x => x.ProcessStepTypeId == ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL
+                x => x.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.IDENTITY_WALLET && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.CLEARING_HOUSE && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO
             );
     }
 
@@ -361,7 +268,6 @@ public class ChecklistCreationServiceTests
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_applicationChecklistRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
     }
 
     #endregion
