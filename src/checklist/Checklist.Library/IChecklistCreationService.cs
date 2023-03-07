@@ -29,7 +29,7 @@ public interface IChecklistCreationService
     /// Creates the initial checklist for the given application
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
-    Task CreateInitialChecklistAsync(Guid applicationId);
+    Task<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>> CreateInitialChecklistAsync(Guid applicationId);
 
     /// <summary>
     /// Creates the missing items for the application

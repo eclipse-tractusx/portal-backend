@@ -34,13 +34,10 @@ public class ChecklistCreationService : IChecklistCreationService
     }
 
     /// <inheritdoc />
-    public async Task CreateInitialChecklistAsync(Guid applicationId)
+    public async Task<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>> CreateInitialChecklistAsync(Guid applicationId)
     {
         var (bpn, existingChecklistEntryTypeIds) = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpnAndChecklistCheckForApplicationIdAsync(applicationId).ConfigureAwait(false);
-        var entries = CreateEntries(applicationId, existingChecklistEntryTypeIds, bpn);
-        var process = _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST);
-        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application => application.ChecklistProcessId = process.Id);
-        _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(GetInitialProcessStepTypeIds(entries).Select(processStepTypeId => (processStepTypeId, ProcessStepStatusId.TODO, process.Id)));
+        return CreateEntries(applicationId, existingChecklistEntryTypeIds, bpn);
     }
 
     /// <inheritdoc />
