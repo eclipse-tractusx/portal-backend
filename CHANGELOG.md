@@ -18,17 +18,17 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * App Service
   * operator/CX Admin endpoint released to view all app details under "IN_REVIEW" for release approval /appreleaseprocess/inReview/{appId}
   * new endpoint to enable app provider to switch leadImage of an app - POST /api/apps/{appId}/appLeadImage
-  * new endpoint to delete app under app release process - DELETE /apps/appreleaseprocess/{appId} 
+  * new endpoint to delete app under app release process - DELETE /apps/appreleaseprocess/{appId}
   * new endpoint to delete app documents for app under app release process - DELETE /api/apps/appreleaseprocess/documents/{documentId}
 * Administration Service
   * company role management endpoint implemented - GET /administration/companydata/companyRolesAndConsents
-* Login Themee
+* Login Theme
   * add customized login theme when inviting a company to register for CX (as part of the creation of the new realm)
   * change the login theme when activating the company registration (update of the realm)
 * Checklist Worker Application - allowed process steps and process_step status update based on related jobs
 
 ### Technical Support
-* Changes in the externalsystems path triggers the build of the checklist worker
+* Added the externalsystems path to trigger the build of the checklist worker
 * Checklist Worker ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
   * introducing portal table processes (enables portal to support several checklist processes in parallel)
   * enhanced portal.process_steps with the mandatory the attribute "process_id"
@@ -42,7 +42,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * override_clearinghouse process step updated to create trigger_clearinghouse step
   * retrigger of bpdm push and pull added as manual process steps
   * bpn can get set manually, even if the checklist item is failed
-  * ensure propper dispose of async enumerators
+  * ensure proper dispose of async enumerators
 * App Service
   * GET /appreleaseprocess/{appId}/appStatus fetched db value of the key "price" updated
 * Administration Service
@@ -50,7 +50,6 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * Others
   * offer decline permission updated to all users with a specific assigned permission
   * connector is set to active when daps was successfully triggered
-
 
 ## 1.0.0-RC10
 
