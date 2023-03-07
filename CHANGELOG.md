@@ -36,6 +36,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * removal of table portal.application_assigned_process_steps
 * Base Data
   * Agreement & Unique Identifier base data updated
+* Added temp fix for CVE-2022-1304
 
 ### Bugfix
 * Checklist Worker Application
