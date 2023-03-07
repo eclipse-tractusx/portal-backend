@@ -537,7 +537,7 @@ public class ServiceBusinessLogicTests
 
         // Assert
         A.CallTo(() => 
-                _offerService.SubmitOfferAsync(
+                _offerService.SubmitServiceAsync(
                     _existingServiceId,
                     _iamUser.UserEntityId,
                     OfferTypeId.SERVICE,
