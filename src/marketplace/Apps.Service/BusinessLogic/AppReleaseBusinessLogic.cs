@@ -340,7 +340,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     /// <inheritdoc/>
     public Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId) => 
-        _offerService.SubmitOfferAsync(appId, iamUserId, OfferTypeId.APP, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles);
+        _offerService.SubmitOfferAsync(appId, iamUserId, OfferTypeId.APP, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles, _settings.SubmitAppDocumentTypeIds);
     
     /// <inheritdoc/>
     public Task ApproveAppRequestAsync(Guid appId, string iamUserId) =>
