@@ -218,5 +218,35 @@
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51182",
     "language_short_name": "en",
     "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de50001",
+    "language_short_name": "de",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de50001",
+    "language_short_name": "en",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de50002",
+    "language_short_name": "de",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de50002",
+    "language_short_name": "en",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de50003",
+    "language_short_name": "de",
+    "description": "The user has access"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de50003",
+    "language_short_name": "en",
+    "description": "The user has access"
   }
 ]
