@@ -608,7 +608,7 @@ public class ChecklistServiceTests
     {
         // Arrange
         var entity = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
-        var ex = new HttpRequestException("Test error");
+        var ex = new ServiceException("Test error", true);
 
         // Act
         var result = await _service.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE).ConfigureAwait(false);
@@ -618,7 +618,7 @@ public class ChecklistServiceTests
         result.ModifyChecklistEntry.Should().NotBeNull();
         result.ModifyChecklistEntry!.Invoke(entity);
         entity.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.TO_DO);
-        entity.Comment.Should().Be("System.Net.Http.HttpRequestException: Test error");
+        entity.Comment.Should().Be("Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.ServiceException: Test error");
         result.ScheduleStepTypeIds.Should().BeNull();
         result.Modified.Should().BeTrue();
     }

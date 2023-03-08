@@ -610,7 +610,7 @@ public class ProcessExecutorTests
         var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().HaveCount(processStepData.Length + 1).And.ContainInOrder(new [] { false }.Concat(Enumerable.Repeat<bool>(true, processStepData.Length)));
+        result.Should().HaveCount(7).And.ContainInOrder(new [] { false, false, true, false, true, false, true });
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._,A<IEnumerable<ProcessStepTypeId>>._,A<CancellationToken>._))
             .MustHaveHappened(processStepData.Length, Times.Exactly);
