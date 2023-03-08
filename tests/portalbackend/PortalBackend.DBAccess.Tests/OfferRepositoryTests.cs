@@ -133,12 +133,12 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var offers = await sut.GetAllActiveAppsAsync(null).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        offers.Should().HaveCount(20);
+        offers.Should().HaveCount(21);
     }
 
     #endregion
 
-    #region GetAllActiveApps
+    #region GetOfferDetailsByIdAsync
     
     [Fact]
     public async Task GetOfferDetailsByIdAsync_ReturnsExpectedResult()
