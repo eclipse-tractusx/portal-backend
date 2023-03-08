@@ -75,9 +75,11 @@ public class ProcessExecutor : IProcessExecutor
             ProcessStepStatusId resultStepStatusId;
             IEnumerable<ProcessStepTypeId>? scheduleStepTypeIds;
             IEnumerable<ProcessStepTypeId>? skipStepTypeIds;
+            bool success;
             try
             {
                 (modified, resultStepStatusId, scheduleStepTypeIds, skipStepTypeIds) = await executor.ExecuteProcessStep(stepTypeId, context.AllSteps.Keys, cancellationToken).ConfigureAwait(false);
+                success = true;
             }
             catch(Exception e) when (e is not SystemException)
             {
@@ -85,6 +87,11 @@ public class ProcessExecutor : IProcessExecutor
                 scheduleStepTypeIds = null;
                 skipStepTypeIds = null;
                 modified = false;
+                success = false;
+            }
+            if (!success)
+            {
+                yield return false;
             }
             modified |= SetProcessStepStatus(stepTypeId, resultStepStatusId, context);
             modified |= SkipProcessStepTypeIds(skipStepTypeIds, context);

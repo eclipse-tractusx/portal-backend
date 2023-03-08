@@ -88,6 +88,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
         await _bpdmService.PutInputLegalEntity(bpdmTransferData, cancellationToken).ConfigureAwait(false);
 
         return new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+            ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
             new [] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL },
             null,
@@ -109,7 +110,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
 
         if (string.IsNullOrEmpty(legalEntity.Bpn))
         {
-            return new IChecklistService.WorkerChecklistProcessStepExecutionResult(null,null,null,false);
+            return new IChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO,null,null,null,false);
         }
 
         // TODO: clarify whether it should be an error if businessPartnerNumber has been set locally while bpdm-answer was outstanding
@@ -129,6 +130,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
         var registrationValidationFailed = context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.FAILED;
 
         return new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+            ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
             registrationValidationFailed
                 ? null

@@ -63,7 +63,7 @@ public class ApplicationActivationService : IApplicationActivationService
     {
         if (!InProcessingTime())
         {
-            return Task.FromResult(new IChecklistService.WorkerChecklistProcessStepExecutionResult(null,null,null,false));
+            return Task.FromResult(new IChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO,null,null,null,false));
         }
         var prerequisiteEntries = context.Checklist.Where(entry => entry.Key != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION);
         if (prerequisiteEntries.Any(entry => entry.Value != ApplicationChecklistEntryStatusId.DONE))
@@ -123,7 +123,12 @@ public class ApplicationActivationService : IApplicationActivationService
                 throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ", clientRoles.roles)}]"))}");
             }
         }
-        return new IChecklistService.WorkerChecklistProcessStepExecutionResult(entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE, null, Enum.GetValues<ProcessStepTypeId>().Except(new [] { ProcessStepTypeId.ACTIVATE_APPLICATION }), true);
+        return new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+            ProcessStepStatusId.DONE,
+            entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
+            null,
+            Enum.GetValues<ProcessStepTypeId>().Except(new [] { ProcessStepTypeId.ACTIVATE_APPLICATION }),
+            true);
     }
 
     private bool InProcessingTime()

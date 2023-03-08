@@ -58,6 +58,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
             .ConfigureAwait(false);
 
         return new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+            ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
             new [] { ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP },
             null,

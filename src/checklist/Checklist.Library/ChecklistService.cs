@@ -102,22 +102,24 @@ public sealed class ChecklistService : IChecklistService
     public Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> HandleServiceErrorAsync(Exception exception, ProcessStepTypeId manualProcessTriggerStep)
     {
         return Task.FromResult(
-            exception is not HttpRequestException ?
-                new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+            exception is ServiceException { IsRecoverable: true }
+                ? new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+                    ProcessStepStatusId.TODO,
+                    item =>
+                    {
+                        item.Comment = exception.ToString();
+                    },
+                    null,
+                    null,
+                    true)
+                : new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+                    ProcessStepStatusId.FAILED,
                     item =>
                     {
                         item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
                         item.Comment = exception.ToString();
                     },
                     new [] { manualProcessTriggerStep },
-                    null,
-                    true) :
-                new IChecklistService.WorkerChecklistProcessStepExecutionResult(
-                    item =>
-                    {
-                        item.Comment = exception.ToString();
-                    },
-                    null,
                     null,
                     true));
     }

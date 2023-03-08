@@ -121,6 +121,7 @@ public class CustodianBusinessLogicTests
         result.ScheduleStepTypeIds.Should().BeNull();
         result.SkipStepTypeIds.Should().BeNull();
         result.Modified.Should().BeFalse();
+        result.StepStatusId.Should().Be(ProcessStepStatusId.TODO);
         A.CallTo(() =>  _custodianService.CreateWalletAsync(A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
@@ -142,6 +143,7 @@ public class CustodianBusinessLogicTests
 
         // Assert
         result.Modified.Should().BeTrue();
+        result.StepStatusId.Should().Be(ProcessStepStatusId.SKIPPED);
         A.CallTo(() =>  _custodianService.CreateWalletAsync(A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
@@ -164,6 +166,7 @@ public class CustodianBusinessLogicTests
 
         // Assert
         result.Modified.Should().BeTrue();
+        result.StepStatusId.Should().Be(ProcessStepStatusId.SKIPPED);
         A.CallTo(() =>  _custodianService.CreateWalletAsync(A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
@@ -235,7 +238,9 @@ public class CustodianBusinessLogicTests
         // Assert
         result.Should().NotBe(default);
 
-        var (action, stepTypeIds, stepsToSkip, modified) = result;
+        var (stepStatusId, action, stepTypeIds, stepsToSkip, modified) = result;
+
+        stepStatusId.Should().Be(ProcessStepStatusId.DONE);
 
         stepsToSkip.Should().BeNull();
         

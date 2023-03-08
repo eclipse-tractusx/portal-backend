@@ -58,22 +58,29 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
     {
         if (context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == ApplicationChecklistEntryStatusId.FAILED || context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.FAILED)
         {
-            return new IChecklistService.WorkerChecklistProcessStepExecutionResult(null,null,null,true);
+            return new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+                ProcessStepStatusId.SKIPPED,
+                checklistEntry => checklistEntry.Comment = $"processStep CREATE_IDENTITY_WALLET skipped as entries BUSINESS_PARTNER_NUMBER and REGISTRATION_VERIFICATION have status {context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER]} and {context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION]}",
+                null,
+                null,
+                true);
         }
         if (context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == ApplicationChecklistEntryStatusId.DONE && context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.DONE)
         {
             var message = await CreateWalletInternal(context.ApplicationId, cancellationToken).ConfigureAwait(false);
 
-            return new IChecklistService.WorkerChecklistProcessStepExecutionResult(checklist =>
+            return new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+                ProcessStepStatusId.DONE,
+                checklist =>
                     {
                         checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
                         checklist.Comment = message;
                     },
-                    new [] { ProcessStepTypeId.START_CLEARING_HOUSE },
-                    null,
-                    true);
+                new [] { ProcessStepTypeId.START_CLEARING_HOUSE },
+                null,
+                true);
         }
-        return new IChecklistService.WorkerChecklistProcessStepExecutionResult(null,null,null,false);
+        return new IChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO,null,null,null,false);
     }
 
     private async Task<string> CreateWalletInternal(Guid applicationId, CancellationToken cancellationToken)

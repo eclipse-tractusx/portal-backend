@@ -311,6 +311,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
 
         A.CallTo(() => _firstProcessFunc(A<IChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
             .Returns(new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+                ProcessStepStatusId.DONE,
                 (ApplicationChecklistEntry entry) => { entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS; },
                 followupStepTypeIds,
                 null,
@@ -386,6 +387,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         A.CallTo(() => _errorFunc(A<Exception>._,A<IChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
             .ReturnsLazily((Exception ex, IChecklistService.WorkerChecklistProcessStepData _, CancellationToken _) => 
                 new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+                    ProcessStepStatusId.FAILED,
                     (ApplicationChecklistEntry entry) =>
                         {
                             entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
@@ -466,6 +468,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         A.CallTo(() => _errorFunc(A<Exception>._,A<IChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
             .ReturnsLazily((Exception ex, IChecklistService.WorkerChecklistProcessStepData _, CancellationToken _) =>
                 new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+                    ProcessStepStatusId.FAILED,
                     null,
                     followupStepTypeIds,
                     null,
@@ -514,7 +517,6 @@ public class ApplicationChecklistProcessTypeExecutorTests
         initializationResult.ScheduleStepTypeIds.Should().BeNull();
 
         // Arrange execute
-
         var executeProcessStepTypeId = ProcessStepTypeId.ACTIVATE_APPLICATION;
         var executeProcessStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
         var followupStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();

@@ -28,7 +28,7 @@ public interface IChecklistService
 {
     record ManualChecklistProcessStepData(Guid ApplicationId, Guid ProcessId, Guid ProcessStepId, ApplicationChecklistEntryTypeId EntryTypeId, ImmutableDictionary<ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId> Checklist, IEnumerable<ProcessStep> ProcessSteps);
     record WorkerChecklistProcessStepData(Guid ApplicationId, ProcessStepTypeId ProcessStepTypeId, ImmutableDictionary<ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId> Checklist, IEnumerable<ProcessStepTypeId> ProcessStepTypeIds);
-    record WorkerChecklistProcessStepExecutionResult(Action<ApplicationChecklistEntry>? ModifyChecklistEntry,IEnumerable<ProcessStepTypeId>? ScheduleStepTypeIds,IEnumerable<ProcessStepTypeId>? SkipStepTypeIds, bool Modified);
+    record WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId StepStatusId, Action<ApplicationChecklistEntry>? ModifyChecklistEntry,IEnumerable<ProcessStepTypeId>? ScheduleStepTypeIds,IEnumerable<ProcessStepTypeId>? SkipStepTypeIds, bool Modified);
 
     Task<ManualChecklistProcessStepData> VerifyChecklistEntryAndProcessSteps(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, IEnumerable<ApplicationChecklistEntryStatusId> entryStatusIds, ProcessStepTypeId processStepTypeId, IEnumerable<ApplicationChecklistEntryTypeId>? entryTypeIds = null, IEnumerable<ProcessStepTypeId>? processStepTypeIds = null);
     void SkipProcessSteps(ManualChecklistProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds);

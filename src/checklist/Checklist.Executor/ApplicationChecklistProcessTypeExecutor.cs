@@ -112,8 +112,7 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
         bool modified;
         try
         {
-            (modifyChecklistEntry, nextStepTypeIds, stepsToSkip, modified) = await execution.ProcessFunc(stepData, cancellationToken).ConfigureAwait(false);
-            stepStatusId = ProcessStepStatusId.DONE;
+            (stepStatusId, modifyChecklistEntry, nextStepTypeIds, stepsToSkip, modified) = await execution.ProcessFunc(stepData, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not SystemException)
         {
@@ -126,8 +125,7 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
             }
             else
             {
-                (modifyChecklistEntry, nextStepTypeIds, stepsToSkip, modified) = await execution.ErrorFunc(ex, stepData, cancellationToken).ConfigureAwait(false);
-                stepStatusId = ProcessStepStatusId.FAILED;
+                (stepStatusId, modifyChecklistEntry, nextStepTypeIds, stepsToSkip, modified) = await execution.ErrorFunc(ex, stepData, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -156,14 +154,14 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
     }
 
     private static (ProcessStepStatusId,Action<ApplicationChecklistEntry>?) ProcessError(Exception ex) =>
-        ex is not ServiceException { IsRecoverable: true }
-            ? ( ProcessStepStatusId.FAILED,
+        ex is ServiceException { IsRecoverable: true }
+            ? ( ProcessStepStatusId.TODO,
                 item => {
-                    item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
                     item.Comment = string.IsNullOrEmpty(ex.Message) ? ex.ToString() : ex.Message;
                 })
-            : ( ProcessStepStatusId.TODO,
+            : ( ProcessStepStatusId.FAILED,
                 item => {
+                    item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
                     item.Comment = string.IsNullOrEmpty(ex.Message) ? ex.ToString() : ex.Message;
                 });
 }
