@@ -250,6 +250,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "process_steps");
 
+            migrationBuilder.DropIndex(
+                name: "ix_process_steps_process_id",
+                schema: "portal",
+                table: "process_steps");
+
+            migrationBuilder.DropIndex(
+                name: "ix_company_applications_checklist_process_id",
+                schema: "portal",
+                table: "company_applications");
+
             migrationBuilder.DropTable(
                 name: "audit_company_application20230214",
                 schema: "portal");
@@ -320,28 +330,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "process_types",
                 schema: "portal");
 
-            migrationBuilder.DropIndex(
-                name: "ix_process_steps_process_id",
-                schema: "portal",
-                table: "process_steps");
-
-            migrationBuilder.DropIndex(
-                name: "ix_company_applications_checklist_process_id",
-                schema: "portal",
-                table: "company_applications");
-
-            migrationBuilder.DeleteData(
-                schema: "portal",
-                table: "document_types",
-                keyColumn: "id",
-                keyValue: 10);
-
-            migrationBuilder.DeleteData(
-                schema: "portal",
-                table: "document_types",
-                keyColumn: "id",
-                keyValue: 11);
-
             migrationBuilder.Sql("DELETE FROM portal.process_steps WHERE process_step_type_id = 19");
 
             migrationBuilder.DeleteData(
@@ -360,11 +348,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "company_applications");
 
-            migrationBuilder.Sql("UPDATE portal.connectors SET self_description_document_id = null WHERE self_description_document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
-            migrationBuilder.Sql("UPDATE portal.agreements SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
-            migrationBuilder.Sql("UPDATE portal.consents SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
-            migrationBuilder.Sql("DELETE FROM portal.offer_assigned_documents WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
-            migrationBuilder.Sql("DELETE FROM portal.documents WHERE document_type_id = 4");
+            migrationBuilder.Sql("UPDATE portal.connectors SET self_description_document_id = null WHERE self_description_document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4 or document_type_id = 10 or document_type_id = 11)");
+            migrationBuilder.Sql("UPDATE portal.agreements SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4 or document_type_id = 10 or document_type_id = 11)");
+            migrationBuilder.Sql("UPDATE portal.consents SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4 or document_type_id = 10 or document_type_id = 11)");
+            migrationBuilder.Sql("DELETE FROM portal.offer_assigned_documents WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4 or document_type_id = 10 or document_type_id = 11)");
+            migrationBuilder.Sql("DELETE FROM portal.documents WHERE document_type_id = 4 or document_type_id = 10 or document_type_id = 11");
 
             migrationBuilder.UpdateData(
                 schema: "portal",
@@ -373,6 +361,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 keyValue: 4,
                 column: "label",
                 value: "APP_DATA_DETAILS");
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "document_types",
+                keyColumn: "id",
+                keyValue: 10);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "document_types",
+                keyColumn: "id",
+                keyValue: 11);
 
             migrationBuilder.CreateIndex(
                 name: "ix_application_assigned_process_steps_process_step_id",
