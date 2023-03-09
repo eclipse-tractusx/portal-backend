@@ -56,6 +56,12 @@ public class ApplicationActivationSettings
     /// </summary>
     public TimeSpan? EndTime { get; set; }
 
+    /// <summary>
+    /// The login theme for the shared idp 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string LoginTheme { get; set; } = null!;
+
 
     public static bool Validate(ApplicationActivationSettings settings)
     {

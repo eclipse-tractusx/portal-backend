@@ -22,7 +22,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using System.Security.Cryptography;
@@ -53,14 +52,16 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         _sdFactoryService.RegisterConnectorAsync(connectorId, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken);
 
     /// <inheritdoc />
-    public async Task<(Action<ApplicationChecklistEntry>?, IEnumerable<ProcessStepTypeId>?, bool)> StartSelfDescriptionRegistration(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    public async Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> StartSelfDescriptionRegistration(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         await RegisterSelfDescriptionInternalAsync(context.ApplicationId, cancellationToken)
             .ConfigureAwait(false);
 
-        return (
+        return new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+            ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
             new [] { ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP },
+            null,
             true
         );
     }

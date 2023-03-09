@@ -19,7 +19,8 @@
 -->
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Provisioning.Library.Tests</AssemblyName>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

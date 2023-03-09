@@ -310,5 +310,23 @@
     "user_role": "storage_user",
     "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb5d1",
     "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de50001",
+    "user_role": "PCF Engineer",
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfed",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de50002",
+    "user_role": "PCF Controller",
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfed",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de50003",
+    "user_role": "App Configurator",
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfed",
+    "last_editor_id": null
   }
 ]

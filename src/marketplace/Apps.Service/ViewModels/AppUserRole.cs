@@ -23,24 +23,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <summary>
 /// Model for Input Role
 /// </summary>
-/// <param name="role"></param>
-/// <param name="descriptions"></param>
+/// <param name="Role"></param>
+/// <param name="Descriptions"></param>
 /// <returns></returns>
-public record AppUserRole(string role, IEnumerable<AppUserRoleDescription> descriptions);
+public record AppUserRole(string Role, IEnumerable<AppUserRoleDescription> Descriptions);
 
 /// <summary>
 /// Model for Role Description
 /// </summary>
-/// <param name="languageCode"></param>
-/// <param name="description"></param>
+/// <param name="LanguageCode"></param>
+/// <param name="Description"></param>
 /// <returns></returns>
-public record AppUserRoleDescription(string languageCode, string description);
+public record AppUserRoleDescription(string LanguageCode, string Description);
 
 /// <summary>
 /// Model for Role Data
 /// </summary>
-/// <param name="roleId"></param>
-/// <param name="roleName"></param>
+/// <param name="RoleId"></param>
+/// <param name="RoleName"></param>
 /// <returns></returns>
-public record AppRoleData(Guid roleId, string roleName);
+public record AppRoleData(Guid RoleId, string RoleName);
 

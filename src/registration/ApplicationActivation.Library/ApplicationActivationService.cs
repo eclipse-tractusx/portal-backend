@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
@@ -30,7 +29,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using System.Collections.Immutable;
 
@@ -61,11 +59,11 @@ public class ApplicationActivationService : IApplicationActivationService
         _settings = options.Value;
     }
 
-    public Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)> HandleApplicationActivation(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    public Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivation(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         if (!InProcessingTime())
         {
-            return Task.FromResult<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)>((null,null,false));
+            return Task.FromResult(new IChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO,null,null,null,false));
         }
         var prerequisiteEntries = context.Checklist.Where(entry => entry.Key != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION);
         if (prerequisiteEntries.Any(entry => entry.Value != ApplicationChecklistEntryStatusId.DONE))
@@ -75,7 +73,7 @@ public class ApplicationActivationService : IApplicationActivationService
         return HandleApplicationActivationInternal(context);
     }
 
-    private async Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)> HandleApplicationActivationInternal(IChecklistService.WorkerChecklistProcessStepData context)
+    private async Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivationInternal(IChecklistService.WorkerChecklistProcessStepData context)
     {
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
         var result = await applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(context.ApplicationId).ConfigureAwait(false);
@@ -83,7 +81,7 @@ public class ApplicationActivationService : IApplicationActivationService
         {
             throw new ConflictException($"CompanyApplication {context.ApplicationId} is not in status SUBMITTED");
         }
-        var (companyId, businessPartnerNumber) = result;
+        var (companyId, businessPartnerNumber, iamIdpAliasse) = result;
 
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
@@ -93,7 +91,8 @@ public class ApplicationActivationService : IApplicationActivationService
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var assignedRoles = await AssignRolesAndBpn(context.ApplicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(false);
         await RemoveRegistrationRoles(context.ApplicationId, userRolesRepository).ConfigureAwait(false);
-
+        await SetTheme(iamIdpAliasse).ConfigureAwait(false);
+        
         applicationRepository.AttachAndModifyCompanyApplication(context.ApplicationId, ca =>
         {
             ca.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
@@ -124,7 +123,12 @@ public class ApplicationActivationService : IApplicationActivationService
                 throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ", clientRoles.roles)}]"))}");
             }
         }
-        return (entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE, null, true);
+        return new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+            ProcessStepStatusId.DONE,
+            entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
+            null,
+            Enum.GetValues<ProcessStepTypeId>().Except(new [] { ProcessStepTypeId.ACTIVATE_APPLICATION }),
+            true);
     }
 
     private bool InProcessingTime()
@@ -204,6 +208,14 @@ public class ApplicationActivationService : IApplicationActivationService
             await _provisioningManager.DeleteClientRolesFromCentralUserAsync(userData.UserEntityId, roleNamesToDelete)
                 .ConfigureAwait(false);
             userRolesRepository.DeleteCompanyUserAssignedRoles(userData.UserRoleIds.Select(roleId => (userData.CompanyUserId, roleId)));
+        }
+    }
+
+    private async Task SetTheme(IEnumerable<string> iamIdpAliasse)
+    {
+        foreach (var alias in iamIdpAliasse)
+        {
+            await _provisioningManager.UpdateSharedRealmTheme(alias, _settings.LoginTheme).ConfigureAwait(false);
         }
     }
 

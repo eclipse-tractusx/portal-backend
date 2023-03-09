@@ -4,6 +4,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -23,26 +24,64 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
-    #region CreateProcessStep
+    #region CreateProcess
 
     [Fact]
-    public async Task CreateProcessStep_CreatesSuccessfully()
+    public async Task CreateProcess_CreatesSuccessfully()
     {
         // Arrange
         var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var changeTracker = dbContext.ChangeTracker;
 
         // Act
-        sut.CreateProcessStep(ProcessStepTypeId.ACTIVATE_APPLICATION, ProcessStepStatusId.TODO);
+        var result = sut.CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST);
 
         // Assert
-        var changeTracker = dbContext.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        var changedEntity = changedEntries.Single();
-        changedEntity.State.Should().Be(EntityState.Added);
-        changedEntity.Entity.Should().BeOfType<ProcessStep>().Which.ProcessStepStatusId.Should().Be(ProcessStepStatusId.TODO);
+        changeTracker.Entries().Should().HaveCount(1)
+            .And.AllSatisfy(x =>
+            {
+                x.State.Should().Be(EntityState.Added);
+                x.Entity.Should().BeOfType<Process>();
+            });
+        changeTracker.Entries().Select(x => x.Entity).Cast<Process>()
+            .Should().Satisfy(
+                x => x.Id == result.Id && x.ProcessTypeId == ProcessTypeId.APPLICATION_CHECKLIST
+            );
+    }
+
+    #endregion
+
+    #region CreateProcessStepRange
+
+    [Fact]
+
+    public async Task CreateProcessStepRange_CreateSuccessfully()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(3).ToImmutableArray();
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var changeTracker = dbContext.ChangeTracker;
+
+        // Act
+        var result = sut.CreateProcessStepRange(processStepTypeIds.Select(processStepTypeId => (processStepTypeId, ProcessStepStatusId.TODO, processId)));
+
+        // Assert
+        changeTracker.HasChanges().Should().BeTrue();
+        changeTracker.Entries().Should()
+            .HaveSameCount(processStepTypeIds)
+            .And.AllSatisfy(x =>
+            {
+                x.State.Should().Be(EntityState.Added);
+                x.Entity.Should().BeOfType<ProcessStep>();
+            });
+        changeTracker.Entries().Select(x => x.Entity).Cast<ProcessStep>()
+            .Should().Satisfy(
+                x => x.Id == result.ElementAt(0).Id && x.ProcessId == processId && x.ProcessStepTypeId == processStepTypeIds[0] && x.ProcessStepStatusId == ProcessStepStatusId.TODO,
+                x => x.Id == result.ElementAt(1).Id && x.ProcessId == processId && x.ProcessStepTypeId == processStepTypeIds[1] && x.ProcessStepStatusId == ProcessStepStatusId.TODO,
+                x => x.Id == result.ElementAt(2).Id && x.ProcessId == processId && x.ProcessStepTypeId == processStepTypeIds[2] && x.ProcessStepStatusId == ProcessStepStatusId.TODO
+            );
     }
 
     #endregion
@@ -76,6 +115,54 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changedEntity = changedEntries.Single();
         changedEntity.State.Should().Be(EntityState.Modified);
         changedEntity.Entity.Should().BeOfType<ProcessStep>().Which.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
+    }
+
+    #endregion
+
+    #region GetActiveProcesses
+
+    [Fact]
+    public async Task GetActiveProcess_ReturnsExpected()
+    {
+        // Arrange
+        var processTypeIds = new [] { ProcessTypeId.APPLICATION_CHECKLIST };
+        var processStepTypeIds = new [] {
+            ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
+            ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
+            ProcessStepTypeId.CREATE_IDENTITY_WALLET,
+            ProcessStepTypeId.START_CLEARING_HOUSE,
+            ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE,
+            ProcessStepTypeId.START_SELF_DESCRIPTION_LP,
+            ProcessStepTypeId.ACTIVATE_APPLICATION,
+        };
+
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetActiveProcesses(processTypeIds, processStepTypeIds).ToListAsync().ConfigureAwait(false);
+        result.Should().HaveCount(1)
+            .And.Satisfy(
+                x => x.ProcessId == new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe") && x.ProcessTypeId == ProcessTypeId.APPLICATION_CHECKLIST
+            );
+    }
+
+    #endregion
+
+    #region GetProcessStepData
+
+    [Fact]
+    public async Task GetProcessStepData_ReturnsExpected()
+    {
+        // Arrange
+        var processId = new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe");
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetProcessStepData(processId).ToListAsync().ConfigureAwait(false);
+        result.Should().HaveCount(1)
+            .And.Satisfy(
+                x => x.ProcessStepId == new Guid("2d03703e-8f10-4e8e-a194-f04d0ae15c35") && x.ProcessStepTypeId == ProcessStepTypeId.START_CLEARING_HOUSE
+            );
     }
 
     #endregion

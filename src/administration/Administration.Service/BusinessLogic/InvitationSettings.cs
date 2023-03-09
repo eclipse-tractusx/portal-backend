@@ -28,13 +28,17 @@ public class InvitationSettings
     {
         RegistrationAppAddress = null!;
         InvitedUserInitialRoles = null!;
+        InitialLoginTheme = null!;
     }
-    
+
     [Required(AllowEmptyStrings = false)]
     public string RegistrationAppAddress { get; set; }
-    
+
     [Required]
     public IDictionary<string,IEnumerable<string>> InvitedUserInitialRoles { get; set; }
+
+    [Required(AllowEmptyStrings = false)]
+    public string InitialLoginTheme { get; set; }
 }
 
 public static class InvitationSettingsExtension

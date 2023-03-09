@@ -31,6 +31,6 @@ public static class PortalRepositoriesStartupServiceExtensions
     public static IServiceCollection AddPortalRepositories(this IServiceCollection services, IConfiguration configuration) =>
         services.AddScoped<IPortalRepositories, PortalRepositories>()
             .AddDbContext<PortalDbContext>(o => o
-                .UseNpgsql(configuration.GetConnectionString("PortalDB"))
-                .UsePostgreSqlTriggers());
+                    .UseNpgsql(configuration.GetConnectionString("PortalDB"))
+                    .UsePostgreSqlTriggers());
 }

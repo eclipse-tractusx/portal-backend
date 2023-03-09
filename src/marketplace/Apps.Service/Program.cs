@@ -38,13 +38,13 @@ builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
 
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
+                .AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>()            
+                .AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()            
                 .AddTransient<IOfferService, OfferService>()
                 .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
                 .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
 
 builder.Services.AddOfferSetupService();
-
-builder.Services.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>();
 
 builder.Build()
     .CreateApp<Program>("apps", VERSION, builder.Environment)

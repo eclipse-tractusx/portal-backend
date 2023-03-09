@@ -55,8 +55,6 @@ public interface IOfferRepository
 
     void AttachAndModifyOffer(Guid offerId, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters = null);
 
-    Offer DeleteOffer(Guid offerId);
-
     /// <summary>
     /// Gets all active apps with an optional filtered with the languageShortName
     /// </summary>
@@ -117,10 +115,6 @@ public interface IOfferRepository
     /// <param name="offerDescriptions">The app descriptions that should be added to the database</param>
     void AddOfferDescriptions(IEnumerable<(Guid offerId, string languageShortName, string descriptionLong, string descriptionShort)> offerDescriptions);
 
-    void RemoveOfferDescriptions(IEnumerable<(Guid offerId, string languageShortName)> offerDescriptionIds);
-
-    void AttachAndModifyOfferDescription(Guid offerId, string languageShortName, Action<OfferDescription> setOptionalParameters);
-
     /// <summary>
     /// Adds <see cref="AppLanguage"/>s to the database
     /// </summary>
@@ -157,7 +151,7 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <returns>ValueTuple, first item is true if the app is in status CREATED,
     /// second item is true if the user is eligible to edit it</returns>
-    Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, string userId, OfferTypeId offerTypeId);
+    Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<OfferDescriptionData> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, string userId, OfferTypeId offerTypeId);
     
     /// Get Offer Release data by Offer Id
     /// </summary>
@@ -270,10 +264,10 @@ public interface IOfferRepository
     /// Adds the service types to the service
     /// </summary>
     /// <param name="serviceAssignedServiceTypes"></param>
-    void AddServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceAssignedServiceTypes);
+    void AddServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId, bool technicalUserNeeded)> serviceAssignedServiceTypes);
 
     /// <summary>
-    /// Removes <see cref="ServiceAssignedServiceType"/>s to the database
+    /// Removes <see cref="ServiceDetail"/>s to the databasethe database
     /// </summary>
     /// <param name="serviceAssignedServiceTypes">serviceIds and serviceTypeIds of the assigned service types to be removed from the database</param>
     void RemoveServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceAssignedServiceTypes);
@@ -294,7 +288,7 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(bool OfferExists, string? AppName, Guid CompanyUserId, Guid? ProviderCompanyId)> GetOfferNameProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+    Task<(bool OfferExists, string? AppName, Guid CompanyUserId, Guid? ProviderCompanyId, IEnumerable<string> ClientClientIds)> GetInsertActiveAppUserRoleDataAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Retireve and Validate Offer Status for App
@@ -336,4 +330,95 @@ public interface IOfferRepository
     /// <param name="modifyPrivacyPolicy"></param>
     /// <returns></returns>
     void CreateDeleteAppAssignedPrivacyPolicies(Guid appId, IEnumerable<PrivacyPolicyId> initialPrivacyPolicy, IEnumerable<PrivacyPolicyId> modifyPrivacyPolicy);
+
+    /// <summary>
+    /// Gets InReview Offer Data for App by ID
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name ="offerTypeId"></param>
+    Task<InReviewOfferData?> GetInReviewAppDataByIdAsync(Guid id, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Gets Offer Descriptions Data for Apps
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name ="iamUserId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task<(bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<OfferDescriptionData>? OfferDescriptionDatas)> GetActiveOfferDescriptionDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId);
+
+    /// <summary>
+    /// Create, Update and Delete Offer Descriptions Data
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name ="initialItems"></param>
+    /// <param name="modifiedItems"></param>
+    /// <returns></returns>
+    void CreateUpdateDeleteOfferDescriptions(Guid offerId, IEnumerable<OfferDescriptionData> initialItems, IEnumerable<(string LanguageCode, string LongDescription, string ShortDescription)> modifiedItems);
+
+    /// <summary>
+    /// Delete the OfferAssignedDocument 
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="documentId"></param>
+    void RemoveOfferAssignedDocument(Guid offerId, Guid documentId);
+    
+    /// Verify that user is linked to the appId ,offerstatus is in created state
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userId"></param>
+    /// <param name="offerStatusId"></param>
+    /// <returns></returns>
+    Task<(bool IsValidApp,bool IsOfferType,bool IsOfferStatus,bool IsProviderCompanyUser,AppDeleteData? DeleteData)> GetAppDeleteDataAsync(Guid offerId, OfferTypeId offerTypeId, string userId, OfferStatusId offerStatusId);
+    
+    /// <summary>
+    /// Delete Offer Assigned Licenses
+    /// </summary>
+    /// <param name="offerLicenseIds"></param>
+    void RemoveOfferAssignedLicenses(IEnumerable<(Guid OfferId, Guid LicenseId)> offerLicenseIds);
+
+    /// <summary>
+    /// Delete Offer Assigned Use Cases
+    /// </summary>
+    /// <param name="offerUseCaseIds"></param>
+    void RemoveOfferAssignedUseCases(IEnumerable<(Guid OfferId, Guid UseCaseId)> offerUseCaseIds);
+
+    /// <summary>
+    /// Delete Offer Assigned Privacy Policies
+    /// </summary>
+    /// <param name="offerPrivacyPolicyIds"></param>
+    void RemoveOfferAssignedPrivacyPolicies(IEnumerable<(Guid OfferId, PrivacyPolicyId PrivacyPolicyId)> offerPrivacyPolicyIds);
+
+    /// <summary>
+    /// Delete Offer Assigned Documents
+    /// </summary>
+    /// <param name="offerDocumentIds"></param>
+    void RemoveOfferAssignedDocuments(IEnumerable<(Guid OfferId, Guid DocumentId)> offerDocumentIds);
+
+    /// <summary>
+    /// Delete Offer Tags
+    /// </summary>
+    /// <param name="offerTagNames"></param>
+    void RemoveOfferTags(IEnumerable<(Guid OfferId, string TagName)> offerTagNames);
+
+    /// <summary>
+    /// Delete Offer Description
+    /// </summary>
+    /// <param name="offerLanguageShortNames"></param>
+     void RemoveOfferDescriptions(IEnumerable<(Guid OfferId, string LanguageShortName)> offerLanguageShortNames);
+
+     /// <summary>
+     /// Delete Offer
+     /// </summary>
+     /// <param name="offerIds"></param>
+     void RemoveOffer(Guid offerId);
+
+    /// <summary>
+    /// Gets Active OfferAssigned AppLeadImage Documents
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name ="iamUserId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task<(bool IsStatusActive, Guid CompanyUserId, IEnumerable<DocumentStatusData> documentStatusDatas)> GetOfferAssignedAppLeadImageDocumentsByIdAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
 }

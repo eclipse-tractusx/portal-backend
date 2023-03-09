@@ -74,5 +74,9 @@
   {
     "app_id": "a16e73b9-5277-4b69-9f8d-3b227495dfec",
     "use_case_id": "c065a349-f649-47f8-94d5-1a504a855419"
+  },
+  {
+    "app_id": "a16e73b9-5277-4b69-9f8d-3b227495dfed",
+    "use_case_id": "06b243a4-ba51-4bf3-bc40-5d79a2231b87"
   }
 ]

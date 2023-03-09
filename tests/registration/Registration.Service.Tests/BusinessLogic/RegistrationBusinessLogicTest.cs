@@ -64,6 +64,7 @@ public class RegistrationBusinessLogicTest
     private readonly IPortalRepositories _portalRepositories;
     private readonly ICompanyRolesRepository _companyRolesRepository;
     private readonly IConsentRepository _consentRepository;
+    private readonly IProcessStepRepository _processStepRepository;
     private readonly IChecklistCreationService _checklistService;
     private readonly string _iamUserId;
     private readonly Guid _companyUserId;
@@ -98,6 +99,7 @@ public class RegistrationBusinessLogicTest
         _consentRepository = A.Fake<IConsentRepository>();
         _checklistService = A.Fake<IChecklistCreationService>();
         _staticDataRepository = A.Fake<IStaticDataRepository>();
+        _processStepRepository = A.Fake<IProcessStepRepository>();
 
         var options = Options.Create(new RegistrationSettings
         {
@@ -1616,24 +1618,145 @@ public class RegistrationBusinessLogicTest
 
     
     [Fact]
-    public async Task SubmitRegistrationAsync_WithDocumentId()
+    public async Task SubmitRegistrationAsync_WithDocumentId_Success()
     {
         // Arrange
-        var applicationid = _fixture.Create<Guid>();
-        IEnumerable<DocumentStatusData> document = new DocumentStatusData[]{
+        var applicationId = _fixture.Create<Guid>();
+        var documents = new DocumentStatusData[] {
             new(Guid.NewGuid(),DocumentStatusId.PENDING),
             new(Guid.NewGuid(),DocumentStatusId.INACTIVE)
         };
-        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationid, _iamUserId))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY,Guid.NewGuid(),"test@mail.de",document));
+        var checklist = _fixture.CreateMany<ApplicationChecklistEntryTypeId>(3).Select(x => (x, ApplicationChecklistEntryStatusId.TO_DO)).ToImmutableArray();
+        var stepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(3).ToImmutableArray();
+
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _iamUserId))
+            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY,Guid.NewGuid(),"test@mail.de",documents));
+
+        A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
+            .Returns(checklist);
+
+        A.CallTo(() => _checklistService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId)>>.That.IsSameSequenceAs(checklist)))
+            .Returns(stepTypeIds);
+        
+        var utcNow = DateTimeOffset.UtcNow;
+
+        Process? process = null;
+
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .ReturnsLazily((ProcessTypeId processTypeId) =>
+            {
+                process = new Process(Guid.NewGuid(), processTypeId);
+                return process;
+            });
+
+        CompanyApplication? application = null;
+
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
+            .Invokes((Guid applicationId, Action<CompanyApplication> setOptionalParameters) =>
+            {
+                application = new CompanyApplication(applicationId, Guid.Empty, default, default);
+                setOptionalParameters(application);
+            });
+
+        IEnumerable<ProcessStep>? processSteps = null;
+
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId,ProcessStepStatusId,Guid)>>._))
+            .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
+            {
+                processSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, utcNow)).ToImmutableArray();
+                return processSteps;
+            });
+
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, _checklistService);
 
         // Act
-        await sut.SubmitRegistrationAsync(applicationid, _iamUserId);
-        // Arrange
+        await sut.SubmitRegistrationAsync(applicationId, _iamUserId);
+
+        // Assert
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._)).MustHaveHappened(2, Times.Exactly);
+
+        A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
+            .MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => _checklistService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId)>>.That.IsSameSequenceAs(checklist)))
+            .MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .MustHaveHappenedOnceExactly();
+        
+        process.Should().NotBeNull();
+        process!.ProcessTypeId.Should().Be(ProcessTypeId.APPLICATION_CHECKLIST);
+
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
+            .MustHaveHappenedOnceExactly();
+
+        application.Should().NotBeNull();
+        application!.ChecklistProcessId.Should().Be(process!.Id);
+        application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
+
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId,ProcessStepStatusId,Guid)>>._))
+            .MustHaveHappenedOnceExactly();
+        
+        processSteps.Should().NotBeNull()
+            .And.HaveCount(stepTypeIds.Length)
+            .And.AllSatisfy(x =>
+                {
+                    x.ProcessId.Should().Be(process.Id);
+                    x.ProcessStepStatusId.Should().Be(ProcessStepStatusId.TODO);
+                })
+            .And.Satisfy(
+                x => x.ProcessStepTypeId == stepTypeIds[0],
+                x => x.ProcessStepTypeId == stepTypeIds[1],
+                x => x.ProcessStepTypeId == stepTypeIds[2]
+            );
+
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
     
+    [Theory]
+    [InlineData(CompanyApplicationStatusId.CREATED)]
+    [InlineData(CompanyApplicationStatusId.ADD_COMPANY_DATA)]
+    [InlineData(CompanyApplicationStatusId.INVITE_USER)]
+    [InlineData(CompanyApplicationStatusId.SELECT_COMPANY_ROLE)]
+    [InlineData(CompanyApplicationStatusId.UPLOAD_DOCUMENTS)]
+    public async Task SubmitRegistrationAsync_InvalidStatus_ThrowsForbiddenException(CompanyApplicationStatusId statusId)
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(statusId, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>()));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitRegistrationAsync(applicationId, Guid.Empty.ToString())
+            .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be("Application status is not fitting to the pre-requisite");
+    }
+
+    [Theory]
+    [InlineData(CompanyApplicationStatusId.SUBMITTED)]
+    [InlineData(CompanyApplicationStatusId.CONFIRMED)]
+    [InlineData(CompanyApplicationStatusId.DECLINED)]
+    public async Task SubmitRegistrationAsync_AlreadyClosed_ThrowsForbiddenException(CompanyApplicationStatusId statusId)
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(statusId, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>()));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitRegistrationAsync(applicationId, Guid.Empty.ToString())
+            .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be("Application is already closed");
+    }
+
     [Fact]
     public async Task SubmitRegistrationAsync_WithNotExistingCompanyUser_ThrowsForbiddenException()
     {
@@ -1926,6 +2049,8 @@ public class RegistrationBusinessLogicTest
             .Returns(_consentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IStaticDataRepository>())
             .Returns(_staticDataRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>())
+            .Returns(_processStepRepository);
     }
 
     private void SetupFakesForInvitation()

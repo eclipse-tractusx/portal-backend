@@ -35,13 +35,18 @@ public interface IRegistrationBusinessLogic
     Task UpdateCompanyBpn(Guid applicationId, string bpn);
     
     /// <summary>
-    /// Sets the registration verification state for the given application.
+    /// Approves the given application.
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
-    /// <param name="approve"><c>true</c> if the application is approved, otherwise <c>false</c></param>
-    /// <param name="comment">An additional comment, only set if the application got declined</param>
-    Task SetRegistrationVerification(Guid applicationId, bool approve, string? comment = null);
+    Task ApproveRegistrationVerification(Guid applicationId);
     
+    /// <summary>
+    /// Declines the given application.
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    /// <param name="comment">Reason of decline</param>
+    Task DeclineRegistrationVerification(Guid applicationId, string comment);
+
     /// <summary>
     /// Processes the clearinghouse response
     /// </summary>

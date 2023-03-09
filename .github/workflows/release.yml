@@ -72,7 +72,7 @@ jobs:
           file: docker/Dockerfile-administration-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_ADMINISTRATION }}:${{ steps.git-tag.outputs.git-version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_ADMINISTRATION }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_ADMINISTRATION }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   checklist-worker-release:
@@ -109,7 +109,7 @@ jobs:
           file: docker/Dockerfile-checklist-worker
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CHECKLIST_WORKER }}:${{ steps.git-tag.outputs.git-version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CHECKLIST_WORKER }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CHECKLIST_WORKER }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   registration-service-release:
@@ -146,7 +146,7 @@ jobs:
           file: docker/Dockerfile-registration-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_REGISTRATION }}:${{ steps.git-tag.outputs.git-version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_REGISTRATION }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_REGISTRATION }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   provisioning-service-release:
@@ -183,7 +183,7 @@ jobs:
           file: docker/Dockerfile-provisioning-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING }}:${{ steps.git-tag.outputs.git-version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   marketplace-app-service-release:
@@ -220,7 +220,7 @@ jobs:
           file: docker/Dockerfile-marketplace-app-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}:${{ steps.git-tag.outputs.git-version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   portal-migrations-release:
@@ -257,7 +257,7 @@ jobs:
           file: docker/Dockerfile-portal-migrations
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}:${{ steps.git-tag.outputs.git-version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   maintenance-service-release:
@@ -294,7 +294,7 @@ jobs:
           file: docker/Dockerfile-maintenance-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MAINTENANCE }}:${{ steps.git-tag.outputs.git-version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MAINTENANCE }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MAINTENANCE }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   notification-service-release:
@@ -331,7 +331,7 @@ jobs:
           file: docker/Dockerfile-notification-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_NOTIFICATION }}:${{ steps.git-tag.outputs.git-version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_NOTIFICATION }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_NOTIFICATION }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   services-service-release:
@@ -368,7 +368,7 @@ jobs:
           file: docker/Dockerfile-services-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVICES }}:${{ steps.git-tag.outputs.git-version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVICES }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVICES }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   provisioning-migrations-release:
@@ -405,7 +405,7 @@ jobs:
           file: docker/Dockerfile-provisioning-migrations
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}:${{ steps.git-tag.outputs.git-version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   auth-and-dispatch:

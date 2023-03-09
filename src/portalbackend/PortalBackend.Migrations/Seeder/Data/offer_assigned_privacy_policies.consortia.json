@@ -38,5 +38,9 @@
     {
         "offer_id": "5cf74ef8-e0b7-4984-a872-474828beb510",
         "privacy_policy_id": 5
-    }
+    },
+    {
+       "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfed",
+       "privacy_policy_id": 5
+    }  
 ]

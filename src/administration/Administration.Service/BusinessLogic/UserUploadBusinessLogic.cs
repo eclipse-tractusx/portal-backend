@@ -74,6 +74,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
             },
             async line => {
                 var parsed = ParseUploadOwnIdpUsersCSVLine(line, companyNameIdpAliasData.IsSharedIdp);
+                ValidateUserCreationRoles(parsed.Roles);
                 return new UserCreationRoleDataIdpInfo(
                     parsed.FirstName,
                     parsed.LastName,
@@ -154,6 +155,14 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         }
     }
 
+    private static void ValidateUserCreationRoles(IEnumerable<string> roles)
+    {
+        if (!roles.Any())
+        {
+            throw new ControllerArgumentException("at least one role must be specified");
+        }
+    }
+
     private static (string FirstName, string LastName, string Email, string ProviderUserName, string ProviderUserId, IEnumerable<string> Roles) ParseUploadOwnIdpUsersCSVLine(string line, bool isSharedIdp)
     {
         var items = line.Split(",").AsEnumerable().GetEnumerator();
@@ -190,6 +199,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
             },
             async line => {
                 var parsed = ParseUploadSharedIdpUsersCSVLine(line);
+                ValidateUserCreationRoles(parsed.Roles);
                 return new UserCreationRoleDataIdpInfo(
                     parsed.FirstName,
                     parsed.LastName,

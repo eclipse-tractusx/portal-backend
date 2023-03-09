@@ -19,8 +19,6 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library;
 
@@ -31,5 +29,5 @@ public interface IApplicationActivationService
     /// </summary>
     /// <param name="context">The context for the application activation</param>
     /// <param name="cancellationToken">The cancellation Token</param>
-    Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)> HandleApplicationActivation(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
+    Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivation(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
 }

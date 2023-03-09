@@ -53,10 +53,16 @@ public class DocumentsController : ControllerBase
     /// <returns>Returns the file.</returns>
     /// <remarks>Example: GET: /api/administration/documents/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
     /// <response code="200">Returns the file.</response>
+    /// <response code="403">The user is not assigned with the Company.</response>
+    /// <response code="404">The document was not found.</response>
+    /// <response code="503">document Content is null.</response>
     [HttpGet]
     [Route("{documentId}")]
     [Authorize(Roles = "view_documents")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
     {
         var (fileName, content, contentType) = await this.WithIamUserId(iamUserId => _businessLogic.GetDocumentAsync(documentId, iamUserId).ConfigureAwait(false));
@@ -70,10 +76,12 @@ public class DocumentsController : ControllerBase
     /// <returns>Returns the file.</returns>
     /// <remarks>Example: GET: /api/administration/documents/selfDescription/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
     /// <response code="200">Returns the file.</response>
+    /// <response code="404">The document was not found.</response>
     [HttpGet]
     [Route("selfDescription/{documentId}")]
     [Authorize(Roles = "view_documents")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GetSelfDescriptionDocumentsAsync([FromRoute] Guid documentId)
     {
         var (fileName, content) = await _businessLogic.GetSelfDescriptionDocumentAsync(documentId).ConfigureAwait(false);

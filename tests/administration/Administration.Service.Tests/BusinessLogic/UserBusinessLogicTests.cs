@@ -362,7 +362,35 @@ public class UserBusinessLogicTests
         var result = await sut.CreateOwnCompanyIdpUserAsync(_identityProviderId, userCreationInfoIdp, _iamUserId).ConfigureAwait(false);
         result.Should().NotBe(Guid.Empty);
         A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfoIdp.Email),A<IDictionary<string,string>>.That.Matches(x => x["companyName"] == _displayName),A<IEnumerable<string>>._)).MustHaveHappened();
-        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();        
+        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task TestCreateOwnCompanyIdpUserNoRolesThrowsArgumentException()
+    {
+        SetupFakesForUserCreation(false);
+
+        var userCreationInfoIdp = _fixture.Build<UserCreationInfoIdp>()
+            .With(x => x.FirstName, _fixture.CreateName())
+            .With(x => x.LastName, _fixture.CreateName())
+            .With(x => x.Email, _fixture.CreateEmail())
+            .With(x => x.Roles, Enumerable.Empty<string>())
+            .Create();
+
+        var sut = new UserBusinessLogic(
+            null!,
+            _userProvisioningService,
+            null!,
+            null!,
+            _mailingService,
+            _logger,
+            _options);
+
+        Task Act() => sut.CreateOwnCompanyIdpUserAsync(_identityProviderId, userCreationInfoIdp, _iamUserId);
+
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be("at least one role must be specified (Parameter 'Roles')");
+        error.ParamName.Should().Be("Roles");
     }
 
     [Fact]
@@ -440,7 +468,7 @@ public class UserBusinessLogicTests
         var result = await sut.CreateOwnCompanyIdpUserAsync(_identityProviderId, userCreationInfoIdp, _iamUserId).ConfigureAwait(false);
         result.Should().NotBe(Guid.Empty);
         A.CallTo(() => _mailingService.SendMails(A<string>._,A<IDictionary<string,string>>._,A<IEnumerable<string>>._)).MustHaveHappened();
-        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappened();        
+        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappened();
     }
 
     #endregion
@@ -976,7 +1004,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length-1);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
 
-        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error),_error,A<string>.That.IsEqualTo($"Error while deleting companyUser {invalidUserId} from shared idp {sharedIdpAlias}"))).MustHaveHappened();
+        A.CallTo(() => _mockLogger.Log(LogLevel.Error, _error, $"Error while deleting companyUser {invalidUserId} from shared idp {sharedIdpAlias}")).MustHaveHappened();
     }
 
     [Fact]
@@ -1033,7 +1061,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length-1);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
 
-        A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error),_error,A<string>.That.IsEqualTo($"Error while deleting companyUser {invalidUserId}"))).MustHaveHappened();
+        A.CallTo(() => _mockLogger.Log(LogLevel.Error, _error, $"Error while deleting companyUser {invalidUserId}")).MustHaveHappened();
     }
 
     #endregion

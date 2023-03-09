@@ -22,6 +22,7 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
@@ -333,13 +334,84 @@ public class AppsControllerTests
         var content = _fixture.Create<byte[]>();
         var fileName = _fixture.Create<string>();
         
-        A.CallTo(() => _logic.GetAppImageDocumentContentAsync(A<Guid>._ , A<Guid>._, A<CancellationToken>._))
+        A.CallTo(() => _logic.GetAppDocumentContentAsync(A<Guid>._ , A<Guid>._, A<CancellationToken>._))
             .ReturnsLazily(() => (content,"image/png",fileName));
 
         //Act
-        var result = await this._controller.GetAppImageDocumentContentAsync(appId,documentId,CancellationToken.None).ConfigureAwait(false);
+        var result = await this._controller.GetAppDocumentContentAsync(appId,documentId,CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAppImageDocumentContentAsync(A<Guid>._ , A<Guid>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetAppDocumentContentAsync(A<Guid>._ , A<Guid>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetAppUpdateDescriptionsAsync_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var offerDescriptionData = _fixture.CreateMany<OfferDescriptionData>(3);
+
+        A.CallTo(() => _logic.GetAppUpdateDescritionByIdAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(() => offerDescriptionData);
+        
+        //Act
+        var result = await this._controller.GetAppUpdateDescriptionsAsync(appId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAppUpdateDescritionByIdAsync(A<Guid>._, A<string>._)).MustHaveHappened();
+    }
+
+    [Fact]
+    public async Task CreateOrUpdateAppDescriptionsAsync_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
+
+        A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<string>._, A<IEnumerable<LocalizedDescription>>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+        
+        //Act
+        var result = await this._controller.CreateOrUpdateAppDescriptionsByIdAsync(appId,offerDescriptionData).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<string>._, A<IEnumerable<LocalizedDescription>>._)).MustHaveHappened();
+        result.Should().BeOfType<NoContentResult>(); 
+    }
+
+    [Fact]
+    public async Task GetAppDocumentTypePdfContentAsync_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var content = _fixture.Create<byte[]>();
+        var fileName = _fixture.Create<string>();
+
+        A.CallTo(() => _logic.GetAppDocumentContentAsync(A<Guid>._, A<Guid>._, A<CancellationToken>._))
+            .ReturnsLazily(() => (content, "application/pdf", fileName));
+
+        //Act
+        var result = await this._controller.GetAppDocumentContentAsync(appId, documentId, CancellationToken.None).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAppDocumentContentAsync(A<Guid>._, A<Guid>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task CreatOfferAssignedAppLeadImageDocumentByIdAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
+        A.CallTo(() => _logic.CreatOfferAssignedAppLeadImageDocumentByIdAsync(A<Guid>._, A<string>._, A<IFormFile>._, CancellationToken.None))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        // Act
+        var result = await this._controller.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, IamUserId, file, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 }

@@ -18,12 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using FakeItEasy;
-using FluentAssertions;
-using Xunit;
-
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO.Tests;
 
 public class CancelableStreamTest

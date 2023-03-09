@@ -50,7 +50,7 @@ public class StaticDataController : ControllerBase
     /// </summary>
     /// <returns>AsyncEnumerable of Use Case Data</returns>
     /// <remarks>
-    /// Example: GET: /api/administration/staticdata/app
+    /// Example: GET: /api/administration/staticdata/usecases
     /// </remarks>
     /// <response code="200">Returns a list of all of the use case data.</response>
     [HttpGet]
