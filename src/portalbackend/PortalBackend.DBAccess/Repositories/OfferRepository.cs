@@ -74,12 +74,10 @@ public class OfferRepository : IOfferRepository
         setOptionalParameters.Invoke(offer);
     }
 
-    public Offer DeleteOffer(Guid offerId) =>
-        _context.Remove(new Offer(offerId, null!, default, default)).Entity;
-
     /// <inheritdoc />
     public IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, Guid LeadPictureId, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName) =>
         _context.Offers.AsNoTracking()
+            .AsSplitQuery()
             .Where(offer => offer.DateReleased.HasValue && offer.DateReleased <= DateTime.UtcNow && offer.OfferTypeId == OfferTypeId.APP && offer.OfferStatusId == OfferStatusId.ACTIVE)
             .Select(a => new ValueTuple<Guid,string?,string,IEnumerable<string>,Guid,string?,string?>(
                 a.Id,
@@ -147,12 +145,12 @@ public class OfferRepository : IOfferRepository
         _context.OfferAssignedLicenses.Remove(new OfferAssignedLicense(offerId, offerLicenseId));
 
     /// <inheritdoc />
-    public void AddServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceAssignedServiceTypes) =>
-        _context.ServiceAssignedServiceTypes.AddRange(serviceAssignedServiceTypes.Select(s => new ServiceAssignedServiceType(s.serviceId, s.serviceTypeId)));
+    public void AddServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId, bool technicalUserNeeded)> serviceAssignedServiceTypes) =>
+        _context.ServiceDetails.AddRange(serviceAssignedServiceTypes.Select(s => new ServiceDetail(s.serviceId, s.serviceTypeId, s.technicalUserNeeded)));
 
     /// <inheritdoc />
     public void RemoveServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceAssignedServiceTypes) =>
-        _context.ServiceAssignedServiceTypes.RemoveRange(serviceAssignedServiceTypes.Select(s => new ServiceAssignedServiceType(s.serviceId, s.serviceTypeId)));
+        _context.ServiceDetails.RemoveRange(serviceAssignedServiceTypes.Select(s => new ServiceDetail(s.serviceId, s.serviceTypeId, default)));
 
     /// <inheritdoc />
     public OfferAssignedLicense CreateOfferAssignedLicense(Guid appId, Guid appLicenseId) =>
@@ -186,15 +184,6 @@ public class OfferRepository : IOfferRepository
     public void AddOfferDescriptions(IEnumerable<(Guid offerId, string languageShortName, string descriptionLong, string descriptionShort)> offerDescriptions) =>
         _context.OfferDescriptions.AddRange(offerDescriptions.Select(s => new OfferDescription(s.offerId, s.languageShortName, s.descriptionLong, s.descriptionShort)));
 
-    public void RemoveOfferDescriptions(IEnumerable<(Guid offerId, string languageShortName)> offerDescriptionIds) =>
-        _context.RemoveRange(offerDescriptionIds.Select(x => new OfferDescription(x.offerId, x.languageShortName, null!, null!)));
-
-    public void AttachAndModifyOfferDescription(Guid offerId, string languageShortName, Action<OfferDescription> setOptionalParameters)
-    {
-        var offerDescription = _context.Attach(new OfferDescription(offerId, languageShortName, null!, null!)).Entity;
-        setOptionalParameters.Invoke(offerDescription);
-    }
-
     /// <inheritdoc />
     public void AddAppLanguages(IEnumerable<(Guid appId, string languageShortName)> appLanguages) =>
         _context.AppLanguages.AddRange(appLanguages.Select(s => new AppLanguage(s.appId, s.languageShortName)));
@@ -220,18 +209,18 @@ public class OfferRepository : IOfferRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<(string LanguageShortName ,string DescriptionLong,string DescriptionShort)> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, string userId, OfferTypeId offerTypeId) =>
+    public Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<OfferDescriptionData> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, string userId, OfferTypeId offerTypeId) =>
         _context.Offers
             .AsNoTracking()
             .Where(a => a.Id == appId && a.OfferTypeId == offerTypeId)
             .Select(a =>
-                new ValueTuple<bool,bool,string?,string?,string?,IEnumerable<(string,string,string)>>(
+                new ValueTuple<bool,bool,string?,string?,string?,IEnumerable<OfferDescriptionData>>(
                     a.OfferStatusId == OfferStatusId.CREATED,
                     a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
                     a.ContactEmail,
                     a.ContactNumber,
                     a.MarketingUrl,
-                    a.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort))
+                    a.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort))
                 ))
             .SingleOrDefaultAsync();
        
@@ -259,7 +248,7 @@ public class OfferRepository : IOfferRepository
                 .Where(x => 
                     x.OfferTypeId == OfferTypeId.SERVICE &&
                     x.OfferStatusId == OfferStatusId.ACTIVE &&
-                    (serviceTypeId == null || x.ServiceTypes.Any(st => st.Id == serviceTypeId)))
+                    (serviceTypeId == null || x.ServiceDetails.Any(st => st.ServiceTypeId == serviceTypeId)))
                 .GroupBy(s => s.OfferTypeId),
             sorting switch
             {
@@ -276,7 +265,7 @@ public class OfferRepository : IOfferRepository
                 service.ContactEmail,
                 service.OfferDescriptions.SingleOrDefault(ln => ln.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionShort,
                 service.OfferLicenses.FirstOrDefault()!.Licensetext,
-                service.ServiceTypes.Select(x => x.Id)))
+                service.ServiceDetails.Select(x => x.ServiceTypeId)))
         .SingleOrDefaultAsync();
 
      /// <inheritdoc />
@@ -308,7 +297,7 @@ public class OfferRepository : IOfferRepository
                  offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
                  offer.OfferLicenses.FirstOrDefault()!.Licensetext,
                  offer.OfferSubscriptions.Where(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)).Select(x => new OfferSubscriptionStateDetailData(x.Id, x.OfferSubscriptionStatusId)),
-                 offer.ServiceTypes.Select(x => x.Id),
+                 offer.ServiceDetails.Select(x => x.ServiceTypeId),
                  offer.Documents.Where(doc => doc.DocumentTypeId == DocumentTypeId.ADDITIONAL_DETAILS)
                     .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName))
              ))
@@ -348,7 +337,11 @@ public class OfferRepository : IOfferRepository
                 o.ProviderCompany!.Name,
                 o.OfferDescriptions.Any(description => description.DescriptionLong == ""),
                 o.OfferDescriptions.Any(description => description.DescriptionShort == ""),
-                o.UserRoles.Any()
+                o.UserRoles.Any(),
+                o.Documents.Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED )
+                    .Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId)),
+                o.Documents.Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED )
+                    .Select(doc => doc.DocumentTypeId)
             ))
             .SingleOrDefaultAsync();
 
@@ -431,7 +424,7 @@ public class OfferRepository : IOfferRepository
             (
                 x.OfferStatusId,
                 x.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
-                x.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                x.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
                 x.SupportedLanguages.Select(sl => new ValueTuple<string, bool>(sl.ShortName, languageCodes.Any(lc => lc == sl.ShortName))),
                 x.UseCases.Select(uc => uc.Id),
                 x.OfferLicenses.Select(ol => new ValueTuple<Guid, string, bool>(ol.Id, ol.Licensetext, ol.Offers.Count > 1)).FirstOrDefault(),
@@ -449,22 +442,23 @@ public class OfferRepository : IOfferRepository
             (
                 x.OfferStatusId,
                 x.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
-                x.ServiceTypes.Select(st => new ValueTuple<ServiceTypeId, bool>(st.Id, serviceTypeIds.Contains(st.Id))),
+                x.ServiceDetails.Select(st => new ValueTuple<ServiceTypeId, bool>(st.ServiceTypeId, serviceTypeIds.Contains(st.ServiceTypeId))),
                 x.OfferLicenses.Select(ol => new ValueTuple<Guid, string, bool>(ol.Id, ol.Licensetext, ol.Offers.Count > 1)).FirstOrDefault(),
-                x.OfferDescriptions.Select(description => new ValueTuple<string,string, string>(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                x.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
                 x.SalesManagerId
             ))
             .SingleOrDefaultAsync();
 
     ///<inheritdoc/>
-    public Task<(bool OfferExists, string? AppName, Guid CompanyUserId, Guid? ProviderCompanyId)> GetOfferNameProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId) =>
+    public Task<(bool OfferExists, string? AppName, Guid CompanyUserId, Guid? ProviderCompanyId, IEnumerable<string> ClientClientIds)> GetInsertActiveAppUserRoleDataAsync(Guid offerId, string userId, OfferTypeId offerTypeId) =>
         _context.Offers
             .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
-            .Select(offer => new ValueTuple<bool,string?,Guid, Guid?>(
+            .Select(offer => new ValueTuple<bool,string?,Guid,Guid?,IEnumerable<string>>(
                 true,
                 offer.Name,
-                offer.ProviderCompany!.CompanyUsers.SingleOrDefault(companyUser => companyUser.IamUser!.UserEntityId == userId)!.Id,
-                offer.ProviderCompanyId
+                offer.ProviderCompany!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == userId).Select(cu => cu.Id).SingleOrDefault(),
+                offer.ProviderCompanyId,
+                offer.AppInstances.Select(ai => ai.IamClient!.ClientClientId)
             ))
             .SingleOrDefaultAsync();
 
@@ -508,4 +502,138 @@ public class OfferRepository : IOfferRepository
             initialPrivacyPolicy,
             modifyPrivacyPolicy,
             privacyPolicy => new OfferAssignedPrivacyPolicy(appId, privacyPolicy));
+    
+    ///<inheritdoc/>
+    public Task<InReviewOfferData?> GetInReviewAppDataByIdAsync(Guid id, OfferTypeId offerTypeId) =>
+        _context.Offers.AsNoTracking()
+            .AsSplitQuery()
+            .Where(offer => offer.Id == id && offer.OfferTypeId == offerTypeId && offer.OfferStatusId == OfferStatusId.IN_REVIEW)
+            .Select(offer =>  
+                new InReviewOfferData(
+                    offer.Id,
+                    offer.Name,
+                    offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE).Select(document => document.Id).FirstOrDefault(),
+                    offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_IMAGE).Select(document => document.Id),
+                    offer.Provider,
+                    offer.UseCases.Select(uc => uc.Name),
+                    offer.OfferDescriptions.Select(od => new OfferDescriptionData(od.LanguageShortName, od.DescriptionLong, od.DescriptionShort)),
+                    offer.Documents.Where(d => d.DocumentTypeId != DocumentTypeId.APP_IMAGE && d.DocumentTypeId != DocumentTypeId.APP_LEADIMAGE)
+                        .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
+                    offer.UserRoles.Select(ur => ur.UserRoleText),
+                    offer.SupportedLanguages.Select(lang => lang.ShortName),
+                    offer.MarketingUrl,
+                    offer.ContactEmail,
+                    offer.ContactNumber,
+                    offer.OfferLicenses.Select(license => license.Licensetext).FirstOrDefault(),
+                    offer.Tags.Select(t => t.Name)))
+            .SingleOrDefaultAsync();
+    
+    ///<inheritdoc/>
+    public Task<(bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<OfferDescriptionData>? OfferDescriptionDatas)> GetActiveOfferDescriptionDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId) =>
+        _context.Offers
+            .Where(offer => offer.Id == appId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new {
+                Offer = offer,
+                IsProviderCompanyUser = offer.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)
+            })
+            .Select(x => new ValueTuple<bool,bool,IEnumerable<OfferDescriptionData>?>(
+                x.Offer.OfferStatusId == OfferStatusId.ACTIVE,
+                x.IsProviderCompanyUser,
+                x.IsProviderCompanyUser ? x.Offer.OfferDescriptions.Select(od => new OfferDescriptionData(od.LanguageShortName, od.DescriptionLong, od.DescriptionShort)) : null))
+            .SingleOrDefaultAsync();
+    
+    ///<inheritdoc/>
+    public void CreateUpdateDeleteOfferDescriptions(Guid offerId, IEnumerable<OfferDescriptionData> initialItems, IEnumerable<(string LanguageCode, string LongDescription, string ShortDescription)> modifiedItems) =>
+        _context.AddAttachRemoveRange(
+            initialItems,
+            modifiedItems,
+            initial => initial.languageCode,
+            modify =>  modify.LanguageCode,
+            languageCode => new OfferDescription(offerId, languageCode, null!, null!),
+            (initial, modified) => (initial.longDescription == modified.LongDescription && initial.shortDescription == modified.ShortDescription),
+            (entity, initial) =>
+                {
+                    entity.DescriptionLong = initial.longDescription;
+                    entity.DescriptionShort = initial.shortDescription;
+                },
+            (entity, modified) =>
+                {
+                    entity.DescriptionLong = modified.LongDescription;
+                    entity.DescriptionShort = modified.ShortDescription;
+                });
+
+    /// <inheritdoc />
+    public void RemoveOfferAssignedDocument(Guid offerId, Guid documentId) => 
+        _context.OfferAssignedDocuments.Remove(new OfferAssignedDocument(offerId, documentId));
+    
+    ///<inheritdoc/>
+    public Task<(bool IsValidApp,bool IsOfferType,bool IsOfferStatus,bool IsProviderCompanyUser,AppDeleteData? DeleteData)> GetAppDeleteDataAsync(Guid offerId, OfferTypeId offerTypeId, string userId, OfferStatusId offerStatusId) =>
+        _context.Offers
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(offer => offer.Id == offerId)
+            .Select(offer => new {
+                Offer = offer,
+                IsOfferTypeId = offer.OfferTypeId == offerTypeId,
+                IsOfferStatusId = offer.OfferStatusId == offerStatusId,
+                IsProviderCompanyUser = offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
+            })
+            .Select(x => new ValueTuple<bool,bool,bool,bool,AppDeleteData?>(
+                true,
+                x.IsOfferTypeId,
+                x.IsOfferStatusId,
+                x.IsProviderCompanyUser,
+                x.IsOfferTypeId && x.IsOfferStatusId && x.IsProviderCompanyUser
+                    ? new AppDeleteData(
+                        x.Offer.OfferLicenses.Select(offerlicense =>offerlicense.Id),
+                        x.Offer.UseCases.Select(uc => uc.Id),
+                        x.Offer.OfferAssignedPrivacyPolicies.Select(pp=>pp.PrivacyPolicyId),
+                        x.Offer.Documents.Select(doc => new ValueTuple<Guid,DocumentStatusId>(doc.Id, doc.DocumentStatusId)),
+                        x.Offer.SupportedLanguages.Select(sl => sl.ShortName),
+                        x.Offer.Tags.Select(offerTag=>offerTag.Name),
+                        x.Offer.OfferDescriptions.Select(description => description.LanguageShortName))
+                    : null
+            ))
+            .SingleOrDefaultAsync();
+    
+    ///<inheritdoc/>
+    public void RemoveOfferAssignedLicenses(IEnumerable<(Guid OfferId, Guid LicenseId)> offerLicenseIds) =>
+        _context.OfferAssignedLicenses.RemoveRange(offerLicenseIds.Select(offerLicenseId => new OfferAssignedLicense(offerLicenseId.OfferId, offerLicenseId.LicenseId)));
+    
+    ///<inheritdoc/>
+    public void RemoveOfferAssignedUseCases(IEnumerable<(Guid OfferId, Guid UseCaseId)> offerUseCaseIds) =>
+        _context.AppAssignedUseCases.RemoveRange(offerUseCaseIds.Select(offerUseCaseId => new AppAssignedUseCase(offerUseCaseId.OfferId, offerUseCaseId.UseCaseId)));
+    
+    ///<inheritdoc/>
+    public void RemoveOfferAssignedPrivacyPolicies(IEnumerable<(Guid OfferId, PrivacyPolicyId PrivacyPolicyId)> offerPrivacyPolicyIds) =>
+        _context.OfferAssignedPrivacyPolicies.RemoveRange(offerPrivacyPolicyIds.Select(offerPrivacyPolicyId => new OfferAssignedPrivacyPolicy(offerPrivacyPolicyId.OfferId, offerPrivacyPolicyId.PrivacyPolicyId)));
+    
+    ///<inheritdoc/>
+    public void RemoveOfferAssignedDocuments(IEnumerable<(Guid OfferId, Guid DocumentId)> offerDocumentIds) =>
+        _context.OfferAssignedDocuments.RemoveRange(offerDocumentIds.Select(offerDocumentId => new OfferAssignedDocument(offerDocumentId.OfferId, offerDocumentId.DocumentId)));
+    
+    ///<inheritdoc/>
+    public void RemoveOfferTags(IEnumerable<(Guid OfferId, string TagName)> offerTagNames) =>
+        _context.OfferTags.RemoveRange(offerTagNames.Select(offerTagName => new OfferTag(offerTagName.OfferId, offerTagName.TagName)));
+    
+    ///<inheritdoc/>
+    public void RemoveOfferDescriptions(IEnumerable<(Guid OfferId, string LanguageShortName)> offerLanguageShortNames) =>
+        _context.OfferDescriptions.RemoveRange(offerLanguageShortNames.Select(offerLanguageShortName => new OfferDescription(offerLanguageShortName.OfferId, offerLanguageShortName.LanguageShortName, null!, null!)));
+    
+    ///<inheritdoc/>
+    public void RemoveOffer(Guid offerId) => 
+        _context.Offers.Remove(new Offer(offerId, null!, default, default));   
+
+    ///<inheritdoc/>
+    public Task<(bool IsStatusActive, Guid CompanyUserId, IEnumerable<DocumentStatusData> documentStatusDatas)> GetOfferAssignedAppLeadImageDocumentsByIdAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId) =>
+        _context.Offers
+            .AsNoTracking()
+            .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new ValueTuple<bool, Guid, IEnumerable<DocumentStatusData>>(
+                offer.OfferStatusId == OfferStatusId.ACTIVE,
+                offer.ProviderCompany!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+                    .Select(cu => cu.Id).FirstOrDefault(),
+                offer.Documents.Where(doc => doc.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE)
+                    .Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId))))
+            .SingleOrDefaultAsync();
 }

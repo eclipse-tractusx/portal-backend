@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
@@ -26,7 +27,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
-    private async Task<(string?, IEnumerable<Role>)> GetCentralClientIdRolesAsync(string clientName, IEnumerable<string> roleNames)
+    private async Task<(string? ClientId, IEnumerable<Role> RoleNames)> GetCentralClientIdRolesAsync(string clientName, IEnumerable<string> roleNames)
     {
         var count = roleNames.Count();
         Client? client = null;
@@ -86,6 +87,25 @@ public partial class ProvisioningManager
                 assigned = Enumerable.Empty<string>();
             }
             yield return (Client: client, Roles: assigned);
+        }
+    }
+
+    public async Task AddRolesToClientAsync(string clientName, IEnumerable<string> roleNames)
+    {
+        var result = await GetCentralClientIdRolesAsync(clientName, roleNames);
+        if (result.ClientId == null)
+        {
+            throw new ConflictException($"Client {clientName} does not exist");
+        }
+
+        foreach (var roleName in roleNames.Except(result.RoleNames.Select(x => x.Name)))
+        {
+            var role = new Role
+            {
+                Name = roleName,
+                ClientRole = true,
+            };
+            await _CentralIdp.CreateRoleAsync(_Settings.CentralRealm, result.ClientId, role).ConfigureAwait(false);
         }
     }
 

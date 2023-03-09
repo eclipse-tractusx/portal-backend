@@ -55,10 +55,10 @@ public interface IAppReleaseBusinessLogic
     /// Add User Role for App
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="appAssignedDesc"></param>
+    /// <param name="userRoles"></param>
     /// <param name="iamUserId"></param>
     /// <returns></returns>
-    Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appAssignedDesc, string iamUserId);
+    Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles, string iamUserId);
     
     /// <summary>
     /// Return Agreements for App_Contract Category
@@ -136,16 +136,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId);
-    
-    /// <summary>
-    /// Add User ROle for Active App and create notification
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="appUserRolesDescription"></param>
-    /// <param name="iamUserId"></param>
-    /// <returns></returns>
-    Task<IEnumerable<AppRoleData>>  AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, string iamUserId);
-    
+
     /// <summary>
     /// Approve App Status from IN_Review to Active
     /// </summary>
@@ -167,4 +158,26 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="data">The decline request data</param>
     Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data);
+
+    /// <summary>
+    /// Gets InReview App Details Data by Id
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    Task<InReviewAppDetails> GetInReviewAppDetailsByIdAsync(Guid appId);
+
+    /// <summary>
+    /// Delete the App Document
+    /// </summary>
+    /// <param name="documentId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task DeleteAppDocumentsAsync(Guid documentId, string iamUserId);
+
+    ///<summary>
+    /// Delete App
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task DeleteAppAsync(Guid appId, string iamUserId);
 }

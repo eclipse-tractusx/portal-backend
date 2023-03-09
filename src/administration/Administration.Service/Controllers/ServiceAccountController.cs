@@ -92,11 +92,13 @@ public class ServiceAccountController : ControllerBase
     /// <remarks>Example: GET: api/administration/serviceaccount/owncompany/serviceaccounts/7e85a0b8-0001-ab67-10d1-0ef508201000</remarks>
     /// <response code="200">Returns a list of service account details.</response>
     /// <response code="404">Record was not found. Service account is either not existing or not connected to the respective company.</response>
+    /// <response code="409">Undefined client for service account.</response>
     [HttpGet]
     [Authorize(Roles = "view_tech_user_management")]
     [Route("owncompany/serviceaccounts/{serviceAccountId}", Name="GetServiceAccountDetails")]
     [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<ServiceAccountDetails> GetServiceAccountDetails([FromRoute] Guid serviceAccountId) =>
         this.WithIamUserId(adminId => _logic.GetOwnCompanyServiceAccountDetailsAsync(serviceAccountId, adminId));
 
@@ -115,12 +117,14 @@ public class ServiceAccountController : ControllerBase
     /// - serviceAccount is already INACTIVE <br />
     /// </response>
     /// <response code="404">Record was not found. Service account is either not existing or not connected to the respective company.</response>
+    /// <response code="409">Undefined client for service account.</response>
     [HttpPut]
     [Authorize(Roles = "add_tech_user_management")] // TODO check whether we also want an edit role
     [Route("owncompany/serviceaccounts/{serviceAccountId}")]
     [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<ServiceAccountDetails> PutServiceAccountDetails([FromRoute] Guid serviceAccountId, [FromBody] ServiceAccountEditableDetails serviceAccountDetails) =>
         this.WithIamUserId(adminId => _logic.UpdateOwnCompanyServiceAccountDetailsAsync(serviceAccountId, serviceAccountDetails, adminId));
 
@@ -130,14 +134,18 @@ public class ServiceAccountController : ControllerBase
     /// </summary>
     /// <param name="serviceAccountId">Id of the service account.</param>
     /// <returns>Returns the service account details.</returns>
-    /// <remarks>Example: PUT: api/administration/serviceaccount/owncompany/serviceaccounts/7e85a0b8-0001-ab67-10d1-0ef508201000/resetCredentials</remarks>
+    /// <remarks>Example: POST: api/administration/serviceaccount/owncompany/serviceaccounts/7e85a0b8-0001-ab67-10d1-0ef508201000/resetCredentials</remarks>
     /// <response code="200">Returns the service account details.</response>
     /// <response code="404">Record was not found. Service account is either not existing or not connected to the respective company.</response>
+    /// <response code="409">Undefined client for service account.</response>
+    /// <response code="502">Bad Gateway Service Error.</response>
     [HttpPost]
     [Authorize(Roles = "add_tech_user_management")]
     [Route("owncompany/serviceaccounts/{serviceAccountId}/resetCredentials")]
     [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task<ServiceAccountDetails> ResetServiceAccountCredentials([FromRoute] Guid serviceAccountId) =>
         this.WithIamUserId(adminId => _logic.ResetOwnCompanyServiceAccountSecretAsync(serviceAccountId, adminId));
 
@@ -161,7 +169,7 @@ public class ServiceAccountController : ControllerBase
     /// </summary>
     /// <param name="languageShortName">OPTIONAL: The language short name.</param>
     /// <returns>all service account roles</returns>
-    /// <remarks>Example: Get: api/administration/serviceaccount/user/roles</remarks>
+    /// <remarks>Example: GET: api/administration/serviceaccount/user/roles</remarks>
     /// <response code="200">returns all service account roles</response>
     [HttpGet]
     [Authorize(Roles = "technical_roles_management")]

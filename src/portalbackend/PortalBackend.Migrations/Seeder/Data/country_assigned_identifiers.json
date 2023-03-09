@@ -1401,5 +1401,21 @@
   {
     "country_alpha2code": "VE",
     "unique_identifier_id": 2
+  },
+  {
+    "country_alpha2code": "DE",
+    "unique_identifier_id": 3
+  },
+  {
+    "country_alpha2code": "GB",
+    "unique_identifier_id": 3
+  },
+  {
+    "country_alpha2code": "NO",
+    "unique_identifier_id": 3
+  },
+  {
+    "country_alpha2code": "FR",
+    "unique_identifier_id": 3
   }
 ]

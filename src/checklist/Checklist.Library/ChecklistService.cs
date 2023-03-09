@@ -23,7 +23,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 
@@ -49,32 +48,13 @@ public sealed class ChecklistService : IChecklistService
         var checklistData = await _portalRepositories.GetInstance<IApplicationChecklistRepository>()
             .GetChecklistProcessStepData(applicationId, allEntryTypeIds, allProcessStepTypeIds).ConfigureAwait(false);
 
-        if (!checklistData.IsValidApplicationId)
-        {
-            throw new NotFoundException($"application {applicationId} does not exist");
-        }
-        if (!checklistData.IsSubmitted)
-        {
-            throw new ConflictException($"application {applicationId} is not in status SUBMITTED");
-        }
-        if (checklistData.Checklist == null || checklistData.ProcessSteps == null)
-        {
-            throw new UnexpectedConditionException("checklist or processSteps should never be null here");
-        }
-        if (checklistData.ProcessSteps.Any(step => step.ProcessStepStatusId != ProcessStepStatusId.TODO))
-        {
-            throw new UnexpectedConditionException("processSteps should never have other status then TODO here");
-        }
-        if (!checklistData.Checklist.Any(entry => entry.TypeId == entryTypeId && entryStatusIds.Contains(entry.StatusId)))
-        {
-            throw new ConflictException($"application {applicationId} does not have a checklist entry for {entryTypeId} in status {string.Join(", ",entryStatusIds)}");
-        }
-        var processStep = checklistData.ProcessSteps.SingleOrDefault(step => step.ProcessStepTypeId == processStepTypeId);
+        checklistData.ValidateChecklistData(applicationId, entryTypeId, entryStatusIds, new [] { ProcessStepStatusId.TODO });
+        var processStep = checklistData!.ProcessSteps!.SingleOrDefault(step => step.ProcessStepTypeId == processStepTypeId);
         if (processStep is null)
         {
             throw new ConflictException($"application {applicationId} checklist entry {entryTypeId}, process step {processStepTypeId} is not eligible to run");
         }
-        return new IChecklistService.ManualChecklistProcessStepData(applicationId, processStep.Id, entryTypeId, checklistData.Checklist.ToImmutableDictionary(entry => entry.TypeId, entry => entry.StatusId), checklistData.ProcessSteps);
+        return checklistData.CreateManualChecklistProcessStepData(applicationId, entryTypeId, processStep);
     }
 
     public void SkipProcessSteps(IChecklistService.ManualChecklistProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds)
@@ -97,42 +77,49 @@ public sealed class ChecklistService : IChecklistService
         }
     }
 
-    public void FinalizeChecklistEntryAndProcessSteps(IChecklistService.ManualChecklistProcessStepData context, Action<ApplicationChecklistEntry> modifyApplicationChecklistEntry, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
+    public void FinalizeChecklistEntryAndProcessSteps(IChecklistService.ManualChecklistProcessStepData context, Action<ApplicationChecklistEntry>? modifyApplicationChecklistEntry, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
     {
         var applicationChecklistRepository = _portalRepositories.GetInstance<IApplicationChecklistRepository>();
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
 
-        applicationChecklistRepository
-            .AttachAndModifyApplicationChecklist(context.ApplicationId, context.EntryTypeId, modifyApplicationChecklistEntry);
-        processStepRepository
-            .AttachAndModifyProcessStep(context.ProcessStepId, null, step => step.ProcessStepStatusId = ProcessStepStatusId.DONE);
-        if (nextProcessStepTypeIds == null)
+        if (modifyApplicationChecklistEntry != null)
+        {
+            applicationChecklistRepository
+                .AttachAndModifyApplicationChecklist(context.ApplicationId, context.EntryTypeId, modifyApplicationChecklistEntry);
+        }
+        processStepRepository.AttachAndModifyProcessStep(context.ProcessStepId, null, step => step.ProcessStepStatusId = ProcessStepStatusId.DONE);
+        if (nextProcessStepTypeIds == null || !nextProcessStepTypeIds.Any())
         {
             return;
         }
 
-        foreach (var processStepTypeId in nextProcessStepTypeIds.Except(context.ProcessSteps.Select(step => step.ProcessStepTypeId)))
-        {
-            var step = processStepRepository.CreateProcessStep(processStepTypeId, ProcessStepStatusId.TODO);
-            applicationChecklistRepository.CreateApplicationAssignedProcessStep(context.ApplicationId, step.Id);
-        }
+        processStepRepository.CreateProcessStepRange(
+            nextProcessStepTypeIds
+                .Except(context.ProcessSteps.Select(step => step.ProcessStepTypeId))
+                .Select(stepTypeId => (stepTypeId, ProcessStepStatusId.TODO, context.ProcessId)));
     }
 
-    public static Task<(Action<ApplicationChecklistEntry>?, IEnumerable<ProcessStepTypeId>?, bool)> HandleServiceErrorAsync(Exception exception, ProcessStepTypeId manualProcessTriggerStep)
+    public Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> HandleServiceErrorAsync(Exception exception, ProcessStepTypeId manualProcessTriggerStep)
     {
-        return Task.FromResult<(Action<ApplicationChecklistEntry>?, IEnumerable<ProcessStepTypeId>?, bool)>(
-            exception is not HttpRequestException ?
-                (item =>
+        return Task.FromResult(
+            exception is ServiceException { IsRecoverable: true }
+                ? new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+                    ProcessStepStatusId.TODO,
+                    item =>
+                    {
+                        item.Comment = exception.ToString();
+                    },
+                    null,
+                    null,
+                    true)
+                : new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+                    ProcessStepStatusId.FAILED,
+                    item =>
                     {
                         item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
                         item.Comment = exception.ToString();
                     },
                     new [] { manualProcessTriggerStep },
-                    true) :
-                (item =>
-                    {
-                        item.Comment = exception.ToString();
-                    },
                     null,
                     true));
     }

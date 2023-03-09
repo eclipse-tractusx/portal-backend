@@ -233,12 +233,16 @@ public class ServicesController : ControllerBase
     /// <response code="204">Service was successfully updated.</response>
     /// <response code="400">Offer Subscription is not in state created or user is not in the same company.</response>
     /// <response code="404">Offer Subscription not found.</response>
+    /// <response code="403">User don't have permission to change the service.</response>
+    /// <response code="409">Service is in inCorrect state</response>
     [HttpPut]
     [Route("{serviceId:guid}")]
     [Authorize(Roles = "update_service_offering")]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateService([FromRoute] Guid serviceId, [FromBody] ServiceUpdateRequestData data)
     {
         await this.WithIamUserId(iamUserId => _serviceBusinessLogic.UpdateServiceAsync(serviceId, data, iamUserId));
@@ -273,6 +277,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> SubmitService([FromRoute] Guid serviceId)
     {
         await this.WithIamUserId(userId => _serviceBusinessLogic.SubmitServiceAsync(serviceId, userId)).ConfigureAwait(false);
@@ -287,12 +292,14 @@ public class ServicesController : ControllerBase
     /// <response code="204">The service was successfully submitted to Active State.</response>
     /// <response code="409">Service is in InCorrect Status</response>
     /// <response code="404">service does not exist.</response>
+    /// <response code="500">Internal server error</response>
     [HttpPut]
     [Route("{serviceId}/approveService")]
     [Authorize(Roles = "approve_service_release")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<NoContentResult> ApproveServiceRequest([FromRoute] Guid serviceId)
     {
         await this.WithIamUserId(userId => _serviceBusinessLogic.ApproveServiceRequestAsync(serviceId, userId)).ConfigureAwait(false);
@@ -308,12 +315,18 @@ public class ServicesController : ControllerBase
     /// <response code="204">NoContent.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     /// <response code="404">If service does not exists.</response>
+    /// <response code="403">User doest not have permission to change</response>
+    /// <response code="409">Offer Type is in inCorrect state.</response>
+    /// <response code="500">Internal Server Error.</response>
     [HttpPut]
     [Route("{serviceId:guid}/declineService")]
     [Authorize(Roles = "decline_service_release")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<NoContentResult> DeclineServiceRequest([FromRoute] Guid serviceId, [FromBody] OfferDeclineRequest data)
     {
         await this.WithIamUserId(userId => _serviceBusinessLogic.DeclineServiceRequestAsync(serviceId, userId, data)).ConfigureAwait(false);
@@ -333,6 +346,7 @@ public class ServicesController : ControllerBase
     /// <response code="404">service does not exist.</response>
     /// <response code="403">The user is not assigned with the service.</response>
     /// <response code="415">Only PDF files are supported.</response>
+    /// <response code="409">Offer is in inCorrect State.</response>
     [HttpPut]
     [Route("updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents")]
     [Authorize(Roles = "add_service_offering")]
@@ -342,6 +356,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<NoContentResult> UpdateServiceDocumentAsync([FromRoute] Guid serviceId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {

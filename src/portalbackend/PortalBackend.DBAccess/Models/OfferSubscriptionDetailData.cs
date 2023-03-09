@@ -17,17 +17,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="RequesterEmail">Email address of the requesting company user</param>
 /// <param name="RequesterFirstname">First name of the requesting company user</param>
 /// <param name="RequesterLastname">First name of the requesting company user</param>
-public record OfferSubscriptionTransferData(
-    OfferSubscriptionStatusId Status, 
-    Guid CompanyUserId, 
+public record OfferSubscriptionTransferData(OfferSubscriptionStatusId Status,
+    Guid CompanyUserId,
     Guid TechnicalUserId,
-    string CompanyName, 
+    string CompanyName,
     Guid CompanyId,
-    Guid RequesterId, 
-    Guid OfferId, 
-    string? OfferName, 
+    Guid RequesterId,
+    Guid OfferId,
+    string? OfferName,
     string? Bpn,
     string? RequesterEmail,
     string? RequesterFirstname,
-    string? RequesterLastname
-);
+    string? RequesterLastname, 
+    bool IsTechnicalUserNeeded);

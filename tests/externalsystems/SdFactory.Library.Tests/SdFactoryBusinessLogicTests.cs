@@ -18,10 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections.Immutable;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
-using Microsoft.AspNetCore.Server.HttpSys;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -31,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Tests;
 
@@ -41,6 +38,7 @@ public class SdFactoryBusinessLogicTests
     private const string CountryCode = "DE";
     private const string Bpn = "BPNL000000000009";
     private static readonly Guid ApplicationId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
+    private static readonly Guid ProcessId = Guid.NewGuid();
     private static readonly Guid CompanyId = new("b4697623-dd87-410d-abb8-6d4f4d87ab58");
     private static readonly IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers = new List<(UniqueIdentifierId Id, string Value)>
     {
@@ -131,11 +129,12 @@ public class SdFactoryBusinessLogicTests
         A.CallTo(() => _service.RegisterSelfDescriptionAsync(ApplicationId, UniqueIdentifiers, CountryCode, Bpn, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         result.Should().NotBeNull();
-        result.Item1.Should().NotBeNull();
-        result.Item1?.Invoke(entry);
+        result.ModifyChecklistEntry.Should().NotBeNull();
+        result.ModifyChecklistEntry!.Invoke(entry);
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.IN_PROGRESS);
-        result.Item2.Should().ContainSingle().And.Match(x => x.Single() == ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP);
-        result.Item3.Should().BeTrue();
+        result.ScheduleStepTypeIds.Should().ContainSingle().And.Match(x => x.Single() == ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP);
+        result.SkipStepTypeIds.Should().BeNull();
+        result.Modified.Should().BeTrue();
     }
 
     [Fact]
@@ -451,7 +450,7 @@ public class SdFactoryBusinessLogicTests
                 ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP,
                 null,
                 new[] {ProcessStepTypeId.START_SELF_DESCRIPTION_LP}))
-            .ReturnsLazily(() => new IChecklistService.ManualChecklistProcessStepData(ApplicationId, Guid.NewGuid(),
+            .ReturnsLazily(() => new IChecklistService.ManualChecklistProcessStepData(ApplicationId, ProcessId, Guid.NewGuid(),
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
                 ImmutableDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>.Empty,
                 new List<ProcessStep>()));

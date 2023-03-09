@@ -174,6 +174,38 @@ public class UserUploadBusinessLogicTests
     }
 
     [Fact]
+    public async Task TestUserCreationCreationNoRolesError()
+    {
+        var creationInfo = _fixture.Build<UserCreationRoleDataIdpInfo>()
+            .With(x => x.RoleDatas, Enumerable.Empty<UserRoleData>())
+            .Create();
+
+        SetupFakes(new [] {
+            HeaderLine(),
+            NextLine(),
+            NextLine(),
+            NextLine(creationInfo),
+            NextLine(),
+            NextLine()
+        });
+
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
+
+        var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo)))).MustNotHaveHappened();
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Not.Matches(info => CreationInfoMatches(info, creationInfo)))).MustHaveHappened(4, Times.Exactly);
+
+        result.Should().NotBeNull();
+        result.Created.Should().Be(4);
+        result.Error.Should().Be(1);
+        result.Total.Should().Be(5);
+        result.Errors.Should().HaveCount(1);
+        result.Errors.Single().Should().Be($"line: 3, message: at least one role must be specified");
+        A.CallTo(() => _mailingService.SendMails(A<string>._,A<IDictionary<string,string>>._,A<IEnumerable<string>>._)).MustHaveHappened(4, Times.Exactly);
+    }
+
+    [Fact]
     public async Task TestUserCreationMailError()
     {
         var creationInfo = _fixture.Create<UserCreationRoleDataIdpInfo>();
@@ -330,6 +362,37 @@ public class UserUploadBusinessLogicTests
     }
 
     [Fact]
+    public async Task TestUserCreationSharedIdpNoRolesError()
+    {
+        var creationInfo = _fixture.Build<UserCreationRoleDataIdpInfo>()
+            .With(x => x.RoleDatas, Enumerable.Empty<UserRoleData>())
+            .Create();
+
+        SetupFakes(new [] {
+            HeaderLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp(creationInfo),
+            NextLineSharedIdp(),
+            NextLineSharedIdp(),
+        });
+
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingService, _options);
+
+        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)))).MustNotHaveHappened();
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Not.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)))).MustHaveHappened(4, Times.Exactly);
+
+        result.Should().NotBeNull();
+        result.Created.Should().Be(4);
+        result.Error.Should().Be(1);
+        result.Total.Should().Be(5);
+        result.Errors.Should().HaveCount(1);
+        result.Errors.Single().Should().Be($"line: 3, message: at least one role must be specified");
+    }
+
+    [Fact]
     public async Task TestUserCreationSharedIdpCreationError()
     {
         var creationInfo = _fixture.Create<UserCreationRoleDataIdpInfo>();
@@ -462,7 +525,7 @@ public class UserUploadBusinessLogicTests
             UserUploadBusinessLogic.CsvHeaders.Roles });        
 
     private string NextLine() =>
-        string.Join(",",_fixture.CreateMany<string>(_random.Next(5,10)));        
+        string.Join(",",_fixture.CreateMany<string>(_random.Next(6,10)));        
 
     private static string HeaderLineSharedIdp() =>
         string.Join(",",new [] {
@@ -472,7 +535,7 @@ public class UserUploadBusinessLogicTests
             UserUploadBusinessLogic.CsvHeaders.Roles });        
 
     private string NextLineSharedIdp() =>
-        string.Join(",",_fixture.CreateMany<string>(_random.Next(3,7)));        
+        string.Join(",",_fixture.CreateMany<string>(_random.Next(4,7)));        
 
     private static string NextLine(UserCreationRoleDataIdpInfo userCreationInfoIdp) =>
         string.Join(",", new [] {

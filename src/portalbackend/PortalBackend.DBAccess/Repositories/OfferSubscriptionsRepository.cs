@@ -51,7 +51,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
         _context.IamUsers.AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
             .SelectMany(iamUser => iamUser.CompanyUser!.Company!.OfferSubscriptions)
-            .Select(s => new AppWithSubscriptionStatus(s.OfferId, s.OfferSubscriptionStatusId))
+            .Select(s => new AppWithSubscriptionStatus(s.OfferId, s.OfferSubscriptionStatusId, s.Offer!.Name, s.Offer!.Provider))
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
@@ -146,7 +146,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     x.Company.BusinessPartnerNumber,
                     x.Requester!.Email,
                     x.Requester.Firstname,
-                    x.Requester.Lastname
+                    x.Requester.Lastname,
+                    x.Offer.OfferTypeId == OfferTypeId.APP || x.Offer.ServiceDetails.Any(st => st.TechnicalUserNeeded)
             ))
             .SingleOrDefaultAsync();
 

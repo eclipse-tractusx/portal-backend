@@ -18,13 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -76,8 +72,8 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Region.Should().BeNull();
         result.Zipcode.Should().Be("00001");
 
-        result.AgreementsData.Should().HaveCount(5);
-        result.AgreementsData.Where(x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER).Should().HaveCount(2);
+        result.AgreementsData.Should().HaveCount(4);
+        result.AgreementsData.Where(x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER).Should().HaveCount(1);
         result.AgreementsData.Where(x => x.CompanyRoleId == CompanyRoleId.ACTIVE_PARTICIPANT).Should().HaveCount(3);
 
         result.InvitedCompanyUserData.Should().BeEmpty();
@@ -305,8 +301,8 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetCompanyAndApplicationDetailsForApprovalAsync(SubmittedApplicationWithBpn).ConfigureAwait(false);
         
         // Assert
-        data.companyId.Should().Be(CompanyId);
-        data.businessPartnerNumber.Should().NotBeNullOrEmpty().And.Be("BPNL00000003LLHB");
+        data.CompanyId.Should().Be(CompanyId);
+        data.BusinessPartnerNumber.Should().NotBeNullOrEmpty().And.Be("BPNL00000003LLHB");
     }
 
     [Fact]
@@ -366,7 +362,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var data = await sut.GetApplicationChecklistData(SubmittedApplicationWithBpn, Enum.GetValues<ProcessStepTypeId>()).ConfigureAwait(false);
+        var data = await sut.GetApplicationChecklistData(new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb6"), Enum.GetValues<ProcessStepTypeId>()).ConfigureAwait(false);
 
         // Assert
         data.Exists.Should().BeTrue();
@@ -381,7 +377,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var data = await sut.GetApplicationChecklistData(SubmittedApplicationWithBpn, Enumerable.Empty<ProcessStepTypeId>()).ConfigureAwait(false);
+        var data = await sut.GetApplicationChecklistData(new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb6"), Enumerable.Empty<ProcessStepTypeId>()).ConfigureAwait(false);
 
         // Assert
         data.Should().NotBe(default);
@@ -415,9 +411,9 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetCompanyAndApplicationDetailsForCreateWalletAsync(SubmittedApplicationWithBpn).ConfigureAwait(false);
         
         // Assert
-        data.companyId.Should().Be(new Guid("d14eba77-0b18-4e41-9d84-49ef875c0763"));
-        data.businessPartnerNumber.Should().Be("BPNL00000003LLHB");
-        data.companyName.Should().Be("Dummy Corp. 1");
+        data.CompanyId.Should().Be(new Guid("d14eba77-0b18-4e41-9d84-49ef875c0763"));
+        data.BusinessPartnerNumber.Should().Be("BPNL00000003LLHB");
+        data.CompanyName.Should().Be("Dummy Corp. 1");
     }
 
 

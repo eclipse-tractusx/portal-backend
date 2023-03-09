@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections.Immutable;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
@@ -28,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
 
@@ -226,8 +226,8 @@ public class BpdmBusinessLogicTests
         var result = await _logic.PushLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        result.Item3.Should().BeTrue();
-        result.Item1?.Invoke(entry);
+        result.Modified.Should().BeTrue();
+        result.ModifyChecklistEntry?.Invoke(entry);
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.IN_PROGRESS);
         A.CallTo(() => _bpdmService.PutInputLegalEntity(
                 A<BpdmTransferData>.That.Matches(x => x.ZipCode == "50668" && x.CompanyName == ValidCompanyName),
@@ -299,9 +299,10 @@ public class BpdmBusinessLogicTests
         var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        result.Item1.Should().BeNull();
-        result.Item2.Should().BeNull();
-        result.Item3.Should().BeFalse();
+        result.ModifyChecklistEntry.Should().BeNull();
+        result.ScheduleStepTypeIds.Should().BeNull();
+        result.SkipStepTypeIds.Should().BeNull();
+        result.Modified.Should().BeFalse();
     }
 
     [Fact]
@@ -328,10 +329,11 @@ public class BpdmBusinessLogicTests
         var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        result.Item1?.Invoke(checklistEntry);
+        result.ModifyChecklistEntry?.Invoke(checklistEntry);
         checklistEntry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
-        result.Item2.Should().ContainSingle().And.Subject.Single().Should().Be(ProcessStepTypeId.CREATE_IDENTITY_WALLET);
-        result.Item3.Should().BeTrue();
+        result.ScheduleStepTypeIds.Should().ContainSingle().And.Subject.Single().Should().Be(ProcessStepTypeId.CREATE_IDENTITY_WALLET);
+        result.SkipStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL);
+        result.Modified.Should().BeTrue();
     }
 
     [Fact]
@@ -358,10 +360,11 @@ public class BpdmBusinessLogicTests
         var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        result.Item1?.Invoke(checklistEntry);
+        result.ModifyChecklistEntry?.Invoke(checklistEntry);
         checklistEntry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
-        result.Item2.Should().BeNull();
-        result.Item3.Should().BeTrue();
+        result.ScheduleStepTypeIds.Should().BeNull();
+        result.SkipStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL);
+        result.Modified.Should().BeTrue();
     }
 
     #endregion

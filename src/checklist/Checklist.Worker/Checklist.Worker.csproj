@@ -46,8 +46,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\registration\ApplicationActivation.Library\ApplicationActivation.Library.csproj" />
-        <ProjectReference Include="..\Checklist.Config\Checklist.Config.csproj" />
+        <ProjectReference Include="..\Checklist.Worker.Library\Checklist.Worker.Library.csproj" />
+        <ProjectReference Include="..\Checklist.Executor\Checklist.Executor.csproj" />
     </ItemGroup>
 
     <ItemGroup>

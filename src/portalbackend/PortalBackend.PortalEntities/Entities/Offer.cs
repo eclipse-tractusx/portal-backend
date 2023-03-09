@@ -46,7 +46,7 @@ public class Offer : IAuditableV1, IBaseEntity
         UserRoles = new HashSet<UserRole>();
         AppInstances = new HashSet<AppInstance>();
         ConsentAssignedOffers = new HashSet<ConsentAssignedOffer>();
-        ServiceTypes = new HashSet<ServiceType>();
+        ServiceDetails = new HashSet<ServiceDetail>();
         OfferAssignedPrivacyPolicies = new HashSet<OfferAssignedPrivacyPolicy>();
     }
 
@@ -111,6 +111,6 @@ public class Offer : IAuditableV1, IBaseEntity
     public virtual ICollection<UseCase> UseCases { get; private set; }
     public virtual ICollection<UserRole> UserRoles { get; private set; }
     public virtual ICollection<ConsentAssignedOffer> ConsentAssignedOffers { get; private set; }
-    public virtual ICollection<ServiceType> ServiceTypes { get; private set; }
+    public virtual ICollection<ServiceDetail> ServiceDetails { get; private set; }
     public virtual ICollection<OfferAssignedPrivacyPolicy> OfferAssignedPrivacyPolicies { get; private set; }
 }

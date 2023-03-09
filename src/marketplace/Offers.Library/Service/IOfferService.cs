@@ -96,18 +96,6 @@ public interface IOfferService
     Task<int> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
-    /// Auto setup the service.
-    /// </summary>
-    /// <param name="data">The offer subscription id and url for the service</param>
-    /// <param name="serviceAccountRoles">Roles that will be assigned to the service account</param>
-    /// <param name="companyAdminRoles">Roles that will be assigned to the company admin</param>
-    /// <param name="iamUserId">Id of the iam user</param>
-    /// <param name="offerTypeId">OfferTypeId of offer to be created</param>
-    /// <param name="basePortalAddress">Address of the portal</param>
-    /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> iTAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress);
-
-    /// <summary>
     /// Creates a new service offering
     /// </summary>
     /// <param name="data">The data to create the service offering</param>
@@ -134,7 +122,7 @@ public interface IOfferService
     /// <returns>Returns the company id of the user</returns>
     Task<Guid> ValidateSalesManager(Guid salesManagerId, string iamUserId, IDictionary<string, IEnumerable<string>> salesManagerRoles);
     
-    void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<Localization> updateDescriptions, IEnumerable<(string LanguageShortName, string DescriptionLong, string DescriptionShort)> existingDescriptions);
+    void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<Localization> updateDescriptions, IEnumerable<OfferDescriptionData> existingDescriptions);
 
     void CreateOrUpdateOfferLicense(Guid offerId, string licenseText, (Guid OfferLicenseId, string LicenseText, bool AssignedToMultipleOffers) offerLicense);
 
@@ -149,15 +137,16 @@ public interface IOfferService
     Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> approveOfferRoles);
 
     /// <summary>
-    /// Update offer status and create notification
+    /// Update offer status and create notification for App 
     /// </summary>
     /// <param name="offerId">Id of the offer that should be submitted</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="offerTypeId">Type of the offer</param>
     /// <param name="notificationTypeIds">Ids for the notifications that are created</param>
     /// <param name="catenaAdminRoles">Company Admin Roles</param>
+    /// <param name="submitAppDocumentTypeIds">Document Type Id</param>
     /// <returns></returns>
-    Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> catenaAdminRoles);
+    Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds);
 
     /// <summary>
     /// Declines the given offer
@@ -191,4 +180,15 @@ public interface IOfferService
     /// <param name="documentTypeIdSettings"></param>
     /// <param name="contentTypeSettings"></param>
     Task UploadDocumentAsync(Guid Id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offertypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Update offer status and create notification for Service
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="iamUserId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <param name="notificationTypeIds"></param>
+    /// <param name="catenaAdminRoles"></param>
+    /// <returns></returns>
+    Task SubmitServiceAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> catenaAdminRoles);
 }

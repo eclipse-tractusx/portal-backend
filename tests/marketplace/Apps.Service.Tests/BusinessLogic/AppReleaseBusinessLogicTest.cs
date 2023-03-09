@@ -26,7 +26,6 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -35,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic.Tests;
@@ -51,7 +51,6 @@ public class AppReleaseBusinessLogicTest
     private readonly CompanyUser _companyUser;
     private readonly IamUser _iamUser;
     private readonly IOfferService _offerService;
-    private readonly INotificationService _notificationService;
     private readonly Guid _notExistingAppId = Guid.NewGuid();
     private readonly Guid _activeAppId = Guid.NewGuid();
     private readonly Guid _differentCompanyAppId = Guid.NewGuid();
@@ -59,6 +58,8 @@ public class AppReleaseBusinessLogicTest
     private readonly ILanguageRepository _languageRepository;
     private readonly AppsSettings _settings;
     private const string ClientId = "catenax-portal";
+    private static readonly Guid ValidDocumentId = Guid.NewGuid();
+    private static readonly string IamUserId = Guid.NewGuid().ToString();
 
     public AppReleaseBusinessLogicTest()
     {
@@ -74,7 +75,6 @@ public class AppReleaseBusinessLogicTest
         _documentRepository = A.Fake<IDocumentRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
         _offerService = A.Fake<IOfferService>();
-        _notificationService = A.Fake<INotificationService>();
         _options = A.Fake<IOptions<AppsSettings>>();
         _companyUser = _fixture.Build<CompanyUser>()
             .Without(u => u.IamUser)
@@ -105,6 +105,7 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
     }
 
     [Fact]
@@ -113,33 +114,73 @@ public class AppReleaseBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var iamUserId = _fixture.Create<string>();
-        var appUserRoleDescription = new AppUserRoleDescription[] {
-            new("en","this is test1"),
-            new("de","this is test2"),
-            new("fr","this is test3")
-        };
-        var appUserRoles = new AppUserRole[] {
-            new("IT Admin",appUserRoleDescription)
-        };
-        A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>.That.IsEqualTo(appId), A<string>.That.IsEqualTo(iamUserId), A<OfferTypeId>.That.IsEqualTo(OfferTypeId.APP))).Returns((true,true));
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, null!, null!);
+        var appUserRoles = _fixture.CreateMany<string>(3).Select(role => new AppUserRole(role, _fixture.CreateMany<AppUserRoleDescription>(2).ToImmutableArray())).ToImmutableArray();        
+
+        A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>.That.IsEqualTo(appId), A<string>.That.IsEqualTo(iamUserId), A<OfferTypeId>.That.IsEqualTo(OfferTypeId.APP)))
+            .Returns((true,true));
+
+        IEnumerable<UserRole>? userRoles = null;
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid,string)>>._))
+            .ReturnsLazily((IEnumerable<(Guid AppId, string Role)> appRoles) =>
+            {
+                userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToImmutableArray();
+                return userRoles;
+            });
+
+        var userRoleDescriptions = new List<IEnumerable<UserRoleDescription>>();
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescriptions(A<IEnumerable<(Guid,string,string)>>._))
+            .ReturnsLazily((IEnumerable<(Guid RoleId, string LanguageCode, string Description)> roleLanguageDescriptions) =>
+            {
+                var createdUserRoleDescriptions = roleLanguageDescriptions.Select(x => new UserRoleDescription(x.RoleId, x.LanguageCode, x.Description)).ToImmutableArray();
+                userRoleDescriptions.Add(createdUserRoleDescriptions);
+                return createdUserRoleDescriptions;
+            });
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, null!);
 
         // Act
         var result = await sut.AddAppUserRoleAsync(appId, appUserRoles, iamUserId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>._, A<string>._, A<OfferTypeId>._)).MustHaveHappened();
-        foreach(var appRole in appUserRoles)
-        {
-            A.CallTo(() => _userRolesRepository.CreateAppUserRole(A<Guid>._, A<string>.That.IsEqualTo(appRole.role))).MustHaveHappened();
-            foreach(var item in appRole.descriptions)
+        
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid,string)>>._)).MustHaveHappenedOnceExactly();
+        userRoles.Should().NotBeNull()
+            .And.HaveSameCount(appUserRoles)
+            .And.AllSatisfy(x =>
             {
-                A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescription(A<Guid>._, A<string>.That.IsEqualTo(item.languageCode), A<string>.That.IsEqualTo(item.description))).MustHaveHappened();
-            }
-        }
+                x.Id.Should().NotBeEmpty();
+                x.OfferId.Should().Be(appId);
+            })
+            .And.Satisfy(
+                x => x.UserRoleText == appUserRoles[0].Role,
+                x => x.UserRoleText == appUserRoles[1].Role,
+                x => x.UserRoleText == appUserRoles[2].Role
+            );
+
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescriptions(A<IEnumerable<(Guid,string,string)>>._)).MustHaveHappened(appUserRoles.Length, Times.Exactly);
+        userRoleDescriptions.Should()
+            .HaveSameCount(appUserRoles)
+            .And.SatisfyRespectively(
+                x => x.Should().HaveCount(2).And.Satisfy(
+                    x => x.UserRoleId == userRoles!.ElementAt(0).Id && x.LanguageShortName == appUserRoles[0].Descriptions.ElementAt(0).LanguageCode && x.Description == appUserRoles[0].Descriptions.ElementAt(0).Description,
+                    x => x.UserRoleId == userRoles!.ElementAt(0).Id && x.LanguageShortName == appUserRoles[0].Descriptions.ElementAt(1).LanguageCode && x.Description == appUserRoles[0].Descriptions.ElementAt(1).Description),
+                x => x.Should().HaveCount(2).And.Satisfy(
+                    x => x.UserRoleId == userRoles!.ElementAt(1).Id && x.LanguageShortName == appUserRoles[1].Descriptions.ElementAt(0).LanguageCode && x.Description == appUserRoles[1].Descriptions.ElementAt(0).Description,
+                    x => x.UserRoleId == userRoles!.ElementAt(1).Id && x.LanguageShortName == appUserRoles[1].Descriptions.ElementAt(1).LanguageCode && x.Description == appUserRoles[1].Descriptions.ElementAt(1).Description),
+                x => x.Should().HaveCount(2).And.Satisfy(
+                    x => x.UserRoleId == userRoles!.ElementAt(2).Id && x.LanguageShortName == appUserRoles[2].Descriptions.ElementAt(0).LanguageCode && x.Description == appUserRoles[2].Descriptions.ElementAt(0).Description,
+                    x => x.UserRoleId == userRoles!.ElementAt(2).Id && x.LanguageShortName == appUserRoles[2].Descriptions.ElementAt(1).LanguageCode && x.Description == appUserRoles[2].Descriptions.ElementAt(1).Description));
 
         Assert.NotNull(result);
         Assert.IsAssignableFrom<IEnumerable<AppRoleData>>(result);
+        result.Should().NotBeNull()
+            .And.HaveSameCount(appUserRoles)
+            .And.Satisfy(
+                x => x.RoleId == userRoles!.ElementAt(0).Id && x.RoleName == appUserRoles[0].Role,
+                x => x.RoleId == userRoles!.ElementAt(1).Id && x.RoleName == appUserRoles[1].Role,
+                x => x.RoleId == userRoles!.ElementAt(2).Id && x.RoleName == appUserRoles[2].Role
+            );
     }
 
     #region AddAppAsync
@@ -153,7 +194,7 @@ public class AppReleaseBusinessLogicTest
                 PrivacyPolicyId.COMPANY_DATA  
             });
         var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
         // Act
         async Task Act() => await sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
@@ -172,7 +213,7 @@ public class AppReleaseBusinessLogicTest
                 PrivacyPolicyId.COMPANY_DATA  
             });
         var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
         // Act
         async Task Act() => await sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
@@ -191,7 +232,7 @@ public class AppReleaseBusinessLogicTest
                 PrivacyPolicyId.COMPANY_DATA   
             });
         var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
         // Act
         await sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
@@ -222,7 +263,7 @@ public class AppReleaseBusinessLogicTest
                 PrivacyPolicyId.COMPANY_DATA   
             });
         var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
         // Act
         await sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
@@ -258,7 +299,7 @@ public class AppReleaseBusinessLogicTest
                 PrivacyPolicyId.COMPANY_DATA   
             });
         var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
         // Act
         async Task Act() => await sut.UpdateAppReleaseAsync(_notExistingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
@@ -278,7 +319,7 @@ public class AppReleaseBusinessLogicTest
                 PrivacyPolicyId.COMPANY_DATA  
             });
         var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
         // Act
         async Task Act() => await sut.UpdateAppReleaseAsync(_activeAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
@@ -298,7 +339,7 @@ public class AppReleaseBusinessLogicTest
                 PrivacyPolicyId.COMPANY_DATA  
             });
         var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
         // Act
         async Task Act() => await sut.UpdateAppReleaseAsync(_differentCompanyAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
@@ -318,7 +359,7 @@ public class AppReleaseBusinessLogicTest
                 PrivacyPolicyId.COMPANY_DATA  
             });
         var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
         
         // Act
         async Task Act() => await sut.UpdateAppReleaseAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
@@ -350,7 +391,7 @@ public class AppReleaseBusinessLogicTest
                 PrivacyPolicyId.COMPANY_DATA  
             });
         var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
         
         // Act
         await sut.UpdateAppReleaseAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
@@ -358,7 +399,7 @@ public class AppReleaseBusinessLogicTest
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerService.UpsertRemoveOfferDescription(_existingAppId, A<IEnumerable<Localization>>.That.IsSameSequenceAs(new Localization("de", "Long description", "desc")), A<IEnumerable<(string LanguageShorName, string DescriptionLong, string DescriptionShort)>>._))
+        A.CallTo(() => _offerService.UpsertRemoveOfferDescription(_existingAppId, A<IEnumerable<Localization>>.That.IsSameSequenceAs(new Localization("de", "Long description", "desc")), A<IEnumerable<OfferDescriptionData>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.AddAppLanguages(A<IEnumerable<(Guid appId, string languageShortName)>>._))
             .MustHaveHappenedOnceExactly();
@@ -386,7 +427,7 @@ public class AppReleaseBusinessLogicTest
             DocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
         };
 
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
 
         // Act
         await sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, CancellationToken.None).ConfigureAwait(false);
@@ -397,106 +438,13 @@ public class AppReleaseBusinessLogicTest
     
     #endregion
 
-    #region  AddActiveAppUserRole
-
-    [Fact]
-    public async Task AddActiveAppUserRoleAsync_ExecutesSuccessfully()
-    {
-        //Arrange
-        var appId = _fixture.Create<Guid>();
-        var companyId = _fixture.Create<Guid>();
-        var appName = _fixture.Create<string>();
-
-        var appUserRoleDescription = new AppUserRoleDescription[] {
-            new("de","this is test1"),
-            new("en","this is test2"),
-        };
-        var appAssignedRoleDesc = new AppUserRole[] { new("Legal Admin", appUserRoleDescription) };
-       
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, appName, _companyUser.Id, companyId));
-
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
-
-        //Act
-        var result = await sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc, _iamUser.UserEntityId).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP)).MustHaveHappened();
-        foreach(var item in appAssignedRoleDesc)
-        {
-            A.CallTo(() => _userRolesRepository.CreateAppUserRole(A<Guid>._, A<string>.That.IsEqualTo(item.role))).MustHaveHappened();
-            foreach (var indexItem in item.descriptions)
-            {
-                A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescription(A<Guid>._, A<string>.That.IsEqualTo(indexItem.languageCode), A<string>.That.IsEqualTo(indexItem.description))).MustHaveHappened();
-            }
-        }
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._)).MustHaveHappened();
-        Assert.NotNull(result);
-        Assert.IsAssignableFrom<IEnumerable<AppRoleData>>(result);
-    }
-
-    [Fact]
-    public async Task AddActiveAppUserRoleAsync_WithCompanyUserIdNotSet_ThrowsForbiddenException()
-    {
-        //Arrange
-        var appId = _fixture.Create<Guid>();
-        var appName = _fixture.Create<string>();
-
-        var appUserRoleDescription = new AppUserRoleDescription[] {
-            new("de","this is test1"),
-            new("en","this is test2"),
-        };
-        var appAssignedRoleDesc = new AppUserRole[] { new("Legal Admin", appUserRoleDescription) };
-       
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, appName, Guid.Empty, null));
-
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
-
-        //Act
-        async Task Act() => await sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc, _iamUser.UserEntityId).ConfigureAwait(false);
-
-        //Assert
-        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"user {_iamUser.UserEntityId} is not a member of the providercompany of app {appId}");
-    }
-
-    [Fact]
-    public async Task AddActiveAppUserRoleAsync_WithProviderCompanyNotSet_ThrowsConflictException()
-    {
-        //Arrange
-        var appId = _fixture.Create<Guid>();
-        var appName = "app name";
-
-        var appUserRoleDescription = new AppUserRoleDescription[] {
-            new("de","this is test1"),
-            new("en","this is test2"),
-        };
-        var appAssignedRoleDesc = new AppUserRole[] { new("Legal Admin", appUserRoleDescription) };
-       
-        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetOfferNameProviderCompanyUserAsync(appId, _iamUser.UserEntityId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, appName, _companyUser.Id, null));
-
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
-
-        //Act
-        async Task Act() => await sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc, _iamUser.UserEntityId).ConfigureAwait(false);
-
-        //Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"App {appId} providing company is not yet set.");
-    }
-
-    #endregion
-
     #region SubmitAppReleaseRequestAsync
 
     [Fact]
     public async Task SubmitAppReleaseRequestAsync_CallsOfferService()
     {
         // Arrange
-        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService, null!);
+        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService);
 
         // Act
         await sut.SubmitAppReleaseRequestAsync(_existingAppId, _iamUser.UserEntityId).ConfigureAwait(false);
@@ -508,7 +456,7 @@ public class AppReleaseBusinessLogicTest
                     _iamUser.UserEntityId,
                     OfferTypeId.APP,
                     A<IEnumerable<NotificationTypeId>>._,
-                    A<IDictionary<string, IEnumerable<string>>>._))
+                    A<IDictionary<string, IEnumerable<string>>>._,A<IEnumerable<DocumentTypeId>>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -520,7 +468,7 @@ public class AppReleaseBusinessLogicTest
     public async Task SubmitOfferConsentAsync_WithEmptyAppId_ThrowsControllerArgumentException()
     {
         // Arrange
-        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService, null!);
+        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService);
 
         // Act
         async Task Act() => await sut.SubmitOfferConsentAsync(Guid.Empty, _fixture.Create<OfferAgreementConsent>(), _iamUser.UserEntityId).ConfigureAwait(false);
@@ -535,7 +483,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         var data = _fixture.Create<OfferAgreementConsent>();
-        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService, null!);
+        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService);
 
         // Act
         await sut.SubmitOfferConsentAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
@@ -563,7 +511,7 @@ public class AppReleaseBusinessLogicTest
         var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, InReviewData.Skip(skip).Take(take)));
         A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._,A<OfferSorting>._))
             .Returns(paginationResult);
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService);
 
         // Act
         var result = await sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, null).ConfigureAwait(false);
@@ -592,7 +540,7 @@ public class AppReleaseBusinessLogicTest
         var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, InReviewData.Skip(skip).Take(take)));
         A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._,A<OfferSorting>._))
             .Returns(paginationResult);
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService);
 
         // Act
         var result = await sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, OfferStatusIdFilter.InReview).ConfigureAwait(false);
@@ -622,7 +570,7 @@ public class AppReleaseBusinessLogicTest
             ServiceManagerRoles = _fixture.Create<Dictionary<string, IEnumerable<string>>>(),
             BasePortalAddress = "test"
         };
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService, _notificationService);
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService);
      
         // Act
         await sut.DeclineAppRequestAsync(appId, IamUserId, data).ConfigureAwait(false);
@@ -632,8 +580,350 @@ public class AppReleaseBusinessLogicTest
             OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION,
             A<IDictionary<string, IEnumerable<string>>>._, A<string>._)).MustHaveHappenedOnceExactly();
     }
+
+    #endregion
+    
+    #region DeleteAppDocument
+    [Fact]
+    public async Task DeleteAppDocumentsAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var settings = new AppsSettings
+        {
+            DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
+        };
+        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, settings.DeleteDocumentTypeIds, OfferTypeId.APP))
+            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, appId, true) }, true, DocumentStatusId.PENDING, true));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
+
+        //Act
+        await sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, settings.DeleteDocumentTypeIds, OfferTypeId.APP))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferAssignedDocument(appId, ValidDocumentId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.RemoveDocument(ValidDocumentId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+    
+    [Fact]
+    public async Task DeleteAppDocumentsAsync_WithNoDocument_ThrowsNotFoundException()
+    {
+        //Arrange
+        var settings = new AppsSettings
+        {
+            DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
+        };
+        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, settings.DeleteDocumentTypeIds, OfferTypeId.APP))
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)>, bool, DocumentStatusId, bool>());
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
+
+        //Act
+        async Task Act() => await sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Document {ValidDocumentId} does not exist");
+    }
+
+    [Fact]
+    public async Task DeleteAppDocumentsAsync_WithNoAssignedOfferDocument_ThrowsConflictException()
+    {
+        //Arrange
+        var settings = new AppsSettings
+        {
+            DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
+        };
+        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, settings.DeleteDocumentTypeIds, OfferTypeId.APP))
+            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>() }, true, DocumentStatusId.PENDING, true));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
+
+        //Act
+        async Task Act() => await sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Document {ValidDocumentId} is not assigned to an app");
+    }
+    
+    [Fact]
+    public async Task DeleteAppDocumentsAsync_WithMultipleDocumentsAssigned_ThrowsConflictException()
+    {
+        //Arrange
+        var settings = new AppsSettings
+        {
+            DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
+        };
+        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, settings.DeleteDocumentTypeIds, OfferTypeId.APP))
+            .ReturnsLazily(() => (
+                new []
+                {
+                    new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, Guid.NewGuid(), true), 
+                    new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, Guid.NewGuid(), true)
+                }, 
+                true, 
+                DocumentStatusId.PENDING, 
+                true));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
+
+        //Act
+        async Task Act() => await sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Document {ValidDocumentId} is assigned to more than one app");
+    }
+
+    [Fact]
+    public async Task DeleteAppDocumentsAsync_WithDocumentAssignedToService_ThrowsConflictException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var settings = new AppsSettings
+        {
+            DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
+        };
+        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, settings.DeleteDocumentTypeIds, OfferTypeId.APP))
+            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, appId, false) }, true, DocumentStatusId.PENDING, true));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
+
+        //Act
+        async Task Act() => await sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Document {ValidDocumentId} is not assigned to an app");
+    }
+
+    [Fact]
+    public async Task DeleteAppDocumentsAsync_WithInvalidProviderCompanyUser_ThrowsForbiddenException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var settings = new AppsSettings
+        {
+            DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
+        };
+        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, settings.DeleteDocumentTypeIds, OfferTypeId.APP))
+            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, appId, true) }, true, DocumentStatusId.PENDING, false));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
+
+        //Act
+        async Task Act() => await sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"user {IamUserId} is not a member of the same company of document {ValidDocumentId}");
+    }
+
+    [Fact]
+    public async Task DeleteAppDocumentsAsync_WithInvalidOfferStatus_ThrowsConflictException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var settings = new AppsSettings
+        {
+            DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
+        };
+        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, settings.DeleteDocumentTypeIds, OfferTypeId.APP))
+            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.ACTIVE, appId, true) }, true, DocumentStatusId.PENDING, true));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
+
+        //Act
+        async Task Act() => await sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"App {appId} is in locked state");
+    }
+
+    [Fact]
+    public async Task DeleteAppDocumentsAsync_WithInvalidDocumentType_ThrowsArgumentException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var settings = new AppsSettings
+        {
+            DeleteDocumentTypeIds = new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }
+        };
+        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, settings.DeleteDocumentTypeIds, OfferTypeId.APP))
+            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, appId, true) }, false, DocumentStatusId.PENDING, true));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
+
+        //Act
+        async Task Act() => await sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"Document {ValidDocumentId} can not get retrieved. Document type not supported");
+    }
+
+    [Fact]
+    public async Task DeleteAppDocumentsAsync_WithInvalidDocumentStatus_ThrowsConflictException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var settings = new AppsSettings
+        {
+            DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
+        };
+        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, settings.DeleteDocumentTypeIds, OfferTypeId.APP))
+            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, appId, true) }, true, DocumentStatusId.LOCKED, true));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
+
+        //Act
+        async Task Act() => await sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Document in State {DocumentStatusId.LOCKED} can't be updated");
+    }
     
     #endregion
+
+    #region GetInReviewAppDetailsById
+
+    [Fact]
+    public async Task GetInReviewAppDetailsByIdAsync_CallsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var data = _fixture.Create<InReviewOfferData>();
+        A.CallTo(() => _offerRepository.GetInReviewAppDataByIdAsync(appId,OfferTypeId.APP))
+            .ReturnsLazily(() => data);
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService);
+
+        // Act
+        var result = await sut.GetInReviewAppDetailsByIdAsync(appId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerRepository.GetInReviewAppDataByIdAsync(appId, OfferTypeId.APP)).MustHaveHappened();
+        result.Should().NotBeNull();
+        result.Id.Should().Be(data.id);
+    }
+
+    [Fact]
+    public async Task GetInReviewAppDetailsByIdAsync_ThrowsNotFoundException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetInReviewAppDataByIdAsync(appId,OfferTypeId.APP))
+            .ReturnsLazily(() => (InReviewOfferData?)null);
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService);
+
+        //Act
+        async Task Act() => await sut.GetInReviewAppDetailsByIdAsync(appId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"App {appId} not found or Incorrect Status");
+    }
+
+    #endregion
+
+    #region DeleteApp
+    
+    [Fact]
+    public async Task DeleteAppAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var appDeleteData = _fixture.Create<AppDeleteData>();
+        
+        A.CallTo(() => _offerRepository.GetAppDeleteDataAsync(appId, OfferTypeId.APP, IamUserId, OfferStatusId.CREATED))
+            .Returns((true,true,true,true,appDeleteData));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService);
+
+        //Act
+        await sut.DeleteAppAsync(appId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        A.CallTo(() => _offerRepository.GetAppDeleteDataAsync(appId, OfferTypeId.APP, IamUserId, OfferStatusId.CREATED))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferAssignedLicenses(A<IEnumerable<(Guid,Guid)>>.That.Matches((IEnumerable<(Guid OfferId,Guid LicenceId)> offerLicenseIds) =>
+            offerLicenseIds.All(x => x.OfferId == appId) && offerLicenseIds.Select(x => x.LicenceId).SequenceEqual(appDeleteData.OfferLicenseIds)))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferAssignedUseCases(A<IEnumerable<(Guid,Guid)>>.That.Matches((IEnumerable<(Guid OfferId, Guid UseCaseId)> offerUseCaseIds) =>
+            offerUseCaseIds.All(x => x.OfferId == appId) && offerUseCaseIds.Select(x => x.UseCaseId).SequenceEqual(appDeleteData.UseCaseIds)))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferAssignedPrivacyPolicies(A<IEnumerable<(Guid,PrivacyPolicyId)>>.That.Matches((IEnumerable<(Guid OfferId,PrivacyPolicyId PolicyId)> offerPolicyIds) =>
+            offerPolicyIds.All(x => x.OfferId == appId) && offerPolicyIds.Select(x => x.PolicyId).SequenceEqual(appDeleteData.PolicyIds)))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferAssignedDocuments(A<IEnumerable<(Guid,Guid)>>.That.Matches((IEnumerable<(Guid OfferId,Guid DocumentId)> offerDocIds) =>
+            offerDocIds.All(x => x.OfferId == appId) && offerDocIds.Select(x => x.DocumentId).SequenceEqual(appDeleteData.DocumentIdStatus.Select(x => x.DocumentId))))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveAppLanguages(A<IEnumerable<(Guid,string)>>.That.Matches((IEnumerable<(Guid OfferId,string Language)> offerLanguages) =>
+            offerLanguages.All(x => x.OfferId == appId) && offerLanguages.Select(x => x.Language).SequenceEqual(appDeleteData.LanguageCodes)))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferTags(A<IEnumerable<(Guid, string)>>.That.Matches((IEnumerable<(Guid OfferId,string Tag)> offerTags) =>
+            offerTags.All(x => x.OfferId == appId) && offerTags.Select(x => x.Tag).SequenceEqual(appDeleteData.TagNames)))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferDescriptions(A<IEnumerable<(Guid,string)>>.That.Matches((IEnumerable<(Guid OfferId,string Langugage)> descriptionLanguages) =>
+            descriptionLanguages.All(x => x.OfferId == appId) && descriptionLanguages.Select(x => x.Langugage).SequenceEqual(appDeleteData.DescriptionLanguageShortNames)))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.RemoveDocuments(A<IEnumerable<Guid>>.That.IsSameSequenceAs(appDeleteData.DocumentIdStatus.Where(x => x.DocumentStatusId != DocumentStatusId.LOCKED).Select(x => x.DocumentId)))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOffer(appId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+    
+    [Fact]
+    public async Task DeleteAppAsync_WithNoProviderCompanyUser_ThrowsForbiddenException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var appDeleteData = _fixture.Create<AppDeleteData>();
+        
+        A.CallTo(() => _offerRepository.GetAppDeleteDataAsync(appId, OfferTypeId.APP, IamUserId, OfferStatusId.CREATED))
+            .Returns((true, true, true, false, appDeleteData));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService);
+
+        //Act
+        async Task Act() =>  await sut.DeleteAppAsync(appId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"user {IamUserId} is not a member of the providercompany of app {appId}");
+    }
+
+    [Fact]
+    public async Task DeleteAppAsync_WithInvalidOfferStatus_ThrowsConflictException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var appDeleteData = _fixture.Create<AppDeleteData>();
+        
+        A.CallTo(() => _offerRepository.GetAppDeleteDataAsync(appId, OfferTypeId.APP, IamUserId, OfferStatusId.CREATED))
+            .Returns((true, true, false, true, appDeleteData));
+
+        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService);
+
+        //Act
+        async Task Act() =>  await sut.DeleteAppAsync(appId, IamUserId).ConfigureAwait(false);
+
+        // Assert 
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"App {appId} is not in Created State");
+    }
+
+    #endregion 
 
     #region Setup
 
@@ -644,11 +934,11 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _offerRepository.GetAppUpdateData(_notExistingAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._))
             .ReturnsLazily(() => (AppUpdateData?)null);
         A.CallTo(() => _offerRepository.GetAppUpdateData(_activeAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._))
-            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(), null, Array.Empty<PrivacyPolicyId>()));
+            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<OfferDescriptionData>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(), null, Array.Empty<PrivacyPolicyId>()));
         A.CallTo(() => _offerRepository.GetAppUpdateData(_differentCompanyAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._))
-            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, false, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(), null, Array.Empty<PrivacyPolicyId>()));
+            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, false, Array.Empty<OfferDescriptionData>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(), null, Array.Empty<PrivacyPolicyId>()));
         A.CallTo(() => _offerRepository.GetAppUpdateData(_existingAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._))
-            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, true, Array.Empty<(string, string, string)>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false), null, Array.Empty<PrivacyPolicyId>()));
+            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, true, Array.Empty<OfferDescriptionData>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false), null, Array.Empty<PrivacyPolicyId>()));
         A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).Returns(_companyUser.CompanyId);
         
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);

@@ -32,7 +32,7 @@ on:
       - 'docker/Dockerfile-portal-migrations'
 
     branches:
-      - 'main'
+      - 'dev'
   workflow_dispatch:
 
 env:
@@ -71,7 +71,7 @@ jobs:
           file: docker/Dockerfile-portal-migrations
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev
           labels: ${{ steps.meta.outputs.labels }}
 
   auth-and-dispatch:
