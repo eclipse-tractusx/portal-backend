@@ -268,5 +268,17 @@
     "language_short_name": "en",
     "description_long": "The Digital Twin Registry provides a central source of information („phone book“): all digital twins and their sub models, which contain various aspects of relevant information and services within the data ecosystem, are registered here. In addition to registering new digital twins, they can also be found and viewed at this point along with their sub models.  Digital twins are relevant both for data providers, who supply the agreed data in the agreed form and make it discoverable via the registry, and for data or service consumers, who can offer value-added services based on this data and find out which providers exist via the registry.",
     "description_short": "Central source of information for all digital twins in the CX dataspace"
+  },
+  {
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfed",
+    "language_short_name": "de",
+    "description_long": "Enabling Supply chain member to to communicate and manage the CO2 Scope 3 information.",
+    "description_short": "Enabling Supply chain member to to communicate and manage the CO2 Scope."
+  },
+  {
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfed",
+    "language_short_name": "en",
+    "description_long": "Enabling Supply chain member to to communicate and manage the CO2 Scope 3 information.",
+    "description_short": "Enabling Supply chain member to to communicate and manage the CO2 Scope."
   }
 ]

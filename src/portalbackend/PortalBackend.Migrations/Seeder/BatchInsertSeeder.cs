@@ -86,7 +86,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<OfferAssignedLicense>("offer_assigned_licenses", x => new { x.OfferId, x.OfferLicenseId}, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferDescription>("offer_descriptions", x => new { AppId = x.OfferId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferTag>("offer_tags", x => new { AppId = x.OfferId, x.Name }, cancellationToken).ConfigureAwait(false);
-        await SeedTable<ServiceAssignedServiceType>("service_assigned_service_types", x => new { x.ServiceId, x.ServiceTypeId}, cancellationToken).ConfigureAwait(false);
+        await SeedTable<ServiceDetail>("service_details", x => new { x.ServiceId, x.ServiceTypeId}, cancellationToken).ConfigureAwait(false);
         await SeedTable<UserRoleAssignedCollection>("user_role_assigned_collections", x => new { x.UserRoleId, x.UserRoleCollectionId}, cancellationToken).ConfigureAwait(false);
         await SeedTable<UserRoleCollectionDescription>("user_role_collection_descriptions", x => new { x.UserRoleCollectionId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedTable<UserRoleDescription>("user_role_descriptions", x => new { x.UserRoleId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
@@ -94,7 +94,6 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<CompanyIdentifier>("company_identifiers", x=>  new { x.CompanyId, x.UniqueIdentifierId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<CountryAssignedIdentifier>("country_assigned_identifiers", x => new { x.CountryAlpha2Code, x.UniqueIdentifierId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferAssignedPrivacyPolicy>("offer_assigned_privacy_policies", x => new { x.OfferId, x.PrivacyPolicyId }, cancellationToken).ConfigureAwait(false);
-        await SeedTable<ApplicationAssignedProcessStep>("application_assigned_process_steps", x => new { x.CompanyApplicationId, x.ProcessStepId }, cancellationToken).ConfigureAwait(false);
         
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
@@ -125,6 +124,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<AppSubscriptionDetail>("app_subscription_details", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<UseCase>("use_cases", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<ProcessStep>("process_steps", cancellationToken).ConfigureAwait(false);
+        await SeedTableForBaseEntity<Process>("processes", cancellationToken).ConfigureAwait(false);
     }
 
     private async Task SeedTableForBaseEntity<T>(string fileName, CancellationToken cancellationToken) where T : class, IBaseEntity

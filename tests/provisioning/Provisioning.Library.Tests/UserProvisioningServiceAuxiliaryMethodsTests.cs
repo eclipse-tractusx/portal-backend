@@ -18,17 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
 using AutoFixture.Dsl;
-using AutoFixture.AutoFakeItEasy;
-using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using FakeItEasy;
-using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests;
 

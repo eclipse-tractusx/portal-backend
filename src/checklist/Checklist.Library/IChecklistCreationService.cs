@@ -29,7 +29,7 @@ public interface IChecklistCreationService
     /// Creates the initial checklist for the given application
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
-    Task CreateInitialChecklistAsync(Guid applicationId);
+    Task<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>> CreateInitialChecklistAsync(Guid applicationId);
 
     /// <summary>
     /// Creates the missing items for the application
@@ -41,5 +41,5 @@ public interface IChecklistCreationService
     /// <param name="existingChecklistEntryTypeIds">The currently existing <see cref="ApplicationChecklistEntryTypeId"/></param>
     /// <returns>The created ChecklistApplication Items</returns>
     Task<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>> CreateMissingChecklistItems(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> existingChecklistEntryTypeIds);
-    IEnumerable<ProcessStep> CreateInitialProcessSteps(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> checklistEntries);
+    IEnumerable<ProcessStepTypeId> GetInitialProcessStepTypeIds(IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)> checklistEntries);
 }

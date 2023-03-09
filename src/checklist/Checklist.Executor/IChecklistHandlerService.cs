@@ -19,10 +19,9 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker;
+namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Executor;
 
 /// <summary>
 /// Service that organizes the mapping of checklist ProcessStepExecutions to ProcessStepTypes
@@ -37,8 +36,8 @@ public interface IChecklistHandlerService
     /// <param name="ErrorFunc">the function to be executed in case ProcessFunc threw an application-exception (optional)</param>
     record ProcessStepExecution(
         ApplicationChecklistEntryTypeId EntryTypeId,
-        Func<IChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)>> ProcessFunc,
-        Func<Exception,IChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)>>? ErrorFunc
+        Func<IChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<IChecklistService.WorkerChecklistProcessStepExecutionResult>> ProcessFunc,
+        Func<Exception,IChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<IChecklistService.WorkerChecklistProcessStepExecutionResult>>? ErrorFunc
     );
 
     /// <summary>
@@ -51,5 +50,10 @@ public interface IChecklistHandlerService
     /// returns whether a ProcessStepTypeId shall be executed automatically by the ChecklistProcessor
     /// </summary>
     /// <param name="stepTypeId">ProcessStepTypeId</param>
-    bool IsManualProcessStep(ProcessStepTypeId stepTypeId);
+    bool IsExecutableProcessStep(ProcessStepTypeId stepTypeId);
+
+    /// <summary>
+    /// returns the ProcessStepTypeIds that shall be executed automatically by the ChecklistProcessor
+    /// </summary>
+    IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds();
 }

@@ -77,7 +77,6 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
 
     private async Task ExecuteInvitationInternalAsync(CompanyInvitationData invitationData, string iamUserId)
     {
-
         var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         if (creatorId == Guid.Empty)
         {
@@ -85,7 +84,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         }
 
         var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
-        await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName).ConfigureAwait(false);
+        await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName, _settings.InitialLoginTheme).ConfigureAwait(false);
 
         var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(invitationData.organisationName);
 

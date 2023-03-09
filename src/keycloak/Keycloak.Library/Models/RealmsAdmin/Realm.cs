@@ -163,4 +163,7 @@ public class Realm
     public bool? UserManagedAccessAllowed { get; set; }
     [JsonProperty("passwordPolicy")]
     public string PasswordPolicy{ get; set; }
+
+    [JsonProperty("loginTheme")] 
+    public string? LoginTheme { get; set; }
 }

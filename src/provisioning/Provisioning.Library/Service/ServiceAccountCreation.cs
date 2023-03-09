@@ -18,13 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
@@ -34,16 +35,26 @@ public class ServiceAccountCreation : IServiceAccountCreation
 {
     private readonly IProvisioningManager _provisioningManager;
     private readonly IPortalRepositories _portalRepositories;
+    private readonly IProvisioningDBAccess _provisioningDbAccess;
+    private readonly ServiceAccountCreationSettings _settings;
 
     /// <summary>
     /// Creates a new instance of <see cref="ServiceAccountCreation"/>
     /// </summary>
     /// <param name="provisioningManager">Access to the provisioning Manager and keycloak</param>
     /// <param name="portalRepositories">Access to the database</param>
-    public ServiceAccountCreation(IProvisioningManager provisioningManager, IPortalRepositories portalRepositories)
+    /// <param name="provisioningDbAccess">Access to the provisioning database</param>
+    /// <param name="options">Options for the service account creation</param>
+    public ServiceAccountCreation(
+        IProvisioningManager provisioningManager,
+        IPortalRepositories portalRepositories,
+        IProvisioningDBAccess provisioningDbAccess,
+        IOptions<ServiceAccountCreationSettings> options)
     {
         _provisioningManager = provisioningManager;
         _portalRepositories = portalRepositories;
+        _provisioningDbAccess = provisioningDbAccess;
+        _settings = options.Value;
     }
 
     /// <inheritdoc />
@@ -52,6 +63,7 @@ public class ServiceAccountCreation : IServiceAccountCreation
         Guid companyId,
         IEnumerable<string> bpns,
         CompanyServiceAccountTypeId companyServiceAccountTypeId,
+        bool enhanceTechnicalUserName,
         Action<CompanyServiceAccount>? setOptionalParameter = null)
     {
         var (name, description, iamClientAuthMethod, userRoleIds) = creationData;
@@ -71,11 +83,12 @@ public class ServiceAccountCreation : IServiceAccountCreation
             }
         }
 
-        var clientId = await _provisioningManager.GetNextServiceAccountClientIdAsync().ConfigureAwait(false);
+        var (clientId, id) = await GetNextServiceAccountClientIdWithIdAsync().ConfigureAwait(false);
+        var enhancedName = enhanceTechnicalUserName ? $"{name}{id}" : name;
         var serviceAccountData = await _provisioningManager.SetupCentralServiceAccountClientAsync(
             clientId,
             new ClientConfigRolesData(
-                name,
+                enhancedName,
                 description,
                 iamClientAuthMethod,
                 userRoleData
@@ -94,7 +107,7 @@ public class ServiceAccountCreation : IServiceAccountCreation
         var serviceAccount = serviceAccountsRepository.CreateCompanyServiceAccount(
             companyId,
             CompanyServiceAccountStatusId.ACTIVE,
-            name,
+            enhancedName,
             description,
             companyServiceAccountTypeId,
             setOptionalParameter);
@@ -111,5 +124,11 @@ public class ServiceAccountCreation : IServiceAccountCreation
         }
 
         return (clientId, serviceAccountData, serviceAccount.Id, userRoleData);
+    }
+    
+    private async Task<(string clientId, string id)> GetNextServiceAccountClientIdWithIdAsync()
+    {
+        var id = await _provisioningDbAccess.GetNextClientSequenceAsync().ConfigureAwait(false);
+        return ($"{_settings.ServiceAccountClientPrefix}{id}", id.ToString());
     }
 }

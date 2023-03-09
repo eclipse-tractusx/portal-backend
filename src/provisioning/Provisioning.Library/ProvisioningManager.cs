@@ -49,14 +49,14 @@ public partial class ProvisioningManager : IProvisioningManager
     {
     }
 
-    public async Task SetupSharedIdpAsync(string idpName, string organisationName)
+    public async Task SetupSharedIdpAsync(string idpName, string organisationName, string? loginTheme)
     {
         await CreateCentralIdentityProviderAsync(idpName, organisationName, _Settings.CentralIdentityProvider).ConfigureAwait(false);
 
         var (clientId, secret) = await CreateSharedIdpServiceAccountAsync(idpName).ConfigureAwait(false);
         var sharedKeycloak = _Factory.CreateKeycloakClient("shared", clientId, secret);
 
-        await CreateSharedRealmAsync(sharedKeycloak, idpName, organisationName).ConfigureAwait(false);
+        await CreateSharedRealmAsync(sharedKeycloak, idpName, organisationName, loginTheme).ConfigureAwait(false);
 
         await UpdateCentralIdentityProviderUrlsAsync(idpName, await sharedKeycloak.GetOpenIDConfigurationAsync(idpName).ConfigureAwait(false)).ConfigureAwait(false);
 
@@ -216,8 +216,15 @@ public partial class ProvisioningManager : IProvisioningManager
         var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
         identityProvider.DisplayName = displayName;
         var sharedKeycloak = await GetSharedKeycloakClient(alias).ConfigureAwait(false);
-        await UpdateSharedRealmAsync(sharedKeycloak, alias, displayName).ConfigureAwait(false);
+        await UpdateSharedRealmAsync(sharedKeycloak, alias, displayName, null).ConfigureAwait(false);
         await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
+    }
+
+    public async ValueTask UpdateSharedRealmTheme(string alias, string loginTheme)
+    {
+        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+        var sharedKeycloak = await GetSharedKeycloakClient(alias).ConfigureAwait(false);
+        await UpdateSharedRealmAsync(sharedKeycloak, alias, identityProvider.DisplayName, loginTheme).ConfigureAwait(false);
     }
 
     public async ValueTask SetSharedIdentityProviderStatusAsync(string alias, bool enabled)

@@ -28,7 +28,7 @@ public class ServiceType
     private ServiceType()
     {
         Label = null!;
-        Services = new HashSet<Offer>();
+        ServiceDetails = new HashSet<ServiceDetail>();
     }
 
     public ServiceType(ServiceTypeId offerTypeId) : this()
@@ -43,5 +43,5 @@ public class ServiceType
     public string Label { get; private set; }
 
     // Navigation properties
-    public virtual ICollection<Offer> Services { get; private set; }
+    public virtual ICollection<ServiceDetail> ServiceDetails { get; private set; }
 }

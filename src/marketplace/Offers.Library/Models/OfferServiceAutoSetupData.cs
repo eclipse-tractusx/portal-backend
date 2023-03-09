@@ -32,7 +32,7 @@ public record OfferAutoSetupData(Guid RequestId, string OfferUrl);
 /// </summary>
 /// <param name="TechnicalUserInfo">Object containing the information of the technical user</param>
 /// <param name="ClientInfo">Information of the created client</param>
-public record OfferAutoSetupResponseData(TechnicalUserInfoData TechnicalUserInfo, ClientInfoData ClientInfo);
+public record OfferAutoSetupResponseData(TechnicalUserInfoData? TechnicalUserInfo, ClientInfoData? ClientInfo);
 
 /// <summary>
 /// Technical User information

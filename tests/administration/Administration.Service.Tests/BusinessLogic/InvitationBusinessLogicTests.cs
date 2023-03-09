@@ -107,7 +107,7 @@ public class InvitationBusinessLogicTests
         await sut.ExecuteInvitation(invitationData,_iamUserId).ConfigureAwait(false);
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
-        A.CallTo(() => _provisioningManager.SetupSharedIdpAsync(A<string>.That.IsEqualTo(_idpName), A<string>.That.IsEqualTo(invitationData.organisationName))).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.SetupSharedIdpAsync(A<string>.That.IsEqualTo(_idpName), A<string>.That.IsEqualTo(invitationData.organisationName), A<string?>._)).MustHaveHappened();
 
         A.CallTo(() => _companyRepository.CreateCompany(A<string>.That.IsEqualTo(invitationData.organisationName))).MustHaveHappened();
         A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>.That.IsEqualTo(IdentityProviderCategoryId.KEYCLOAK_SHARED))).MustHaveHappened();

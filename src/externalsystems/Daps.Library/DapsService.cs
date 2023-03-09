@@ -46,7 +46,7 @@ public class DapsService : IDapsService
     /// <inheritdoc />
     public Task<bool> EnableDapsAuthAsync(string clientName, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken)
     {
-        UrlHelper.ValidateHttpUrl(connectorUrl, () => nameof(connectorUrl));
+        connectorUrl.EnsureValidHttpUrl(() => nameof(connectorUrl));
         return HandleRequest(clientName, connectorUrl, businessPartnerNumber, formFile, cancellationToken);
     }
 
@@ -61,7 +61,7 @@ public class DapsService : IDapsService
         multiPartStream.Add(new StreamContent(stream), "file", formFile.FileName);
         multiPartStream.Add(new StringContent(clientName), "clientName");
         multiPartStream.Add(new StringContent(BaseSecurityProfile), "securityProfile");
-        multiPartStream.Add(new StringContent(UrlHelper.AppendToPathEncoded(connectorUrl, businessPartnerNumber)), "referringConnector");
+        multiPartStream.Add(new StringContent(connectorUrl.AppendToPathEncoded(businessPartnerNumber)), "referringConnector");
 
         await httpClient.PostAsync(string.Empty, multiPartStream, cancellationToken)
             .CatchingIntoServiceExceptionFor("daps-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);

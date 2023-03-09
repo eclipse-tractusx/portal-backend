@@ -22,7 +22,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Executor;
+using Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Config.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
@@ -31,27 +32,30 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 try
 {
     Console.WriteLine("Building worker");
-    var host = Host.CreateDefaultBuilder(args)
-     .ConfigureServices((hostContext, services) =>
-     {
-         services
-             .AddTransient<ChecklistExecutionService>()
-             .AddTransient<IChecklistProcessor, ChecklistProcessor>()            
-             .AddTransient<IChecklistHandlerService, ChecklistHandlerService>()
-             .AddPortalRepositories(hostContext.Configuration)
-             .AddChecklist(hostContext.Configuration.GetSection("Checklist"))
-             .AddChecklistCreation()
-             .AddApplicationActivation(hostContext.Configuration);
+    var host = Host
+        .CreateDefaultBuilder(args)
+        .ConfigureServices((hostContext, services) =>
+        {
+            services
+                .AddTransient<ProcessExecutionService>()
+                .AddTransient<IProcessExecutor, ProcessExecutor>()            
+                .AddTransient<IProcessTypeExecutor, ApplicationChecklistProcessTypeExecutor>()
+                .AddTransient<IChecklistHandlerService, ChecklistHandlerService>()
+                .AddPortalRepositories(hostContext.Configuration)
+                .AddChecklist(hostContext.Configuration.GetSection("Checklist"))
+                .AddChecklistCreation()
+                .AddApplicationActivation(hostContext.Configuration);
 
-         if (hostContext.HostingEnvironment.IsDevelopment())
-         {
-             var urlsToTrust = hostContext.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
-                 .Where(config => config.ConnectionString.StartsWith("https://"))
-                 .Select(config => config.ConnectionString)
-                 .Distinct();
-             FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);    
-         }
-     }).Build();
+            if (hostContext.HostingEnvironment.IsDevelopment())
+            {
+                var urlsToTrust = hostContext.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
+                    .Where(config => config.ConnectionString.StartsWith("https://"))
+                    .Select(config => config.ConnectionString)
+                    .Distinct();
+                FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);    
+            }
+        })
+        .Build();
     Console.WriteLine("Building worker completed");
 
     var cts = new CancellationTokenSource();
@@ -63,7 +67,7 @@ try
     };
 
     Console.WriteLine("Start processing Checklist");
-    var workerInstance = host.Services.GetRequiredService<ChecklistExecutionService>();
+    var workerInstance = host.Services.GetRequiredService<ProcessExecutionService>();
     await workerInstance.ExecuteAsync(cts.Token).ConfigureAwait(false);
     Console.WriteLine("Execution finished shutting down");
 }

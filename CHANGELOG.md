@@ -2,6 +2,62 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.1.0
+
+### Change
+* App Service
+  * enhanced GET apps/subscribed/subscription-status endpoint by adding 'name' and 'provider' keys
+  * new controller 'App Change' introduced
+  * endpoint /appreleaseprocess/{appId}/role/activeapp moved to /appChange controller ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * endpoint /appChange/{appId}/role/activeapp business logic enhanced to add new role in existing keycloak clients/app instances
+* Services Service
+  * for offer with service type DATASPACE_SERVICE  - portal db subscription record is created and technical user creation is supported
+  * for offer with service type CONSULTANCE_SERVICE - portal db subscription record is created with the subscription request; app_instance and technical users are no longer created/relevant
+
+### Feature
+* App Service
+  * operator/CX Admin endpoint released to view all app details under "IN_REVIEW" for release approval /appreleaseprocess/inReview/{appId}
+  * new endpoint to enable app provider to switch leadImage of an app - POST /api/apps/{appId}/appLeadImage
+  * new endpoint to delete app under app release process - DELETE /apps/appreleaseprocess/{appId}
+  * new endpoint to delete app documents for app under app release process - DELETE /api/apps/appreleaseprocess/documents/{documentId}
+* Administration Service
+  * company role management endpoint implemented - GET /administration/companydata/companyRolesAndConsents
+* Login Theme
+  * add customized login theme when inviting a company to register for CX (as part of the creation of the new realm)
+  * change the login theme when activating the company registration (update of the realm)
+* Checklist Worker Application - allowed process steps and process_step status update based on related jobs
+
+### Technical Support
+* Added the externalsystems path to trigger the build of the checklist worker
+* Checklist Worker ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * add new table portal.processes (enables portal to support several checklist processes in parallel)
+  * add new table portal.process_types
+  * enhanced portal.process_steps with the mandatory attribute "process_id"
+  * enhanced portal.company_applications with optional attribute "checklist_process_id"
+  * removal of table portal.application_assigned_process_steps
+* Service Service
+  * add new table portal.service_details
+  * removal of table portal.service_assigned_service_types
+* Base Data
+  * Agreement & Unique Identifier base data updated
+* Added temp fix for CVE-2022-1304
+
+### Bugfix
+* Checklist Worker Application
+  * remove bpn process steps from manual steps
+  * added status code value of external systems inside the service exception log
+  * override_clearinghouse process step updated to create trigger_clearinghouse step
+  * retrigger of bpdm push and pull added as manual process steps
+  * bpn can get set manually, even if the checklist item is failed
+  * ensure proper dispose of async enumerators
+* App Service
+  * GET /appreleaseprocess/{appId}/appStatus fetched db value of the key "price" updated
+* Administration Service
+  * Set user role in the user creation scenario as mandatory values (own IdP, bulk and single load)
+* Others
+  * offer decline permission updated to all users with a specific assigned permission
+  * connector is set to active when daps was successfully triggered
+
 ## 1.0.0-RC10
 
 ### Change

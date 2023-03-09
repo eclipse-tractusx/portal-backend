@@ -639,8 +639,29 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             }
         }
 
-        UpdateApplicationStatus(applicationId, applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration, applicationRepository);
-        await _checklistService.CreateInitialChecklistAsync(applicationId);
+        if (GetAndValidateUpdateApplicationStatus(applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration) != CompanyApplicationStatusId.SUBMITTED)
+        {
+            throw new UnexpectedConditionException("updateStatus should allways be SUBMITTED here");
+        }
+
+        var entries = await _checklistService.CreateInitialChecklistAsync(applicationId);
+
+        var process = _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST);
+
+        _portalRepositories.GetInstance<IProcessStepRepository>()
+            .CreateProcessStepRange(
+                _checklistService
+                    .GetInitialProcessStepTypeIds(entries)
+                    .Select(processStepTypeId => (processStepTypeId, ProcessStepStatusId.TODO, process.Id)));
+
+        _portalRepositories.GetInstance<IApplicationRepository>()
+            .AttachAndModifyCompanyApplication(
+                applicationId,
+                application =>
+                {
+                    application.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
+                    application.ChecklistProcessId = process.Id;
+                });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
@@ -806,61 +827,43 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private static void UpdateApplicationStatus(Guid applicationId, CompanyApplicationStatusId applicationStatusId, UpdateApplicationSteps type, IApplicationRepository applicationRepository)
     {
-        if (applicationStatusId == CompanyApplicationStatusId.SUBMITTED
-            || applicationStatusId == CompanyApplicationStatusId.CONFIRMED
-            || applicationStatusId == CompanyApplicationStatusId.DECLINED)
+        var updateStatus = GetAndValidateUpdateApplicationStatus(applicationStatusId, type);
+        if (updateStatus != default)
         {
-            throw new ForbiddenException($"Application is already closed");
+            applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca => ca.ApplicationStatusId = updateStatus);
         }
-
-        switch(type)
+    }
+    
+    private static CompanyApplicationStatusId GetAndValidateUpdateApplicationStatus(CompanyApplicationStatusId applicationStatusId, UpdateApplicationSteps type)
+    {
+        return type switch
         {
-            case UpdateApplicationSteps.CompanyWithAddress:
-            {
-                if (applicationStatusId == CompanyApplicationStatusId.CREATED
-                    || applicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA)
-                {
-                    applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca =>
-                    {
-                        ca.ApplicationStatusId = CompanyApplicationStatusId.INVITE_USER;
-                    });
-                }
-                break;
-            }
-            case UpdateApplicationSteps.CompanyRoleAgreementConsents:
-            {
-                if (applicationStatusId == CompanyApplicationStatusId.CREATED
-                    || applicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA
-                    || applicationStatusId == CompanyApplicationStatusId.INVITE_USER
-                    || applicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE)
-                {
-                    
-                    applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca =>
-                    {
-                        ca.ApplicationStatusId = CompanyApplicationStatusId.UPLOAD_DOCUMENTS;
-                    });
-                }
-                break;
-            }
-            case UpdateApplicationSteps.SubmitRegistration:
-            {
-                if (applicationStatusId == CompanyApplicationStatusId.CREATED
-                    || applicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA
-                    || applicationStatusId == CompanyApplicationStatusId.INVITE_USER
-                    || applicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE
-                    || applicationStatusId == CompanyApplicationStatusId.UPLOAD_DOCUMENTS)
-                {
-                    throw new ForbiddenException($"Application status is not fitting to the pre-requisite");
-                }
+            UpdateApplicationSteps.CompanyWithAddress
+                when (applicationStatusId == CompanyApplicationStatusId.CREATED ||
+                    applicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA) => CompanyApplicationStatusId.INVITE_USER,
 
-                applicationRepository.AttachAndModifyCompanyApplication(applicationId, ca =>
-                {
-                    ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
-                });
+            UpdateApplicationSteps.CompanyRoleAgreementConsents
+                when (applicationStatusId == CompanyApplicationStatusId.CREATED ||
+                    applicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA ||
+                    applicationStatusId == CompanyApplicationStatusId.INVITE_USER ||
+                    applicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE) => CompanyApplicationStatusId.UPLOAD_DOCUMENTS,
 
-                break;
-            }
-        }
+            UpdateApplicationSteps.SubmitRegistration
+                when (applicationStatusId == CompanyApplicationStatusId.CREATED ||
+                    applicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA ||
+                    applicationStatusId == CompanyApplicationStatusId.INVITE_USER ||
+                    applicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE ||
+                    applicationStatusId == CompanyApplicationStatusId.UPLOAD_DOCUMENTS) => throw new ForbiddenException($"Application status is not fitting to the pre-requisite"),
+
+            UpdateApplicationSteps.SubmitRegistration
+                when applicationStatusId == CompanyApplicationStatusId.VERIFY => CompanyApplicationStatusId.SUBMITTED,
+
+            _ when (applicationStatusId == CompanyApplicationStatusId.SUBMITTED ||
+                applicationStatusId == CompanyApplicationStatusId.CONFIRMED ||
+                applicationStatusId == CompanyApplicationStatusId.DECLINED) => throw new ForbiddenException($"Application is already closed"),
+
+            _ => default
+        };
     }
 
     public async Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, string iamUserId)
