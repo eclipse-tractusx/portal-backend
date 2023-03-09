@@ -306,10 +306,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public async Task<(byte[] Content, string ContentType, string FileName)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken)
+    public async Task<(byte[] Content, string ContentType, string FileName)> GetAppDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var document = await documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken).ConfigureAwait(false);
+        var document = await documentRepository.GetOfferDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken).ConfigureAwait(false);
         if (!document.IsDocumentExisting)
         {
             throw new NotFoundException($"document {documentId} does not exist");
