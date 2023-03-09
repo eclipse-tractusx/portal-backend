@@ -291,10 +291,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             
             migrationBuilder.Sql("INSERT INTO portal.application_assigned_process_steps (company_application_id, process_step_id) SELECT applications.id,steps.id FROM portal.company_applications AS applications JOIN portal.process_steps AS steps ON applications.checklist_process_id = steps.process_id;");
 
-            migrationBuilder.DropTable(
-                name: "processes",
-                schema: "portal");
-
             migrationBuilder.CreateTable(
                 name: "service_assigned_service_types",
                 schema: "portal",
@@ -326,10 +322,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "service_details",
                 schema: "portal");
 
-            migrationBuilder.DropTable(
-                name: "process_types",
-                schema: "portal");
-
             migrationBuilder.Sql("DELETE FROM portal.process_steps WHERE process_step_type_id = 19");
 
             migrationBuilder.DeleteData(
@@ -348,11 +340,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "company_applications");
 
-            migrationBuilder.Sql("UPDATE portal.connectors SET self_description_document_id = null WHERE self_description_document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4 or document_type_id = 10 or document_type_id = 11)");
-            migrationBuilder.Sql("UPDATE portal.agreements SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4 or document_type_id = 10 or document_type_id = 11)");
-            migrationBuilder.Sql("UPDATE portal.consents SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4 or document_type_id = 10 or document_type_id = 11)");
-            migrationBuilder.Sql("DELETE FROM portal.offer_assigned_documents WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4 or document_type_id = 10 or document_type_id = 11)");
-            migrationBuilder.Sql("DELETE FROM portal.documents WHERE document_type_id = 4 or document_type_id = 10 or document_type_id = 11");
+            migrationBuilder.DropTable(
+                name: "processes",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "process_types",
+                schema: "portal");
+
+            migrationBuilder.Sql("UPDATE portal.connectors SET self_description_document_id = null WHERE self_description_document_id in (SELECT id FROM portal.documents WHERE document_type_id IN (4,10,11))");
+            migrationBuilder.Sql("UPDATE portal.agreements SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id IN (4,10,11))");
+            migrationBuilder.Sql("UPDATE portal.consents SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id IN (4,10,11))");
+            migrationBuilder.Sql("DELETE FROM portal.offer_assigned_documents WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id IN (4,10,11))");
+            migrationBuilder.Sql("DELETE FROM portal.documents WHERE document_type_id IN (4,10,11)");
 
             migrationBuilder.UpdateData(
                 schema: "portal",
