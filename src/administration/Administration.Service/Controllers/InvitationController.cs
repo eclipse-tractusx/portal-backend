@@ -59,12 +59,14 @@ public class InvitationController : ControllerBase
     /// <response code="400">Missing mandatory input values (e.g. email, organization name, etc.)</response>
     /// <response code="500">Internal Server Error.</response>
     /// <response code="502">Bad Gateway Service Error.</response>
+    /// <response code="409">user is not associated with  company.</response>
     [HttpPost]
     [Authorize(Roles = "invite_new_partner")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task ExecuteInvitation([FromBody] CompanyInvitationData invitationData) =>
         this.WithIamUserId(iamUserId => _logic.ExecuteInvitation(invitationData, iamUserId));
 }

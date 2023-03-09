@@ -20,13 +20,11 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 
 public interface IClearinghouseBusinessLogic
 {
-    Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)> HandleClearinghouse(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
+    Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> HandleClearinghouse(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
     Task ProcessEndClearinghouse(Guid applicationId, ClearinghouseResponseData data, CancellationToken cancellationToken);
 }

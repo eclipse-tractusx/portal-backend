@@ -93,7 +93,7 @@ public class IdentityProviderController : ControllerBase
     /// <param name="identityProviderId">Id of the identity provider</param>
     /// <returns>Returns details of the identity provider</returns>
     /// <remarks>
-    /// Example: POST: api/administration/identityprovider/owncompany/identityproviders/6CFEEF93-CB37-405B-B65A-02BEEB81629F
+    /// Example: GET: api/administration/identityprovider/owncompany/identityproviders/6CFEEF93-CB37-405B-B65A-02BEEB81629F
     /// </remarks>
     /// <response code="200">Returns a list of identityProviderDetails.</response>
     /// <response code="400">The user is not associated with a company.</response>

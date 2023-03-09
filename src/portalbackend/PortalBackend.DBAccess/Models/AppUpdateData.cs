@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 public record AppUpdateData(
     OfferStatusId OfferState,
     bool IsUserOfProvider,
-    IEnumerable<(string, string, string)> OfferDescriptions,
+    IEnumerable<OfferDescriptionData> OfferDescriptions,
     IEnumerable<(string Shortname, bool IsMatch)> Languages,
     IEnumerable<Guid> MatchingUseCases, 
     ValueTuple<Guid, string, bool> OfferLicense,

@@ -20,8 +20,6 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 
@@ -41,5 +39,5 @@ public interface ICustodianBusinessLogic
     /// <param name="context">Context for the identity wallet creation.</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns>Returns the checklist data</returns>
-    Task<(Action<ApplicationChecklistEntry>?,IEnumerable<ProcessStepTypeId>?,bool)> CreateIdentityWalletAsync(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
+    Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> CreateIdentityWalletAsync(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
 }

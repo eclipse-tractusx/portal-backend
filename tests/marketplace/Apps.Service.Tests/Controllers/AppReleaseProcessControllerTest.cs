@@ -307,28 +307,6 @@ public class AppReleaseProcessControllerTest
     }
 
     [Fact]
-    public async Task AddActiveAppUserRole_ReturnsExpectedCount()
-    {
-        var appId = _fixture.Create<Guid>();
-        var iamUserId = _fixture.Create<string>();
-
-        var appUserRoles = _fixture.CreateMany<AppUserRole>(3);
-        var appRoleData = _fixture.CreateMany<AppRoleData>(3);
-        A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles, iamUserId))
-            .Returns(appRoleData);
-
-        //Act
-        var result = await this._controller.AddActiveAppUserRole(appId, appUserRoles).ConfigureAwait(false);
-        foreach (var item in result)
-        {
-            //Assert
-            A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles, iamUserId)).MustHaveHappenedOnceExactly();
-            Assert.NotNull(item);
-            Assert.IsType<AppRoleData>(item);
-        }
-    }
-
-    [Fact]
     public async Task ApproveAppRequest_ReturnsExpectedCount()
     {
         //Arrange
@@ -359,5 +337,57 @@ public class AppReleaseProcessControllerTest
         //Assert
         A.CallTo(() => _logic.DeclineAppRequestAsync(appId, IamUserId, data)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task GetinReviewAppDetailsByIdAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var data = new InReviewAppDetails(appId,"Catena-X",default,null!,null!,null!,null!,null!,null!,null!,null!,null!,null!,null!,null!);
+        A.CallTo(() => _logic.GetInReviewAppDetailsByIdAsync(appId))
+            .ReturnsLazily(() => data);
+        
+        //Act
+        var result = await this._controller.GetInReviewAppDetailsByIdAsync(appId);
+
+        //Assert
+        result.Should().NotBeNull();
+        result.Title.Should().Be("Catena-X");
+    }
+
+    [Fact]
+    public async Task DeleteAppDocumentsAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var documentId = Guid.NewGuid();
+        var roleId = Guid.NewGuid();
+        A.CallTo(() => _logic.DeleteAppDocumentsAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(()=> Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.DeleteAppDocumentsAsync(documentId).ConfigureAwait(false);
+        
+        // Assert 
+        Assert.IsType<NoContentResult>(result);
+        A.CallTo(() => _logic.DeleteAppDocumentsAsync(documentId, IamUserId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeleteAppAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.DeleteAppAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(()=> Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.DeleteAppAsync(appId).ConfigureAwait(false);
+        
+        // Assert 
+        Assert.IsType<NoContentResult>(result);
+        A.CallTo(() => _logic.DeleteAppAsync(appId, IamUserId))
+            .MustHaveHappenedOnceExactly();
     }
 }

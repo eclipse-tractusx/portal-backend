@@ -20,22 +20,14 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public class ServiceAssignedServiceType
-{
-    private ServiceAssignedServiceType() {}
-
-    public ServiceAssignedServiceType(Guid serviceId, ServiceTypeId serviceTypeId)
-    {
-        ServiceId = serviceId;
-        ServiceTypeId = serviceTypeId;
-    }
-
-    public Guid ServiceId { get; private set; }
-    public ServiceTypeId ServiceTypeId { get; private set; }
-
-    // Navigation properties
-    public virtual Offer? Service { get; private set; }
-    public virtual ServiceType? ServiceType { get; private set; }
-}
+public record AppDeleteData(
+    IEnumerable<Guid> OfferLicenseIds,
+    IEnumerable<Guid> UseCaseIds,
+    IEnumerable<PrivacyPolicyId> PolicyIds,
+    IEnumerable<(Guid DocumentId,DocumentStatusId DocumentStatusId)> DocumentIdStatus,
+    IEnumerable<string> LanguageCodes,
+    IEnumerable<string> TagNames,
+    IEnumerable<string> DescriptionLanguageShortNames
+);

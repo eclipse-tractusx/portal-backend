@@ -18,9 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using FluentAssertions;
-using Xunit;
 using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO.Tests;

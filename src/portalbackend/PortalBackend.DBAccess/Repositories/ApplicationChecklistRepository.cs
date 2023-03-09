@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -60,14 +61,23 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
         return entity;
     }
 
-    /// <inheritdoc />
-    public IAsyncEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> GetChecklistDataAsync(Guid applicationId) =>
-        _portalDbContext.ApplicationChecklist
-            .Where(x => x.ApplicationId == applicationId)
-            .Select(x => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId))
-            .AsAsyncEnumerable();
+    public Task<(bool IsValidProcessId, Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(ApplicationChecklistEntryTypeId EntryTypeId, ApplicationChecklistEntryStatusId EntryStatusId)> Checklist)> GetChecklistData(Guid processId) =>
+        _portalDbContext.Processes
+            .AsNoTracking()
+            .Where(process => process.Id == processId)
+            .Select(process =>
+                new ValueTuple<bool,Guid,CompanyApplicationStatusId,IEnumerable<(ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId)>>(
+                    true,
+                    process.CompanyApplication!.Id,
+                    process.CompanyApplication.ApplicationStatusId,
+                    process.CompanyApplication.ApplicationChecklistEntries.Select(entry => new ValueTuple<ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId>(
+                        entry.ApplicationChecklistEntryTypeId,
+                        entry.ApplicationChecklistEntryStatusId
+                    ))
+                ))
+            .SingleOrDefaultAsync();
 
-    public Task<(bool IsValidApplicationId, bool IsSubmitted, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>? Checklist, IEnumerable<ProcessStep>? ProcessSteps)> GetChecklistProcessStepData(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> entryTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+    public Task<VerifyChecklistData?> GetChecklistProcessStepData(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> entryTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         _portalDbContext.CompanyApplications
             .AsNoTracking()
             .AsSplitQuery()
@@ -76,38 +86,19 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
                 Application = application,
                 IsSubmitted = application.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED
             })
-            .Select(x => new ValueTuple<bool,bool,IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>?, IEnumerable<ProcessStep>?>(
-                true,
+            .Select(x => new VerifyChecklistData(
                 x.IsSubmitted,
+                x.Application.ChecklistProcessId,
                 x.IsSubmitted
                     ? x.Application.ApplicationChecklistEntries
                         .Where(entry => entryTypeIds.Contains(entry.ApplicationChecklistEntryTypeId))
                         .Select(entry => new ValueTuple<ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId>(entry.ApplicationChecklistEntryTypeId, entry.ApplicationChecklistEntryStatusId))
                     : null,
                 x.IsSubmitted
-                    ? x.Application.ApplicationAssignedProcessSteps
-                        .Where(assigned =>
-                            processStepTypeIds.Contains(assigned.ProcessStep!.ProcessStepTypeId) && 
-                            assigned.ProcessStep!.ProcessStepStatusId == ProcessStepStatusId.TODO)
-                        .Select(assignedStep => assignedStep.ProcessStep!)
+                    ? x.Application.ChecklistProcess!.ProcessSteps
+                        .Where(step =>
+                            processStepTypeIds.Contains(step.ProcessStepTypeId) && 
+                            step.ProcessStepStatusId == ProcessStepStatusId.TODO)
                     : null))
             .SingleOrDefaultAsync();
-
-    /// <inheritdoc />
-    public IAsyncEnumerable<(Guid ApplicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> Checklist, IEnumerable<ProcessStep> ProcessSteps)> GetAllChecklistProcessStepData() =>
-        _portalDbContext.CompanyApplications
-            .AsNoTracking()
-            .AsSplitQuery()
-            .Where(application => application.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(application => new ValueTuple<Guid, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>, IEnumerable<ProcessStep>>(
-                application.Id,
-                application.ApplicationChecklistEntries
-                    .Select(entry => new ValueTuple<ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId>(entry.ApplicationChecklistEntryTypeId, entry.ApplicationChecklistEntryStatusId)),
-                application.ApplicationAssignedProcessSteps
-                    .Where(assigned => assigned.ProcessStep!.ProcessStepStatusId == ProcessStepStatusId.TODO)
-                    .Select(assignedStep => assignedStep.ProcessStep)!))
-            .ToAsyncEnumerable();
-
-    public ApplicationAssignedProcessStep CreateApplicationAssignedProcessStep(Guid companyApplicationId, Guid processStepId) =>
-        _portalDbContext.Add(new ApplicationAssignedProcessStep(companyApplicationId, processStepId)).Entity;
 }

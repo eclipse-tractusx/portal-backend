@@ -154,11 +154,35 @@ public interface IAppsBusinessLogic
     public Task DeactivateOfferbyAppIdAsync(Guid appId, string iamUserId);
 
     /// <summary>
-    /// Retrieve Document Content for document type "App Lead Image" and "App Image" by ID
+    /// Retrieve Document Content for document type  by ID
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="documentId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>byte Array Content</returns>
-    Task<(byte[] Content, string ContentType, string FileName)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken);
+    Task<(byte[] Content, string ContentType, string FileName)> GetAppDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Get OfferDescription by appId
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    Task<IEnumerable<OfferDescriptionData>> GetAppUpdateDescritionByIdAsync(Guid appId, string iamUserId);
+
+    /// <summary>
+    /// Create or Update OfferDescription by appId
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="offerDescriptionDatas">OfferDescription Data</param>
+    Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas);
+
+    /// <summary>
+    /// Create OfferAssigned AppLeadImage Document by appId
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="document">Document Data</param>
+    /// <param name="cancellationToken">cancellationToken</param>
+    Task CreatOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken);
 }

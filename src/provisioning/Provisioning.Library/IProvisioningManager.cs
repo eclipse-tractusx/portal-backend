@@ -26,12 +26,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 public interface IProvisioningManager
 {
     ValueTask<string> GetNextCentralIdentityProviderNameAsync();
-    Task<string> GetNextServiceAccountClientIdAsync();
-    Task SetupSharedIdpAsync(string idpName, string organisationName);
+    Task SetupSharedIdpAsync(string idpName, string organisationName, string? loginTheme);
     Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes);
     Task<string> CreateSharedRealmUserAsync(string realm, UserProfile profile);
     Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes);
     IAsyncEnumerable<(string Client, IEnumerable<string> Roles)> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames);
+    Task AddRolesToClientAsync(string clientName, IEnumerable<string> roleNames);
     Task<string> CreateOwnIdpAsync(string displayName, string organisationName, IamIdentityProviderProtocol providerProtocol);
     Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId);
     IAsyncEnumerable<IdentityProviderLink> GetProviderUserLinkDataForCentralUserIdAsync(string userId);
@@ -66,4 +66,5 @@ public interface IProvisioningManager
     ValueTask DeleteSharedIdpRealmAsync(string alias);
     IEnumerable<(string AttributeName,IEnumerable<string> AttributeValues)> GetStandardAttributes(string? organisationName = null, string? businessPartnerNumber = null);
     Task DeleteClientRolesFromCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames);
+    ValueTask UpdateSharedRealmTheme(string alias, string loginTheme);
 }

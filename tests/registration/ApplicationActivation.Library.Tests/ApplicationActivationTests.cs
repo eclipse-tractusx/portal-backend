@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections.Immutable;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
@@ -32,12 +31,14 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.Tests;
 
 public class ApplicationActivationTests
 {
     private const string BusinessPartnerNumber = "CAXLSHAREDIDPZZ";
+    private const string IdpAlias = "idp5";
     private const string ClientId = "catenax-portal";
     private const string CompanyName = "Shared Idp Test";
     private static readonly Guid Id = new("d90995fe-1241-4b8d-9f5c-f3909acc6383");
@@ -229,7 +230,7 @@ public class ApplicationActivationTests
             new List<ProcessStepTypeId>());
 
         //Act
-        await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
@@ -249,6 +250,12 @@ public class ApplicationActivationTests
         _notifications.Should().HaveCount(5);
         companyApplication.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.CONFIRMED);
         company.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
+        var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, default);
+        result.ModifyChecklistEntry!.Invoke(entry);
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+        result.ScheduleStepTypeIds.Should().BeNull();
+        result.SkipStepTypeIds.Should().HaveCount(Enum.GetValues<ProcessStepTypeId>().Length - 1);
+        result.Modified.Should().BeTrue();
     }
 
     [Fact]
@@ -298,7 +305,7 @@ public class ApplicationActivationTests
             new List<ProcessStepTypeId>());
 
         //Act
-        await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
@@ -319,6 +326,12 @@ public class ApplicationActivationTests
         _notifications.Should().HaveCount(5);
         companyApplication.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.CONFIRMED);
         company.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
+        var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, default);
+        result.ModifyChecklistEntry!.Invoke(entry);
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+        result.ScheduleStepTypeIds.Should().BeNull();
+        result.SkipStepTypeIds.Should().HaveCount(Enum.GetValues<ProcessStepTypeId>().Length - 1);
+        result.Modified.Should().BeTrue();
     }
 
     [Fact]
@@ -364,7 +377,7 @@ public class ApplicationActivationTests
             new List<ProcessStepTypeId>());
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(applicationId))
-            .ReturnsLazily(() => new ValueTuple<Guid, string?>());
+            .Returns(((Guid,string?,IEnumerable<string>))default);
 
         //Act
         async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
@@ -614,14 +627,14 @@ public class ApplicationActivationTests
         };
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == Id)))
-            .ReturnsLazily(() => new ValueTuple<Guid, string?>(company.Id, company.BusinessPartnerNumber!));
+            .Returns((company.Id, company.BusinessPartnerNumber, new []{ IdpAlias }));
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
-            .ReturnsLazily(() => new ValueTuple<Guid, string?>(IdWithoutBpn, null));
+            .Returns((IdWithoutBpn, null, Enumerable.Empty<string>()));
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(A<Guid>.That.Matches(x => x == Id)))
-            .ReturnsLazily(() => new ValueTuple<Guid, string, string?>(company.Id, company.Name, company.BusinessPartnerNumber!));
+            .Returns((company.Id, company.Name, company.BusinessPartnerNumber));
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
-            .ReturnsLazily(() => new ValueTuple<Guid, string, string?>(IdWithoutBpn, company.Name, null));
+            .Returns((IdWithoutBpn, company.Name, null));
 
         var welcomeEmailData = new List<WelcomeEmailData>();
         welcomeEmailData.AddRange(new WelcomeEmailData[]

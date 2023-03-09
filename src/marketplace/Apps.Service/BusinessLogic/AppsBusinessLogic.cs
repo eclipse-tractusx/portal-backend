@@ -33,6 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using System.Security.Cryptography;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -45,6 +46,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly AppsSettings _settings;
     private readonly IOfferService _offerService;
+    private readonly IOfferSetupService _offerSetupService;
     private readonly IMailingService _mailingService;
 
     /// <summary>
@@ -53,13 +55,21 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerSubscriptionService">OfferSubscription Service.</param>
     /// <param name="offerService">Offer service</param>
+    /// <param name="offerSetupService">Offer Setup Service</param>
     /// <param name="settings">Settings</param>
     /// <param name="mailingService">Mailing service</param>
-    public AppsBusinessLogic(IPortalRepositories portalRepositories, IOfferSubscriptionService offerSubscriptionService, IOfferService offerService, IOptions<AppsSettings> settings, IMailingService mailingService)
+    public AppsBusinessLogic(
+        IPortalRepositories portalRepositories,
+        IOfferSubscriptionService offerSubscriptionService,
+        IOfferService offerService,
+        IOfferSetupService offerSetupService,
+        IOptions<AppsSettings> settings,
+        IMailingService mailingService)
     {
         _portalRepositories = portalRepositories;
         _offerSubscriptionService = offerSubscriptionService;
         _offerService = offerService;
+        _offerSetupService = offerSetupService;
         _mailingService = mailingService;
         _settings = settings.Value;
     }
@@ -213,7 +223,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                 });
             });
 
-        var userName = string.Join(" ", new[] { requesterData.Firstname, requesterData.Lastname }); 
+        var userName = string.Join(" ", requesterData.Firstname, requesterData.Lastname); 
 
         if (!string.IsNullOrWhiteSpace(requesterData.Email))
         {
@@ -285,7 +295,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId) =>
-        _offerService.AutoSetupServiceAsync(data, _settings.ServiceAccountRoles, _settings.ITAdminRoles, iamUserId, OfferTypeId.APP, _settings.UserManagementAddress);
+        _offerSetupService.AutoSetupOfferAsync(data, _settings.ServiceAccountRoles, _settings.ITAdminRoles, iamUserId, OfferTypeId.APP, _settings.UserManagementAddress);
 
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId) =>
@@ -296,10 +306,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public async Task<(byte[] Content, string ContentType, string FileName)> GetAppImageDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken)
+    public async Task<(byte[] Content, string ContentType, string FileName)> GetAppDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var document = await documentRepository.GetOfferImageDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken).ConfigureAwait(false);
+        var document = await documentRepository.GetOfferDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken).ConfigureAwait(false);
         if (!document.IsDocumentExisting)
         {
             throw new NotFoundException($"document {documentId} does not exist");
@@ -316,10 +326,111 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new ControllerArgumentException($"Document {documentId} and app id {appId} do not match.");
         }
+        if (document.IsInactive)
+        {
+            throw new ConflictException($"Document {documentId} is in status INACTIVE");
+        }
         if (document.Content == null)
         {
             throw new UnexpectedConditionException($"document content should never be null");
         }
         return (document.Content, document.FileName.MapToContentType(), document.FileName);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<OfferDescriptionData>> GetAppUpdateDescritionByIdAsync(Guid appId, string iamUserId)
+    {        
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        return await ValidateAndGetAppDescription(appId, iamUserId, offerRepository);        
+    }
+
+    /// <inheritdoc />
+    public async Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas)
+    {
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+
+        offerRepository.CreateUpdateDeleteOfferDescriptions(appId,
+            await ValidateAndGetAppDescription(appId, iamUserId, offerRepository),
+            offerDescriptionDatas.Select(od => new ValueTuple<string,string, string>(od.LanguageCode,od.LongDescription,od.ShortDescription)));
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    private static async Task<IEnumerable<OfferDescriptionData>> ValidateAndGetAppDescription(Guid appId, string iamUserId, IOfferRepository offerRepository)
+    {
+        var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, iamUserId).ConfigureAwait(false);
+        if(result == default)
+        {
+            throw new NotFoundException($"App {appId} does not exist.");
+        }
+
+        if(!result.IsStatusActive)
+        {
+            throw new ConflictException($"App {appId} is in InCorrect Status");
+        }
+
+        if(!result.IsProviderCompanyUser)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of App {appId}");
+        }
+
+        if (result.OfferDescriptionDatas == null)
+        {
+            throw new UnexpectedConditionException("offerDescriptionDatas should never be null here");
+        }
+        return result.OfferDescriptionDatas;
+    }
+
+    /// <inheritdoc />
+    public async Task CreatOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken)
+    {
+        var appLeadImageContentTypes = new []{ "image/jpeg","image/png" };
+        if (!appLeadImageContentTypes.Contains(document.ContentType))
+        {
+            throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType :{string.Join(",", appLeadImageContentTypes)} are allowed.");
+        }
+
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var result = await offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP).ConfigureAwait(false);
+
+        if(result == default)
+        {
+            throw new NotFoundException($"App {appId} does not exist.");
+        }
+        if (!result.IsStatusActive)
+        {
+            throw new ConflictException("offerStatus is in incorrect State");
+        }
+        var companyUserId = result.CompanyUserId;
+        if (companyUserId == Guid.Empty)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not a member of the provider company of App {appId}");
+        }
+
+        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+        var documentName = document.FileName;
+        using var sha512Hash = SHA512.Create();
+        using var ms = new MemoryStream((int)document.Length);
+
+        await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
+        var hash = await sha512Hash.ComputeHashAsync(ms, cancellationToken);
+        var documentContent = ms.GetBuffer();
+        if (ms.Length != document.Length || documentContent.Length != document.Length)
+        {
+            throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
+        }
+        var doc = documentRepository.CreateDocument(documentName, documentContent, hash, DocumentTypeId.APP_LEADIMAGE, x =>
+        {
+            x.CompanyUserId = companyUserId;
+            x.DocumentStatusId = DocumentStatusId.LOCKED;
+        });
+        _portalRepositories.GetInstance<IOfferRepository>().CreateOfferAssignedDocument(appId, doc.Id);
+
+        foreach(var docId in result.documentStatusDatas.Select(x => x.DocumentId))
+        {
+            offerRepository.RemoveOfferAssignedDocument(appId, docId);
+            documentRepository.RemoveDocument(docId);
+        }
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

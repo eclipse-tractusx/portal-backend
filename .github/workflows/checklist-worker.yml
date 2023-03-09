@@ -25,6 +25,7 @@ on:
       # service and transitive paths
       - 'src/checklist/Checklist.Worker/**'
       - 'src/checklist/Checklist.Library/**'
+      - 'src/externalsystems/**'
       - 'src/framework/**'
       - 'src/portalbackend/PortalBackend.PortalEntities/**'
       # workflow file
@@ -33,7 +34,7 @@ on:
       - 'docker/Dockerfile-checklist-worker'
 
     branches:
-      - 'main'
+      - 'dev'
   workflow_dispatch:
 
 env:
@@ -72,7 +73,7 @@ jobs:
           file: docker/Dockerfile-checklist-worker
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev
           labels: ${{ steps.meta.outputs.labels }}
 
   auth-and-dispatch:

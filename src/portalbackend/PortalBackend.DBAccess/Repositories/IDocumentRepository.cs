@@ -118,5 +118,21 @@ public interface IDocumentRepository
     /// <param name="appDocumentTypeIds"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken);
+    Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, bool IsInactive, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Fetch the App Document belongs to same company
+    /// </summary>
+    /// <param name="documentId"></param>
+    /// <param name="iamUserId"></param>
+    /// <param name="documentTypeIds"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task<(IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)> OfferData, bool IsDocumentTypeMatch, DocumentStatusId DocumentStatusId, bool IsProviderCompanyUser)> GetAppDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// Delete List Of Document
+    /// </summary>
+    /// <param name="documentIds"></param>
+    void RemoveDocuments(IEnumerable<Guid> documentIds);
 }

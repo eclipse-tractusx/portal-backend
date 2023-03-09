@@ -167,7 +167,7 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferImageDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
+    public Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, bool IsInactive, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
         _dbContext.Documents
             .Where(document => document.Id == documentId)
             .Select(document => new {
@@ -178,15 +178,44 @@ public class DocumentRepository : IDocumentRepository
                 IsValidDocumentType = documentTypeIds.Contains(x.Document.DocumentTypeId),
                 IsDocumentLinkedToOffer = x.Offer != null,
                 IsValidOfferType = x.Offer!.OfferTypeId == offerTypeId,
+                IsInactive = x.Document.DocumentStatusId == DocumentStatusId.INACTIVE,
                 Document = x.Document
             })
-            .Select(x => new ValueTuple<bool, bool, bool, byte[]?, bool, string>(
+            .Select(x => new ValueTuple<bool,bool,bool,bool,byte[]?,bool,string>(
                 x.IsValidDocumentType,
                 x.IsDocumentLinkedToOffer,
                 x.IsValidOfferType,
-                x.IsValidDocumentType && x.IsDocumentLinkedToOffer && x.IsValidOfferType ? x.Document.DocumentContent : null,
+                x.IsInactive,
+                x.IsValidDocumentType && x.IsDocumentLinkedToOffer && x.IsValidOfferType && !x.IsInactive ? x.Document.DocumentContent : null,
                 true,
                 x.Document.DocumentName
             ))
             .SingleOrDefaultAsync(cancellationToken);
+
+    /// <inheritdoc />
+    public Task<(IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)> OfferData, bool IsDocumentTypeMatch, DocumentStatusId DocumentStatusId, bool IsProviderCompanyUser)> GetAppDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId) =>
+        _dbContext.Documents
+            .Where(document => document.Id == documentId)
+            .Select(document => new {
+                Offers = document.Offers,
+                Document = document
+            })
+            .Select(x => new {
+                IsOfferAssignedDocument = x.Offers.Any(),
+                OfferData =  x.Offers.Select(o => new ValueTuple<OfferStatusId, Guid, bool>(o.OfferStatusId, o.Id, o.OfferTypeId == offerTypeId)),
+                IsDocumentTypeMatch = documentTypeIds.Contains(x.Document.DocumentTypeId),
+                DocumentStatus = x.Document.DocumentStatusId,
+                IsProviderCompanyUser = x.Document.CompanyUser!.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)
+            })
+            .Select(x => new ValueTuple<IEnumerable<ValueTuple<OfferStatusId, Guid, bool>>, bool, DocumentStatusId, bool>(
+                x.OfferData,
+                x.IsDocumentTypeMatch,
+                x.DocumentStatus,
+                x.IsProviderCompanyUser
+            ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public void RemoveDocuments(IEnumerable<Guid> documentIds) => 
+        _dbContext.Documents.RemoveRange(documentIds.Select(documentId=> new Document(documentId, null!, null!, null!, default, default, default)));
 }

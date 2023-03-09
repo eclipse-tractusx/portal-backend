@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections.Immutable;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
@@ -31,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Tests;
 
@@ -201,14 +201,15 @@ public class ClearinghouseBusinessLogicTests
         var result = await _logic.HandleClearinghouse(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        result.Item1.Should().NotBeNull();
-        result.Item1!.Invoke(entry);
+        result.ModifyChecklistEntry.Should().NotBeNull();
+        result.ModifyChecklistEntry!.Invoke(entry);
         entry.ApplicationChecklistEntryStatusId.Should().Be(statusId);
         A.CallTo(() => _clearinghouseService.TriggerCompanyDataPost(A<ClearinghouseTransferData>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        result.Item2.Should().HaveCount(1);
-        result.Item2.Should().Contain(expectedProcessTypeId);
-        result.Item3.Should().BeTrue();
+        result.ScheduleStepTypeIds.Should().HaveCount(1);
+        result.ScheduleStepTypeIds.Should().Contain(expectedProcessTypeId);
+        result.SkipStepTypeIds.Should().BeNull();
+        result.Modified.Should().BeTrue();
     }
 
     #endregion
@@ -314,7 +315,7 @@ public class ClearinghouseBusinessLogicTests
                 ProcessStepTypeId.END_CLEARING_HOUSE, 
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IChecklistService.ManualChecklistProcessStepData(Guid.Empty, Guid.Empty, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ImmutableDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>.Empty, new List<ProcessStep>()));
+            .Returns(new IChecklistService.ManualChecklistProcessStepData(Guid.Empty, Guid.Empty, Guid.Empty, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ImmutableDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>.Empty, new List<ProcessStep>()));
     }
 
     #endregion

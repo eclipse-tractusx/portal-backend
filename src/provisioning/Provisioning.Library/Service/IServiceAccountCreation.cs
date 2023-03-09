@@ -34,6 +34,7 @@ public interface IServiceAccountCreation
     /// <param name="companyId">Id of the company the technical user is created for</param>
     /// <param name="bpns">Optional list of bpns to set for the user</param>
     /// <param name="companyServiceAccountTypeId">The type of the created service account</param>
+    /// <param name="enhanceTechnicalUserName">If <c>true</c> the technicalUserName will get enhanced by the id of the clientID.</param>
     /// <param name="setOptionalParameter"></param>
     /// <returns>Returns information about the created technical user</returns>
     Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, List<UserRoleData> userRoleData)> CreateServiceAccountAsync(
@@ -41,5 +42,6 @@ public interface IServiceAccountCreation
         Guid companyId,
         IEnumerable<string> bpns,
         CompanyServiceAccountTypeId companyServiceAccountTypeId,
+        bool enhanceTechnicalUserName,
         Action<CompanyServiceAccount>? setOptionalParameter = null);
 }
