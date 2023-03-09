@@ -25,7 +25,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
-    public partial class CPLP1783genericprocess : Migration
+    public partial class _110 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -86,6 +86,32 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateTable(
+                name: "service_details",
+                schema: "portal",
+                columns: table => new
+                {
+                    service_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    service_type_id = table.Column<int>(type: "integer", nullable: false),
+                    technical_user_needed = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_service_details", x => new { x.service_id, x.service_type_id });
+                    table.ForeignKey(
+                        name: "fk_service_details_offers_service_id",
+                        column: x => x.service_id,
+                        principalSchema: "portal",
+                        principalTable: "offers",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_service_details_service_types_service_type_id",
+                        column: x => x.service_type_id,
+                        principalSchema: "portal",
+                        principalTable: "service_types",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "processes",
                 schema: "portal",
                 columns: table => new
@@ -104,6 +130,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         principalColumn: "id");
                 });
 
+            migrationBuilder.Sql("UPDATE portal.connectors SET self_description_document_id = null WHERE self_description_document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
+            migrationBuilder.Sql("UPDATE portal.agreements SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
+            migrationBuilder.Sql("UPDATE portal.consents SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
+            migrationBuilder.Sql("DELETE FROM portal.offer_assigned_documents WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
+            migrationBuilder.Sql("DELETE FROM portal.documents WHERE document_type_id = 4");
+            
+            migrationBuilder.UpdateData(
+                schema: "portal",
+                table: "document_types",
+                keyColumn: "id",
+                keyValue: 4,
+                column: "label",
+                value: "CONFORMITY_APPROVAL_REGISTRATION");
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "document_types",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 10, "CONFORMITY_APPROVAL_CONNECTOR" },
+                    { 11, "CONFORMITY_APPROVAL_BUSINESS_APPS" }
+                });
+
             migrationBuilder.InsertData(
                 schema: "portal",
                 table: "process_types",
@@ -114,8 +164,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.Sql("INSERT INTO portal.processes (id, process_type_id) SELECT checklist_process_id, 1 FROM portal.company_applications WHERE checklist_process_id IS NOT NULL;");
             migrationBuilder.Sql("UPDATE portal.process_steps AS steps SET process_id = subquery.checklist_process_id FROM ( SELECT applications.checklist_process_id, assigned.process_step_id FROM portal.company_applications AS applications JOIN portal.application_assigned_process_steps AS assigned ON applications.id = assigned.company_application_id WHERE applications.checklist_process_id IS NOT NULL) AS subquery WHERE steps.id = subquery.process_step_id;");
 
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "process_step_types",
+                columns: new[] { "id", "label" },
+                values: new object[] { 19, "DECLINE_APPLICATION" });
+
+            migrationBuilder.Sql("INSERT INTO portal.process_steps (id, process_step_type_id, process_step_status_id, date_created, date_last_changed, process_id) SELECT gen_random_uuid(), 19, 1, now(), null, p.id FROM portal.processes as p INNER JOIN portal.company_applications as cp ON p.id = cp.checklist_process_id and cp.application_status_id = 7");
+
             migrationBuilder.DropTable(
                 name: "application_assigned_process_steps",
+                schema: "portal");
+
+            migrationBuilder.Sql("INSERT INTO portal.service_details (service_id, service_type_id, technical_user_needed) SELECT service_id, service_type_id, service_type_id = 1 FROM portal.service_assigned_service_types");
+
+            migrationBuilder.DropTable(
+                name: "service_assigned_service_types",
                 schema: "portal");
 
             migrationBuilder.CreateIndex(
@@ -136,6 +200,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "processes",
                 column: "process_type_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_service_details_service_type_id",
+                schema: "portal",
+                table: "service_details",
+                column: "service_type_id");
 
             migrationBuilder.AddForeignKey(
                 name: "fk_company_applications_processes_checklist_process_id",
@@ -180,6 +250,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "process_steps");
 
+            migrationBuilder.DropIndex(
+                name: "ix_process_steps_process_id",
+                schema: "portal",
+                table: "process_steps");
+
+            migrationBuilder.DropIndex(
+                name: "ix_company_applications_checklist_process_id",
+                schema: "portal",
+                table: "company_applications");
+
             migrationBuilder.DropTable(
                 name: "audit_company_application20230214",
                 schema: "portal");
@@ -208,26 +288,47 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         principalTable: "process_steps",
                         principalColumn: "id");
                 });
-
+            
             migrationBuilder.Sql("INSERT INTO portal.application_assigned_process_steps (company_application_id, process_step_id) SELECT applications.id,steps.id FROM portal.company_applications AS applications JOIN portal.process_steps AS steps ON applications.checklist_process_id = steps.process_id;");
 
+            migrationBuilder.CreateTable(
+                name: "service_assigned_service_types",
+                schema: "portal",
+                columns: table => new
+                {
+                    service_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    service_type_id = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_service_assigned_service_types", x => new { x.service_id, x.service_type_id });
+                    table.ForeignKey(
+                        name: "fk_service_assigned_service_types_offers_service_id",
+                        column: x => x.service_id,
+                        principalSchema: "portal",
+                        principalTable: "offers",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_service_assigned_service_types_service_types_service_type_id",
+                        column: x => x.service_type_id,
+                        principalSchema: "portal",
+                        principalTable: "service_types",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.Sql("INSERT INTO portal.service_assigned_service_types (service_id, service_type_id) SELECT service_id, service_type_id FROM portal.service_details");
+
             migrationBuilder.DropTable(
-                name: "processes",
+                name: "service_details",
                 schema: "portal");
 
-            migrationBuilder.DropTable(
-                name: "process_types",
-                schema: "portal");
+            migrationBuilder.Sql("DELETE FROM portal.process_steps WHERE process_step_type_id = 19");
 
-            migrationBuilder.DropIndex(
-                name: "ix_process_steps_process_id",
+            migrationBuilder.DeleteData(
                 schema: "portal",
-                table: "process_steps");
-
-            migrationBuilder.DropIndex(
-                name: "ix_company_applications_checklist_process_id",
-                schema: "portal",
-                table: "company_applications");
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 19);
 
             migrationBuilder.DropColumn(
                 name: "process_id",
@@ -239,12 +340,52 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "company_applications");
 
+            migrationBuilder.DropTable(
+                name: "processes",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "process_types",
+                schema: "portal");
+
+            migrationBuilder.Sql("UPDATE portal.connectors SET self_description_document_id = null WHERE self_description_document_id in (SELECT id FROM portal.documents WHERE document_type_id IN (4,10,11))");
+            migrationBuilder.Sql("UPDATE portal.agreements SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id IN (4,10,11))");
+            migrationBuilder.Sql("UPDATE portal.consents SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id IN (4,10,11))");
+            migrationBuilder.Sql("DELETE FROM portal.offer_assigned_documents WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id IN (4,10,11))");
+            migrationBuilder.Sql("DELETE FROM portal.documents WHERE document_type_id IN (4,10,11)");
+
+            migrationBuilder.UpdateData(
+                schema: "portal",
+                table: "document_types",
+                keyColumn: "id",
+                keyValue: 4,
+                column: "label",
+                value: "APP_DATA_DETAILS");
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "document_types",
+                keyColumn: "id",
+                keyValue: 10);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "document_types",
+                keyColumn: "id",
+                keyValue: 11);
+
             migrationBuilder.CreateIndex(
                 name: "ix_application_assigned_process_steps_process_step_id",
                 schema: "portal",
                 table: "application_assigned_process_steps",
                 column: "process_step_id",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_service_assigned_service_types_service_type_id",
+                schema: "portal",
+                table: "service_assigned_service_types",
+                column: "service_type_id");
 
             migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_application20221005 (\"id\", \"date_created\", \"date_last_changed\", \"application_status_id\", \"company_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT OLD.id, \r\n  OLD.date_created, \r\n  OLD.date_last_changed, \r\n  OLD.application_status_id, \r\n  OLD.company_id, \r\n  OLD.last_editor_id, \r\n  gen_random_uuid(), \r\n  3, \r\n  CURRENT_DATE, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION AFTER DELETE\r\nON portal.company_applications\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_COMPANYAPPLICATION();");
 
