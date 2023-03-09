@@ -30,10 +30,14 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 ### Technical Support
 * Added the externalsystems path to trigger the build of the checklist worker
 * Checklist Worker ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
-  * introducing table portal.processes (enables portal to support several checklist processes in parallel)
+  * add new table portal.processes (enables portal to support several checklist processes in parallel)
+  * add new table portal.process_types
   * enhanced portal.process_steps with the mandatory attribute "process_id"
   * enhanced portal.company_applications with optional attribute "checklist_process_id"
   * removal of table portal.application_assigned_process_steps
+* Service Service
+  * add new table portal.service_details
+  * removal of table portal.service_assigned_service_types
 * Base Data
   * Agreement & Unique Identifier base data updated
 * Added temp fix for CVE-2022-1304
