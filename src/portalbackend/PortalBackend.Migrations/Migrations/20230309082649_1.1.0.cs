@@ -130,6 +130,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         principalColumn: "id");
                 });
 
+            migrationBuilder.Sql("UPDATE portal.connectors SET self_description_document_id = null WHERE self_description_document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
+            migrationBuilder.Sql("UPDATE portal.agreements SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
+            migrationBuilder.Sql("UPDATE portal.consents SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
+            migrationBuilder.Sql("DELETE FROM portal.offer_assigned_documents WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
+            migrationBuilder.Sql("DELETE FROM portal.documents WHERE document_type_id = 4");
+            
             migrationBuilder.UpdateData(
                 schema: "portal",
                 table: "document_types",
@@ -150,14 +156,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.InsertData(
                 schema: "portal",
-                table: "process_step_types",
-                columns: new[] { "id", "label" },
-                values: new object[] { 19, "DECLINE_APPLICATION" });
-
-            migrationBuilder.Sql("INSERT INTO portal.process_steps (id, process_step_type_id, process_step_status_id, date_created, date_last_changed, process_id) SELECT gen_random_uuid(), 19, 1, now(), null, p.id FROM portal.processes as p INNER JOIN portal.company_applications as cp ON p.id = cp.checklist_process_id and cp.application_status_id = 7");
-
-            migrationBuilder.InsertData(
-                schema: "portal",
                 table: "process_types",
                 columns: new[] { "id", "label" },
                 values: new object[] { 1, "APPLICATION_CHECKLIST" });
@@ -165,6 +163,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.Sql("UPDATE portal.company_applications AS applications SET checklist_process_id = gen_random_uuid() FROM ( SELECT DISTINCT company_application_id FROM portal.application_assigned_process_steps) AS subquery WHERE applications.id = subquery.company_application_id;");
             migrationBuilder.Sql("INSERT INTO portal.processes (id, process_type_id) SELECT checklist_process_id, 1 FROM portal.company_applications WHERE checklist_process_id IS NOT NULL;");
             migrationBuilder.Sql("UPDATE portal.process_steps AS steps SET process_id = subquery.checklist_process_id FROM ( SELECT applications.checklist_process_id, assigned.process_step_id FROM portal.company_applications AS applications JOIN portal.application_assigned_process_steps AS assigned ON applications.id = assigned.company_application_id WHERE applications.checklist_process_id IS NOT NULL) AS subquery WHERE steps.id = subquery.process_step_id;");
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "process_step_types",
+                columns: new[] { "id", "label" },
+                values: new object[] { 19, "DECLINE_APPLICATION" });
+
+            migrationBuilder.Sql("INSERT INTO portal.process_steps (id, process_step_type_id, process_step_status_id, date_created, date_last_changed, process_id) SELECT gen_random_uuid(), 19, 1, now(), null, p.id FROM portal.processes as p INNER JOIN portal.company_applications as cp ON p.id = cp.checklist_process_id and cp.application_status_id = 7");
 
             migrationBuilder.DropTable(
                 name: "application_assigned_process_steps",
@@ -353,6 +359,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "checklist_process_id",
                 schema: "portal",
                 table: "company_applications");
+
+            migrationBuilder.Sql("UPDATE portal.connectors SET self_description_document_id = null WHERE self_description_document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
+            migrationBuilder.Sql("UPDATE portal.agreements SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
+            migrationBuilder.Sql("UPDATE portal.consents SET document_id = null WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
+            migrationBuilder.Sql("DELETE FROM portal.offer_assigned_documents WHERE document_id in (SELECT id FROM portal.documents WHERE document_type_id = 4)");
+            migrationBuilder.Sql("DELETE FROM portal.documents WHERE document_type_id = 4");
 
             migrationBuilder.UpdateData(
                 schema: "portal",
