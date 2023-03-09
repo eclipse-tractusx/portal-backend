@@ -32,8 +32,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230227090133_CPLP-1783-generic-process")]
-    partial class CPLP1783genericprocess
+    [Migration("20230309082649_1.1.0")]
+    partial class _110
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -3415,6 +3415,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 18,
                             Label = "FINISH_SELF_DESCRIPTION_LP"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Label = "DECLINE_APPLICATION"
                         });
                 });
 
@@ -3473,7 +3478,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("provider_company_details", "portal");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceAssignedServiceType", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceDetail", b =>
                 {
                     b.Property<Guid>("ServiceId")
                         .HasColumnType("uuid")
@@ -3483,13 +3488,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("integer")
                         .HasColumnName("service_type_id");
 
+                    b.Property<bool>("TechnicalUserNeeded")
+                        .HasColumnType("boolean")
+                        .HasColumnName("technical_user_needed");
+
                     b.HasKey("ServiceId", "ServiceTypeId")
-                        .HasName("pk_service_assigned_service_types");
+                        .HasName("pk_service_details");
 
                     b.HasIndex("ServiceTypeId")
-                        .HasDatabaseName("ix_service_assigned_service_types_service_type_id");
+                        .HasDatabaseName("ix_service_details_service_type_id");
 
-                    b.ToTable("service_assigned_service_types", "portal");
+                    b.ToTable("service_details", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceType", b =>
@@ -4742,19 +4751,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Company");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceAssignedServiceType", b =>
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceDetail", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer", "Service")
-                        .WithMany()
+                        .WithMany("ServiceDetails")
                         .HasForeignKey("ServiceId")
                         .IsRequired()
-                        .HasConstraintName("fk_service_assigned_service_types_offers_service_id");
+                        .HasConstraintName("fk_service_details_offers_service_id");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceType", "ServiceType")
-                        .WithMany()
+                        .WithMany("ServiceDetails")
                         .HasForeignKey("ServiceTypeId")
                         .IsRequired()
-                        .HasConstraintName("fk_service_assigned_service_types_service_types_service_type_id");
+                        .HasConstraintName("fk_service_details_service_types_service_type_id");
 
                     b.Navigation("Service");
 
@@ -5084,6 +5093,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("OfferSubscriptions");
 
+                    b.Navigation("ServiceDetails");
+
                     b.Navigation("Tags");
 
                     b.Navigation("UserRoles");
@@ -5140,6 +5151,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProcessType", b =>
                 {
                     b.Navigation("Processes");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ServiceType", b =>
+                {
+                    b.Navigation("ServiceDetails");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UniqueIdentifier", b =>
