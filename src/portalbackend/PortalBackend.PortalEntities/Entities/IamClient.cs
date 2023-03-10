@@ -42,5 +42,7 @@ public class IamClient : IBaseEntity
     [StringLength(255)]
     public string ClientClientId { get; private set; }
 
+    public bool Disabled { get; set; }
+
     public virtual ICollection<AppInstance> AppInstances { get; private set; }
 }
