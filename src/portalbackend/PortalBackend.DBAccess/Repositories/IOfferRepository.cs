@@ -294,7 +294,7 @@ public interface IOfferRepository
     /// <summary>
     /// Retireve and Validate Offer Status for App
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="offerId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task<(bool IsStatusInReview, string? OfferName, Guid? ProviderCompanyId, bool IsSingleInstance, IEnumerable<(Guid InstanceId, string ClientId)> Instances)> GetOfferStatusDataByIdAsync(Guid offerId, OfferTypeId offerTypeId);
