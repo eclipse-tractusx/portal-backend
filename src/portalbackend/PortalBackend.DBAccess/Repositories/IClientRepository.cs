@@ -39,4 +39,11 @@ public interface IClientRepository
     /// </summary>
     /// <param name="clientId">Id of the client that should be removed</param>
     void RemoveClient(Guid clientId);
+    
+    /// <summary>
+    /// Updates the client
+    /// </summary>
+    /// <param name="clientId">Id of the client</param>
+    /// <param name="setOptionalParameter">Action to set the parameter</param>
+    void AttachAndModifyClient(Guid clientId, Action<IamClient> setOptionalParameter);
 }
