@@ -429,6 +429,21 @@ public class OfferSetupServiceTests
     }
 
     [Fact]
+    public async Task ActivateSingleInstanceAppAsync_WithNoInstanceSetupId_ThrowsConflictException()
+    {
+        SetupCreateSingleInstance();
+        var serviceAccountRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { "technical_roles_management", new [] { "Digital Twin Management" } }
+        };
+        
+        async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithInstanceNotSet, serviceAccountRoles).ConfigureAwait(false);
+
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("Instance must be set");
+    }
+
+    [Fact]
     public async Task ActivateSingleInstanceAppAsync_WithNoClientSet_ThrowsConflictException()
     {
         SetupCreateSingleInstance();
