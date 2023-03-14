@@ -1082,6 +1082,25 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
     
     #endregion
+    
+    #region GetServiceDetailsByIdAsync
+    
+    [Fact]
+    public async Task GetServiceDetailsByIdAsync_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceDetailsByIdAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Title.Should().Be("SDE with EDC");
+        result.Provider.Should().Be("Service Provider");
+    }
+    
+    #endregion
 
     #region Setup
     

@@ -405,13 +405,13 @@ public interface IOfferRepository
     /// Delete Offer Description
     /// </summary>
     /// <param name="offerLanguageShortNames"></param>
-     void RemoveOfferDescriptions(IEnumerable<(Guid OfferId, string LanguageShortName)> offerLanguageShortNames);
+    void RemoveOfferDescriptions(IEnumerable<(Guid OfferId, string LanguageShortName)> offerLanguageShortNames);
 
      /// <summary>
      /// Delete Offer
      /// </summary>
      /// <param name="offerIds"></param>
-     void RemoveOffer(Guid offerId);
+    void RemoveOffer(Guid offerId);
 
     /// <summary>
     /// Gets Active OfferAssigned AppLeadImage Documents
@@ -421,4 +421,11 @@ public interface IOfferRepository
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task<(bool IsStatusActive, Guid CompanyUserId, IEnumerable<DocumentStatusData> documentStatusDatas)> GetOfferAssignedAppLeadImageDocumentsByIdAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Retrieve Service Detail
+    /// </summary>
+    /// <param name="serviceId"></param>
+    /// <returns></returns>
+    Task<ServiceDetailsData?> GetServiceDetailsByIdAsync(Guid serviceId);
 }
