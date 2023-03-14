@@ -41,6 +41,7 @@ builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
     .AddTransient<IOfferService, OfferService>()
     .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
+    .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
     .ConfigureServiceSettings(builder.Configuration.GetSection("Services"));
 
 builder.Services.AddOfferSetupService();

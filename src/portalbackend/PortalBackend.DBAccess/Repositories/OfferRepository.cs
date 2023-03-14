@@ -636,4 +636,22 @@ public class OfferRepository : IOfferRepository
                 offer.Documents.Where(doc => doc.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE)
                     .Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId))))
             .SingleOrDefaultAsync();
+
+    ///<inheritdoc/>
+    public Task<ServiceDetailsData?> GetServiceDetailsByIdAsync(Guid serviceId) =>
+        _context.Offers.AsNoTracking()
+            .Where(service => service.Id == serviceId && service.OfferTypeId == OfferTypeId.SERVICE)
+            .Select(offer => new ServiceDetailsData(
+                offer.Id,
+                offer.Name,
+                offer.ServiceDetails.Select(x => x.ServiceType!.Label),
+                offer.Provider,
+                offer.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                offer.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
+                offer.MarketingUrl,
+                offer.ContactEmail,
+                offer.ContactNumber,
+                offer.OfferStatusId
+            ))
+            .SingleOrDefaultAsync();
 }
