@@ -172,6 +172,28 @@ public class ServiceReleaseBusinessLogicTest
         result.FirstOrDefault()!.ServiceTypeId.Should().Be(1);
         result.FirstOrDefault()!.Name.Should().Be(ServiceTypeId.CONSULTANCE_SERVICE.ToString());
     }
+    
+    [Fact]
+    public async Task GetServiceAgreementConsentAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var data = _fixture.Create<OfferAgreementConsent>();
+        var serviceId = Guid.NewGuid();
+        var iamUserId = _fixture.Create<string>();
+        var offerService = A.Fake<IOfferService>();
+        _fixture.Inject(offerService);
+        A.CallTo(() => offerService.GetProviderOfferAgreementConsentById(A<Guid>._, A<string>._, OfferTypeId.SERVICE))
+            .Returns(data);
+
+        //Act
+        var sut = _fixture.Create<ServiceReleaseBusinessLogic>();
+        var result = await sut.GetServiceAgreementConsentAsync(serviceId, iamUserId).ConfigureAwait(false);
+        
+        // Assert 
+        A.CallTo(() => offerService.GetProviderOfferAgreementConsentById(serviceId, iamUserId, OfferTypeId.SERVICE))
+            .MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<OfferAgreementConsent>();
+    } 
 
     private void SetupRepositories()
     {

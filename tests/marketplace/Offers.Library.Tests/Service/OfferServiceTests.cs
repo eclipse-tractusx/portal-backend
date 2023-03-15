@@ -1267,7 +1267,63 @@ public class OfferServiceTests
     }
 
     #endregion
+    
+    #region GetProviderOfferAgreementConsentById_ReturnExpectedResult
+    
+    [Fact]
+    public async Task GetProviderOfferAgreementConsentById_ReturnExpectedResult()
+    {
+        //Arrange
+        var data = _fixture.Create<OfferAgreementConsent>();
+        var serviceId = Guid.NewGuid();
+        A.CallTo(() => _agreementRepository.GetOfferAgreementConsentById(A<Guid>._,A<string>._,OfferTypeId.SERVICE))
+            .Returns((data,true));
 
+        // Act
+        var result = await _sut.GetProviderOfferAgreementConsentById(serviceId, _iamUserId, OfferTypeId.SERVICE).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _agreementRepository.GetOfferAgreementConsentById(serviceId, _iamUserId, OfferTypeId.SERVICE))
+            .MustHaveHappenedOnceExactly();
+        result.Should().Be(data);
+    }
+
+    [Fact]
+    public async Task GetProviderOfferAgreementConsentById_WithInvalidUserProviderCompany_ThrowsForbiddenException()
+    {
+        //Arrange
+        var data = _fixture.Create<OfferAgreementConsent>();
+        var serviceId = Guid.NewGuid();
+        A.CallTo(() => _agreementRepository.GetOfferAgreementConsentById(A<Guid>._,A<string>._,OfferTypeId.SERVICE))
+            .Returns((data,false));
+
+         // Act
+        async Task Act() => await _sut.GetProviderOfferAgreementConsentById(serviceId, _iamUserId, OfferTypeId.SERVICE).ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"UserId {_iamUserId} is not assigned with Offer {serviceId}");
+    }
+    
+    [Fact]
+    public async Task GetProviderOfferAgreementConsentById_WithInvalidOfferId_ThrowsNotFoundException()
+    {
+        //Arrange
+        var serviceId = Guid.NewGuid();
+
+        A.CallTo(() => _agreementRepository.GetOfferAgreementConsentById(A<Guid>._,A<string>._,OfferTypeId.SERVICE))
+            .Returns(new ValueTuple<OfferAgreementConsent, bool>());
+
+         // Act
+        async Task Act() => await _sut.GetProviderOfferAgreementConsentById(serviceId, _iamUserId, OfferTypeId.SERVICE).ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"offer {serviceId}, offertype {OfferTypeId.SERVICE} does not exist");
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupValidateSalesManager()

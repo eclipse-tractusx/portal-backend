@@ -94,4 +94,22 @@ public class ServiceReleaseControllerTest
         Assert.IsType<List<ServiceTypeData>>(result);
         result.Should().HaveCount(5);
     }
+
+    [Fact]
+    public async Task GetServiceAgreementConsentByIdAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var serviceId = Guid.NewGuid();
+        var data = _fixture.Create<OfferAgreementConsent>();
+        A.CallTo(() => _logic.GetServiceAgreementConsentAsync(A<Guid>._, A<string>._))
+            .Returns(data);
+
+        //Act
+        var result = await this._controller.GetServiceAgreementConsentByIdAsync(serviceId).ConfigureAwait(false);
+        
+        // Assert 
+        result.Should().Be(data);
+        A.CallTo(() => _logic.GetServiceAgreementConsentAsync(serviceId, IamUserId))
+            .MustHaveHappenedOnceExactly();
+    }
 }

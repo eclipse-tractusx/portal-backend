@@ -46,4 +46,12 @@ public interface IServiceReleaseBusinessLogic
     /// </summary>
     /// <returns></returns>
     IAsyncEnumerable<ServiceTypeData> GetServiceTypeDataAsync();
+
+    /// <summary>
+    /// Retrieve Offer Agreemnet Consent Status Data
+    /// </summary>
+    /// <param name="serviceId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task<OfferAgreementConsent> GetServiceAgreementConsentAsync(Guid serviceId, string iamUserId);
 }
