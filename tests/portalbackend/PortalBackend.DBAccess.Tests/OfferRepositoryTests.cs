@@ -1344,13 +1344,13 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferStatusDataByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0573f0009"), OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferStatusDataByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result.IsStatusInReview.Should().BeFalse();
-        result.OfferName.Should().Be("Dismantler Cockpit");
-        result.ProviderCompanyId.Should().Be(new Guid("0dcd8209-85e2-4073-b130-ac094fb47106"));
+        result.OfferName.Should().Be("Trace-X");
+        result.ProviderCompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
         result.IsSingleInstance.Should().BeTrue();
     }
     
@@ -1365,7 +1365,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferWithSetupDataById(new Guid("ac1cf001-7fbc-1f2f-817f-bce0573f0009"), "ad56702b-5908-44eb-a668-9a11a0e100d6", OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferWithSetupDataById(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -1441,12 +1441,12 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetSingleInstanceOfferData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0573f0009"), OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetSingleInstanceOfferData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result!.InstanceSetupId.Should().Be(new Guid("682d82f7-23e7-4660-99ca-0dadc8b0bdcb"));
-        result.OfferName.Should().Be("Dismantler Cockpit");
+        result.OfferName.Should().Be("Trace-X");
     }
 
     #endregion
