@@ -24,7 +24,6 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -32,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -65,7 +65,7 @@ public class RegistrationBusinessLogicTest
     private readonly ICompanyRolesRepository _companyRolesRepository;
     private readonly IConsentRepository _consentRepository;
     private readonly IProcessStepRepository _processStepRepository;
-    private readonly IChecklistCreationService _checklistService;
+    private readonly IApplicationChecklistCreationService _checklistService;
     private readonly string _iamUserId;
     private readonly Guid _companyUserId;
     private readonly Guid _existingApplicationId;
@@ -97,7 +97,7 @@ public class RegistrationBusinessLogicTest
         _applicationRepository = A.Fake<IApplicationRepository>();
         _countryRepository = A.Fake<ICountryRepository>();
         _consentRepository = A.Fake<IConsentRepository>();
-        _checklistService = A.Fake<IChecklistCreationService>();
+        _checklistService = A.Fake<IApplicationChecklistCreationService>();
         _staticDataRepository = A.Fake<IStaticDataRepository>();
         _processStepRepository = A.Fake<IProcessStepRepository>();
 
@@ -1645,7 +1645,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
             .ReturnsLazily((ProcessTypeId processTypeId) =>
             {
-                process = new Process(Guid.NewGuid(), processTypeId);
+                process = new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid());
                 return process;
             });
 

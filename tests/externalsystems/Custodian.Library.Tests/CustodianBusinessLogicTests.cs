@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Tests;
@@ -110,7 +110,7 @@ public class CustodianBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE }
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForCreateWallet();
         
         // Act
@@ -135,7 +135,7 @@ public class CustodianBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.FAILED }
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForCreateWallet();
         
         // Act
@@ -158,7 +158,7 @@ public class CustodianBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.FAILED }
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForCreateWallet();
         
         // Act
@@ -182,7 +182,7 @@ public class CustodianBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO },
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForCreateWallet();
         
         // Act
@@ -204,7 +204,7 @@ public class CustodianBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO },
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(IdWithoutBpn, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithoutBpn, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForCreateWallet();
 
         // Act
@@ -226,7 +226,7 @@ public class CustodianBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO },
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(IdWithBpn, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForCreateWallet();
 
         // Act

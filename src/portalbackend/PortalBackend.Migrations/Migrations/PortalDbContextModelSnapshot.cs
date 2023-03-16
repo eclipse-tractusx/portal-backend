@@ -3206,9 +3206,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<DateTimeOffset?>("LockExpiryDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lock_expiry_date");
+
                     b.Property<int>("ProcessTypeId")
                         .HasColumnType("integer")
                         .HasColumnName("process_type_id");
+
+                    b.Property<Guid>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid")
+                        .HasColumnName("version");
 
                     b.HasKey("Id")
                         .HasName("pk_processes");

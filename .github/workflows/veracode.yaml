@@ -455,18 +455,18 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install dependencies
-        run: dotnet restore src/checklist/Checklist.Worker
+        run: dotnet restore src/processes/Processes.Worker
 
       - name: Build and publish
         run: |
-          cd src/checklist/Checklist.Worker
+          cd src/processes/Processes.Worker
           dotnet build --no-restore
           dotnet publish -c Debug  -p:PublishDir=.\publish
 
       - name: "Bundle files to scan"
         run: >
           zip -r portal-backend-checklist-worker.zip
-          src/checklist/Checklist.Worker/.publish
+          src/processes/Processes.Worker/.publish
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
@@ -479,4 +479,4 @@ jobs:
           filepath: "portal-backend-checklist-worker.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
-          include: 'Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker.dll'
+          include: 'Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.dll'

@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -33,10 +33,10 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 {
     private readonly ISdFactoryService _sdFactoryService;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IChecklistService _checklistService;
+    private readonly IApplicationChecklistService _checklistService;
 
     public SdFactoryBusinessLogic(ISdFactoryService sdFactoryService, IPortalRepositories portalRepositories,
-        IChecklistService checklistService)
+        IApplicationChecklistService checklistService)
     {
         _sdFactoryService = sdFactoryService;
         _portalRepositories = portalRepositories;
@@ -52,12 +52,12 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         _sdFactoryService.RegisterConnectorAsync(connectorId, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken);
 
     /// <inheritdoc />
-    public async Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> StartSelfDescriptionRegistration(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> StartSelfDescriptionRegistration(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         await RegisterSelfDescriptionInternalAsync(context.ApplicationId, cancellationToken)
             .ConfigureAwait(false);
 
-        return new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
             new [] { ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP },

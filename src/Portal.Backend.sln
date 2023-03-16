@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -126,15 +126,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Web.Tests", "..\t
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.DBAccess.Tests", "..\tests\framework\Framework.DBAccess.Tests\Framework.DBAccess.Tests.csproj", "{D577BF62-519F-4AF7-B317-47B144186144}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checklist.Library.Tests", "..\tests\checklist\Checklist.Library.Tests\Checklist.Library.Tests.csproj", "{8B7D8210-05A4-4C0A-AB19-D695E6E97281}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationChecklist.Library.Tests", "..\tests\processes\ApplicationChecklist.Library.Tests\ApplicationChecklist.Library.Tests.csproj", "{8B7D8210-05A4-4C0A-AB19-D695E6E97281}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "checklist", "checklist", "{282CEF03-292F-4A49-83C6-997567D0FF5F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "processes", "processes", "{282CEF03-292F-4A49-83C6-997567D0FF5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checklist.Library", "checklist\Checklist.Library\Checklist.Library.csproj", "{CF80BBB1-C07D-425C-9A5B-54C5E2890CC4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationChecklist.Library", "processes\ApplicationChecklist.Library\ApplicationChecklist.Library.csproj", "{CF80BBB1-C07D-425C-9A5B-54C5E2890CC4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checklist.Worker", "checklist\Checklist.Worker\Checklist.Worker.csproj", "{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Processes.Worker", "processes\Processes.Worker\Processes.Worker.csproj", "{D248909F-DFDF-4001-B9F1-8F3DDB0B7D39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checklist.Executor.Tests", "..\tests\checklist\Checklist.Executor.Tests\Checklist.Executor.Tests.csproj", "{AD9A89E5-DDBE-4D67-A1A0-C88DFE5124A0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationChecklist.Executor.Tests", "..\tests\processes\ApplicationChecklist.Executor.Tests\ApplicationChecklist.Executor.Tests.csproj", "{AD9A89E5-DDBE-4D67-A1A0-C88DFE5124A0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "externalsystems", "externalsystems", "{C8957230-4203-452C-A085-34091C5E370B}"
 EndProject
@@ -164,7 +164,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationActivation.Libra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.DateTimeProvider", "framework\Framework.DateTimeProvider\Framework.DateTimeProvider.csproj", "{AB9FC684-E08A-4EEC-9F3A-C256CB2E4D73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checklist.Config", "checklist\Checklist.Config\Checklist.Config.csproj", "{C3E5E7C8-69D3-4ECB-A4FA-53A9A780EFF0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationChecklist.Config", "processes\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj", "{C3E5E7C8-69D3-4ECB-A4FA-53A9A780EFF0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.HttpClient", "framework\Framework.HttpClient\Framework.HttpClient.csproj", "{4B13E087-E789-4A8D-BE06-5461FA4900A5}"
 EndProject
@@ -172,11 +172,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daps.Library", "externalsys
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daps.Library.Tests", "..\tests\externalsystems\Daps.Library.Tests\Daps.Library.Tests.csproj", "{3C07D5B5-5F9B-40ED-9B2F-1CA9F27124AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checklist.Worker.Library", "checklist\Checklist.Worker.Library\Checklist.Worker.Library.csproj", "{527A4A82-D63A-4DD5-B37D-0AC8A79F1B0E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Processes.Worker.Library", "processes\Processes.Worker.Library\Processes.Worker.Library.csproj", "{527A4A82-D63A-4DD5-B37D-0AC8A79F1B0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checklist.Executor", "checklist\Checklist.Executor\Checklist.Executor.csproj", "{0221E83B-B26B-442F-ACAD-B1043DF9993A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationChecklist.Executor", "processes\ApplicationChecklist.Executor\ApplicationChecklist.Executor.csproj", "{0221E83B-B26B-442F-ACAD-B1043DF9993A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checklist.Worker.Library.Tests", "..\tests\checklist\Checklist.Worker.Library.Tests\Checklist.Worker.Library.Tests.csproj", "{B787DF92-23F7-410A-B592-95701E4B423D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Processes.Worker.Library.Tests", "..\tests\processes\Processes.Worker.Library.Tests\Processes.Worker.Library.Tests.csproj", "{B787DF92-23F7-410A-B592-95701E4B423D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortalBackend.Migrations.Tests", "..\tests\portalbackend\PortalBackend.Migrations.Tests\PortalBackend.Migrations.Tests.csproj", "{7985B208-CE41-49DA-B749-B94B582612E6}"
 EndProject
