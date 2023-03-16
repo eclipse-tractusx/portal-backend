@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -179,6 +179,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Async.Tests", "..\tests\framework\Framework.Async.Tests\Framework.Async.Tests.csproj", "{98BA45B9-30DE-4CB0-BFAB-3FED4B764E1C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Web.Tests", "..\tests\framework\Framework.Web.Tests\Framework.Web.Tests.csproj", "{FD7EA0BC-B14C-4315-BDC8-1DD28B717042}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfferSubscription.Executor", "processes\OfferSubscription.Executor\OfferSubscription.Executor.csproj", "{4C7E9EAC-222B-4C13-B8B1-5987406817A0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfferSubscription.Library", "processes\OfferSubscription.Library\OfferSubscription.Library.csproj", "{15BA8836-E9FE-4F64-AD97-261A524779A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1066,6 +1070,18 @@ Global
 		{B787DF92-23F7-410A-B592-95701E4B423D}.Release|x64.Build.0 = Release|Any CPU
 		{B787DF92-23F7-410A-B592-95701E4B423D}.Release|x86.ActiveCfg = Release|Any CPU
 		{B787DF92-23F7-410A-B592-95701E4B423D}.Release|x86.Build.0 = Release|Any CPU
+		{4C7E9EAC-222B-4C13-B8B1-5987406817A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C7E9EAC-222B-4C13-B8B1-5987406817A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C7E9EAC-222B-4C13-B8B1-5987406817A0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4C7E9EAC-222B-4C13-B8B1-5987406817A0}.Debug|x64.Build.0 = Debug|Any CPU
+		{4C7E9EAC-222B-4C13-B8B1-5987406817A0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4C7E9EAC-222B-4C13-B8B1-5987406817A0}.Debug|x86.Build.0 = Debug|Any CPU
+		{4C7E9EAC-222B-4C13-B8B1-5987406817A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C7E9EAC-222B-4C13-B8B1-5987406817A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C7E9EAC-222B-4C13-B8B1-5987406817A0}.Release|x64.ActiveCfg = Release|Any CPU
+		{4C7E9EAC-222B-4C13-B8B1-5987406817A0}.Release|x64.Build.0 = Release|Any CPU
+		{4C7E9EAC-222B-4C13-B8B1-5987406817A0}.Release|x86.ActiveCfg = Release|Any CPU
+		{4C7E9EAC-222B-4C13-B8B1-5987406817A0}.Release|x86.Build.0 = Release|Any CPU
 		{7985B208-CE41-49DA-B749-B94B582612E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7985B208-CE41-49DA-B749-B94B582612E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7985B208-CE41-49DA-B749-B94B582612E6}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -1102,6 +1118,18 @@ Global
 		{FD7EA0BC-B14C-4315-BDC8-1DD28B717042}.Release|x64.Build.0 = Release|Any CPU
 		{FD7EA0BC-B14C-4315-BDC8-1DD28B717042}.Release|x86.ActiveCfg = Release|Any CPU
 		{FD7EA0BC-B14C-4315-BDC8-1DD28B717042}.Release|x86.Build.0 = Release|Any CPU
+		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Debug|x64.Build.0 = Debug|Any CPU
+		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Debug|x86.Build.0 = Debug|Any CPU
+		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Release|x64.ActiveCfg = Release|Any CPU
+		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Release|x64.Build.0 = Release|Any CPU
+		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Release|x86.ActiveCfg = Release|Any CPU
+		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1185,6 +1213,8 @@ Global
 		{3C07D5B5-5F9B-40ED-9B2F-1CA9F27124AF} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{527A4A82-D63A-4DD5-B37D-0AC8A79F1B0E} = {282CEF03-292F-4A49-83C6-997567D0FF5F}
 		{0221E83B-B26B-442F-ACAD-B1043DF9993A} = {282CEF03-292F-4A49-83C6-997567D0FF5F}
+		{4C7E9EAC-222B-4C13-B8B1-5987406817A0} = {282CEF03-292F-4A49-83C6-997567D0FF5F}
 		{7985B208-CE41-49DA-B749-B94B582612E6} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
+		{15BA8836-E9FE-4F64-AD97-261A524779A5} = {282CEF03-292F-4A49-83C6-997567D0FF5F}
 	EndGlobalSection
 EndGlobal

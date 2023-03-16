@@ -64,6 +64,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditOffer20230119> AuditOffer20230119 { get; set; } = default!;
     public virtual DbSet<AuditOffer20230406> AuditOffer20230406 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20221005 { get; set; } = default!;
+    public virtual DbSet<AuditOfferSubscription20230317> AuditOfferSubscription20230317 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20230214> AuditCompanyApplication20230214 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
@@ -278,7 +279,7 @@ public class PortalDbContext : DbContext
                             .OnDelete(DeleteBehavior.ClientSetNull);
                         j.Property(e => e.OfferSubscriptionStatusId)
                             .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
-                        j.HasAuditV1Triggers<OfferSubscription, AuditOfferSubscription20221005>();
+                        j.HasAuditV1Triggers<OfferSubscription, AuditOfferSubscription20230317>();
                     }
                 );
 
@@ -401,11 +402,6 @@ public class PortalDbContext : DbContext
                 .WithMany(x => x.AppInstances)
                 .HasForeignKey(x => x.IamClientId)
                 .OnDelete(DeleteBehavior.SetNull);
-            
-            entity.HasOne(x => x.ServiceAccount)
-                .WithOne(x => x.AppInstance)
-                .HasForeignKey<AppInstance>(x => x.ServiceAccountId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<AppInstanceAssignedCompanyServiceAccount>(entity =>

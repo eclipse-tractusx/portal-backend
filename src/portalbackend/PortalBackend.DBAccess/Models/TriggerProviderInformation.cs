@@ -18,8 +18,31 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record ServiceProviderDetailData(string Url, string? CallbackUrl);
+public record TriggerProviderInformation(
+    Guid OfferId,
+    string? OfferName,
+    string? AutoSetupUrl,
+    CompanyInformationData CompanyInformationData,
+    string? UserEmail,
+    OfferTypeId OfferTypeId,
+    Guid? SalesManagerId,
+    Guid CompanyUserId,
+    bool IsSingleInstance
+);
 
-public record ProviderDetailReturnData(Guid? Id, Guid CompanyId, string? Url);
+public record SubscriptionActivationData(
+    Guid OfferId,
+    OfferSubscriptionStatusId Status,
+    OfferTypeId OfferTypeId,
+    string? OfferName,
+    string CompanyName,
+    Guid CompanyId,
+    string? RequesterEmail,
+    string? RequesterFirstname,
+    string? RequesterLastname,
+    Guid RequesterId
+);

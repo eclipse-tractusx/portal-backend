@@ -77,4 +77,17 @@ public interface IOfferSetupService
     /// <param name="clientClientId">internal client id</param>
     /// <param name="instanceUrl">the new instance url</param>
     Task UpdateSingleInstance(string clientClientId, string instanceUrl);
+
+    /// <summary>
+    /// Internally auto setup the offer.
+    /// </summary>
+    /// <param name="data">The offer subscription id and url for the service</param>
+    /// <param name="itAdminRoles">Roles that will be assigned to the company admin</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="offerTypeId">OfferTypeId of offer to be created</param>
+    /// <param name="basePortalAddress">Address of the portal</param>
+    /// <returns>Returns the response data</returns>
+    Task StartAutoSetupAppAsync(OfferAutoSetupData data, IDictionary<string, IEnumerable<string>> itAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress);
+
+    Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, IEnumerable<ProcessStepTypeId>? stepsToSkip, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> ActivateSubscription(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> itAdminRoles, string basePortalAddress);
 }

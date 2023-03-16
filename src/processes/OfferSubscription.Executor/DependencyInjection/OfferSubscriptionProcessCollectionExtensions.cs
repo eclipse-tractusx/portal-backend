@@ -18,24 +18,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 
-public static class OfferSetupServiceCollectionExtension
+public static class OfferSubscriptionProcessCollectionExtensions
 {
-    public static IServiceCollection AddOfferServices(this IServiceCollection services)
+    public static IServiceCollection AddOfferSubscriptionProcessExecutor(this IServiceCollection services, IConfiguration config)
     {
-        services
-            .AddTransient<LoggingHandler<OfferSetupService>>()
-            .AddHttpClient(nameof(OfferSetupService)).AddHttpMessageHandler<LoggingHandler<OfferSetupService>>();
+        services.AddOptions<OfferSubscriptionsProcessSettings>()
+            .Bind(config.GetSection("OfferSubscriptionProcess"))
+            .ValidateOnStart();
+
         return services
-            .AddTransient<IOfferService, OfferService>()
-            .AddTransient<IOfferSetupService, OfferSetupService>()
             .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
-            .AddOfferSubscriptionProcess();
+            .AddOfferServices()
+            .AddTransient<IProcessTypeExecutor, OfferSubscriptionProcessTypeExecutor>();
     }
 }

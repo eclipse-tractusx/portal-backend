@@ -29,7 +29,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 /// <summary>
 /// App subscription relationship between companies and apps.
 /// </summary>
-[AuditEntityV1(typeof(AuditOfferSubscription20221005))]
+[AuditEntityV1(typeof(AuditOfferSubscription20230317))]
 public class OfferSubscription : IAuditableV1, IBaseEntity
 {
     /// <summary>
@@ -99,6 +99,8 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
 
+    public Guid? ProcessId { get; set; }
+
     // Navigation properties
     /// <summary>
     /// Subscribed app.
@@ -109,6 +111,11 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     /// Subscribing company.
     /// </summary>
     public virtual Company? Company { get; private set; }
+
+    /// <summary>
+    /// Assigned Process.
+    /// </summary>
+    public virtual Process? Process { get; private set; }
 
     /// <summary>
     /// Requester

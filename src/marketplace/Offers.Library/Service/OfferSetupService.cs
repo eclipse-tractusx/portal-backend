@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
@@ -43,6 +44,7 @@ public class OfferSetupService : IOfferSetupService
     private readonly IProvisioningManager _provisioningManager;
     private readonly IServiceAccountCreation _serviceAccountCreation;
     private readonly INotificationService _notificationService;
+    private readonly IOfferSubscriptionProcessService _offerSubscriptionProcessService;
     private readonly IMailingService _mailingService;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ITechnicalUserProfileService _technicalUserProfileService;
@@ -54,6 +56,7 @@ public class OfferSetupService : IOfferSetupService
     /// <param name="provisioningManager">Access to the provisioning manager</param>
     /// <param name="serviceAccountCreation">Access to the service account creation</param>
     /// <param name="notificationService">Creates notifications for the user</param>
+    /// <param name="offerSubscriptionProcessService">Access to offer subscription process service</param>
     /// <param name="mailingService">Mailing service to send mails to the user</param>
     /// <param name="httpClientFactory">Creates the http client</param>
     /// <param name="technicalUserProfileService">Access to the technical user profile service</param>
@@ -61,6 +64,7 @@ public class OfferSetupService : IOfferSetupService
         IProvisioningManager provisioningManager,
         IServiceAccountCreation serviceAccountCreation,
         INotificationService notificationService,
+        IOfferSubscriptionProcessService offerSubscriptionProcessService,
         IMailingService mailingService,
         IHttpClientFactory httpClientFactory,
         ITechnicalUserProfileService technicalUserProfileService)
@@ -69,6 +73,7 @@ public class OfferSetupService : IOfferSetupService
         _provisioningManager = provisioningManager;
         _serviceAccountCreation = serviceAccountCreation;
         _notificationService = notificationService;
+        _offerSubscriptionProcessService = offerSubscriptionProcessService;
         _mailingService = mailingService;
         _httpClientFactory = httpClientFactory;
         _technicalUserProfileService = technicalUserProfileService;
@@ -384,6 +389,18 @@ public class OfferSetupService : IOfferSetupService
         await _mailingService
             .SendMails(requesterEmail, mailParams, new List<string> { "subscription-activation" })
             .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task StartAutoSetupAppAsync(OfferAutoSetupData data, IDictionary<string, IEnumerable<string>> itAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc />
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, IEnumerable<ProcessStepTypeId>? stepsToSkip, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> ActivateSubscription(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> itAdminRoles, string basePortalAddress)
+    {
+        throw new NotImplementedException();
     }
 
     internal record CreateTechnicalUserData(Guid CompanyId, string? OfferName, string? Bpn, string TechnicalUserName, bool EnhanceTechnicalUserName);

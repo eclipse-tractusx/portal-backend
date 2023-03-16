@@ -22,6 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 
 public enum ProcessStepTypeId
 {
+    // ApplicationChecklist Process
     VERIFY_REGISTRATION = 1,
     CREATE_BUSINESS_PARTNER_NUMBER_PUSH = 2,
     CREATE_BUSINESS_PARTNER_NUMBER_PULL = 3,
@@ -41,4 +42,12 @@ public enum ProcessStepTypeId
     START_OVERRIDE_CLEARING_HOUSE = 17,
     FINISH_SELF_DESCRIPTION_LP = 18,
     DECLINE_APPLICATION = 19,
+
+    // OfferSubscriptionProcess
+    START_SUBSCRIPTION = 100,
+    TRIGGER_PROVIDER = 101,
+    START_AUTOSETUP = 102,
+    OFFERSUBSCRIPTION_CLIENT_CREATION = 103,
+    OFFERSUBSCRIPTION_TECHNICALUSER_CREATION = 104,
+    ACTIVATE_SUBSCRIPTION = 105,
 }

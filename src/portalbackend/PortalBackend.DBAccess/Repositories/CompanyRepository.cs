@@ -152,8 +152,13 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, string dataUrl) =>
-        _context.ProviderCompanyDetails.Add(new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow)).Entity;
+    public ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, string dataUrl, Action<ProviderCompanyDetail>? setOptionalParameter)
+    {
+        var entity = _context.ProviderCompanyDetails
+            .Add(new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow)).Entity;
+        setOptionalParameter?.Invoke(entity);
+        return entity;
+    }
 
     /// <inheritdoc />
     public Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, string iamUserId) =>

@@ -75,8 +75,9 @@ public interface ICompanyRepository
     /// </summary>
     /// <param name="companyId">Id of the company</param>
     /// <param name="dataUrl">Url for the service provider</param>
+    /// <param name="setOptionalParameter">action to set optional parameter</param>
     /// <returns>Returns the newly created entity</returns>
-    ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, string dataUrl);
+    ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, string dataUrl, Action<ProviderCompanyDetail>? setOptionalParameter = null);
 
     /// <summary>
     /// Gets the service provider company details data

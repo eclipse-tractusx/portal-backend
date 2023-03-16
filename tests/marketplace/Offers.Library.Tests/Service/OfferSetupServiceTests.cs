@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -70,6 +71,7 @@ public class OfferSetupServiceTests
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly OfferSetupService _sut;
     private readonly ITechnicalUserProfileService _technicalUserProfileService;
+    private readonly IOfferSubscriptionProcessService _offerSubscriptionProcessService;
 
     public OfferSetupServiceTests()
     {
@@ -96,6 +98,8 @@ public class OfferSetupServiceTests
         _httpClientFactory = A.Fake<IHttpClientFactory>();
         _technicalUserProfileService = A.Fake<ITechnicalUserProfileService>();
 
+        _offerSubscriptionProcessService = A.Fake<IOfferSubscriptionProcessService>();
+
         A.CallTo(() => _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()).Returns(_appSubscriptionDetailRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IAppInstanceRepository>()).Returns(_appInstanceRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IClientRepository>()).Returns(_clientRepository);
@@ -103,7 +107,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
 
-        _sut = new OfferSetupService(_portalRepositories, _provisioningManager, _serviceAccountCreation, _notificationService, _mailingService, _httpClientFactory, _technicalUserProfileService);
+        _sut = new OfferSetupService(_portalRepositories, _provisioningManager, _serviceAccountCreation, _notificationService, _offerSubscriptionProcessService, _mailingService, _httpClientFactory, _technicalUserProfileService);
     }
 
     #region CallThirdPartyAutoSetupOfferAsync
@@ -436,8 +440,8 @@ public class OfferSetupServiceTests
         {
             { "technical_roles_management", new [] { "Digital Twin Management" } }
         };
-        
-        async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithInstanceNotSet, serviceAccountRoles).ConfigureAwait(false);
+
+        async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithInstanceNotSet).ConfigureAwait(false);
 
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("Instance must be set");

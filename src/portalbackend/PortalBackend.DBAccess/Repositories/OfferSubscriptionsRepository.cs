@@ -163,17 +163,18 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid offerSubscriptionId, OfferSubscriptionStatusId offerSubscriptionStatusId)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId) =>
+    public Task<(Guid OfferSubscriptionId, OfferSubscriptionStatusId OfferSubscriptionStatusId, Guid? ProcessId)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId) =>
         _context.OfferSubscriptions.AsNoTracking()
             .Where(x => x.OfferId == offerId && x.CompanyId == companyId && x.Offer!.OfferTypeId == offerTypeId)
-            .Select(x => new ValueTuple<Guid, OfferSubscriptionStatusId>(x.Id, x.OfferSubscriptionStatusId))
+            .Select(x => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid?>(x.Id, x.OfferSubscriptionStatusId, x.ProcessId))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public void AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters)
+    public OfferSubscription AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters)
     {
         var offerSubscription = _context.Attach(new OfferSubscription(offerSubscriptionId, Guid.Empty, Guid.Empty, default, Guid.Empty, Guid.Empty)).Entity;
         setOptionalParameters.Invoke(offerSubscription);
+        return offerSubscription;
     }
 
     /// <inheritdoc />
@@ -270,5 +271,99 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                             document.DocumentTypeId == documentTypeId &&
                             document.DocumentStatusId == DocumentStatusId.LOCKED)
                         .Select(document => document.Id).FirstOrDefault()))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<OfferSubscriptionProcessData?> GetOfferSubscriptionDataForProcessIdAsync(Guid processId) =>
+        _context.Processes
+            .AsNoTracking()
+            .Where(process => process.Id == processId)
+            .Select(process => new OfferSubscriptionProcessData(
+                process.OfferSubscription!.Id,
+                process.OfferSubscription.OfferSubscriptionStatusId))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<TriggerProviderInformation?> GetTriggerProviderInformation(Guid offerSubscriptionId) =>
+        _context.OfferSubscriptions
+            .Where(x => x.Id == offerSubscriptionId)
+            .Select(x => new
+            {
+                RequesterCompany = x.Requester!.Company,
+                x.Requester.Email,
+                OfferId = x.Offer!.Id,
+                OfferName = x.Offer.Name,
+                x.Offer.ProviderCompany!.ProviderCompanyDetail!.AutoSetupUrl,
+                x.Offer.SalesManagerId,
+                x.Offer.OfferTypeId,
+                CompanyUserId = x.Requester.Id,
+                IsSingleInstance = x.Offer.AppInstanceSetup != null && x.Offer.AppInstanceSetup.IsSingleInstance
+            })
+            .Select(x => new TriggerProviderInformation(
+                x.OfferId,
+                x.OfferName,
+                x.AutoSetupUrl,
+                new CompanyInformationData(
+                    x.RequesterCompany!.Id,
+                    x.RequesterCompany.Name,
+                    x.RequesterCompany.Address!.CountryAlpha2Code,
+                    x.RequesterCompany.BusinessPartnerNumber
+                ),
+                x.Email,
+                x.OfferTypeId,
+                x.SalesManagerId,
+                x.CompanyUserId,
+                x.IsSingleInstance
+            ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<Guid?> GetProcessForOfferSubscriptionId(Guid offerSubscriptionId) =>
+        _context.OfferSubscriptions
+            .Where(x => x.Id == offerSubscriptionId)
+            .Select(x => x.ProcessId)
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<SubscriptionActivationData?> GetSubscriptionActivationDataByIdAsync(Guid offerSubscriptionId) =>
+        _context.OfferSubscriptions
+            .Where(x => x.Id == offerSubscriptionId)
+            .Select(x => new SubscriptionActivationData(
+                x.OfferId,
+                x.OfferSubscriptionStatusId,
+                x.Offer!.OfferTypeId,
+                x.Offer.Name,
+                x.Requester!.Company!.Name,
+                x.Requester.CompanyId,
+                x.Requester.Email,
+                x.Requester.Firstname,
+                x.Requester.Lastname,
+                x.RequesterId
+            ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<VerifyOfferSubscriptionProcessData?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+        _context.OfferSubscriptions
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(os => os.Id == offerSubscriptionId)
+            .Select(os => new
+            {
+                Subscription = os,
+                IsActive = os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE,
+                os.Process,
+            })
+            .Select(x => new VerifyOfferSubscriptionProcessData(
+                x.IsActive,
+                x.IsActive
+                    ? null
+                    : x.Process,
+                x.IsActive
+                    ? null
+                    : x.Process!.ProcessSteps
+                        .Where(step =>
+                            processStepTypeIds.Contains(step.ProcessStepTypeId) &&
+                            step.ProcessStepStatusId == ProcessStepStatusId.TODO)))
             .SingleOrDefaultAsync();
 }

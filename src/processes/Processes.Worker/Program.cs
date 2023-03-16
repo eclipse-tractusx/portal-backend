@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
 try
@@ -39,6 +40,7 @@ try
             services
                 .AddProcessExecutionService(hostContext.Configuration.GetSection("Processes"))
                 .AddTransient<IProcessTypeExecutor, ApplicationChecklistProcessTypeExecutor>()
+                .AddOfferSubscriptionProcessExecutor(hostContext.Configuration)
                 .AddTransient<IApplicationChecklistHandlerService, ApplicationChecklistHandlerService>()
                 .AddPortalRepositories(hostContext.Configuration)
                 .AddApplicationChecklist(hostContext.Configuration.GetSection("ApplicationChecklist"))

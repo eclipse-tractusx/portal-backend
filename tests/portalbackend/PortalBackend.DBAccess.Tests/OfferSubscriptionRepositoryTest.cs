@@ -18,16 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -96,8 +92,8 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result.Should().NotBe(default);
-        result.offerSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
-        result.offerSubscriptionId.Should().Be(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"));
+        result.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+        result.OfferSubscriptionId.Should().Be(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"));
     }
 
     [Fact]

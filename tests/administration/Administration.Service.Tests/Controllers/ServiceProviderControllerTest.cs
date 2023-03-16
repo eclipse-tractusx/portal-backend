@@ -44,7 +44,7 @@ public class ServiceProviderControllerTest
     public async Task SetServiceProviderCompanyDetail_WithValidData_ReturnsNoContent()
     {
         //Arrange
-        var data = new ServiceProviderDetailData("https://this-is-a-test.de");
+        var data = new ServiceProviderDetailData("https://this-is-a-test.de", null);
         A.CallTo(() => _logic.SetServiceProviderCompanyDetailsAsync(data, IamUserId))
             .ReturnsLazily(() => Task.CompletedTask);
 

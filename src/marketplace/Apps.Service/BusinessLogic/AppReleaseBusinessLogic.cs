@@ -495,7 +495,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 throw new ControllerArgumentException("Multi instance app must not have a instance url set",
                     nameof(data.InstanceUrl));
         }
-            
+
         return SetInstanceTypeInternal(appId, data, iamUserId);
     }
 

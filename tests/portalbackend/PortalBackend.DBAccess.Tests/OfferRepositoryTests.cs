@@ -1450,7 +1450,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region Setup
 
     private async Task<OfferRepository> CreateSut()

@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -61,7 +62,10 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     /// <inheritdoc />
     public Task SetServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
     {
-        if (string.IsNullOrWhiteSpace(data.Url) || !data.Url.StartsWith("https://") || data.Url.Length > 100)
+        data.Url.EnsureValidHttpUrl(() => nameof(data.Url));
+        data.CallbackUrl?.EnsureValidHttpUrl(() => nameof(data.CallbackUrl));
+
+        if (!data.Url.StartsWith("https://") || data.Url.Length > 100)
         {
             throw new ControllerArgumentException(
                 "Url must start with https and the maximum allowed length is 100 characters", nameof(data.Url));
@@ -89,7 +93,13 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
             {
                 throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
             }
-            companyRepository.CreateProviderCompanyDetail(result.CompanyId, data.Url);
+            companyRepository.CreateProviderCompanyDetail(result.CompanyId, data.Url, providerDetails =>
+            {
+                if (data.CallbackUrl != null)
+                {
+                    providerDetails.AutoSetupCallbackUrl = data.CallbackUrl;
+                }
+            });
         }
         else
         {

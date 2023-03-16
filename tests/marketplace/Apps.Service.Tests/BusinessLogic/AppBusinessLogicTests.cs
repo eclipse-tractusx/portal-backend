@@ -17,7 +17,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-// 
+
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
@@ -186,7 +186,7 @@ public class AppBusinessLogicTests
         var offerSubscriptionId = Guid.NewGuid();
         var offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
-        A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._, A<OfferTypeId>._, A<string>._))
+        A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._, A<OfferTypeId>._, A<string>._))
             .Returns(offerSubscriptionId);
         var sut = new AppsBusinessLogic(null!, offerSubscriptionService, null!, null!, Options.Create(new AppsSettings()), null!);
 
@@ -199,8 +199,6 @@ public class AppBusinessLogicTests
                 A<Guid>._,
                 A<IEnumerable<OfferAgreementConsentData>>._,
                 A<string>._,
-                A<string>._,
-                A<IDictionary<string, IEnumerable<string>>>._,
                 A<OfferTypeId>.That.Matches(x => x == OfferTypeId.APP),
                 A<string>._))
             .MustHaveHappenedOnceExactly();

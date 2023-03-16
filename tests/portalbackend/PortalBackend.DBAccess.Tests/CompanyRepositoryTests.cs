@@ -59,17 +59,24 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = sut.CreateProviderCompanyDetail(_validCompanyId, url);
+        var results = sut.CreateProviderCompanyDetail(_validCompanyId, url, entity =>
+        {
+            entity.AutoSetupCallbackUrl = "https://test.de";
+        });
 
         // Assert
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         results.CompanyId.Should().Be(_validCompanyId);
         results.AutoSetupUrl.Should().Be(url);
+        results.AutoSetupCallbackUrl.Should().Be("https://test.de");
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<ProviderCompanyDetail>().Which.AutoSetupUrl.Should().Be(url);
+        changedEntries.Single().Entity.Should().BeOfType<ProviderCompanyDetail>();
+        var providerCompanyDetail = changedEntries.Single().Entity as ProviderCompanyDetail;
+        providerCompanyDetail!.AutoSetupUrl.Should().Be(url);
+        providerCompanyDetail.AutoSetupCallbackUrl.Should().Be("https://test.de");
     }
 
     #endregion
