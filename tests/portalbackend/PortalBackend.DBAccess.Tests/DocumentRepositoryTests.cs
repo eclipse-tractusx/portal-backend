@@ -82,9 +82,8 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetUploadedDocuments
 
     [Theory]
-    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9c", DocumentTypeId.CX_FRAME_CONTRACT, "555b0b81-6ead-4d3d-8d5d-41c07bb8cfbb", 2)]
-    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9f", DocumentTypeId.CX_FRAME_CONTRACT, "623770c5-cf38-4b9f-9a35-f8b9ae972e2d", 1)]
-    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9c", DocumentTypeId.APP_CONTRACT, "4a23930a-30b6-461c-9ad4-58d3e761a0b5", 0)]
+    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9e", DocumentTypeId.CX_FRAME_CONTRACT, "e756e57e-e236-4f6e-b410-92a16ff8be85", 1)]
+    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9e", DocumentTypeId.APP_CONTRACT, "e756e57e-e236-4f6e-b410-92a16ff8be85", 0)]
     public async Task GetUploadedDocumentsAsync_ReturnsExpectedDocuments(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId, int count)
     {
         // Arrange
@@ -119,7 +118,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
     
         // Act
-        var result = await sut.GetUploadedDocumentsAsync(new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb3"), DocumentTypeId.CX_FRAME_CONTRACT, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetUploadedDocumentsAsync(new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e"), DocumentTypeId.CX_FRAME_CONTRACT, Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
@@ -300,10 +299,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetOfferImageDocumentContentAsync
 
     [Theory]
-    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "fda6c9cb-62be-4a98-99c1-d9c5a2df4aaa", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP, true, true, true, true, false)]
-    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "246e3b20-899e-40d2-8d0d-cd9b4ced332c", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.CX_FRAME_CONTRACT }, OfferTypeId.SERVICE, true, true, true, false, false)]
-    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "fda6c9cb-62be-4a98-99c1-d9c5a2df4aac", new [] { DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP, true, true, false, true, false)]
-    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "d6eb6ec2-24a6-40c5-becb-2142c62fb117", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE }, OfferTypeId.APP, true, false, true, false, false)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "e020787d-1e04-4c0b-9c06-bd1cd44724b1", new [] { DocumentTypeId.APP_LEADIMAGE,DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP, true, true, true, true, false)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "e020787d-1e04-4c0b-9c06-bd1cd44724b1", new [] { DocumentTypeId.APP_LEADIMAGE,DocumentTypeId.CX_FRAME_CONTRACT }, OfferTypeId.SERVICE, true, true, true, false, false)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "e020787d-1e04-4c0b-9c06-bd1cd44724b1", new [] { DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP, true, true, false, true, false)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", "e020787d-1e04-4c0b-9c06-bd1cd44724b3", new [] { DocumentTypeId.CX_FRAME_CONTRACT,DocumentTypeId.APP_LEADIMAGE }, OfferTypeId.APP, true, false, true, false, false)]
     [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4", "deadbeef-0000-0000-0000-000000000000", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE }, OfferTypeId.APP, false, false, false, false, false)]
     public async Task GetOfferImageDocumentContentAsync_ReturnsExpectedResult(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, bool isDocumentExisting, bool isLinkedToOffer, bool isValidDocumentType, bool isValidOfferType, bool isInactive)
     {
@@ -334,22 +333,23 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #region GetAppDocumentsAsync
 
-    [Theory]
-    [InlineData("31d4f694-a97d-46a7-aec0-e70141bf5402","2f1efa5c-60bd-405b-95ac-365009d7f3fd", new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP)]
-    public async Task GetAppDocumentsAsync_ReturnsExpectedResult(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId)
+    [Fact]
+    public async Task GetAppDocumentsAsync_ReturnsExpectedResult()
     {
         // Arrange
+        var documentId = new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b2");
+        var iamUserId = "4746cff4-7a64-4be8-a70e-cf762a7011b7";
         var (sut, _) = await CreateSut().ConfigureAwait(false);
     
         // Act
-        var result = await sut.GetAppDocumentsAsync(documentId,iamUserId, documentTypeIds, offerTypeId).ConfigureAwait(false);
+        var result = await sut.GetAppDocumentsAsync(documentId ,iamUserId, new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result.OfferData.Should().ContainSingle();
         result.IsDocumentTypeMatch.Should().Be(true);
         var offer = result.OfferData.Single();
-        offer.OfferId.Should().Be(new Guid("5cf74ef8-e0b7-4984-a872-474828beb510"));
+        offer.OfferId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"));
     }
     
     #endregion

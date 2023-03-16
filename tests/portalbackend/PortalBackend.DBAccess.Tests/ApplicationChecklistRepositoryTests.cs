@@ -129,7 +129,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         result.Should().NotBeNull()
             .And.BeOfType<(bool IsValidProcessId, Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(ApplicationChecklistEntryTypeId EntryTypeId, ApplicationChecklistEntryStatusId EntryStatusId)> Checklist)>()
             .And.Match<(bool IsValidProcessId, Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(ApplicationChecklistEntryTypeId EntryTypeId, ApplicationChecklistEntryStatusId EntryStatusId)> Checklist)>(
-                x => x.IsValidProcessId && x.ApplicationId == new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb6") && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED && x.Checklist.Count() == 6
+                x => x.IsValidProcessId && x.ApplicationId == new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9f") && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED && x.Checklist.Count() == 6
             );
     }
 
@@ -144,7 +144,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetChecklistProcessStepData(new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb6"),
+        var result = await sut.GetChecklistProcessStepData(new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9f"),
             new[]
             {
                 ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
@@ -165,9 +165,9 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         result.Checklist.Should().HaveCount(5).And.Contain(new [] {
             ( ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE ),
             ( ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE ),
-            ( ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO ),
-            ( ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO ),
-            ( ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO ),
+            ( ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE ),
+            ( ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE ),
+            ( ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE ),
         });
         result.ProcessId.Should().Be(new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe"));
         result.ProcessSteps.Should().NotBeEmpty();

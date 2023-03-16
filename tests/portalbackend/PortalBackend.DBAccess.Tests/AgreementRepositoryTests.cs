@@ -57,7 +57,7 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"), OfferTypeId.APP)
+            .CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), new Guid("3de6a31f-a5d1-4f60-aa3a-4b1a769becbf"), OfferTypeId.SERVICE)
             .ConfigureAwait(false);
 
         // Assert
@@ -72,7 +72,7 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .CheckAgreementExistsForSubscriptionAsync(new Guid("979a29b1-40c2-4169-979c-43c3156dbf64"), Guid.NewGuid(), OfferTypeId.SERVICE)
+            .CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), Guid.NewGuid(), OfferTypeId.SERVICE)
             .ConfigureAwait(false);
 
         // Assert
@@ -140,7 +140,7 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
     
         // Assert
         results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(2);
+        results.Should().ContainSingle();
     }
 
     [Fact]
@@ -168,7 +168,7 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.CheckAgreementsExistsForOfferAsync(Enumerable.Repeat(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1017"), 1), new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.CheckAgreementsExistsForOfferAsync(Enumerable.Repeat(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), 1), new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
         result.Should().BeTrue();
