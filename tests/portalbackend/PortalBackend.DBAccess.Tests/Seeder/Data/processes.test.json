@@ -1,14 +1,20 @@
 [
   {
     "id": "dd371565-9489-4907-a2e4-b8cbfe7a8cd2",
-    "process_type_id" : 1
+    "process_type_id" : 1,
+    "lock_expiry_date" : null,
+    "version" : "deadbeef-dead-beef-dead-beefdeadbeef"
   },
   {
     "id": "34215ee3-f99f-45e7-8c4e-747a089cf0b1",
-    "process_type_id" : 1
+    "process_type_id" : 1,
+    "lock_expiry_date" : null,
+    "version" : "deadbeef-dead-beef-dead-beefdeadbeef"
   },
   {
     "id": "1f9a3232-9772-4ecb-8f50-c16e97772dfe",
-    "process_type_id" : 1
+    "process_type_id" : 1,
+    "lock_expiry_date" : "2023-03-01 00:00:00.000000 +00:00",
+    "version" : "deadbeef-dead-beef-dead-beefdeadbeef"
   }
 ]

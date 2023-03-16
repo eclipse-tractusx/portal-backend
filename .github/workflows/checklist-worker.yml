@@ -23,8 +23,8 @@ on:
   push:
     paths:
       # service and transitive paths
-      - 'src/checklist/Checklist.Worker/**'
-      - 'src/checklist/Checklist.Library/**'
+      - 'src/processes/Processes.Worker/**'
+      - 'src/processes/ApplicationChecklist.Library/**'
       - 'src/externalsystems/**'
       - 'src/framework/**'
       - 'src/portalbackend/PortalBackend.PortalEntities/**'

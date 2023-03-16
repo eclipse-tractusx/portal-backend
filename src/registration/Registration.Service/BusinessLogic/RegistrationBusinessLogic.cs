@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
@@ -33,7 +34,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
@@ -46,7 +46,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
-    private readonly IChecklistCreationService _checklistService;
+    private readonly IApplicationChecklistCreationService _checklistService;
 
     private static readonly Regex bpnRegex = new Regex(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
 
@@ -58,7 +58,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IUserProvisioningService userProvisioningService,
         ILogger<RegistrationBusinessLogic> logger,
         IPortalRepositories portalRepositories,
-        IChecklistCreationService checklistService)
+        IApplicationChecklistCreationService checklistService)
     {
         _settings = settings.Value;
         _mailingService = mailingService;

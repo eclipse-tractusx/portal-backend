@@ -1,4 +1,24 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿/********************************************************************************
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -122,7 +142,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetActiveProcesses
 
     [Fact]
-    public async Task GetActiveProcess_ReturnsExpected()
+    public async Task GetActiveProcess_LockExpired_ReturnsExpected()
     {
         // Arrange
         var processTypeIds = new [] { ProcessTypeId.APPLICATION_CHECKLIST };
@@ -139,11 +159,33 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetActiveProcesses(processTypeIds, processStepTypeIds).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetActiveProcesses(processTypeIds, processStepTypeIds, DateTimeOffset.Parse("2023-03-02 00:00:00.000000 +00:00")).ToListAsync().ConfigureAwait(false);
         result.Should().HaveCount(1)
             .And.Satisfy(
-                x => x.ProcessId == new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe") && x.ProcessTypeId == ProcessTypeId.APPLICATION_CHECKLIST
+                x => x.Id == new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe") && x.ProcessTypeId == ProcessTypeId.APPLICATION_CHECKLIST && x.LockExpiryDate == DateTimeOffset.Parse("2023-03-01 00:00:00.000000 +00:00")
             );
+    }
+
+    [Fact]
+    public async Task GetActiveProcess_Locked_ReturnsExpected()
+    {
+        // Arrange
+        var processTypeIds = new [] { ProcessTypeId.APPLICATION_CHECKLIST };
+        var processStepTypeIds = new [] {
+            ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
+            ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
+            ProcessStepTypeId.CREATE_IDENTITY_WALLET,
+            ProcessStepTypeId.START_CLEARING_HOUSE,
+            ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE,
+            ProcessStepTypeId.START_SELF_DESCRIPTION_LP,
+            ProcessStepTypeId.ACTIVATE_APPLICATION,
+        };
+
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetActiveProcesses(processTypeIds, processStepTypeIds, DateTimeOffset.Parse("2023-02-28 00:00:00.000000 +00:00")).ToListAsync().ConfigureAwait(false);
+        result.Should().BeEmpty();
     }
 
     #endregion

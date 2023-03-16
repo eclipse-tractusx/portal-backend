@@ -34,7 +34,7 @@
         <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
         <ProjectReference Include="..\..\framework\Framework.Token\Framework.Token.csproj" />
         <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
-        <ProjectReference Include="..\..\checklist\Checklist.Library\Checklist.Library.csproj" />
+        <ProjectReference Include="..\..\processes\ApplicationChecklist.Library\ApplicationChecklist.Library.csproj" />
     </ItemGroup>
 
     <ItemGroup>
