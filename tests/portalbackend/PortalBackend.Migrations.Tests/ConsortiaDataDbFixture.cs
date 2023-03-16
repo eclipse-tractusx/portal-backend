@@ -18,8 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
@@ -28,17 +26,15 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
-using Xunit;
-using Xunit.Extensions.AssemblyFixture;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
-[assembly: TestFramework(AssemblyFixtureFramework.TypeName, AssemblyFixtureFramework.AssemblyName)]
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Tests;
 
-public class TestDbFixture : IAsyncLifetime
+public class ConsortiaDataDbFixture : IAsyncLifetime
 {
     private readonly PostgreSqlTestcontainer _container;
 
-    public TestDbFixture()
+    public ConsortiaDataDbFixture()
     {
         _container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
             .WithDatabase(new PostgreSqlTestcontainerConfiguration
@@ -61,9 +57,8 @@ public class TestDbFixture : IAsyncLifetime
     /// In this method the migrations don't need to get executed since they are already on the testcontainer.
     /// Because of that the EnsureCreatedAsync is enough.
     /// </remarks>
-    /// <param name="seedActions">Additional data for the database</param>
     /// <returns>Returns the created PortalDbContext</returns>
-    public async Task<PortalDbContext> GetPortalDbContext(params Action<PortalDbContext>[] seedActions)
+    public PortalDbContext GetPortalDbContext()
     {
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
         
@@ -73,13 +68,6 @@ public class TestDbFixture : IAsyncLifetime
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
         var context = new PortalDbContext(optionsBuilder.Options);
-        await context.Database.EnsureCreatedAsync().ConfigureAwait(false);
-        foreach (var seedAction in seedActions)
-        {
-            seedAction.Invoke(context);
-        }
-
-        await context.SaveChangesAsync().ConfigureAwait(false);
         return context;
     }
 
@@ -101,7 +89,7 @@ public class TestDbFixture : IAsyncLifetime
         var context = new PortalDbContext(optionsBuilder.Options);
         await context.Database.MigrateAsync();
 
-        var seederOptions = Options.Create(new SeederSettings { TestDataEnvironments = new List<string> { "test" } });
+        var seederOptions = Options.Create(new SeederSettings { TestDataEnvironments = new List<string> { "consortia" } });
         var insertSeeder = new BatchInsertSeeder(context,
             LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<BatchInsertSeeder>(),
             seederOptions);

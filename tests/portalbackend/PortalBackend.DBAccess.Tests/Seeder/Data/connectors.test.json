@@ -1,0 +1,26 @@
+[
+  {
+    "id": "7e86a0b8-6903-496b-96d1-0ef508206836",
+    "name": "Test Connector 4",
+    "connector_url": "www.google.de",
+    "type_id": 1,
+    "status_id": 2,
+    "provider_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "host_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "location_id": "DE",
+    "self_description_document_id": null,
+    "daps_registration_successful": null
+  },
+  {
+    "id": "7e86a0b8-6903-496b-96d1-0ef508206833",
+    "name": "Test Connector 1",
+    "connector_url": "www.google.de",
+    "type_id": 1,
+    "status_id": 1,
+    "provider_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "host_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "location_id": "DE",
+    "self_description_document_id": null,
+    "daps_registration_successful": null
+  }
+]
