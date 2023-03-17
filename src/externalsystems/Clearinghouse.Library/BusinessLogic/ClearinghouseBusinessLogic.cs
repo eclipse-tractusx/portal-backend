@@ -73,7 +73,8 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
             new [] { ProcessStepTypeId.END_CLEARING_HOUSE },
             null,
-            true);
+            true,
+            null);
     }
 
     private async Task TriggerCompanyDataPost(Guid applicationId, string decentralizedIdentifier, bool overwrite, CancellationToken cancellationToken)
