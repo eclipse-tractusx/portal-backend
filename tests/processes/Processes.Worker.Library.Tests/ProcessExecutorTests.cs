@@ -147,7 +147,7 @@ public class ProcessExecutorTests
             .Returns(new IProcessTypeExecutor.InitializationResult(false, initialStepTypeIds));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._,A<IEnumerable<ProcessStepTypeId>>._,A<CancellationToken>._))
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null));
+            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null, null));
 
         IEnumerable<ProcessStep>? createdProcessSteps = null;;
 
@@ -255,7 +255,7 @@ public class ProcessExecutorTests
             .Returns(new IProcessTypeExecutor.InitializationResult(false, null));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._,A<IEnumerable<ProcessStepTypeId>>._,A<CancellationToken>._))
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null));
+            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null, null));
 
         var modifiedProcessSteps = new List<ProcessStep>();
 
@@ -367,7 +367,7 @@ public class ProcessExecutorTests
             .Returns(new IProcessTypeExecutor.InitializationResult(false, null));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._,A<IEnumerable<ProcessStepTypeId>>._,A<CancellationToken>._))
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null));
+            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null, null));
 
         var modifiedProcessSteps = new List<ProcessStep>();
 
@@ -472,10 +472,10 @@ public class ProcessExecutorTests
             .Returns(new IProcessTypeExecutor.InitializationResult(false, null));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(processStepData.StepTypeId,A<IEnumerable<ProcessStepTypeId>>._,A<CancellationToken>._))
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, scheduleStepTypeIds, null));
+            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, scheduleStepTypeIds, null, null));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>.That.Not.IsEqualTo(processStepData.StepTypeId),A<IEnumerable<ProcessStepTypeId>>._,A<CancellationToken>._))
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null));
+            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null, null));
 
         IEnumerable<ProcessStep>? createdProcessSteps = null;;
 
@@ -580,10 +580,10 @@ public class ProcessExecutorTests
             .Returns(new IProcessTypeExecutor.InitializationResult(false, null));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(stepTypeId,A<IEnumerable<ProcessStepTypeId>>._,A<CancellationToken>._))
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, scheduleStepTypeIds, null))
+            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, scheduleStepTypeIds, null, null))
             .Once()
             .Then
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null));
+            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null, null));
 
         IEnumerable<ProcessStep>? createdProcessSteps = null;;
 
@@ -681,7 +681,7 @@ public class ProcessExecutorTests
             .Returns(new IProcessTypeExecutor.InitializationResult(false, null));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._,A<IEnumerable<ProcessStepTypeId>>._,A<CancellationToken>._))
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, skipStepTypeIds));
+            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, skipStepTypeIds, null));
 
         var modifiedProcessSteps = new List<ProcessStep>();
 

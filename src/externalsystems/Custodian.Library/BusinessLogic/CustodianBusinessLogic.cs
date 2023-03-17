@@ -63,7 +63,8 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
                 checklistEntry => checklistEntry.Comment = $"processStep CREATE_IDENTITY_WALLET skipped as entries BUSINESS_PARTNER_NUMBER and REGISTRATION_VERIFICATION have status {context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER]} and {context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION]}",
                 null,
                 null,
-                true);
+                true,
+                null);
         }
         if (context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == ApplicationChecklistEntryStatusId.DONE && context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.DONE)
         {
@@ -78,9 +79,10 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
                     },
                 new [] { ProcessStepTypeId.START_CLEARING_HOUSE },
                 null,
-                true);
+                true,
+                null);
         }
-        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO,null,null,null,false);
+        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO,null,null,null,false, null);
     }
 
     private async Task<string> CreateWalletInternal(Guid applicationId, CancellationToken cancellationToken)

@@ -238,7 +238,7 @@ public class CustodianBusinessLogicTests
         // Assert
         result.Should().NotBe(default);
 
-        var (stepStatusId, action, stepTypeIds, stepsToSkip, modified) = result;
+        var (stepStatusId, action, stepTypeIds, stepsToSkip, modified, processMessage) = result;
 
         stepStatusId.Should().Be(ProcessStepStatusId.DONE);
 
@@ -256,6 +256,8 @@ public class CustodianBusinessLogicTests
 
         checklistEntry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
         checklistEntry.Comment.Should().Be("It worked.");
+
+        processMessage.Should().BeNull();
     }
 
     #endregion

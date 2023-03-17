@@ -62,7 +62,8 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
             new [] { ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP },
             null,
-            true
+            true,
+            null
         );
     }
 

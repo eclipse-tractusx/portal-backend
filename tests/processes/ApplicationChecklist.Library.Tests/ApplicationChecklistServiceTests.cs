@@ -677,7 +677,7 @@ public class ChecklistServiceTests
         result.ModifyChecklistEntry.Should().NotBeNull();
         result.ModifyChecklistEntry!.Invoke(entity);
         entity.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.FAILED);
-        entity.Comment.Should().Be("Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.ServiceException: Test error");
+        entity.Comment.Should().Be("Test error");
         result.ScheduleStepTypeIds.Should().NotBeNull();
         result.ScheduleStepTypeIds.Should().ContainSingle().And.Match(x => x.Single() == ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE);
         result.Modified.Should().BeTrue();
@@ -698,7 +698,7 @@ public class ChecklistServiceTests
         result.ModifyChecklistEntry.Should().NotBeNull();
         result.ModifyChecklistEntry!.Invoke(entity);
         entity.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.TO_DO);
-        entity.Comment.Should().Be("Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.ServiceException: Test error");
+        entity.Comment.Should().Be("Test error");
         result.ScheduleStepTypeIds.Should().BeNull();
         result.Modified.Should().BeTrue();
     }

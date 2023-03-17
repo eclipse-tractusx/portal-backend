@@ -317,7 +317,8 @@ public class ApplicationChecklistProcessTypeExecutorTests
                 (ApplicationChecklistEntry entry) => { entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS; },
                 followupStepTypeIds,
                 null,
-                true));
+                true,
+                null));
 
         ApplicationChecklistEntry? checklistEntry = null;
 
@@ -396,7 +397,8 @@ public class ApplicationChecklistProcessTypeExecutorTests
                         },
                     followupStepTypeIds,
                     null,
-                    true));
+                    true,
+                    "Test message"));
 
         ApplicationChecklistEntry? checklistEntry = null;
 
@@ -423,6 +425,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         executionResult.ProcessStepStatusId.Should().Be(ProcessStepStatusId.FAILED);
         executionResult.ScheduleStepTypeIds.Should().ContainInOrder(followupStepTypeIds);
         executionResult.SkipStepTypeIds.Should().BeNull();
+        executionResult.ProcessMessage.Should().Be("Test message");
 
         A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._))
             .MustHaveHappenedOnceExactly();
@@ -472,7 +475,8 @@ public class ApplicationChecklistProcessTypeExecutorTests
                     null,
                     followupStepTypeIds,
                     null,
-                    false));
+                    false,
+                    "Test Message"));
 
         // Act execute
         var executionResult = await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
@@ -489,6 +493,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         executionResult.ProcessStepStatusId.Should().Be(ProcessStepStatusId.FAILED);
         executionResult.ScheduleStepTypeIds.Should().ContainInOrder(followupStepTypeIds);
         executionResult.SkipStepTypeIds.Should().BeNull();
+        executionResult.ProcessMessage.Should().Be("Test Message");
 
         A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._))
             .MustNotHaveHappened();

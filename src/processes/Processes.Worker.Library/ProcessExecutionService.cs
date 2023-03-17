@@ -43,6 +43,8 @@ public class ProcessExecutionService
     /// Creates a new instance of <see cref="ProcessExecutionService"/>
     /// </summary>
     /// <param name="serviceScopeFactory">access to the services</param>
+    /// <param name="dateTimeProvider">date time provider</param>
+    /// <param name="options">access to the options</param>
     /// <param name="logger">the logger</param>
     public ProcessExecutionService(
         IServiceScopeFactory serviceScopeFactory,

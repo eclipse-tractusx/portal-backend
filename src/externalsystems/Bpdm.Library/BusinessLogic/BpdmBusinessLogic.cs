@@ -92,7 +92,8 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
             new [] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL },
             null,
-            true);
+            true,
+            null);
     }
 
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandlePullLegalEntity(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
@@ -110,7 +111,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
 
         if (string.IsNullOrEmpty(legalEntity.Bpn))
         {
-            return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO,null,null,null,false);
+            return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO,null,null,null,false, null);
         }
 
         // TODO: clarify whether it should be an error if businessPartnerNumber has been set locally while bpdm-answer was outstanding
@@ -136,6 +137,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
                 ? null
                 : new [] { ProcessStepTypeId.CREATE_IDENTITY_WALLET },
             new [] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL },
-            true);
+            true,
+            null);
     }
 }
