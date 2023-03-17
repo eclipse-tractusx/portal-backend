@@ -39,7 +39,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: catenax-ng/tx-portal-backend
 
 jobs:
   analyze-config:
