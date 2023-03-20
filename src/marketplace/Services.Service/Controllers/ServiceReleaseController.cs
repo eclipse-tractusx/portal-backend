@@ -55,7 +55,7 @@ public class ServiceReleaseController : ControllerBase
     /// <response code="200">Returns the Cpllection of agreement data</response>
     [HttpGet]
     [Route("agreementData")]
-    [Authorize(Roles = "edit_apps")]
+    [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(IAsyncEnumerable<AgreementDocumentData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<AgreementDocumentData> GetServiceAgreementDataAsync() =>
         _serviceReleaseBusinessLogic.GetServiceAgreementDataAsync();
@@ -101,7 +101,7 @@ public class ServiceReleaseController : ControllerBase
     /// <response code="403">User not associated with offer.</response>
     [HttpGet]
     [Route("consent/{serviceId}")]
-    [Authorize(Roles = "edit_apps")]
+    [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(OfferAgreementConsent), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
