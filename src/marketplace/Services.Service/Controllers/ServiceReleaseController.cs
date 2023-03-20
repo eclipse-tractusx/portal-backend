@@ -119,7 +119,7 @@ public class ServiceReleaseController : ControllerBase
     /// <response code="403">User not associated with provider company.</response>
     [HttpGet]
     [Route("{serviceId}/serviceStatus")]
-    [Authorize(Roles = "view_service_details")]
+    [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(OfferProviderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
