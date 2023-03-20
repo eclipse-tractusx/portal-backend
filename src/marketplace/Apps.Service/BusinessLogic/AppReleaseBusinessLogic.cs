@@ -137,7 +137,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     /// <inheritdoc/>
     public IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync()=>
-        _offerService.GetOfferTypeAgreementsAsync(OfferTypeId.APP);
+        _offerService.GetOfferTypeAgreements(OfferTypeId.APP);
 
     /// <inheritdoc/>
     public async Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId)
@@ -314,7 +314,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.SalesManagerId = appData.SalesManagerId;
         });
 
-        _offerService.UpsertRemoveOfferDescription(appId, appRequestModel.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), appData.OfferDescriptions);
+        _offerService.UpsertRemoveOfferDescription(appId, appRequestModel.Descriptions, appData.OfferDescriptions);
         UpdateAppSupportedLanguages(appId, newSupportedLanguages, appData.Languages.Where(x => !x.IsMatch).Select(x => x.Shortname), appRepository);
 
         appRepository.CreateDeleteAppAssignedUseCases(appId, appData.MatchingUseCases, appRequestModel.UseCaseIds);

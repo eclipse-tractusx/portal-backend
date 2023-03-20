@@ -52,7 +52,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     }
 
     public IAsyncEnumerable<AgreementDocumentData> GetServiceAgreementDataAsync()=>
-        _offerService.GetOfferTypeAgreementsAsync(OfferTypeId.SERVICE);
+        _offerService.GetOfferTypeAgreements(OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public async Task<ServiceData> GetServiceDetailsByIdAsync(Guid serviceId)
@@ -72,14 +72,14 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             result.Title ?? Constants.ErrorString,
             result.ServiceTypeIds,
             result.Provider,
-            result.Descriptions.Select(x => new LocalizedDescription(x.languageCode, x.longDescription, x.shortDescription)),
+            result.Descriptions,
             result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))),
             result.ProviderUri ?? Constants.ErrorString,
             result.ContactEmail,
             result.ContactNumber
         );
     }
-    
+
     /// <inheritdoc />
     public IAsyncEnumerable<ServiceTypeData> GetServiceTypeDataAsync()=>
         _portalRepositories.GetInstance<IStaticDataRepository>().GetServiceTypeData();
@@ -87,4 +87,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     /// <inheritdoc/>
     public Task<OfferAgreementConsent> GetServiceAgreementConsentAsync(Guid serviceId, string iamUserId) => 
         _offerService.GetProviderOfferAgreementConsentById(serviceId,  iamUserId, OfferTypeId.SERVICE);
+
+    public Task<OfferProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, string userId) =>
+        _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, userId, OfferTypeId.SERVICE);
 }

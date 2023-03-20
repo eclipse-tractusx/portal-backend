@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
@@ -108,4 +109,20 @@ public class ServiceReleaseController : ControllerBase
     public Task<OfferAgreementConsent> GetServiceAgreementConsentByIdAsync([FromRoute] Guid serviceId) =>
        this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.GetServiceAgreementConsentAsync(serviceId, iamUserId));
 
+    /// <summary>
+    /// Return app detail with status
+    /// </summary>
+    /// <param name="serviceId"></param>
+    /// <remarks>Example: GET: /api/services/servicerelease/{serviceId}/serviceStatus</remarks>
+    /// <response code="200">Return the Offer and status data</response>
+    /// <response code="404">App does not exist.</response>
+    /// <response code="403">User not associated with provider company.</response>
+    [HttpGet]
+    [Route("{serviceId}/serviceStatus")]
+    [Authorize(Roles = "view_service_details")]
+    [ProducesResponseType(typeof(OfferProviderResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public Task<OfferProviderResponse> GetServiceDetailsForStatusAsync([FromRoute] Guid serviceId) =>
+        this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.GetServiceDetailsForStatusAsync(serviceId, iamUserId));
 }

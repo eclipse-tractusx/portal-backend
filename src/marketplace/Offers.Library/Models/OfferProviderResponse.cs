@@ -28,7 +28,7 @@ public record OfferProviderResponse(
     Guid LeadPictureId, 
     string? ProviderName, 
     IEnumerable<string> UseCase, 
-    IEnumerable<OfferDescriptionData> Descriptions, 
+    IEnumerable<LocalizedDescription> Descriptions, 
     IEnumerable<OfferAgreement> Agreements, 
     IEnumerable<string> SupportedLanguageCodes, 
     string? Price, 

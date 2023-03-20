@@ -209,18 +209,18 @@ public class OfferRepository : IOfferRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<OfferDescriptionData> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, string userId, OfferTypeId offerTypeId) =>
+    public Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<LocalizedDescription> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, string userId, OfferTypeId offerTypeId) =>
         _context.Offers
             .AsNoTracking()
             .Where(a => a.Id == appId && a.OfferTypeId == offerTypeId)
             .Select(a =>
-                new ValueTuple<bool,bool,string?,string?,string?,IEnumerable<OfferDescriptionData>>(
+                new ValueTuple<bool,bool,string?,string?,string?,IEnumerable<LocalizedDescription>>(
                     a.OfferStatusId == OfferStatusId.CREATED,
                     a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
                     a.ContactEmail,
                     a.ContactNumber,
                     a.MarketingUrl,
-                    a.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort))
+                    a.OfferDescriptions.Select(description => new LocalizedDescription(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort))
                 ))
             .SingleOrDefaultAsync();
        
@@ -358,7 +358,7 @@ public class OfferRepository : IOfferRepository
                     offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                     offer.ProviderCompany!.Name,
                     offer.UseCases.Select(uc => uc.Name),
-                    offer.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                    offer.OfferDescriptions.Select(description => new LocalizedDescription(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
                     offer.OfferType!.AgreementAssignedOfferTypes
                     .Select(aaot => aaot.Agreement)
                     .Select(agreement => new AgreementAssignedOfferData(
@@ -424,7 +424,7 @@ public class OfferRepository : IOfferRepository
             (
                 x.OfferStatusId,
                 x.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
-                x.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                x.OfferDescriptions.Select(description => new LocalizedDescription(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
                 x.SupportedLanguages.Select(sl => new ValueTuple<string, bool>(sl.ShortName, languageCodes.Any(lc => lc == sl.ShortName))),
                 x.UseCases.Select(uc => uc.Id),
                 x.OfferLicenses.Select(ol => new ValueTuple<Guid, string, bool>(ol.Id, ol.Licensetext, ol.Offers.Count > 1)).FirstOrDefault(),
@@ -444,7 +444,7 @@ public class OfferRepository : IOfferRepository
                 x.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
                 x.ServiceDetails.Select(st => new ValueTuple<ServiceTypeId, bool>(st.ServiceTypeId, serviceTypeIds.Contains(st.ServiceTypeId))),
                 x.OfferLicenses.Select(ol => new ValueTuple<Guid, string, bool>(ol.Id, ol.Licensetext, ol.Offers.Count > 1)).FirstOrDefault(),
-                x.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                x.OfferDescriptions.Select(description => new LocalizedDescription(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
                 x.SalesManagerId
             ))
             .SingleOrDefaultAsync();
@@ -516,7 +516,7 @@ public class OfferRepository : IOfferRepository
                     offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_IMAGE).Select(document => document.Id),
                     offer.Provider,
                     offer.UseCases.Select(uc => uc.Name),
-                    offer.OfferDescriptions.Select(od => new OfferDescriptionData(od.LanguageShortName, od.DescriptionLong, od.DescriptionShort)),
+                    offer.OfferDescriptions.Select(od => new LocalizedDescription(od.LanguageShortName, od.DescriptionLong, od.DescriptionShort)),
                     offer.Documents.Where(d => d.DocumentTypeId != DocumentTypeId.APP_IMAGE && d.DocumentTypeId != DocumentTypeId.APP_LEADIMAGE)
                         .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
                     offer.UserRoles.Select(ur => ur.UserRoleText),
@@ -529,32 +529,32 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
     
     ///<inheritdoc/>
-    public Task<(bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<OfferDescriptionData>? OfferDescriptionDatas)> GetActiveOfferDescriptionDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId) =>
+    public Task<(bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<LocalizedDescription>? OfferDescriptionDatas)> GetActiveOfferDescriptionDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId) =>
         _context.Offers
             .Where(offer => offer.Id == appId && offer.OfferTypeId == offerTypeId)
             .Select(offer => new {
                 Offer = offer,
                 IsProviderCompanyUser = offer.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)
             })
-            .Select(x => new ValueTuple<bool,bool,IEnumerable<OfferDescriptionData>?>(
+            .Select(x => new ValueTuple<bool,bool,IEnumerable<LocalizedDescription>?>(
                 x.Offer.OfferStatusId == OfferStatusId.ACTIVE,
                 x.IsProviderCompanyUser,
-                x.IsProviderCompanyUser ? x.Offer.OfferDescriptions.Select(od => new OfferDescriptionData(od.LanguageShortName, od.DescriptionLong, od.DescriptionShort)) : null))
+                x.IsProviderCompanyUser ? x.Offer.OfferDescriptions.Select(od => new LocalizedDescription(od.LanguageShortName, od.DescriptionLong, od.DescriptionShort)) : null))
             .SingleOrDefaultAsync();
     
     ///<inheritdoc/>
-    public void CreateUpdateDeleteOfferDescriptions(Guid offerId, IEnumerable<OfferDescriptionData> initialItems, IEnumerable<(string LanguageCode, string LongDescription, string ShortDescription)> modifiedItems) =>
+    public void CreateUpdateDeleteOfferDescriptions(Guid offerId, IEnumerable<LocalizedDescription> initialItems, IEnumerable<(string LanguageCode, string LongDescription, string ShortDescription)> modifiedItems) =>
         _context.AddAttachRemoveRange(
             initialItems,
             modifiedItems,
-            initial => initial.languageCode,
+            initial => initial.LanguageCode,
             modify =>  modify.LanguageCode,
             languageCode => new OfferDescription(offerId, languageCode, null!, null!),
-            (initial, modified) => (initial.longDescription == modified.LongDescription && initial.shortDescription == modified.ShortDescription),
+            (initial, modified) => (initial.LongDescription == modified.LongDescription && initial.ShortDescription == modified.ShortDescription),
             (entity, initial) =>
                 {
-                    entity.DescriptionLong = initial.longDescription;
-                    entity.DescriptionShort = initial.shortDescription;
+                    entity.DescriptionLong = initial.LongDescription;
+                    entity.DescriptionShort = initial.ShortDescription;
                 },
             (entity, modified) =>
                 {
@@ -646,7 +646,7 @@ public class OfferRepository : IOfferRepository
                 offer.Name,
                 offer.ServiceDetails.Select(x => x.ServiceType!.Label),
                 offer.Provider,
-                offer.OfferDescriptions.Select(description => new OfferDescriptionData(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                offer.OfferDescriptions.Select(description => new LocalizedDescription(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
                 offer.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
                 offer.MarketingUrl,
                 offer.ContactEmail,

@@ -18,16 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
-/// Model for updating an app.
+/// Simple model to specify descriptions for a language.
 /// </summary>
-/// <param name="Descriptions"></param>
-/// <param name="ProviderUri"></param>
-/// <param name="ContactEmail"></param>
-/// <param name="ContactNumber"></param>
-/// <returns></returns>
-public record AppEditableDetail(IEnumerable<LocalizedDescription> Descriptions, string? ProviderUri, string? ContactEmail, string? ContactNumber);
+/// <param name="LanguageCode">Two character language code.</param>
+/// <param name="LongDescription">Long description in specified language.</param>
+/// <param name="ShortDescription">Short description in specified language.</param>
+public record LocalizedDescription(
+    [StringLength(2, MinimumLength = 2)] string LanguageCode,
+    [MaxLength(4096)] string LongDescription,
+    [MaxLength(255)] string ShortDescription);

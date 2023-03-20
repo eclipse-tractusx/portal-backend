@@ -639,7 +639,7 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var offerDescription = _fixture.CreateMany<OfferDescriptionData>(3);
+        var offerDescription = _fixture.CreateMany<LocalizedDescription>(3);
         var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
@@ -652,7 +652,7 @@ public class AppBusinessLogicTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Select(x => x.languageCode).Should().Contain(offerDescription.Select(od => od.languageCode));
+        result.Select(x => x.LanguageCode).Should().Contain(offerDescription.Select(od => od.LanguageCode));
     }
 
     [Fact]    
@@ -662,7 +662,7 @@ public class AppBusinessLogicTests
         var appId = _fixture.Create<Guid>();
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
-            .ReturnsLazily(() => ((bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<OfferDescriptionData> OfferDescriptionDatas))default);
+            .ReturnsLazily(() => ((bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<LocalizedDescription> OfferDescriptionDatas))default);
         
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
 
@@ -679,7 +679,7 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var offerDescription = _fixture.CreateMany<OfferDescriptionData>(3);
+        var offerDescription = _fixture.CreateMany<LocalizedDescription>(3);
         var appDescriptionData = (IsStatusActive: false, IsProviderCompanyUser: true, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
@@ -700,7 +700,7 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var offerDescription = _fixture.CreateMany<OfferDescriptionData>(3);
+        var offerDescription = _fixture.CreateMany<LocalizedDescription>(3);
         var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: false, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
@@ -721,7 +721,7 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var existingOfferDescriptions = new OfferDescriptionData[] {
+        var existingOfferDescriptions = new LocalizedDescription[] {
             new ("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new ("de", _fixture.Create<string>(), _fixture.Create<string>())
         };
@@ -754,7 +754,7 @@ public class AppBusinessLogicTests
             new ("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new ("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: Array.Empty<OfferDescriptionData>());
+        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: Array.Empty<LocalizedDescription>());
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
             .ReturnsLazily(() => appDescriptionData);
@@ -765,7 +765,7 @@ public class AppBusinessLogicTests
         await sut.CreateOrUpdateAppDescriptionByIdAsync(appId, IamUserId, updateDescriptionData).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(appId, A<IEnumerable<OfferDescriptionData>>.That.IsEmpty(), A<IEnumerable<(string,string,string)>>.That.IsSameSequenceAs(updateDescriptionData.Select(x => new ValueTuple<string,string,string>(x.LanguageCode, x.LongDescription, x.ShortDescription)))))
+        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(appId, A<IEnumerable<LocalizedDescription>>.That.IsEmpty(), A<IEnumerable<(string,string,string)>>.That.IsSameSequenceAs(updateDescriptionData.Select(x => new ValueTuple<string,string,string>(x.LanguageCode, x.LongDescription, x.ShortDescription)))))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -778,7 +778,7 @@ public class AppBusinessLogicTests
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<OfferDescriptionData>)null!);
+        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>)null!);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
             .ReturnsLazily(() => appDescriptionData);
@@ -792,7 +792,7 @@ public class AppBusinessLogicTests
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
         result.Message.Should().Be("offerDescriptionDatas should never be null here");
         
-        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(A<Guid>._, A<IEnumerable<OfferDescriptionData>>._, A<IEnumerable<(string,string,string)>>._)) 
+        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(A<Guid>._, A<IEnumerable<LocalizedDescription>>._, A<IEnumerable<(string,string,string)>>._)) 
             .MustNotHaveHappened();
 
     }
@@ -817,7 +817,7 @@ public class AppBusinessLogicTests
     
     #endregion
 
-  #region  CreateOfferAssignedAppLeadImageDocumentById
+    #region  CreateOfferAssignedAppLeadImageDocumentById
 
     [Fact]
     public async Task CreateOfferAssignedAppLeadImageDocumentById_ExpectedCalls()

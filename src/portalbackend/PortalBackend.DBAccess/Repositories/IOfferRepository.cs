@@ -151,7 +151,7 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <returns>ValueTuple, first item is true if the app is in status CREATED,
     /// second item is true if the user is eligible to edit it</returns>
-    Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<OfferDescriptionData> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, string userId, OfferTypeId offerTypeId);
+    Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<LocalizedDescription> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, string userId, OfferTypeId offerTypeId);
     
     /// Get Offer Release data by Offer Id
     /// </summary>
@@ -345,7 +345,7 @@ public interface IOfferRepository
     /// <param name ="iamUserId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<OfferDescriptionData>? OfferDescriptionDatas)> GetActiveOfferDescriptionDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId);
+    Task<(bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<LocalizedDescription>? OfferDescriptionDatas)> GetActiveOfferDescriptionDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId);
 
     /// <summary>
     /// Create, Update and Delete Offer Descriptions Data
@@ -354,7 +354,7 @@ public interface IOfferRepository
     /// <param name ="initialItems"></param>
     /// <param name="modifiedItems"></param>
     /// <returns></returns>
-    void CreateUpdateDeleteOfferDescriptions(Guid offerId, IEnumerable<OfferDescriptionData> initialItems, IEnumerable<(string LanguageCode, string LongDescription, string ShortDescription)> modifiedItems);
+    void CreateUpdateDeleteOfferDescriptions(Guid offerId, IEnumerable<LocalizedDescription> initialItems, IEnumerable<(string LanguageCode, string LongDescription, string ShortDescription)> modifiedItems);
 
     /// <summary>
     /// Delete the OfferAssignedDocument 

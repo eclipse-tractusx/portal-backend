@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 
@@ -54,4 +55,12 @@ public interface IServiceReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task<OfferAgreementConsent> GetServiceAgreementConsentAsync(Guid serviceId, string iamUserId);
+
+    /// <summary>
+    /// Return Offer with Consent Status
+    /// </summary>
+    /// <param name="serviceId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<OfferProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, string userId);
 }

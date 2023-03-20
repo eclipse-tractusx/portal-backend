@@ -654,7 +654,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         result!.IsStatusActive.Should().BeTrue();
         result.IsProviderCompanyUser.Should().BeTrue();
         result.OfferDescriptionDatas.Should().NotBeNull();
-        result.OfferDescriptionDatas!.Select(od => od.languageCode).Should().Contain("en");
+        result.OfferDescriptionDatas!.Select(od => od.LanguageCode).Should().Contain("en");
     }
 
     [Fact]
@@ -679,8 +679,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         var appId = new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
         var existingOfferDescription = new [] { 
-            new OfferDescriptionData("en", "some long Description for testing","some short Description for testing"),
-            new OfferDescriptionData("de", "some long Description for testing","some short Description for testing")
+            new LocalizedDescription("en", "some long Description for testing","some short Description for testing"),
+            new LocalizedDescription("de", "some long Description for testing","some short Description for testing")
         };
         var modifedOfferDescription = new [] { 
             ("en", "some long Description in english, for testing","some short Description in english for testing"),
@@ -710,8 +710,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var appId = new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
         var newOfferDescriptionEntry = ("es", "newly added long Description for testing", "newly added short Description for testing");
         var existingOfferDescription = new [] { 
-            new OfferDescriptionData("en", "some long Description for testing","some short Description for testing"),
-            new OfferDescriptionData("de", "some long Description for testing","some short Description for testing")
+            new LocalizedDescription("en", "some long Description for testing","some short Description for testing"),
+            new LocalizedDescription("de", "some long Description for testing","some short Description for testing")
         };
         var modifedOfferDescription = new [] { 
             ("en", "some long Description for testing","some short Description for testing"),
@@ -741,8 +741,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         var appId = new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
         var existingOfferDescriptions = new [] { 
-            new OfferDescriptionData("en", "some long Description for testing","some short Description for testing"),
-            new OfferDescriptionData("de", "some long Description for testing","some short Description for testing")
+            new LocalizedDescription("en", "some long Description for testing","some short Description for testing"),
+            new LocalizedDescription("de", "some long Description for testing","some short Description for testing")
         };
         var modifedOfferDescriptions = new [] { ("de", "modified long Description for testing","modified short Description for testing") };
 

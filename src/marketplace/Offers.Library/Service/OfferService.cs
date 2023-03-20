@@ -143,7 +143,7 @@ public class OfferService : IOfferService
         return consentDetails;
     }
 
-    public IAsyncEnumerable<AgreementDocumentData> GetOfferTypeAgreementsAsync(OfferTypeId offerTypeId)=>
+    public IAsyncEnumerable<AgreementDocumentData> GetOfferTypeAgreements(OfferTypeId offerTypeId)=>
         _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementDataForOfferType(offerTypeId);
 
     public async Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId)
@@ -303,7 +303,7 @@ public class OfferService : IOfferService
         return responseData.UserCompanyId;
     }
     
-    public void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<Localization> updateDescriptions, IEnumerable<OfferDescriptionData> existingDescriptions)
+    public void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<LocalizedDescription> updateDescriptions, IEnumerable<LocalizedDescription> existingDescriptions)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         offerRepository.CreateUpdateDeleteOfferDescriptions(offerId, existingDescriptions, 

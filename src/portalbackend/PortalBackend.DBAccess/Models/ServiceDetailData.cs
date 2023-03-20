@@ -50,7 +50,7 @@ public record ServiceDetailsData(
     /// <summary>
     /// Descriptions of the offer.
     /// </summary>
-    IEnumerable<OfferDescriptionData> Descriptions,
+    IEnumerable<LocalizedDescription> Descriptions,
 
     /// <summary>
     /// document assigned to offer
