@@ -18,30 +18,37 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-[AuditEntityV1(typeof(AuditCompanyAssignedRole2023316))]
-public class CompanyAssignedRole : IAuditableV1
+/// <summary>
+/// Audit entity for <see cref="CompanyAssignedRole"/> only needed for configuration purposes
+/// </summary>
+
+public class AuditCompanyAssignedRole2023316 : IAuditEntityV1
 {
-    private CompanyAssignedRole() {}
-
-    public CompanyAssignedRole(Guid companyId, CompanyRoleId companyRoleId)
-    {
-        CompanyId = companyId;
-        CompanyRoleId = companyRoleId;
-    }
-
+    /// <inheritdoc />
+    [Key]
+    public Guid AuditV1Id { get; set; }
+    
     public Guid CompanyId { get; private set; }
-    public CompanyRoleId CompanyRoleId { get; private set; }
 
-    [AuditLastEditorV1]
+    public CompanyRoleId CompanyRoleId { get; private set; }
+    
+    public DateTimeOffset? DateLastChanged { get; set; }
+
     public Guid? LastEditorId { get; set; }
 
-    // Navigation properties
-    public virtual Company? Company { get; private set; }
-    public virtual CompanyRole? CompanyRole { get; private set; }
+    /// <inheritdoc />
+    public Guid? AuditV1LastEditorId { get; set; }
+    
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
+    
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

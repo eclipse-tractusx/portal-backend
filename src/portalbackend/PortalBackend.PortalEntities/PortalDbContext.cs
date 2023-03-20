@@ -65,6 +65,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
     public virtual DbSet<AuditUserRole20221017> AuditUserRole20221017 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole20221018> AuditCompanyUserAssignedRole20221018 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyAssignedRole2023316> AuditCompanyAssignedRole2023316 { get; set; } = default!;
     public virtual DbSet<BpdmIdentifier> BpdmIdentifiers { get; set; } = default!;    
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
@@ -448,6 +449,7 @@ public class PortalDbContext : DbContext
                     j =>
                     {
                         j.HasKey(e => new { e.CompanyId, e.CompanyRoleId });
+                        j.HasAuditV1Triggers<CompanyAssignedRole, AuditCompanyAssignedRole2023316>();
                     }
                 );
 
