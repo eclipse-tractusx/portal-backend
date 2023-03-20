@@ -103,6 +103,15 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
                 ProcessStepTypeId.TRIGGER_PROVIDER => await _offerSubscriptionService
                     .TriggerProvider(_offerSubscriptionId, _settings.ServiceManagerRoles)
                     .ConfigureAwait(false),
+                ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION => await _offerSetupService
+                    .CreateSingleInstanceSubscriptionDetail(_offerSubscriptionId)
+                    .ConfigureAwait(false),
+                ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION => await _offerSetupService
+                    .CreateClient(_offerSubscriptionId)
+                    .ConfigureAwait(false),
+                ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION => await _offerSetupService
+                    .CreateTechnicalUser(_offerSubscriptionId, _settings.ItAdminRoles, _settings.ServiceAccountRoles)
+                    .ConfigureAwait(false),
                 ProcessStepTypeId.ACTIVATE_SUBSCRIPTION => await _offerSetupService
                     .ActivateSubscription(_offerSubscriptionId, _settings.ItAdminRoles, _settings.BasePortalAddress)
                     .ConfigureAwait(false),

@@ -214,4 +214,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc />
     public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId) =>
         _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, iamUserId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE);
+
+    /// <inheritdoc />
+    public Task StartAutoSetupAsync(OfferAutoSetupData data, string iamUserId) =>
+        _offerSetupService.StartAutoSetupAsync(data, _settings.ITAdminRoles, iamUserId, OfferTypeId.SERVICE, _settings.UserManagementAddress);
 }

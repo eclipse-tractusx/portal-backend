@@ -338,7 +338,10 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.Requester.Email,
                 x.Requester.Firstname,
                 x.Requester.Lastname,
-                x.RequesterId
+                x.RequesterId,
+                x.Offer!.ProviderCompany!.ProviderCompanyDetail!.AutoSetupCallbackUrl,
+                x.Offer.AppInstanceSetup == null ? new ValueTuple<bool, string?>() : new ValueTuple<bool, string?>(x.Offer.AppInstanceSetup.IsSingleInstance, x.Offer.AppInstanceSetup.InstanceUrl),
+                x.Offer.AppInstances.Select(ai => ai.Id)
             ))
             .SingleOrDefaultAsync();
 
@@ -365,5 +368,32 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                         .Where(step =>
                             processStepTypeIds.Contains(step.ProcessStepTypeId) &&
                             step.ProcessStepStatusId == ProcessStepStatusId.TODO)))
+            .SingleOrDefaultAsync();
+    
+    /// <inheritdoc />
+    public Task<OfferSubscriptionClientCreationData?> GetClientCreationData(Guid offerSubscriptionId) =>
+        _context.OfferSubscriptions
+            .Where(x => x.Id == offerSubscriptionId)
+            .Select(x => new OfferSubscriptionClientCreationData(
+                x.Offer!.Id,
+                x.Offer.OfferTypeId,
+                "test", // TODO (PS): Safe OfferUrl and return here
+                x.Offer!.TechnicalUserProfiles.Any()
+            ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<OfferSubscriptionTechnicalUserCreationData?> GetTechnicalUserCreationData(Guid offerSubscriptionId) =>
+        _context.OfferSubscriptions
+            .Where(x => x.Id == offerSubscriptionId)
+            .Select(x => new OfferSubscriptionTechnicalUserCreationData(
+                x.Offer!.TechnicalUserProfiles.Any(),
+                null, // TODO (PS) / get clientId for offer subscription
+                x.Offer.Name,
+                x.Company!.Name,
+                x.CompanyId,
+                x.Company.BusinessPartnerNumber,
+                x.Offer.OfferTypeId
+            ))
             .SingleOrDefaultAsync();
 }

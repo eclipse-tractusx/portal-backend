@@ -142,7 +142,7 @@ public interface IAppsBusinessLogic
     /// <param name="data">The offer subscription id and url for the service</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the response data</returns>
-    Task StartAutoSetupAppAsync(OfferAutoSetupData data, string iamUserId);
+    Task StartAutoSetupAsync(OfferAutoSetupData data, string iamUserId);
 
     /// <summary>
     /// Gets the app agreement data

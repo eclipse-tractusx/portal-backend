@@ -44,5 +44,8 @@ public record SubscriptionActivationData(
     string? RequesterEmail,
     string? RequesterFirstname,
     string? RequesterLastname,
-    Guid RequesterId
+    Guid RequesterId,
+    string? AutoSetupCallbackUrl,
+    (bool IsSingleInstance, string? InstanceUrl) InstanceData,
+    IEnumerable<Guid> AppInstanceIds
 );
