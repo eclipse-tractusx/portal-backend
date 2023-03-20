@@ -60,7 +60,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var content = Encoding.UTF8.GetBytes(test);
 
         // Act
-        var result = sut.CreateDocument("New Document", content, content, DocumentTypeId.APP_CONTRACT, doc =>
+        var result = sut.CreateDocument("New Document", content, content, MediaTypeId.PDF, DocumentTypeId.APP_CONTRACT, doc =>
         {
             doc.DocumentStatusId = DocumentStatusId.INACTIVE;
         });
@@ -141,8 +141,9 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     
         // Assert
         result.Should().NotBe(default);
-        result.FileName.Should().Be("Default_App_Image");
+        result.FileName.Should().Be("Default_App_Image.png");
         result.IsUserInCompany.Should().BeTrue();
+        result.MediaTypeId.Should().Be(MediaTypeId.PNG);
     }
 
     [Fact]
@@ -156,8 +157,9 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBe(default);
-        result.FileName.Should().Be("Default_App_Image");
+        result.FileName.Should().Be("Default_App_Image.png");
         result.IsUserInCompany.Should().BeFalse();
+        result.MediaTypeId.Should().Be(MediaTypeId.PNG);
     }
 
     [Fact]
@@ -188,7 +190,8 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     
         // Assert
         result.Should().NotBe(default);
-        result.FileName.Should().Be("Default_App_Image");
+        result.FileName.Should().Be("Default_App_Image.png");
+        result.MediaTypeId.Should().Be(MediaTypeId.PNG);
     }
 
     [Fact]
@@ -277,7 +280,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.Should().NotBeNull();
         results!.DocumentStatusId.Should().Be(2);
         results.DocumentTypeId.Should().Be(6);
-        results.DocumentName.Should().Be("Default_App_Image");
+        results.DocumentName.Should().Be("Default_App_Image.png");
     }
 
     [Fact]
@@ -295,7 +298,6 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    
     #region GetOfferImageDocumentContentAsync
 
     [Theory]
@@ -312,21 +314,23 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var result = await sut.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIds, offerTypeId, CancellationToken.None).ConfigureAwait(false);
 
-        if (isDocumentExisting && isLinkedToOffer && isValidDocumentType && isValidOfferType && !isInactive)
+        // Assert
+        if (isDocumentExisting)
         {
-            result.Content.Should().NotBeNull();
+            result.Should().NotBeNull();
+            result!.IsDocumentLinkedToOffer.Should().Be(isLinkedToOffer);
+            result.IsValidDocumentType.Should().Be(isValidDocumentType);
+            result.IsValidOfferType.Should().Be(isValidOfferType);
+            result.IsInactive.Should().Be(isInactive);
+            if (isDocumentExisting && isLinkedToOffer && isValidDocumentType && isValidOfferType && !isInactive)
+            {
+                result.Content.Should().NotBeNull();
+            }
         }
         else
         {
-            result.Content.Should().BeNull();
+            result.Should().BeNull();
         }
-
-        // Assert
-        result.IsDocumentExisting.Should().Be(isDocumentExisting);
-        result.IsDocumentLinkedToOffer.Should().Be(isLinkedToOffer);
-        result.IsValidDocumentType.Should().Be(isValidDocumentType);
-        result.IsValidOfferType.Should().Be(isValidOfferType);
-        result.IsInactive.Should().Be(isInactive);
     }
 
     #endregion
@@ -352,6 +356,30 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         offer.OfferId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"));
     }
     
+    #endregion
+    
+    #region RemoveDocument
+    
+    [Fact]
+    public async Task RemovedDocument_WithExistingDocument()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var documentId = new Guid("184cde16-52d4-4865-81f6-b5b45e3c9051");
+
+        // Act
+        sut.RemoveDocument(documentId);
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Deleted);
+    }
+
     #endregion
     
     [Fact]

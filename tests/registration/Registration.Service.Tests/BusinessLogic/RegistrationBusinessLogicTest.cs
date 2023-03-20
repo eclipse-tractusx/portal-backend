@@ -1090,16 +1090,10 @@ public class RegistrationBusinessLogicTest
         var documentId = Guid.NewGuid();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         var documents = new List<Document>();
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<DocumentTypeId>._,A<Action<Document>?>._))
-            .Invokes(x =>
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._,A<Action<Document>?>._))
+            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? action) =>
             {
-                var documentName = x.Arguments.Get<string>("documentName")!;
-                var documentContent = x.Arguments.Get<byte[]>("documentContent")!;
-                var hash = x.Arguments.Get<byte[]>("hash")!;
-                var documentTypeId = x.Arguments.Get<DocumentTypeId>("documentType")!;
-                var action = x.Arguments.Get<Action<Document?>>("setupOptionalFields");
-
-                var document = new Document(documentId, documentContent, hash, documentName, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
+                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
                 action?.Invoke(document);
                 documents.Add(document);
             });
@@ -1992,6 +1986,66 @@ public class RegistrationBusinessLogicTest
 
     #endregion
 
+    #region GetDocumentAsync
+    
+    [Fact]
+    public async Task GetDocumentAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, _iamUserId))
+            .ReturnsLazily(() => new ValueTuple<Guid, bool>(documentId, true));
+        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
+            .ReturnsLazily(() => new Document(documentId, content, content, "test.pdf", MediaTypeId.PDF, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        var result = await sut.GetDocumentContentAsync(documentId, _iamUserId).ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeNull();
+        result.FileName.Should().Be("test.pdf");
+        result.MediaType.Should().Be("application/pdf");
+    }
+    
+    [Fact]
+    public async Task GetDocumentAsync_WithoutDocument_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, _iamUserId))
+            .ReturnsLazily(() => new ValueTuple<Guid, bool>(Guid.Empty, false));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.GetDocumentContentAsync(documentId, _iamUserId).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"document {documentId} does not exist.");
+    }
+
+    [Fact]
+    public async Task GetDocumentAsync_WithWrongUser_ThrowsForbiddenException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        A.CallTo(() => _documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, _iamUserId))
+            .ReturnsLazily(() => new ValueTuple<Guid, bool>(documentId, false));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.GetDocumentContentAsync(documentId, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"user {_iamUserId} is not permitted to access document {documentId}.");
+    }
+
+    #endregion
+    
     #region Setup  
 
     private void SetupRepositories()

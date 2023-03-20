@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -41,16 +42,17 @@ public class DocumentRepository : IDocumentRepository
     }
     
     /// <inheritdoc />
-    public Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentType, Action<Document>? setupOptionalFields)
+    public Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields)
     {
         var document = new Document(
             Guid.NewGuid(),
             documentContent,
             hash,
             documentName,
+            mediaTypeId,
             DateTimeOffset.UtcNow,
             DocumentStatusId.PENDING,
-            documentType);
+            documentTypeId);
 
         setupOptionalFields?.Invoke(document);
         return _dbContext.Documents.Add(document).Entity;
@@ -96,29 +98,30 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(byte[]? Content, string FileName, bool IsUserInCompany)> GetDocumentDataAndIsCompanyUserAsync(Guid documentId, string iamUserId) =>
+    public Task<(byte[]? Content, string FileName, MediaTypeId MediaTypeId, bool IsUserInCompany)> GetDocumentDataAndIsCompanyUserAsync(Guid documentId, string iamUserId) =>
         this._dbContext.Documents
             .Where(x => x.Id == documentId)
             .Select(x => new {
                 Document = x,
                 IsUserInSameCompany = x.CompanyUser!.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)
             })
-            .Select(x => new ValueTuple<byte[]?, string, bool>(
+            .Select(x => new ValueTuple<byte[]?, string, MediaTypeId, bool>(
                 x.IsUserInSameCompany ? x.Document.DocumentContent : null,
                 x.Document.DocumentName,
+                x.Document.MediaTypeId,
                 x.IsUserInSameCompany))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(byte[] Content, string FileName)> GetDocumentDataByIdAndTypeAsync(Guid documentId, DocumentTypeId documentTypeId) =>
+    public Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId)> GetDocumentDataByIdAndTypeAsync(Guid documentId, DocumentTypeId documentTypeId) =>
         _dbContext.Documents
         .Where(x => x.Id == documentId && x.DocumentTypeId == documentTypeId)
-        .Select(x => new ValueTuple<byte[], string>(x.DocumentContent, x.DocumentName))
+        .Select(x => new ValueTuple<byte[], string, MediaTypeId>(x.DocumentContent, x.DocumentName, x.MediaTypeId))
         .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public void RemoveDocument(Guid documentId) => 
-        _dbContext.Documents.Remove(new Document(documentId, null!, null!, null!, default, default, default));
+        _dbContext.Documents.Remove(new Document(documentId, null!, null!, null!, default, default, default, default));
 
     /// <inheritdoc />
     public Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
@@ -144,7 +147,7 @@ public class DocumentRepository : IDocumentRepository
     /// <inheritdoc />
     public void AttachAndModifyDocument(Guid documentId, Action<Document>? initialize, Action<Document> modify)
     {
-        var document = new Document(documentId, null!, null!, null!, default, default, default);
+        var document = new Document(documentId, null!, null!, null!, default, default, default, default);
         initialize?.Invoke(document);
         _dbContext.Attach(document);
         modify(document);
@@ -167,7 +170,7 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, bool IsInactive, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
+    public Task<OfferDocumentContentData?> GetOfferDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
         _dbContext.Documents
             .Where(document => document.Id == documentId)
             .Select(document => new {
@@ -181,14 +184,14 @@ public class DocumentRepository : IDocumentRepository
                 IsInactive = x.Document.DocumentStatusId == DocumentStatusId.INACTIVE,
                 Document = x.Document
             })
-            .Select(x => new ValueTuple<bool,bool,bool,bool,byte[]?,bool,string>(
+            .Select(x => new OfferDocumentContentData(
                 x.IsValidDocumentType,
                 x.IsDocumentLinkedToOffer,
                 x.IsValidOfferType,
                 x.IsInactive,
                 x.IsValidDocumentType && x.IsDocumentLinkedToOffer && x.IsValidOfferType && !x.IsInactive ? x.Document.DocumentContent : null,
-                true,
-                x.Document.DocumentName
+                x.Document.DocumentName,
+                x.Document.MediaTypeId
             ))
             .SingleOrDefaultAsync(cancellationToken);
 
@@ -217,5 +220,5 @@ public class DocumentRepository : IDocumentRepository
 
     /// <inheritdoc />
     public void RemoveDocuments(IEnumerable<Guid> documentIds) => 
-        _dbContext.Documents.RemoveRange(documentIds.Select(documentId=> new Document(documentId, null!, null!, null!, default, default, default)));
+        _dbContext.Documents.RemoveRange(documentIds.Select(documentId=> new Document(documentId, null!, null!, null!, default, default, default, default)));
 }

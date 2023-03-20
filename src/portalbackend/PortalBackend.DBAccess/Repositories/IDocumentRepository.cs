@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -35,10 +36,11 @@ public interface IDocumentRepository
     /// <param name="documentName">The documents name</param>
     /// <param name="documentContent">The document itself</param>
     /// <param name="hash">Hash of the document</param>
-    /// <param name="documentType">the document type id</param>
+    /// <param name="mediaTypeId">The documents mediaType</param>
+    /// <param name="documentTypeId">the document type id</param>
     /// <param name="setupOptionalFields">Action to setup the additional fields</param>
     /// <returns>Returns the created document</returns>
-    Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentType, Action<Document>? setupOptionalFields);
+    Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields);
 
     /// <summary>
     /// Gets the document with the given id from the persistence layer.
@@ -71,7 +73,7 @@ public interface IDocumentRepository
     /// <param name="documentId">id of the document</param>
     /// <param name="iamUserId">id of the iamUser</param>
     /// <returns>Returns the document data</returns>
-    Task<(byte[]? Content, string FileName, bool IsUserInCompany)> GetDocumentDataAndIsCompanyUserAsync(Guid documentId, string iamUserId);
+    Task<(byte[]? Content, string FileName, MediaTypeId MediaTypeId, bool IsUserInCompany)> GetDocumentDataAndIsCompanyUserAsync(Guid documentId, string iamUserId);
 
     /// <summary>
     /// Gets the document data for the given id and type
@@ -79,7 +81,7 @@ public interface IDocumentRepository
     /// <param name="documentId">id of the document</param>
     /// <param name="documentTypeId">type of the document</param>
     /// <returns>Returns the document data</returns>
-    Task<(byte[] Content, string FileName)> GetDocumentDataByIdAndTypeAsync(Guid documentId, DocumentTypeId documentTypeId);
+    Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId)> GetDocumentDataByIdAndTypeAsync(Guid documentId, DocumentTypeId documentTypeId);
     
     /// <summary>
     ///Deleting document record and document file from the portal db/document storage location
@@ -113,12 +115,13 @@ public interface IDocumentRepository
     /// <summary>
     /// Retrieve Document TypeId , Content and validate app link to document
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="offerId"></param>
     /// <param name="documentId"></param>
-    /// <param name="appDocumentTypeIds"></param>
+    /// <param name="documentTypeIds"></param>
+    /// <param name="offerTypeId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<(bool IsValidDocumentType, bool IsDocumentLinkedToOffer, bool IsValidOfferType, bool IsInactive, byte[]? Content, bool IsDocumentExisting, string FileName)> GetOfferDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken);
+    Task<OfferDocumentContentData?> GetOfferDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Fetch the App Document belongs to same company

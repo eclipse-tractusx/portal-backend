@@ -47,7 +47,7 @@ public class DocumentsControllerTests
         var id = Guid.NewGuid();
         var content = Encoding.UTF8.GetBytes("This is just test content");
         A.CallTo(() => _logic.GetSelfDescriptionDocumentAsync(id))
-            .ReturnsLazily(() => (fileName, content));
+            .ReturnsLazily(() => (fileName, content, "application/json"));
 
         //Act
         await this._controller.GetSelfDescriptionDocumentsAsync(id).ConfigureAwait(false);

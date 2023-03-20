@@ -321,7 +321,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
     {
-        await this.WithIamUserId(userId => _appsBusinessLogic.DeactivateOfferbyAppIdAsync(appId,userId)).ConfigureAwait(false);
+        await this.WithIamUserId(userId => _appsBusinessLogic.DeactivateOfferByAppIdAsync(appId,userId)).ConfigureAwait(false);
         return NoContent();
     }
     
@@ -365,7 +365,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionsAsync([FromRoute] Guid appId) =>
-        await this.WithIamUserId(userId => _appsBusinessLogic.GetAppUpdateDescritionByIdAsync(appId, userId)).ConfigureAwait(false);
+        await this.WithIamUserId(userId => _appsBusinessLogic.GetAppUpdateDescriptionByIdAsync(appId, userId)).ConfigureAwait(false);
     
     /// <summary>
     /// Create or Update description of the app by Id.
