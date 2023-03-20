@@ -56,7 +56,7 @@ public class AppReleaseProcessControllerTest
         // Arrange
         var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
         var data = new AppEditableDetail(
-            new Localization[]
+            new LocalizedDescription[]
             {
                 new("en", "This is a long description", "description")
             },

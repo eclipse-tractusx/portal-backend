@@ -349,7 +349,7 @@ public class AppsControllerTests
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        var offerDescriptionData = _fixture.CreateMany<OfferDescriptionData>(3);
+        var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
 
         A.CallTo(() => _logic.GetAppUpdateDescritionByIdAsync(A<Guid>._, A<string>._))
             .ReturnsLazily(() => offerDescriptionData);

@@ -46,7 +46,7 @@ public record OfferProviderData(
     Guid LeadPictureId,
     string? ProviderName,
     IEnumerable<string> UseCase,
-    IEnumerable<OfferDescriptionData> Descriptions,
+    IEnumerable<LocalizedDescription> Descriptions,
     IEnumerable<AgreementAssignedOfferData> Agreements,
     IEnumerable<string> SupportedLanguageCodes,
     string? Price,
@@ -57,19 +57,6 @@ public record OfferProviderData(
     IEnumerable<DocumentTypeData> Documents,
     Guid? SalesManagerId,
     IEnumerable<PrivacyPolicyId> PrivacyPolicies
-);
-
-/// <summary>
-/// Model for Offer Description
-/// </summary>
-/// <param name="languageCode"></param>
-/// <param name="longDescription"></param>
-/// <param name="shortDescription"></param>
-/// <returns></returns>
-public record OfferDescriptionData(
-    string languageCode,
-    string longDescription,
-    string shortDescription
 );
 
 /// <summary>

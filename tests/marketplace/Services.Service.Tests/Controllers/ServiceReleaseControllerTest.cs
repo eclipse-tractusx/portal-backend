@@ -21,6 +21,7 @@
 using AutoFixture;
 using FakeItEasy;
 using FluentAssertions;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
@@ -110,6 +111,24 @@ public class ServiceReleaseControllerTest
         // Assert 
         result.Should().Be(data);
         A.CallTo(() => _logic.GetServiceAgreementConsentAsync(serviceId, IamUserId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetServiceDetailsForStatusAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        var serviceId = Guid.NewGuid();
+        var data = _fixture.Create<OfferProviderResponse>();
+        A.CallTo(() => _logic.GetServiceDetailsForStatusAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(() => data);
+
+        //Act
+        var result = await this._controller.GetServiceDetailsForStatusAsync(serviceId).ConfigureAwait(false);
+
+        // Assert 
+        result.Should().Be(data);
+        A.CallTo(() => _logic.GetServiceDetailsForStatusAsync(serviceId, IamUserId))
             .MustHaveHappenedOnceExactly();
     }
 }

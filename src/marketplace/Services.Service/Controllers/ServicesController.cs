@@ -83,7 +83,7 @@ public class ServicesController : ControllerBase
     public async Task<CreatedAtRouteResult> CreateServiceOffering([FromBody] ServiceOfferingData data)
     {
         var id = await this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateServiceOfferingAsync(data, iamUserId)).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetServiceDetails), new { serviceId = id }, id);
+        return CreatedAtRoute(nameof(ServiceReleaseController.GetServiceDetailsForStatusAsync), new { serviceId = id }, id);
     }
 
     /// <summary>

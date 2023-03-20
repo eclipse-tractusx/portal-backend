@@ -338,7 +338,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<OfferDescriptionData>> GetAppUpdateDescritionByIdAsync(Guid appId, string iamUserId)
+    public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescritionByIdAsync(Guid appId, string iamUserId)
     {        
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         return await ValidateAndGetAppDescription(appId, iamUserId, offerRepository);        
@@ -356,7 +356,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private static async Task<IEnumerable<OfferDescriptionData>> ValidateAndGetAppDescription(Guid appId, string iamUserId, IOfferRepository offerRepository)
+    private static async Task<IEnumerable<LocalizedDescription>> ValidateAndGetAppDescription(Guid appId, string iamUserId, IOfferRepository offerRepository)
     {
         var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, iamUserId).ConfigureAwait(false);
         if(result == default)

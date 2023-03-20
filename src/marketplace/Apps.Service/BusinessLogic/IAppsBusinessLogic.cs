@@ -167,7 +167,7 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="appId">Id of the app</param>
     /// <param name="iamUserId">Id of the iamUser</param>
-    Task<IEnumerable<OfferDescriptionData>> GetAppUpdateDescritionByIdAsync(Guid appId, string iamUserId);
+    Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescritionByIdAsync(Guid appId, string iamUserId);
 
     /// <summary>
     /// Create or Update OfferDescription by appId

@@ -502,14 +502,14 @@ public class OfferServiceTests
         };
 
         var updateDescriptions = new [] {
-            new Localization("de", _fixture.Create<string>(), _fixture.Create<string>()),
-            new Localization("fr", _fixture.Create<string>(), _fixture.Create<string>()),
-            new Localization("sk", _fixture.Create<string>(), _fixture.Create<string>()),
-            new Localization("se", _fixture.Create<string>(), _fixture.Create<string>()),
-            new Localization("it", null!,null!)
+            new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>()),
+            new LocalizedDescription("fr", _fixture.Create<string>(), _fixture.Create<string>()),
+            new LocalizedDescription("sk", _fixture.Create<string>(), _fixture.Create<string>()),
+            new LocalizedDescription("se", _fixture.Create<string>(), _fixture.Create<string>()),
+            new LocalizedDescription("it", null!,null!)
         };
 
-        var existingDescriptions = seed.Select((x) => x.Value).Select(y => new OfferDescriptionData(y.LanguageShortName, y.DescriptionLong, y.DescriptionShort)).ToList();
+        var existingDescriptions = seed.Select((x) => x.Value).Select(y => new LocalizedDescription(y.LanguageShortName, y.DescriptionLong, y.DescriptionShort)).ToList();
 
         A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(seedOfferId, existingDescriptions, 
             updateDescriptions.Select(x => new ValueTuple<string, string, string>(x.LanguageCode, x.LongDescription, x.ShortDescription))));
@@ -517,7 +517,7 @@ public class OfferServiceTests
         _sut.UpsertRemoveOfferDescription(seedOfferId, updateDescriptions, existingDescriptions);
 
         // Assert
-        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(A<Guid>._,A<IEnumerable<OfferDescriptionData>>._
+        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(A<Guid>._,A<IEnumerable<LocalizedDescription>>._
             ,A<IEnumerable<(string, string, string)>>._)).MustHaveHappened();
     }
 
