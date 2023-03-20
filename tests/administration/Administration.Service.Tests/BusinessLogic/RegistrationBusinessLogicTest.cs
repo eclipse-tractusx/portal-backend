@@ -703,7 +703,7 @@ public class RegistrationBusinessLogicTest
         var documentId = Guid.NewGuid();
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
-            .ReturnsLazily(() => new Document(documentId, content, content, "test.pdf", DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT));
+            .ReturnsLazily(() => new Document(documentId, content, content, "test.pdf", MediaTypeId.JSON, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT));
         
         // Act
         var result = await _logic.GetDocumentAsync(documentId).ConfigureAwait(false);

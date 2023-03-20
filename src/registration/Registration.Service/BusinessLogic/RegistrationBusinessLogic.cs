@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
@@ -211,17 +212,16 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
         }
         
-        _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, documentTypeId, doc =>
+        _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, document.ContentType.ParseMediaTypeId(), documentTypeId, doc =>
         {
             doc.CompanyUserId = companyUserId;
         });
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<(string fileName, byte[] content)> GetDocumentContentAsync(Guid documentId, string iamUserId)
+    public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId, string iamUserId)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-
         var documentDetails = await documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, iamUserId).ConfigureAwait(false);
         if (documentDetails.DocumentId == Guid.Empty)
         {
@@ -238,8 +238,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new NotFoundException($"document {documentId} does not exist.");
         }
-
-        return (document.DocumentName, document.DocumentContent);
+        return (document.DocumentName, document.DocumentContent, document.MediaTypeId.MapToMediaType());
     }
 
     public async IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId)

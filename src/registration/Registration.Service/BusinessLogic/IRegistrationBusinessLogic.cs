@@ -40,7 +40,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         /// <param name="documentId">The Id of the document that should be get</param>
         /// <param name="iamUserId">The Id of the current user</param>
         /// <returns></returns>
-        Task<(string fileName, byte[] content)> GetDocumentContentAsync(Guid documentId, string iamUserId);
+        Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId, string iamUserId);
 
         IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId);
         Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId, string iamUserId);

@@ -30,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Security.Cryptography;
 using System.Text.Json;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
@@ -368,8 +369,8 @@ public class OfferService : IOfferService
             foreach(var documentStatusData in offerDetails.DocumentStatusDatas)
             {
                 documentRepository.AttachAndModifyDocument(documentStatusData!.DocumentId,
-                A => {A.DocumentStatusId = documentStatusData.StatusId;},
-                A => {A.DocumentStatusId = DocumentStatusId.LOCKED;});
+                a => { a.DocumentStatusId = documentStatusData.StatusId; },
+                a => { a.DocumentStatusId = DocumentStatusId.LOCKED; });
             }
         }
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
@@ -619,7 +620,8 @@ public class OfferService : IOfferService
             throw new ControllerArgumentException($"documentType must be either: {string.Join(",", documentTypeIdSettings)}");
 
         // Check if document is a pdf,jpeg and png file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
-        if (!contentTypeSettings.Contains(document.ContentType))
+        var documentContentType = document.ContentType;
+        if (!contentTypeSettings.Contains(documentContentType))
             throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType :{string.Join(",", contentTypeSettings)} are allowed.");
         
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
@@ -645,7 +647,7 @@ public class OfferService : IOfferService
         if (ms.Length != document.Length || documentContent.Length != document.Length)
             throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
         
-        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, documentTypeId, x =>
+        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, documentContentType.ParseMediaTypeId(), documentTypeId, x =>
         {
             x.CompanyUserId = companyUserId;
         });

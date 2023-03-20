@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Flurl.Http;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -120,7 +119,8 @@ public class DocumentsBusinessLogicTests
         
         // Assert
         result.Should().NotBeNull();
-        result.fileName.Should().Be("test.pdf");
+        result.FileName.Should().Be("test.pdf");
+        result.MediaType.Should().Be("application/pdf");
     }
     
     [Fact]
@@ -162,7 +162,7 @@ public class DocumentsBusinessLogicTests
         // Arrange
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentDataByIdAndTypeAsync(ValidDocumentId, DocumentTypeId.SELF_DESCRIPTION))
-            .ReturnsLazily(() => new ValueTuple<byte[], string>(content, "test.json"));
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId>(content, "test.json", MediaTypeId.JSON));
 
         
         // Act
@@ -170,7 +170,8 @@ public class DocumentsBusinessLogicTests
         
         // Assert
         result.Should().NotBeNull();
-        result.fileName.Should().Be("test.json");
+        result.FileName.Should().Be("test.json");
+        result.MediaType.Should().Be("application/json");
     }
     
     [Fact]
@@ -180,7 +181,7 @@ public class DocumentsBusinessLogicTests
         var documentId = Guid.NewGuid();
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentDataByIdAndTypeAsync(documentId, DocumentTypeId.SELF_DESCRIPTION))
-            .ReturnsLazily(() => new ValueTuple<byte[], string>());
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId>());
         
         // Act
         async Task Act() => await _sut.GetSelfDescriptionDocumentAsync(documentId).ConfigureAwait(false);
@@ -206,11 +207,11 @@ public class DocumentsBusinessLogicTests
     {
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(ValidDocumentId, IamUserId))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, bool>(content, "test.pdf", true));
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, true));
         A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(A<Guid>.That.Not.Matches(x => x == ValidDocumentId), IamUserId))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, bool>());
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>());
         A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(ValidDocumentId, A<string>.That.Not.Matches(x => x == IamUserId)))
-            .ReturnsLazily(() => new ValueTuple<byte[], string, bool>(content, "test.pdf", false));
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, false));
     }
 
     #endregion

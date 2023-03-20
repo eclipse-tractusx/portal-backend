@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using System.Security.Cryptography;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -302,43 +303,43 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerService.GetOfferAgreementsAsync(appId, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public Task DeactivateOfferbyAppIdAsync(Guid appId, string iamUserId) =>
+    public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId) =>
         _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
 
     /// <inheritdoc />
     public async Task<(byte[] Content, string ContentType, string FileName)> GetAppDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var document = await documentRepository.GetOfferDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken).ConfigureAwait(false);
-        if (!document.IsDocumentExisting)
+        var result = await documentRepository.GetOfferDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken).ConfigureAwait(false);
+        if (result is null)
         {
             throw new NotFoundException($"document {documentId} does not exist");
         }
-        if (!document.IsValidDocumentType)
+        if (!result.IsValidDocumentType)
         {
             throw new ControllerArgumentException($"Document {documentId} can not get retrieved. Document type not supported.");
         }
-        if (!document.IsValidOfferType)
+        if (!result.IsValidOfferType)
         {
             throw new ControllerArgumentException($"offer {appId} is not an app");
         }
-        if (!document.IsDocumentLinkedToOffer)
+        if (!result.IsDocumentLinkedToOffer)
         {
             throw new ControllerArgumentException($"Document {documentId} and app id {appId} do not match.");
         }
-        if (document.IsInactive)
+        if (result.IsInactive)
         {
             throw new ConflictException($"Document {documentId} is in status INACTIVE");
         }
-        if (document.Content == null)
+        if (result.Content == null)
         {
             throw new UnexpectedConditionException($"document content should never be null");
         }
-        return (document.Content, document.FileName.MapToContentType(), document.FileName);
+        return (result.Content, result.MediaTypeId.MapToMediaType(), result.FileName);
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescritionByIdAsync(Guid appId, string iamUserId)
+    public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, string iamUserId)
     {        
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         return await ValidateAndGetAppDescription(appId, iamUserId, offerRepository);        
@@ -385,7 +386,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public async Task CreatOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken)
     {
         var appLeadImageContentTypes = new []{ "image/jpeg","image/png" };
-        if (!appLeadImageContentTypes.Contains(document.ContentType))
+        var documentContentType = document.ContentType;
+        if (!appLeadImageContentTypes.Contains(documentContentType))
         {
             throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType :{string.Join(",", appLeadImageContentTypes)} are allowed.");
         }
@@ -419,7 +421,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         {
             throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
         }
-        var doc = documentRepository.CreateDocument(documentName, documentContent, hash, DocumentTypeId.APP_LEADIMAGE, x =>
+        var doc = documentRepository.CreateDocument(documentName, documentContent, hash, documentContentType.ParseMediaTypeId(), DocumentTypeId.APP_LEADIMAGE, x =>
         {
             x.CompanyUserId = companyUserId;
             x.DocumentStatusId = DocumentStatusId.LOCKED;
