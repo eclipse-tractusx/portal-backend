@@ -24,9 +24,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Execut
 
 public class OfferSubscriptionsProcessSettings
 {
-    [Required]
-    public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; init; } = null!;
-
     /// <summary>
     /// IT Admin Roles
     /// </summary>
@@ -44,5 +41,5 @@ public class OfferSubscriptionsProcessSettings
     /// Service Account Roles
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> ServiceAccountRoles { get; set; } = null;
+    public IDictionary<string, IEnumerable<string>> ServiceAccountRoles { get; set; } = null!;
 }

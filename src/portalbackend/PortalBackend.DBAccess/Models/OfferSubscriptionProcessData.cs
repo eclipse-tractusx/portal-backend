@@ -22,7 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record OfferSubscriptionProcessData(
+public record OfferSubscriptionProcessInformationData(
     Guid OfferSubscriptionId,
     OfferSubscriptionStatusId StatusId
 );

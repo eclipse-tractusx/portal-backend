@@ -129,6 +129,8 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
 
     public virtual AppSubscriptionDetail? AppSubscriptionDetail { get; private set; }
 
+    public virtual OfferSubscriptionProcessData? OfferSubscriptionProcessData { get; private set; }
+
     public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
     public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
 }

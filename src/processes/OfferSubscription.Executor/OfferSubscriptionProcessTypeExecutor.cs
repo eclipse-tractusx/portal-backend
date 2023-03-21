@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -31,7 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Execut
 
 public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
 {
-    private readonly IOfferSubscriptionService _offerSubscriptionService;
+    private readonly IOfferProviderBusinessLogic _offerProviderBusinessLogic;
     private readonly IOfferSetupService _offerSetupService;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
 
@@ -48,12 +49,12 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
     private readonly OfferSubscriptionsProcessSettings _settings;
 
     public OfferSubscriptionProcessTypeExecutor(
-        IOfferSubscriptionService offerSubscriptionService,
+        IOfferProviderBusinessLogic offerProviderBusinessLogic,
         IOfferSetupService offerSetupService,
         IPortalRepositories portalRepositories,
         IOptions<OfferSubscriptionsProcessSettings> options)
     {
-        _offerSubscriptionService = offerSubscriptionService;
+        _offerProviderBusinessLogic = offerProviderBusinessLogic;
         _offerSetupService = offerSetupService;
         _offerSubscriptionsRepository = portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         _settings = options.Value;
@@ -66,7 +67,7 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
 
     public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
-        _offerSubscriptionId = default;
+        _offerSubscriptionId = Guid.Empty;
 
         var result = await _offerSubscriptionsRepository.GetOfferSubscriptionDataForProcessIdAsync(processId).ConfigureAwait(false);
         if (result == null)
@@ -103,8 +104,8 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
         {
             (nextStepTypeIds, stepsToSkip, stepStatusId, modified, processMessage) = processStepTypeId switch
             {
-                ProcessStepTypeId.TRIGGER_PROVIDER => await _offerSubscriptionService
-                    .TriggerProvider(_offerSubscriptionId, _settings.ServiceManagerRoles)
+                ProcessStepTypeId.TRIGGER_PROVIDER => await _offerProviderBusinessLogic
+                    .TriggerProvider(_offerSubscriptionId, cancellationToken)
                     .ConfigureAwait(false),
                 ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION => await _offerSetupService
                     .CreateSingleInstanceSubscriptionDetail(_offerSubscriptionId)

@@ -74,7 +74,7 @@ public interface IOfferSubscriptionsRepository
     /// <returns>Returns the offer details.</returns>
     Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId, OfferTypeId offerTypeId);
 
-    public Task<(Guid OfferSubscriptionId, OfferSubscriptionStatusId OfferSubscriptionStatusId, Guid? ProcessId)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
+    public Task<(Guid OfferSubscriptionId, OfferSubscriptionStatusId OfferSubscriptionStatusId)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
 
     OfferSubscription AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters);
 
@@ -128,7 +128,7 @@ public interface IOfferSubscriptionsRepository
     /// </summary>
     /// <param name="processId">Id of the process</param>
     /// <returns>Returns offer subscription process data</returns>
-    Task<OfferSubscriptionProcessData?> GetOfferSubscriptionDataForProcessIdAsync(Guid processId);
+    Task<OfferSubscriptionProcessInformationData?> GetOfferSubscriptionDataForProcessIdAsync(Guid processId);
 
     Task<TriggerProviderInformation?> GetTriggerProviderInformation(Guid offerSubscriptionId);
     Task<Guid?> GetProcessForOfferSubscriptionId(Guid offerSubscriptionId);
@@ -136,4 +136,7 @@ public interface IOfferSubscriptionsRepository
     Task<VerifyOfferSubscriptionProcessData?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
     Task<OfferSubscriptionClientCreationData?> GetClientCreationData(Guid offerSubscriptionId);
     Task<OfferSubscriptionTechnicalUserCreationData?> GetTechnicalUserCreationData(Guid offerSubscriptionId);
+    Task<(IEnumerable<(Guid TechnicalUserId, string TechnicalClientId)> ServiceAccounts, string ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId);
+    OfferSubscriptionProcessData CreateOfferSubscriptionProcessData(Guid offerSubscriptionId, string offerUrl);
+    void RemoveOfferSubscriptionProcessData(Guid offerSubscriptionId);
 }

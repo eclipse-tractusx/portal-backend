@@ -26,6 +26,4 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 public interface IOfferSubscriptionService
 {
     Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress);
-
-    Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, IEnumerable<ProcessStepTypeId>? stepsToSkip, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerProvider(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> serviceManagerRoles);
 }

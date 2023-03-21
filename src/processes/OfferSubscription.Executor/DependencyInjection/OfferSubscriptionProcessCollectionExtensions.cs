@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
@@ -35,7 +36,7 @@ public static class OfferSubscriptionProcessCollectionExtensions
             .ValidateOnStart();
 
         return services
-            .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
+            .AddOfferProviderService(config)
             .AddOfferServices()
             .AddTransient<IProcessTypeExecutor, OfferSubscriptionProcessTypeExecutor>();
     }

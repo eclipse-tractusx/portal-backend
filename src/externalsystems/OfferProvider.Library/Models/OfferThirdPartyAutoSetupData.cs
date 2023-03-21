@@ -18,9 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
+using System.Text.Json.Serialization;
 
-public interface IOfferSubscriptionCreationService
-{
-    Task CreateOfferSubscriptionProcess(Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferSubscription offerSubscription);
-}
+namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Models;
+
+public record OfferThirdPartyAutoSetupData(
+    [property: JsonPropertyName("customer")] OfferThirdPartyAutoSetupCustomerData OfferThirdPartyAutoSetupCustomer,
+    [property: JsonPropertyName("properties")] OfferThirdPartyAutoSetupPropertyData OfferThirdPartyAutoSetupProperties);
+
+public record OfferThirdPartyAutoSetupCustomerData(
+    [property: JsonPropertyName("organizationName")] string OrganizationName,
+    [property: JsonPropertyName("country")] string Country,
+    [property: JsonPropertyName("email")] string? Email);
+
+public record OfferThirdPartyAutoSetupPropertyData(
+    [property: JsonPropertyName("bpnNumber")] string? BpnNumber,
+    [property: JsonPropertyName("subscriptionId")] Guid SubscriptionId,
+    [property: JsonPropertyName("serviceId")] Guid ServiceId);

@@ -184,6 +184,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfferSubscription.Executor"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfferSubscription.Library", "processes\OfferSubscription.Library\OfferSubscription.Library.csproj", "{15BA8836-E9FE-4F64-AD97-261A524779A5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfferProvider.Library", "externalsystems\OfferProvider.Library\OfferProvider.Library.csproj", "{1EE0ED29-2076-49B0-8110-FF43C9612888}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1130,6 +1132,18 @@ Global
 		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Release|x64.Build.0 = Release|Any CPU
 		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Release|x86.ActiveCfg = Release|Any CPU
 		{15BA8836-E9FE-4F64-AD97-261A524779A5}.Release|x86.Build.0 = Release|Any CPU
+		{1EE0ED29-2076-49B0-8110-FF43C9612888}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EE0ED29-2076-49B0-8110-FF43C9612888}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EE0ED29-2076-49B0-8110-FF43C9612888}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1EE0ED29-2076-49B0-8110-FF43C9612888}.Debug|x64.Build.0 = Debug|Any CPU
+		{1EE0ED29-2076-49B0-8110-FF43C9612888}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1EE0ED29-2076-49B0-8110-FF43C9612888}.Debug|x86.Build.0 = Debug|Any CPU
+		{1EE0ED29-2076-49B0-8110-FF43C9612888}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EE0ED29-2076-49B0-8110-FF43C9612888}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1EE0ED29-2076-49B0-8110-FF43C9612888}.Release|x64.ActiveCfg = Release|Any CPU
+		{1EE0ED29-2076-49B0-8110-FF43C9612888}.Release|x64.Build.0 = Release|Any CPU
+		{1EE0ED29-2076-49B0-8110-FF43C9612888}.Release|x86.ActiveCfg = Release|Any CPU
+		{1EE0ED29-2076-49B0-8110-FF43C9612888}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1216,5 +1230,6 @@ Global
 		{4C7E9EAC-222B-4C13-B8B1-5987406817A0} = {282CEF03-292F-4A49-83C6-997567D0FF5F}
 		{7985B208-CE41-49DA-B749-B94B582612E6} = {323C198D-A8C6-4EB0-8B79-72624275E35F}
 		{15BA8836-E9FE-4F64-AD97-261A524779A5} = {282CEF03-292F-4A49-83C6-997567D0FF5F}
+		{1EE0ED29-2076-49B0-8110-FF43C9612888} = {C8957230-4203-452C-A085-34091C5E370B}
 	EndGlobalSection
 EndGlobal

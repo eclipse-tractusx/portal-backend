@@ -88,19 +88,39 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     table.PrimaryKey("pk_audit_offer_subscription20230317", x => x.audit_v1id);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "offer_subscriptions_process_datas",
+                schema: "portal",
+                columns: table => new
+                {
+                    offer_subscription_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    offer_url = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_offer_subscriptions_process_datas", x => x.offer_subscription_id);
+                    table.ForeignKey(
+                        name: "fk_offer_subscriptions_process_datas_offer_subscriptions_offer",
+                        column: x => x.offer_subscription_id,
+                        principalSchema: "portal",
+                        principalTable: "offer_subscriptions",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 schema: "portal",
                 table: "process_step_types",
                 columns: new[] { "id", "label" },
                 values: new object[,]
                 {
-                    { 100, "START_SUBSCRIPTION" },
-                    { 101, "TRIGGER_PROVIDER" },
-                    { 102, "START_AUTOSETUP" },
-                    { 103, "OFFERSUBSCRIPTION_CLIENT_CREATION" },
-                    { 104, "SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION" },
-                    { 105, "OFFERSUBSCRIPTION_TECHNICALUSER_CREATION" },
-                    { 106, "ACTIVATE_SUBSCRIPTION" }
+                    { 100, "TRIGGER_PROVIDER" },
+                    { 101, "START_AUTOSETUP" },
+                    { 102, "OFFERSUBSCRIPTION_CLIENT_CREATION" },
+                    { 103, "SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION" },
+                    { 104, "OFFERSUBSCRIPTION_TECHNICALUSER_CREATION" },
+                    { 105, "ACTIVATE_SUBSCRIPTION" },
+                    { 106, "TRIGGER_PROVIDER_CALLBACK" }
                 });
 
             migrationBuilder.InsertData(
@@ -167,6 +187,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.DropTable(
                 name: "audit_offer_subscription20230317",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "offer_subscriptions_process_datas",
                 schema: "portal");
 
             migrationBuilder.DropIndex(

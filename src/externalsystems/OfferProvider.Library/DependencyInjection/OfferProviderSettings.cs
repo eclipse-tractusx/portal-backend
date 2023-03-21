@@ -18,20 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 
-public record OfferThirdPartyAutoSetupData(
-    [property: JsonPropertyName("customer")] OfferThirdPartyAutoSetupCustomerData OfferThirdPartyAutoSetupCustomer,
-    [property: JsonPropertyName("properties")] OfferThirdPartyAutoSetupPropertyData OfferThirdPartyAutoSetupProperties);
-
-public record OfferThirdPartyAutoSetupCustomerData(
-    [property: JsonPropertyName("organizationName")] string OrganizationName,
-    [property: JsonPropertyName("country")] string Country,
-    [property: JsonPropertyName("email")] string? Email);
-
-public record OfferThirdPartyAutoSetupPropertyData(
-    [property: JsonPropertyName("bpnNumber")] string? BpnNumber,
-    [property: JsonPropertyName("subscriptionId")] Guid SubscriptionId,
-    [property: JsonPropertyName("serviceId")] Guid ServiceId);
+/// <summary>
+/// Settings used in business logic concerning daps.
+/// </summary>
+public class OfferProviderSettings : KeyVaultAuthSettings
+{
+    [Required]
+    public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; init; } = null!;
+}

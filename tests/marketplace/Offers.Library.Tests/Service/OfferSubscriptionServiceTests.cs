@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -27,7 +26,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
@@ -65,10 +63,9 @@ public class OfferSubscriptionServiceTests
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
-    private readonly IOfferSetupService _offerSetupService;
     private readonly IMailingService _mailingService;
     private readonly Dictionary<string, IEnumerable<string>> _serviceManagerRoles;
-    private readonly IOfferSubscriptionCreationService _offerSubscriptionCreationService;
+    private readonly IProcessStepRepository _processStepRepository;
     private readonly OfferSubscriptionService _sut;
 
     public OfferSubscriptionServiceTests()
@@ -107,17 +104,14 @@ public class OfferSubscriptionServiceTests
         _offerRepository = A.Fake<IOfferRepository>();
         _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
         _notificationRepository = A.Fake<INotificationRepository>();
+        _processStepRepository = A.Fake<IProcessStepRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
-        _offerSetupService = A.Fake<IOfferSetupService>();
         _mailingService = A.Fake<IMailingService>();
-        _offerSubscriptionCreationService = A.Fake<IOfferSubscriptionCreationService>();
 
         SetupRepositories();
-        SetupServices();
 
-        _fixture.Inject(_offerSetupService);
-        _sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _offerSubscriptionCreationService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
+        _sut = new OfferSubscriptionService(_portalRepositories, _mailingService);
     }
 
     #region Add Offer Subscription
@@ -153,7 +147,7 @@ public class OfferSubscriptionServiceTests
         notifications.Should().HaveCount(2);
         notifications.Should().OnlyHaveUniqueItems();
         notifications.Should().AllSatisfy(x => x.Done.Should().NotBeNull().And.BeFalse());
-        A.CallTo(() => _offerSubscriptionCreationService.CreateOfferSubscriptionProcess(A<OfferSubscription>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.Single().ProcessStepTypeId == ProcessStepTypeId.TRIGGER_PROVIDER))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -353,7 +347,7 @@ public class OfferSubscriptionServiceTests
     {
         // Arrange 
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionStateForCompanyAsync(_existingOfferId, _existingActiveSubscriptionCompanyId, A<OfferTypeId>._))
-            .Returns(new ValueTuple<Guid, OfferSubscriptionStatusId, Guid?>(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid()));
+            .Returns(new ValueTuple<Guid, OfferSubscriptionStatusId>(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE));
 
         // Act
         async Task Act() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _existingActiveSubscriptionUserId, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
@@ -368,7 +362,7 @@ public class OfferSubscriptionServiceTests
     {
         // Arrange 
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionStateForCompanyAsync(_existingOfferId, _existingInactiveSubscriptionCompanyId, A<OfferTypeId>._))
-            .Returns(new ValueTuple<Guid, OfferSubscriptionStatusId, Guid?>(Guid.NewGuid(), OfferSubscriptionStatusId.INACTIVE, Guid.NewGuid()));
+            .Returns(new ValueTuple<Guid, OfferSubscriptionStatusId>(Guid.NewGuid(), OfferSubscriptionStatusId.INACTIVE));
 
         // Act
         await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _existingInactiveSubscriptionUserId, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
@@ -484,15 +478,10 @@ public class OfferSubscriptionServiceTests
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         _fixture.Inject(_portalRepositories);
-    }
-
-    private void SetupServices()
-    {
-        A.CallTo(() => _offerSetupService.AutoSetupOfferSubscription(A<OfferThirdPartyAutoSetupData>._, A<string>._, A<string>.That.Matches(x => x == "https://www.fail.com")))
-            .ThrowsAsync(new ServiceException("Error occured"));
     }
 
     #endregion

@@ -39,7 +39,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
 
 public class OfferSetupServiceTests
 {
-    private const string AccessToken = "THISISAACCESSTOKEN";
     private const string Bpn = "CAXSDUMMYCATENAZZ";
     private const string IamUserId = "9aae7a3b-b188-4a42-b46b-fb2ea5f47668";
     private const string IamUserIdWithoutMail = "9aae7a3b-b188-4a42-b46b-fb2ea5f47669";
@@ -68,7 +67,6 @@ public class OfferSetupServiceTests
     private readonly IServiceAccountCreation _serviceAccountCreation;
     private readonly INotificationService _notificationService;
     private readonly IMailingService _mailingService;
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly OfferSetupService _sut;
     private readonly ITechnicalUserProfileService _technicalUserProfileService;
     private readonly IOfferSubscriptionProcessService _offerSubscriptionProcessService;
@@ -95,7 +93,6 @@ public class OfferSetupServiceTests
         _serviceAccountCreation = A.Fake<IServiceAccountCreation>();
         _notificationService = A.Fake<INotificationService>();
         _mailingService = A.Fake<IMailingService>();
-        _httpClientFactory = A.Fake<IHttpClientFactory>();
         _technicalUserProfileService = A.Fake<ITechnicalUserProfileService>();
 
         _offerSubscriptionProcessService = A.Fake<IOfferSubscriptionProcessService>();
@@ -107,60 +104,8 @@ public class OfferSetupServiceTests
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
 
-        _sut = new OfferSetupService(_portalRepositories, _provisioningManager, _serviceAccountCreation, _notificationService, _offerSubscriptionProcessService, _mailingService, _httpClientFactory, _technicalUserProfileService);
+        _sut = new OfferSetupService(_portalRepositories, _provisioningManager, _serviceAccountCreation, _notificationService, _offerSubscriptionProcessService, _mailingService, _technicalUserProfileService);
     }
-
-    #region CallThirdPartyAutoSetupOfferAsync
-
-    [Fact]
-    public async Task CallThirdPartyAutoSetupOfferAsync_WithNonSuccessfullyClientCall_ThrowsServiceException()
-    {
-        // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        A.CallTo(() => _httpClientFactory.CreateClient(nameof(OfferSetupService)))
-            .Returns(new HttpClient(httpMessageHandlerMock));
-
-        // Act
-        async Task Action() => await _sut.AutoSetupOfferSubscription(_fixture.Create<OfferThirdPartyAutoSetupData>(), AccessToken, "https://www.superservice.com").ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Action);
-        ex.Message.Should().Be("call to external system autosetup-offer-subscription failed with statuscode 400");
-    }
-
-    [Fact]
-    public async Task CallThirdPartyAutoSetupOfferAsync_WithDnsError_ReturnsServiceException()
-    {
-        // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException("DNS Error"));
-        A.CallTo(() => _httpClientFactory.CreateClient(nameof(OfferSetupService)))
-            .Returns(new HttpClient(httpMessageHandlerMock));
-
-        // Act
-        async Task Action() => await _sut.AutoSetupOfferSubscription(_fixture.Create<OfferThirdPartyAutoSetupData>(), AccessToken, "https://www.superservice.com").ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Action);
-        ex.Message.Should().Be("call to external system autosetup-offer-subscription failed");
-    }
-
-    [Fact]
-    public async Task CallThirdPartyAutoSetupOfferAsync_WithTimeout_ReturnsServiceException()
-    {
-        // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new TaskCanceledException("Timed out"));
-        A.CallTo(() => _httpClientFactory.CreateClient(nameof(OfferSetupService)))
-            .Returns(new HttpClient(httpMessageHandlerMock));
-
-        // Act
-        async Task Action() => await _sut.AutoSetupOfferSubscription(_fixture.Create<OfferThirdPartyAutoSetupData>(), AccessToken, "https://www.superservice.com").ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Action);
-        ex.Message.Should().Be("call to external system autosetup-offer-subscription failed due to timeout");
-    }
-
-    #endregion
 
     #region AutoSetupServiceAsync
 

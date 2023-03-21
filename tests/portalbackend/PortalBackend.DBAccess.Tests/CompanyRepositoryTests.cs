@@ -675,7 +675,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #region Setup
 
-    private async Task<(CompanyRepository, PortalDbContext)> CreateSut()
+    private async Task<(ICompanyRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new CompanyRepository(context);

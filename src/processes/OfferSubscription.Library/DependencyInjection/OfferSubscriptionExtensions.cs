@@ -26,6 +26,5 @@ public static class OfferSubscriptionExtensions
 {
     public static IServiceCollection AddOfferSubscriptionProcess(this IServiceCollection services) =>
         services
-            .AddTransient<IOfferSubscriptionProcessService, OfferSubscriptionProcessService>()
-            .AddTransient<IOfferSubscriptionCreationService, OfferSubscriptionCreationService>();
+            .AddTransient<IOfferSubscriptionProcessService, OfferSubscriptionProcessService>();
 }

@@ -217,5 +217,5 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
     /// <inheritdoc />
     public Task StartAutoSetupAsync(OfferAutoSetupData data, string iamUserId) =>
-        _offerSetupService.StartAutoSetupAsync(data, _settings.ITAdminRoles, iamUserId, OfferTypeId.SERVICE, _settings.UserManagementAddress);
+        _offerSetupService.StartAutoSetupAsync(data, iamUserId, OfferTypeId.SERVICE);
 }

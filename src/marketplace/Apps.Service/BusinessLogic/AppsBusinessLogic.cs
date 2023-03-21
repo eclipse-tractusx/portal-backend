@@ -276,7 +276,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
     /// <inheritdoc />
     public Task StartAutoSetupAsync(OfferAutoSetupData data, string iamUserId) =>
-        _offerSetupService.StartAutoSetupAsync(data, _settings.ITAdminRoles, iamUserId, OfferTypeId.APP, _settings.UserManagementAddress);
+        _offerSetupService.StartAutoSetupAsync(data, iamUserId, OfferTypeId.APP);
 
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId) =>
