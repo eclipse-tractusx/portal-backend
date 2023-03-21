@@ -98,8 +98,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     { 101, "TRIGGER_PROVIDER" },
                     { 102, "START_AUTOSETUP" },
                     { 103, "OFFERSUBSCRIPTION_CLIENT_CREATION" },
-                    { 104, "OFFERSUBSCRIPTION_TECHNICALUSER_CREATION" },
-                    { 105, "ACTIVATE_SUBSCRIPTION" }
+                    { 104, "SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION" },
+                    { 105, "OFFERSUBSCRIPTION_TECHNICALUSER_CREATION" },
+                    { 106, "ACTIVATE_SUBSCRIPTION" }
                 });
 
             migrationBuilder.InsertData(
@@ -213,6 +214,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "process_step_types",
                 keyColumn: "id",
                 keyValue: 105);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 106);
 
             migrationBuilder.DeleteData(
                 schema: "portal",

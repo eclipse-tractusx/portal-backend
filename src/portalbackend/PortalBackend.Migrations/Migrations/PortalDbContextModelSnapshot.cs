@@ -4159,11 +4159,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 104,
-                            Label = "OFFERSUBSCRIPTION_TECHNICALUSER_CREATION"
+                            Label = "SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION"
                         },
                         new
                         {
                             Id = 105,
+                            Label = "OFFERSUBSCRIPTION_TECHNICALUSER_CREATION"
+                        },
+                        new
+                        {
+                            Id = 106,
                             Label = "ACTIVATE_SUBSCRIPTION"
                         });
                 });

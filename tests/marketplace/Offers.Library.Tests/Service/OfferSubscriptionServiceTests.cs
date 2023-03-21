@@ -153,6 +153,7 @@ public class OfferSubscriptionServiceTests
         notifications.Should().HaveCount(2);
         notifications.Should().OnlyHaveUniqueItems();
         notifications.Should().AllSatisfy(x => x.Done.Should().NotBeNull().And.BeFalse());
+        A.CallTo(() => _offerSubscriptionCreationService.CreateOfferSubscriptionProcess(A<OfferSubscription>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -178,10 +179,9 @@ public class OfferSubscriptionServiceTests
                 setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });
-        var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _offerSubscriptionCreationService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
 
         // Act
-        await sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _iamUserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _iamUserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
@@ -206,10 +206,9 @@ public class OfferSubscriptionServiceTests
                 setOptionalParameters?.Invoke(notification);
                 notifications.Add(notification);
             });
-        var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _offerSubscriptionCreationService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
 
         // Act
-        await sut.AddOfferSubscriptionAsync(_existingOfferWithFailingAutoSetupId, _validConsentData, _iamUserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferWithFailingAutoSetupId, _validConsentData, _iamUserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         notifications.Should().ContainSingle();

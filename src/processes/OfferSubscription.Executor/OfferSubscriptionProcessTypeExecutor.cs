@@ -38,6 +38,9 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
     private readonly IReadOnlyList<ProcessStepTypeId> _executableProcessSteps = new List<ProcessStepTypeId>
     {
         ProcessStepTypeId.TRIGGER_PROVIDER,
+        ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION,
+        ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION,
+        ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION,
         ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
     };
 
