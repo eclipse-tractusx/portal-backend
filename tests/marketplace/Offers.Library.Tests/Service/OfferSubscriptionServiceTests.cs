@@ -376,7 +376,7 @@ public class OfferSubscriptionServiceTests
         // Assert
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(A<Guid>._, A<Action<OfferSubscription>>._)).MustHaveHappenedOnceExactly();
-        offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+        offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.PENDING);
     }
 
     #endregion

@@ -439,6 +439,7 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         var offerSetupService = A.Fake<IOfferSetupService>();
+        _fixture.Inject(offerSetupService);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
         var sut = _fixture.Create<ServiceBusinessLogic>();
 

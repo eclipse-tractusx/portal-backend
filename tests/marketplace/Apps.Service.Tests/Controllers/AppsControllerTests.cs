@@ -302,14 +302,12 @@ public class AppsControllerTests
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
-        A.CallTo(() => _logic.StartAutoSetupAsync(A<OfferAutoSetupData>._, A<string>.That.Matches(x => x== IamUserId)))
-            .ReturnsLazily(() => Task.CompletedTask);
-
+        
         //Act
         var result = await this._controller.StartAutoSetupAppProcess(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AutoSetupAppAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.StartAutoSetupAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 
