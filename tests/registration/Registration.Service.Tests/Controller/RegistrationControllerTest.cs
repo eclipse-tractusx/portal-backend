@@ -148,7 +148,7 @@ public class RegistrationControllerTest
             Assert.IsType<UniqueIdentifierData?>(item);
         }
     }
-    
+
     [Fact]
     public async Task GetDocumentContentFileAsync_WithValidData_ReturnsOk()
     {
@@ -167,5 +167,22 @@ public class RegistrationControllerTest
         A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _iamUserId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<FileContentResult>();
         ((FileContentResult) result).ContentType.Should().Be(contentType);
+    }
+
+    [Fact]
+    public async Task GetRegistrationDocumentAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var documentId = _fixture.Create<Guid>();
+        var content = new byte[7];
+        A.CallTo(() => _registrationBusinessLogicFake.GetRegistrationDocumentAsync(documentId))
+            .ReturnsLazily(() => new ValueTuple<string, byte[], string>("test.json", content, "application/json"));
+
+        //Act
+        var result = await this._controller.GetRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _registrationBusinessLogicFake.GetRegistrationDocumentAsync(documentId)).MustHaveHappenedOnceExactly();
+        result.Should().NotBeNull();
     }
 }

@@ -59,5 +59,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, string iamUserId);
         IAsyncEnumerable<CompanyRolesDetails> GetCompanyRoles(string? languageShortName = null);
         Task<IEnumerable<UniqueIdentifierData>> GetCompanyIdentifiers(string alpha2Code);
+        Task<(string fileName, byte[] content, string mediaType)> GetRegistrationDocumentAsync(Guid documentId);
     }
 }

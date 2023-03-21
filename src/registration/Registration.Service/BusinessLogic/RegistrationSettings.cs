@@ -50,6 +50,13 @@ public class RegistrationSettings
     /// <value></value>
     [Required]
     public IEnumerable<CompanyApplicationStatusId> ApplicationStatusIds { get; set; } = null!;
+
+    /// <summary>
+    /// RegistrationDocument Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<DocumentTypeId> RegistrationDocumentTypeIds { get; set; } = null!;
 }
 
 public static class RegistrationSettingsExtension

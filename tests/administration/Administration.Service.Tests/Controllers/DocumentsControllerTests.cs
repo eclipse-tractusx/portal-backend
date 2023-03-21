@@ -71,4 +71,21 @@ public class DocumentsControllerTests
         //Assert
         A.CallTo(() => _logic.GetSeedData(id)).MustHaveHappenedOnceExactly();
     }
+
+    [Fact]
+    public async Task GetFrameDocumentAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var documentId = _fixture.Create<Guid>();
+        var content = new byte[7];
+        A.CallTo(() => _logic.GetFrameDocumentAsync(documentId))
+            .ReturnsLazily(() => new ValueTuple<string, byte[]>("test.json", content));
+
+        //Act
+        var result = await this._controller.GetFrameDocumentAsync(documentId).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _logic.GetFrameDocumentAsync(documentId)).MustHaveHappenedOnceExactly();
+        result.Should().NotBeNull();
+    }
 }

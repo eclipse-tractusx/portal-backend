@@ -56,4 +56,11 @@ public interface IDocumentsBusinessLogic
     /// <param name="documentId">Id of the document</param>
     /// <returns>The document as json</returns>
     Task<DocumentSeedData> GetSeedData(Guid documentId);
+    
+    /// <summary>
+    /// Retrieve Frame Document
+    /// </summary>
+    /// <param name="documentId"></param>
+    /// <returns></returns>
+    Task<(string fileName, byte[] content)> GetFrameDocumentAsync(Guid documentId);
 }

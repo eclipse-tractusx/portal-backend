@@ -221,4 +221,11 @@ public class DocumentRepository : IDocumentRepository
     /// <inheritdoc />
     public void RemoveDocuments(IEnumerable<Guid> documentIds) => 
         _dbContext.Documents.RemoveRange(documentIds.Select(documentId=> new Document(documentId, null!, null!, null!, default, default, default, default)));
+
+    public Task<(byte[] Content, string FileName, bool IsDocumentTypeMatch, MediaTypeId MediaTypeId)> GetDocumentAsync(Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds) =>
+        this._dbContext.Documents
+            .Where(x => x.Id == documentId)
+            .Select(x => new ValueTuple<byte[], string, bool, MediaTypeId>(x.DocumentContent, x.DocumentName, documentTypeIds.Contains(x.DocumentTypeId), x.MediaTypeId))
+            .SingleOrDefaultAsync();
+    
 }
