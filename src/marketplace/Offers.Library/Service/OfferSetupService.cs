@@ -393,7 +393,7 @@ public class OfferSetupService : IOfferSetupService
         var multiInstanceStep = offerTypeId == OfferTypeId.APP ? 
             ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION :
             ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION;
-        var nextProcessStepTypeIds = new List<ProcessStepTypeId>
+        var nextProcessStepTypeIds = new []
         {
             offerDetails.InstanceData.IsSingleInstance ?
                 ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION :
@@ -414,27 +414,30 @@ public class OfferSetupService : IOfferSetupService
             throw new NotFoundException($"Offer Subscription {offerSubscriptionId} does not exist");
         }
 
-        if (offerDetails.InstanceData.IsSingleInstance && offerDetails.AppInstanceIds.Count() != 1)
+        switch (offerDetails.InstanceData.IsSingleInstance)
         {
-            throw new ConflictException("There must only be one app instance for single instance apps");
+            case false:
+                throw new ConflictException("The process step is only executable for single instance apps");
+            case true when offerDetails.AppInstanceIds.Count() != 1:
+                throw new ConflictException("There must only be one app instance for single instance apps");
+            default:
+                _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()
+                    .CreateAppSubscriptionDetail(offerSubscriptionId, appSubscriptionDetail =>
+                    {
+                        appSubscriptionDetail.AppInstanceId = offerDetails.AppInstanceIds.Single();
+                        appSubscriptionDetail.AppSubscriptionUrl = offerDetails.InstanceData.InstanceUrl;
+                    });
+
+                return new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
+                    new[]
+                    {
+                        ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
+                    },
+                    null,
+                    ProcessStepStatusId.DONE,
+                    true,
+                    null);
         }
-
-        _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()
-            .CreateAppSubscriptionDetail(offerSubscriptionId, appSubscriptionDetail =>
-            {
-                appSubscriptionDetail.AppInstanceId = offerDetails.AppInstanceIds.Single();
-                appSubscriptionDetail.AppSubscriptionUrl = offerDetails.InstanceData.InstanceUrl;
-            });
-
-        return new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-            new[]
-            {
-                ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
-            },
-            null,
-            ProcessStepStatusId.DONE,
-            true,
-            null);
     }
 
     /// <inheritdoc />
