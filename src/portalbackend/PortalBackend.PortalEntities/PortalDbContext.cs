@@ -131,7 +131,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferType> OfferTypes { get; set; } = default!;
     public virtual DbSet<OfferSubscription> OfferSubscriptions { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
-    public virtual DbSet<OfferSubscriptionProcessData> OfferSubscriptionsProcessDatas { get; set; }
+    public virtual DbSet<OfferSubscriptionProcessData> OfferSubscriptionsProcessDatas { get; set; } = default!;
     public virtual DbSet<Process> Processes { get; set; } = default!;
     public virtual DbSet<ProcessStep> ProcessSteps { get; set; } = default!;
     public virtual DbSet<ProcessStepStatus> ProcessStepStatuses { get; set; } = default!;

@@ -360,9 +360,15 @@ public class OfferSubscriptionServiceTests
     [Fact]
     public async Task AddOfferSubscription_WithExistingInactiveSubscription_UpdatesState()
     {
-        // Arrange 
+        // Arrange
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _existingOfferId, _companyId, OfferSubscriptionStatusId.INACTIVE, Guid.NewGuid(), Guid.NewGuid());
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionStateForCompanyAsync(_existingOfferId, _existingInactiveSubscriptionCompanyId, A<OfferTypeId>._))
-            .Returns(new ValueTuple<Guid, OfferSubscriptionStatusId>(Guid.NewGuid(), OfferSubscriptionStatusId.INACTIVE));
+            .Returns(new ValueTuple<Guid, OfferSubscriptionStatusId>(offerSubscription.Id, offerSubscription.OfferSubscriptionStatusId));
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscription.Id, A<Action<OfferSubscription>>._))
+            .Invokes((Guid _, Action<OfferSubscription> setOptionalFields) =>
+            {
+                setOptionalFields.Invoke(offerSubscription);
+            });
 
         // Act
         await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _existingInactiveSubscriptionUserId, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
@@ -370,6 +376,7 @@ public class OfferSubscriptionServiceTests
         // Assert
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(A<Guid>._, A<Action<OfferSubscription>>._)).MustHaveHappenedOnceExactly();
+        offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
     }
 
     #endregion

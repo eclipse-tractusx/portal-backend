@@ -178,7 +178,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(OfferAutoSetupResponseData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> AutoSetupAppProcess([FromBody] OfferAutoSetupData data)
+    public async Task<NoContentResult> StartAutoSetupServiceProcess([FromBody] OfferAutoSetupData data)
     {
         await this.WithIamUserId(iamUserId => _serviceBusinessLogic.StartAutoSetupAsync(data, iamUserId)).ConfigureAwait(false);
         return NoContent();

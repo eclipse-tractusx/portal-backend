@@ -229,6 +229,26 @@ public class AppBusinessLogicTests
 
     #endregion
 
+    #region Start Auto setup service
+
+    [Fact]
+    public async Task StartAutoSetupService_ReturnsExcepted()
+    {
+        // Arrange
+        var offerSetupService = A.Fake<IOfferSetupService>();
+        var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
+
+        var sut = new AppsBusinessLogic(null!, null!, null!, offerSetupService, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
+
+        // Act
+        await sut.StartAutoSetupAsync(data, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => offerSetupService.StartAutoSetupAsync(A<OfferAutoSetupData>._, A<string>._, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
     #region GetCompanyProvidedAppSubscriptionStatusesForUser
 
     [Theory]

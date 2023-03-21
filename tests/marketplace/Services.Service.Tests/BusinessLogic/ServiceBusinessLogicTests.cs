@@ -432,6 +432,25 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
+    #region Start Auto setup
+    
+    [Fact]
+    public async Task StartAutoSetupAsync_ReturnsExcepted()
+    {
+        // Arrange
+        var offerSetupService = A.Fake<IOfferSetupService>();
+        var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        await sut.StartAutoSetupAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => offerSetupService.StartAutoSetupAsync(A<OfferAutoSetupData>._, A<string>._, OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();
+    }
+    
+    #endregion
+
     #region SubmitServiceAsync
 
     [Fact]

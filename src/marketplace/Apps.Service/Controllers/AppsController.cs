@@ -299,7 +299,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(OfferAutoSetupResponseData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> AutoSetupAppProcess([FromBody] OfferAutoSetupData data)
+    public async Task<NoContentResult> StartAutoSetupAppProcess([FromBody] OfferAutoSetupData data)
     {
         await this.WithIamUserId(iamUserId => _appsBusinessLogic.StartAutoSetupAsync(data, iamUserId)).ConfigureAwait(false);
         return NoContent();

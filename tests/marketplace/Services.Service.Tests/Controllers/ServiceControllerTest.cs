@@ -244,6 +244,23 @@ public class ServiceControllerTest
     }
 
     [Fact]
+    public async Task StartAutoSetupProcess_ReturnsExpected()
+    {
+        //Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
+        A.CallTo(() => _logic.StartAutoSetupAsync(A<OfferAutoSetupData>._, A<string>.That.Matches(x => x== IamUserId)))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.StartAutoSetupServiceProcess(data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.StartAutoSetupAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
     public async Task GetSubscriptionDetailForProvider_ReturnsExpected()
     {
         // Arrange

@@ -390,13 +390,14 @@ public class OfferSetupService : IOfferSetupService
 
         offerSubscriptionRepository.CreateOfferSubscriptionProcessData(data.RequestId, data.OfferUrl);
 
+        var multiInstanceStep = offerTypeId == OfferTypeId.APP ? 
+            ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION :
+            ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION;
         var nextProcessStepTypeIds = new List<ProcessStepTypeId>
         {
             offerDetails.InstanceData.IsSingleInstance ?
                 ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION :
-                offerTypeId == OfferTypeId.APP ?
-                    ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION :
-                    ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION
+                multiInstanceStep
         };
 
         _offerSubscriptionProcessService.FinalizeChecklistEntryAndProcessSteps(context, nextProcessStepTypeIds);
