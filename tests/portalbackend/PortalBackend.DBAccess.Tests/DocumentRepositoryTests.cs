@@ -418,6 +418,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.IsDocumentTypeMatch.Should().Be(true);
         result.MediaTypeId.Should().Be(MediaTypeId.PDF);
     }
+
     #region Setup    
 
     private async Task<(DocumentRepository, PortalDbContext)> CreateSut()

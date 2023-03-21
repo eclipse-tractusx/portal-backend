@@ -2023,6 +2023,24 @@ public class RegistrationBusinessLogicTest
         var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
         result.Message.Should().Be($"document {documentId} does not exist.");
     }
+ 
+    [Fact]
+    public async Task GetRegistrationDocumentAsync_WithInvalidDocumentId_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>());
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, null!, _portalRepositories, null!);
+
+        //Act
+        var Act = () => sut.GetRegistrationDocumentAsync(documentId);
+        
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"document {documentId} does not exist.");
+    }
 
     #region GetDocumentAsync
     
@@ -2046,7 +2064,7 @@ public class RegistrationBusinessLogicTest
         result.FileName.Should().Be("test.pdf");
         result.MediaType.Should().Be("application/pdf");
     }
-    
+   
     [Fact]
     public async Task GetDocumentAsync_WithoutDocument_ThrowsNotFoundException()
     {
@@ -2083,7 +2101,7 @@ public class RegistrationBusinessLogicTest
     }
 
     #endregion
-    
+
     #region Setup  
 
     private void SetupRepositories()
