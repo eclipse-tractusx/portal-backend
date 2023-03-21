@@ -138,4 +138,12 @@ public interface IDocumentRepository
     /// </summary>
     /// <param name="documentIds"></param>
     void RemoveDocuments(IEnumerable<Guid> documentIds);
+    
+    /// <summary>
+    /// Gets the registration document with the given id
+    /// </summary>
+    /// <param name="documentId">Id of the document</param>
+    /// <param name="documentTypeIds">the document types</param>
+    /// <returns></returns>
+    Task<(byte[] Content, string FileName, bool IsDocumentTypeMatch, MediaTypeId MediaTypeId)> GetDocumentAsync(Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds);
 }

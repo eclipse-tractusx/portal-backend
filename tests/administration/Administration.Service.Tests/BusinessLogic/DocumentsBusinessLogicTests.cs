@@ -190,8 +190,59 @@ public class DocumentsBusinessLogicTests
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"Self description document {documentId} does not exist");
     }
-
+    
     #endregion
+    
+    [Fact]
+    public async Task GetFrameDocumentAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>(content, "test.json", true, MediaTypeId.JSON));
+
+        //Act
+        var result = await _sut.GetFrameDocumentAsync(documentId).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._)).MustHaveHappenedOnceExactly();
+        result.Should().NotBeNull();
+        result.fileName.Should().Be("test.json");
+    }
+
+    [Fact]
+    public async Task GetFrameDocumentAsync_WithInvalidDocumentTypeId_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>(content, "test.json", false, MediaTypeId.JSON));
+
+        //Act
+        var Act = () => _sut.GetFrameDocumentAsync(documentId);
+        
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"document {documentId} does not exist.");
+    }
+
+    [Fact]
+    public async Task GetFrameDocumentAsync_WithInvalidDocumentId_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>());
+
+        //Act
+        var Act = () => _sut.GetFrameDocumentAsync(documentId);
+        
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"document {documentId} does not exist.");
+    }
 
     #region Setup
 

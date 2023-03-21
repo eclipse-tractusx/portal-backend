@@ -462,5 +462,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public  Task<IEnumerable<UniqueIdentifierData>> GetCompanyIdentifiers([FromRoute] string alpha2Code) =>
             _registrationBusinessLogic.GetCompanyIdentifiers(alpha2Code);
+        
+        /// <summary>
+        /// Retrieve Registration document of type CX_FRAME_CONTRACT
+        /// </summary>
+        /// <param name="documentId"></param>
+        /// <response code="200">Successfully fetched the document</response>
+        /// <response code="404">No document with the given id was found.</response>
+        /// <remarks>Example: Get: /api/registration/registrationDocuments/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
+        /// <returns></returns>
+        [HttpGet]
+        [Authorize(Roles = "view_documents")]
+        [Route("registrationDocuments/{documentId}")]
+        [Produces("application/pdf", "application/json")]
+        [ProducesResponseType(typeof(File), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> GetRegistrationDocumentAsync([FromRoute] Guid documentId)
+        {
+            var (fileName, content, mediaType) =await  _registrationBusinessLogic.GetRegistrationDocumentAsync(documentId);
+            return File(content, mediaType, fileName);
+        }
     }
 }

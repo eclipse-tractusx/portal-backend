@@ -133,4 +133,22 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
 
         return document;
     }
+    
+    /// <inheritdoc />
+    public async Task<(string fileName, byte[] content)> GetFrameDocumentAsync(Guid documentId)
+    {
+        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+
+        var documentDetails = await documentRepository.GetDocumentAsync(documentId, _settings.FrameDocumentTypeIds).ConfigureAwait(false);
+        if(documentDetails == default)
+        {
+            throw new NotFoundException($"document {documentId} does not exist.");
+        }
+        if (!documentDetails.IsDocumentTypeMatch)
+        {
+            throw new NotFoundException($"document {documentId} does not exist.");
+        }
+
+        return (documentDetails.FileName, documentDetails.Content);
+    }
 }

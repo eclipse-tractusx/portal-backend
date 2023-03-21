@@ -130,4 +130,24 @@ public class DocumentsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<DocumentSeedData> GetDocumentSeedData([FromRoute] Guid documentId) =>
         _businessLogic.GetSeedData(documentId);
+
+    /// <summary>
+    /// Retrieve  document of type CX_FRAME_CONTRACT
+    /// </summary>
+    /// <param name="documentId"></param>
+    /// <response code="200">Successfully fetched the document</response>
+    /// <response code="404">No document with the given id was found.</response>
+    /// <remarks>Example: Get: /api/administration/documents/frameDocuments/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
+    /// <returns></returns>
+    [HttpGet]
+    [Authorize(Roles = "view_documents")]
+    [Route("frameDocuments/{documentId}")]
+    [Produces("application/pdf", "application/json")]
+    [ProducesResponseType(typeof(File), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> GetFrameDocumentAsync([FromRoute] Guid documentId)
+    {
+        var (fileName, content) = await _businessLogic.GetFrameDocumentAsync(documentId);
+        return File(content, "application/pdf", fileName);
+    }
 }

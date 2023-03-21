@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -26,6 +27,13 @@ public class DocumentSettings
 {
     [Required(AllowEmptyStrings = false)]
     public bool EnableSeedEndpoint { get; set; }
+
+    /// <summary>
+    /// Frame Document Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<DocumentTypeId> FrameDocumentTypeIds { get; set; } = null!;
 }
 
 public static class DocumentSettingsExtension

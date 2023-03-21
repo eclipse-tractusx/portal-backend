@@ -401,7 +401,23 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changedEntity = changedEntries.Single();
         changedEntity.State.Should().Be(EntityState.Deleted);
     }
+    
+    [Fact]
+    public async Task GetRegistrationDocumentAsync__ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+    
+        // Act
+        var result = await sut.GetDocumentAsync(new Guid("00000000-0000-0000-0000-000000000002"), new[]{DocumentTypeId.CX_FRAME_CONTRACT}).ConfigureAwait(false);
 
+        // Assert
+        result.Should().NotBe(default);
+        result.FileName.Should().Be("Terms&Conditions-Active_Participant.pdf");
+        result.Content.Should().NotBeNull();
+        result.IsDocumentTypeMatch.Should().Be(true);
+        result.MediaTypeId.Should().Be(MediaTypeId.PDF);
+    }
     #region Setup    
 
     private async Task<(DocumentRepository, PortalDbContext)> CreateSut()

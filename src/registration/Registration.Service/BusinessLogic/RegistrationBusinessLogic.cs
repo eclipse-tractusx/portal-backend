@@ -910,4 +910,17 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         return uniqueIdentifierData.IdentifierIds.Select(identifierId => new UniqueIdentifierData((int)identifierId, identifierId));
     }
+
+    public async Task<(string fileName, byte[] content, string mediaType)> GetRegistrationDocumentAsync(Guid documentId)
+    {
+        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+
+        var documentDetails = await documentRepository.GetDocumentAsync(documentId, _settings.RegistrationDocumentTypeIds).ConfigureAwait(false);
+        if (!documentDetails.IsDocumentTypeMatch)
+        {
+            throw new NotFoundException($"document {documentId} does not exist.");
+        }
+
+        return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
+    }
 }
