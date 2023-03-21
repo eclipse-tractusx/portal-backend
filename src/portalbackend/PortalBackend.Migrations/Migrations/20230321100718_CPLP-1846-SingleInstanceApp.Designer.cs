@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230320135408_CPLP-1846-SingleInstanceApp")]
+    [Migration("20230321100718_CPLP-1846-SingleInstanceApp")]
     partial class CPLP1846SingleInstanceApp
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2236,6 +2236,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("integer")
                         .HasColumnName("document_type_id");
 
+                    b.Property<int>("MediaTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("media_type_id");
+
                     b.HasKey("Id")
                         .HasName("pk_documents");
 
@@ -2247,6 +2251,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.HasIndex("DocumentTypeId")
                         .HasDatabaseName("ix_documents_document_type_id");
+
+                    b.HasIndex("MediaTypeId")
+                        .HasDatabaseName("ix_documents_media_type_id");
 
                     b.ToTable("documents", "portal");
                 });
@@ -2632,6 +2639,81 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasName("pk_languages");
 
                     b.ToTable("languages", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.MediaType", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_media_types");
+
+                    b.ToTable("media_types", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "JPEG"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "GIF"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "PNG"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Label = "SVG"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "TIFF"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Label = "PDF"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Label = "JSON"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Label = "PEM"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Label = "CA_CERT"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Label = "PKX_CER"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Label = "OCTET"
+                        });
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Notification", b =>
@@ -4541,11 +4623,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .IsRequired()
                         .HasConstraintName("fk_documents_document_types_document_type_id");
 
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.MediaType", "MediaType")
+                        .WithMany("Documents")
+                        .HasForeignKey("MediaTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_documents_media_types_media_type_id");
+
                     b.Navigation("CompanyUser");
 
                     b.Navigation("DocumentStatus");
 
                     b.Navigation("DocumentType");
+
+                    b.Navigation("MediaType");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamIdentityProvider", b =>
@@ -5192,6 +5283,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyRoleDescriptions");
 
                     b.Navigation("UserRoleDescriptions");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.MediaType", b =>
+                {
+                    b.Navigation("Documents");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationTopic", b =>
