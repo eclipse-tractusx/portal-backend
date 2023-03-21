@@ -110,8 +110,9 @@ public class CompanyDataBusinessLogicTests
     public async Task GetCompanyRoleAndConsentAgreementDetails_ThrowsConflictException()
     {
         // Arrange
+        var companyRoleConsentDatas = _fixture.CreateMany<CompanyRoleConsentData>(0).ToAsyncEnumerable();
         A.CallTo(() => _companyRepository.GetCompanyRoleAndConsentAgreementDetailsAsync(IamUserId))
-            .Returns(null!);
+            .Returns(companyRoleConsentDatas);
 
         var sut = new CompanyDataBusinessLogic(_portalRepositories);
 
