@@ -22,8 +22,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -49,50 +47,5 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ConflictException($"user {iamUserId} is not associated with any company");
         }
         return result;
-    }
-
-    /// <inheritdoc/>
-    public async IAsyncEnumerable<CompanyRoleConsentData> GetCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId)
-    {
-        var result =  _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyRoleAndConsentAgreementDetailsAsync(iamUserId);
-        if (!await result.AnyAsync())
-        {
-            throw new ConflictException($"user {iamUserId} is not associated with any company or Incorrect Status");
-        }
-        await foreach(var data in result)
-        {
-            yield return data;
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task CreateCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId,IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails)
-    {
-        var companyRole = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyRolesDataAsync(iamUserId).ConfigureAwait(false);
-        if(companyRole == default)
-        {
-            throw new NotFoundException($"user {iamUserId} is not associated with any company");
-        }
-        if(!companyRole.isCompanyActive)
-        {
-            throw new ConflictException("Company Status is Incorrect");
-        }
-        foreach(var data in  companyRoleConsentDetails)
-        {
-            if(!companyRole.agreementAssignedRole.Contains(data.companyRoles) || data.agreements.Any(x => x.consentStatus != ConsentStatusId.ACTIVE))
-            {
-                throw new ConflictException("All agreement need to get signed");
-            }
-            if(companyRole.companyRoleId.Contains(data.companyRoles))
-            {
-                throw new ConflictException("companyRole already exists");   
-            }
-            _portalRepositories.GetInstance<ICompanyRolesRepository>().CreateCompanyAssignedRole(companyRole.companyId, data.companyRoles);
-            foreach(var agreementData in data.agreements)
-            {
-                _portalRepositories.GetInstance<IConsentRepository>().CreateConsent(agreementData.agreementId, companyRole.companyId, companyRole.companyUserId, agreementData.consentStatus);
-            }
-        }
-        await _portalRepositories.SaveAsync();
     }
 }
