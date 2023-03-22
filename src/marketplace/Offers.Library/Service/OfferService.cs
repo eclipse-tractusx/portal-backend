@@ -255,6 +255,10 @@ public class OfferService : IOfferService
         {
             throw new ForbiddenException($"userId {userId} is not associated with provider-company of offer {offerId}");
         }
+        if (offerDetail.OfferProviderData == null)
+        {
+            throw new UnexpectedConditionException("offerProviderData should never be null here");
+        }
 
         var data = offerDetail.OfferProviderData;
 
@@ -274,7 +278,8 @@ public class OfferService : IOfferService
             data.ContactNumber,
             data.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))),
             data.SalesManagerId,
-            data.PrivacyPolicies);
+            data.PrivacyPolicies,
+            data.ServiceTypeIds);
     }
     
     /// <inheritdoc />

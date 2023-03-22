@@ -188,10 +188,10 @@ public class AppReleaseProcessController : ControllerBase
     [HttpGet]
     [Route("{appId}/appStatus")]
     [Authorize(Roles = "app_management")]
-    [ProducesResponseType(typeof(OfferProviderResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AppProviderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public Task<OfferProviderResponse> GetAppDetailsForStatusAsync([FromRoute] Guid appId) =>
+    public Task<AppProviderResponse> GetAppDetailsForStatusAsync([FromRoute] Guid appId) =>
         this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppDetailsForStatusAsync(appId, iamUserId));
     
     /// <summary>

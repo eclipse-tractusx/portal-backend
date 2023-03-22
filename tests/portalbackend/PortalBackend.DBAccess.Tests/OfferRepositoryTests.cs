@@ -470,7 +470,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetProviderOfferDataWithConsentStatusAsync
 
     [Fact]
-    public async Task GetProviderOfferDataWithConsentStatusAsync_ReturnsExpectedResult()
+    public async Task GetProviderOfferDataWithConsentStatusAsync_APP_ReturnsExpectedResult()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
@@ -479,9 +479,42 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetProviderOfferDataWithConsentStatusAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP).ConfigureAwait(false);
         
         // Assert
+        result.IsProviderCompanyUser.Should().BeTrue();
         result.OfferProviderData.Should().NotBeNull();
-        result.OfferProviderData.LeadPictureId.Should().NotBeEmpty();
+        result.OfferProviderData!.LeadPictureId.Should().NotBeEmpty();
         result.OfferProviderData.LeadPictureId.Should().Be(new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1"));
+        result.OfferProviderData.UseCase.Should().NotBeNull();
+        result.OfferProviderData.ServiceTypeIds.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetProviderOfferDataWithConsentStatusAsync_APP_InvalidUser_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetProviderOfferDataWithConsentStatusAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), "invalid user", OfferTypeId.APP).ConfigureAwait(false);
+        
+        // Assert
+        result.IsProviderCompanyUser.Should().BeFalse();
+        result.OfferProviderData.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetProviderOfferDataWithConsentStatusAsync_SERVICE_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetProviderOfferDataWithConsentStatusAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.SERVICE).ConfigureAwait(false);
+        
+        // Assert
+        result.IsProviderCompanyUser.Should().BeTrue();
+        result.OfferProviderData.Should().NotBeNull();
+        result.OfferProviderData!.UseCase.Should().BeNull();
+        result.OfferProviderData.ServiceTypeIds.Should().NotBeNull();
     }
 
     #endregion

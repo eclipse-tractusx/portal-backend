@@ -346,39 +346,50 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(OfferProviderData OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId) =>
+    public Task<(OfferProviderData? OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId) =>
         _context.Offers
             .AsNoTracking()
             .AsSplitQuery() 
             .Where(a => a.Id == offerId && a.OfferTypeId == offerTypeId)
-            .Select(offer => new ValueTuple<OfferProviderData,bool>(
-                new OfferProviderData(
-                    offer.Name,
-                    offer.Provider,
-                    offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
-                    offer.ProviderCompany!.Name,
-                    offer.UseCases.Select(uc => new AppUseCaseData(uc.Id, uc.Name)),
-                    offer.OfferDescriptions.Select(description => new LocalizedDescription(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
-                    offer.OfferType!.AgreementAssignedOfferTypes
-                    .Select(aaot => aaot.Agreement)
-                    .Select(agreement => new AgreementAssignedOfferData(
-                        agreement!.Id, 
-                        agreement.Name,
-                        agreement.Consents.SingleOrDefault(consent => consent.ConsentAssignedOffers.Any(cao => cao.OfferId == offer.Id))!.ConsentStatusId)),
-                    offer.SupportedLanguages.Select(l => l.ShortName),
-                    offer.OfferLicenses
-                        .Select(license => license.Licensetext)
-                        .FirstOrDefault(),
-                    offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_IMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id),
-                    offer.MarketingUrl,
-                    offer.ContactEmail,
-                    offer.ContactNumber,
-                    offer.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
-                    offer.SalesManagerId,
-                    offer.OfferAssignedPrivacyPolicies.Select(x => x.PrivacyPolicyId)),
-                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
-                ))
+            .Select(offer => new {
+                IsProviderCompany = offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
+                Offer = offer
+            })
+            .Select(x => new ValueTuple<OfferProviderData?,bool>(
+                x.IsProviderCompany
+                    ? new OfferProviderData(
+                        x.Offer.Name,
+                        x.Offer.Provider,
+                        x.Offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
+                        x.Offer.ProviderCompany!.Name,
+                        offerTypeId == OfferTypeId.APP
+                            ? x.Offer.UseCases.Select(uc => new AppUseCaseData(uc.Id, uc.Name))
+                            : null,
+                        x.Offer.OfferDescriptions.Select(description => new LocalizedDescription(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
+                        x.Offer.OfferType!.AgreementAssignedOfferTypes
+                            .Select(aaot => aaot.Agreement)
+                            .Select(agreement => new AgreementAssignedOfferData(
+                                agreement!.Id, 
+                                agreement.Name,
+                                agreement.Consents.SingleOrDefault(consent => consent.ConsentAssignedOffers.Any(cao => cao.OfferId == x.Offer.Id))!.ConsentStatusId)),
+                        x.Offer.SupportedLanguages.Select(l => l.ShortName),
+                        x.Offer.OfferLicenses
+                            .Select(license => license.Licensetext)
+                            .FirstOrDefault(),
+                        x.Offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_IMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id),
+                        x.Offer.MarketingUrl,
+                        x.Offer.ContactEmail,
+                        x.Offer.ContactNumber,
+                        x.Offer.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
+                        x.Offer.SalesManagerId,
+                        x.Offer.OfferAssignedPrivacyPolicies.Select(x => x.PrivacyPolicyId),
+                        offerTypeId == OfferTypeId.SERVICE
+                            ? x.Offer.ServiceDetails.Select(x => x.ServiceTypeId)
+                            : null)
+                    : null,
+                x.IsProviderCompany))
             .SingleOrDefaultAsync();
+
     ///<inheritdoc/>
     public Task<(bool OfferExists, bool IsProviderCompanyUser)> IsProviderCompanyUserAsync(Guid offerId, string userId, OfferTypeId offerTypeId) =>
         _context.Offers

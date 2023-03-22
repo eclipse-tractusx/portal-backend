@@ -160,8 +160,31 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         _offerService.CreateOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, userId, OfferTypeId.APP);
     
     /// <inheritdoc/>
-    public Task<OfferProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId) =>
-        _offerService.GetProviderOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP);
+    public async Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId)
+    {
+        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP).ConfigureAwait(false);
+        if (result.UseCase == null)
+        {
+            throw new UnexpectedConditionException("usecase should never be null here");
+        }
+        return new AppProviderResponse(
+            result.Title,
+            result.Provider,
+            result.LeadPictureId,
+            result.ProviderName,
+            result.UseCase,
+            result.Descriptions,
+            result.Agreements,
+            result.SupportedLanguageCodes,
+            result.Price,
+            result.Images,
+            result.ProviderUri,
+            result.ContactEmail,
+            result.ContactNumber,
+            result.Documents,
+            result.SalesManagerId,
+            result.PrivacyPolicies);
+    }
 
     /// <inheritdoc/>
     public async Task DeleteAppRoleAsync(Guid appId, Guid roleId, string iamUserId)
