@@ -171,7 +171,7 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var appId = Guid.NewGuid();
-        var data = _fixture.Create<OfferProviderResponse>();
+        var data = _fixture.Create<AppProviderResponse>();
         A.CallTo(() => _logic.GetAppDetailsForStatusAsync(A<Guid>._, A<string>._))
             .ReturnsLazily(() => data);
 

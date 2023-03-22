@@ -88,6 +88,25 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     public Task<OfferAgreementConsent> GetServiceAgreementConsentAsync(Guid serviceId, string iamUserId) => 
         _offerService.GetProviderOfferAgreementConsentById(serviceId,  iamUserId, OfferTypeId.SERVICE);
 
-    public Task<OfferProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, string userId) =>
-        _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, userId, OfferTypeId.SERVICE);
+    public async Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, string userId)
+    {
+        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, userId, OfferTypeId.SERVICE).ConfigureAwait(false);
+        if (result.ServiceTypeIds == null)
+        {
+            throw new UnexpectedConditionException("serviceTypeIds should never be null here");
+        }
+        return new ServiceProviderResponse(
+            result.Title,
+            result.LeadPictureId,
+            result.Descriptions,
+            result.Agreements,
+            result.Price,
+            result.Images,
+            result.ProviderUri,
+            result.ContactEmail,
+            result.ContactNumber,
+            result.Documents,
+            result.SalesManagerId,
+            result.ServiceTypeIds);
+    }
 }

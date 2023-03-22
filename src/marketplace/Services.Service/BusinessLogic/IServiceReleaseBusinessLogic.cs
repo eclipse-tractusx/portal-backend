@@ -62,5 +62,5 @@ public interface IServiceReleaseBusinessLogic
     /// <param name="serviceId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<OfferProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, string userId);
+    Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, string userId);
 }

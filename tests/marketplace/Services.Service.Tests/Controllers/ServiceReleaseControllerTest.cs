@@ -119,7 +119,7 @@ public class ServiceReleaseControllerTest
     {
         //Arrange
         var serviceId = Guid.NewGuid();
-        var data = _fixture.Create<OfferProviderResponse>();
+        var data = _fixture.Create<ServiceProviderResponse>();
         A.CallTo(() => _logic.GetServiceDetailsForStatusAsync(A<Guid>._, A<string>._))
             .ReturnsLazily(() => data);
 
