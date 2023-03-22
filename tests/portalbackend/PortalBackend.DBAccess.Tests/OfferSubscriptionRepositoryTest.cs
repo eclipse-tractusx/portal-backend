@@ -85,15 +85,15 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.GetOfferSubscriptionStateForCompanyAsync(
-            new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"),
+            new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"),
             new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
-            OfferTypeId.APP).ConfigureAwait(false);
+            OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result.Should().NotBe(default);
         result.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
-        result.OfferSubscriptionId.Should().Be(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"));
+        result.OfferSubscriptionId.Should().Be(new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"));
     }
 
     [Fact]
@@ -265,6 +265,257 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.Exists.Should().BeTrue();
         result.IsUserOfCompany.Should().BeFalse();
         result.Details.Name.Should().Be("SDE with EDC");
+    }
+
+    #endregion
+
+    #region GetOfferSubscriptionDataForProcessIdAsync
+
+    [Fact]
+    public async Task GetOfferSubscriptionDataForProcessIdAsync_WithValidData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferSubscriptionDataForProcessIdAsync(new Guid("0cc208c3-bdf6-456c-af81-6c3ebe14fe06")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.OfferSubscriptionId.Should().Be(new Guid("e8886159-9258-44a5-88d8-f5735a197a09"));
+        result.StatusId.Should().Be(OfferSubscriptionStatusId.PENDING);
+    }
+    
+    [Fact]
+    public async Task GetOfferSubscriptionDataForProcessIdAsync_WithNotExistingId_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferSubscriptionDataForProcessIdAsync(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetOfferSubscriptionDataForProcessIdAsync
+
+    [Fact]
+    public async Task GetTriggerProviderInformation_WithValidData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetTriggerProviderInformation(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.OfferName.Should().Be("Trace-X");
+        result.IsSingleInstance.Should().BeTrue();
+    }
+    
+    [Fact]
+    public async Task GetTriggerProviderInformation_WithNotExistingId_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetTriggerProviderInformation(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetSubscriptionActivationDataByIdAsync
+
+    [Fact]
+    public async Task GetSubscriptionActivationDataByIdAsync_WithValidData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetSubscriptionActivationDataByIdAsync(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.OfferName.Should().Be("Trace-X");
+        result.InstanceData.Should().Be((true, "https://test.com"));
+        result.Status.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+    }
+    
+    [Fact]
+    public async Task GetSubscriptionActivationDataByIdAsync_WithNotExistingId_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetSubscriptionActivationDataByIdAsync(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetProcessStepData
+
+    [Fact]
+    public async Task GetProcessStepData_WithValidData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetProcessStepData(new Guid("e8886159-9258-44a5-88d8-f5735a197a09"), new []
+            {
+                ProcessStepTypeId.START_AUTOSETUP
+            }).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.IsActive.Should().BeFalse();
+        result.ProcessSteps.Should().HaveCount(1);
+    }
+    
+    [Fact]
+    public async Task GetProcessStepData_WithNotExistingId_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetProcessStepData(Guid.NewGuid(), new [] { ProcessStepTypeId.START_AUTOSETUP }).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetClientCreationData
+
+    [Fact]
+    public async Task GetClientCreationData_WithValidData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetClientCreationData(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.OfferType.Should().Be(OfferTypeId.APP);
+        result.IsTechnicalUserNeeded.Should().BeTrue();
+    }
+    
+    [Fact]
+    public async Task GetClientCreationData_WithNotExistingId_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetClientCreationData(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetTechnicalUserCreationData
+
+    [Fact]
+    public async Task GetTechnicalUserCreationData_WithValidData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetTechnicalUserCreationData(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Bpn.Should().Be("BPNL00000003CRHK");
+        result.OfferName.Should().Be("Trace-X");
+        result.IsTechnicalUserNeeded.Should().BeTrue();
+    }
+    
+    [Fact]
+    public async Task GetTechnicalUserCreationData_WithNotExistingId_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetTechnicalUserCreationData(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region GetTriggerProviderCallbackInformation
+
+    [Fact]
+    public async Task GetTriggerProviderCallbackInformation_WithValidData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetTriggerProviderCallbackInformation(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Status.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+    }
+    
+    [Fact]
+    public async Task GetTriggerProviderCallbackInformation_WithNotExistingId_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetTriggerProviderCallbackInformation(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(default);
+    }
+
+    #endregion
+
+    #region Create Notification
+
+    [Fact]
+    public async Task CreateNotification_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateOfferSubscriptionProcessData(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"), "https://www.test.de");
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        results.OfferUrl.Should().Be("https://www.test.de");
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<OfferSubscriptionProcessData>().Which.OfferUrl.Should().Be("https://www.test.de");
     }
 
     #endregion
