@@ -108,7 +108,7 @@ public class OfferRepository : IOfferRepository
                 offer.Provider,
                 offer.ContactEmail,
                 offer.ContactNumber,
-                offer.UseCases.Select(u => u.Name),
+                offer.UseCases.Select(uc => new AppUseCaseData(uc.Id, uc.Name)),
                 _context.Languages.Any(l => l.ShortName == languageShortName)
                     ? offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
                         ?? offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == defaultLanguageShortName)!.DescriptionLong
@@ -357,7 +357,7 @@ public class OfferRepository : IOfferRepository
                     offer.Provider,
                     offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                     offer.ProviderCompany!.Name,
-                    offer.UseCases.Select(uc => uc.Name),
+                    offer.UseCases.Select(uc => new AppUseCaseData(uc.Id, uc.Name)),
                     offer.OfferDescriptions.Select(description => new LocalizedDescription(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
                     offer.OfferType!.AgreementAssignedOfferTypes
                     .Select(aaot => aaot.Agreement)

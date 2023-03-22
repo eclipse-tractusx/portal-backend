@@ -45,7 +45,7 @@ public record OfferProviderData(
     string Provider,
     Guid LeadPictureId,
     string? ProviderName,
-    IEnumerable<string> UseCase,
+    IEnumerable<AppUseCaseData> UseCase,
     IEnumerable<LocalizedDescription> Descriptions,
     IEnumerable<AgreementAssignedOfferData> Agreements,
     IEnumerable<string> SupportedLanguageCodes,
