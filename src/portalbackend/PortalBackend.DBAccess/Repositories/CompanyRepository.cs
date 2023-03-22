@@ -198,4 +198,17 @@ public class CompanyRepository : ICompanyRepository
                     aacr.Agreement!.Name,
                     aacr.Agreement.Consents.Where(c => c.CompanyId == company.CompanyId).Select(x => x.ConsentStatusId).SingleOrDefault()))))
         .AsAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<(bool isCompanyActive, Guid companyId, IEnumerable<CompanyRoleId> companyRoleId, Guid companyUserId, IEnumerable<CompanyRoleId> agreementAssignedRole)> GetCompanyRolesDataAsync(string iamUserId) =>
+    _context.Companies
+    .Where(company => company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
+    .Select( company => new ValueTuple<bool,Guid,IEnumerable<CompanyRoleId>,Guid,IEnumerable<CompanyRoleId>>(
+        company.CompanyStatusId == CompanyStatusId.ACTIVE,
+        company.Id,
+        company.CompanyRoles.Select(cr => cr.Id),
+        company.CompanyUsers.Select(cu => cu.Id).FirstOrDefault(),
+        company.Agreements.SelectMany(agreement => agreement.AgreementAssignedCompanyRoles)
+            .Select(aacr => aacr.CompanyRoleId)
+    )).SingleOrDefaultAsync();
 }
