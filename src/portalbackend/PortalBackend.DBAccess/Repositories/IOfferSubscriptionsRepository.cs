@@ -131,7 +131,6 @@ public interface IOfferSubscriptionsRepository
     Task<OfferSubscriptionProcessInformationData?> GetOfferSubscriptionDataForProcessIdAsync(Guid processId);
 
     Task<TriggerProviderInformation?> GetTriggerProviderInformation(Guid offerSubscriptionId);
-    Task<Guid?> GetProcessForOfferSubscriptionId(Guid offerSubscriptionId);
     Task<SubscriptionActivationData?> GetSubscriptionActivationDataByIdAsync(Guid offerSubscriptionId);
     Task<VerifyOfferSubscriptionProcessData?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
     Task<OfferSubscriptionClientCreationData?> GetClientCreationData(Guid offerSubscriptionId);

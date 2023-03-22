@@ -61,6 +61,7 @@ public class OfferSetupServiceTests
     private readonly IAppSubscriptionDetailRepository _appSubscriptionDetailRepository;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
     private readonly IOfferRepository _offerRepository;
+    private readonly IUserRolesRepository _userRolesRepository;
     private readonly INotificationRepository _notificationRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningManager _provisioningManager;
@@ -88,6 +89,7 @@ public class OfferSetupServiceTests
         _clientRepository = A.Fake<IClientRepository>();
         _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
         _offerRepository = A.Fake<IOfferRepository>();
+        _userRolesRepository = A.Fake<IUserRolesRepository>();
         _provisioningManager = A.Fake<IProvisioningManager>();
         _notificationRepository = A.Fake<INotificationRepository>();
         _serviceAccountCreation = A.Fake<IServiceAccountCreation>();
@@ -103,6 +105,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
 
         _sut = new OfferSetupService(_portalRepositories, _provisioningManager, _serviceAccountCreation, _notificationService, _offerSubscriptionProcessService, _mailingService, _technicalUserProfileService);
     }
@@ -833,6 +836,274 @@ public class OfferSetupServiceTests
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
         result.stepsToSkip.Should().BeNull();
+    }
+
+    #endregion
+    
+    #region CreateClient
+
+    [Fact]
+    public async Task CreateClient_WithNotExistingOfferSubscription_ThrowsNotFoundException()
+    {
+        // Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        A.CallTo(() => _offerSubscriptionsRepository.GetClientCreationData(offerSubscriptionId))
+            .ReturnsLazily(() => (OfferSubscriptionClientCreationData?) null);
+
+        // Act
+        async Task Act() => await _sut.CreateClient(offerSubscriptionId).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"offer subscription {offerSubscriptionId} does not exist");
+    }
+    
+    [Fact]
+    public async Task CreateClient_WithService_ThrowsConflictException()
+    {
+        // Arrange
+        var clientCreationData = _fixture.Build<OfferSubscriptionClientCreationData>()
+            .With(x => x.OfferType, OfferTypeId.SERVICE)
+            .Create();
+        var offerSubscriptionId = Guid.NewGuid();
+        A.CallTo(() => _offerSubscriptionsRepository.GetClientCreationData(offerSubscriptionId))
+            .ReturnsLazily(() => clientCreationData);
+
+        // Act
+        async Task Act() => await _sut.CreateClient(offerSubscriptionId).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Offers without type {OfferTypeId.APP} are not eligible to run");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CreateClient_WithValidData_ReturnsExpected(bool technicalUserNeeded)
+    {
+        // Arrange
+        const string clientId = "cl1";
+        const string url = "https://www.test.de";
+        var clients = new List<IamClient>();
+        var offerSubscriptionId = Guid.NewGuid();
+        var iamClientId = Guid.NewGuid();
+        var data = new OfferSubscriptionClientCreationData(_validOfferId, OfferTypeId.APP, url, technicalUserNeeded);
+        var detail = new AppSubscriptionDetail(Guid.NewGuid(), offerSubscriptionId); 
+        A.CallTo(() => _offerSubscriptionsRepository.GetClientCreationData(offerSubscriptionId))
+            .ReturnsLazily(() => data);
+        A.CallTo(() => _userRolesRepository.GetUserRolesForOfferIdAsync(_validOfferId))
+            .ReturnsLazily(() => new List<string> {"TestRole"});
+        A.CallTo(() => _provisioningManager.SetupClientAsync($"{url}/*", url, A<IEnumerable<string>>._, true))
+            .ReturnsLazily(() => clientId);
+        A.CallTo(() => _clientRepository.CreateClient(clientId, A<Action<IamClient>>._))
+            .Invokes((string paramClientId, Action<IamClient> setOptionalProperties) =>
+            {
+                var client = new IamClient(iamClientId, paramClientId);
+                setOptionalProperties.Invoke(client);
+                clients.Add(client);
+            });
+        A.CallTo(() => _clientRepository.CreateClient(clientId, A<Action<IamClient>>._))
+            .Invokes((string paramClientId, Action<IamClient> setOptionalProperties) =>
+            {
+                var client = new IamClient(iamClientId, paramClientId);
+                setOptionalProperties.Invoke(client);
+                clients.Add(client);
+            })
+            .Returns(new IamClient(iamClientId, clientId));
+        A.CallTo(() => _appSubscriptionDetailRepository.CreateAppSubscriptionDetail(offerSubscriptionId, A<Action<AppSubscriptionDetail?>>._))
+            .Invokes((Guid _, Action<AppSubscriptionDetail> setOptionalParameter) =>
+            {
+                setOptionalParameter.Invoke(detail);
+            });
+
+
+        // Act
+        var result = await _sut.CreateClient(offerSubscriptionId).ConfigureAwait(false);
+        
+        // Assert
+        detail.AppSubscriptionUrl.Should().Be("https://www.test.de");
+        result.nextStepTypeIds.Should().ContainSingle().And
+            .AllSatisfy(x => x.Should().Be(technicalUserNeeded? 
+                ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION :
+                ProcessStepTypeId.ACTIVATE_APPLICATION));
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.modified.Should().BeTrue();
+        result.processMessage.Should().BeNull();
+        result.stepsToSkip.Should().BeNull();
+        A.CallTo(() => _appInstanceRepository.CreateAppInstance(_validOfferId, iamClientId))
+            .MustHaveHappenedOnceExactly();
+        clients.Should().ContainSingle().And.AllSatisfy(x => x.Disabled.Should().BeFalse());
+    }
+
+    #endregion
+    
+    #region CreateTechnicalUser
+
+    [Fact]
+    public async Task CreateTechnicalUser_WithNotExistingOfferSubscription_ThrowsNotFoundException()
+    {
+        // Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        A.CallTo(() => _offerSubscriptionsRepository.GetTechnicalUserCreationData(offerSubscriptionId))
+            .ReturnsLazily(() => (OfferSubscriptionTechnicalUserCreationData?) null);
+
+        // Act
+        async Task Act() => await _sut.CreateTechnicalUser(offerSubscriptionId, null!, null!).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Offer subscription {offerSubscriptionId} does not exist");
+    }
+
+    [Fact]
+    public async Task CreateTechnicalUser_WithTechnicalUserNotNeeded_ThrowsConflictException()
+    {
+        // Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        var data = new OfferSubscriptionTechnicalUserCreationData(false, "cl1", "Test App", "Stark Industries", _companyUserCompanyId, Bpn, OfferTypeId.SERVICE);
+        A.CallTo(() => _offerSubscriptionsRepository.GetTechnicalUserCreationData(offerSubscriptionId))
+            .ReturnsLazily(() => data);
+
+        // Act
+        async Task Act() => await _sut.CreateTechnicalUser(offerSubscriptionId, null!, null!).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("Technical user is not needed");
+    }
+
+    [Theory]
+    [InlineData("cl1")]
+    [InlineData(null)]
+    public async Task CreateTechnicalUser_WithTechnicalUserNeeded_ReturnsExpected(string? clientId)
+    {
+        // Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        var serviceAccountId = Guid.NewGuid();
+        var userRoleId = Guid.NewGuid();
+        var userRoleData = new List<UserRoleData> {new(userRoleId, "Client1", "TestRole")};
+        var data = new OfferSubscriptionTechnicalUserCreationData(true, clientId, "Test App", "Stark Industries", _companyUserCompanyId, Bpn, OfferTypeId.SERVICE);
+        var serviceAccountData = _fixture.Create<ServiceAccountData>();
+        var companyServiceAccount = _fixture.Build<CompanyServiceAccount>()
+            .With(x => x.OfferSubscriptionId, (Guid?)null)
+            .Create();
+        A.CallTo(() => _offerSubscriptionsRepository.GetTechnicalUserCreationData(offerSubscriptionId))
+            .ReturnsLazily(() => data);
+        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
+            .ReturnsLazily(() => userRoleData.ToAsyncEnumerable());
+        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, _companyUserCompanyId, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == Bpn), CompanyServiceAccountTypeId.MANAGED, false, A<Action<CompanyServiceAccount>>._))
+            .Invokes((ServiceAccountCreationInfo _, Guid _, IEnumerable<string> _, CompanyServiceAccountTypeId _, bool _, Action<CompanyServiceAccount>? setOptionalParameter) =>
+            {
+                setOptionalParameter?.Invoke(companyServiceAccount);
+            })
+            .Returns(new ValueTuple<string, ServiceAccountData, Guid, List<UserRoleData>>(
+                clientId ?? $"{data.OfferName}-{data.CompanyName}",
+                serviceAccountData,
+                serviceAccountId,
+                userRoleData));
+        var itAdminRoles = new Dictionary<string, IEnumerable<string>> {{"Test", new[] {"AdminRoles"}}};
+        var serviceAccountRoles = new Dictionary<string, IEnumerable<string>> {{"Test", new[] {"ServiceAccount"}}};
+        
+        // Act
+        var result = await _sut.CreateTechnicalUser(offerSubscriptionId, itAdminRoles, serviceAccountRoles).ConfigureAwait(false);
+        
+        // Assert
+        companyServiceAccount.OfferSubscriptionId!.Value.Should().Be(offerSubscriptionId);
+        result.nextStepTypeIds.Should().ContainSingle().And
+            .AllSatisfy(x => x.Should().Be(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION));
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.modified.Should().BeTrue();
+        result.processMessage.Should().BeNull();
+        result.stepsToSkip.Should().BeNull();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == NotificationTypeId.TECHNICAL_USER_CREATION), _companyUserCompanyId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
+    #region ActivateSubscription
+
+    [Fact]
+    public async Task ActivateSubscription_WithNotExistingOfferSubscription_ThrowsNotFoundException()
+    {
+        // Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId))
+            .ReturnsLazily(() => (SubscriptionActivationData?) null);
+
+        // Act
+        async Task Act() => await _sut.ActivateSubscription(offerSubscriptionId, null!, null!).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Offer Subscription {offerSubscriptionId} does not exist");
+    }
+
+    [Theory]
+    [InlineData(null, true, OfferTypeId.APP)]
+    [InlineData(null, false, OfferTypeId.APP)]
+    [InlineData("test@email.com", true, OfferTypeId.APP)]
+    [InlineData("test@email.com", false, OfferTypeId.APP)]
+    [InlineData(null, true, OfferTypeId.SERVICE)]
+    [InlineData(null, false, OfferTypeId.SERVICE)]
+    [InlineData("test@email.com", true, OfferTypeId.SERVICE)]
+    [InlineData("test@email.com", false, OfferTypeId.SERVICE)]
+    public async Task ActivateSubscription_WithValidData_ReturnsExpected(string? requesterEmail, bool isSingleInstance, OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, _companyUserCompanyId, OfferSubscriptionStatusId.PENDING, _companyUser.Id, _companyUser.Id);
+        var subscriptionProcessData = new List<OfferSubscriptionProcessData>
+        {
+            new(offerSubscription.Id, "https://www.test.de")
+        };
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
+            .ReturnsLazily(() => new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, offerTypeId, "Test App", "Stark Industries", _companyUserCompanyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new (isSingleInstance, null), new []{Guid.NewGuid()}));
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscription.Id, A<Action<OfferSubscription>>._))
+            .Invokes((Guid _, Action<OfferSubscription> setOptionalParameter) =>
+            {
+                setOptionalParameter.Invoke(offerSubscription);
+            });
+        A.CallTo(() => _offerSubscriptionsRepository.RemoveOfferSubscriptionProcessData(offerSubscription.Id))
+            .Invokes((Guid id) =>
+            {
+                subscriptionProcessData.Remove(subscriptionProcessData.Single(x => x.OfferSubscriptionId == id));
+            });
+        var itAdminRoles = new Dictionary<string, IEnumerable<string>> {{"Test", new[] {"AdminRoles"}}};
+
+        // Act
+        var result = await _sut.ActivateSubscription(offerSubscription.Id, itAdminRoles, "https://portal-backend.dev.demo.catena-x.net/").ConfigureAwait(false);
+        
+        // Assert
+        var notificationTypeId = offerTypeId == OfferTypeId.APP
+            ? NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION
+            : NotificationTypeId.SERVICE_ACTIVATION;
+        offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+        if(isSingleInstance)
+        {
+            result.nextStepTypeIds.Should().BeNull();
+        }
+        else
+        {
+            result.nextStepTypeIds.Should().ContainSingle().And
+                .AllSatisfy(x => x.Should().Be(ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK));
+        }
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.modified.Should().BeTrue();
+        result.processMessage.Should().BeNull();
+        result.stepsToSkip.Should().BeNull();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), _companyUserCompanyId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, notificationTypeId, false, A<Action<Notification>>._))
+            .MustHaveHappenedOnceExactly();
+        if (string.IsNullOrWhiteSpace(requesterEmail))
+        {
+            A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
+        }
+        else
+        {
+            A.CallTo(() => _mailingService.SendMails(requesterEmail, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappenedOnceExactly();
+        }
     }
 
     #endregion

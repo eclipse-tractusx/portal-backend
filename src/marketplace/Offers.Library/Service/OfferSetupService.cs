@@ -482,6 +482,11 @@ public class OfferSetupService : IOfferSetupService
             throw new NotFoundException($"Offer subscription {offerSubscriptionId} does not exist");
         }
 
+        if (!data.IsTechnicalUserNeeded)
+        {
+            throw new ConflictException("Technical user is not needed");
+        }
+
         var technicalUserClientId = data.ClientId ?? $"{data.OfferName}-{data.CompanyName}";
         var createTechnicalUserData = new CreateTechnicalUserData(data.CompanyId, data.OfferName, data.Bpn, technicalUserClientId, true);
         var technicalUserInfoData = await CreateTechnicalUserForSubscription(offerSubscriptionId, createTechnicalUserData).ConfigureAwait(false);
@@ -498,7 +503,7 @@ public class OfferSetupService : IOfferSetupService
             new[]
             {
                 (content, NotificationTypeId.TECHNICAL_USER_CREATION)
-            },
+            }!,
             data.CompanyId).AwaitAll().ConfigureAwait(false);
 
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
@@ -565,6 +570,11 @@ public class OfferSetupService : IOfferSetupService
         {
             notification.Content = notificationContent;
         });
+        
+        if (!string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
+        {
+            await SendMail(basePortalAddress, $"{offerDetails.RequesterFirstname} {offerDetails.RequesterLastname}", offerDetails.RequesterEmail, offerDetails.OfferName).ConfigureAwait(false);
+        }
 
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             offerDetails.InstanceData.IsSingleInstance ? null : new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK },
