@@ -280,6 +280,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
     [InlineData(ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION, true)]
     [InlineData(ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, true)]
     [InlineData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, true)]
+    [InlineData(ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK, true)]
     [InlineData(ProcessStepTypeId.START_AUTOSETUP, false)]
     [InlineData(ProcessStepTypeId.END_CLEARING_HOUSE, false)]
     [InlineData(ProcessStepTypeId.START_CLEARING_HOUSE, false)]
@@ -305,13 +306,14 @@ public class OfferSubscriptionProcessTypeExecutorTests
         var result = _executor.GetExecutableStepTypeIds();
 
         // Assert
-        result.Should().HaveCount(5)
+        result.Should().HaveCount(6)
             .And.Satisfy(
                 x => x == ProcessStepTypeId.TRIGGER_PROVIDER,
                 x => x == ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION,
                 x => x == ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION,
                 x => x == ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION,
-                x => x == ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
+                x => x == ProcessStepTypeId.ACTIVATE_SUBSCRIPTION,
+                x => x == ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK
             );
     }
 

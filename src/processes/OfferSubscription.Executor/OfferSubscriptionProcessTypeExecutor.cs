@@ -42,7 +42,8 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
         ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION,
         ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION,
         ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION,
-        ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
+        ProcessStepTypeId.ACTIVATE_SUBSCRIPTION,
+        ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK
     };
 
     private Guid _offerSubscriptionId;
