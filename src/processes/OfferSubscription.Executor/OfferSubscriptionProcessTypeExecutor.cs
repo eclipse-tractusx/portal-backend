@@ -111,6 +111,9 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
                 ProcessStepTypeId.ACTIVATE_SUBSCRIPTION => await _offerSetupService
                     .ActivateSubscription(_offerSubscriptionId, _settings.ItAdminRoles, _settings.BasePortalAddress)
                     .ConfigureAwait(false),
+                ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK => await _offerProviderBusinessLogic
+                    .TriggerProviderCallback(_offerSubscriptionId, cancellationToken)
+                    .ConfigureAwait(false),
                 _ => (null, null, ProcessStepStatusId.TODO, false, null)
             };
         }

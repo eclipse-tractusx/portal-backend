@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
@@ -515,6 +516,29 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);
         changedEntries.Single().Entity.Should().BeOfType<OfferSubscriptionProcessData>().Which.OfferUrl.Should().Be("https://www.test.de");
+    }
+
+    #endregion
+
+    #region RemoveOfferSubscriptionProcessData
+
+    [Fact]
+    public async Task RemoveOfferSubscriptionProcessData_WithExisting_RemovesOfferSubscriptionProcessData()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.RemoveOfferSubscriptionProcessData(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"));
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Deleted);
     }
 
     #endregion

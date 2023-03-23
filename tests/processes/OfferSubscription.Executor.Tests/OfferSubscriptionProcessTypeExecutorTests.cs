@@ -24,19 +24,17 @@ using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
-using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.Tests;
 
 public class OfferSubscriptionProcessTypeExecutorTests
 {
     private readonly Guid _processId = Guid.NewGuid();
+    private readonly Guid _failingProcessId = Guid.NewGuid();
     private readonly Guid _subscriptionId = Guid.NewGuid();
+    private readonly Guid _failingSubscriptionId = Guid.NewGuid();
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionRepository;
@@ -133,7 +131,90 @@ public class OfferSubscriptionProcessTypeExecutorTests
     }
 
     [Fact]
-    public async Task ExecuteProcessStep_ValidSubscription_ReturnsExpected()
+    public async Task ExecuteProcessStep_WithUnrecoverableServiceException_Throws()
+    {
+        // Act initialize
+        var initializationResult = await _executor.InitializeProcess(_failingProcessId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+
+        // Assert initialize
+        initializationResult.Should().NotBeNull();
+        initializationResult.Modified.Should().BeFalse();
+        initializationResult.ScheduleStepTypeIds.Should().BeNull();
+
+        // Arrange
+        const ProcessStepTypeId processStepTypeId = ProcessStepTypeId.TRIGGER_PROVIDER;
+        var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
+        A.CallTo(() => _offerProviderBusinessLogic.TriggerProvider(_failingSubscriptionId, A<CancellationToken>._))
+            .ThrowsAsync(new ServiceException("test"));
+
+        // Act
+        var result = await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Modified.Should().BeTrue();
+        result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.FAILED);
+        result.ProcessMessage.Should().Be("test");
+    }
+
+    [Fact]
+    public async Task ExecuteProcessStep_WithConflictException_Throws()
+    {
+        // Act initialize
+        var initializationResult = await _executor.InitializeProcess(_failingProcessId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+
+        // Assert initialize
+        initializationResult.Should().NotBeNull();
+        initializationResult.Modified.Should().BeFalse();
+        initializationResult.ScheduleStepTypeIds.Should().BeNull();
+
+        // Arrange
+        const ProcessStepTypeId processStepTypeId = ProcessStepTypeId.TRIGGER_PROVIDER;
+        var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
+        A.CallTo(() => _offerProviderBusinessLogic.TriggerProvider(_failingSubscriptionId, A<CancellationToken>._))
+            .ThrowsAsync(new ConflictException("test"));
+
+        // Act
+        var result = await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Modified.Should().BeTrue();
+        result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.FAILED);
+        result.ProcessMessage.Should().Be("test");
+    }
+
+    [Fact]
+    public async Task ExecuteProcessStep_WithRecoverableServiceException_Throws()
+    {
+        // Act initialize
+        var initializationResult = await _executor.InitializeProcess(_failingProcessId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+
+        // Assert initialize
+        initializationResult.Should().NotBeNull();
+        initializationResult.Modified.Should().BeFalse();
+        initializationResult.ScheduleStepTypeIds.Should().BeNull();
+
+        // Arrange
+        const ProcessStepTypeId processStepTypeId = ProcessStepTypeId.TRIGGER_PROVIDER;
+        var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
+        A.CallTo(() => _offerProviderBusinessLogic.TriggerProvider(_failingSubscriptionId, A<CancellationToken>._))
+            .ThrowsAsync(new ServiceException("test", true));
+
+        // Act
+        var result = await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Modified.Should().BeTrue();
+        result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.TODO);
+    }
+
+    [Theory]
+    [InlineData(ProcessStepTypeId.TRIGGER_PROVIDER, ProcessStepTypeId.START_AUTOSETUP)]
+    [InlineData(ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION)]
+    [InlineData(ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION, ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION)]
+    [InlineData(ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION)]
+    [InlineData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK)]
+    [InlineData(ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK, null)]
+    public async Task ExecuteProcessStep_ValidSubscription_ReturnsExpected(ProcessStepTypeId processStepTypeId, ProcessStepTypeId? expectedResult)
     {
         // Act initialize
         var initializationResult = await _executor.InitializeProcess(_processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
@@ -145,15 +226,20 @@ public class OfferSubscriptionProcessTypeExecutorTests
 
         // Arrange execute
         var executeProcessStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
-        A.CallTo(() => _offerProviderBusinessLogic.TriggerProvider(_subscriptionId, A<CancellationToken>._))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.START_AUTOSETUP }, null, ProcessStepStatusId.DONE, true, null));
 
         // Act
-        var result = await _executor.ExecuteProcessStep(ProcessStepTypeId.TRIGGER_PROVIDER, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var result = await _executor.ExecuteProcessStep(processStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Modified.Should().BeTrue();
-        result.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(x => x == ProcessStepTypeId.START_AUTOSETUP);
+        if (expectedResult == null)
+        {
+            result.ScheduleStepTypeIds.Should().BeNull();
+        }
+        else
+        {
+            result.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(x => x == expectedResult);
+        }
     }
 
     #endregion
@@ -168,6 +254,20 @@ public class OfferSubscriptionProcessTypeExecutorTests
 
         // Assert
         result.Should().Be(ProcessTypeId.OFFER_SUBSCRIPTION);
+    }
+
+    #endregion
+
+    #region GetProcessTypeId
+
+    [Fact]
+    public async Task IsLockRequested_ReturnsExpected()
+    {
+        // Act
+        var result = await _executor.IsLockRequested(_fixture.Create<ProcessStepTypeId>()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
     }
 
     #endregion
@@ -221,35 +321,26 @@ public class OfferSubscriptionProcessTypeExecutorTests
 
     private void SetupFakes()
     {
+        A.CallTo(() => _offerSubscriptionRepository.GetOfferSubscriptionDataForProcessIdAsync(_failingProcessId))
+            .ReturnsLazily(() => _failingSubscriptionId);
         A.CallTo(() => _offerSubscriptionRepository.GetOfferSubscriptionDataForProcessIdAsync(_processId))
             .ReturnsLazily(() => _subscriptionId);
-        A.CallTo(() => _offerSubscriptionRepository.GetOfferSubscriptionDataForProcessIdAsync(A<Guid>.That.Not.Matches(x => x == _processId)))
+        A.CallTo(() => _offerSubscriptionRepository.GetOfferSubscriptionDataForProcessIdAsync(A<Guid>.That.Not.Matches(x => x == _processId || x == _failingProcessId)))
             .ReturnsLazily(() => Guid.Empty);
-
-        A.CallTo(() => _offerProviderBusinessLogic.TriggerProvider(A<Guid>.That.Not.Matches(x => x == _subscriptionId), A<CancellationToken>._))
-            .ThrowsAsync(() => new TestException("Test"));
-        A.CallTo(() => _offerSetupService.CreateSingleInstanceSubscriptionDetail(A<Guid>.That.Not.Matches(x => x == _subscriptionId)))
-            .ThrowsAsync(() => new TestException("Test"));
-        A.CallTo(() => _offerSetupService.CreateClient(A<Guid>.That.Not.Matches(x => x == _subscriptionId)))
-            .ThrowsAsync(() => new TestException("Test"));
-        A.CallTo(() => _offerSetupService.CreateTechnicalUser(A<Guid>.That.Not.Matches(x => x == _subscriptionId), A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._))
-            .ThrowsAsync(() => new TestException("Test"));
-        A.CallTo(() => _offerSetupService.ActivateSubscription(A<Guid>.That.Not.Matches(x => x == _subscriptionId), A<IDictionary<string, IEnumerable<string>>>._, A<string>._))
-            .ThrowsAsync(() => new TestException("Test"));
-        A.CallTo(() => _offerProviderBusinessLogic.TriggerProviderCallback(A<Guid>.That.Not.Matches(x => x == _subscriptionId), A<CancellationToken>._))
-            .ThrowsAsync(() => new TestException("Test"));
+        
+        A.CallTo(() => _offerProviderBusinessLogic.TriggerProvider(_subscriptionId, A<CancellationToken>._))
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.START_AUTOSETUP }, null, ProcessStepStatusId.DONE, true, null));
+        A.CallTo(() => _offerSetupService.CreateSingleInstanceSubscriptionDetail(_subscriptionId))
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION }, null, ProcessStepStatusId.DONE, true, null));
+        A.CallTo(() => _offerSetupService.CreateClient(_subscriptionId))
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION }, null, ProcessStepStatusId.DONE, true, null));
+        A.CallTo(() => _offerSetupService.CreateTechnicalUser(_subscriptionId, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._))
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION }, null, ProcessStepStatusId.DONE, true, null));
+        A.CallTo(() => _offerSetupService.ActivateSubscription(_subscriptionId, A<IDictionary<string, IEnumerable<string>>>._, A<string>._))
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK }, null, ProcessStepStatusId.DONE, true, null));
+        A.CallTo(() => _offerProviderBusinessLogic.TriggerProviderCallback(_subscriptionId, A<CancellationToken>._))
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(null, null, ProcessStepStatusId.DONE, true, null));
     }
 
     #endregion
-
-    [Serializable]
-    public class TestException : Exception
-    {
-        public TestException() { }
-        public TestException(string message) : base(message) { }
-        public TestException(string message, Exception inner) : base(message, inner) { }
-        protected TestException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
 }
