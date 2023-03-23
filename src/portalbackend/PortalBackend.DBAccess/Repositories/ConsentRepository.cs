@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -80,4 +81,21 @@ public class ConsentRepository : IConsentRepository
             setOptionalParameter.Invoke(consent);
         }
     }
+
+    public IEnumerable<Consent> AddAttachAndModifyConsents(IEnumerable<AppAgreementConsentStatus> initialItems, IEnumerable<AgreementConsentStatus> modifyItems, Guid offerId, Guid companyId, Guid companyUserId, DateTimeOffset utcNow) =>
+        _portalDbContext.AddAttachRange(
+            initialItems,
+            modifyItems,
+            initial => initial.AgreementId,
+            modify => modify.AgreementId,
+            initial => new Consent(initial.ConsentId),
+            modify =>
+            {
+                var consent = new Consent(Guid.NewGuid(), modify.AgreementId, companyId, companyUserId, modify.ConsentStatusId, utcNow);
+                CreateConsentAssignedOffer(consent.Id,offerId);
+                return consent;
+            },
+            (initial,modify) => initial.ConsentStatusId == modify.ConsentStatusId,
+            (consent,initial) => consent.ConsentStatusId = initial.ConsentStatusId,
+            (consent,modify) => consent.ConsentStatusId = modify.ConsentStatusId);
 }

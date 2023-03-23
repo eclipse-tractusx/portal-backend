@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -19,15 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
-{
-    public record CompanyRoleAgreementConsents(
-        [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleId> CompanyRoleIds,
-        [property: JsonPropertyName("agreements")] IEnumerable<AgreementConsentStatus> AgreementConsentStatuses);
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
-    public record AgreementConsentStatus(
-        [property: JsonPropertyName("agreementId")] Guid AgreementId,
-        [property: JsonPropertyName("consentStatus")] ConsentStatusId ConsentStatusId);
-}
+public record ConsentStatusData(Guid ConsentId, ConsentStatusId ConsentStatus);

@@ -154,14 +154,15 @@ public class AppReleaseProcessControllerTest
         //Arrange
         var appId = Guid.NewGuid();
         var data = _fixture.Create<OfferAgreementConsent>();
+        var consentStatusData = new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
         A.CallTo(() => _logic.SubmitOfferConsentAsync(A<Guid>._, A<OfferAgreementConsent>._, A<string>._))
-            .Returns(1);
+            .ReturnsLazily(() => Enumerable.Repeat(consentStatusData, 1));
 
         //Act
         var result = await this._controller.SubmitOfferConsentToAgreementsAsync(appId, data).ConfigureAwait(false);
         
         // Assert 
-        result.Should().Be(1);
+        result.Should().HaveCount(1);
         A.CallTo(() => _logic.SubmitOfferConsentAsync(appId, data, IamUserId))
             .MustHaveHappenedOnceExactly();
     }
