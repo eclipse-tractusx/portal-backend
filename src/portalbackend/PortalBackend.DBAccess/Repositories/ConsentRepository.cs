@@ -77,7 +77,7 @@ public class ConsentRepository : IConsentRepository
     {
         foreach (var consentId in consentIds)
         {
-            var consent = _portalDbContext.Consents.Attach(new Consent(consentId)).Entity;
+            var consent = _portalDbContext.Consents.Attach(new Consent(consentId, Guid.Empty, Guid.Empty, Guid.Empty, default, default)).Entity;
             setOptionalParameter.Invoke(consent);
         }
     }
@@ -88,7 +88,7 @@ public class ConsentRepository : IConsentRepository
             modifyItems,
             initial => initial.AgreementId,
             modify => modify.AgreementId,
-            initial => new Consent(initial.ConsentId),
+            initial => new Consent(initial.ConsentId, initial.AgreementId, Guid.Empty, Guid.Empty, initial.ConsentStatusId, default),
             modify =>
             {
                 var consent = new Consent(Guid.NewGuid(), modify.AgreementId, companyId, companyUserId, modify.ConsentStatusId, utcNow);
@@ -96,6 +96,5 @@ public class ConsentRepository : IConsentRepository
                 return consent;
             },
             (initial,modify) => initial.ConsentStatusId == modify.ConsentStatusId,
-            (consent,initial) => consent.ConsentStatusId = initial.ConsentStatusId,
             (consent,modify) => consent.ConsentStatusId = modify.ConsentStatusId);
 }

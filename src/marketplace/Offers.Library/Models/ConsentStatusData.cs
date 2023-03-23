@@ -22,4 +22,4 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
-public record ConsentStatusData(Guid ConsentId, ConsentStatusId ConsentStatus);
+public record ConsentStatusData(Guid AgreementId, ConsentStatusId ConsentStatus);

@@ -108,7 +108,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
         documentRepository.RemoveDocument(details.DocumentId);
         if (details.ConsentIds.Any())
         {
-            _portalRepositories.GetInstance<IConsentRepository>().RemoveConsents(details.ConsentIds.Select(x => new Consent(x)));
+            _portalRepositories.GetInstance<IConsentRepository>().RemoveConsents(details.ConsentIds.Select(x => new Consent(x, Guid.Empty, Guid.Empty, Guid.Empty, default, default)));
         }
 
         await this._portalRepositories.SaveAsync().ConfigureAwait(false);
