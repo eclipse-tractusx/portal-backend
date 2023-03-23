@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor;
@@ -120,17 +121,16 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
         }
         catch (Exception ex) when (ex is not SystemException)
         {
-            (stepStatusId, processMessage) = ProcessError(ex);
+            (stepStatusId, processMessage, nextStepTypeIds) = ProcessError(ex, processStepTypeId);
             modified = true;
-            nextStepTypeIds = null;
             stepsToSkip = null;
         }
 
         return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, stepsToSkip, processMessage);
     }
 
-    private static (ProcessStepStatusId StatusId, string? ProcessMessage) ProcessError(Exception ex) =>
+    private static (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(Exception ex, ProcessStepTypeId processStepTypeId) =>
         ex is ServiceException { IsRecoverable: true }
-            ? (ProcessStepStatusId.TODO, null)
-            : (ProcessStepStatusId.FAILED, ex.Message);
+            ? (ProcessStepStatusId.TODO, null, null)
+            : (ProcessStepStatusId.FAILED, ex.Message, processStepTypeId.GetRetriggerStep());
 }

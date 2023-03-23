@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230517074857_CPLP-2344-AddOfferSubscriptionProcess")]
+    [Migration("20230517080427_CPLP-2344-AddOfferSubscriptionProcess")]
     partial class CPLP2344AddOfferSubscriptionProcess
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3773,6 +3773,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION", "CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer_subscription20230317 (\"id\", \"company_id\", \"offer_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"last_editor_id\", \"process_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.company_id, \r\n  NEW.offer_id, \r\n  NEW.offer_subscription_status_id, \r\n  NEW.display_name, \r\n  NEW.description, \r\n  NEW.requester_id, \r\n  NEW.last_editor_id, \r\n  NEW.process_id, \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION AFTER UPDATE\r\nON portal.offer_subscriptions\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION();");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferSubscriptionProcessData", b =>
+                {
+                    b.Property<Guid>("OfferSubscriptionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offer_subscription_id");
+
+                    b.Property<string>("OfferUrl")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("offer_url");
+
+                    b.HasKey("OfferSubscriptionId")
+                        .HasName("pk_offer_subscriptions_process_datas");
+
+                    b.ToTable("offer_subscriptions_process_datas", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferSubscriptionStatus", b =>
                 {
                     b.Property<int>("Id")
@@ -4141,22 +4158,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 100,
-                            Label = "START_SUBSCRIPTION"
-                        },
-                        new
-                        {
-                            Id = 101,
                             Label = "TRIGGER_PROVIDER"
                         },
                         new
                         {
-                            Id = 102,
+                            Id = 101,
                             Label = "START_AUTOSETUP"
                         },
                         new
                         {
-                            Id = 103,
+                            Id = 102,
                             Label = "OFFERSUBSCRIPTION_CLIENT_CREATION"
+                        },
+                        new
+                        {
+                            Id = 103,
+                            Label = "SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION"
                         },
                         new
                         {
@@ -4167,6 +4184,41 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 105,
                             Label = "ACTIVATE_SUBSCRIPTION"
+                        },
+                        new
+                        {
+                            Id = 106,
+                            Label = "TRIGGER_PROVIDER_CALLBACK"
+                        },
+                        new
+                        {
+                            Id = 107,
+                            Label = "RETRIGGER_TRIGGER_PROVIDER"
+                        },
+                        new
+                        {
+                            Id = 108,
+                            Label = "RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION"
+                        },
+                        new
+                        {
+                            Id = 109,
+                            Label = "RETRIGGER_SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION"
+                        },
+                        new
+                        {
+                            Id = 110,
+                            Label = "RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION"
+                        },
+                        new
+                        {
+                            Id = 111,
+                            Label = "RETRIGGER_ACTIVATE_SUBSCRIPTION"
+                        },
+                        new
+                        {
+                            Id = 113,
+                            Label = "RETRIGGER_TRIGGER_PROVIDER_CALLBACK"
                         });
                 });
 
@@ -5568,6 +5620,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Requester");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferSubscriptionProcessData", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferSubscription", "OfferSubscription")
+                        .WithOne("OfferSubscriptionProcessData")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferSubscriptionProcessData", "OfferSubscriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_offer_subscriptions_process_datas_offer_subscriptions_offer");
+
+                    b.Navigation("OfferSubscription");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferTag", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer", "Offer")
@@ -6052,6 +6116,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyServiceAccounts");
 
                     b.Navigation("ConsentAssignedOfferSubscriptions");
+
+                    b.Navigation("OfferSubscriptionProcessData");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferSubscriptionStatus", b =>
