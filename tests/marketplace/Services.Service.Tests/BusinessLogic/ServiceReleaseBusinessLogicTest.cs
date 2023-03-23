@@ -215,6 +215,31 @@ public class ServiceReleaseBusinessLogicTest
         result.ServiceTypeIds.Should().HaveCount(2);
     }
 
+    [Fact]
+    public async Task SubmitOfferConsentAsync_WithValidData_ReturnsExpected()
+    {
+        var serviceId = Guid.NewGuid();
+        var iamUserId = Guid.NewGuid().ToString();
+        var data = new OfferAgreementConsent(new List<AgreementConsentStatus>());
+
+        A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, data, iamUserId, OfferTypeId.SERVICE))
+            .ReturnsLazily(() => new []{ new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE)});
+
+        var result = await _sut.SubmitOfferConsentAsync(serviceId, data, iamUserId).ConfigureAwait(false);
+
+        result.Should().ContainSingle().Which.ConsentStatus.Should().Be(ConsentStatusId.ACTIVE);
+    }
+
+    [Fact]
+    public async Task SubmitOfferConsentAsync_WithEmptyGuid_ThrowsControllerArgumentException()
+    {
+        var data = new OfferAgreementConsent(new List<AgreementConsentStatus>());
+        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, data,  Guid.NewGuid().ToString()).ConfigureAwait(false);
+
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("ServiceId must not be empty");
+    }
+
     private void SetupRepositories()
     {
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);

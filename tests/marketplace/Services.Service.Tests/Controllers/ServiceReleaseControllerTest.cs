@@ -21,8 +21,10 @@
 using AutoFixture;
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
@@ -130,5 +132,24 @@ public class ServiceReleaseControllerTest
         result.Should().Be(data);
         A.CallTo(() => _logic.GetServiceDetailsForStatusAsync(serviceId, IamUserId))
             .MustHaveHappenedOnceExactly();
+    }
+    
+    [Fact]
+    public async Task SubmitOfferConsentToAgreementsAsync_ReturnsExpectedId()
+    {
+        //Arrange
+        var serviceId = Guid.NewGuid();
+        var agreementId = Guid.NewGuid();
+        var consentStatusData = new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
+        var offerAgreementConsentData = new OfferAgreementConsent(new []{new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE)});
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(serviceId, A<OfferAgreementConsent>._, A<string>._))
+            .ReturnsLazily(() => Enumerable.Repeat(consentStatusData, 1));
+
+        //Act
+        var result = await this._controller.SubmitOfferConsentToAgreementsAsync(serviceId, offerAgreementConsentData).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(serviceId, offerAgreementConsentData, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(1);
     }
 }

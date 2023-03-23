@@ -109,4 +109,17 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             result.SalesManagerId,
             result.ServiceTypeIds);
     }
+    
+    /// <inheritdoc/>
+    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, string userId)
+    {
+        if (serviceId == Guid.Empty)
+        {
+            throw new ControllerArgumentException("ServiceId must not be empty");
+        }
+        return SubmitOfferConsentInternalAsync(serviceId, offerAgreementConsents, userId);
+    }
+
+    private Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentInternalAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, string userId) =>
+        _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, offerAgreementConsents, userId, OfferTypeId.SERVICE);
 }

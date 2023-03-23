@@ -145,43 +145,6 @@ public class ServiceControllerTest
     }
 
     [Fact]
-    public async Task CreateServiceAgreementConsent_ReturnsExpectedId()
-    {
-        //Arrange
-        var serviceId = Guid.NewGuid();
-        var consentId = Guid.NewGuid();
-        var offerAgreementConsentData = new OfferAgreementConsentData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
-        A.CallTo(() => _logic.CreateServiceAgreementConsentAsync(serviceId, A<OfferAgreementConsentData>._, A<string>._))
-            .ReturnsLazily(() => consentId);
-
-        //Act
-        var result = await this._controller.CreateServiceAgreementConsent(serviceId, offerAgreementConsentData).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.CreateServiceAgreementConsentAsync(serviceId, offerAgreementConsentData, IamUserId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<CreatedAtRouteResult>(result);
-        Assert.IsType<Guid>(result.Value);
-        result.Value.Should().Be(consentId);
-    }
-
-    [Fact]
-    public async Task CreateOrUpdateServiceAgreementConsents_ReturnsExpectedId()
-    {
-        //Arrange
-        var serviceId = Guid.NewGuid();
-        var offerAgreementConsentData = _fixture.Build<OfferAgreementConsentData>().With(x => x.ConsentStatusId, ConsentStatusId.ACTIVE).CreateMany(2);
-        A.CallTo(() => _logic.CreateOrUpdateServiceAgreementConsentAsync(serviceId, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._))
-            .ReturnsLazily(() => Task.CompletedTask);
-
-        //Act
-        var result = await this._controller.CreateOrUpdateServiceAgreementConsents(serviceId, offerAgreementConsentData).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.CreateOrUpdateServiceAgreementConsentAsync(serviceId, offerAgreementConsentData, IamUserId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<NoContentResult>(result);
-    }
-
-    [Fact]
     public async Task GetServiceAgreement_ReturnsExpected()
     {
         //Arrange

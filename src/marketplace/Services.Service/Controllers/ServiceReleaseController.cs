@@ -125,4 +125,24 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync([FromRoute] Guid serviceId) =>
         this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.GetServiceDetailsForStatusAsync(serviceId, iamUserId));
+
+    /// <summary>
+    /// Update or Insert Consent
+    /// </summary>
+    /// <param name="serviceId">Id of the service</param>
+    /// <param name="offerAgreementConsents">agreement consent data</param>
+    /// <remarks>Example: POST: /api/services/servicerelease/consent/{serviceId}/agreementConsents</remarks>
+    /// <response code="200">Successfully submitted consent to agreements</response>
+    /// <response code="403">Either the user was not found or the user is not assignable to the given application.</response>
+    /// <response code="404">Service does not exist.</response>
+    /// <response code="400">Service Id is incorrect.</response>
+    [HttpPost]
+    [Authorize(Roles = "add_service_offering")]
+    [Route("consent/{serviceId}/agreementConsents")]
+    [ProducesResponseType(typeof(IEnumerable<ConsentStatusData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid serviceId, [FromBody] OfferAgreementConsent offerAgreementConsents) => 
+        await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.SubmitOfferConsentAsync(serviceId, offerAgreementConsents, iamUserId));
 }

@@ -116,24 +116,12 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<Guid> CreateServiceAgreementConsentAsync(Guid subscriptionId,
-        OfferAgreementConsentData offerAgreementConsentData, string iamUserId) =>
-        _offerService.CreateOfferSubscriptionAgreementConsentAsync(subscriptionId, offerAgreementConsentData.AgreementId,
-            offerAgreementConsentData.ConsentStatusId, iamUserId, OfferTypeId.SERVICE);
-
-    /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetServiceAgreement(Guid serviceId) => 
         _offerService.GetOfferAgreementsAsync(serviceId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public Task<ConsentDetailData> GetServiceConsentDetailDataAsync(Guid serviceConsentId) =>
         _offerService.GetConsentDetailDataAsync(serviceConsentId, OfferTypeId.SERVICE);
-
-    /// <inheritdoc />
-    public Task CreateOrUpdateServiceAgreementConsentAsync(Guid subscriptionId,
-        IEnumerable<OfferAgreementConsentData> offerAgreementConsentData,
-        string iamUserId) =>
-        _offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(subscriptionId, offerAgreementConsentData, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, string iamUserId) =>

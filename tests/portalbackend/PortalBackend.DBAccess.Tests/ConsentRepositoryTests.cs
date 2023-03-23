@@ -18,16 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -172,8 +169,79 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Should().AllSatisfy(x => x.Entity.Should().BeOfType<Consent>().Which.ConsentStatusId.Should().Be(ConsentStatusId.ACTIVE));
     }
 
+    #endregion AddAttachAndModifyConsents
+
+    [Fact]
+    public async Task AddAttachAndModifyConsents_ReturnsExpected()
+    {
+        //Arrange
+        var offerId = Guid.NewGuid();
+        var agreementId_1 = Guid.NewGuid();
+        var agreementId_2 = Guid.NewGuid();
+        var agreementId_3 = Guid.NewGuid();
+        var agreementId_4 = Guid.NewGuid();
+        var agreementId_5 = Guid.NewGuid();
+        var agreementId_6 = Guid.NewGuid();
+        var consentId_1 = Guid.NewGuid();
+        var consentId_2 = Guid.NewGuid();
+        var consentId_3 = Guid.NewGuid();
+        var consentId_4 = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var companyUserId = Guid.NewGuid();
+        var utcNow = DateTimeOffset.UtcNow;
+        var agreementConsentStatus = new AgreementConsentStatus[] {
+            new(agreementId_1, ConsentStatusId.ACTIVE),   // shall remain unchanged
+            new(agreementId_2, ConsentStatusId.INACTIVE), // shall remain unchanged
+            new(agreementId_3, ConsentStatusId.ACTIVE),   // shall be updated
+            new(agreementId_4, ConsentStatusId.INACTIVE), // shall be updated
+            new(agreementId_5, ConsentStatusId.ACTIVE),   // shall be added
+            new(agreementId_6, ConsentStatusId.INACTIVE), // shall be added
+        };
+        var appAgreementConsentStatus = new AppAgreementConsentStatus[] {
+            new(agreementId_1, consentId_1, ConsentStatusId.ACTIVE),
+            new(agreementId_2, consentId_2, ConsentStatusId.INACTIVE),
+            new(agreementId_3, consentId_3, ConsentStatusId.INACTIVE),
+            new(agreementId_4, consentId_4, ConsentStatusId.ACTIVE),
+        };
+
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        //Act
+        var result = sut.AddAttachAndModifyConsents(appAgreementConsentStatus, agreementConsentStatus, offerId, companyId, companyUserId, utcNow);
+
+        //Assert
+        result.Should().HaveCount(6)
+            .And.Satisfy(
+                x => x.Id == consentId_1 && x.ConsentStatusId == ConsentStatusId.ACTIVE,
+                x => x.Id == consentId_2 && x.ConsentStatusId == ConsentStatusId.INACTIVE,
+                x => x.Id == consentId_3 && x.ConsentStatusId == ConsentStatusId.ACTIVE,
+                x => x.Id == consentId_4 && x.ConsentStatusId == ConsentStatusId.INACTIVE,
+                x => x.AgreementId == agreementId_5 && x.ConsentStatusId == ConsentStatusId.ACTIVE,
+                x => x.AgreementId == agreementId_6 && x.ConsentStatusId == ConsentStatusId.INACTIVE
+            );
+
+        context.ChangeTracker.Entries().Should().HaveCount(6);
+        context.ChangeTracker.Entries<Consent>().Should().HaveCount(4)
+            .And.Satisfy(
+                x => x.State == EntityState.Modified && x.Entity.Id == consentId_3 && x.Entity.ConsentStatusId == ConsentStatusId.ACTIVE,
+                x => x.State == EntityState.Modified && x.Entity.Id == consentId_4 && x.Entity.ConsentStatusId == ConsentStatusId.INACTIVE,
+                x => x.State == EntityState.Added && x.Entity.AgreementId == agreementId_5 && x.Entity.ConsentStatusId == ConsentStatusId.ACTIVE,
+                x => x.State == EntityState.Added && x.Entity.AgreementId == agreementId_6 && x.Entity.ConsentStatusId == ConsentStatusId.INACTIVE
+            );
+
+        var addedConsents = context.ChangeTracker.Entries<Consent>().Where(x => x.State == EntityState.Added).Select(x => x.Entity).ToArray();
+
+        context.ChangeTracker.Entries<ConsentAssignedOffer>().Should().HaveCount(2)
+            .And.Satisfy(
+                x => x.State == EntityState.Added && x.Entity.ConsentId == addedConsents[0].Id && x.Entity.OfferId == offerId,
+                x => x.State == EntityState.Added && x.Entity.ConsentId == addedConsents[1].Id && x.Entity.OfferId == offerId
+            );
+    }
+
+    #region
+
     #endregion
-    
+
     private async Task<(ConsentRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

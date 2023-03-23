@@ -63,4 +63,12 @@ public interface IServiceReleaseBusinessLogic
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, string userId);
+
+    /// <summary>
+    /// Inserts or updates the consent to the specific service
+    /// </summary>
+    /// <param name="serviceId">Id of the service</param>
+    /// <param name="offerAgreementConsents">Data of the consents for the agreements</param>
+    /// <param name="userId">Id of th iam user</param>
+    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, string userId);
 }

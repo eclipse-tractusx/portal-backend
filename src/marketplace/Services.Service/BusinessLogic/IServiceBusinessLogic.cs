@@ -73,15 +73,6 @@ public interface IServiceBusinessLogic
     Task<SubscriptionDetailData> GetSubscriptionDetailAsync(Guid subscriptionId, string iamUserId);
 
     /// <summary>
-    /// Creates new service agreement consents with the given data for the given service
-    /// </summary>
-    /// <param name="subscriptionId">Id of the service subscription to create the consents for.</param>
-    /// <param name="offerAgreementConsentData">service agreement consents</param>
-    /// <param name="iamUserId">Id of the iam user</param>
-    Task<Guid> CreateServiceAgreementConsentAsync(Guid subscriptionId, OfferAgreementConsentData offerAgreementConsentData,
-        string iamUserId);
-
-    /// <summary>
     /// Gets the service agreement data
     /// </summary>
     /// <param name="serviceId">Id of the service to get the agreements for</param>
@@ -94,14 +85,6 @@ public interface IServiceBusinessLogic
     /// <param name="serviceConsentId">Id of the service consent</param>
     /// <returns>Returns the details</returns>
     Task<ConsentDetailData> GetServiceConsentDetailDataAsync(Guid serviceConsentId);
-
-    /// <summary>
-    /// Creates the non existing Consents for the given subscription id or updates the status of the existing
-    /// </summary>
-    /// <param name="subscriptionId">Id of the subscription</param>
-    /// <param name="offerAgreementConsentData">Service Agreement Consent Data</param>
-    /// <param name="iamUserId">id of the iam user</param>
-    Task CreateOrUpdateServiceAgreementConsentAsync(Guid subscriptionId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId);
 
     /// <summary>
     /// Auto setup the service.

@@ -317,47 +317,6 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
-    #region Create Service Agreement Consent
-
-    [Fact]
-    public async Task CreateServiceAgreementConsent_ReturnsCorrectId()
-    {
-        // Arrange
-        var consentId = Guid.NewGuid();
-        var offerService = A.Fake<IOfferService>();
-        A.CallTo(() => offerService.CreateOfferSubscriptionAgreementConsentAsync(A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<string>._, A<OfferTypeId>._))
-            .ReturnsLazily(() => consentId);
-        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, Options.Create(new ServiceSettings()));
-
-        // Act
-        var offerAgreementConsentData = new OfferAgreementConsentData(_existingAgreementId, ConsentStatusId.ACTIVE);
-        var result = await sut.CreateServiceAgreementConsentAsync(_existingServiceId, offerAgreementConsentData, _iamUser.UserEntityId);
-
-        // Assert
-        result.Should().Be(consentId);
-    }
-
-    [Fact]
-    public async Task CreateOrUpdateServiceAgreementConsentAsync_RunsSuccessfull()
-    {
-        // Arrange
-        var offerService = A.Fake<IOfferService>();
-        A.CallTo(() => offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._, A<OfferTypeId>._))
-            .ReturnsLazily(() => Task.CompletedTask);
-        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, Options.Create(new ServiceSettings()));
-
-        // Act
-        await sut.CreateOrUpdateServiceAgreementConsentAsync(_existingServiceId, new List<OfferAgreementConsentData>
-        {
-            new(_existingAgreementId, ConsentStatusId.ACTIVE)
-        }, _iamUser.UserEntityId);
-
-        // Assert
-        true.Should().BeTrue();
-    }
-
-    #endregion
-
     #region Get Service Consent Detail Data
 
     [Fact]
