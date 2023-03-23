@@ -333,6 +333,10 @@ public class OfferService : IOfferService
         {
             throw new ConflictException($"{string.Join(",", submitAppDocumentTypeIds)} are mandatory document types");
         }
+        if (!offerDetails.HasUserRoles)
+        {
+            throw new ConflictException("The app has no roles assigned");
+        }
        
         await SubmitAppServiceAsync(offerId, iamUserId, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(false);
     }
@@ -398,7 +402,7 @@ public class OfferService : IOfferService
     {
         if (offerDetails.Name is not null && 
             offerDetails.ProviderCompanyId is not null && 
-            offerDetails is { IsDescriptionLongNotSet: false, IsDescriptionShortNotSet: false, HasUserRoles: true }) return;
+            offerDetails is { IsDescriptionLongNotSet: false, IsDescriptionShortNotSet: false }) return;
         
         var nullProperties = new List<string>();
         if (offerDetails.Name is null)
@@ -420,10 +424,7 @@ public class OfferService : IOfferService
         {
             nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.IsDescriptionShortNotSet)}");
         }
-        if (!offerDetails.HasUserRoles)
-        {
-            nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.HasUserRoles)}");
-        }
+        
         throw new ConflictException($"Missing  : {string.Join(", ", nullProperties)}");
     }
 
