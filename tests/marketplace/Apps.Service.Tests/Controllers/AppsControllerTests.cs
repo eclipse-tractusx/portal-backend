@@ -302,7 +302,7 @@ public class AppsControllerTests
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
-        
+
         //Act
         var result = await this._controller.StartAutoSetupAppProcess(data).ConfigureAwait(false);
 

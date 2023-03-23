@@ -274,13 +274,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<OfferSubscriptionProcessInformationData?> GetOfferSubscriptionDataForProcessIdAsync(Guid processId) =>
+    public Task<Guid> GetOfferSubscriptionDataForProcessIdAsync(Guid processId) =>
         _context.Processes
             .AsNoTracking()
             .Where(process => process.Id == processId)
-            .Select(process => new OfferSubscriptionProcessInformationData(
-                process.OfferSubscription!.Id,
-                process.OfferSubscription.OfferSubscriptionStatusId))
+            .Select(process => process.OfferSubscription!.Id)
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

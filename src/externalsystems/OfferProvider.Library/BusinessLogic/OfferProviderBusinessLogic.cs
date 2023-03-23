@@ -42,7 +42,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         var data = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetTriggerProviderInformation(offerSubscriptionId).ConfigureAwait(false);
         if (data == null)
         {
-            throw new ConflictException($"OfferSubscription {offerSubscriptionId} does not exist");
+            throw new NotFoundException($"OfferSubscription {offerSubscriptionId} does not exist");
         }
 
         var triggerProvider = !string.IsNullOrWhiteSpace(data.AutoSetupUrl) && !data.IsSingleInstance;
@@ -131,7 +131,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         var data = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetTriggerProviderCallbackInformation(offerSubscriptionId).ConfigureAwait(false);
         if (data == default)
         {
-            throw new ConflictException($"OfferSubscription {offerSubscriptionId} does not exist");
+            throw new NotFoundException($"OfferSubscription {offerSubscriptionId} does not exist");
         }
 
         if (data.Status != OfferSubscriptionStatusId.ACTIVE)

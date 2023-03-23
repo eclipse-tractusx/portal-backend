@@ -28,14 +28,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Librar
 
 public static class VerifyOfferSubscriptionProcessDataExtensions
 {
-    public static void ValidateOfferSubscriptionProcessData(
-        this VerifyOfferSubscriptionProcessData? processData,
+    public static ProcessStep ValidateOfferSubscriptionProcessData(this VerifyOfferSubscriptionProcessData? processData,
         Guid offerSubscriptionId,
-        IEnumerable<ProcessStepStatusId> processStepStatusIds)
+        IEnumerable<ProcessStepStatusId> processStepStatusIds, ProcessStepTypeId processStepTypeId)
     {
         if (processData is null)
         {
-            throw new NotFoundException($"application {offerSubscriptionId} does not exist");
+            throw new NotFoundException($"offer subscription {offerSubscriptionId} does not exist");
         }
 
         if (processData.IsActive)
@@ -58,10 +57,17 @@ public static class VerifyOfferSubscriptionProcessDataExtensions
             throw new UnexpectedConditionException("processSteps should never be null here");
         }
 
-        if (processData.ProcessSteps == null || processData.ProcessSteps.Any(step => !processStepStatusIds.Contains(step.ProcessStepStatusId)))
+        if (processData.ProcessSteps.Any(step => !processStepStatusIds.Contains(step.ProcessStepStatusId)))
         {
             throw new UnexpectedConditionException($"processSteps should never have other status then {string.Join(",", processStepStatusIds)} here");
         }
+
+        if (processData.ProcessSteps.Count(step => step.ProcessStepTypeId == processStepTypeId) != 1)
+        {
+            throw new ConflictException($"offer subscription {offerSubscriptionId} process step {processStepTypeId} is not eligible to run");
+        }
+
+        return processData.ProcessSteps.Single(step => step.ProcessStepTypeId == processStepTypeId);
     }
 
     public static IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData CreateManualOfferSubscriptionProcessStepData(this VerifyOfferSubscriptionProcessData checklistData, Guid offerSubscriptionId, ProcessStep processStep) =>

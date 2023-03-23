@@ -49,7 +49,7 @@ public class OfferProviderService : IOfferProviderService
         var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(_settings, cancellationToken)
             .ConfigureAwait(false);
         await httpClient.PostAsJsonAsync(autoSetupUrl, autoSetupData, cancellationToken)
-            .CatchingIntoServiceExceptionFor("autosetup-offer-subscription")
+            .CatchingIntoServiceExceptionFor("trigger-offer-provider")
             .ConfigureAwait(false);
 
         return true;
@@ -61,7 +61,7 @@ public class OfferProviderService : IOfferProviderService
         var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(_settings, cancellationToken)
             .ConfigureAwait(false);
         await httpClient.PostAsJsonAsync(callbackUrl, callbackData, cancellationToken)
-            .CatchingIntoServiceExceptionFor("autosetup-offer-subscription")
+            .CatchingIntoServiceExceptionFor("trigger-offer-provider-callback")
             .ConfigureAwait(false);
 
         return true;

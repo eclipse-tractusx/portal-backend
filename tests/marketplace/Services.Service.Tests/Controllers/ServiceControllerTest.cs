@@ -249,7 +249,7 @@ public class ServiceControllerTest
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
-        A.CallTo(() => _logic.StartAutoSetupAsync(A<OfferAutoSetupData>._, A<string>.That.Matches(x => x== IamUserId)))
+        A.CallTo(() => _logic.StartAutoSetupAsync(A<OfferAutoSetupData>._, A<string>.That.Matches(x => x == IamUserId)))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act

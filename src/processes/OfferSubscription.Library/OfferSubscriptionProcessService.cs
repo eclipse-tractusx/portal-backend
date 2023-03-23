@@ -25,16 +25,11 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
         var processData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetProcessStepData(offerSubscriptionId, allProcessStepTypeIds).ConfigureAwait(false);
 
-        processData.ValidateOfferSubscriptionProcessData(offerSubscriptionId, new[] { ProcessStepStatusId.TODO });
-        var processStep = processData!.ProcessSteps!.SingleOrDefault(step => step.ProcessStepTypeId == processStepTypeId);
-        if (processStep is null)
-        {
-            throw new ConflictException($"offer subscription {offerSubscriptionId} process step {processStepTypeId} is not eligible to run");
-        }
-        return processData.CreateManualOfferSubscriptionProcessStepData(offerSubscriptionId, processStep);
+        var processStep = processData.ValidateOfferSubscriptionProcessData(offerSubscriptionId, new[] { ProcessStepStatusId.TODO }, processStepTypeId);
+        return processData!.CreateManualOfferSubscriptionProcessStepData(offerSubscriptionId, processStep);
     }
 
-    public void FinalizeChecklistEntryAndProcessSteps(IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData context, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
+    public void FinalizeProcessSteps(IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData context, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
     {
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
         processStepRepository.AttachAndModifyProcessStep(context.ProcessStepId, null, step => step.ProcessStepStatusId = ProcessStepStatusId.DONE);

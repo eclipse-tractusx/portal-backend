@@ -433,7 +433,7 @@ public class ServiceBusinessLogicTests
     #endregion
 
     #region Start Auto setup
-    
+
     [Fact]
     public async Task StartAutoSetupAsync_ReturnsExcepted()
     {
@@ -449,7 +449,7 @@ public class ServiceBusinessLogicTests
         // Assert
         A.CallTo(() => offerSetupService.StartAutoSetupAsync(A<OfferAutoSetupData>._, A<string>._, OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();
     }
-    
+
     #endregion
 
     #region SubmitServiceAsync

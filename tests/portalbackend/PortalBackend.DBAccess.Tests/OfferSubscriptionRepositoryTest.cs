@@ -281,11 +281,10 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOfferSubscriptionDataForProcessIdAsync(new Guid("0cc208c3-bdf6-456c-af81-6c3ebe14fe06")).ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.OfferSubscriptionId.Should().Be(new Guid("e8886159-9258-44a5-88d8-f5735a197a09"));
-        result.StatusId.Should().Be(OfferSubscriptionStatusId.PENDING);
+        result.Should().NotBe(Guid.Empty);
+        result.Should().Be(new Guid("e8886159-9258-44a5-88d8-f5735a197a09"));
     }
-    
+
     [Fact]
     public async Task GetOfferSubscriptionDataForProcessIdAsync_WithNotExistingId_ReturnsNull()
     {
@@ -296,7 +295,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOfferSubscriptionDataForProcessIdAsync(Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeNull();
+        result.Should().Be(Guid.Empty);
     }
 
     #endregion
@@ -317,7 +316,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result!.OfferName.Should().Be("Trace-X");
         result.IsSingleInstance.Should().BeTrue();
     }
-    
+
     [Fact]
     public async Task GetTriggerProviderInformation_WithNotExistingId_ReturnsNull()
     {
@@ -350,7 +349,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.InstanceData.Should().Be((true, "https://test.com"));
         result.Status.Should().Be(OfferSubscriptionStatusId.ACTIVE);
     }
-    
+
     [Fact]
     public async Task GetSubscriptionActivationDataByIdAsync_WithNotExistingId_ReturnsNull()
     {
@@ -375,7 +374,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProcessStepData(new Guid("e8886159-9258-44a5-88d8-f5735a197a09"), new []
+        var result = await sut.GetProcessStepData(new Guid("e8886159-9258-44a5-88d8-f5735a197a09"), new[]
             {
                 ProcessStepTypeId.START_AUTOSETUP
             }).ConfigureAwait(false);
@@ -385,7 +384,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result!.IsActive.Should().BeFalse();
         result.ProcessSteps.Should().HaveCount(1);
     }
-    
+
     [Fact]
     public async Task GetProcessStepData_WithNotExistingId_ReturnsNull()
     {
@@ -393,7 +392,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProcessStepData(Guid.NewGuid(), new [] { ProcessStepTypeId.START_AUTOSETUP }).ConfigureAwait(false);
+        var result = await sut.GetProcessStepData(Guid.NewGuid(), new[] { ProcessStepTypeId.START_AUTOSETUP }).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -417,7 +416,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result!.OfferType.Should().Be(OfferTypeId.APP);
         result.IsTechnicalUserNeeded.Should().BeTrue();
     }
-    
+
     [Fact]
     public async Task GetClientCreationData_WithNotExistingId_ReturnsNull()
     {
@@ -450,7 +449,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.OfferName.Should().Be("Trace-X");
         result.IsTechnicalUserNeeded.Should().BeTrue();
     }
-    
+
     [Fact]
     public async Task GetTechnicalUserCreationData_WithNotExistingId_ReturnsNull()
     {
@@ -481,7 +480,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result.Status.Should().Be(OfferSubscriptionStatusId.ACTIVE);
     }
-    
+
     [Fact]
     public async Task GetTriggerProviderCallbackInformation_WithNotExistingId_ReturnsNull()
     {

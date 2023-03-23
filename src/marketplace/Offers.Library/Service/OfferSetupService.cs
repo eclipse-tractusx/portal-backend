@@ -390,17 +390,17 @@ public class OfferSetupService : IOfferSetupService
 
         offerSubscriptionRepository.CreateOfferSubscriptionProcessData(data.RequestId, data.OfferUrl);
 
-        var multiInstanceStep = offerTypeId == OfferTypeId.APP ? 
+        var multiInstanceStep = offerTypeId == OfferTypeId.APP ?
             ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION :
             ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION;
-        var nextProcessStepTypeIds = new []
+        var nextProcessStepTypeIds = new[]
         {
             offerDetails.InstanceData.IsSingleInstance ?
                 ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION :
                 multiInstanceStep
         };
 
-        _offerSubscriptionProcessService.FinalizeChecklistEntryAndProcessSteps(context, nextProcessStepTypeIds);
+        _offerSubscriptionProcessService.FinalizeProcessSteps(context, nextProcessStepTypeIds);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -570,7 +570,7 @@ public class OfferSetupService : IOfferSetupService
         {
             notification.Content = notificationContent;
         });
-        
+
         if (!string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
         {
             await SendMail(basePortalAddress, $"{offerDetails.RequesterFirstname} {offerDetails.RequesterLastname}", offerDetails.RequesterEmail, offerDetails.OfferName).ConfigureAwait(false);

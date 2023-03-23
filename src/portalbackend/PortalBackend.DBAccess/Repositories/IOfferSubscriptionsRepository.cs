@@ -128,7 +128,7 @@ public interface IOfferSubscriptionsRepository
     /// </summary>
     /// <param name="processId">Id of the process</param>
     /// <returns>Returns offer subscription process data</returns>
-    Task<OfferSubscriptionProcessInformationData?> GetOfferSubscriptionDataForProcessIdAsync(Guid processId);
+    Task<Guid> GetOfferSubscriptionDataForProcessIdAsync(Guid processId);
 
     Task<TriggerProviderInformation?> GetTriggerProviderInformation(Guid offerSubscriptionId);
     Task<SubscriptionActivationData?> GetSubscriptionActivationDataByIdAsync(Guid offerSubscriptionId);

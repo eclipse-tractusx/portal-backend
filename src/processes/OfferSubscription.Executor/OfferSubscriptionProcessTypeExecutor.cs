@@ -70,20 +70,12 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
         _offerSubscriptionId = Guid.Empty;
 
         var result = await _offerSubscriptionsRepository.GetOfferSubscriptionDataForProcessIdAsync(processId).ConfigureAwait(false);
-        if (result == null)
+        if (result == Guid.Empty)
         {
-            throw new NotFoundException($"process {processId} does not exist");
-        }
-        if (result.OfferSubscriptionId == Guid.Empty)
-        {
-            throw new ConflictException($"process {processId} is not associated with an offerSubscription");
-        }
-        if (result.StatusId == OfferSubscriptionStatusId.ACTIVE)
-        {
-            throw new ConflictException($"offer subscription {result.OfferSubscriptionId} is already ACTIVE");
+            throw new NotFoundException($"process {processId} does not exist or is not associated with an offer subscription");
         }
 
-        _offerSubscriptionId = result.OfferSubscriptionId;
+        _offerSubscriptionId = result;
         return new IProcessTypeExecutor.InitializationResult(false, null);
     }
 
@@ -91,7 +83,7 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
     {
         if (_offerSubscriptionId == Guid.Empty)
         {
-            throw new UnexpectedConditionException("offerSubscriptionId should never be null or empty here");
+            throw new UnexpectedConditionException("offerSubscriptionId should never be empty here");
         }
 
         IEnumerable<ProcessStepTypeId>? nextStepTypeIds;
