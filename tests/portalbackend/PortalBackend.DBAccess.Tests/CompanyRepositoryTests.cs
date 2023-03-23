@@ -413,7 +413,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         modified.Should().HaveSameCount(updatedEntities);
         modified.OrderBy(x => x.UniqueIdentifierId).Zip(updatedEntities).Should().AllSatisfy(x => (x.First.UniqueIdentifierId == x.Second.UniqueIdentifierId && x.First.Value == x.Second.Value).Should().BeTrue());
         deleted.Should().HaveSameCount(removedEntities);
-        deleted.OrderBy(x => x.UniqueIdentifierId).Zip(removedEntities).Should().AllSatisfy(x => (x.First.UniqueIdentifierId == x.Second.UniqueIdentifierId && x.First.Value == x.Second.Value).Should().BeTrue());
+        deleted.OrderBy(x => x.UniqueIdentifierId).Zip(removedEntities).Should().AllSatisfy(x => x.First.UniqueIdentifierId.Should().Be(x.Second.UniqueIdentifierId));
    }
 
     #endregion

@@ -125,9 +125,9 @@ public class ContextExtensionsTests
     {
         var initialItems = initialKeys.Zip(initialValues).Select(x => ((Guid InitialKey, string InitialValue))(new Guid(x.First), x.Second)).ToImmutableArray();
         var updateItems = updateKeys.Zip(updateValues).Select(x => ((Guid UpdateKey, string UpdateValue))(new Guid(x.First),x.Second)).ToImmutableArray();
-        var addedEntities = addedEntityKeys.Zip(addedEntityValues).Select(x => new TestValueEntity(new Guid(x.First), x.Second)).OrderBy(x => x.EntityKey).ToImmutableArray();
-        var updatedEntities = updatedEntityKeys.Zip(updatedEntityValues).Select(x => new TestValueEntity(new Guid(x.First), x.Second)).OrderBy(x => x.EntityKey).ToImmutableArray();
-        var removedEntities = removedEntityKeys.Select(x => new TestValueEntity(new Guid(x), null!)).OrderBy(x => x.EntityKey).ToImmutableArray();
+        var addedEntities = addedEntityKeys.Zip(addedEntityValues).Select(x => new TestValueEntity(new Guid(x.First), x.Second)).ToImmutableArray();
+        var updatedEntities = updatedEntityKeys.Zip(updatedEntityValues).Select(x => new TestValueEntity(new Guid(x.First), x.Second)).ToImmutableArray();
+        var removedEntityIds = removedEntityKeys.Select(x => new Guid(x)).ToImmutableArray();
 
         IEnumerable<TestValueEntity>? added = null;
         IEnumerable<TestValueEntity>? updated = null;
@@ -164,16 +164,16 @@ public class ContextExtensionsTests
         A.CallTo(() => _context.RemoveRange(A<IEnumerable<object>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _context.RemoveRange(A<object[]>._)).MustNotHaveHappened();
 
-        added.Should().NotBeNull();
-        added.Should().HaveSameCount(addedEntities);
-        updated.Should().NotBeNull();
-        updated.Should().HaveSameCount(updatedEntities);
+        added.Should().NotBeNull()
+            .And.HaveSameCount(addedEntities)
+            .And.Contain(addedEntities);
+        updated.Should().NotBeNull()
+            .And.HaveSameCount(updatedEntities)
+            .And.Contain(updatedEntities);
         removed.Should().NotBeNull();
-        removed.Should().HaveSameCount(removedEntities);
-
-        added!.OrderBy(x => x.EntityKey).Should().ContainInOrder(addedEntities);
-        updated!.OrderBy(x => x.EntityKey).Should().ContainInOrder(updatedEntities);
-        removed!.OrderBy(x => x.EntityKey).Should().ContainInOrder(removedEntities);
+        removed!.Select(x => x.EntityKey)
+            .Should().HaveSameCount(removedEntityIds)
+            .And.Contain(removedEntityIds);
     }
 
     public record TestValueEntity

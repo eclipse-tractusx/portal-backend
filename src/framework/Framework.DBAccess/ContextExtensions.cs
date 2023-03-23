@@ -77,12 +77,34 @@ public static class ContextExtensions
         Func<TKey,TEntity> createSelector,
         Func<TInitial,TModify,bool> equalsPredicate,        
         Action<TEntity,TInitial> initialize,
+        Action<TEntity,TModify> modify) where TEntity : class =>
+
+        AddAttachRemoveRange(
+            context,
+            initialItems,
+            modifyItems,
+            initialKeySelector,
+            modifyKeySelector,
+            (TInitial initial) => { var entity = createSelector(initialKeySelector(initial)); initialize(entity, initial); return entity; },
+            (TModify modify) => createSelector(modifyKeySelector(modify)),
+            equalsPredicate,        
+            modify);
+
+    public static IEnumerable<TEntity> AddAttachRemoveRange<TInitial,TModify,TEntity,TKey>(
+        this DbContext context,
+        IEnumerable<TInitial> initialItems,
+        IEnumerable<TModify> modifyItems,
+        Func<TInitial,TKey> initialKeySelector,
+        Func<TModify,TKey> modifyKeySelector,
+        Func<TInitial,TEntity> initialCreateSelector,
+        Func<TModify,TEntity> modifyCreateSelector,
+        Func<TInitial,TModify,bool> equalsPredicate,        
         Action<TEntity,TModify> modify) where TEntity : class
     {
         context.RemoveRange(
-            initialItems.Select(initialKeySelector)
-                .Except(modifyItems.Select(modifyKeySelector))
-                .Select(initialKey => createSelector(initialKey)));
+            initialItems
+                .ExceptBy(modifyItems.Select(modifyKeySelector), initialKeySelector)
+                .Select(initial => initialCreateSelector(initial)));
 
         return AddAttachRange(
             context,
@@ -90,9 +112,9 @@ public static class ContextExtensions
             modifyItems,
             initialKeySelector,
             modifyKeySelector,
-            createSelector,
+            initialCreateSelector,
+            modifyCreateSelector,
             equalsPredicate,        
-            initialize,
             modify);
     }
 
@@ -105,20 +127,18 @@ public static class ContextExtensions
         Func<TKey,TEntity> createSelector,
         Func<TInitial,TModify,bool> equalsPredicate,        
         Action<TEntity,TInitial> initialize,
-        Action<TEntity,TModify> modify) where TEntity : class
-    {
-        return AddAttachRange(
+        Action<TEntity,TModify> modify) where TEntity : class =>
+
+        AddAttachRange(
             context,
             initialItems,
             modifyItems,
             initialKeySelector,
             modifyKeySelector,
-            (TInitial initial) => createSelector(initialKeySelector(initial)),
+            (TInitial initial) => { var entity = createSelector(initialKeySelector(initial)); initialize(entity, initial); return entity; },
             (TModify modify) => createSelector(modifyKeySelector(modify)),
             equalsPredicate,        
-            initialize,
             modify);
-    }
 
     public static IEnumerable<TEntity> AddAttachRange<TInitial,TModify,TEntity,TKey>(
         this DbContext context,
@@ -129,7 +149,6 @@ public static class ContextExtensions
         Func<TInitial,TEntity> initialCreateSelector,
         Func<TModify,TEntity> modifyCreateSelector,
         Func<TInitial,TModify,bool> equalsPredicate,        
-        Action<TEntity,TInitial> initialize,
         Action<TEntity,TModify> modify) where TEntity : class
     {
         var add = modifyItems
@@ -149,17 +168,13 @@ public static class ContextExtensions
                 modifyItems,
                 initialKeySelector,
                 modifyKeySelector,
-                (initialItem, modifyItem) => {
-                    var entity = initialCreateSelector(initialItem);
-                    initialize(entity, initialItem);
-                    return (entity, initialItem, modifyItem);
-                })
+                (initialItem, modifyItem) => (Entity: initialCreateSelector(initialItem), initialItem, modifyItem))
             .ToImmutableList();
 
         var update = joined.Where(x => !equalsPredicate(x.initialItem, x.modifyItem)).ToImmutableList();
-        context.AttachRange(update.Select(x => x.entity));
-        update.ForEach(x => modify(x.entity, x.modifyItem));
+        context.AttachRange(update.Select(x => x.Entity));
+        update.ForEach(x => modify(x.Entity, x.modifyItem));
 
-        return add.Concat(joined.Select(x => x.entity));
+        return add.Concat(joined.Select(x => x.Entity));
     }
 }

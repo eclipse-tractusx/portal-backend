@@ -1552,7 +1552,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _consentRepository.AttachAndModifiesConsents(A<IEnumerable<Guid>>._, A<Action<Consent>>._))
             .Invokes((IEnumerable<Guid> consentIds, Action<Consent> setOptionalParameter) =>
             {
-                var consents = consentIds.Select(x => new Consent(x));
+                var consents = consentIds.Select(x => new Consent(x, Guid.Empty, Guid.Empty, Guid.Empty, default, default));
                 foreach (var consent in consents)
                 {
                     setOptionalParameter.Invoke(consent);

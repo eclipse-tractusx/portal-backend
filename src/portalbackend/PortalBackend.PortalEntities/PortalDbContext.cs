@@ -755,7 +755,9 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p!.Consents)
                 .HasForeignKey(d => d.ConsentStatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-            
+
+            entity.HasIndex(x => new {x.AgreementId, x.CompanyId})
+                .IsUnique();
         });
         
         modelBuilder.Entity<ConsentAssignedOfferSubscription>(entity =>
