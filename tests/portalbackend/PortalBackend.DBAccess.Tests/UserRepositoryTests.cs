@@ -307,7 +307,23 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().HaveCount(1);
         result.First().Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
     }
+    
+    [Fact]
+    public async Task GetCompanyUserWithRoleIdForCompany_WithExistingUserForRole_WithoutCompanyId_ReturnsExpectedUserId()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var result = await sut
+            .GetCompanyUserWithRoleIdForCompany(new[] {new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632")})
+            .ToListAsync().ConfigureAwait(false);
 
+        // Assert
+        result.Should().HaveCount(3);
+        result.First().Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
+    }
+    
     #endregion
     
     #region GetCompanyUserWithRoleIdForCompany

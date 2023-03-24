@@ -77,4 +77,40 @@ public class NotificationService : INotificationService
             }
         }
     }
+
+    /// <inheritdoc />
+    public async Task CreateNotifications(
+        IDictionary<string, IEnumerable<string>> receiverUserRoles,
+        Guid? creatorId,
+        IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications)
+    {
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var roleData = await userRolesRepository
+            .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        if (roleData.Count < receiverUserRoles.Sum(clientRoles => clientRoles.Value.Count()))
+        {
+            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+        }
+
+        var notificationList = notifications.ToList();
+        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+
+        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleIdForCompany(roleData))
+        {
+            foreach (var notificationData in notificationList)
+            {
+                notificationRepository.CreateNotification(
+                    receiver,
+                    notificationData.notificationTypeId,
+                    false,
+                    notification =>
+                    {
+                        notification.CreatorUserId = creatorId;
+                        notification.Content = notificationData.content;
+                    });
+            }
+        }
+    }
 }

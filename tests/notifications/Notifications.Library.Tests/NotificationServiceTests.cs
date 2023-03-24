@@ -190,6 +190,129 @@ public class NotificationServiceTests
     }
 
     #endregion
+    
+    #region overload method
+    
+     [Fact]
+    public async Task CreateNotificationsoverloadedmethod_WithSingleUserRoleAndOneNotificationTypeId_CreatesOneNotification()
+    {
+        // Arrange
+        var userRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, new []{ "CX Admin" } }
+        };
+        var sut = new NotificationService(_portalRepositories);
+        var notificationContent = new
+        {
+            appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+            companyName = "Shared Idp test"
+        };
+        var content = new (string?, NotificationTypeId)[]
+        {
+            new (JsonSerializer.Serialize(notificationContent), NotificationTypeId.APP_RELEASE_REQUEST)
+        };
+
+        // Act
+        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
+
+        // Assert
+        _notifications.Should().HaveCount(1);
+        _notifications.Single().NotificationTypeId.Should().Be(NotificationTypeId.APP_RELEASE_REQUEST);
+    }
+
+    [Fact]
+    public async Task CreateNotificationsoverloadedmethod_WithSingleUserRoleAndMultipleNotificationTypeId_CreatesFiveNotification()
+    {
+        // Arrange
+        var userRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, new []{ "CX Admin" } }
+        };
+        var sut = new NotificationService(_portalRepositories);
+
+        // Act
+        var notificationContent = new
+        {
+            appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+            companyName = "Shared Idp test"
+        };
+        var content = new (string?, NotificationTypeId)[]
+        {
+            new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME),
+            new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_USE_CASES),
+            new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_APP_MARKETPLACE),
+            new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_SERVICE_PROVIDER),
+            new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION)
+        };
+
+        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
+
+        // Assert
+        _notifications.Should().HaveCount(5);
+        _notifications.Should().ContainSingle(x => x.NotificationTypeId == NotificationTypeId.WELCOME);
+        _notifications.Should().ContainSingle(x => x.NotificationTypeId == NotificationTypeId.WELCOME_USE_CASES);
+        _notifications.Should().ContainSingle(x => x.NotificationTypeId == NotificationTypeId.WELCOME_APP_MARKETPLACE);
+        _notifications.Should().ContainSingle(x => x.NotificationTypeId == NotificationTypeId.WELCOME_SERVICE_PROVIDER);
+        _notifications.Should().ContainSingle(x => x.NotificationTypeId == NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION);
+    }
+
+    [Fact]
+    public async Task CreateNotificationsoverloadedmethod_WithMultipleUserRoleAndOneNotificationTypeId_CreatesThreeNotification()
+    {
+        // Arrange
+        var userRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, new []{ "Company Admin" } }
+        };
+        var sut = new NotificationService(_portalRepositories);
+        var notificationContent = new
+        {
+            appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+            companyName = "Shared Idp test"
+        };
+        var content = new (string?, NotificationTypeId)[]
+        {
+            new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.INFO)
+        };
+
+        // Act
+        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
+
+        // Assert
+        _notifications.Should().HaveCount(3);
+        _notifications.Should().ContainSingle(x => x.ReceiverUserId == UserId1);
+        _notifications.Should().ContainSingle(x => x.ReceiverUserId == UserId2);
+        _notifications.Should().ContainSingle(x => x.ReceiverUserId == UserId3);
+        _notifications.Should().NotContain(x => x.ReceiverUserId == CxAdminUserId);
+    }
+
+    [Fact]
+    public async Task CreateNotificationsoverloadedmethod_WithNotExistingRole_ThrowsException()
+    {
+        // Arrange
+        var userRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, new []{ "Not Existing" } }
+        };
+        var sut = new NotificationService(_portalRepositories);
+        var notificationContent = new
+        {
+            appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
+            companyName = "Shared Idp test"
+        };
+        var content = new (string?, NotificationTypeId)[]
+        {
+            new (JsonSerializer.Serialize(notificationContent), NotificationTypeId.INFO)
+        };
+
+        // Act
+        async Task Action() => await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
+
+        // Assert
+        await Assert.ThrowsAsync<ConfigurationException>(Action);
+    }
+
+    #endregion
 
     #region Setup
 
@@ -207,6 +330,13 @@ public class NotificationServiceTests
         A.CallTo(() => _userRepository.GetCompanyUserWithRoleIdForCompany(A<List<Guid>>.That.Matches(x => x.Count == 1 && x.All(y => y == CxAdminRoleId)), A<Guid>._))
             .Returns(new List<Guid> { CxAdminUserId }.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserWithRoleIdForCompany(A<List<Guid>>.That.Not.Matches(x => x.Contains(CxAdminRoleId) || x.Contains(UserRoleId)), A<Guid>._))
+            .Returns(new List<Guid>().ToAsyncEnumerable());
+
+        A.CallTo(() => _userRepository.GetCompanyUserWithRoleIdForCompany(A<List<Guid>>.That.Matches(x => x.Count == 1 && x.All(y => y == UserRoleId))))
+            .Returns(new List<Guid> { UserId1, UserId2, UserId3 }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetCompanyUserWithRoleIdForCompany(A<List<Guid>>.That.Matches(x => x.Count == 1 && x.All(y => y == CxAdminRoleId))))
+            .Returns(new List<Guid> { CxAdminUserId }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetCompanyUserWithRoleIdForCompany(A<List<Guid>>.That.Not.Matches(x => x.Contains(CxAdminRoleId) || x.Contains(UserRoleId))))
             .Returns(new List<Guid>().ToAsyncEnumerable());
 
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._))
