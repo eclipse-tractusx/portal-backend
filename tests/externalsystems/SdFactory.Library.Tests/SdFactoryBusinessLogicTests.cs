@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
@@ -38,7 +38,7 @@ public class SdFactoryBusinessLogicTests
     private const string CountryCode = "DE";
     private const string Bpn = "BPNL000000000009";
     private static readonly Guid ApplicationId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
-    private static readonly Guid ProcessId = Guid.NewGuid();
+    private readonly Process _process;
     private static readonly Guid CompanyId = new("b4697623-dd87-410d-abb8-6d4f4d87ab58");
     private static readonly IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers = new List<(UniqueIdentifierId Id, string Value)>
     {
@@ -55,7 +55,7 @@ public class SdFactoryBusinessLogicTests
 
     private readonly SdFactoryBusinessLogic _sut;
     private readonly IFixture _fixture;
-    private readonly IChecklistService _checklistService;
+    private readonly IApplicationChecklistService _checklistService;
 
     public SdFactoryBusinessLogicTests()
     {
@@ -64,13 +64,15 @@ public class SdFactoryBusinessLogicTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
+        _process = _fixture.Create<Process>();
+
         _documents = new HashSet<Document>();
         _applicationRepository = A.Fake<IApplicationRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _connectorsRepository = A.Fake<IConnectorsRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
-        _checklistService = A.Fake<IChecklistService>();
+        _checklistService = A.Fake<IApplicationChecklistService>();
         _service = A.Fake<ISdFactoryService>();
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
@@ -115,7 +117,7 @@ public class SdFactoryBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE },
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>(CompanyId, Bpn, CountryCode, UniqueIdentifiers));
@@ -148,7 +150,7 @@ public class SdFactoryBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE },
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>());
 
@@ -173,7 +175,7 @@ public class SdFactoryBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE },
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>(CompanyId, null, CountryCode, new List<(UniqueIdentifierId Id, string Value)>()));
 
@@ -207,8 +209,8 @@ public class SdFactoryBusinessLogicTests
         await _sut.ProcessFinishSelfDescriptionLpForApplication(data, company.Id, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.ACTIVATE_APPLICATION) == 1))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _documentRepository.CreateDocument($"SelfDescription_LegalPerson.json", A<byte[]>._, A<byte[]>._, DocumentTypeId.SELF_DESCRIPTION, A<Action<Document>?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.ACTIVATE_APPLICATION) == 1))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.CreateDocument($"SelfDescription_LegalPerson.json", A<byte[]>._, A<byte[]>._, MediaTypeId.JSON, DocumentTypeId.SELF_DESCRIPTION, A<Action<Document>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(company.Id, null, A<Action<Company>>._)).MustHaveHappenedOnceExactly();
 
         applicationChecklistEntry.Comment.Should().BeNull();
@@ -253,8 +255,8 @@ public class SdFactoryBusinessLogicTests
         await _sut.ProcessFinishSelfDescriptionLpForApplication(data, company.Id, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, null)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _documentRepository.CreateDocument("SelfDescription_LegalPerson.json", A<byte[]>._, A<byte[]>._, DocumentTypeId.SELF_DESCRIPTION, A<Action<Document>?>._)).MustNotHaveHappened();
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.CreateDocument("SelfDescription_LegalPerson.json", A<byte[]>._, A<byte[]>._, MediaTypeId.JSON, DocumentTypeId.SELF_DESCRIPTION, A<Action<Document>?>._)).MustNotHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(company.Id, null, A<Action<Company>>._)).MustNotHaveHappened();
 
         applicationChecklistEntry.Comment.Should().Be("test message");
@@ -291,7 +293,7 @@ public class SdFactoryBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE },
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>());
 
@@ -314,7 +316,7 @@ public class SdFactoryBusinessLogicTests
                 { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE },
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .ReturnsLazily(() => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>(CompanyId, null, CountryCode, new List<(UniqueIdentifierId Id, string Value)>()));
 
@@ -343,7 +345,7 @@ public class SdFactoryBusinessLogicTests
         await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _documentRepository.CreateDocument("SelfDescription_Connector.json", A<byte[]>._, A<byte[]>._, DocumentTypeId.SELF_DESCRIPTION, A<Action<Document>?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.CreateDocument("SelfDescription_Connector.json", A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, DocumentTypeId.SELF_DESCRIPTION, A<Action<Document>?>._)).MustHaveHappenedOnceExactly();
         
         _documents.Should().HaveCount(1);
         var document = _documents.Single();
@@ -450,14 +452,14 @@ public class SdFactoryBusinessLogicTests
                 ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP,
                 null,
                 new[] {ProcessStepTypeId.START_SELF_DESCRIPTION_LP}))
-            .ReturnsLazily(() => new IChecklistService.ManualChecklistProcessStepData(ApplicationId, ProcessId, Guid.NewGuid(),
+            .ReturnsLazily(() => new IApplicationChecklistService.ManualChecklistProcessStepData(ApplicationId, _process, Guid.NewGuid(),
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
                 ImmutableDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>.Empty,
                 new List<ProcessStep>()));
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(
-                A<IChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._,
+                A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._,
                 A<IEnumerable<ProcessStepTypeId>>._))
-            .Invokes((IChecklistService.ManualChecklistProcessStepData _,
+            .Invokes((IApplicationChecklistService.ManualChecklistProcessStepData _,
                 Action<ApplicationChecklistEntry> modifyApplicationChecklistEntry, IEnumerable<ProcessStepTypeId> _) =>
             {
                 applicationChecklistEntry.DateLastChanged = DateTimeOffset.UtcNow;
@@ -465,16 +467,15 @@ public class SdFactoryBusinessLogicTests
             });
         var documentId = Guid.NewGuid();
         A.CallTo(() =>
-                _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<DocumentTypeId>._,
+                _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._,
                     A<Action<Document>?>._))
-            .Invokes((string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields) =>
+            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields) =>
             {
-                var document = new Document(documentId, documentContent, hash, documentName, DateTimeOffset.UtcNow,
-                    DocumentStatusId.PENDING, documentTypeId);
+                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
                 setupOptionalFields?.Invoke(document);
                 _documents.Add(document);
             })
-            .Returns(new Document(documentId, null!, null!, null!, default, default, default));
+            .Returns(new Document(documentId, null!, null!, null!, default, default, default, default));
         
         A.CallTo(() =>
                 _companyRepository.AttachAndModifyCompany(A<Guid>._, null, A<Action<Company>>._))
@@ -494,16 +495,14 @@ public class SdFactoryBusinessLogicTests
             });
         var documentId = Guid.NewGuid();
         A.CallTo(() =>
-                _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<DocumentTypeId>._,
-                    A<Action<Document>?>._))
-            .Invokes((string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields) =>
+                _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._, A<Action<Document>?>._))
+            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields) =>
             {
-                var document = new Document(documentId, documentContent, hash, documentName, DateTimeOffset.UtcNow,
-                    DocumentStatusId.PENDING, documentTypeId);
+                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
                 setupOptionalFields?.Invoke(document);
                 _documents.Add(document);
             })
-            .Returns(new Document(documentId, null!, null!, null!, default, default, default));
+            .Returns(new Document(documentId, null!, null!, null!, default, default, default, default));
     }
     
     #endregion

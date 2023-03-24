@@ -26,7 +26,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Tests;
@@ -156,18 +155,11 @@ public class SdFactoryServiceTests
 
     private void SetupRepositoryMethods()
     { 
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<DocumentTypeId>._, A<Action<Document>?>._))
-            .Invokes(x =>
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._, A<Action<Document>?>._))
+            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? action) =>
             {
-                var documentName = x.Arguments.Get<string>("documentName")!;
-                var documentContent = x.Arguments.Get<byte[]>("documentContent")!;
-                var hash = x.Arguments.Get<byte[]>("hash")!;
-                var documentTypeId = x.Arguments.Get<DocumentTypeId>("documentType")!;
-                var setupOptionalFields = x.Arguments.Get<Action<Document>?>("setupOptionalFields");
-
-                var document = new Document(Guid.NewGuid(), documentContent, hash, documentName, DateTimeOffset.UtcNow,
-                    DocumentStatusId.PENDING, documentTypeId);
-                setupOptionalFields?.Invoke(document);
+                var document = new Document(Guid.NewGuid(), documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
+                action?.Invoke(document);
                 _documents.Add(document);
             });
 

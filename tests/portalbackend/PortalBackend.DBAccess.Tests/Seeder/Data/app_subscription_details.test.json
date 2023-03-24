@@ -1,0 +1,23 @@
+[
+  {
+    "id": "88b0661c-cc22-4a4a-9721-fc4f3cec21f8",
+    "offer_subscription_id": "0b2ca541-206d-48ad-bc02-fb61fbcb5552",
+    "app_instance_id": "ab25c218-9ab3-4f1a-b6f4-6394fbc33c5a",
+    "app_subscription_url": "https://ec-qas.d13fe27.kyma.ondemand.com",
+    "last_editor_id": null
+  },
+  {
+    "id": "88b0661c-cc22-4a4a-9721-fc4f3cec21f9",
+    "offer_subscription_id": "3de6a31f-a5d1-4f60-aa3a-4b1a769becbf",
+    "app_instance_id": "ab25c218-9ab3-4f1a-b6f4-6394fbc33c5b",
+    "app_subscription_url": "https://ec-qas.d13fe27.kyma.ondemand.com",
+    "last_editor_id": null
+  },
+  {
+    "id": "bedb45bf-7094-4da0-9e69-0695db782a16",
+    "offer_subscription_id": "ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba",
+    "app_instance_id": "b161d570-f6ff-45b4-a077-243f72487af6",
+    "app_subscription_url": null,
+    "last_editor_id": null
+  }
+]

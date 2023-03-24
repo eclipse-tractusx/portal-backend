@@ -24,7 +24,6 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -32,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -65,7 +65,7 @@ public class RegistrationBusinessLogicTest
     private readonly ICompanyRolesRepository _companyRolesRepository;
     private readonly IConsentRepository _consentRepository;
     private readonly IProcessStepRepository _processStepRepository;
-    private readonly IChecklistCreationService _checklistService;
+    private readonly IApplicationChecklistCreationService _checklistService;
     private readonly string _iamUserId;
     private readonly Guid _companyUserId;
     private readonly Guid _existingApplicationId;
@@ -97,14 +97,14 @@ public class RegistrationBusinessLogicTest
         _applicationRepository = A.Fake<IApplicationRepository>();
         _countryRepository = A.Fake<ICountryRepository>();
         _consentRepository = A.Fake<IConsentRepository>();
-        _checklistService = A.Fake<IChecklistCreationService>();
+        _checklistService = A.Fake<IApplicationChecklistCreationService>();
         _staticDataRepository = A.Fake<IStaticDataRepository>();
         _processStepRepository = A.Fake<IProcessStepRepository>();
 
         var options = Options.Create(new RegistrationSettings
         {
             BasePortalAddress = "just a test",
-            KeycloakClientID = "CatenaX"
+            KeycloakClientID = "CatenaX",
         });
         _fixture.Inject(options);
         _fixture.Inject(A.Fake<IMailingService>());
@@ -1090,16 +1090,10 @@ public class RegistrationBusinessLogicTest
         var documentId = Guid.NewGuid();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         var documents = new List<Document>();
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<DocumentTypeId>._,A<Action<Document>?>._))
-            .Invokes(x =>
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._,A<Action<Document>?>._))
+            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? action) =>
             {
-                var documentName = x.Arguments.Get<string>("documentName")!;
-                var documentContent = x.Arguments.Get<byte[]>("documentContent")!;
-                var hash = x.Arguments.Get<byte[]>("hash")!;
-                var documentTypeId = x.Arguments.Get<DocumentTypeId>("documentType")!;
-                var action = x.Arguments.Get<Action<Document?>>("setupOptionalFields");
-
-                var document = new Document(documentId, documentContent, hash, documentName, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
+                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
                 action?.Invoke(document);
                 documents.Add(document);
             });
@@ -1558,7 +1552,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _consentRepository.AttachAndModifiesConsents(A<IEnumerable<Guid>>._, A<Action<Consent>>._))
             .Invokes((IEnumerable<Guid> consentIds, Action<Consent> setOptionalParameter) =>
             {
-                var consents = consentIds.Select(x => new Consent(x));
+                var consents = consentIds.Select(x => new Consent(x, Guid.Empty, Guid.Empty, Guid.Empty, default, default));
                 foreach (var consent in consents)
                 {
                     setOptionalParameter.Invoke(consent);
@@ -1645,7 +1639,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
             .ReturnsLazily((ProcessTypeId processTypeId) =>
             {
-                process = new Process(Guid.NewGuid(), processTypeId);
+                process = new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid());
                 return process;
             });
 
@@ -1988,6 +1982,122 @@ public class RegistrationBusinessLogicTest
         // Assert
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
         result.Message.Should().Be($"registrationData should never be null for application {applicationId}");
+    }
+
+    #endregion
+    
+    [Fact]
+    public async Task GetRegistrationDocumentAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+       // var documentId = _fixture.Create<Guid>();
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>(content, "test.json", true, MediaTypeId.JSON));
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, null!, _portalRepositories, null!);
+
+        //Act
+        var result = await sut.GetRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._)).MustHaveHappenedOnceExactly();
+        result.Should().NotBeNull();
+        result.fileName.Should().Be("test.json");
+    }
+
+    [Fact]
+    public async Task GetRegistrationDocumentAsync_WithInvalidDocumentTypeId_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>(content, "test.json", false, MediaTypeId.JSON));
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, null!, _portalRepositories, null!);
+
+        //Act
+        var Act = () => sut.GetRegistrationDocumentAsync(documentId);
+        
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"document {documentId} does not exist.");
+    }
+ 
+    [Fact]
+    public async Task GetRegistrationDocumentAsync_WithInvalidDocumentId_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>());
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, null!, _portalRepositories, null!);
+
+        //Act
+        var Act = () => sut.GetRegistrationDocumentAsync(documentId);
+        
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"document {documentId} does not exist.");
+    }
+
+    #region GetDocumentAsync
+    
+    [Fact]
+    public async Task GetDocumentAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, _iamUserId))
+            .ReturnsLazily(() => new ValueTuple<Guid, bool>(documentId, true));
+        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
+            .ReturnsLazily(() => new Document(documentId, content, content, "test.pdf", MediaTypeId.PDF, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        var result = await sut.GetDocumentContentAsync(documentId, _iamUserId).ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeNull();
+        result.FileName.Should().Be("test.pdf");
+        result.MediaType.Should().Be("application/pdf");
+    }
+   
+    [Fact]
+    public async Task GetDocumentAsync_WithoutDocument_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, _iamUserId))
+            .ReturnsLazily(() => new ValueTuple<Guid, bool>(Guid.Empty, false));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.GetDocumentContentAsync(documentId, _iamUserId).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"document {documentId} does not exist.");
+    }
+
+    [Fact]
+    public async Task GetDocumentAsync_WithWrongUser_ThrowsForbiddenException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        A.CallTo(() => _documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, _iamUserId))
+            .ReturnsLazily(() => new ValueTuple<Guid, bool>(documentId, false));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.GetDocumentContentAsync(documentId, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"user {_iamUserId} is not permitted to access document {documentId}.");
     }
 
     #endregion

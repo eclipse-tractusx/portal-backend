@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library;
 
@@ -29,5 +29,5 @@ public interface IApplicationActivationService
     /// </summary>
     /// <param name="context">The context for the application activation</param>
     /// <param name="cancellationToken">The cancellation Token</param>
-    Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivation(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
+    Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivation(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
 }

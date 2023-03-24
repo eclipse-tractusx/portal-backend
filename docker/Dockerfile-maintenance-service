@@ -24,6 +24,7 @@ WORKDIR /
 COPY src/maintenance/Maintenance.App/ src/maintenance/Maintenance.App/
 COPY src/portalbackend/PortalBackend.PortalEntities/ src/portalbackend/PortalBackend.PortalEntities/
 COPY src/framework/Framework.BaseDependencies/ src/framework/Framework.BaseDependencies/
+COPY src/framework/Framework.DBAccess/ src/framework/Framework.DBAccess/
 COPY src/framework/Framework.ErrorHandling.Library/ src/framework/Framework.ErrorHandling.Library/
 RUN dotnet restore "src/maintenance/Maintenance.App/Maintenance.App.csproj"
 WORKDIR /src/maintenance/Maintenance.App

@@ -83,4 +83,10 @@ public class StaticDataRepository : IStaticDataRepository
                     .Where(identifier => identifier.BpdmIdentifierId != null && bpdmIdentifierIds.Contains(identifier.BpdmIdentifierId.Value))
                     .Select(identifier => new ValueTuple<BpdmIdentifierId,UniqueIdentifierId>(identifier.BpdmIdentifierId!.Value, identifier.UniqueIdentifierId))))
             .SingleOrDefaultAsync();
+    
+    ///<inheritdoc />
+    public IAsyncEnumerable<ServiceTypeData> GetServiceTypeData()=>
+        _dbContext.ServiceTypes.AsNoTracking()
+            .Select(serviceType => new ServiceTypeData((int)serviceType.Id, serviceType.Label))
+            .AsAsyncEnumerable();
 }

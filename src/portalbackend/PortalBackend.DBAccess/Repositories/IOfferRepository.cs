@@ -151,7 +151,7 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <returns>ValueTuple, first item is true if the app is in status CREATED,
     /// second item is true if the user is eligible to edit it</returns>
-    Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<OfferDescriptionData> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, string userId, OfferTypeId offerTypeId);
+    Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<LocalizedDescription> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, string userId, OfferTypeId offerTypeId);
     
     /// Get Offer Release data by Offer Id
     /// </summary>
@@ -201,7 +201,7 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(OfferProviderData OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+    Task<(OfferProviderData? OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Verify that user is linked to the appId
@@ -345,7 +345,7 @@ public interface IOfferRepository
     /// <param name ="iamUserId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<OfferDescriptionData>? OfferDescriptionDatas)> GetActiveOfferDescriptionDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId);
+    Task<(bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<LocalizedDescription>? OfferDescriptionDatas)> GetActiveOfferDescriptionDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId);
 
     /// <summary>
     /// Create, Update and Delete Offer Descriptions Data
@@ -354,7 +354,7 @@ public interface IOfferRepository
     /// <param name ="initialItems"></param>
     /// <param name="modifiedItems"></param>
     /// <returns></returns>
-    void CreateUpdateDeleteOfferDescriptions(Guid offerId, IEnumerable<OfferDescriptionData> initialItems, IEnumerable<(string LanguageCode, string LongDescription, string ShortDescription)> modifiedItems);
+    void CreateUpdateDeleteOfferDescriptions(Guid offerId, IEnumerable<LocalizedDescription> initialItems, IEnumerable<(string LanguageCode, string LongDescription, string ShortDescription)> modifiedItems);
 
     /// <summary>
     /// Delete the OfferAssignedDocument 
@@ -405,13 +405,13 @@ public interface IOfferRepository
     /// Delete Offer Description
     /// </summary>
     /// <param name="offerLanguageShortNames"></param>
-     void RemoveOfferDescriptions(IEnumerable<(Guid OfferId, string LanguageShortName)> offerLanguageShortNames);
+    void RemoveOfferDescriptions(IEnumerable<(Guid OfferId, string LanguageShortName)> offerLanguageShortNames);
 
      /// <summary>
      /// Delete Offer
      /// </summary>
      /// <param name="offerIds"></param>
-     void RemoveOffer(Guid offerId);
+    void RemoveOffer(Guid offerId);
 
     /// <summary>
     /// Gets Active OfferAssigned AppLeadImage Documents
@@ -421,4 +421,11 @@ public interface IOfferRepository
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task<(bool IsStatusActive, Guid CompanyUserId, IEnumerable<DocumentStatusData> documentStatusDatas)> GetOfferAssignedAppLeadImageDocumentsByIdAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Retrieve Service Detail
+    /// </summary>
+    /// <param name="serviceId"></param>
+    /// <returns></returns>
+    Task<ServiceDetailsData?> GetServiceDetailsByIdAsync(Guid serviceId);
 }

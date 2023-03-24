@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 
@@ -54,22 +54,23 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
         return walletData;
     }
 
-    public async Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> CreateIdentityWalletAsync(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> CreateIdentityWalletAsync(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         if (context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == ApplicationChecklistEntryStatusId.FAILED || context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.FAILED)
         {
-            return new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+            return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
                 ProcessStepStatusId.SKIPPED,
                 checklistEntry => checklistEntry.Comment = $"processStep CREATE_IDENTITY_WALLET skipped as entries BUSINESS_PARTNER_NUMBER and REGISTRATION_VERIFICATION have status {context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER]} and {context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION]}",
                 null,
                 null,
-                true);
+                true,
+                null);
         }
         if (context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == ApplicationChecklistEntryStatusId.DONE && context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.DONE)
         {
             var message = await CreateWalletInternal(context.ApplicationId, cancellationToken).ConfigureAwait(false);
 
-            return new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+            return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
                 ProcessStepStatusId.DONE,
                 checklist =>
                     {
@@ -78,9 +79,10 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
                     },
                 new [] { ProcessStepTypeId.START_CLEARING_HOUSE },
                 null,
-                true);
+                true,
+                null);
         }
-        return new IChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO,null,null,null,false);
+        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO,null,null,null,false, null);
     }
 
     private async Task<string> CreateWalletInternal(Guid applicationId, CancellationToken cancellationToken)

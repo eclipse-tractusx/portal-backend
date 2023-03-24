@@ -84,18 +84,21 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
             .Where(application => application.Id == applicationId)
             .Select(application => new {
                 Application = application,
-                IsSubmitted = application.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED
+                IsSubmitted = application.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED,
+                Process = application.ChecklistProcess,
             })
             .Select(x => new VerifyChecklistData(
                 x.IsSubmitted,
-                x.Application.ChecklistProcessId,
+                x.IsSubmitted
+                    ? x.Process
+                    : null,
                 x.IsSubmitted
                     ? x.Application.ApplicationChecklistEntries
                         .Where(entry => entryTypeIds.Contains(entry.ApplicationChecklistEntryTypeId))
                         .Select(entry => new ValueTuple<ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId>(entry.ApplicationChecklistEntryTypeId, entry.ApplicationChecklistEntryStatusId))
                     : null,
                 x.IsSubmitted
-                    ? x.Application.ChecklistProcess!.ProcessSteps
+                    ? x.Process!.ProcessSteps
                         .Where(step =>
                             processStepTypeIds.Contains(step.ProcessStepTypeId) && 
                             step.ProcessStepStatusId == ProcessStepStatusId.TODO)

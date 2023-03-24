@@ -18,12 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text;
 using AutoFixture;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -145,5 +147,42 @@ public class RegistrationControllerTest
             Assert.NotNull(item);
             Assert.IsType<UniqueIdentifierData?>(item);
         }
+    }
+
+    [Fact]
+    public async Task GetDocumentContentFileAsync_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        const string fileName = "test.pdf";
+        const string contentType = "application/pdf";
+        var id = Guid.NewGuid();
+        var content = Encoding.UTF8.GetBytes("This is just test content");
+        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _iamUserId))
+            .ReturnsLazily(() => (fileName, content, contentType));
+
+        //Act
+        var result = await this._controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _iamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<FileContentResult>();
+        ((FileContentResult) result).ContentType.Should().Be(contentType);
+    }
+
+    [Fact]
+    public async Task GetRegistrationDocumentAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var documentId = _fixture.Create<Guid>();
+        var content = new byte[7];
+        A.CallTo(() => _registrationBusinessLogicFake.GetRegistrationDocumentAsync(documentId))
+            .ReturnsLazily(() => new ValueTuple<string, byte[], string>("test.json", content, "application/json"));
+
+        //Act
+        var result = await this._controller.GetRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _registrationBusinessLogicFake.GetRegistrationDocumentAsync(documentId)).MustHaveHappenedOnceExactly();
+        result.Should().NotBeNull();
     }
 }

@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using System.Collections.Immutable;
@@ -106,7 +108,16 @@ public class PortalRepositories : IPortalRepositories
         => _dbContext.RemoveRange(entities);
     
 
-    public Task<int> SaveAsync() => _dbContext.SaveChangesAsync();
-    
+    public Task<int> SaveAsync()
+    {
+        try
+        {
+            return _dbContext.SaveChangesAsync();
+        }
+        catch(DbUpdateConcurrencyException e)
+        {
+            throw new ConflictException("while processing a concurrent update was saved to the database", e);
+        }
+    }
     public void Clear() => _dbContext.ChangeTracker.Clear();
 }

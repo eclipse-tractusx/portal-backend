@@ -317,47 +317,6 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
-    #region Create Service Agreement Consent
-
-    [Fact]
-    public async Task CreateServiceAgreementConsent_ReturnsCorrectId()
-    {
-        // Arrange
-        var consentId = Guid.NewGuid();
-        var offerService = A.Fake<IOfferService>();
-        A.CallTo(() => offerService.CreateOfferSubscriptionAgreementConsentAsync(A<Guid>._, A<Guid>._, A<ConsentStatusId>._, A<string>._, A<OfferTypeId>._))
-            .ReturnsLazily(() => consentId);
-        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, Options.Create(new ServiceSettings()));
-
-        // Act
-        var offerAgreementConsentData = new OfferAgreementConsentData(_existingAgreementId, ConsentStatusId.ACTIVE);
-        var result = await sut.CreateServiceAgreementConsentAsync(_existingServiceId, offerAgreementConsentData, _iamUser.UserEntityId);
-
-        // Assert
-        result.Should().Be(consentId);
-    }
-
-    [Fact]
-    public async Task CreateOrUpdateServiceAgreementConsentAsync_RunsSuccessfull()
-    {
-        // Arrange
-        var offerService = A.Fake<IOfferService>();
-        A.CallTo(() => offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._, A<OfferTypeId>._))
-            .ReturnsLazily(() => Task.CompletedTask);
-        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, Options.Create(new ServiceSettings()));
-
-        // Act
-        await sut.CreateOrUpdateServiceAgreementConsentAsync(_existingServiceId, new List<OfferAgreementConsentData>
-        {
-            new(_existingAgreementId, ConsentStatusId.ACTIVE)
-        }, _iamUser.UserEntityId);
-
-        // Assert
-        true.Should().BeTrue();
-    }
-
-    #endregion
-
     #region Get Service Consent Detail Data
 
     [Fact]
@@ -511,7 +470,7 @@ public class ServiceBusinessLogicTests
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerService.UpsertRemoveOfferDescription(A<Guid>._, A<IEnumerable<Localization>>._, A<IEnumerable<OfferDescriptionData>>._))
+        A.CallTo(() => _offerService.UpsertRemoveOfferDescription(A<Guid>._, A<IEnumerable<LocalizedDescription>>._, A<IEnumerable<LocalizedDescription>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerService.CreateOrUpdateOfferLicense(A<Guid>._, A<string>._, A<(Guid offerLicenseId, string price, bool assignedToMultipleOffers)>._))
             .MustHaveHappenedOnceExactly();
@@ -603,11 +562,11 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_notExistingServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUser.UserEntityId))
             .ReturnsLazily(() => (ServiceUpdateData?)null);
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_activeServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUser.UserEntityId))
-            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<OfferDescriptionData>(), null));
+            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<LocalizedDescription>(), null));
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_differentCompanyServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUser.UserEntityId))
-            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<OfferDescriptionData>(), null));
+            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<LocalizedDescription>(), null));
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_existingServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUser.UserEntityId))
-            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, true, Enumerable.Repeat(new ValueTuple<ServiceTypeId, bool>(ServiceTypeId.DATASPACE_SERVICE, false), 1), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false), Array.Empty<OfferDescriptionData>(), Guid.NewGuid()));
+            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, true, Enumerable.Repeat(new ValueTuple<ServiceTypeId, bool>(ServiceTypeId.DATASPACE_SERVICE, false), 1), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false), Array.Empty<LocalizedDescription>(), Guid.NewGuid()));
         A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).Returns(_companyUser.CompanyId);
     }
 

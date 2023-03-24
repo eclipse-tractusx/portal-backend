@@ -35,7 +35,7 @@
     "date_created": "2022-08-10 18:01:33.570000 +00:00",
     "content": null,
     "notification_type_id": 5,
-    "is_read": true,
+    "is_read": false,
     "due_date": "2022-09-10 18:01:33.570000 +00:00",
     "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
   },
@@ -45,7 +45,7 @@
     "date_created": "2022-08-10 18:01:33.570000 +00:00",
     "content": null,
     "notification_type_id": 6,
-    "is_read": true,
+    "is_read": false,
     "due_date": "2022-09-10 18:01:33.570000 +00:00",
     "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
   }

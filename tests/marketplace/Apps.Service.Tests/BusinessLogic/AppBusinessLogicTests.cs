@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using PortalBackend.DBAccess.Models;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic.Tests;
@@ -396,7 +397,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(null!, null!, _offerService, null!, Options.Create(settings), _mailingService);
         
         // Act
-        await sut.DeactivateOfferbyAppIdAsync(appId, IamUserId).ConfigureAwait(false);
+        await sut.DeactivateOfferByAppIdAsync(appId, IamUserId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerService.DeactivateOfferIdAsync(appId, IamUserId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
@@ -407,7 +408,7 @@ public class AppBusinessLogicTests
     #region GetAppDocumentContentAsync
 
     [Fact]
-    public async Task GetAppDocumentContentAsync_ReturnsExpectedresult()
+    public async Task GetAppDocumentContentAsync_ReturnsExpectedResult()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
@@ -418,8 +419,9 @@ public class AppBusinessLogicTests
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
+        var documentContentData = new OfferDocumentContentData(true, true, true, false, data, fileName, MediaTypeId.JPEG);
         A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((true, true, true, false, data, true, fileName));
+            .ReturnsLazily(() => documentContentData);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, Options.Create(settings), null!);
 
@@ -433,45 +435,17 @@ public class AppBusinessLogicTests
     }
 
     [Fact]
-    public async Task GetAppDocumentContentAsync_InvalidFileName_ThrowsUnsupportedMediatypeException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var documentId = _fixture.Create<Guid>();
-        var data = _fixture.Create<byte[]>();
-        var fileName = _fixture.Create<string>();
-        var settings = new AppsSettings
-        {
-            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
-        };
-        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((true, true, true, false, data, true, fileName));
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, Options.Create(settings), null!);
-
-        // Act
-        var Act = () => sut.GetAppDocumentContentAsync(appId, documentId, CancellationToken.None);
-
-        // Assert
-        await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
-
-        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._)).MustHaveHappened();
-    }
-
-    [Fact]
     public async Task GetAppDocumentContentAsync_ForDocumentIdNotExist_ThrowsArgumentException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var data = _fixture.Create<byte[]>();
-        var fileName = _fixture.Create<string>()+".jpeg";
         var settings = new AppsSettings
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
         A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((true, true, true, false, null, false,fileName));
+            .ReturnsLazily(() => (OfferDocumentContentData?)null);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
 
@@ -489,14 +463,14 @@ public class AppBusinessLogicTests
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var data = _fixture.Create<byte[]>();
         var fileName = _fixture.Create<string>()+".jpeg";;
         var settings = new AppsSettings
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
+        var documentContentData = new OfferDocumentContentData(false, true, true, false, null, fileName, MediaTypeId.JPEG);
         A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((false, true, true, false, null, true, fileName));
+            .ReturnsLazily(() => documentContentData);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
 
@@ -514,14 +488,14 @@ public class AppBusinessLogicTests
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var data = _fixture.Create<byte[]>();
         var fileName = _fixture.Create<string>()+".jpeg";;
         var settings = new AppsSettings
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
+        var documentContentData = new OfferDocumentContentData(true, true, false, false, null, fileName, MediaTypeId.JPEG);
         A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((true, true, false, false, null, true, fileName));
+            .ReturnsLazily(() => documentContentData);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
 
@@ -539,14 +513,14 @@ public class AppBusinessLogicTests
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var data = _fixture.Create<byte[]>();
         var fileName = _fixture.Create<string>()+".jpeg";;
         var settings = new AppsSettings
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
+        var documentContentData = new OfferDocumentContentData(true, false, true, false, null, fileName, MediaTypeId.JPEG);
         A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((true, false, true, false, null, true, fileName));
+            .ReturnsLazily(() => documentContentData);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
 
@@ -564,14 +538,14 @@ public class AppBusinessLogicTests
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var data = _fixture.Create<byte[]>();
         var fileName = _fixture.Create<string>()+".jpeg";;
         var settings = new AppsSettings
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
+        var documentContentData = new OfferDocumentContentData(true, true, true, true, null, fileName, MediaTypeId.JPEG);
         A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((true, true, true, true, null, true, fileName));
+            .ReturnsLazily(() => documentContentData);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
 
@@ -589,14 +563,14 @@ public class AppBusinessLogicTests
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var data = _fixture.Create<byte[]>();
         var fileName = _fixture.Create<string>()+".jpeg";;
         var settings = new AppsSettings
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
+        var documentContentData = new OfferDocumentContentData(true, true, true, false, null, fileName, MediaTypeId.JPEG);
         A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .Returns((true, true, true, false, null, true, fileName));
+            .ReturnsLazily(() => documentContentData);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
 
@@ -639,7 +613,7 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var offerDescription = _fixture.CreateMany<OfferDescriptionData>(3);
+        var offerDescription = _fixture.CreateMany<LocalizedDescription>(3);
         var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
@@ -648,11 +622,11 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
 
         // Act
-        var result = await sut.GetAppUpdateDescritionByIdAsync(appId, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetAppUpdateDescriptionByIdAsync(appId, IamUserId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result.Select(x => x.languageCode).Should().Contain(offerDescription.Select(od => od.languageCode));
+        result.Select(x => x.LanguageCode).Should().Contain(offerDescription.Select(od => od.LanguageCode));
     }
 
     [Fact]    
@@ -662,12 +636,12 @@ public class AppBusinessLogicTests
         var appId = _fixture.Create<Guid>();
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
-            .ReturnsLazily(() => ((bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<OfferDescriptionData> OfferDescriptionDatas))default);
+            .ReturnsLazily(() => ((bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<LocalizedDescription> OfferDescriptionDatas))default);
         
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
 
         // Act
-        async Task Act() => await sut.GetAppUpdateDescritionByIdAsync(appId, IamUserId).ConfigureAwait(false);
+        async Task Act() => await sut.GetAppUpdateDescriptionByIdAsync(appId, IamUserId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -679,7 +653,7 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var offerDescription = _fixture.CreateMany<OfferDescriptionData>(3);
+        var offerDescription = _fixture.CreateMany<LocalizedDescription>(3);
         var appDescriptionData = (IsStatusActive: false, IsProviderCompanyUser: true, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
@@ -688,7 +662,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
 
         // Act
-        async Task Act() => await sut.GetAppUpdateDescritionByIdAsync(appId, IamUserId).ConfigureAwait(false);
+        async Task Act() => await sut.GetAppUpdateDescriptionByIdAsync(appId, IamUserId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -700,7 +674,7 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var offerDescription = _fixture.CreateMany<OfferDescriptionData>(3);
+        var offerDescription = _fixture.CreateMany<LocalizedDescription>(3);
         var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: false, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
@@ -709,7 +683,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
 
         // Act
-        async Task Act() => await sut.GetAppUpdateDescritionByIdAsync(appId, IamUserId).ConfigureAwait(false);
+        async Task Act() => await sut.GetAppUpdateDescriptionByIdAsync(appId, IamUserId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -721,7 +695,7 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var existingOfferDescriptions = new OfferDescriptionData[] {
+        var existingOfferDescriptions = new LocalizedDescription[] {
             new ("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new ("de", _fixture.Create<string>(), _fixture.Create<string>())
         };
@@ -754,7 +728,7 @@ public class AppBusinessLogicTests
             new ("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new ("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: Array.Empty<OfferDescriptionData>());
+        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: Array.Empty<LocalizedDescription>());
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
             .ReturnsLazily(() => appDescriptionData);
@@ -765,7 +739,7 @@ public class AppBusinessLogicTests
         await sut.CreateOrUpdateAppDescriptionByIdAsync(appId, IamUserId, updateDescriptionData).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(appId, A<IEnumerable<OfferDescriptionData>>.That.IsEmpty(), A<IEnumerable<(string,string,string)>>.That.IsSameSequenceAs(updateDescriptionData.Select(x => new ValueTuple<string,string,string>(x.LanguageCode, x.LongDescription, x.ShortDescription)))))
+        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(appId, A<IEnumerable<LocalizedDescription>>.That.IsEmpty(), A<IEnumerable<(string,string,string)>>.That.IsSameSequenceAs(updateDescriptionData.Select(x => new ValueTuple<string,string,string>(x.LanguageCode, x.LongDescription, x.ShortDescription)))))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -778,7 +752,7 @@ public class AppBusinessLogicTests
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<OfferDescriptionData>)null!);
+        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>)null!);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, IamUserId))
             .ReturnsLazily(() => appDescriptionData);
@@ -792,7 +766,7 @@ public class AppBusinessLogicTests
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
         result.Message.Should().Be("offerDescriptionDatas should never be null here");
         
-        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(A<Guid>._, A<IEnumerable<OfferDescriptionData>>._, A<IEnumerable<(string,string,string)>>._)) 
+        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(A<Guid>._, A<IEnumerable<LocalizedDescription>>._, A<IEnumerable<(string,string,string)>>._)) 
             .MustNotHaveHappened();
 
     }
@@ -817,7 +791,7 @@ public class AppBusinessLogicTests
     
     #endregion
 
-  #region  CreateOfferAssignedAppLeadImageDocumentById
+    #region  CreateOfferAssignedAppLeadImageDocumentById
 
     [Fact]
     public async Task CreateOfferAssignedAppLeadImageDocumentById_ExpectedCalls()
@@ -835,10 +809,10 @@ public class AppBusinessLogicTests
         A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP))
             .ReturnsLazily(() => (true, companyUserId, documentStatusData));
 
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<DocumentTypeId>._,A<Action<Document>?>._))
-            .Invokes((string documentName, byte[] documentContent, byte[] hash, DocumentTypeId documentType, Action<Document>? setupOptionalFields) =>
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._,A<Action<Document>?>._))
+            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentType, Action<Document>? setupOptionalFields) =>
             {
-                var document = new Document(documentId, documentContent, hash, documentName, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, documentType);
+                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, documentType);
                 setupOptionalFields?.Invoke(document);
                 documents.Add(document);
             });
@@ -856,7 +830,7 @@ public class AppBusinessLogicTests
         await sut.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, file, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<DocumentTypeId>._,A<Action<Document>?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._,A<Action<Document>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.CreateOfferAssignedDocument(A<Guid>._, A<Guid>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.RemoveOfferAssignedDocument(A<Guid>._,A<Guid>._)).MustHaveHappenedTwiceExactly();
         A.CallTo(() => _documentRepository.RemoveDocument(A<Guid>._)).MustHaveHappenedTwiceExactly();

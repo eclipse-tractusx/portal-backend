@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -129,7 +130,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         result.Should().NotBeNull()
             .And.BeOfType<(bool IsValidProcessId, Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(ApplicationChecklistEntryTypeId EntryTypeId, ApplicationChecklistEntryStatusId EntryStatusId)> Checklist)>()
             .And.Match<(bool IsValidProcessId, Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(ApplicationChecklistEntryTypeId EntryTypeId, ApplicationChecklistEntryStatusId EntryStatusId)> Checklist)>(
-                x => x.IsValidProcessId && x.ApplicationId == new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb6") && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED && x.Checklist.Count() == 6
+                x => x.IsValidProcessId && x.ApplicationId == new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9f") && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED && x.Checklist.Count() == 6
             );
     }
 
@@ -144,7 +145,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetChecklistProcessStepData(new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb6"),
+        var result = await sut.GetChecklistProcessStepData(new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9f"),
             new[]
             {
                 ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
@@ -165,11 +166,17 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         result.Checklist.Should().HaveCount(5).And.Contain(new [] {
             ( ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE ),
             ( ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE ),
-            ( ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO ),
-            ( ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO ),
-            ( ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO ),
+            ( ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE ),
+            ( ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE ),
+            ( ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE ),
         });
-        result.ProcessId.Should().Be(new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe"));
+        result.Process!.Id.Should().Be(new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe"));
+        result.Process.ProcessTypeId.Should().Be(ProcessTypeId.APPLICATION_CHECKLIST);
+        result.Process.LockExpiryDate.Should().Be(DateTimeOffset.Parse("2023-03-01 00:00:00.000000 +00:00"));
+        result.Process.IsLocked().Should().BeTrue();
+        result.Process.IsLockExpired(DateTimeOffset.Parse("2023-02-28 00:00:00.000000 +00:00")).Should().BeFalse();
+        result.Process.IsLockExpired(DateTimeOffset.Parse("2023-03-01 00:00:00.000000 +00:00")).Should().BeFalse();
+        result.Process.IsLockExpired(DateTimeOffset.Parse("2023-03-02 00:00:00.000000 +00:00")).Should().BeTrue();
         result.ProcessSteps.Should().NotBeEmpty();
         result.ProcessSteps!.Select(step => (step.ProcessStepTypeId, step.ProcessStepStatusId, step.ProcessId)).Should().Contain( new [] {
             (ProcessStepTypeId.START_CLEARING_HOUSE, ProcessStepStatusId.TODO, new Guid ("1f9a3232-9772-4ecb-8f50-c16e97772dfe")),

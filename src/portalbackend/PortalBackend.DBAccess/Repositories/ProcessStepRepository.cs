@@ -39,7 +39,7 @@ public class ProcessStepRepository : IProcessStepRepository
     }
 
     public Process CreateProcess(ProcessTypeId processTypeId) =>
-        _context.Add(new Process(Guid.NewGuid(), processTypeId)).Entity;
+        _context.Add(new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid())).Entity;
 
     public IEnumerable<ProcessStep> CreateProcessStepRange(IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus)
     {
@@ -57,17 +57,13 @@ public class ProcessStepRepository : IProcessStepRepository
         modify(step);
     }
 
-    public IAsyncEnumerable<(Guid ProcessId, ProcessTypeId ProcessTypeId)> GetActiveProcesses(IEnumerable<ProcessTypeId> processTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+    public IAsyncEnumerable<Process> GetActiveProcesses(IEnumerable<ProcessTypeId> processTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds, DateTimeOffset lockExpiryDate) =>
         _context.Processes
             .AsNoTracking()
             .Where(process =>
                 processTypeIds.Contains(process.ProcessTypeId) &&
-                process.ProcessSteps.Any(step => processStepTypeIds.Contains(step.ProcessStepTypeId) && step.ProcessStepStatusId == ProcessStepStatusId.TODO))
-            .Select(process =>
-                new ValueTuple<Guid,ProcessTypeId>(
-                    process.Id,
-                    process.ProcessTypeId
-                ))
+                process.ProcessSteps.Any(step => processStepTypeIds.Contains(step.ProcessStepTypeId) && step.ProcessStepStatusId == ProcessStepStatusId.TODO) &&
+                (process.LockExpiryDate == null || process.LockExpiryDate < lockExpiryDate))
             .AsAsyncEnumerable();
 
     public IAsyncEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId)> GetProcessStepData(Guid processId) =>

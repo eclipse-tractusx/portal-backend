@@ -20,13 +20,13 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
@@ -80,7 +80,7 @@ public class BpdmBusinessLogicTests
                 {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(IdWithBpn, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithBpn)))
             .ReturnsLazily(() => (ValidCompanyId, null!));
 
@@ -104,7 +104,7 @@ public class BpdmBusinessLogicTests
                 {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupFakesForTrigger();
 
         // Act
@@ -126,7 +126,7 @@ public class BpdmBusinessLogicTests
                 {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(IdWithoutZipCode, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithoutZipCode, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithoutZipCode)))
             .ReturnsLazily(() => (ValidCompanyId, new BpdmData(ValidCompanyName, null!, "Test", null!, null!, "Test", "test", null!, null!, new List<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
 
@@ -149,7 +149,7 @@ public class BpdmBusinessLogicTests
                 {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(IdWithoutZipCode, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithoutZipCode, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithoutZipCode)))
             .ReturnsLazily(() => (ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, null!, null!, "Test", "test", null!, null!, new List<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
 
@@ -172,7 +172,7 @@ public class BpdmBusinessLogicTests
                 {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(IdWithoutZipCode, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithoutZipCode, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithoutZipCode)))
             .ReturnsLazily(() => (ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, "DE", null!, null, "test", null!, null!, new List<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
 
@@ -195,7 +195,7 @@ public class BpdmBusinessLogicTests
                 {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(IdWithoutZipCode, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithoutZipCode, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithoutZipCode)))
             .ReturnsLazily(() => (ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, "DE", null!, "TEST", null, null!, null!, new List<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
 
@@ -219,7 +219,7 @@ public class BpdmBusinessLogicTests
                 {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(IdWithBpn, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupFakesForTrigger();
 
         // Act
@@ -250,7 +250,7 @@ public class BpdmBusinessLogicTests
                 {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForHandlePullLegalEntity();
 
         // Act
@@ -271,7 +271,7 @@ public class BpdmBusinessLogicTests
                 {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(IdWithStateCreated, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithStateCreated, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForHandlePullLegalEntity();
 
         // Act
@@ -292,7 +292,7 @@ public class BpdmBusinessLogicTests
                 {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(IdWithoutZipCode, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithoutZipCode, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForHandlePullLegalEntity();
 
         // Act
@@ -322,7 +322,7 @@ public class BpdmBusinessLogicTests
                 {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(IdWithBpn, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForHandlePullLegalEntity(company);
 
         // Act
@@ -353,7 +353,7 @@ public class BpdmBusinessLogicTests
                 {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(IdWithBpn, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForHandlePullLegalEntity(company);
 
         // Act

@@ -39,7 +39,7 @@
       <ProjectReference Include="..\..\mailing\Mailing.SendMail\Mailing.SendMail.csproj" />
       <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
       <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
-      <ProjectReference Include="..\..\checklist\Checklist.Library\Checklist.Library.csproj" />
+      <ProjectReference Include="..\..\processes\ApplicationChecklist.Library\ApplicationChecklist.Library.csproj" />
     </ItemGroup>
 
 </Project>

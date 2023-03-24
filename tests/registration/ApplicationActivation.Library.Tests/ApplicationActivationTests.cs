@@ -20,7 +20,6 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -30,6 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using System.Collections.Immutable;
 
@@ -120,7 +120,7 @@ public class ApplicationActivationTests
         _settings.StartTime = TimeSpan.FromHours(4);
         _settings.EndTime = TimeSpan.FromHours(8);
         SetupFakes(new Dictionary<string, IEnumerable<string>>(), new List<UserRoleData>(), companyUserAssignedRole, companyUserAssignedBusinessPartner);
-        var context = new IChecklistService.WorkerChecklistProcessStepData(
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             Id,
             default,
             new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
@@ -166,7 +166,7 @@ public class ApplicationActivationTests
                 {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(Id, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Id, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
         A.CallTo(() => _dateTimeProvider.Now).Returns(new DateTime(2022, 01, 01, 0, 0, 0));
         _settings.StartTime = TimeSpan.FromHours(22);
@@ -215,7 +215,7 @@ public class ApplicationActivationTests
             {
                 setOptionalParameters.Invoke(company);
             });
-        var context = new IChecklistService.WorkerChecklistProcessStepData(
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             Id,
             default,
             new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
@@ -290,7 +290,7 @@ public class ApplicationActivationTests
             {
                 setOptionalParameters.Invoke(company);
             });
-        var context = new IChecklistService.WorkerChecklistProcessStepData(
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             Id,
             default,
             new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
@@ -347,7 +347,7 @@ public class ApplicationActivationTests
                 {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
             }
             .ToImmutableDictionary();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(Guid.Empty, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Guid.Empty, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
         async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
@@ -362,7 +362,7 @@ public class ApplicationActivationTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        var context = new IChecklistService.WorkerChecklistProcessStepData(
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             applicationId,
             default,
             new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
@@ -391,7 +391,7 @@ public class ApplicationActivationTests
     public async Task HandleApplicationActivation_WithCompanyWithoutBPN_ThrowsConflictException()
     {
         //Act
-        var context = new IChecklistService.WorkerChecklistProcessStepData(
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             IdWithoutBpn,
             default,
             new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>

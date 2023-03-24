@@ -142,8 +142,8 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Count.Should().Be(10);
-        results.Data.Count().Should().Be(10);
+        results!.Count.Should().Be(5);
+        results.Data.Count().Should().Be(5);
         results.Data.Should().AllBeOfType<NotificationDetailData>();
     }
 
@@ -158,7 +158,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(10);
+        results!.Data.Count().Should().Be(5);
         results!.Data.Should().BeInAscendingOrder(detailData => detailData.Created);
     }
 
@@ -173,7 +173,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(10);
+        results!.Data.Count().Should().Be(5);
         results.Data.Should().BeInDescendingOrder(detailData => detailData.Created);
     }
 
@@ -188,7 +188,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(10);
+        results!.Data.Count().Should().Be(5);
         results.Data.Should().BeInAscendingOrder(detailData => detailData.IsRead);
     }
 
@@ -203,7 +203,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(10);
+        results!.Data.Count().Should().Be(5);
         results.Data.Should().BeInDescendingOrder(detailData => detailData.IsRead);
     }
 
@@ -220,7 +220,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(5);
+        results!.Data.Count().Should().Be(2);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == false));
     }
 
@@ -237,7 +237,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(5);
+        results!.Data.Count().Should().Be(3);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true));
     }
 
@@ -282,7 +282,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNull();
-        results!.Data.Count().Should().Be(9);
+        results!.Data.Count().Should().Be(4);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.NotificationTopic == NotificationTopicId.INFO));
     }
 
@@ -298,13 +298,13 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut
-            .GetNotificationByIdAndIamUserIdUntrackedAsync(new Guid("b753cd7f-24c7-44a7-a88e-08ed00c31600"), IamUserId)
+            .GetNotificationByIdAndIamUserIdUntrackedAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), IamUserId)
             .ConfigureAwait(false);
         
         // Assert
         result.Should().NotBeNull();
         result.IsUserReceiver.Should().BeTrue();
-        result.NotificationDetailData.IsRead.Should().BeFalse();
+        result.NotificationDetailData.IsRead.Should().BeTrue();
     }
 
     #endregion
@@ -323,7 +323,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
             .ConfigureAwait(false);
 
         // Assert
-        results.Count.Should().Be(5);
+        results.Count.Should().Be(3);
     }
 
     [Fact]
@@ -338,7 +338,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
             .ConfigureAwait(false);
 
         // Assert
-        results.Count.Should().Be(10);
+        results.Count.Should().Be(5);
     }
 
     #endregion
@@ -372,7 +372,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .CheckNotificationExistsByIdAndIamUserIdAsync(new Guid("b753cd7f-24c7-44a7-a88e-08ed00c31600"), IamUserId)
+            .CheckNotificationExistsByIdAndIamUserIdAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), IamUserId)
             .ConfigureAwait(false);
 
         // Assert
