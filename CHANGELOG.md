@@ -2,6 +2,41 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.2.0
+
+### Change
+* Update email template content for "Next Step" email
+* App Service
+  * enhance api response body key useCase in appStatus endpoint by including the useCase label and id ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+
+### Feature
+* Services Service
+  * released new endpoints to retrieve service type master data for the service release process
+  * released new endpoint to fetch agreement and consent data for an offer of service type
+  * released new endpoint to receive pre-saved service informations as part of the service release process
+  * released new endpoint ro set the consent to agreements for a specific service
+  * removed service serviceAgreementConsent endpoints from service controller
+  * added attribute "providerUri" to the PUT endpoint services/{serviceId}
+* Added audit entity for portal table company_assigned_roles
+* Document Endpoints
+  * implemented media type usage (mimeType) for all document uploads/downloads. Media type is now getting stored based on the upload file type inside the portal.documents table
+  * new endpoint GET administration/document released to fetch cx frame documents as part of the portal app
+  * new endpoint GET registration/document released to fetch cx frame documents as part of the registration app
+* Adinistration Service
+  * released new endpoints to change CompnayRole and Consent records
+
+### Technical Support
+* Unit test split for seeding data consortia vs. test data
+* trg and trivy: add repo metafile and fixed container registry
+* Fixing missing dockerfile dependencies of maintenance and migration
+* Checklist worker: enhance process step logic/table by enabling the storage of error messages against process steps
+
+### Bugfix
+* Registration Service: fix/updating query validating calling users association with application
+* Checklist worker: fix racecondition on concurrent execution of same process
+* Seeding data consortia updated by adding offer privacy policies
+* Updated the business logic for service/submit by removing the validation for attribute user role t flow
+
 ## 1.1.0
 
 ### Change
