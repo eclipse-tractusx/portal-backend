@@ -25,6 +25,4 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public interface ICompanyDataBusinessLogic
 {
     Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync(string iamUserId);
-
-    IAsyncEnumerable<CompanyRoleConsentData> GetCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId);
 }

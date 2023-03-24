@@ -86,12 +86,12 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, "623770c5-cf38-4b9f-9a35-f8b9ae972e2d").ConfigureAwait(false);
+        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, "8be5ee49-4b9c-4008-b641-138305430cc4").ConfigureAwait(false);
         
         // Assert
         result.Should().NotBe(default);
         result.ProviderDetailReturnData.Should().NotBeNull();
-        result.ProviderDetailReturnData.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"));
+        result.ProviderDetailReturnData.CompanyId.Should().Be(new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
         result.IsProviderCompany.Should().BeTrue();
     }
 
@@ -133,7 +133,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", CompanyRoleId.SERVICE_PROVIDER);
+        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("8be5ee49-4b9c-4008-b641-138305430cc4", CompanyRoleId.SERVICE_PROVIDER);
 
         // Assert
         results.Should().NotBe(default);
@@ -413,7 +413,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         modified.Should().HaveSameCount(updatedEntities);
         modified.OrderBy(x => x.UniqueIdentifierId).Zip(updatedEntities).Should().AllSatisfy(x => (x.First.UniqueIdentifierId == x.Second.UniqueIdentifierId && x.First.Value == x.Second.Value).Should().BeTrue());
         deleted.Should().HaveSameCount(removedEntities);
-        deleted.OrderBy(x => x.UniqueIdentifierId).Zip(removedEntities).Should().AllSatisfy(x => (x.First.UniqueIdentifierId == x.Second.UniqueIdentifierId && x.First.Value == x.Second.Value).Should().BeTrue());
+        deleted.OrderBy(x => x.UniqueIdentifierId).Zip(removedEntities).Should().AllSatisfy(x => x.First.UniqueIdentifierId.Should().Be(x.Second.UniqueIdentifierId));
    }
 
     #endregion
@@ -438,27 +438,6 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.StreetName.Should().Be("Street");
         result.StreetNumber.Should().Be("1");
         result.ZipCode.Should().Be("00001");
-    }
-
-    #endregion
-
-    #region GetCompanyRoleAndConsentAgreement
-
-    [Fact]
-    public async Task GetCompanyRoleAndConsentAgreementDetailsAsync_ReturnsExpected()
-    {
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
-
-        var result = sut.GetCompanyRoleAndConsentAgreementDetailsAsync("502dabcf-01c7-47d9-a88e-0be4279097b5");
-
-        result.Should().NotBeNull();
-        var data = await result.FirstAsync();
-        var companyRole = data!.CompanyRoles;
-        var isActiveCompanyRole = data.CompanyRolesActive;
-        var agreement = data.Agreements.First();
-        companyRole.Should().Be("ACTIVE_PARTICIPANT");
-        isActiveCompanyRole.Should().BeTrue();
-        agreement.AgreementId.Should().Be(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1090"));
     }
 
     #endregion

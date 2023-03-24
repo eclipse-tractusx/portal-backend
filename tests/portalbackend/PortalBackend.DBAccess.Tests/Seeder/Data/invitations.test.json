@@ -1,0 +1,16 @@
+[
+  {
+    "id": "d54db875-774c-479f-9f14-375f2cb8b257",
+    "date_created": "2022-03-24 18:01:33.439000 +00:00",
+    "invitation_status_id": 3,
+    "company_application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9f",
+    "company_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
+  },
+  {
+    "id": "d54db875-774c-479f-9f14-375f2cb8b262",
+    "date_created": "2022-03-24 18:01:33.439000 +00:00",
+    "invitation_status_id": 1,
+    "company_application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9e",
+    "company_user_id": "ac1cf001-7fbc-1f2f-817f-bce058019994"
+  }
+]

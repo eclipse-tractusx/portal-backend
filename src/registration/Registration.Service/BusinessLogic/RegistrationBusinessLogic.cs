@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
@@ -33,7 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
@@ -46,7 +47,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
-    private readonly IChecklistCreationService _checklistService;
+    private readonly IApplicationChecklistCreationService _checklistService;
 
     private static readonly Regex bpnRegex = new Regex(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
 
@@ -58,7 +59,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IUserProvisioningService userProvisioningService,
         ILogger<RegistrationBusinessLogic> logger,
         IPortalRepositories portalRepositories,
-        IChecklistCreationService checklistService)
+        IApplicationChecklistCreationService checklistService)
     {
         _settings = settings.Value;
         _mailingService = mailingService;
@@ -211,17 +212,16 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
         }
         
-        _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, documentTypeId, doc =>
+        _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, document.ContentType.ParseMediaTypeId(), documentTypeId, doc =>
         {
             doc.CompanyUserId = companyUserId;
         });
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<(string fileName, byte[] content)> GetDocumentContentAsync(Guid documentId, string iamUserId)
+    public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId, string iamUserId)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-
         var documentDetails = await documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, iamUserId).ConfigureAwait(false);
         if (documentDetails.DocumentId == Guid.Empty)
         {
@@ -238,8 +238,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new NotFoundException($"document {documentId} does not exist.");
         }
-
-        return (document.DocumentName, document.DocumentContent);
+        return (document.DocumentName, document.DocumentContent, document.MediaTypeId.MapToMediaType());
     }
 
     public async IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId)
@@ -910,5 +909,22 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new NotFoundException($"invalid country code {alpha2Code}");
         }
         return uniqueIdentifierData.IdentifierIds.Select(identifierId => new UniqueIdentifierData((int)identifierId, identifierId));
+    }
+
+    public async Task<(string fileName, byte[] content, string mediaType)> GetRegistrationDocumentAsync(Guid documentId)
+    {
+        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+
+        var documentDetails = await documentRepository.GetDocumentAsync(documentId, _settings.RegistrationDocumentTypeIds).ConfigureAwait(false);
+        if(documentDetails == default)
+        {
+            throw new NotFoundException($"document {documentId} does not exist.");
+        }
+        if (!documentDetails.IsDocumentTypeMatch)
+        {
+            throw new NotFoundException($"document {documentId} does not exist.");
+        }
+
+        return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
     }
 }

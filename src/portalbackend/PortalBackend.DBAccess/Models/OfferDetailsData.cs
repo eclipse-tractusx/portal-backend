@@ -25,86 +25,38 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <summary>
 /// View model of an application's detailed data.
 /// </summary>
+/// <param name="Id">ID of the app.</param>
+/// <param name="Title">Title or name of the app.</param>
+/// <param name="LeadPictureId">Id of the Lead Image.</param>
+/// <param name="Images">List of Images to app's secondary pictures</param>
+/// <param name="ProviderUri">Uri to provider's marketing presence</param>
+/// <param name="Provider">Provider of the app</param>
+/// <param name="ContactEmail">Email address of the app's primary contact</param>
+/// <param name="ContactNumber">Phone number of the app's primary contact</param>
+/// <param name="UseCases">Names of the app's use cases</param>
+/// <param name="LongDescription">Long description of the app</param>
+/// <param name="Price">Pricing information of the app</param>
+/// <param name="Tags">Tags assigned to application</param>
+/// <param name="IsSubscribed">Whether app has been purchased by the user's company</param>
+/// <param name="Languages">Languages that the app is available in</param>
+/// <param name="Documents">document assigned to offer</param>
+/// <param name="PrivacyPolicies">privacy policy assigned to offer</param>
 public record OfferDetailsData(
-
-    /// <summary>
-    /// ID of the app.
-    /// </summary>
     Guid Id,
-
-    /// <summary>
-    /// Title or name of the app.
-    /// </summary>
     string? Title,
-
-    /// <summary>
-    /// Id of the Lead Image.
-    /// </summary>
     Guid LeadPictureId,
-
-    /// <summary>
-    /// List of Images to app's secondary pictures.
-    /// </summary>
     IEnumerable<Guid> Images,
-
-    /// <summary>
-    /// Uri to provider's marketing presence.
-    /// </summary>
     string? ProviderUri,
-
-    /// <summary>
-    /// Provider of the app.
-    /// </summary>
     string Provider,
-
-    /// <summary>
-    /// Email address of the app's primary contact.
-    /// </summary>
     string? ContactEmail,
-
-    /// <summary>
-    /// Phone number of the app's primary contact.
-    /// </summary>
     string? ContactNumber,
-
-    /// <summary>
-    /// Names of the app's use cases.
-    /// </summary>
-    IEnumerable<string> UseCases,
-
-    /// <summary>
-    /// Long description of the app.
-    /// </summary>
+    IEnumerable<AppUseCaseData> UseCases,
     string? LongDescription,
-
-    /// <summary>
-    /// Pricing information of the app.
-    /// </summary>
     string? Price,
-
-    /// <summary>
-    /// Tags assigned to application.
-    /// </summary>
     IEnumerable<string> Tags,
-
-    /// <summary>
-    /// Whether app has been purchased by the user's company.
-    /// </summary>
     OfferSubscriptionStatusId IsSubscribed,
-
-    /// <summary>
-    /// Languages that the app is available in.
-    /// </summary>
     IEnumerable<string> Languages,
-
-    /// <summary>
-    /// document assigned to offer
-    /// </summary>
     IEnumerable<DocumentTypeData> Documents,
-    
-    /// <summary>
-    /// privacy policy assigned to offer
-    /// </summary>
     IEnumerable<PrivacyPolicyId> PrivacyPolicies
 );
 

@@ -1,0 +1,27 @@
+[
+    {
+      "company_id": "0dcd8209-85e2-4073-b130-ac094fb47106",
+      "unique_identifier_id": 1,
+      "value": "HRB 12340"
+    },
+    {
+      "company_id": "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd",
+      "unique_identifier_id": 1,
+      "value": "HRB 12344"
+    },
+    {
+      "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88",
+      "unique_identifier_id": 1,
+      "value": "HRB 12345"
+    },
+    {
+      "company_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
+      "unique_identifier_id": 1,
+      "value": "HRB 12343"
+    },
+    {
+      "company_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+      "unique_identifier_id": 2,
+      "value": "DE123456789"
+    }
+]

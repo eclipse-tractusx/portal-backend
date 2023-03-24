@@ -21,7 +21,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -32,9 +31,11 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using System.Text.RegularExpressions;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -43,7 +44,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly RegistrationSettings _settings;
     private readonly IMailingService _mailingService;
-    private readonly IChecklistService _checklistService;
+    private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
 
@@ -51,7 +52,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IPortalRepositories portalRepositories, 
         IOptions<RegistrationSettings> configuration, 
         IMailingService mailingService,
-        IChecklistService checklistService,
+        IApplicationChecklistService checklistService,
         IClearinghouseBusinessLogic clearinghouseBusinessLogic,
         ISdFactoryBusinessLogic sdFactoryBusinessLogic)
     {
@@ -497,6 +498,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new NotFoundException($"Document {documentId} does not exist");
         }
 
-        return (document.DocumentName, document.DocumentContent, document.DocumentName.MapToContentType());
+        return (document.DocumentName, document.DocumentContent, document.MediaTypeId.MapToMediaType());
     }
 }

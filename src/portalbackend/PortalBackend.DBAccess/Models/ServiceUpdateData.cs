@@ -27,5 +27,5 @@ public record ServiceUpdateData(
     bool IsUserOfProvider,
     IEnumerable<(ServiceTypeId ServiceTypeId, bool IsMatch)> ServiceTypeIds,
     ValueTuple<Guid, string, bool> OfferLicense,
-    IEnumerable<OfferDescriptionData> Descriptions,
+    IEnumerable<LocalizedDescription> Descriptions,
     Guid? SalesManagerId);

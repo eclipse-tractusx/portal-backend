@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
@@ -30,4 +30,4 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="ContactEmail"></param>
 /// <param name="ContactNumber"></param>
 /// <returns></returns>
-public record AppEditableDetail(IEnumerable<Localization> Descriptions, string? ProviderUri, string? ContactEmail, string? ContactNumber);
+public record AppEditableDetail(IEnumerable<LocalizedDescription> Descriptions, string? ProviderUri, string? ContactEmail, string? ContactNumber);

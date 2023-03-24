@@ -48,4 +48,10 @@ public interface IStaticDataRepository
     Task<(IEnumerable<UniqueIdentifierId> IdentifierIds, bool IsValidCountryCode)> GetCompanyIdentifiers(string alpha2Code);
 
     Task<(bool IsValidCountry, IEnumerable<(BpdmIdentifierId BpdmIdentifierId, UniqueIdentifierId UniqueIdentifierId)> Identifiers)> GetCountryAssignedIdentifiers(IEnumerable<BpdmIdentifierId> bpdmIdentifierIds, string countryAlpha2Code);
+    
+    /// <summary>
+    /// Retrieve Service Type Data
+    /// </summary>
+    /// <returns></returns>
+    IAsyncEnumerable<ServiceTypeData> GetServiceTypeData();
 }

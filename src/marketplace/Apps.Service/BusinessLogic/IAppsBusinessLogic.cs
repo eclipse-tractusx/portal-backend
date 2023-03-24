@@ -151,7 +151,7 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="appId">Id of the app</param>
     /// <param name="iamUserId">Id of the iamUser</param>
-    public Task DeactivateOfferbyAppIdAsync(Guid appId, string iamUserId);
+    public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId);
 
     /// <summary>
     /// Retrieve Document Content for document type  by ID
@@ -167,7 +167,7 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="appId">Id of the app</param>
     /// <param name="iamUserId">Id of the iamUser</param>
-    Task<IEnumerable<OfferDescriptionData>> GetAppUpdateDescritionByIdAsync(Guid appId, string iamUserId);
+    Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, string iamUserId);
 
     /// <summary>
     /// Create or Update OfferDescription by appId

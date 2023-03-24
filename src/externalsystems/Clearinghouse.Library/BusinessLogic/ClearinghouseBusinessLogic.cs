@@ -19,13 +19,13 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 
@@ -34,14 +34,14 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IClearinghouseService _clearinghouseService;
     private readonly ICustodianBusinessLogic _custodianBusinessLogic;
-    private readonly IChecklistService _checklistService;
+    private readonly IApplicationChecklistService _checklistService;
     private readonly ClearinghouseSettings _settings;
 
     public ClearinghouseBusinessLogic(
         IPortalRepositories portalRepositories,
         IClearinghouseService clearinghouseService,
         ICustodianBusinessLogic custodianBusinessLogic,
-        IChecklistService checklistService,
+        IApplicationChecklistService checklistService,
         IOptions<ClearinghouseSettings> options)
     {
         _portalRepositories = portalRepositories;
@@ -51,27 +51,30 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
         _settings = options.Value;
     }
 
-    public async Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> HandleClearinghouse(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleClearinghouse(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
-        if (context.ProcessStepTypeId is not ProcessStepTypeId.START_CLEARING_HOUSE and not ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE)
+        var overwrite = context.ProcessStepTypeId switch
         {
-            throw new UnexpectedConditionException($"HandleClearingHouse called for unexpected processStepTypeId {context.ProcessStepTypeId}. Expected {ProcessStepTypeId.START_CLEARING_HOUSE} or {ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE}");
-        }
+            ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE => true,
+            ProcessStepTypeId.START_CLEARING_HOUSE => false,
+            _ => throw new UnexpectedConditionException($"HandleClearingHouse called for unexpected processStepTypeId {context.ProcessStepTypeId}. Expected {ProcessStepTypeId.START_CLEARING_HOUSE} or {ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE}")
+        };
+
         var walletData = await _custodianBusinessLogic.GetWalletByBpnAsync(context.ApplicationId, cancellationToken);
         if (walletData == null || string.IsNullOrEmpty(walletData.Did))
         {
             throw new ConflictException($"Decentralized Identifier for application {context.ApplicationId} is not set");
         }
         
-        var overwrite = context.ProcessStepTypeId == ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE;
         await TriggerCompanyDataPost(context.ApplicationId, walletData.Did, overwrite, cancellationToken).ConfigureAwait(false);
 
-        return new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
             new [] { ProcessStepTypeId.END_CLEARING_HOUSE },
             null,
-            true);
+            true,
+            null);
     }
 
     private async Task TriggerCompanyDataPost(Guid applicationId, string decentralizedIdentifier, bool overwrite, CancellationToken cancellationToken)
