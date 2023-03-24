@@ -1,4 +1,6 @@
 ﻿using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.Extensions;
@@ -17,12 +19,17 @@ public class ProcessBusinessLogic : IProcessBusinessLogic
     }
     
     /// <inheritdoc />
-    public async Task TriggerProcessStep(Guid offerSubscriptionId, ProcessStepTypeId stepToTrigger)
+    async Task IProcessBusinessLogic.TriggerProcessStep(Guid offerSubscriptionId, ProcessStepTypeId stepToTrigger, bool mustBePending)
     {
+        var nextStep = stepToTrigger.GetStepToRetrigger();
         var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, stepToTrigger, null)
             .ConfigureAwait(false);
         
-        _offerSubscriptionProcessService.FinalizeProcessSteps(context, Enumerable.Repeat(stepToTrigger.GetStepToRetrigger(), 1));
+        _offerSubscriptionProcessService.FinalizeProcessSteps(context, Enumerable.Repeat(nextStep, 1));
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId) =>
+        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetProcessStepsForSubscription(offerSubscriptionId);
 }

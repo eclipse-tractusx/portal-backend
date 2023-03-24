@@ -378,7 +378,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetProcessStepData(new Guid("e8886159-9258-44a5-88d8-f5735a197a09"), new[]
             {
                 ProcessStepTypeId.START_AUTOSETUP
-            }).ConfigureAwait(false);
+            }, false).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -393,7 +393,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProcessStepData(Guid.NewGuid(), new[] { ProcessStepTypeId.START_AUTOSETUP }).ConfigureAwait(false);
+        var result = await sut.GetProcessStepData(Guid.NewGuid(), new[] { ProcessStepTypeId.START_AUTOSETUP }, false).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -704,8 +704,8 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region Setup
-
-    private async Task<(OfferSubscriptionsRepository, PortalDbContext)> CreateSut()
+    
+    private async Task<(IOfferSubscriptionsRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new OfferSubscriptionsRepository(context);

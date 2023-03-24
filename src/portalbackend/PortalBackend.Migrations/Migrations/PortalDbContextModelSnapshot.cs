@@ -4171,7 +4171,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 107,
-                            Label = "RETRIGGER_TRIGGER_PROVIDER"
+                            Label = "RETRIGGER_PROVIDER"
                         },
                         new
                         {
@@ -4196,7 +4196,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 113,
-                            Label = "RETRIGGER_TRIGGER_PROVIDER_CALLBACK"
+                            Label = "RETRIGGER_PROVIDER_CALLBACK"
                         });
                 });
 

@@ -121,12 +121,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     { 104, "OFFERSUBSCRIPTION_TECHNICALUSER_CREATION" },
                     { 105, "ACTIVATE_SUBSCRIPTION" },
                     { 106, "TRIGGER_PROVIDER_CALLBACK" },
-                    { 107, "RETRIGGER_TRIGGER_PROVIDER" },
+                    { 107, "RETRIGGER_PROVIDER" },
                     { 108, "RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION" },
                     { 109, "RETRIGGER_SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION" },
                     { 110, "RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION" },
                     { 111, "RETRIGGER_ACTIVATE_SUBSCRIPTION" },
-                    { 113, "RETRIGGER_TRIGGER_PROVIDER_CALLBACK" }
+                    { 113, "RETRIGGER_PROVIDER_CALLBACK" }
                 });
 
             migrationBuilder.InsertData(

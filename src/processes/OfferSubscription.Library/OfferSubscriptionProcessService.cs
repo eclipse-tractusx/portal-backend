@@ -16,14 +16,14 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
         _portalRepositories = portalRepositories;
     }
 
-    async Task<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData> IOfferSubscriptionProcessService.VerifySubscriptionAndProcessSteps(Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId>? processStepTypeIds)
+    async Task<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData> IOfferSubscriptionProcessService.VerifySubscriptionAndProcessSteps(Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId>? processStepTypeIds, bool mustBePending)
     {
         var allProcessStepTypeIds = processStepTypeIds == null
             ? new[] { processStepTypeId }
             : processStepTypeIds.Append(processStepTypeId);
 
         var processData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetProcessStepData(offerSubscriptionId, allProcessStepTypeIds).ConfigureAwait(false);
+            .GetProcessStepData(offerSubscriptionId, allProcessStepTypeIds, mustBePending).ConfigureAwait(false);
 
         var processStep = processData.ValidateOfferSubscriptionProcessData(offerSubscriptionId, new[] { ProcessStepStatusId.TODO }, processStepTypeId);
         return processData!.CreateManualOfferSubscriptionProcessStepData(offerSubscriptionId, processStep);

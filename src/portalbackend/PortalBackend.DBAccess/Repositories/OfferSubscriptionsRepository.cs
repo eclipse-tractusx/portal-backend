@@ -336,7 +336,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<VerifyOfferSubscriptionProcessData?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+    public Task<VerifyOfferSubscriptionProcessData?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds, bool mustBePending) =>
         _context.OfferSubscriptions
             .AsNoTracking()
             .AsSplitQuery()
@@ -349,10 +349,10 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             })
             .Select(x => new VerifyOfferSubscriptionProcessData(
                 x.IsActive,
-                x.IsActive
+                mustBePending && x.IsActive
                     ? null
                     : x.Process,
-                x.IsActive
+                mustBePending && x.IsActive
                     ? null
                     : x.Process!.ProcessSteps
                         .Where(step =>
@@ -406,4 +406,17 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     /// <inheritdoc />
     public void RemoveOfferSubscriptionProcessData(Guid offerSubscriptionId) =>
         _context.Remove(new OfferSubscriptionProcessData(offerSubscriptionId, null!));
+    
+    /// <inheritdoc />
+    public IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId) =>
+        _context.OfferSubscriptions
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(os => os.Id == offerSubscriptionId)
+            .SelectMany(x => x.Process!.ProcessSteps)
+            .Select(x => new ProcessStepData(
+                x.ProcessStepTypeId,
+                x.ProcessStepStatusId,
+                x.Message))
+            .ToAsyncEnumerable();
 }

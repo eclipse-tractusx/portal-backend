@@ -681,7 +681,7 @@ public class OfferSetupServiceTests
             .ReturnsLazily(() => transferData);
         A.CallTo(() =>
                 _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId,
-                    ProcessStepTypeId.START_AUTOSETUP, null))
+                    ProcessStepTypeId.START_AUTOSETUP, null, false))
             .ReturnsLazily(() => new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(
                 offerSubscriptionId, process, Guid.NewGuid(),
                 new ProcessStep[]
@@ -721,7 +721,7 @@ public class OfferSetupServiceTests
             .ReturnsLazily(() => transferData);
         A.CallTo(() =>
                 _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId,
-                    ProcessStepTypeId.START_AUTOSETUP, null))
+                    ProcessStepTypeId.START_AUTOSETUP, null, false))
             .ReturnsLazily(() => new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(
                 offerSubscriptionId, process, Guid.NewGuid(),
                 new ProcessStep[]
