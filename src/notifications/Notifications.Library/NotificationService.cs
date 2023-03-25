@@ -84,7 +84,7 @@ public class NotificationService : INotificationService
         return roleData;
     }
 
-    private void CreateNotification(Guid receiver, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, INotificationRepository notificationRepository)
+    private static void CreateNotification(Guid receiver, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, INotificationRepository notificationRepository)
     {
         var notificationList = notifications.ToList();
         foreach (var notificationData in notificationList)
