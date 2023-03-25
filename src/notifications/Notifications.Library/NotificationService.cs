@@ -48,33 +48,11 @@ public class NotificationService : INotificationService
         IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications,
         Guid companyId)
     {
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var roleData = await userRolesRepository
-            .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        if (roleData.Count < receiverUserRoles.Sum(clientRoles => clientRoles.Value.Count()))
-        {
-            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
-        }
-
-        var notificationList = notifications.ToList();
+        var roleData = await ValidateRoleData(receiverUserRoles);
         var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
-
         await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleIdForCompany(roleData, companyId))
         {
-            foreach (var notificationData in notificationList)
-            {
-                notificationRepository.CreateNotification(
-                    receiver,
-                    notificationData.notificationTypeId,
-                    false,
-                    notification =>
-                    {
-                        notification.CreatorUserId = creatorId;
-                        notification.Content = notificationData.content;
-                    });
-            }
+            CreateNotification(receiver, creatorId, notifications, notificationRepository);
         }
     }
 
@@ -83,6 +61,16 @@ public class NotificationService : INotificationService
         IDictionary<string, IEnumerable<string>> receiverUserRoles,
         Guid? creatorId,
         IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications)
+    {
+        var roleData = await ValidateRoleData(receiverUserRoles);
+        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleIdForCompany(roleData))
+        {
+            CreateNotification(receiver, creatorId, notifications, notificationRepository);
+        }
+    }
+    
+    private async Task<IEnumerable<Guid>> ValidateRoleData(IDictionary<string, IEnumerable<string>> receiverUserRoles)
     {
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roleData = await userRolesRepository
@@ -93,13 +81,13 @@ public class NotificationService : INotificationService
         {
             throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
         }
+        return roleData;
+    }
 
+    private void CreateNotification(Guid receiver, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, INotificationRepository notificationRepository)
+    {
         var notificationList = notifications.ToList();
-        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
-
-        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleIdForCompany(roleData))
-        {
-            foreach (var notificationData in notificationList)
+        foreach (var notificationData in notificationList)
             {
                 notificationRepository.CreateNotification(
                     receiver,
@@ -111,6 +99,5 @@ public class NotificationService : INotificationService
                         notification.Content = notificationData.content;
                     });
             }
-        }
     }
 }
