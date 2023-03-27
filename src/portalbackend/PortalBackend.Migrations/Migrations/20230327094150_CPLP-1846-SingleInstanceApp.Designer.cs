@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230323192313_CPLP-1846-SingleInstanceApp")]
+    [Migration("20230327094150_CPLP-1846-SingleInstanceApp")]
     partial class CPLP1846SingleInstanceApp
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2052,6 +2052,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasKey("Id")
                         .HasName("pk_consents");
 
+                    b.HasIndex("AgreementId")
+                        .HasDatabaseName("ix_consents_agreement_id");
+
                     b.HasIndex("CompanyId")
                         .HasDatabaseName("ix_consents_company_id");
 
@@ -2063,10 +2066,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.HasIndex("DocumentId")
                         .HasDatabaseName("ix_consents_document_id");
-
-                    b.HasIndex("AgreementId", "CompanyId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_consents_agreement_id_company_id");
 
                     b.ToTable("consents", "portal");
                 });
