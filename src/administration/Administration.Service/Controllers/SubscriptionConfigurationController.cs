@@ -99,7 +99,7 @@ public class SubscriptionConfigurationController : ControllerBase
     /// <response code="400">Either the OfferSubscription is not in status PENDING or the next step can't automatically retriggered.</response>
     /// <response code="404">No OfferSubscription found for the offerSubscriptionId.</response>
     [HttpGet]
-    [Authorize(Roles = "tobedefined")]
+    [Authorize(Roles = "retrigger_subscription, activate_subscription")]
     [Route("process/offer-subscription/{offerSubscriptionId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -117,7 +117,7 @@ public class SubscriptionConfigurationController : ControllerBase
     /// <response code="400">Either the OfferSubscription is not in status PENDING or the next step can't automatically retriggered.</response>
     /// <response code="404">No OfferSubscription found for the offerSubscriptionId.</response>
     [HttpPost]
-    [Authorize(Roles = "tobedefined")]
+    [Authorize(Roles = "retrigger_subscription, activate_subscription")]
     [Route("process/offer-subscription/{offerSubscriptionId}/retrigger-provider")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -138,7 +138,7 @@ public class SubscriptionConfigurationController : ControllerBase
     /// <response code="400">Either the OfferSubscription is not in status PENDING or the next step can't automatically retriggered.</response>
     /// <response code="404">No OfferSubscription found for the offerSubscriptionId.</response>
     [HttpPost]
-    [Authorize(Roles = "tobedefined")]
+    [Authorize(Roles = "retrigger_subscription")]
     [Route("process/offer-subscription/{offerSubscriptionId}/retrigger-create-client")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -159,7 +159,7 @@ public class SubscriptionConfigurationController : ControllerBase
     /// <response code="400">Either the OfferSubscription is not in status PENDING or the next step can't automatically retriggered.</response>
     /// <response code="404">No OfferSubscription found for the offerSubscriptionId.</response>
     [HttpPost]
-    [Authorize(Roles = "tobedefined")]
+    [Authorize(Roles = "retrigger_subscriptionn")]
     [Route("process/offer-subscription/{offerSubscriptionId}/retrigger-create-technical-user")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -180,7 +180,7 @@ public class SubscriptionConfigurationController : ControllerBase
     /// <response code="400">Either the OfferSubscription is not in status ACTIVE or the next step can't automatically retriggered.</response>
     /// <response code="404">No OfferSubscription found for the offerSubscriptionId.</response>
     [HttpPost]
-    [Authorize(Roles = "tobedefined")]
+    [Authorize(Roles = "retrigger_subscription, activate_subscription")]
     [Route("process/offer-subscription/{offerSubscriptionId}/retrigger-provider-callback")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
