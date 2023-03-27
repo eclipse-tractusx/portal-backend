@@ -167,7 +167,7 @@ public class OfferService : IOfferService
             throw new ControllerArgumentException($"agreements {string.Join(",", invalidConsents.Select(consent => consent.AgreementId))} are not valid for offer {offerId}", nameof(offerAgreementConsent));
         }
 
-        return _portalRepositories.GetInstance<IConsentRepository>()
+        var ConsentStatusdata = _portalRepositories.GetInstance<IConsentRepository>()
             .AddAttachAndModifyConsents(
                 dbAgreements,
                 offerAgreementConsent.Agreements,
@@ -176,6 +176,8 @@ public class OfferService : IOfferService
                 companyUserId,
                 DateTimeOffset.UtcNow)
             .Select(consent => new ConsentStatusData(consent.AgreementId, consent.ConsentStatusId));
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return ConsentStatusdata;
     }
 
     private async Task<OfferAgreementConsentUpdate> GetProviderOfferAgreementConsent(Guid offerId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId)
