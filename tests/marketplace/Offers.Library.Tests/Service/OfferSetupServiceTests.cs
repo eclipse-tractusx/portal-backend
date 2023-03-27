@@ -665,7 +665,7 @@ public class OfferSetupServiceTests
     [Theory]
     [InlineData(OfferTypeId.APP)]
     [InlineData(OfferTypeId.SERVICE)]
-    public async Task StartAutoSetupAsync_WithValidSingleInstance_ReturnsExpected(OfferTypeId offerTypeId)
+    public async Task StartAutoSetupAsync_WithValidSingleInstance_ThrowsConflictException(OfferTypeId offerTypeId)
     {
         // Arrange
         var transferData = _fixture.Build<OfferSubscriptionTransferData>()
@@ -690,16 +690,11 @@ public class OfferSetupServiceTests
                 }));
 
         // Act
-        await _sut.StartAutoSetupAsync(data, IamUserId, offerTypeId).ConfigureAwait(false);
-
+        async Task Act() => await _sut.StartAutoSetupAsync(data, IamUserId, offerTypeId).ConfigureAwait(false);
+        
         // Assert
-        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscriptionProcessData(offerSubscriptionId, "https://www.test.de"))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
-                A<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData>._,
-                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION)))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("This step is not eligible to run for single instance apps");
     }
 
     [Theory]

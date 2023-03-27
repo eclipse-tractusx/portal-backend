@@ -27,19 +27,20 @@ using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
-public class ProcessControllerTests
+public class SubscriptionConfigurationControllerTests
 {
     private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private static readonly Guid OfferSubscriptionId = new("4C1A6851-D4E7-4E10-A011-3732CD049999");
-    private readonly IProcessBusinessLogic _logic;
-    private readonly ProcessController _controller;
+    private static readonly Guid CompanyId = new("4C1A6851-D4E7-4E10-A011-3732CD049999");
+    private readonly ISubscriptionConfigurationBusinessLogic _logic;
+    private readonly SubscriptionConfigurationController _controller;
     private readonly Fixture _fixture;
 
-    public ProcessControllerTests()
+    public SubscriptionConfigurationControllerTests()
     {
         _fixture = new Fixture();
-        _logic = A.Fake<IProcessBusinessLogic>();
-        _controller = new ProcessController(_logic);
+        _logic = A.Fake<ISubscriptionConfigurationBusinessLogic>();
+        _controller = new SubscriptionConfigurationController(_logic);
         _controller.AddControllerContextWithClaim(IamUserId);
     }
 
@@ -89,21 +90,6 @@ public class ProcessControllerTests
     }
     
     [Fact]
-    public async Task RetriggerSingleInstance_WithValidData_ReturnsNoContent()
-    {
-        //Arrange
-        A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION, true))
-            .ReturnsLazily(() => Task.CompletedTask);
-
-        //Act
-        var result = await this._controller.RetriggerSingleInstanceDetailsCreation(OfferSubscriptionId).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION, true)).MustHaveHappenedOnceExactly();
-        Assert.IsType<NoContentResult>(result);
-    }
-
-    [Fact]
     public async Task RetriggerCreateTechnicalUser_WithValidData_ReturnsNoContent()
     {
         //Arrange
@@ -115,21 +101,6 @@ public class ProcessControllerTests
 
         //Assert
         A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, true)).MustHaveHappenedOnceExactly();
-        Assert.IsType<NoContentResult>(result);
-    }
-
-    [Fact]
-    public async Task RetriggerActivation_WithValidData_ReturnsNoContent()
-    {
-        //Arrange
-        A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_ACTIVATE_SUBSCRIPTION, true))
-            .ReturnsLazily(() => Task.CompletedTask);
-
-        //Act
-        var result = await this._controller.RetriggerActivation(OfferSubscriptionId).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_ACTIVATE_SUBSCRIPTION, true)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -146,5 +117,40 @@ public class ProcessControllerTests
         //Assert
         A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, false)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
+    }
+    
+    [Fact]
+    public async Task SetCompanyDetail_WithValidData_ReturnsNoContent()
+    {
+        //Arrange
+        var data = new ProviderDetailData("https://this-is-a-test.de", null);  
+        A.CallTo(() => _logic.SetProviderCompanyDetailsAsync(data, IamUserId))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.SetProviderCompanyDetail(data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.SetProviderCompanyDetailsAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+    
+    [Fact]
+    public async Task GetProviderCompanyDetail_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var id = Guid.NewGuid();
+        var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de");  
+        A.CallTo(() => _logic.GetProviderCompanyDetailsAsync(IamUserId))
+            .ReturnsLazily(() => data);
+
+        //Act
+        var result = await this._controller.GetServiceProviderCompanyDetail().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetProviderCompanyDetailsAsync(IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<ProviderDetailReturnData>();
+        result.Id.Should().Be(id);
+        result.CompanyId.Should().Be(CompanyId);
     }
 }

@@ -72,7 +72,7 @@ builder.Services.AddDapsService(builder.Configuration)
 builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
-builder.Services.AddTransient<IServiceProviderBusinessLogic, ServiceProviderBusinessLogic>();
+builder.Services.AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>();
 
 builder.Services.AddProvisioningDBAccess(builder.Configuration);
 

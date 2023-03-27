@@ -3,7 +3,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-public interface IProcessBusinessLogic
+public interface ISubscriptionConfigurationBusinessLogic
 {
     /// <summary>
     /// Retriggers the given process step
@@ -19,4 +19,18 @@ public interface IProcessBusinessLogic
     /// <param name="offerSubscriptionId">Id of the offer subscription</param>
     /// <returns>Returns the process steps with their status</returns>
     IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId);
+    
+    /// <summary>
+    /// Gets the service provider company details
+    /// </summary>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>The detail data</returns>
+    Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync(string iamUserId);
+
+    /// <summary>
+    /// Sets service provider company details
+    /// </summary>
+    /// <param name="data">Detail data for the service provider</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    Task SetProviderCompanyDetailsAsync(ProviderDetailData data, string iamUserId);
 }

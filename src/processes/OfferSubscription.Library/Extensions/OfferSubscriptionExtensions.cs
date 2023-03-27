@@ -33,9 +33,7 @@ public static class VerifyOfferSubscriptionProcessDataExtensions
         {
             ProcessStepTypeId.TRIGGER_PROVIDER => new []{ProcessStepTypeId.RETRIGGER_PROVIDER},
             ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION => new []{ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION},
-            ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION => new []{ProcessStepTypeId.RETRIGGER_SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION},
             ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION =>new []{ ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION},
-            ProcessStepTypeId.ACTIVATE_SUBSCRIPTION => new []{ProcessStepTypeId.RETRIGGER_ACTIVATE_SUBSCRIPTION},
             ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK => new []{ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK},
             _ => null
         };
@@ -45,9 +43,7 @@ public static class VerifyOfferSubscriptionProcessDataExtensions
         {
             ProcessStepTypeId.RETRIGGER_PROVIDER => ProcessStepTypeId.TRIGGER_PROVIDER,
             ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION => ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION,
-            ProcessStepTypeId.RETRIGGER_SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION => ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION,
             ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION => ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION,
-            ProcessStepTypeId.RETRIGGER_ACTIVATE_SUBSCRIPTION => ProcessStepTypeId.ACTIVATE_SUBSCRIPTION,
             ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK => ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK,
             _ => throw new ConflictException($"Step {retriggerProcessStep} is not retriggerable")
         };

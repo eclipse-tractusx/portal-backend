@@ -64,9 +64,9 @@ public interface ICompanyRepository
     /// Checks whether the iamUser is assigned to the company and the company exists
     /// </summary>
     /// <param name="iamUserId">IAm User Id</param>
-    /// <param name="companyRoleId">The company Role</param>
+    /// <param name="companyRoleIds">The company Roles</param>
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
-    Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(string iamUserId, CompanyRoleId companyRoleId);
+    Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(string iamUserId, IEnumerable<CompanyRoleId> companyRoleIds);
 
     Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(string iamUserId);
 

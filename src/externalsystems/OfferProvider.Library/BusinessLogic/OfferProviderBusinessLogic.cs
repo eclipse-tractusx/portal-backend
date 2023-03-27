@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Models;
@@ -73,7 +73,10 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         });
         await SendNotifications(data.OfferId, data.OfferTypeId, data.SalesManagerId, data.CompanyUserId, content).ConfigureAwait(false);
         return (
-            new[] { ProcessStepTypeId.START_AUTOSETUP },
+            new[] {
+                data.IsSingleInstance ?
+                    ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION :
+                    ProcessStepTypeId.START_AUTOSETUP }, 
             null,
             triggerProvider ? ProcessStepStatusId.DONE : ProcessStepStatusId.SKIPPED,
             true,

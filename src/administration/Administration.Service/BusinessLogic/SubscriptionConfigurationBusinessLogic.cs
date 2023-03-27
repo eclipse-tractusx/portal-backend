@@ -1,48 +1,27 @@
-/********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
- *
- * See the NOTICE file(s) distributed with this work for additional
- * information regarding copyright ownership.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ********************************************************************************/
-
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+﻿using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-/// <inheritdoc />
-public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
+public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfigurationBusinessLogic
 {
+    private readonly IOfferSubscriptionProcessService _offerSubscriptionProcessService;
     private readonly IPortalRepositories _portalRepositories;
 
-    /// <summary>
-    /// Creates a new instance of <see cref="ServiceProviderBusinessLogic"/>
-    /// </summary>
-    /// <param name="portalRepositories">Access to the portal repositories</param>
-    public ServiceProviderBusinessLogic(IPortalRepositories portalRepositories)
+    public SubscriptionConfigurationBusinessLogic(IOfferSubscriptionProcessService offerSubscriptionProcessService, IPortalRepositories portalRepositories)
     {
+        _offerSubscriptionProcessService = offerSubscriptionProcessService;
         _portalRepositories = portalRepositories;
     }
-
+    
     /// <inheritdoc />
-    public async Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(string iamUserId)
+    public async Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync(string iamUserId)
     {
         var result = await _portalRepositories.GetInstance<ICompanyRepository>()
             .GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, iamUserId)
@@ -60,7 +39,7 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task SetServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
+    public Task SetProviderCompanyDetailsAsync(ProviderDetailData data, string iamUserId)
     {
         data.Url.EnsureValidHttpUrl(() => nameof(data.Url));
         data.CallbackUrl?.EnsureValidHttpUrl(() => nameof(data.CallbackUrl));
@@ -71,19 +50,19 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
                 "Url must start with https and the maximum allowed length is 100 characters", nameof(data.Url));
         }
 
-        return SetServiceProviderCompanyDetailsInternalAsync(data, iamUserId);
+        return SetOfferProviderCompanyDetailsInternalAsync(data, iamUserId);
     }
 
-    private async Task SetServiceProviderCompanyDetailsInternalAsync(ServiceProviderDetailData data, string iamUserId)
+    private async Task SetOfferProviderCompanyDetailsInternalAsync(ProviderDetailData data, string iamUserId)
     {
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
-        var serviceProviderDetailData = await companyRepository
+        var providerDetailData = await companyRepository
             .GetProviderCompanyDetailsExistsForUser(iamUserId)
             .ConfigureAwait(false);
-        if (serviceProviderDetailData == default)
+        if (providerDetailData == default)
         {
             var result = await companyRepository
-                .GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(iamUserId, CompanyRoleId.SERVICE_PROVIDER)
+                .GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(iamUserId, new []{CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER})
                 .ConfigureAwait(false);
             if (result == default)
             {
@@ -104,10 +83,25 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
         else
         {
             companyRepository.AttachAndModifyProviderCompanyDetails(
-                serviceProviderDetailData.ProviderCompanyDetailId,
-                details => { details.AutoSetupUrl = serviceProviderDetailData.Url; },
+                providerDetailData.ProviderCompanyDetailId,
+                details => { details.AutoSetupUrl = providerDetailData.Url; },
                 details => { details.AutoSetupUrl = data.Url; });
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
+
+    /// <inheritdoc />
+    async Task ISubscriptionConfigurationBusinessLogic.TriggerProcessStep(Guid offerSubscriptionId, ProcessStepTypeId stepToTrigger, bool mustBePending)
+    {
+        var nextStep = stepToTrigger.GetStepToRetrigger();
+        var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, stepToTrigger, null)
+            .ConfigureAwait(false);
+        
+        _offerSubscriptionProcessService.FinalizeProcessSteps(context, Enumerable.Repeat(nextStep, 1));
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId) =>
+        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetProcessStepsForSubscription(offerSubscriptionId);
 }

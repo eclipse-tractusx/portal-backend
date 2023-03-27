@@ -384,20 +384,22 @@ public class OfferSetupService : IOfferSetupService
     public async Task StartAutoSetupAsync(OfferAutoSetupData data, string iamUserId, OfferTypeId offerTypeId)
     {
         var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var offerDetails = await GetAndValidateOfferDetails(data.RequestId, iamUserId, offerTypeId, offerSubscriptionRepository).ConfigureAwait(false);
+        var details = await GetAndValidateOfferDetails(data.RequestId, iamUserId, offerTypeId, offerSubscriptionRepository).ConfigureAwait(false);
+        if (details.InstanceData.IsSingleInstance)
+        {
+            throw new ConflictException("This step is not eligible to run for single instance apps");
+        }
+
         var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(data.RequestId,
             ProcessStepTypeId.START_AUTOSETUP, null).ConfigureAwait(false);
 
         offerSubscriptionRepository.CreateOfferSubscriptionProcessData(data.RequestId, data.OfferUrl);
 
-        var multiInstanceStep = offerTypeId == OfferTypeId.APP ?
-            ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION :
-            ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION;
         var nextProcessStepTypeIds = new[]
         {
-            offerDetails.InstanceData.IsSingleInstance ?
-                ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION :
-                multiInstanceStep
+            offerTypeId == OfferTypeId.APP ? 
+                ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION :
+                ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION
         };
 
         _offerSubscriptionProcessService.FinalizeProcessSteps(context, nextProcessStepTypeIds);
@@ -571,9 +573,24 @@ public class OfferSetupService : IOfferSetupService
             notification.Content = notificationContent;
         });
 
-        if (!string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
+        if (string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
+        {
+            return new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId,
+                bool, string?>(
+                offerDetails.InstanceData.IsSingleInstance ? null : new[] {ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK},
+                null,
+                ProcessStepStatusId.DONE,
+                true,
+                null);
+        }
+
+        try
         {
             await SendMail(basePortalAddress, $"{offerDetails.RequesterFirstname} {offerDetails.RequesterLastname}", offerDetails.RequesterEmail, offerDetails.OfferName).ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            throw new ServiceException(e.Message, true);
         }
 
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(

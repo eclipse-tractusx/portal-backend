@@ -137,7 +137,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("8be5ee49-4b9c-4008-b641-138305430cc4", CompanyRoleId.SERVICE_PROVIDER);
+        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("8be5ee49-4b9c-4008-b641-138305430cc4", Enumerable.Repeat(CompanyRoleId.SERVICE_PROVIDER, 1));
 
         // Assert
         results.Should().NotBe(default);
@@ -152,7 +152,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("ad56702b-5908-44eb-a668-9a11a0e100d6", CompanyRoleId.SERVICE_PROVIDER);
+        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("ad56702b-5908-44eb-a668-9a11a0e100d6", Enumerable.Repeat(CompanyRoleId.SERVICE_PROVIDER, 1));
 
         // Assert
         results.Should().NotBe(default);
