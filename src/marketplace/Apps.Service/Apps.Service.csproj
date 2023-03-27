@@ -49,7 +49,4 @@
       <Value>Program.cs</Value>
     </SonarQubeSetting>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="ViewModels\AppInputModel.cs" />
-  </ItemGroup>
 </Project>
