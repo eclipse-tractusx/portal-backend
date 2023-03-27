@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230517080427_CPLP-2344-AddOfferSubscriptionProcess")]
+    [Migration("20230517081005_CPLP-2344-AddOfferSubscriptionProcess")]
     partial class CPLP2344AddOfferSubscriptionProcess
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -4203,21 +4203,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 109,
-                            Label = "RETRIGGER_SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION"
-                        },
-                        new
-                        {
-                            Id = 110,
                             Label = "RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION"
                         },
                         new
                         {
-                            Id = 111,
-                            Label = "RETRIGGER_ACTIVATE_SUBSCRIPTION"
-                        },
-                        new
-                        {
-                            Id = 113,
+                            Id = 110,
                             Label = "RETRIGGER_PROVIDER_CALLBACK"
                         });
                 });
