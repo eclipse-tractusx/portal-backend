@@ -263,7 +263,11 @@ public class AppReleaseProcessControllerTest
             new[]
             {
                 PrivacyPolicyId.COMPANY_DATA 
-            });
+            },
+            "https://test.provider.com",
+            "test@gmail.com",
+            "9456321678"
+            );
         A.CallTo(() => _logic.UpdateAppReleaseAsync(A<Guid>._, A<AppRequestModel>._, A<string>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
