@@ -56,7 +56,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.CheckAppExistsById(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfec")).ConfigureAwait(false);
+        var result = await sut.CheckAppExistsById(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007")).ConfigureAwait(false);
 
         // Assert
         result.Should().BeTrue();
@@ -86,11 +86,11 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var offerDetail = await sut.GetOfferProviderDetailsAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfeb"), OfferTypeId.APP).ConfigureAwait(false);
+        var offerDetail = await sut.GetOfferProviderDetailsAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         offerDetail.Should().NotBeNull();
-        offerDetail!.OfferName.Should().Be("Capacity Management");
+        offerDetail!.OfferName.Should().Be("Trace-X");
     }
 
     [Fact]
@@ -133,7 +133,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var offers = await sut.GetAllActiveAppsAsync(null).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        offers.Should().HaveCount(21);
+        offers.Should().HaveCount(3);
     }
 
     #endregion
@@ -147,15 +147,15 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var offerDetail = await sut.GetOfferDetailsByIdAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfeb"), "3d8142f1-860b-48aa-8c2b-1ccb18699f65", null, "de", OfferTypeId.APP).ConfigureAwait(false);
+        var offerDetail = await sut.GetOfferDetailsByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), "502dabcf-01c7-47d9-a88e-0be4279097b5", null, "de", OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         offerDetail.Should().NotBeNull();
-        offerDetail!.Title.Should().Be("Capacity Management");
+        offerDetail!.Title.Should().Be("Trace-X");
         offerDetail.Documents.Should().NotBeNull();
-        var documenttypeId = offerDetail!.Documents.Select(x => x.documentTypeId);
-        documenttypeId.Should().NotContain(DocumentTypeId.APP_LEADIMAGE);
-        documenttypeId.Should().NotContain(DocumentTypeId.APP_IMAGE);
+        var documentTypeId = offerDetail.Documents.Select(x => x.documentTypeId);
+        documentTypeId.Should().NotContain(DocumentTypeId.APP_LEADIMAGE);
+        documentTypeId.Should().NotContain(DocumentTypeId.APP_IMAGE);
     }
 
     #endregion
@@ -315,7 +315,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var offerDetail = await sut.GetAppUpdateData(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfeb"), "502dabcf-01c7-47d9-a88e-0be4279097b5", new []{"de"}).ConfigureAwait(false);
+        var offerDetail = await sut.GetAppUpdateData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), "502dabcf-01c7-47d9-a88e-0be4279097b5", new []{"de"}).ConfigureAwait(false);
 
         // Assert
         offerDetail.Should().NotBeNull();
@@ -386,8 +386,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         offerDetail.Should().NotBeNull();
-        offerDetail!.Count.Should().Be(7);
-        offerDetail.Data.Should().HaveCount(7);
+        offerDetail!.Count.Should().Be(3);
+        offerDetail.Data.Should().HaveCount(3);
         if (sorting == ServiceOverviewSorting.ProviderAsc)
         {
             offerDetail.Data.Select(data => data.Provider).Should().BeInAscendingOrder();
@@ -399,11 +399,11 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     [Theory]
-    [InlineData(ServiceTypeId.CONSULTANCE_SERVICE, 0, 2, 3, 2)]
-    [InlineData(ServiceTypeId.DATASPACE_SERVICE, 0, 2, 3, 2)]
-    [InlineData(null, 0, 2, 7, 2)]
-    [InlineData(null, 1, 1, 7, 1)]
-    [InlineData(null, 2, 1, 7, 1)]
+    [InlineData(ServiceTypeId.CONSULTANCE_SERVICE, 0, 2, 1, 1)]
+    [InlineData(ServiceTypeId.DATASPACE_SERVICE, 0, 2, 1, 1)]
+    [InlineData(null, 0, 2, 3, 2)]
+    [InlineData(null, 1, 1, 3, 1)]
+    [InlineData(null, 2, 1, 3, 1)]
     public async Task GetActiveServices_WithExistingServiceAndServiceType_ReturnsExpectedResult(ServiceTypeId? serviceTypeId, int page, int size, int count, int numData)
     {
         // Arrange
@@ -470,18 +470,51 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetProviderOfferDataWithConsentStatusAsync
 
     [Fact]
-    public async Task GetProviderOfferDataWithConsentStatusAsync_ReturnsExpectedResult()
+    public async Task GetProviderOfferDataWithConsentStatusAsync_APP_ReturnsExpectedResult()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProviderOfferDataWithConsentStatusAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfeb"), "3d8142f1-860b-48aa-8c2b-1ccb18699f65", OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetProviderOfferDataWithConsentStatusAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP).ConfigureAwait(false);
         
         // Assert
+        result.IsProviderCompanyUser.Should().BeTrue();
         result.OfferProviderData.Should().NotBeNull();
-        result.OfferProviderData.LeadPictureId.Should().NotBeEmpty();
-        result.OfferProviderData.LeadPictureId.Should().Be(new Guid("d0d45a39-521f-4fa8-b8f4-146e20ce7575"));
+        result.OfferProviderData!.LeadPictureId.Should().NotBeEmpty();
+        result.OfferProviderData.LeadPictureId.Should().Be(new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1"));
+        result.OfferProviderData.UseCase.Should().NotBeNull();
+        result.OfferProviderData.ServiceTypeIds.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetProviderOfferDataWithConsentStatusAsync_APP_InvalidUser_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetProviderOfferDataWithConsentStatusAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), "invalid user", OfferTypeId.APP).ConfigureAwait(false);
+        
+        // Assert
+        result.IsProviderCompanyUser.Should().BeFalse();
+        result.OfferProviderData.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetProviderOfferDataWithConsentStatusAsync_SERVICE_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetProviderOfferDataWithConsentStatusAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.SERVICE).ConfigureAwait(false);
+        
+        // Assert
+        result.IsProviderCompanyUser.Should().BeTrue();
+        result.OfferProviderData.Should().NotBeNull();
+        result.OfferProviderData!.UseCase.Should().BeNull();
+        result.OfferProviderData.ServiceTypeIds.Should().NotBeNull();
     }
 
     #endregion
@@ -493,31 +526,13 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         OfferTypeId.APP,
         "502dabcf-01c7-47d9-a88e-0be4279097b5",
         new [] {
-            "5cf74ef8-e0b7-4984-a872-474828beb5d1",
-            "5cf74ef8-e0b7-4984-a872-474828beb5d2",
-            "5cf74ef8-e0b7-4984-a872-474828beb5d3",
-            "5cf74ef8-e0b7-4984-a872-474828beb5d4",
-            "5cf74ef8-e0b7-4984-a872-474828beb5d5",
-            "5cf74ef8-e0b7-4984-a872-474828beb5d6",
-            "5cf74ef8-e0b7-4984-a872-474828beb5d9",
-            "a16e73b9-5277-4b69-9f8d-3b227495dfeb",
             "ac1cf001-7fbc-1f2f-817f-bce0572c0007",
-            "f9cad59d-84b3-4880-a550-4072c26a6b93",
             "99c5fd12-8085-4de2-abfd-215e1ee4baa4",
             "99c5fd12-8085-4de2-abfd-215e1ee4baa6",
             "99c5fd12-8085-4de2-abfd-215e1ee4baa7",
         },
         new [] {
-            "d6eb6ec2-24a6-40c5-becb-2142c62fb117",
-            "184cde16-52d4-4865-81f6-b5b45e3c9051",
-            "184cde16-52d4-4865-81f6-b5b45e3c9050",
-            "4487ce3a-2018-4e8f-82df-6d5f3440193a",
-            "8cd4d4a3-e57c-4e19-a8a3-5f2b4fdfb9ad",
-            "00af3c73-32ab-49c2-b02c-b65536a61aac",
-            "00000000-0000-0000-0000-000000000000",
-            "d0d45a39-521f-4fa8-b8f4-146e20ce7575",
-            "384fa860-c48a-4c1f-bbe5-8f47877ad37e",
-            "a221b9d8-e79a-43c4-9a25-edec28071c3c",
+            "e020787d-1e04-4c0b-9c06-bd1cd44724b1",
             "00000000-0000-0000-0000-000000000000",
             "00000000-0000-0000-0000-000000000000",
             "00000000-0000-0000-0000-000000000000",
@@ -527,18 +542,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         "502dabcf-01c7-47d9-a88e-0be4279097b5",
         new [] {
             "ac1cf001-7fbc-1f2f-817f-bce0000c0001",
-            "ac1cf001-7fbc-1f2f-817f-bce0000c0002",
-            "ac1cf001-7fbc-1f2f-817f-bce0000c0003",
-            "ac1cf001-7fbc-1f2f-817f-bce0000c0004",
-            "ac1cf001-7fbc-1f2f-817f-bce0000c0005",
             "99c5fd12-8085-4de2-abfd-215e1ee4baa5",
         },
         new [] {
             "00000000-0000-0000-0000-000000000000",
-            "00000000-0000-0000-0000-000000000000",
-            "00000000-0000-0000-0000-000000000000",
-            "00000000-0000-0000-0000-000000000000",
-            "c6bc1f44-ad94-4478-b2b0-e741a77e83a9",
             "00000000-0000-0000-0000-000000000000",
         })]
     [InlineData(
@@ -673,14 +680,14 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         //Act
-        var result = await sut.GetActiveOfferDescriptionDataByIdAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfeb"), OfferTypeId.APP, "502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
+        var result = await sut.GetActiveOfferDescriptionDataByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP, "502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result!.IsStatusActive.Should().BeTrue();
         result.IsProviderCompanyUser.Should().BeTrue();
         result.OfferDescriptionDatas.Should().NotBeNull();
-        result.OfferDescriptionDatas!.Select(od => od.languageCode).Should().Contain("en");
+        result.OfferDescriptionDatas!.Select(od => od.LanguageCode).Should().Contain("en");
     }
 
     [Fact]
@@ -690,7 +697,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         //Act
-        var result = await sut.GetActiveOfferDescriptionDataByIdAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfeb"), OfferTypeId.APP, "invalid user").ConfigureAwait(false);
+        var result = await sut.GetActiveOfferDescriptionDataByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP, "invalid user").ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -705,8 +712,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         var appId = new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
         var existingOfferDescription = new [] { 
-            new OfferDescriptionData("en", "some long Description for testing","some short Description for testing"),
-            new OfferDescriptionData("de", "some long Description for testing","some short Description for testing")
+            new LocalizedDescription("en", "some long Description for testing","some short Description for testing"),
+            new LocalizedDescription("de", "some long Description for testing","some short Description for testing")
         };
         var modifedOfferDescription = new [] { 
             ("en", "some long Description in english, for testing","some short Description in english for testing"),
@@ -736,8 +743,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var appId = new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
         var newOfferDescriptionEntry = ("es", "newly added long Description for testing", "newly added short Description for testing");
         var existingOfferDescription = new [] { 
-            new OfferDescriptionData("en", "some long Description for testing","some short Description for testing"),
-            new OfferDescriptionData("de", "some long Description for testing","some short Description for testing")
+            new LocalizedDescription("en", "some long Description for testing","some short Description for testing"),
+            new LocalizedDescription("de", "some long Description for testing","some short Description for testing")
         };
         var modifedOfferDescription = new [] { 
             ("en", "some long Description for testing","some short Description for testing"),
@@ -767,8 +774,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         var appId = new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
         var existingOfferDescriptions = new [] { 
-            new OfferDescriptionData("en", "some long Description for testing","some short Description for testing"),
-            new OfferDescriptionData("de", "some long Description for testing","some short Description for testing")
+            new LocalizedDescription("en", "some long Description for testing","some short Description for testing"),
+            new LocalizedDescription("de", "some long Description for testing","some short Description for testing")
         };
         var modifedOfferDescriptions = new [] { ("de", "modified long Description for testing","modified short Description for testing") };
 
@@ -957,11 +964,11 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
     
     [Theory]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfeb", OfferTypeId.APP, "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferStatusId.ACTIVE, true, true, true, true, true)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", OfferTypeId.APP, "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferStatusId.ACTIVE, true, true, true, true, true)]
     [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", OfferTypeId.APP, "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferStatusId.ACTIVE, false, false, false, false, false)]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfeb", OfferTypeId.SERVICE, "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferStatusId.ACTIVE, true, false, true, true, false)]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfeb", OfferTypeId.APP, "no-valid-user", OfferStatusId.ACTIVE, true, true, true, false, false)]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfeb", OfferTypeId.APP, "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferStatusId.CREATED, true, true, false, true, false)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", OfferTypeId.SERVICE, "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferStatusId.ACTIVE, true, false, true, true, false)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", OfferTypeId.APP, "no-valid-user", OfferStatusId.ACTIVE, true, true, true, false, false)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", OfferTypeId.APP, "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferStatusId.CREATED, true, true, false, true, false)]
     public async Task GetAppUntrackedAsync_ReturnsExpectedResult(Guid offerId, OfferTypeId offerTypeId, string iamUserId, OfferStatusId offerStatusId, bool isValidApp, bool isOfferType, bool isOfferStatus, bool isCompanyUser, bool hasData)
     {
         // Arrange
@@ -1069,16 +1076,35 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferAssignedAppLeadImageDocumentsByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0573f0009"), "ad56702b-5908-44eb-a668-9a11a0e100d6", OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferAssignedAppLeadImageDocumentsByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce0575a0011"));
+        result.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
         result.IsStatusActive.Should().BeTrue();
         var documentId = result.documentStatusDatas.Select(x => x.DocumentId);
         var documentStatus = result.documentStatusDatas.Select(x => x.StatusId);
-        documentId.Should().Contain(new Guid("caa8013f-7875-4175-a4c4-361ada12c70c"));
+        documentId.Should().Contain(new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1"));
         documentStatus.Should().Contain(DocumentStatusId.LOCKED);
+    }
+    
+    #endregion
+    
+    #region GetServiceDetailsByIdAsync
+    
+    [Fact]
+    public async Task GetServiceDetailsByIdAsync_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceDetailsByIdAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Title.Should().Be("SDE with EDC");
+        result.Provider.Should().Be("Service Provider");
     }
     
     #endregion

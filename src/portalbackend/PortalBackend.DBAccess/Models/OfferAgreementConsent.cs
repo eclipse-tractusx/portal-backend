@@ -26,4 +26,4 @@ public record OfferAgreementConsent(IEnumerable<AgreementConsentStatus> Agreemen
 
 public record AppAgreementConsentStatus(Guid AgreementId, Guid ConsentId, ConsentStatusId ConsentStatusId);
 
-public record OfferAgreementConsentUpdate(Guid CompanyUserId, Guid CompanyId, IEnumerable<AppAgreementConsentStatus> Agreements);
+public record OfferAgreementConsentUpdate(Guid CompanyUserId, Guid CompanyId, IEnumerable<AppAgreementConsentStatus> ExistingAgreements, IEnumerable<Guid> RequiredAgreementIds);

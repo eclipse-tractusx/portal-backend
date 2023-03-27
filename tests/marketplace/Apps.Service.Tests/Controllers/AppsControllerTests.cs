@@ -314,14 +314,14 @@ public class AppsControllerTests
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.DeactivateOfferbyAppIdAsync(A<Guid>._, A<string>._))
+        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(A<Guid>._, A<string>._))
             .ReturnsLazily(() => Task.CompletedTask);
         
         //Act
         var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);
         
         //Assert
-        A.CallTo(() => _logic.DeactivateOfferbyAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>(); 
     }
 
@@ -349,16 +349,16 @@ public class AppsControllerTests
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        var offerDescriptionData = _fixture.CreateMany<OfferDescriptionData>(3);
+        var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
 
-        A.CallTo(() => _logic.GetAppUpdateDescritionByIdAsync(A<Guid>._, A<string>._))
+        A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<string>._))
             .ReturnsLazily(() => offerDescriptionData);
         
         //Act
         var result = await this._controller.GetAppUpdateDescriptionsAsync(appId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAppUpdateDescritionByIdAsync(A<Guid>._, A<string>._)).MustHaveHappened();
+        A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<string>._)).MustHaveHappened();
     }
 
     [Fact]

@@ -81,7 +81,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="offerAgreementConsents"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId);
+    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId);
     
     /// <summary>
     /// Return Offer with Consent Status
@@ -89,7 +89,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="appId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<OfferProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId);
+    Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId);
     
     /// <summary>
     /// Delete User Role by appId and roleId

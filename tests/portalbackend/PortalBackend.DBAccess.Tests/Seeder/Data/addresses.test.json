@@ -1,0 +1,62 @@
+[
+  {
+    "id": "12302f9b-418c-4b8c-aea8-3eedf67e6a02",
+    "date_created": "2022-03-24 18:01:33.341000 +00:00",
+    "date_last_changed": "2022-03-24 18:01:33.341000 +00:00",
+    "city": "Munich",
+    "region": null,
+    "streetadditional": null,
+    "streetname": "Street",
+    "streetnumber": "2",
+    "zipcode": "00001",
+    "country_alpha2code": "DE"
+  },
+  {
+    "id": "081c8bfd-c6d1-4119-a5f8-a69726dfc11e",
+    "date_created": "2022-03-24 18:01:33.428000 +00:00",
+    "date_last_changed": "2022-03-24 18:01:33.428000 +00:00",
+    "city": "Munich",
+    "region": null,
+    "streetadditional": null,
+    "streetname": "Street",
+    "streetnumber": "9",
+    "zipcode": "00001",
+    "country_alpha2code": "DE"
+  },
+  {
+    "id": "3a52099d-4988-4a56-9787-10a669c41338",
+    "date_created": "2022-03-24 18:01:33.344000 +00:00",
+    "date_last_changed": "2022-03-24 18:01:33.344000 +00:00",
+    "city": "Munich",
+    "region": null,
+    "streetadditional": null,
+    "streetname": "Street",
+    "streetnumber": "3",
+    "zipcode": "00001",
+    "country_alpha2code": "DE"
+  },
+  {
+    "id": "b4db3945-19a7-4a50-97d6-e66e8dfd04fe",
+    "date_created": "2022-03-24 18:01:33.306000 +00:00",
+    "date_last_changed": "2022-03-24 18:01:33.306000 +00:00",
+    "city": "Munich",
+    "region": null,
+    "streetadditional": null,
+    "streetname": "Street",
+    "streetnumber": "1",
+    "zipcode": "00001",
+    "country_alpha2code": "DE"
+  },
+  {
+    "id": "86da3e1c-a634-41a6-ad44-9880746123e4",
+    "date_created": "2022-03-24 18:01:33.435000 +00:00",
+    "date_last_changed": "2022-03-24 18:01:33.435000 +00:00",
+    "city": "Munich",
+    "region": null,
+    "streetadditional": null,
+    "streetname": "Street",
+    "streetnumber": "6",
+    "zipcode": "00001",
+    "country_alpha2code": "DE"
+  }
+]

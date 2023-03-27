@@ -50,7 +50,7 @@ public record InReviewAppDetails(
     IEnumerable<Guid> Images,
     string Provider,
     IEnumerable<string> UseCases,
-    IEnumerable<OfferDescriptionData?> Description,
+    IEnumerable<LocalizedDescription> Description,
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
     IEnumerable<string> Roles,
     IEnumerable<string> Languages,

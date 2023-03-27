@@ -23,41 +23,11 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
 {
-    public class CompanyRoleAgreementConsents
-    {
-        public CompanyRoleAgreementConsents(IEnumerable<CompanyRoleId> companyRoleIds, IEnumerable<AgreementConsentStatus> agreementConsentStatuses)
-        {
-            CompanyRoleIds = companyRoleIds;
-            AgreementConsentStatuses = agreementConsentStatuses;
-        }
+    public record CompanyRoleAgreementConsents(
+        [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleId> CompanyRoleIds,
+        [property: JsonPropertyName("agreements")] IEnumerable<AgreementConsentStatus> AgreementConsentStatuses);
 
-        private CompanyRoleAgreementConsents()
-        {
-            CompanyRoleIds = default!;
-            AgreementConsentStatuses = default!;
-        }
-
-        [JsonPropertyName("companyRoles")]
-        public IEnumerable<CompanyRoleId> CompanyRoleIds { get; set; }
-
-        [JsonPropertyName("agreements")]
-        public IEnumerable<AgreementConsentStatus> AgreementConsentStatuses { get; set; }
-    }
-
-    public class AgreementConsentStatus
-    {
-        public AgreementConsentStatus(Guid agreementId, ConsentStatusId consentStatusId)
-        {
-            AgreementId = agreementId;
-            ConsentStatusId = consentStatusId;
-        }
-
-        private AgreementConsentStatus() {}
-
-        [JsonPropertyName("agreementId")]
-        public Guid AgreementId { get; set; }
-
-        [JsonPropertyName("consentStatus")]
-        public ConsentStatusId ConsentStatusId { get; set; }
-    }
+    public record AgreementConsentStatus(
+        [property: JsonPropertyName("agreementId")] Guid AgreementId,
+        [property: JsonPropertyName("consentStatus")] ConsentStatusId ConsentStatusId);
 }

@@ -1,0 +1,130 @@
+[
+  {
+    "id": "b055df56-2f41-4c22-b355-5dd5e008852e",
+    "process_step_type_id": 1,
+    "process_step_status_id": 2,
+    "process_id": "1f9a3232-9772-4ecb-8f50-c16e97772dfe",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "9ae6fc9e-c4ea-4e0a-b5d0-ef17c47de308",
+    "process_step_type_id": 5,
+    "process_step_status_id": 2,
+    "process_id": "1f9a3232-9772-4ecb-8f50-c16e97772dfe",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "2d03703e-8f10-4e8e-a194-f04d0ae15c35",
+    "process_step_type_id": 7,
+    "process_step_status_id": 1,
+    "process_id": "1f9a3232-9772-4ecb-8f50-c16e97772dfe",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "1788d6df-9fc9-4a36-a270-d1a4073b4f1b",
+    "process_step_type_id": 5,
+    "process_step_status_id": 2,
+    "process_id": "34215ee3-f99f-45e7-8c4e-747a089cf0b1",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "744a81b6-d5a9-4495-be52-39f83c93df70",
+    "process_step_type_id": 7,
+    "process_step_status_id": 2,
+    "process_id": "34215ee3-f99f-45e7-8c4e-747a089cf0b1",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "4f3a27cc-956a-4a08-a05e-50361e2c22d1",
+    "process_step_type_id": 9,
+    "process_step_status_id": 2,
+    "process_id": "34215ee3-f99f-45e7-8c4e-747a089cf0b1",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "37f04d37-001c-45f4-bf12-df092765f0e2",
+    "process_step_type_id": 10,
+    "process_step_status_id": 2,
+    "process_id": "34215ee3-f99f-45e7-8c4e-747a089cf0b1",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "0ef678f3-c2ae-41a6-b773-844db454a977",
+    "process_step_type_id": 18,
+    "process_step_status_id": 2,
+    "process_id": "34215ee3-f99f-45e7-8c4e-747a089cf0b1",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "d4e2197e-5aa0-4da2-824f-8a6795e045dd",
+    "process_step_type_id": 12,
+    "process_step_status_id": 2,
+    "process_id": "34215ee3-f99f-45e7-8c4e-747a089cf0b1",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "5c9a4f56-0609-49a5-ab86-dd8f93dfd3fa",
+    "process_step_type_id": 1,
+    "process_step_status_id": 2,
+    "process_id": "dd371565-9489-4907-a2e4-b8cbfe7a8cd2",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "629cc08f-bb0b-43ba-b20a-45c3538789b5",
+    "process_step_type_id": 5,
+    "process_step_status_id": 2,
+    "process_id": "dd371565-9489-4907-a2e4-b8cbfe7a8cd2",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "cd231cb8-55de-4ae4-b93f-d440512341fb",
+    "process_step_type_id": 7,
+    "process_step_status_id": 2,
+    "process_id": "dd371565-9489-4907-a2e4-b8cbfe7a8cd2",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "32345a6b-fca6-4b44-804f-31d26f4451e9",
+    "process_step_type_id": 9,
+    "process_step_status_id": 2,
+    "process_id": "dd371565-9489-4907-a2e4-b8cbfe7a8cd2",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "f8994e51-8380-49da-aa98-2c6d508ff9dd",
+    "process_step_type_id": 10,
+    "process_step_status_id": 2,
+    "process_id": "dd371565-9489-4907-a2e4-b8cbfe7a8cd2",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "aa291e83-537e-4541-84a6-aa033ef78fc3",
+    "process_step_type_id": 18,
+    "process_step_status_id": 2,
+    "process_id": "dd371565-9489-4907-a2e4-b8cbfe7a8cd2",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "6e7b02c0-b1c5-499e-b287-b0c4f1e55d5c",
+    "process_step_type_id": 12,
+    "process_step_status_id": 2,
+    "process_id": "dd371565-9489-4907-a2e4-b8cbfe7a8cd2",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  }
+]

@@ -20,7 +20,6 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -29,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using System.Collections.Immutable;
 
@@ -59,11 +59,11 @@ public class ApplicationActivationService : IApplicationActivationService
         _settings = options.Value;
     }
 
-    public Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivation(IChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    public Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivation(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         if (!InProcessingTime())
         {
-            return Task.FromResult(new IChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO,null,null,null,false));
+            return Task.FromResult(new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO,null,null,null,false,null));
         }
         var prerequisiteEntries = context.Checklist.Where(entry => entry.Key != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION);
         if (prerequisiteEntries.Any(entry => entry.Value != ApplicationChecklistEntryStatusId.DONE))
@@ -73,7 +73,7 @@ public class ApplicationActivationService : IApplicationActivationService
         return HandleApplicationActivationInternal(context);
     }
 
-    private async Task<IChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivationInternal(IChecklistService.WorkerChecklistProcessStepData context)
+    private async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivationInternal(IApplicationChecklistService.WorkerChecklistProcessStepData context)
     {
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
         var result = await applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(context.ApplicationId).ConfigureAwait(false);
@@ -123,12 +123,13 @@ public class ApplicationActivationService : IApplicationActivationService
                 throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ", clientRoles.roles)}]"))}");
             }
         }
-        return new IChecklistService.WorkerChecklistProcessStepExecutionResult(
+        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
             null,
             Enum.GetValues<ProcessStepTypeId>().Except(new [] { ProcessStepTypeId.ACTIVATE_APPLICATION }),
-            true);
+            true,
+            null);
     }
 
     private bool InProcessingTime()

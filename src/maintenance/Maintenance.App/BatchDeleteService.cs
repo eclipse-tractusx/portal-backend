@@ -81,7 +81,7 @@ public class BatchDeleteService : BackgroundService
                 dbContext.Agreements.AttachRange(agreementsToDeleteDocumentId);
                 agreementsToDeleteDocumentId.ForEach(agreement => agreement.DocumentId = null);
                 dbContext.OfferAssignedDocuments.RemoveRange(documentData.SelectMany(data => data.OfferIds.Select(offerId => new OfferAssignedDocument(offerId, data.DocumentId))));
-                dbContext.Documents.RemoveRange(documentData.Select(x => new Document(x.DocumentId, null!, null!, null!, default, default, default)));
+                dbContext.Documents.RemoveRange(documentData.Select(x => new Document(x.DocumentId, null!, null!, null!, default, default, default, default)));
                 await dbContext.SaveChangesAsync(stoppingToken).ConfigureAwait(false);
                 _logger.LogInformation("Documents older than {Days} days and depending consents successfully cleaned up", _days);
             }

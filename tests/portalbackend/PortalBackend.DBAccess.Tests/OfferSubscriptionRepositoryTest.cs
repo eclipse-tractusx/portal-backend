@@ -195,10 +195,10 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result.First().AppId.Should().Be("5cf74ef8-e0b7-4984-a872-474828beb5d2");
+        result.First().AppId.Should().Be("a16e73b9-5277-4b69-9f8d-3b227495dfea");
         result.First().OfferSubscriptionStatus.Should().Be(OfferSubscriptionStatusId.ACTIVE);
-        result.First().Name.Should().Be("DTC-Translator");
-        result.First().Provider.Should().Be("ADAC");
+        result.First().Name.Should().Be("SDE with EDC");
+        result.First().Provider.Should().Be("Service Provider");
     }
 
     #endregion

@@ -20,15 +20,14 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Checklist.Config.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Microsoft.Extensions.FileProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 
@@ -70,7 +69,7 @@ builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBu
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 builder.Services
     .AddDapsService(builder.Configuration)
-    .AddChecklist(builder.Configuration.GetSection("Checklist"));
+    .AddApplicationChecklist(builder.Configuration.GetSection("Checklist"));
 
 builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));

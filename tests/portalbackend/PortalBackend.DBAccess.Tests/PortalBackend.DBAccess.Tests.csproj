@@ -58,5 +58,242 @@
 
   <ItemGroup>
     <Content Include="Seeder\Data\**" LinkBase="Seeder\Data" CopyToOutputDirectory="Always" />
+    <Content Update="Seeder\Data\addresses.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\addresses.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\agreement_assigned_company_roles.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\agreement_assigned_offer_types.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\agreement_assigned_offers.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\agreement_assigned_offers.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\agreements.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\agreements.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\app_assigned_use_cases.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\app_instances.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\app_languages.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\app_subscription_details.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\application_checklist.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\companies.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\companies.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_applications.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_assigned_roles.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_assigned_roles.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_assigned_use_cases.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_identifiers.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_identifiers.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_identity_providers.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_identity_providers.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_role_assigned_role_collections.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_role_descriptions.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_role_registration_data.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_service_account_assigned_roles.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_service_account_assigned_roles.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_service_accounts.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_service_accounts.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_user_assigned_app_favourites.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_user_assigned_business_partners.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_user_assigned_roles.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_user_assigned_roles.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_users.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_users.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\connectors.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\consent_assigned_offer_subscriptions.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\consent_assigned_offers.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\consents.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\consents.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\countries.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\country_assigned_identifiers.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\documents.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\documents.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\iam_clients.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\iam_clients.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\iam_identity_providers.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\iam_identity_providers.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\iam_service_accounts.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\iam_users.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\iam_users.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\identity_providers.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\identity_providers.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\invitations.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\languages.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\notification_type_assigned_topic.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\notifications.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\offer_assigned_documents.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\offer_assigned_licenses.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\offer_assigned_privacy_policies.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\offer_descriptions.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\offer_licenses.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\offer_subscriptions.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\offer_tags.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\offers.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\offers.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\process_steps.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\processes.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\provider_company_details.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\service_details.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\use_cases.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\user_role_assigned_collections.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\user_role_collection_descriptions.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\user_role_collections.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\user_role_descriptions.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\user_role_descriptions.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\user_roles.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\user_roles.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
   </ItemGroup>
 </Project>

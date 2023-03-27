@@ -65,6 +65,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
     public virtual DbSet<AuditUserRole20221017> AuditUserRole20221017 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole20221018> AuditCompanyUserAssignedRole20221018 { get; set; } = default!;
+    public virtual DbSet<AuditCompanyAssignedRole2023316> AuditCompanyAssignedRole2023316 { get; set; } = default!;
     public virtual DbSet<BpdmIdentifier> BpdmIdentifiers { get; set; } = default!;    
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
@@ -97,6 +98,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; set; } = default!;
     public virtual DbSet<Document> Documents { get; set; } = default!;
     public virtual DbSet<DocumentType> DocumentTypes { get; set; } = default!;
+    public virtual DbSet<MediaType> MediaTypes { get; set; } = default!;
     public virtual DbSet<DocumentStatus> DocumentStatus { get; set; } = default!;
     public virtual DbSet<IamClient> IamClients { get; set; } = default!;
     public virtual DbSet<IamIdentityProvider> IamIdentityProviders { get; set; } = default!;
@@ -448,6 +450,7 @@ public class PortalDbContext : DbContext
                     j =>
                     {
                         j.HasKey(e => new { e.CompanyId, e.CompanyRoleId });
+                        j.HasAuditV1Triggers<CompanyAssignedRole, AuditCompanyAssignedRole2023316>();
                     }
                 );
 
@@ -752,7 +755,6 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p!.Consents)
                 .HasForeignKey(d => d.ConsentStatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-            
         });
         
         modelBuilder.Entity<ConsentAssignedOfferSubscription>(entity =>
@@ -806,6 +808,13 @@ public class PortalDbContext : DbContext
                 Enum.GetValues(typeof(DocumentTypeId))
                     .Cast<DocumentTypeId>()
                     .Select(e => new DocumentType(e))
+            );
+
+        modelBuilder.Entity<MediaType>()
+            .HasData(
+                Enum.GetValues(typeof(MediaTypeId))
+                    .Cast<MediaTypeId>()
+                    .Select(e => new MediaType(e))
             );
 
         modelBuilder.Entity<DocumentStatus>()

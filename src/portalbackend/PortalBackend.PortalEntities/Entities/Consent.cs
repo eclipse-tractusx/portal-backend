@@ -26,25 +26,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class Consent : IBaseEntity
 {
-    public Consent()
+    private Consent()
     {
         ConsentAssignedOffers = new HashSet<ConsentAssignedOffer>();
         ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
     }
 
-    /// <summary>
-    /// Please only use when attaching the Consent to the database
-    /// </summary>
-    /// <param name="id"></param>
-    public Consent(Guid id) 
-        :this()
+    public Consent(Guid id, Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, DateTimeOffset dateCreated)
+        : this()
     {
         Id = id;
-    }
-
-    public Consent(Guid id, Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, DateTimeOffset dateCreated)
-        : this(id)
-    {
         AgreementId = agreementId;
         CompanyId = companyId;
         CompanyUserId = companyUserId;

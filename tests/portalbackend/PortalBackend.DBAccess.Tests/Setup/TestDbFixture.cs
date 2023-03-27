@@ -101,7 +101,7 @@ public class TestDbFixture : IAsyncLifetime
         var context = new PortalDbContext(optionsBuilder.Options);
         await context.Database.MigrateAsync();
 
-        var seederOptions = Options.Create(new SeederSettings { TestDataEnvironments = new List<string> { "consortia", "test" } });
+        var seederOptions = Options.Create(new SeederSettings { TestDataEnvironments = new List<string> { "test" } });
         var insertSeeder = new BatchInsertSeeder(context,
             LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<BatchInsertSeeder>(),
             seederOptions);

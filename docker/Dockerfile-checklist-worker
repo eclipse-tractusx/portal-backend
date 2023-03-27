@@ -22,12 +22,12 @@ FROM mcr.microsoft.com/dotnet/runtime:6.0-alpine AS base
 FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
 WORKDIR /
 COPY src/ src/
-RUN dotnet restore "src/checklist/Checklist.Worker/Checklist.Worker.csproj"
-WORKDIR /src/checklist/Checklist.Worker
-RUN dotnet build "Checklist.Worker.csproj" -c Release -o /app/build
+RUN dotnet restore "src/processes/Processes.Worker/Processes.Worker.csproj"
+WORKDIR /src/processes/Processes.Worker
+RUN dotnet build "Processes.Worker.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Checklist.Worker.csproj" -c Release -o /app/publish
+RUN dotnet publish "Processes.Worker.csproj" -c Release -o /app/publish
 
 FROM base AS final
 # temp fix for CVE-2022-1304
@@ -37,4 +37,4 @@ COPY --from=publish /app/publish .
 
 RUN chown -R 1000:3000 /app
 USER 1000:3000
-ENTRYPOINT ["dotnet", "Org.Eclipse.TractusX.Portal.Backend.Checklist.Worker.dll"]
+ENTRYPOINT ["dotnet", "Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.dll"]

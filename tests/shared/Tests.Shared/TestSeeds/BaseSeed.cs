@@ -131,31 +131,31 @@ public static class BaseSeed
         });
         dbContext.Documents.AddRange(new List<Document>
         {
-            new (new Guid("fda6c9cb-62be-4a98-99c1-d9c5a2df4aad"), new byte[1024], new byte[1024], "test1.pdf", DateTimeOffset.UtcNow, DocumentStatusId.INACTIVE, DocumentTypeId.CX_FRAME_CONTRACT)
+            new (new Guid("fda6c9cb-62be-4a98-99c1-d9c5a2df4aad"), new byte[1024], new byte[1024], "test1.pdf", MediaTypeId.JSON, DateTimeOffset.UtcNow, DocumentStatusId.INACTIVE, DocumentTypeId.CX_FRAME_CONTRACT)
             {
                 CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058019990")
             },
-            new (new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea40"), new byte[1024], new byte[1024], "test2.pdf", DateTimeOffset.UtcNow, DocumentStatusId.INACTIVE, DocumentTypeId.CX_FRAME_CONTRACT)
+            new (new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea40"), new byte[1024], new byte[1024], "test2.pdf", MediaTypeId.JSON, DateTimeOffset.UtcNow, DocumentStatusId.INACTIVE, DocumentTypeId.CX_FRAME_CONTRACT)
             {
                 CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058019991")
             },
-            new (new Guid("5936c0f4-d07a-4f90-b397-b00b8b30c6f4"), new byte[1024], new byte[1024], "test3.pdf", DateTimeOffset.UtcNow, DocumentStatusId.INACTIVE, DocumentTypeId.CX_FRAME_CONTRACT)
+            new (new Guid("5936c0f4-d07a-4f90-b397-b00b8b30c6f4"), new byte[1024], new byte[1024], "test3.pdf", MediaTypeId.JSON, DateTimeOffset.UtcNow, DocumentStatusId.INACTIVE, DocumentTypeId.CX_FRAME_CONTRACT)
             {
                 CompanyUserId = new Guid("adf37b09-53f3-48ea-b8fb-8cbb7fd79324")
             },
-            new (new Guid("7fc2fb78-8dc2-4f5f-b1d1-91c9c2f4506f"), new byte[1024], new byte[1024], "fake.pdf", DateTimeOffset.UtcNow.AddYears(-1), DocumentStatusId.INACTIVE, DocumentTypeId.CX_FRAME_CONTRACT)
+            new (new Guid("7fc2fb78-8dc2-4f5f-b1d1-91c9c2f4506f"), new byte[1024], new byte[1024], "fake.pdf", MediaTypeId.JSON, DateTimeOffset.UtcNow.AddYears(-1), DocumentStatusId.INACTIVE, DocumentTypeId.CX_FRAME_CONTRACT)
             {
                 CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992")
             },
-            new (new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"), new byte[1024], new byte[1024], "test5.pdf", DateTimeOffset.UtcNow, DocumentStatusId.PENDING, DocumentTypeId.APP_LEADIMAGE)
+            new (new Guid("90a24c6d-1092-4590-ae89-a9d2bff1ea41"), new byte[1024], new byte[1024], "test5.pdf", MediaTypeId.JSON, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, DocumentTypeId.APP_LEADIMAGE)
             {
                 CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")
             },
-            new (new Guid("2b9e45a6-ec22-489a-b2cb-9cbdd0b6bfbc"), new byte[1024], new byte[1024], "test5.pdf", DateTimeOffset.UtcNow, DocumentStatusId.PENDING, DocumentTypeId.APP_IMAGE)
+            new (new Guid("2b9e45a6-ec22-489a-b2cb-9cbdd0b6bfbc"), new byte[1024], new byte[1024], "test5.pdf", MediaTypeId.JSON, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, DocumentTypeId.APP_IMAGE)
             {
                 CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")
             },
-            new (new Guid("b42de0f5-fd35-428a-86eb-a048ed7e57fa"), new byte[1024], new byte[1024], "test5.pdf", DateTimeOffset.UtcNow, DocumentStatusId.PENDING, DocumentTypeId.ADDITIONAL_DETAILS)
+            new (new Guid("b42de0f5-fd35-428a-86eb-a048ed7e57fa"), new byte[1024], new byte[1024], "test5.pdf", MediaTypeId.JSON, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, DocumentTypeId.ADDITIONAL_DETAILS)
             {
                 CompanyUserId = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001")
             }

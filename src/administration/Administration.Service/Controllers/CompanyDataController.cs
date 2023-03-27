@@ -61,20 +61,4 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync() =>
         this.WithIamUserId(iamUserId =>_logic.GetOwnCompanyDetailsAsync(iamUserId));
-
-    /// <summary>
-    /// Gets the companyrole and ConsentAgreement Details
-    /// </summary>
-    /// <returns>the Companyrole and ConsentAgreement details</returns>
-    /// <remarks>Example: GET: api/administration/companydata/companyRolesAndConsents</remarks>
-    /// <response code="200">Returns the Companyrole and Consent details.</response>
-    /// <response code="409">No Companyrole or Incorrect Status</response>
-    [HttpGet]
-    [Authorize(Roles = "view_company_data")]
-    [Route("companyRolesAndConsents")]
-    [ProducesResponseType(typeof(CompanyRoleConsentData), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public IAsyncEnumerable<CompanyRoleConsentData> GetCompanyRoleAndConsentAgreementDetailsAsync() =>
-        this.WithIamUserId(iamUserId =>_logic.GetCompanyRoleAndConsentAgreementDetailsAsync(iamUserId));
 }

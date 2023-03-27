@@ -321,7 +321,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
     {
-        await this.WithIamUserId(userId => _appsBusinessLogic.DeactivateOfferbyAppIdAsync(appId,userId)).ConfigureAwait(false);
+        await this.WithIamUserId(userId => _appsBusinessLogic.DeactivateOfferByAppIdAsync(appId,userId)).ConfigureAwait(false);
         return NoContent();
     }
     
@@ -360,12 +360,12 @@ public class AppsController : ControllerBase
     [HttpGet]
     [Route("{appId}/appupdate/description")]
     [Authorize(Roles = "edit_apps")]
-    [ProducesResponseType(typeof(IEnumerable<OfferDescriptionData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<LocalizedDescription>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<IEnumerable<OfferDescriptionData>> GetAppUpdateDescriptionsAsync([FromRoute] Guid appId) =>
-        await this.WithIamUserId(userId => _appsBusinessLogic.GetAppUpdateDescritionByIdAsync(appId, userId)).ConfigureAwait(false);
+    public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionsAsync([FromRoute] Guid appId) =>
+        await this.WithIamUserId(userId => _appsBusinessLogic.GetAppUpdateDescriptionByIdAsync(appId, userId)).ConfigureAwait(false);
     
     /// <summary>
     /// Create or Update description of the app by Id.

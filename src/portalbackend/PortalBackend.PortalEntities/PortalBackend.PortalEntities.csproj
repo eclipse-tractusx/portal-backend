@@ -44,5 +44,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.DBAccess\Framework.DBAccess.csproj" />
   </ItemGroup>
 </Project>

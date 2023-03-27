@@ -1,0 +1,146 @@
+[
+  {
+    "application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9e",
+    "application_checklist_entry_type_id": 1,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9e",
+    "application_checklist_entry_type_id": 2,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9e",
+    "application_checklist_entry_type_id": 3,
+    "date_created": "2023-01-18 14:17:37.316824 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 1,
+    "comment": null
+  },
+  {
+    "application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9e",
+    "application_checklist_entry_type_id": 4,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 1,
+    "comment": null
+  },
+  {
+    "application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9e",
+    "application_checklist_entry_type_id": 5,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 1,
+    "comment": null
+  },
+  {
+    "application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9e",
+    "application_checklist_entry_type_id": 6,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 1,
+    "comment": null
+  },
+  {
+    "application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9f",
+    "application_checklist_entry_type_id": 1,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9f",
+    "application_checklist_entry_type_id": 2,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9f",
+    "application_checklist_entry_type_id": 3,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9f",
+    "application_checklist_entry_type_id": 4,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9f",
+    "application_checklist_entry_type_id": 5,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9f",
+    "application_checklist_entry_type_id": 6,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "4f0146c6-32aa-4bb1-b844-df7e8babdcb2",
+    "application_checklist_entry_type_id": 1,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "4f0146c6-32aa-4bb1-b844-df7e8babdcb2",
+    "application_checklist_entry_type_id": 2,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "4f0146c6-32aa-4bb1-b844-df7e8babdcb2",
+    "application_checklist_entry_type_id": 3,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "4f0146c6-32aa-4bb1-b844-df7e8babdcb2",
+    "application_checklist_entry_type_id": 4,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "4f0146c6-32aa-4bb1-b844-df7e8babdcb2",
+    "application_checklist_entry_type_id": 5,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "4f0146c6-32aa-4bb1-b844-df7e8babdcb2",
+    "application_checklist_entry_type_id": 6,
+    "date_created": "2023-01-18 12:46:57.583000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  }
+]

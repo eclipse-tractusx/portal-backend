@@ -137,7 +137,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     /// <inheritdoc/>
     public IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync()=>
-        _offerService.GetOfferTypeAgreementsAsync(OfferTypeId.APP);
+        _offerService.GetOfferTypeAgreements(OfferTypeId.APP);
 
     /// <inheritdoc/>
     public async Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId)
@@ -146,7 +146,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
     
     /// <inheritdoc/>
-    public Task<int> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId)
+    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId)
     {
         if (appId == Guid.Empty)
         {
@@ -156,12 +156,35 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    private Task<int> SubmitOfferConsentInternalAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId) =>
+    private Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentInternalAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId) =>
         _offerService.CreateOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, userId, OfferTypeId.APP);
     
     /// <inheritdoc/>
-    public Task<OfferProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId) =>
-        _offerService.GetProviderOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP);
+    public async Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId)
+    {
+        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP).ConfigureAwait(false);
+        if (result.UseCase == null)
+        {
+            throw new UnexpectedConditionException("usecase should never be null here");
+        }
+        return new AppProviderResponse(
+            result.Title,
+            result.Provider,
+            result.LeadPictureId,
+            result.ProviderName,
+            result.UseCase,
+            result.Descriptions,
+            result.Agreements,
+            result.SupportedLanguageCodes,
+            result.Price,
+            result.Images,
+            result.ProviderUri,
+            result.ContactEmail,
+            result.ContactNumber,
+            result.Documents,
+            result.SalesManagerId,
+            result.PrivacyPolicies);
+    }
 
     /// <inheritdoc/>
     public async Task DeleteAppRoleAsync(Guid appId, Guid roleId, string iamUserId)
@@ -314,7 +337,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.SalesManagerId = appData.SalesManagerId;
         });
 
-        _offerService.UpsertRemoveOfferDescription(appId, appRequestModel.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), appData.OfferDescriptions);
+        _offerService.UpsertRemoveOfferDescription(appId, appRequestModel.Descriptions, appData.OfferDescriptions);
         UpdateAppSupportedLanguages(appId, newSupportedLanguages, appData.Languages.Where(x => !x.IsMatch).Select(x => x.Shortname), appRepository);
 
         appRepository.CreateDeleteAppAssignedUseCases(appId, appData.MatchingUseCases, appRequestModel.UseCaseIds);
