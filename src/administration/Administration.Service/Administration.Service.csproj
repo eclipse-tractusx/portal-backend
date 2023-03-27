@@ -42,7 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\checklist\Checklist.Config\Checklist.Config.csproj" />
+    <ProjectReference Include="..\..\processes\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj" />
     <ProjectReference Include="..\..\externalsystems\Daps.Library\Daps.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />

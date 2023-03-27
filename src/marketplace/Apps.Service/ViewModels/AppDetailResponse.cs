@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
@@ -51,7 +52,7 @@ public record AppDetailResponse(
     string Provider,
     string? ContactEmail,
     string? ContactNumber,
-    IEnumerable<string> UseCases,
+    IEnumerable<AppUseCaseData> UseCases,
     string LongDescription,
     string Price,
     IEnumerable<string> Tags,

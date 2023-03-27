@@ -1,0 +1,20 @@
+[
+  {
+    "id": "efc20368-9e82-46ff-b88f-6495b9810253",
+    "user_role": "EarthCommerce.AdministratorRC_QAS2",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05744000b",
+    "last_editor_id": null
+  },
+  {
+    "id": "aabcdfeb-6669-4c74-89f0-19cda090873f",
+    "user_role": "EarthCommerce.Advanced.BuyerRC_QAS2",
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce05744000b",
+    "last_editor_id": null
+  },
+  {
+    "id": "aabcdfeb-6669-4c74-89f0-19cda090873e",
+    "user_role": "test",
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfea",
+    "last_editor_id": null
+  }
+]

@@ -74,7 +74,7 @@ public interface IOfferService
     /// </summary>
     /// <param name="offerTypeId">OfferTypeId the agreement is associated with</param>
     /// <returns></returns>
-    IAsyncEnumerable<AgreementDocumentData> GetOfferTypeAgreementsAsync(OfferTypeId offerTypeId);
+    IAsyncEnumerable<AgreementDocumentData> GetOfferTypeAgreements(OfferTypeId offerTypeId);
     
     /// <summary>
     /// Return Offer Agreement Consent
@@ -93,7 +93,7 @@ public interface IOfferService
     /// <param name="iamUserId"></param>
     /// <param name="offerTypeId">OfferTypeId the agreements are associated with</param>
     /// <returns></returns>
-    Task<int> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId);
+    Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Creates a new service offering
@@ -122,7 +122,7 @@ public interface IOfferService
     /// <returns>Returns the company id of the user</returns>
     Task<Guid> ValidateSalesManager(Guid salesManagerId, string iamUserId, IDictionary<string, IEnumerable<string>> salesManagerRoles);
     
-    void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<Localization> updateDescriptions, IEnumerable<OfferDescriptionData> existingDescriptions);
+    void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<LocalizedDescription> updateDescriptions, IEnumerable<LocalizedDescription> existingDescriptions);
 
     void CreateOrUpdateOfferLicense(Guid offerId, string licenseText, (Guid OfferLicenseId, string LicenseText, bool AssignedToMultipleOffers) offerLicense);
 

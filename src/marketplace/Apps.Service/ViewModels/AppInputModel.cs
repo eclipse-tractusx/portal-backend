@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
-using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 

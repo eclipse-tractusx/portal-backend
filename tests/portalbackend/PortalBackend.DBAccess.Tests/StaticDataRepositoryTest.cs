@@ -104,6 +104,19 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
+    
+      [Fact]
+    public async Task GetServiceTypeData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var results = await sut.GetServiceTypeData().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        results.Should().HaveCount(2);
+    }
 
     #region setup
 

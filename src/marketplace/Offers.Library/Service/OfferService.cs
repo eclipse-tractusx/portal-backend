@@ -30,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Security.Cryptography;
 using System.Text.Json;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
@@ -94,10 +95,7 @@ public class OfferService : IOfferService
 
         foreach (var offerSubscriptionConsent in offerSubscriptionConsents)
         {
-            var consent = new Consent(offerSubscriptionConsent.ConsentId)
-                {
-                    ConsentStatusId = offerSubscriptionConsent.ConsentStatusId
-                };
+            var consent = new Consent(offerSubscriptionConsent.ConsentId, Guid.Empty, Guid.Empty, Guid.Empty, offerSubscriptionConsent.ConsentStatusId, default);
             var dbConsent = _portalRepositories.Attach(consent);
             dbConsent.ConsentStatusId = offerAgreementConsentData.Single(x => x.AgreementId == offerSubscriptionConsent.AgreementId).ConsentStatusId;
         }
@@ -143,7 +141,7 @@ public class OfferService : IOfferService
         return consentDetails;
     }
 
-    public IAsyncEnumerable<AgreementDocumentData> GetOfferTypeAgreementsAsync(OfferTypeId offerTypeId)=>
+    public IAsyncEnumerable<AgreementDocumentData> GetOfferTypeAgreements(OfferTypeId offerTypeId)=>
         _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementDataForOfferType(offerTypeId);
 
     public async Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId)
@@ -160,34 +158,24 @@ public class OfferService : IOfferService
         return result.OfferAgreementConsent;
     }
 
-    public async Task<int> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId)
+    public async Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId)
     {
-        var consentRepository = _portalRepositories.GetInstance<IConsentRepository>();
-
-        var (companyUserId, companyId, dbAgreements) = await GetProviderOfferAgreementConsent(offerId, iamUserId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
-
-        foreach (var agreementId in offerAgreementConsent.Agreements
-                .ExceptBy(dbAgreements.Select(db => db.AgreementId), input => input.AgreementId)
-                .Select(input => input.AgreementId))
+        var (companyUserId, companyId, dbAgreements, requiredAgreementIds) = await GetProviderOfferAgreementConsent(offerId, iamUserId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
+        var invalidConsents = offerAgreementConsent.Agreements.ExceptBy(requiredAgreementIds, consent => consent.AgreementId);
+        if (invalidConsents.Any())
         {
-            var consent = consentRepository.CreateConsent(agreementId, companyId, companyUserId, ConsentStatusId.ACTIVE);
-            consentRepository.CreateConsentAssignedOffer(consent.Id, offerId);
-        }
-        foreach (var (agreementId, consentStatus) in offerAgreementConsent.Agreements
-                .IntersectBy(dbAgreements.Select(d => d.AgreementId), input => input.AgreementId)
-                .Select(input => (input.AgreementId, input.ConsentStatusId)))
-        {
-            var existing = dbAgreements.First(d => d.AgreementId == agreementId);
-            _portalRepositories.Attach(new Consent(existing.ConsentId), consent =>
-            {
-                if (consentStatus != existing.ConsentStatusId)
-                {
-                    consent.ConsentStatusId = consentStatus;
-                }
-            });
+            throw new ControllerArgumentException($"agreements {string.Join(",", invalidConsents.Select(consent => consent.AgreementId))} are not valid for offer {offerId}", nameof(offerAgreementConsent));
         }
 
-        return await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return _portalRepositories.GetInstance<IConsentRepository>()
+            .AddAttachAndModifyConsents(
+                dbAgreements,
+                offerAgreementConsent.Agreements,
+                offerId,
+                companyId,
+                companyUserId,
+                DateTimeOffset.UtcNow)
+            .Select(consent => new ConsentStatusData(consent.AgreementId, consent.ConsentStatusId));
     }
 
     private async Task<OfferAgreementConsentUpdate> GetProviderOfferAgreementConsent(Guid offerId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId)
@@ -254,6 +242,10 @@ public class OfferService : IOfferService
         {
             throw new ForbiddenException($"userId {userId} is not associated with provider-company of offer {offerId}");
         }
+        if (offerDetail.OfferProviderData == null)
+        {
+            throw new UnexpectedConditionException("offerProviderData should never be null here");
+        }
 
         var data = offerDetail.OfferProviderData;
 
@@ -273,7 +265,8 @@ public class OfferService : IOfferService
             data.ContactNumber,
             data.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))),
             data.SalesManagerId,
-            data.PrivacyPolicies);
+            data.PrivacyPolicies,
+            data.ServiceTypeIds);
     }
     
     /// <inheritdoc />
@@ -303,7 +296,7 @@ public class OfferService : IOfferService
         return responseData.UserCompanyId;
     }
     
-    public void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<Localization> updateDescriptions, IEnumerable<OfferDescriptionData> existingDescriptions)
+    public void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<LocalizedDescription> updateDescriptions, IEnumerable<LocalizedDescription> existingDescriptions)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         offerRepository.CreateUpdateDeleteOfferDescriptions(offerId, existingDescriptions, 
@@ -337,6 +330,10 @@ public class OfferService : IOfferService
         {
             throw new ConflictException($"{string.Join(",", submitAppDocumentTypeIds)} are mandatory document types");
         }
+        if (!offerDetails.HasUserRoles)
+        {
+            throw new ConflictException("The app has no roles assigned");
+        }
        
         await SubmitAppServiceAsync(offerId, iamUserId, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(false);
     }
@@ -368,8 +365,8 @@ public class OfferService : IOfferService
             foreach(var documentStatusData in offerDetails.DocumentStatusDatas)
             {
                 documentRepository.AttachAndModifyDocument(documentStatusData!.DocumentId,
-                A => {A.DocumentStatusId = documentStatusData.StatusId;},
-                A => {A.DocumentStatusId = DocumentStatusId.LOCKED;});
+                a => { a.DocumentStatusId = documentStatusData.StatusId; },
+                a => { a.DocumentStatusId = DocumentStatusId.LOCKED; });
             }
         }
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
@@ -402,7 +399,7 @@ public class OfferService : IOfferService
     {
         if (offerDetails.Name is not null && 
             offerDetails.ProviderCompanyId is not null && 
-            offerDetails is { IsDescriptionLongNotSet: false, IsDescriptionShortNotSet: false, HasUserRoles: true }) return;
+            offerDetails is { IsDescriptionLongNotSet: false, IsDescriptionShortNotSet: false }) return;
         
         var nullProperties = new List<string>();
         if (offerDetails.Name is null)
@@ -424,10 +421,7 @@ public class OfferService : IOfferService
         {
             nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.IsDescriptionShortNotSet)}");
         }
-        if (!offerDetails.HasUserRoles)
-        {
-            nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.HasUserRoles)}");
-        }
+        
         throw new ConflictException($"Missing  : {string.Join(", ", nullProperties)}");
     }
 
@@ -619,7 +613,8 @@ public class OfferService : IOfferService
             throw new ControllerArgumentException($"documentType must be either: {string.Join(",", documentTypeIdSettings)}");
 
         // Check if document is a pdf,jpeg and png file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
-        if (!contentTypeSettings.Contains(document.ContentType))
+        var documentContentType = document.ContentType;
+        if (!contentTypeSettings.Contains(documentContentType))
             throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType :{string.Join(",", contentTypeSettings)} are allowed.");
         
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
@@ -645,7 +640,7 @@ public class OfferService : IOfferService
         if (ms.Length != document.Length || documentContent.Length != document.Length)
             throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
         
-        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, documentTypeId, x =>
+        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, documentContentType.ParseMediaTypeId(), documentTypeId, x =>
         {
             x.CompanyUserId = companyUserId;
         });

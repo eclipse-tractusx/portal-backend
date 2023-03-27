@@ -1,0 +1,52 @@
+[
+  {
+    "id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "date_created": "2022-03-24 18:01:33.341000 +00:00",
+    "business_partner_number": "BPNL00000003AYRE",
+    "name": "Bayerische Motorenwerke AG",
+    "shortname": "BMW AG",
+    "company_status_id": 2,
+    "address_id": "12302f9b-418c-4b8c-aea8-3eedf67e6a02",
+    "self_description_document_id": null
+  },
+  {
+    "id": "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd",
+    "date_created": "2022-10-01 00:00:00.000000 +00:00",
+    "business_partner_number": "BPNL07800HZ01643",
+    "name": "Service Provider",
+    "shortname": "SP",
+    "company_status_id": 2,
+    "address_id": "081c8bfd-c6d1-4119-a5f8-a69726dfc11e",
+    "self_description_document_id": null
+  },
+  {
+    "id": "0dcd8209-85e2-4073-b130-ac094fb47106",
+    "date_created": "2022-03-24 18:01:33.344000 +00:00",
+    "business_partner_number": "BPNL00000003LLHA",
+    "name": "SAP AG",
+    "shortname": "SAP",
+    "company_status_id": 1,
+    "address_id": "3a52099d-4988-4a56-9787-10a669c41338",
+    "self_description_document_id": null
+  },
+  {
+    "id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88",
+    "date_created": "2022-03-24 18:01:33.306000 +00:00",
+    "business_partner_number": "BPNL00000003CRHL",
+    "name": "CX-Test-Access",
+    "shortname": "CX-Test-Access",
+    "company_status_id": 2,
+    "address_id": "b4db3945-19a7-4a50-97d6-e66e8dfd04fe",
+    "self_description_document_id": null
+  },
+  {
+    "id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
+    "date_created": "2022-03-24 18:01:33.438000 +00:00",
+    "business_partner_number": "BPNL00000003LLHA",
+    "name": "Security Company",
+    "shortname": "Security Company",
+    "company_status_id": 1,
+    "address_id": "86da3e1c-a634-41a6-ad44-9880746123e4",
+    "self_description_document_id": null
+  }
+]

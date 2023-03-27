@@ -1,0 +1,22 @@
+[
+  {
+    "user_role_id": "efc20368-9e82-46ff-b88f-6495b9810253",
+    "language_short_name": "de",
+    "description": "Vehicle Purchaser"
+  },
+  {
+    "user_role_id": "efc20368-9e82-46ff-b88f-6495b9810253",
+    "language_short_name": "en",
+    "description": "Vehicle Purchaser"
+  },
+  {
+    "user_role_id": "aabcdfeb-6669-4c74-89f0-19cda090873f",
+    "language_short_name": "de",
+    "description": "Dismantling Lead"
+  },
+  {
+    "user_role_id": "aabcdfeb-6669-4c74-89f0-19cda090873f",
+    "language_short_name": "en",
+    "description": "Dismantling Lead"
+  }
+]

@@ -45,7 +45,9 @@ public class ProcessStep : IBaseEntity
     public DateTimeOffset DateCreated { get; private set; }
 
     public DateTimeOffset? DateLastChanged { get; set; }
-    
+
+    public string? Message { get; set; }
+
     // Navigation properties
     public virtual ProcessStepType? ProcessStepType { get; private set; }
     public virtual ProcessStepStatus? ProcessStepStatus { get; set; }

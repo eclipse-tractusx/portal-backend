@@ -1,0 +1,38 @@
+[
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0001",
+    "language_short_name": "de",
+    "description_long": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "description_short": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0001",
+    "language_short_name": "en",
+    "description_long": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "description_short": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0572c0007",
+    "language_short_name": "de",
+    "description_long": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "description_short": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
+    "offer_id": "ac1cf001-7fbc-1f2f-817f-bce0572c0007",
+    "language_short_name": "en",
+    "description_long": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "description_short": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfea",
+    "language_short_name": "en",
+    "description_long": "In order to allow Data Providers and Data Consumers to easily participate in relevant Use Cases, a service for low-effort data sharing was needed. The service would add a convenience layer around already established CX components, such as EDC and Digital Twin Registry, simplifying their use. It is a standalone service which can be self-hosted, it enables companies to provide their data in the Catena-X network via an EDC, Ddata is uploaded via CSV-files/Manual Entry/Json format, the DFT registers the data in the Digital Twin Registry and makes it accessible via an EDC, DFT also act as a Data Consumer, it is show the data offers from data provider.",
+    "description_short": "Component for Digital Twins registration"
+  },
+  {
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfea",
+    "language_short_name": "de",
+    "description_long": "In order to allow Data Providers and Data Consumers to easily participate in relevant Use Cases, a service for low-effort data sharing was needed. The service would add a convenience layer around already established CX components, such as EDC and Digital Twin Registry, simplifying their use. It is a standalone service which can be self-hosted, it enables companies to provide their data in the Catena-X network via an EDC, Ddata is uploaded via CSV-files/Manual Entry/Json format, the DFT registers the data in the Digital Twin Registry and makes it accessible via an EDC, DFT also act as a Data Consumer, it is show the data offers from data provider.",
+    "description_short": "Component for Digital Twins registration"
+  }
+]

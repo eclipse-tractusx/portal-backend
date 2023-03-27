@@ -40,7 +40,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         /// <param name="documentId">The Id of the document that should be get</param>
         /// <param name="iamUserId">The Id of the current user</param>
         /// <returns></returns>
-        Task<(string fileName, byte[] content)> GetDocumentContentAsync(Guid documentId, string iamUserId);
+        Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId, string iamUserId);
 
         IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId);
         Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId, string iamUserId);
@@ -59,5 +59,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, string iamUserId);
         IAsyncEnumerable<CompanyRolesDetails> GetCompanyRoles(string? languageShortName = null);
         Task<IEnumerable<UniqueIdentifierData>> GetCompanyIdentifiers(string alpha2Code);
+        Task<(string fileName, byte[] content, string mediaType)> GetRegistrationDocumentAsync(Guid documentId);
     }
 }

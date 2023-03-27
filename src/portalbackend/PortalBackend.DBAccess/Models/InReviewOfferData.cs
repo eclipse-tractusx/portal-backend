@@ -55,7 +55,7 @@ public record InReviewOfferData(
     /// <summary>
     /// Descriptions of the app's
     /// </summary>
-    IEnumerable<OfferDescriptionData?> Description,
+    IEnumerable<LocalizedDescription> Description,
 
     /// <summary>
     /// document assigned to offer

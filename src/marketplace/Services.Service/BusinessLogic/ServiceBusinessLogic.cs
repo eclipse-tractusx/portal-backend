@@ -116,24 +116,12 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<Guid> CreateServiceAgreementConsentAsync(Guid subscriptionId,
-        OfferAgreementConsentData offerAgreementConsentData, string iamUserId) =>
-        _offerService.CreateOfferSubscriptionAgreementConsentAsync(subscriptionId, offerAgreementConsentData.AgreementId,
-            offerAgreementConsentData.ConsentStatusId, iamUserId, OfferTypeId.SERVICE);
-
-    /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetServiceAgreement(Guid serviceId) => 
         _offerService.GetOfferAgreementsAsync(serviceId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public Task<ConsentDetailData> GetServiceConsentDetailDataAsync(Guid serviceConsentId) =>
         _offerService.GetConsentDetailDataAsync(serviceConsentId, OfferTypeId.SERVICE);
-
-    /// <inheritdoc />
-    public Task CreateOrUpdateServiceAgreementConsentAsync(Guid subscriptionId,
-        IEnumerable<OfferAgreementConsentData> offerAgreementConsentData,
-        string iamUserId) =>
-        _offerService.CreateOrUpdateOfferSubscriptionAgreementConsentAsync(subscriptionId, offerAgreementConsentData, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, string iamUserId) =>
@@ -180,7 +168,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                 offer.SalesManagerId = serviceData.SalesManagerId;
             });
 
-        _offerService.UpsertRemoveOfferDescription(serviceId, data.Descriptions.Select(x => new Localization(x.LanguageCode, x.LongDescription, x.ShortDescription)), serviceData.Descriptions);
+        _offerService.UpsertRemoveOfferDescription(serviceId, data.Descriptions, serviceData.Descriptions);
         _offerService.CreateOrUpdateOfferLicense(serviceId, data.Price, serviceData.OfferLicense);
         var newServiceTypes = data.ServiceTypeIds
             .Except(serviceData.ServiceTypeIds.Where(x => x.IsMatch).Select(x => x.ServiceTypeId))

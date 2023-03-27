@@ -20,7 +20,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Checklist.Library.Custodian.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 
 public record WalletData(
     [property: JsonPropertyName("name")] string? Name,
