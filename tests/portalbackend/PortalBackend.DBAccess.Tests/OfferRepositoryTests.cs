@@ -439,9 +439,14 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var offerDetail = await sut.GetServiceDetailByIdUntrackedAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "de", "502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
 
         // Assert
-        offerDetail.Should().NotBeNull();
+        offerDetail.Should().NotBeNull()
+            .And.BeOfType<ServiceDetailData>();
         offerDetail!.Title.Should().Be("Consulting Service - Data Readiness");
-        Assert.IsType<ServiceDetailData>(offerDetail);
+        offerDetail.Documents.Should()
+            .NotBeEmpty()
+            .And.AllSatisfy(
+                x => x.documentTypeId.Should().Be(DocumentTypeId.ADDITIONAL_DETAILS)
+            );
     }
 
     #endregion

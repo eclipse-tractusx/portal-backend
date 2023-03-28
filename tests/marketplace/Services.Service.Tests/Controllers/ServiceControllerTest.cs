@@ -123,7 +123,6 @@ public class ServiceControllerTest
         A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, "en", IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<ServiceDetailResponse>(result);
         result.Should().Be(serviceDetailData);
-        result.Documents.ContainsKey(DocumentTypeId.ADDITIONAL_DETAILS);
     }
         
     [Fact]

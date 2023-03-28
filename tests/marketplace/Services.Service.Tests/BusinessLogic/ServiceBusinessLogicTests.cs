@@ -242,9 +242,9 @@ public class ServiceBusinessLogicTests
         var result = await sut.GetServiceDetailsAsync(_existingServiceId, "en", _iamUser.UserEntityId);
 
         // Assert
+        result.Should().BeOfType<ServiceDetailResponse>();
         result.Id.Should().Be(_existingServiceId);
         result.Documents.Keys.Should().Contain(DocumentTypeId.ADDITIONAL_DETAILS);
-        Assert.IsType<ServiceDetailResponse>(result);
     }
 
     [Fact]
