@@ -64,7 +64,7 @@ public class NotificationService : INotificationService
     {
         var roleData = await ValidateRoleData(receiverUserRoles);
         var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
-        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleIdForCompany(roleData))
+        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleId(roleData))
         {
             CreateNotification(receiver, creatorId, notifications, notificationRepository);
         }
