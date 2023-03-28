@@ -29,13 +29,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "disabled",
+            migrationBuilder.AddColumn<Guid>(
+                name: "service_account_id",
                 schema: "portal",
-                table: "iam_clients",
-                type: "boolean",
-                nullable: false,
-                defaultValue: false);
+                table: "app_instances",
+                type: "uuid",
+                nullable: true);
 
             migrationBuilder.CreateTable(
                 name: "app_instance_setups",
@@ -45,18 +44,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     app_id = table.Column<Guid>(type: "uuid", nullable: false),
                     is_single_instance = table.Column<bool>(type: "boolean", nullable: false),
-                    instance_url = table.Column<string>(type: "text", nullable: true),
-                    service_account_id = table.Column<string>(type: "character varying(36)", nullable: true)
+                    instance_url = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_app_instance_setups", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_app_instance_setups_iam_service_accounts_service_account_te",
-                        column: x => x.service_account_id,
-                        principalSchema: "portal",
-                        principalTable: "iam_service_accounts",
-                        principalColumn: "client_id");
                     table.ForeignKey(
                         name: "fk_app_instance_setups_offers_app_id",
                         column: x => x.app_id,
@@ -66,30 +58,49 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateIndex(
+                name: "ix_app_instances_service_account_id",
+                schema: "portal",
+                table: "app_instances",
+                column: "service_account_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "ix_app_instance_setups_app_id",
                 schema: "portal",
                 table: "app_instance_setups",
                 column: "app_id",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
-                name: "ix_app_instance_setups_service_account_id",
+            migrationBuilder.AddForeignKey(
+                name: "fk_app_instances_company_service_accounts_service_account_id",
                 schema: "portal",
-                table: "app_instance_setups",
+                table: "app_instances",
                 column: "service_account_id",
-                unique: true);
+                principalSchema: "portal",
+                principalTable: "company_service_accounts",
+                principalColumn: "id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "fk_app_instances_company_service_accounts_service_account_id",
+                schema: "portal",
+                table: "app_instances");
+
             migrationBuilder.DropTable(
                 name: "app_instance_setups",
                 schema: "portal");
 
-            migrationBuilder.DropColumn(
-                name: "disabled",
+            migrationBuilder.DropIndex(
+                name: "ix_app_instances_service_account_id",
                 schema: "portal",
-                table: "iam_clients");
+                table: "app_instances");
+
+            migrationBuilder.DropColumn(
+                name: "service_account_id",
+                schema: "portal",
+                table: "app_instances");
         }
     }
 }
