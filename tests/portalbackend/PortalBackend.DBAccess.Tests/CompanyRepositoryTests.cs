@@ -18,16 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using AutoFixture;
-using AutoFixture.AutoFakeItEasy;
-using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using System.Collections.Immutable;
-using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -438,6 +435,90 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.StreetName.Should().Be("Street");
         result.StreetNumber.Should().Be("1");
         result.ZipCode.Should().Be("00001");
+    }
+
+    #endregion
+
+    #region CompanyAssignedUseCaseId
+
+    [Fact]
+    public async Task GetCompanyAssigendUseCaseDetailsAsync_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = sut.GetCompanyAssigendUseCaseDetailsAsync("ad56702b-5908-44eb-a668-9a11a0e100d6");
+
+        // Assert
+        result.Should().NotBeNull();
+        var data = await result.FirstAsync();
+        data!.useCaseId.Should().Be("06b243a4-ba51-4bf3-bc40-5d79a2231b86");
+        data.name.Should().Be("Traceability");
+    }
+
+    [Fact]
+    public async Task GetCompanyStatusAndUseCaseIdAsync_ReturnsExpected()
+    {
+        // Arrange
+        var useCaseId = new Guid("06b243a4-ba51-4bf3-bc40-5d79a2231b86");
+        var iamUserId = "ad56702b-5908-44eb-a668-9a11a0e100d6";
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCompanyStatusAndUseCaseIdAsync(iamUserId, useCaseId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.isActiveCompanyStatus.Should().BeFalse();
+        result.isUseCaseIdExists.Should().BeTrue();
+        result.companyId.Should().Be(new Guid("0dcd8209-85e2-4073-b130-ac094fb47106"));
+    }
+
+    [Fact]
+    public async Task CreateCompanyAssignedUseCase_ReturnsExpectedResult()
+    {
+        // Arrange
+        var useCaseId = new Guid("1aacde78-35ec-4df3-ba1e-f988cddcbbd8");
+        var companyId = new Guid("0dcd8209-85e2-4073-b130-ac094fb47106");
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.CreateCompanyAssignedUseCase(companyId, useCaseId);
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Should().AllSatisfy(entry => entry.State.Should().Be(EntityState.Added));
+        changedEntries.Select(x => x.Entity).Should().AllBeOfType<CompanyAssignedUseCase>();
+        changedEntries.Select(x => x.Entity).Cast<CompanyAssignedUseCase>().Select(x => (x.CompanyId, x.UseCaseId))
+            .Should().Contain((companyId, useCaseId));
+    }
+
+    [Fact]
+    public async Task RemoveCompanyAssignedUseCase_ReturnsExpectedResult()
+    {
+        // Arrange
+        var useCaseId = new Guid("1aacde78-35ec-4df3-ba1e-f988cddcbbd8");
+        var companyId = new Guid("0dcd8209-85e2-4073-b130-ac094fb47106");
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.RemoveCompanyAssignedUseCase(companyId, useCaseId);
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Select(x => x.Entity).Should().AllBeOfType<CompanyAssignedUseCase>();
+        var deletedEntities = changedEntries.Where(x => x.State == EntityState.Deleted).Select(x => (CompanyAssignedUseCase)x.Entity);
+        deletedEntities.Should().HaveCount(1);
+        deletedEntities.Select(x => (x.CompanyId, x.UseCaseId)).Should().Contain((companyId, useCaseId));
     }
 
     #endregion

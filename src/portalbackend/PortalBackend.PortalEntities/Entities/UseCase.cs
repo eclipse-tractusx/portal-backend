@@ -30,7 +30,7 @@ public class UseCase : IBaseEntity
         Name = null!;
         Shortname = null!;
         Agreements = new HashSet<Agreement>();
-        Companies = new HashSet<Company>();
+        CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
         Apps = new HashSet<Offer>();
     }
     
@@ -51,6 +51,6 @@ public class UseCase : IBaseEntity
 
     // Navigation properties
     public virtual ICollection<Agreement> Agreements { get; private set; }
-    public virtual ICollection<Company> Companies { get; private set; }
+    public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
     public virtual ICollection<Offer> Apps { get; private set; }
 }
