@@ -36,4 +36,13 @@ public interface INotificationService
     /// <param name="notifications">combination of notification types with content of the notification</param>
     /// <param name="companyId">Id of the company to select the receiver users from</param>
     Task CreateNotifications(IDictionary<string, IEnumerable<string>> receiverUserRoles, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, Guid companyId);
+
+    /// <summary>
+    /// Creates notifications for the given notification type ids with the given content.
+    /// The receiver of the notification will be retrieved by the given roles for the given clients.
+    /// </summary>
+    /// <param name="receiverUserRoles">UserRoles for specified clients</param>
+    /// <param name="creatorId">ID of the creator company user</param>
+    /// <param name="notifications">combination of notification types with content of the notification</param>
+    Task CreateNotifications(IDictionary<string, IEnumerable<string>> receiverUserRoles, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications);
 }
