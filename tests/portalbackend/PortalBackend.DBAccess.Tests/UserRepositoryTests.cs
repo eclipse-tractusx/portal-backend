@@ -304,8 +304,8 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
             .ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().HaveCount(1);
-        result.First().Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
+        result.Should().HaveCount(1)
+            .And.Contain(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
     }
     
     [Fact]
@@ -320,8 +320,8 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
             .ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().HaveCount(3);
-        result.First().Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
+        result.Should().HaveCount(3)
+            .And.Contain(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
     }
     
     #endregion
@@ -340,8 +340,10 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
             .ToListAsync().ConfigureAwait(false);
         
         // Assert
-        result.Should().HaveCount(1);
-        result.First().Email.Should().Be("tobeadded@cx.com");
+        result.Should().HaveCount(1)
+            .And.Satisfy(
+                x => x.Email == "tobeadded@cx.com"
+            );
     }
 
     #endregion
