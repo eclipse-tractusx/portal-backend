@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -61,4 +62,54 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync() =>
         this.WithIamUserId(iamUserId =>_logic.GetOwnCompanyDetailsAsync(iamUserId));
+
+    /// <summary>
+    /// Gets the CompanyAssigned UseCase details
+    /// </summary>
+    /// <returns>the CompanyAssigned UseCase details</returns>
+    /// <remarks>Example: GET: api/administration/companydata/preferredUseCases</remarks>
+    /// <response code="200">Returns the CompanyAssigned UseCase details.</response>
+    [HttpGet]
+    [Authorize(Roles = "view_use_cases")]
+    [Route("preferredUseCases")]
+    [ProducesResponseType(typeof(CompanyAssignedUseCaseData), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync() =>
+       this.WithIamUserId(iamUserId => _logic.GetCompanyAssigendUseCaseDetailsAsync(iamUserId));
+    
+    /// <summary>
+    /// Create the CompanyAssigned UseCase details
+    /// </summary>
+    /// <remarks>Example: POST: api/administration/companydata/preferredUseCases</remarks>
+    /// <response code="204">NoContentResult</response>
+    /// <response code="208">UseCaseId already existis</response>
+    /// <response code="409">Company Status is Incorrect</response>
+    [HttpPost]
+    [Authorize(Roles = "set_company_use_cases")]
+    [Route("preferredUseCases")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status208AlreadyReported)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<StatusCodeResult> CreateCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data)
+    {
+        var result = await this.WithIamUserId(iamUserId => _logic.CreateCompanyAssignedUseCaseDetailsAsync(iamUserId, data.useCaseId)).ConfigureAwait(false);
+        return this.StatusCode((int)result);
+    }
+
+    /// <summary>
+    /// Remove the CompanyAssigned UseCase details by UseCaseId
+    /// </summary>
+    /// <remarks>Example: DELETE: api/administration/companydata/preferredUseCases</remarks>
+    /// <response code="204">NoContentResult</response>
+    /// <response code="409">Company Status is Incorrect</response>
+    /// <response code="409">UseCaseId is not available</response>
+    [HttpDelete]
+    [Authorize(Roles = "set_company_use_cases")]
+    [Route("preferredUseCases")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<NoContentResult> RemoveCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data)
+    {
+        await this.WithIamUserId(iamUserId => _logic.RemoveCompanyAssignedUseCaseDetailsAsync(iamUserId, data.useCaseId)).ConfigureAwait(false);
+        return NoContent();
+    }
 }

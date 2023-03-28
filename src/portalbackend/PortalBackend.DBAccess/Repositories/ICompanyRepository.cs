@@ -101,4 +101,33 @@ public interface ICompanyRepository
     /// <param name="companyId">Id of the company</param>
     /// <returns>Returns the business partner number</returns>
     Task<(string? Bpn, Guid? SelfDescriptionDocumentId)> GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(Guid companyId);
+
+    /// <summary>
+    /// Gets the the companyAssigendUeseCase Details
+    /// </summary>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the companyAssigendUeseCase Details</returns>
+    IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(string iamUserId);
+
+    /// <summary>
+    /// Gets the CompanyActive Status and companyAssigendUeseCase Id
+    /// </summary>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="useCaseId">Id of the UseCase</param>
+    /// <returns>Returns the CompanyActive Status, companyAssigendUeseCase Id and CompanyId</returns>
+    Task<(bool isUseCaseIdExists, bool isActiveCompanyStatus , Guid companyId)> GetCompanyStatusAndUseCaseIdAsync(string iamUserId, Guid useCaseId);
+
+    /// <summary>
+    /// creates the companyAssigendUeseCase record
+    /// </summary>
+    /// <param name="companyId">Id of the comapny</param>
+    /// <param name="useCaseId">Id of the UseCase</param>
+    CompanyAssignedUseCase CreateCompanyAssignedUseCase(Guid companyId, Guid useCaseId);
+
+    /// <summary>
+    /// Remove the companyAssigendUeseCase record
+    /// </summary>
+    /// <param name="companyId">Id of the comapny</param>
+    /// <param name="useCaseId">Id of the UseCase</param>
+    void RemoveCompanyAssignedUseCase(Guid companyId, Guid useCaseId);
 }
