@@ -48,6 +48,30 @@ public class NotificationService : INotificationService
         IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications,
         Guid companyId)
     {
+        var roleData = await ValidateRoleData(receiverUserRoles);
+        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleIdForCompany(roleData, companyId))
+        {
+            CreateNotification(receiver, creatorId, notifications, notificationRepository);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task CreateNotifications(
+        IDictionary<string, IEnumerable<string>> receiverUserRoles,
+        Guid? creatorId,
+        IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications)
+    {
+        var roleData = await ValidateRoleData(receiverUserRoles);
+        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleId(roleData))
+        {
+            CreateNotification(receiver, creatorId, notifications, notificationRepository);
+        }
+    }
+    
+    private async Task<IEnumerable<Guid>> ValidateRoleData(IDictionary<string, IEnumerable<string>> receiverUserRoles)
+    {
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roleData = await userRolesRepository
             .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
@@ -57,13 +81,13 @@ public class NotificationService : INotificationService
         {
             throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
         }
+        return roleData;
+    }
 
+    private static void CreateNotification(Guid receiver, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, INotificationRepository notificationRepository)
+    {
         var notificationList = notifications.ToList();
-        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
-
-        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleIdForCompany(roleData, companyId))
-        {
-            foreach (var notificationData in notificationList)
+        foreach (var notificationData in notificationList)
             {
                 notificationRepository.CreateNotification(
                     receiver,
@@ -75,6 +99,5 @@ public class NotificationService : INotificationService
                         notification.Content = notificationData.content;
                     });
             }
-        }
     }
 }
