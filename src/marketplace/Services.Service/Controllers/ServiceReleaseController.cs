@@ -72,7 +72,7 @@ public class ServiceReleaseController : ControllerBase
     /// <response code="409">service is inCorrect Status.</response>
     [HttpGet]
     [Route("inReview/{serviceId}", Name = nameof(GetServiceDetailsByIdAsync))]
-    [Authorize(Roles = "view_service_details")]
+    [Authorize(Roles = "approve_service_release,decline_service_release")]
     [ProducesResponseType(typeof(ServiceData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
