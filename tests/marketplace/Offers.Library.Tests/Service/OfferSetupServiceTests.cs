@@ -919,7 +919,6 @@ public class OfferSetupServiceTests
         result.stepsToSkip.Should().BeNull();
         A.CallTo(() => _appInstanceRepository.CreateAppInstance(_validOfferId, iamClientId))
             .MustHaveHappenedOnceExactly();
-        clients.Should().ContainSingle().And.AllSatisfy(x => x.Disabled.Should().BeFalse());
     }
 
     #endregion

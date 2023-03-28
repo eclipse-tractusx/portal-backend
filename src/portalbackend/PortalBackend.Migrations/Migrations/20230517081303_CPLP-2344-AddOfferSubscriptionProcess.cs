@@ -49,21 +49,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 type: "uuid",
                 nullable: true);
 
-            migrationBuilder.AddColumn<Guid>(
-                name: "app_instance_setup_id",
-                schema: "portal",
-                table: "iam_service_accounts",
-                type: "uuid",
-                nullable: true);
-
-            migrationBuilder.AddColumn<bool>(
-                name: "disabled",
-                schema: "portal",
-                table: "iam_clients",
-                type: "boolean",
-                nullable: false,
-                defaultValue: false);
-
             migrationBuilder.CreateTable(
                 name: "audit_offer_subscription20230317",
                 schema: "portal",
@@ -140,21 +125,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "process_id",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
-                name: "ix_iam_service_accounts_app_instance_setup_id",
-                schema: "portal",
-                table: "iam_service_accounts",
-                column: "app_instance_setup_id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_iam_service_accounts_app_instance_setups_app_instance_setup",
-                schema: "portal",
-                table: "iam_service_accounts",
-                column: "app_instance_setup_id",
-                principalSchema: "portal",
-                principalTable: "app_instance_setups",
-                principalColumn: "id");
-
             migrationBuilder.AddForeignKey(
                 name: "fk_offer_subscriptions_processes_process_id",
                 schema: "portal",
@@ -180,11 +150,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_OFFERSUBSCRIPTION() CASCADE;");
 
             migrationBuilder.DropForeignKey(
-                name: "fk_iam_service_accounts_app_instance_setups_app_instance_setup",
-                schema: "portal",
-                table: "iam_service_accounts");
-
-            migrationBuilder.DropForeignKey(
                 name: "fk_offer_subscriptions_processes_process_id",
                 schema: "portal",
                 table: "offer_subscriptions");
@@ -201,11 +166,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "ix_offer_subscriptions_process_id",
                 schema: "portal",
                 table: "offer_subscriptions");
-
-            migrationBuilder.DropIndex(
-                name: "ix_iam_service_accounts_app_instance_setup_id",
-                schema: "portal",
-                table: "iam_service_accounts");
 
             migrationBuilder.DeleteData(
                 schema: "portal",
@@ -288,16 +248,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "process_id",
                 schema: "portal",
                 table: "offer_subscriptions");
-
-            migrationBuilder.DropColumn(
-                name: "app_instance_setup_id",
-                schema: "portal",
-                table: "iam_service_accounts");
-
-            migrationBuilder.DropColumn(
-                name: "disabled",
-                schema: "portal",
-                table: "iam_clients");
 
             migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION$\r\nBEGIN\r\n  INSERT INTO portal.audit_offer_subscription20221005 (\"id\", \"company_id\", \"offer_id\", \"offer_subscription_status_id\", \"display_name\", \"description\", \"requester_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT OLD.id, \r\n  OLD.company_id, \r\n  OLD.offer_id, \r\n  OLD.offer_subscription_status_id, \r\n  OLD.display_name, \r\n  OLD.description, \r\n  OLD.requester_id, \r\n  OLD.last_editor_id, \r\n  gen_random_uuid(), \r\n  3, \r\n  CURRENT_DATE, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION AFTER DELETE\r\nON portal.offer_subscriptions\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_OFFERSUBSCRIPTION();");
 

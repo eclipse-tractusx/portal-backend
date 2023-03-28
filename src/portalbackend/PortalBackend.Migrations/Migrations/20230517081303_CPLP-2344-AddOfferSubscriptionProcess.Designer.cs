@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20230517081005_CPLP-2344-AddOfferSubscriptionProcess")]
+    [Migration("20230517081303_CPLP-2344-AddOfferSubscriptionProcess")]
     partial class CPLP2344AddOfferSubscriptionProcess
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2841,10 +2841,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("character varying(255)")
                         .HasColumnName("client_client_id");
 
-                    b.Property<bool>("Disabled")
-                        .HasColumnType("boolean")
-                        .HasColumnName("disabled");
-
                     b.HasKey("Id")
                         .HasName("pk_iam_clients");
 
@@ -2883,10 +2879,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("character varying(36)")
                         .HasColumnName("client_id");
 
-                    b.Property<Guid?>("AppInstanceSetupId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("app_instance_setup_id");
-
                     b.Property<string>("ClientClientId")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -2905,9 +2897,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.HasKey("ClientId")
                         .HasName("pk_iam_service_accounts");
-
-                    b.HasIndex("AppInstanceSetupId")
-                        .HasDatabaseName("ix_iam_service_accounts_app_instance_setup_id");
 
                     b.HasIndex("ClientClientId")
                         .IsUnique()
@@ -5337,18 +5326,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamServiceAccount", b =>
                 {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppInstanceSetup", "AppInstanceSetup")
-                        .WithMany()
-                        .HasForeignKey("AppInstanceSetupId")
-                        .HasConstraintName("fk_iam_service_accounts_app_instance_setups_app_instance_setup");
-
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "CompanyServiceAccount")
                         .WithOne("IamServiceAccount")
                         .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IamServiceAccount", "CompanyServiceAccountId")
                         .IsRequired()
                         .HasConstraintName("fk_iam_service_accounts_company_service_accounts_company_servi");
-
-                    b.Navigation("AppInstanceSetup");
 
                     b.Navigation("CompanyServiceAccount");
                 });
