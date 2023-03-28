@@ -316,7 +316,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         
         // Act
         var result = await sut
-            .GetCompanyUserWithRoleIdForCompany(new[] {new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632")})
+            .GetCompanyUserWithRoleId(new[] {new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632")})
             .ToListAsync().ConfigureAwait(false);
 
         // Assert

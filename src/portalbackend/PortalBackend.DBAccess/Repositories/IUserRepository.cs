@@ -95,7 +95,7 @@ public interface IUserRepository
     /// </summary>
     /// <param name="userRoleIds">User role ids</param>
     /// <returns>Returns a list of the company user ids</returns>
-    IAsyncEnumerable<Guid> GetCompanyUserWithRoleIdForCompany(IEnumerable<Guid> userRoleIds);
+    IAsyncEnumerable<Guid> GetCompanyUserWithRoleId(IEnumerable<Guid> userRoleIds);
 
     /// <summary>
     /// Gets all company user emails which have the given user role assigned
