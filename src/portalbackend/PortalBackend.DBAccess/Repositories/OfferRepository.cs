@@ -824,22 +824,6 @@ public class OfferRepository : IOfferRepository
                 o.Offer!.AppInstanceSetup != null && o.Offer.AppInstanceSetup.IsSingleInstance,
                 o.Offer.TechnicalUserProfiles.Select(tup => tup.UserRoles.Select(ur => new UserRoleData(ur.Id, ur.Offer!.AppInstances.First().IamClient!.ClientClientId, ur.UserRoleText))),
                 o.Offer.Name
-    public Task<SingleInstanceOfferData?> GetSingleInstanceOfferData(Guid offerId, OfferTypeId offerTypeId) =>
-        _context.Offers.Where(o => o.Id == offerId && o.OfferTypeId == offerTypeId)
-            .Select(o => new
-            {
-                Company = o.ProviderCompany, OfferId = o.Id, OfferName = o.Name,
-                InternalClientId = o.AppInstances.Select(x => x.IamClient!.ClientClientId).SingleOrDefault(),
-                ClientId = o.AppInstances.Select(x => x.IamClientId).SingleOrDefault(),
-                InstanceSetupId = o.AppInstanceSetup == null ? Guid.Empty : o.AppInstanceSetup.Id,
-            })
-            .Select(x => new SingleInstanceOfferData(
-                x.Company!.Id,
-                x.OfferName,
-                x.Company.BusinessPartnerNumber,
-                x.InternalClientId,
-                x.InstanceSetupId,
-                x.ClientId
             ))
             .SingleOrDefaultAsync();
 }
