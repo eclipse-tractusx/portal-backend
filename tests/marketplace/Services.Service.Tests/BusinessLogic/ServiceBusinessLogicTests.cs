@@ -35,6 +35,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.BusinessLogic;
@@ -581,6 +582,37 @@ public class ServiceBusinessLogicTests
     }
     #endregion
     
+    [Theory]
+    [InlineData(ServiceStatusIdFilter.Active, new []{ OfferStatusId.ACTIVE })]
+    [InlineData(ServiceStatusIdFilter.Inactive, new []{ OfferStatusId.INACTIVE })]
+    [InlineData(ServiceStatusIdFilter.InReview, new []{ OfferStatusId.IN_REVIEW })]
+    [InlineData(ServiceStatusIdFilter.WIP, new []{ OfferStatusId.CREATED })]
+    [InlineData((ServiceStatusIdFilter)default, new []{ OfferStatusId.CREATED, OfferStatusId.IN_REVIEW, OfferStatusId.ACTIVE, OfferStatusId.INACTIVE })]
+    public async Task GetCompanyProvidedServiceStatusDataAsync_InActiveRequest(ServiceStatusIdFilter serviceStatusIdFilter, IEnumerable<OfferStatusId> offerStatusIds)
+    {
+        // Arrange
+        var serviceDetailData = _fixture.CreateMany<AllOfferStatusData>(10).ToImmutableArray();
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<AllOfferStatusData>(serviceDetailData.Length, serviceDetailData.Skip(skip).Take(take)));
+        var user = _fixture.Create<string>();
+        var sorting = _fixture.Create<OfferSorting>();
+        var name = _fixture.Create<string>();
+
+        A.CallTo(() => _offerRepository.GetCompanyProvidedServiceStatusDataAsync(A<IEnumerable<OfferStatusId>>._, A<OfferTypeId>._, A<string>._, A<OfferSorting>._, A<string>._))
+            .Returns(paginationResult);
+        
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        var result = await sut.GetCompanyProvidedServiceStatusDataAsync(2, 3, user, sorting, name, serviceStatusIdFilter).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerRepository.GetCompanyProvidedServiceStatusDataAsync(A<IEnumerable<OfferStatusId>>
+            .That.IsSameSequenceAs(offerStatusIds), OfferTypeId.SERVICE, user, sorting, name)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(3)
+            .And.ContainInOrder(serviceDetailData.Skip(6).Take(3));
+    }
+
     #region Setup
 
     private void SetupUpdateService()

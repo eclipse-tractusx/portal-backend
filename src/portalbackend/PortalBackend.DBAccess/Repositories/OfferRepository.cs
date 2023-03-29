@@ -670,4 +670,28 @@ public class OfferRepository : IOfferRepository
                 offer.OfferStatusId
             ))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Func<int,int,Task<Pagination.Source<AllOfferStatusData>?>> GetCompanyProvidedServiceStatusDataAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, string userId, OfferSorting? sorting, string? offerName) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            _context.Offers.AsNoTracking()
+                .Where(offer => offer.OfferTypeId == offerTypeId && 
+                    offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId) &&
+                    offerStatusIds.Contains(offer.OfferStatusId) && (offerName == null || EF.Functions.ILike(offer.Name!, $"%{offerName!.EscapeForILike()}%")))
+                .GroupBy(offer=>offer.OfferTypeId),
+            sorting switch
+            {
+                OfferSorting.DateAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.DateCreated),
+                OfferSorting.DateDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.DateCreated),
+                _ => (Expression<Func<IEnumerable<Offer>,IOrderedEnumerable<Offer>>>?)null
+            },
+            offer => new AllOfferStatusData(
+                offer.Id,
+                offer.Name,
+                offer.ProviderCompany!.Name,
+                offer.OfferStatusId
+                ))
+            .SingleOrDefaultAsync();
 }
