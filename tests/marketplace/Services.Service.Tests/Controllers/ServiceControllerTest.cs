@@ -281,4 +281,25 @@ public class ServiceControllerTest
         A.CallTo(() => _logic.CreateServiceDocumentAsync(serviceId,
             DocumentTypeId.ADDITIONAL_DETAILS, file, IamUserId, CancellationToken.None)).MustHaveHappened();
     }
+    [Fact]
+    public async Task GetServiceDocumentContentAsync_ReturnsExpected()
+    {
+        //Arrange
+        var serviceId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var content = _fixture.Create<byte[]>();
+        var fileName = _fixture.Create<string>();
+        
+        A.CallTo(() => _logic.GetServiceDocumentContentAsync(A<Guid>._ , A<Guid>._, A<CancellationToken>._))
+            .Returns((content,"image/png",fileName));
+
+        //Act
+        var result = await this._controller.GetServiceDocumentContentAsync(serviceId,documentId,CancellationToken.None).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetServiceDocumentContentAsync(A<Guid>._ , A<Guid>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        result.ContentType.Should().Be("image/png");
+        result.FileDownloadName.Should().Be(fileName);
+        result.Should().BeOfType<FileContentResult>();
+    }
 }

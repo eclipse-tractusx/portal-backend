@@ -554,6 +554,32 @@ public class ServiceBusinessLogicTests
     }
 
     #endregion
+
+    #region GetServiceDocumentContentAsync
+
+    [Fact]
+    public async Task GetServiceDocumentContentAsync_ReturnsExpectedCalls()
+    {
+        // Arrange
+        var serviceId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var settings = new ServiceSettings()
+        {
+            ServiceImageDocumentTypeIds = new[] { 
+                DocumentTypeId.ADDITIONAL_DETAILS,
+                DocumentTypeId.CONFORMITY_APPROVAL_SERVICES,
+                DocumentTypeId.SERVICE_LEADIMAGE
+                }
+        };
+        var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, null!, null!, Options.Create(settings));
+
+        // Act
+        await sut.GetServiceDocumentContentAsync(serviceId,documentId,CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.GetOfferDocumentContentAsync(serviceId, documentId, settings.ServiceImageDocumentTypeIds, OfferTypeId.SERVICE, CancellationToken.None)).MustHaveHappenedOnceExactly();
+    }
+    #endregion
     
     #region Setup
 
