@@ -104,6 +104,13 @@ public class ServiceSettings
     /// <value></value>
     [Required]
     public IEnumerable<DocumentTypeId> ServiceImageDocumentTypeIds{ get; init; } = null!;
+
+    /// <summary>
+    /// Offer Status Ids
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
 }
 
 public static class ServiceSettingsExtension
