@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
+using Microsoft.Extensions.Options;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
@@ -37,18 +38,21 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferService _offerService;
-
+    private readonly ServiceSettings _settings;
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerService">Access to the offer service</param>
+    /// <param name="settings">Access to the settings</param>
     public ServiceReleaseBusinessLogic(
         IPortalRepositories portalRepositories,
-        IOfferService offerService)
+        IOfferService offerService,
+        IOptions<ServiceSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _offerService = offerService;
+        _settings = settings.Value;
     }
 
     public IAsyncEnumerable<AgreementDocumentData> GetServiceAgreementDataAsync()=>
@@ -122,4 +126,11 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 
     private Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentInternalAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, string userId) =>
         _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, offerAgreementConsents, userId, OfferTypeId.SERVICE);
+
+     /// <inheritdoc/>
+    public Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync(int page, int size, OfferSorting? sorting, string? serviceName, string? languageShortName) =>
+        Pagination.CreateResponseAsync(page, size, 15,
+            _portalRepositories.GetInstance<IOfferRepository>()
+                .GetAllInReviewStatusServiceAsync(_settings.OfferStatusIds, OfferTypeId.SERVICE, sorting ?? OfferSorting.DateDesc,serviceName, languageShortName));
+
 }
