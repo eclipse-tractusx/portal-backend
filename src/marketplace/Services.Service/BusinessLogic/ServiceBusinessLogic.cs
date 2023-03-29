@@ -217,4 +217,37 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc />
     public Task<(byte[] Content, string ContentType, string FileName)> GetServiceDocumentContentAsync(Guid serviceId, Guid documentId, CancellationToken cancellationToken) =>
         _offerService.GetOfferDocumentContentAsync(serviceId, documentId, _settings.ServiceImageDocumentTypeIds, OfferTypeId.SERVICE, cancellationToken);
+
+    /// <inheritdoc/>
+    public Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync(int page, int size, string userId, OfferSorting? sorting, string? offerName,  ServiceStatusIdFilter? statusId) =>
+        Pagination.CreateResponseAsync(page, size, 15,
+            _portalRepositories.GetInstance<IOfferRepository>()
+                .GetCompanyProvidedServiceStatusDataAsync(GetOfferStatusIds(statusId), OfferTypeId.SERVICE, userId, sorting ?? OfferSorting.DateDesc, offerName));
+
+    private static IEnumerable<OfferStatusId> GetOfferStatusIds(ServiceStatusIdFilter? serviceStatusIdFilter)
+    {
+        switch(serviceStatusIdFilter)
+        {
+            case ServiceStatusIdFilter.Active :
+            {
+               return new []{ OfferStatusId.ACTIVE };
+            }
+            case ServiceStatusIdFilter.Inactive :
+            {
+               return new []{ OfferStatusId.INACTIVE };
+            }
+            case ServiceStatusIdFilter.InReview:
+            {
+               return new []{ OfferStatusId.IN_REVIEW };
+            }
+            case ServiceStatusIdFilter.WIP:
+            {
+               return new []{ OfferStatusId.CREATED };
+            }
+            default :
+            {
+                return Enum.GetValues<OfferStatusId>();
+            }
+        }       
+    }
 }

@@ -346,4 +346,22 @@ public class ServicesController : ControllerBase
         var (content, contentType, fileName) = await _serviceBusinessLogic.GetServiceDocumentContentAsync(serviceId, documentId, cancellationToken).ConfigureAwait(false);
         return File(content, contentType, fileName);
     }
+
+    /// <summary>
+    /// Retrieves all in review status service in the marketplace .
+    /// </summary>
+    /// <param name="page">page index start from 0</param>
+    /// <param name="size">size to get number of records</param>
+    /// <param name="sorting">sort by</param>
+    /// <param name="offerName">search by status Id</param>
+    /// <param name="statusId">search by status Id</param>
+    /// <returns>Collection of all in review status marketplace service.</returns>
+    /// <remarks>Example: GET: /api/services/provided</remarks>
+    /// <response code="200">Returns the list of service filtered by offer status Id.</response>
+    [HttpGet]
+    [Route("provided")]
+    [Authorize(Roles = "add_service_offering")]
+    [ProducesResponseType(typeof(Pagination.Response<AllOfferStatusData>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, [FromQuery] string? offerName = null, [FromQuery] ServiceStatusIdFilter? statusId = null) =>
+        this.WithIamUserId(userId =>_serviceBusinessLogic.GetCompanyProvidedServiceStatusDataAsync(page, size, userId, sorting, offerName, statusId));
 }

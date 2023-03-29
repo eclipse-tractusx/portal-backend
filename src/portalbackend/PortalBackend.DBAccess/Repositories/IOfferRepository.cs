@@ -428,4 +428,13 @@ public interface IOfferRepository
     /// <param name="serviceId"></param>
     /// <returns></returns>
     Task<ServiceDetailsData?> GetServiceDetailsByIdAsync(Guid serviceId);
+
+    /// <summary>
+    /// Retrieves all status offer in the marketplace.
+    /// </summary>
+    /// <param name="offerStatusIds"></param>
+    /// <param name="userId"></param>
+    /// <param name="sorting"></param>
+    /// <param name="offerName"></param>
+    Func<int,int,Task<Pagination.Source<AllOfferStatusData>?>> GetCompanyProvidedServiceStatusDataAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, string userId, OfferSorting? sorting, string? offerName);
 }

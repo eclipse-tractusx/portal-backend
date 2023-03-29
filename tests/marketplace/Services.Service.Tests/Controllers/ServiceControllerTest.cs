@@ -302,4 +302,21 @@ public class ServiceControllerTest
         result.FileDownloadName.Should().Be(fileName);
         result.Should().BeOfType<FileContentResult>();
     }
+
+     [Fact]
+    public async Task GetCompanyProvidedServiceStatusDataAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = _fixture.CreateMany<AllOfferStatusData>(5);
+        var paginationResponse = new Pagination.Response<AllOfferStatusData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15,IamUserId, null, null,null))
+            .ReturnsLazily(() => paginationResponse);
+
+        //Act
+        var result = await this._controller.GetCompanyProvidedServiceStatusDataAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15,IamUserId, null, null,null)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(5);
+    }
 }
