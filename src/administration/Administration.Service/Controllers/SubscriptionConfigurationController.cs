@@ -99,7 +99,7 @@ public class SubscriptionConfigurationController : ControllerBase
     /// <response code="400">Either the OfferSubscription is not in status PENDING or the next step can't automatically retriggered.</response>
     /// <response code="404">No OfferSubscription found for the offerSubscriptionId.</response>
     [HttpGet]
-    [Authorize(Roles = "retrigger_subscription, activate_subscription")]
+    [Authorize(Roles = "view_autosetup_status")]
     [Route("process/offer-subscription/{offerSubscriptionId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
