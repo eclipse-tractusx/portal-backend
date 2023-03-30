@@ -389,7 +389,7 @@ jobs:
         run: |
           curl -v \
             --request POST \
-            --url https://api.github.com/repos/catenax-ng/tx-portal-cd/actions/workflows/portal-backend-rc-release-image-update.yml/dispatches \
+            --url https://api.github.com/repos/catenax-ng/tx-portal-cd/actions/workflows/portal-backend-rc-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
             --data '{"ref":"release-candidate", "inputs": { "new-image":"${{ env.COMMIT_SHA }}" }}' \
