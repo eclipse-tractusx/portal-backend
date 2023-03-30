@@ -257,8 +257,24 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task DeleteConnectorAsync(Guid connectorId) =>
-        _portalRepositories.GetInstance<IConnectorsRepository>().DeleteConnectorAsync(connectorId);
+    public async Task DeleteConnectorAsync(Guid connectorId)
+    {
+        var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
+        var result = await connectorsRepository.GetSelfDescriptionDocumentDataAsync(connectorId).ConfigureAwait(false);
+        if(!result.IsConnectorIdExist)
+        {
+            throw new NotFoundException($"Connector {connectorId} does not exist");
+        }
+        if(result.SelfDescriptionDocumentId != null)
+        {
+            _portalRepositories.GetInstance<IDocumentRepository>().AttachAndModifyDocument(
+                result.SelfDescriptionDocumentId.Value,
+                a => { a.DocumentStatusId = result.DocumentStatusId!.Value; },
+                a => { a.DocumentStatusId = DocumentStatusId.INACTIVE; });
+        }
+        connectorsRepository.DeleteConnector(connectorId);
+        await _portalRepositories.SaveAsync();
+    }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns) =>

@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Microsoft.EntityFrameworkCore;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -86,20 +86,8 @@ public class ConnectorsRepository : IConnectorsRepository
     }
 
     /// <inheritdoc/>
-    public async Task DeleteConnectorAsync(Guid connectorId)
-    {
-        try
-        {
-            var connector = new Connector(connectorId, string.Empty, string.Empty, string.Empty);
-            _context.Connectors.Attach(connector);
-            _context.Connectors.Remove(connector);
-            await _context.SaveChangesAsync().ConfigureAwait(false);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            throw new NotFoundException("Connector with provided ID does not exist.");
-        }
-    }
+    public void DeleteConnector(Guid connectorId) =>
+        _context.Connectors.Remove(new Connector(connectorId, null!, null!, null!));
     
     /// <inheritdoc/>
     public IAsyncEnumerable<(string BusinessPartnerNumber, string ConnectorEndpoint)> GetConnectorEndPointDataAsync(IEnumerable<string> bpns) =>
@@ -128,4 +116,14 @@ public class ConnectorsRepository : IConnectorsRepository
             .Where(x => x.Id == connectorId)
             .Select(x => new ValueTuple<Guid, Guid?>(x.Id, x.SelfDescriptionDocumentId))
             .SingleOrDefaultAsync();
+    
+    /// <inheritdoc>
+    public Task<(bool IsConnectorIdExist, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId)> GetSelfDescriptionDocumentDataAsync(Guid connectorId) =>
+        _context.Connectors
+            .Where(x => x.Id == connectorId)
+            .Select(connector => new ValueTuple<bool,Guid?,DocumentStatusId?>(
+                true,
+                connector.SelfDescriptionDocumentId,
+                connector.SelfDescriptionDocument!.DocumentStatusId
+            )).SingleOrDefaultAsync();
 }
