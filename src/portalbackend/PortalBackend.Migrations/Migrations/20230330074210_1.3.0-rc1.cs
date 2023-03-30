@@ -17,14 +17,14 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
- 
+
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
-    public partial class CPLP2441addDocumentTypes : Migration
+    public partial class _130rc1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
