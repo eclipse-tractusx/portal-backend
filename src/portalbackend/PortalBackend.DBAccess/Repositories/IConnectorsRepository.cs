@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -53,7 +54,7 @@ public interface IConnectorsRepository
     /// Removes a connector from persistence layer by id.
     /// </summary>
     /// <param name="connectorId">ID of the connector to be deleted.</param>
-    Task DeleteConnectorAsync(Guid connectorId);
+    void DeleteConnector(Guid connectorId);
     
     /// <summary>
     /// Get Connector End Point Grouped By Business Partner Number
@@ -76,4 +77,11 @@ public interface IConnectorsRepository
     /// <param name="connectorId">Id of the connector</param>
     /// <returns><c>true</c> if the connector exists, otherwise <c>false</c></returns>
     Task<(Guid ConnectorId, Guid? SelfDescriptionDocumentId)> GetConnectorDataById(Guid connectorId);
+
+    /// <summary>
+    /// Gets SelfDescriptionDocument Data
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    /// <returns>returns SelfDescriptionDocument Data/c></returns>
+    Task<(bool IsConnectorIdExist, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId)> GetSelfDescriptionDocumentDataAsync(Guid connectorId);
 }
