@@ -106,23 +106,6 @@ public class AppsControllerTests
     }
 
     [Fact]
-    public async Task CreateApp_ReturnsExpectedId()
-    {
-        //Arrange
-        var id = new Guid("d90995fe-1241-4b8d-9f5c-f3909acc6383");
-        var appInputModel = _fixture.Create<AppInputModel>();
-        A.CallTo(() => _logic.CreateAppAsync(A<AppInputModel>._))
-            .Returns(id);
-
-        //Act
-        var result = await this._controller.CreateAppAsync(appInputModel).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.CreateAppAsync(appInputModel)).MustHaveHappenedOnceExactly();
-        result.Value.Should().Be(id);
-    }
-
-    [Fact]
     public async Task GetAllFavouriteAppsForCurrentUser_ReturnsExpectedCount()
     {
         //Arrange

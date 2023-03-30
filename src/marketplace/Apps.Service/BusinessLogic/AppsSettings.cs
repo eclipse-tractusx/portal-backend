@@ -62,12 +62,6 @@ public class AppsSettings
     public string AppOverviewAddress { get; init; } = null!;
 
     /// <summary>
-    /// Service account roles
-    /// </summary>
-    [Required]
-    public IDictionary<string,IEnumerable<string>> ServiceAccountRoles { get; set; } = null!;
-
-    /// <summary>
     /// Sales Manager roles
     /// </summary>
     [Required]

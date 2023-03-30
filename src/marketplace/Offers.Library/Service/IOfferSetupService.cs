@@ -42,11 +42,38 @@ public interface IOfferSetupService
     /// Internally auto setup the offer.
     /// </summary>
     /// <param name="data">The offer subscription id and url for the service</param>
-    /// <param name="serviceAccountRoles">Roles that will be assigned to the service account</param>
     /// <param name="itAdminRoles">Roles that will be assigned to the company admin</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="offerTypeId">OfferTypeId of offer to be created</param>
     /// <param name="basePortalAddress">Address of the portal</param>
     /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> serviceAccountRoles, IDictionary<string,IEnumerable<string>> itAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress);
+    Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> itAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress);
+
+    /// <summary>
+    /// Setup a single instance app
+    /// </summary>
+    /// <param name="offerId">id of the offer</param>
+    /// <param name="instanceUrl">Url for the offer instance</param>
+    Task SetupSingleInstance(Guid offerId, string instanceUrl);
+
+    /// <summary>
+    /// Deletes the client and the app instance
+    /// </summary>
+    /// <param name="appInstanceId">id of the app instance</param>
+    /// <param name="clientId">Id of the iamClient</param>
+    /// <param name="clientClientId">Id of the client</param>
+    Task DeleteSingleInstance(Guid appInstanceId, Guid clientId, string clientClientId);
+
+    /// <summary>
+    /// Setup a single instance app
+    /// </summary>
+    /// <param name="offerId">id of the offer</param>
+    Task<IEnumerable<string?>> ActivateSingleInstanceAppAsync(Guid offerId);
+
+    /// <summary>
+    /// Updates the single instance
+    /// </summary>
+    /// <param name="clientClientId">internal client id</param>
+    /// <param name="instanceUrl">the new instance url</param>
+    Task UpdateSingleInstance(string clientClientId, string instanceUrl);
 }

@@ -62,10 +62,6 @@ public class ServiceReleaseBusinessLogicTest
          var serviceSettings = new ServiceSettings
         {
             ApplicationsMaxPageSize = 15, 
-            ServiceAccountRoles = new Dictionary<string, IEnumerable<string>>
-            {
-                {"Test", new[] {"Technical User"}}
-            }, 
             ITAdminRoles = new Dictionary<string, IEnumerable<string>>
             {
                 {"Cl2-CX-Portal", new[] {"IT Admin"}}

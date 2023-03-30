@@ -79,7 +79,7 @@ public interface IAppsBusinessLogic
     /// Retrieves subscription statuses of subscribed apps of the provided user's company.
     /// </summary>
     /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
-    /// <returns>Async enumberable of user's company's subscribed apps' statuses.</returns>
+    /// <returns>Async enumerable of user's company's subscribed apps' statuses.</returns>
     public IAsyncEnumerable<AppWithSubscriptionStatus> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId);
 
     /// <summary>
@@ -116,13 +116,6 @@ public interface IAppsBusinessLogic
     /// <param name="appId">ID of the app to unsubscribe from.</param>
     /// <param name="iamUserId">ID of the user that initiated app unsubscription for their company.</param>
     public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId);
-
-    /// <summary>
-    /// Creates an application and returns its generated ID.
-    /// </summary>
-    /// <param name="appInputModel">Input model for app creation.</param>
-    /// <returns>Guid of the created app.</returns>
-    public Task<Guid> CreateAppAsync(AppInputModel appInputModel);
 
     /// <summary>
     /// Retrieve Company Owned App Data

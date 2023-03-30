@@ -414,11 +414,11 @@ public class OfferSubscriptionServiceTests
             .ReturnsLazily(() => (OfferDetailData?)null);
         
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingOfferId), A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferProviderDetailsData("Test Offer", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.testurl.com"));
+            .ReturnsLazily(() => new OfferProviderDetailsData("Test Offer", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.testurl.com", false));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingOfferWithFailingAutoSetupId), A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferProviderDetailsData("Test Offer", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.fail.com"));
+            .ReturnsLazily(() => new OfferProviderDetailsData("Test Offer", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.fail.com", false));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingOfferWithoutDetailsFilled), A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferProviderDetailsData(null, "Test Company", null, new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.fail.com"));
+            .ReturnsLazily(() => new OfferProviderDetailsData(null, "Test Company", null, new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.fail.com", false));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Not.Matches(x => x == _existingOfferId || x == _existingOfferWithFailingAutoSetupId || x == _existingOfferWithoutDetailsFilled), A<OfferTypeId>._))
             .ReturnsLazily(() => (OfferProviderDetailsData?)null);
         

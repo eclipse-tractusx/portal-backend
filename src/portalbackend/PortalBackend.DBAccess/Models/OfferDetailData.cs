@@ -62,7 +62,8 @@ public record ServiceDetailData(
     string Price, 
     IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData,
     IEnumerable<ServiceTypeId> ServiceTypeIds,
-    IEnumerable<DocumentTypeData> Documents);
+    IEnumerable<DocumentTypeData> Documents
+);
 
 /// <summary>
 /// View Model of the offer subscription data

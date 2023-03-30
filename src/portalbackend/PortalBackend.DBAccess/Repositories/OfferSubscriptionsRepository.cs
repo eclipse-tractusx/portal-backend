@@ -131,23 +131,28 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId, OfferTypeId offerTypeId) =>
+    public Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId,
+        OfferTypeId offerTypeId) =>
         _context.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId && x.Offer!.OfferTypeId == offerTypeId)
             .Select(x => new OfferSubscriptionTransferData(
-                    x.OfferSubscriptionStatusId, 
-                    x.Offer!.ProviderCompany!.CompanyUsers.Where(cu => cu.IamUser!.UserEntityId == iamUserId).Select(cu => cu.Id).SingleOrDefault(),
-                    x.Offer.ProviderCompany.CompanyServiceAccounts.Where(cu => cu.IamServiceAccount!.UserEntityId == iamUserId).Select(cu => cu.Id).SingleOrDefault(),
-                    x.Company!.Name,
-                    x.CompanyId,
-                    x.RequesterId,
-                    x.OfferId,
-                    x.Offer!.Name,
-                    x.Company.BusinessPartnerNumber,
-                    x.Requester!.Email,
-                    x.Requester.Firstname,
-                    x.Requester.Lastname,
-                    x.Offer.OfferTypeId == OfferTypeId.APP || x.Offer.ServiceDetails.Any(st => st.TechnicalUserNeeded)
+                x.OfferSubscriptionStatusId,
+                x.Offer!.ProviderCompany!.CompanyUsers.Where(cu => cu.IamUser!.UserEntityId == iamUserId)
+                    .Select(cu => cu.Id).SingleOrDefault(),
+                x.Offer.ProviderCompany.CompanyServiceAccounts
+                    .Where(cu => cu.IamServiceAccount!.UserEntityId == iamUserId).Select(cu => cu.Id).SingleOrDefault(),
+                x.Company!.Name,
+                x.CompanyId,
+                x.RequesterId,
+                x.OfferId,
+                x.Offer!.Name,
+                x.Company.BusinessPartnerNumber,
+                x.Requester!.Email,
+                x.Requester.Firstname,
+                x.Requester.Lastname,
+                x.Offer.OfferTypeId == OfferTypeId.APP || x.Offer.ServiceDetails.Any(st => st.TechnicalUserNeeded),
+                x.Offer.AppInstanceSetup == null ? new ValueTuple<bool, string?>() : new ValueTuple<bool, string?>(x.Offer.AppInstanceSetup.IsSingleInstance, x.Offer.AppInstanceSetup.InstanceUrl),
+                    x.Offer.AppInstances.Select(ai => ai.Id)
             ))
             .SingleOrDefaultAsync();
 
