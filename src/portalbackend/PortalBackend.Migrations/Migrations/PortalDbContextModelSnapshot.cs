@@ -781,6 +781,54 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("app_instances", "portal");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppInstanceAssignedCompanyServiceAccount", b =>
+                {
+                    b.Property<Guid>("AppInstanceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("app_instance_id");
+
+                    b.Property<Guid>("CompanyServiceAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_service_account_id");
+
+                    b.HasKey("AppInstanceId", "CompanyServiceAccountId")
+                        .HasName("pk_app_instance_assigned_service_accounts");
+
+                    b.HasIndex("CompanyServiceAccountId")
+                        .HasDatabaseName("ix_app_instance_assigned_service_accounts_company_service_acco");
+
+                    b.ToTable("app_instance_assigned_service_accounts", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppInstanceSetup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AppId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("app_id");
+
+                    b.Property<string>("InstanceUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("instance_url");
+
+                    b.Property<bool>("IsSingleInstance")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_single_instance");
+
+                    b.HasKey("Id")
+                        .HasName("pk_app_instance_setups");
+
+                    b.HasIndex("AppId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_app_instance_setups_app_id");
+
+                    b.ToTable("app_instance_setups", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppLanguage", b =>
                 {
                     b.Property<Guid>("AppId")
@@ -4020,6 +4068,36 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("IamClient");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppInstanceAssignedCompanyServiceAccount", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppInstance", "AppInstance")
+                        .WithMany("ServiceAccounts")
+                        .HasForeignKey("AppInstanceId")
+                        .IsRequired()
+                        .HasConstraintName("fk_app_instance_assigned_service_accounts_app_instances_app_in");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "CompanyServiceAccount")
+                        .WithMany("AppInstances")
+                        .HasForeignKey("CompanyServiceAccountId")
+                        .IsRequired()
+                        .HasConstraintName("fk_app_instance_assigned_service_accounts_company_service_acco");
+
+                    b.Navigation("AppInstance");
+
+                    b.Navigation("CompanyServiceAccount");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppInstanceSetup", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer", "App")
+                        .WithOne("AppInstanceSetup")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppInstanceSetup", "AppId")
+                        .IsRequired()
+                        .HasConstraintName("fk_app_instance_setups_offers_app_id");
+
+                    b.Navigation("App");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppLanguage", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer", "App")
@@ -5029,6 +5107,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppInstance", b =>
                 {
                     b.Navigation("AppSubscriptionDetails");
+
+                    b.Navigation("ServiceAccounts");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ApplicationChecklistEntryStatus", b =>
@@ -5100,6 +5180,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", b =>
                 {
+                    b.Navigation("AppInstances");
+
                     b.Navigation("CompanyServiceAccountAssignedRoles");
 
                     b.Navigation("IamServiceAccount");
@@ -5251,6 +5333,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer", b =>
                 {
                     b.Navigation("AgreementAssignedOffers");
+
+                    b.Navigation("AppInstanceSetup");
 
                     b.Navigation("AppInstances");
 

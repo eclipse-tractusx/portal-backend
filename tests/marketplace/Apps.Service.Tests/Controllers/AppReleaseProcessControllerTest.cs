@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -393,6 +394,19 @@ public class AppReleaseProcessControllerTest
         // Assert 
         Assert.IsType<NoContentResult>(result);
         A.CallTo(() => _logic.DeleteAppAsync(appId, IamUserId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task SetInstanceType_ReturnsExpectedResult()
+    {
+        var appId = _fixture.Create<Guid>();
+        var data = new AppInstanceSetupData(true, "https://test.de");
+
+        var result = await _controller.SetInstanceType(appId, data).ConfigureAwait(false);
+
+        Assert.IsType<NoContentResult>(result);
+        A.CallTo(() => _logic.SetInstanceType(appId, data, IamUserId))
             .MustHaveHappenedOnceExactly();
     }
 }

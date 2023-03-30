@@ -97,23 +97,6 @@ public class AppsController : ControllerBase
         this.WithIamUserId(userId => _appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang));
 
     /// <summary>
-    /// Creates an app according to input model.
-    /// </summary>
-    /// <param name="appInputModel">Input model for app creation.</param>
-    /// <returns>ID of created application.</returns>
-    /// <remarks>Example: POST: /api/apps</remarks>
-    /// <response code="201">Returns created app's ID.</response>
-    [HttpPost]
-    [Route("")]
-    [Authorize(Roles = "add_apps")]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    public async Task<CreatedAtRouteResult> CreateAppAsync([FromBody] AppInputModel appInputModel)
-    {
-        var appId = await _appsBusinessLogic.CreateAppAsync(appInputModel).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new { appId }, appId);
-    }
-
-    /// <summary>
     /// Retrieves IDs of all favourite apps of the current user (by sub claim).
     /// </summary>
     /// <returns>Collection of IDs of favourite apps.</returns>

@@ -215,7 +215,7 @@ public class AppBusinessLogicTests
         var offerAutoSetupResponseData = _fixture.Create<OfferAutoSetupResponseData>();
         // Arrange
         var offerSetupService = A.Fake<IOfferSetupService>();
-        A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._, A<string>._))
+        A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._, A<string>._))
             .ReturnsLazily(() => offerAutoSetupResponseData);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
 

@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Linq.Expressions;
+using PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -50,12 +51,15 @@ public class OfferRepository : IOfferRepository
 
     ///<inheritdoc/>
     public Task<OfferProviderDetailsData?> GetOfferProviderDetailsAsync(Guid offerId, OfferTypeId offerTypeId) =>
-        _context.Offers.AsNoTracking().Where(o => o.Id == offerId && o.OfferTypeId == offerTypeId).Select(c => new OfferProviderDetailsData(
-            c.Name,
-            c.Provider,
-            c.ContactEmail,
-            c.SalesManagerId,
-            c.ProviderCompany!.ProviderCompanyDetail!.AutoSetupUrl
+        _context.Offers.AsNoTracking()
+            .Where(o => o.Id == offerId && o.OfferTypeId == offerTypeId)
+            .Select(c => new OfferProviderDetailsData(
+                c.Name,
+                c.Provider,
+                c.ContactEmail,
+                c.SalesManagerId,
+                c.ProviderCompany!.ProviderCompanyDetail!.AutoSetupUrl,
+                c.AppInstanceSetup != null && c.AppInstanceSetup!.IsSingleInstance
         )).SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -125,7 +129,8 @@ public class OfferRepository : IOfferRepository
                 offer.Documents
                     .Where(doc => doc.DocumentTypeId != DocumentTypeId.APP_IMAGE && doc.DocumentTypeId != DocumentTypeId.APP_LEADIMAGE) 
                     .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
-                offer.OfferAssignedPrivacyPolicies.Select(x => x.PrivacyPolicyId)
+                offer.OfferAssignedPrivacyPolicies.Select(x => x.PrivacyPolicyId),
+                offer.AppInstanceSetup != null && offer.AppInstanceSetup!.IsSingleInstance
             ))
             .SingleOrDefaultAsync();
 
@@ -479,13 +484,15 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
 
     ///<inheritdoc/>
-    public Task<(bool IsStatusInReview, string? OfferName, Guid? ProviderCompanyId)> GetOfferStatusDataByIdAsync(Guid appId, OfferTypeId offerTypeId) =>
+    public Task<(bool IsStatusInReview, string? OfferName, Guid? ProviderCompanyId, bool IsSingleInstance, IEnumerable<(Guid InstanceId, string ClientId)> Instances)> GetOfferStatusDataByIdAsync(Guid offerId, OfferTypeId offerTypeId) =>
         _context.Offers
-            .Where(offer => offer.Id == appId && offer.OfferTypeId == offerTypeId)
-            .Select(offer => new ValueTuple<bool, string?, Guid?>(
+            .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new ValueTuple<bool, string?, Guid?, bool, IEnumerable<(Guid,string)>>(
                 offer.OfferStatusId == OfferStatusId.IN_REVIEW,
                 offer.Name!,
-                offer.ProviderCompanyId
+                offer.ProviderCompanyId,
+                offer.AppInstanceSetup != null && offer.AppInstanceSetup.IsSingleInstance,
+                offer.AppInstances.Select(x => new ValueTuple<Guid,string>(x.Id, x.IamClient!.ClientClientId))
             ))
             .SingleOrDefaultAsync();
     
@@ -719,5 +726,69 @@ public class OfferRepository : IOfferRepository
                 offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
                            ?? offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionShort
                         ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(OfferStatusId OfferStatus, bool IsUserOfProvidingCompany, AppInstanceSetupTransferData? SetupTransferData, IEnumerable<(Guid AppInstanceId, Guid ClientId, string ClientClientId)> AppInstanceData)> GetOfferWithSetupDataById(Guid offerId, string iamUserId, OfferTypeId offerTypeId) =>
+        _context.Offers
+            .AsNoTracking()
+            .Where(x => x.OfferTypeId == offerTypeId && x.Id == offerId)
+            .Select(o => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(
+                o.OfferStatusId,
+                o.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
+                o.AppInstanceSetup == null ? 
+                    null : 
+                    new AppInstanceSetupTransferData(o.AppInstanceSetup!.AppId, o.AppInstanceSetup!.IsSingleInstance, o.AppInstanceSetup!.InstanceUrl),
+                o.AppInstances.Select(x => new ValueTuple<Guid, Guid, string>(x.Id, x.IamClientId, x.IamClient!.ClientClientId))
+            ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public AppInstanceSetup CreateAppInstanceSetup(Guid appId, Action<AppInstanceSetup>? setOptionalParameter)
+    {
+        var appInstanceSetup = _context.AppInstanceSetups.Add(new AppInstanceSetup(Guid.NewGuid(), appId)).Entity;
+        setOptionalParameter?.Invoke(appInstanceSetup);
+        return appInstanceSetup;
+    }
+
+    /// <inheritdoc />
+    public Task<SingleInstanceOfferData?> GetSingleInstanceOfferData(Guid offerId, OfferTypeId offerTypeId) =>
+        _context.Offers.Where(o => o.Id == offerId && o.OfferTypeId == offerTypeId)
+            .Select(o => new SingleInstanceOfferData(
+                o.ProviderCompany!.Id,
+                o.Name,
+                o.ProviderCompany.BusinessPartnerNumber,
+                o.AppInstanceSetup != null && o.AppInstanceSetup.IsSingleInstance,
+                o.AppInstances.Select(x => new ValueTuple<Guid,string>(x.Id, x.IamClient!.ClientClientId))
+            ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public void AttachAndModifyAppInstanceSetup(Guid appInstanceSetupId, Guid offerId, Action<AppInstanceSetup> setOptionalParameters, Action<AppInstanceSetup>? initializeParameter = null)
+    {
+        var entity = new AppInstanceSetup(appInstanceSetupId, offerId);
+        initializeParameter?.Invoke(entity);
+        var appInstanceSetup = _context.Attach(entity).Entity;
+        setOptionalParameters.Invoke(appInstanceSetup);
+    }
+
+    /// <inheritdoc />
+    public Task<(bool IsSingleInstance, bool TechnicalUserNeeded, string? OfferName)> GetServiceAccountProfileData(Guid offerId) =>
+        _context.Offers.Where(x => x.Id == offerId)
+            .Select(o => new ValueTuple<bool, bool, string?>(
+                o.AppInstanceSetup != null && o.AppInstanceSetup.IsSingleInstance,
+                o.ServiceDetails.Any(x => x.TechnicalUserNeeded),
+                o.Name
+            ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(bool IsSingleInstance, bool TechnicalUserNeeded, string? OfferName)> GetServiceAccountProfileDataForSubscription(Guid subscriptionId) =>
+        _context.OfferSubscriptions.Where(x => x.Id == subscriptionId)
+            .Select(o => new ValueTuple<bool, bool, string?>(
+                o.Offer!.AppInstanceSetup != null && o.Offer.AppInstanceSetup.IsSingleInstance,
+                o.Offer.ServiceDetails.Any(x => x.TechnicalUserNeeded),
+                o.Offer.Name
+            ))
             .SingleOrDefaultAsync();
 }

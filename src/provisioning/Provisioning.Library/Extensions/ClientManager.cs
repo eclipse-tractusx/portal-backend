@@ -56,6 +56,21 @@ public partial class ProvisioningManager
     public Task DeleteCentralClientAsync(string internalClientId) =>
         _CentralIdp.DeleteClientAsync(_Settings.CentralRealm, internalClientId);
 
+    public async Task UpdateClient(string internalClientId, string url, string redirectUrl)
+    {
+        var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
+        client.BaseUrl = url;
+        client.RedirectUris = Enumerable.Repeat(redirectUrl, 1);
+        await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, internalClientId, client).ConfigureAwait(false);
+    }
+
+    public async Task EnableClient(string internalClientId)
+    {
+        var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
+        client.Enabled = true;
+        await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, internalClientId, client).ConfigureAwait(false);
+    }
+
     public async Task<ClientAuthData> GetCentralClientAuthDataAsync(string internalClientId)
     {
         var credentials = await _CentralIdp.GetClientSecretAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
@@ -91,11 +106,12 @@ public partial class ProvisioningManager
         await keycloak.CreateClientAsync(realm,newClient).ConfigureAwait(false);
     }
 
-    private async Task<string> CreateCentralOIDCClientAsync(string clientId, string redirectUri, string? baseUrl)
+    private async Task<string> CreateCentralOIDCClientAsync(string clientId, string redirectUri, string? baseUrl, bool enabled)
     {
         var newClient = Clone(_Settings.CentralOIDCClient);
         newClient.ClientId = clientId;
-        newClient.RedirectUris = Enumerable.Repeat<string>(redirectUri, 1);
+        newClient.RedirectUris = Enumerable.Repeat(redirectUri, 1);
+        newClient.Enabled = enabled;
         if (!string.IsNullOrEmpty(baseUrl))
         {
             newClient.BaseUrl = baseUrl;

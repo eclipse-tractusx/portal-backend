@@ -17,6 +17,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="RequesterEmail">Email address of the requesting company user</param>
 /// <param name="RequesterFirstname">First name of the requesting company user</param>
 /// <param name="RequesterLastname">First name of the requesting company user</param>
+/// <param name="IsSingleInstance">Defines whether the offer is a single or multiple instance offer</param>
+/// <param name="AppInstanceIds">Ids of the app instances</param>
 public record OfferSubscriptionTransferData(OfferSubscriptionStatusId Status,
     Guid CompanyUserId,
     Guid TechnicalUserId,
@@ -29,4 +31,7 @@ public record OfferSubscriptionTransferData(OfferSubscriptionStatusId Status,
     string? RequesterEmail,
     string? RequesterFirstname,
     string? RequesterLastname, 
-    bool IsTechnicalUserNeeded);
+    bool IsTechnicalUserNeeded,
+    (bool IsSingleInstance, string? InstanceUrl) InstanceData,
+    IEnumerable<Guid> AppInstanceIds
+);

@@ -96,6 +96,8 @@ public class Offer : IAuditableV1, IBaseEntity
     public virtual OfferType? OfferType { get; private set; }
     
     public virtual OfferStatus? OfferStatus{ get; set; }
+    
+    public virtual AppInstanceSetup? AppInstanceSetup{ get; set; }
     public virtual ICollection<AgreementAssignedOffer> AgreementAssignedOffers { get; private set; }
     public virtual ICollection<OfferDescription> OfferDescriptions { get; private set; }
     public virtual ICollection<AppInstance> AppInstances { get; private set; }

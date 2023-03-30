@@ -124,7 +124,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             result.IsSubscribed == default ? null : result.IsSubscribed,
             result.Languages,
             result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))),
-            result.PrivacyPolicies
+            result.PrivacyPolicies,
+            result.IsSingleInstance
         );
     }
 
@@ -259,43 +260,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task<Guid> CreateAppAsync(AppInputModel appInputModel)
-    {
-        // Add app to db
-        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
-
-        var appId = appRepository.CreateOffer(appInputModel.Provider, OfferTypeId.APP, app =>
-        {
-            app.Name = appInputModel.Title;
-            app.MarketingUrl = appInputModel.ProviderUri;
-            app.ContactEmail = appInputModel.ContactEmail;
-            app.ContactNumber = appInputModel.ContactNumber;
-            app.ProviderCompanyId = appInputModel.ProviderCompanyId;
-            app.OfferStatusId = OfferStatusId.CREATED;
-            app.SalesManagerId = appInputModel.SalesManagerId;
-        }).Id;
-
-        var licenseId = appRepository.CreateOfferLicenses(appInputModel.Price).Id;
-        appRepository.CreateOfferAssignedLicense(appId, licenseId);
-        appRepository.AddAppAssignedUseCases(appInputModel.UseCaseIds.Select(uc =>
-            new ValueTuple<Guid, Guid>(appId, uc)));
-        appRepository.AddOfferDescriptions(appInputModel.Descriptions.Select(d =>
-            new ValueTuple<Guid, string, string, string>(appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
-        appRepository.AddAppLanguages(appInputModel.SupportedLanguageCodes.Select(c =>
-            new ValueTuple<Guid, string>(appId, c)));
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
-        return appId;
-    }
-
-    /// <inheritdoc/>
     public IAsyncEnumerable<AllOfferData> GetCompanyProvidedAppsDataForUserAsync(string userId) =>
         _portalRepositories.GetInstance<IOfferRepository>().GetProvidedOffersData(OfferTypeId.APP, userId);
     
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId) =>
-        _offerSetupService.AutoSetupOfferAsync(data, _settings.ServiceAccountRoles, _settings.ITAdminRoles, iamUserId, OfferTypeId.APP, _settings.UserManagementAddress);
+        _offerSetupService.AutoSetupOfferAsync(data, _settings.ITAdminRoles, iamUserId, OfferTypeId.APP, _settings.UserManagementAddress);
 
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId) =>

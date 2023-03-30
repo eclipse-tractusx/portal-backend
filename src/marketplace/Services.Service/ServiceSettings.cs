@@ -35,9 +35,6 @@ public class ServiceSettings
     public IDictionary<string,IEnumerable<string>> CatenaAdminRoles { get; init; } = null!;
     
     [Required]
-    public IDictionary<string,IEnumerable<string>> ServiceAccountRoles { get; init; } = null!;
-
-    [Required]
     public IDictionary<string,IEnumerable<string>> ServiceManagerRoles { get; init; } = null!;
 
     [Required]

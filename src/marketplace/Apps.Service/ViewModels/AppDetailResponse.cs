@@ -43,6 +43,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="Languages">Languages that the app is available in.</param>
 /// <param name="Documents">documents assigned to offer</param>
 /// <param name="PrivacyPolicies">Privacy Policies assigned to offer</param>
+/// <param name="IsSingleInstance">Defines whether the app is a single instance</param>
 public record AppDetailResponse(
     Guid Id,
     string Title,
@@ -59,5 +60,6 @@ public record AppDetailResponse(
     OfferSubscriptionStatusId? IsSubscribed,
     IEnumerable<string> Languages,
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
-    IEnumerable<PrivacyPolicyId> PrivacyPolicies
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies,
+    bool IsSingleInstance
 );

@@ -23,6 +23,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -30,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -41,6 +43,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly AppsSettings _settings;
     private readonly IOfferService _offerService;
+    private readonly IOfferSetupService _offerSetupService;
 
     /// <summary>
     /// Constructor.
@@ -48,11 +51,13 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <param name="portalRepositories"></param>
     /// <param name="settings"></param>
     /// <param name="offerService"></param>
-    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories, IOptions<AppsSettings> settings, IOfferService offerService)
+    /// <param name="offerSetupService"></param>
+    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories, IOptions<AppsSettings> settings, IOfferService offerService, IOfferSetupService offerSetupService)
     {
         _portalRepositories = portalRepositories;
         _settings = settings.Value;
         _offerService = offerService;
+        _offerSetupService = offerSetupService;
     }
     
     /// <inheritdoc/>
@@ -377,7 +382,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     
     /// <inheritdoc/>
     public Task ApproveAppRequestAsync(Guid appId, string iamUserId) =>
-        _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, (_settings.ApproveAppUserRoles));
+        _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, _settings.ApproveAppUserRoles);
     
     private IEnumerable<OfferStatusId> GetOfferStatusIds(OfferStatusIdFilter? offerStatusIdFilter)
     {
@@ -515,5 +520,120 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         _portalRepositories.GetInstance<IOfferRepository>().RemoveOfferDescriptions(appData.DescriptionLanguageShortNames.Select(languageShortName => (appId, languageShortName)));
         _portalRepositories.GetInstance<IOfferRepository>().RemoveOffer(appId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public Task SetInstanceType(Guid appId, AppInstanceSetupData data, string iamUserId)
+    {
+        switch (data.IsSingleInstance)
+        {
+            case true:
+                if (string.IsNullOrWhiteSpace(data.InstanceUrl))
+                {
+                    throw new ControllerArgumentException("InstanceUrl must be set for a single instance app",
+                        nameof(data.InstanceUrl));
+                }
+                data.InstanceUrl!.EnsureValidHttpUrl(() => nameof(data.InstanceUrl));
+                break;
+
+            case false when !string.IsNullOrWhiteSpace(data.InstanceUrl):
+                throw new ControllerArgumentException("Multi instance app must not have a instance url set",
+                    nameof(data.InstanceUrl));
+        }
+
+        return SetInstanceTypeInternal(appId, data, iamUserId);
+    }
+
+    private async Task SetInstanceTypeInternal(Guid appId, AppInstanceSetupData data, string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<IOfferRepository>()
+            .GetOfferWithSetupDataById(appId, iamUserId, OfferTypeId.APP)
+            .ConfigureAwait(false);
+        if (result == default)
+            throw new NotFoundException($"App {appId} does not exist");
+
+        if (!result.IsUserOfProvidingCompany)
+            throw new ForbiddenException($"User {iamUserId} is not a user of the provider company");
+
+        if (result.OfferStatus is not (OfferStatusId.CREATED or OfferStatusId.IN_REVIEW))
+            throw new ConflictException($"App {appId} is not in Status {OfferStatusId.CREATED} or {OfferStatusId.IN_REVIEW}");
+
+        await (result.SetupTransferData == null
+            ? HandleAppInstanceCreation(appId, data)
+            : HandleAppInstanceUpdate(appId, data, (result.OfferStatus, result.IsUserOfProvidingCompany, result.SetupTransferData, result.AppInstanceData))).ConfigureAwait(false);
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    private async Task HandleAppInstanceCreation(Guid appId, AppInstanceSetupData data)
+    {
+        _portalRepositories.GetInstance<IOfferRepository>().CreateAppInstanceSetup(appId,
+            entity =>
+            {
+                entity.IsSingleInstance = data.IsSingleInstance;
+                entity.InstanceUrl = data.InstanceUrl;
+            });
+        
+        if (data.IsSingleInstance)
+        {
+            await _offerSetupService
+                .SetupSingleInstance(appId, data.InstanceUrl!).ConfigureAwait(false);
+        }
+    }
+
+    private async Task HandleAppInstanceUpdate(
+        Guid appId,
+        AppInstanceSetupData data,
+        (OfferStatusId OfferStatus, bool IsUserOfProvidingCompany, AppInstanceSetupTransferData SetupTransferData, IEnumerable<(Guid AppInstanceId, Guid ClientId, string ClientClientId)> AppInstanceData) result)
+    {
+        var existingData = result.SetupTransferData;
+        var instanceTypeChanged = existingData.IsSingleInstance != data.IsSingleInstance;
+        _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyAppInstanceSetup(
+            existingData.Id,
+            appId,
+            entity =>
+            {
+                entity.InstanceUrl = data.InstanceUrl;
+                entity.IsSingleInstance = data.IsSingleInstance;
+            },
+            entity =>
+            {
+                entity.InstanceUrl = existingData.InstanceUrl;
+                entity.IsSingleInstance = existingData.IsSingleInstance;
+            });
+
+        (Guid AppInstanceId, Guid ClientId, string ClientClientId) appInstance;
+        switch (instanceTypeChanged)
+        {
+            case true when existingData.IsSingleInstance:
+                appInstance = GetAndValidateSingleAppInstance(result.AppInstanceData);
+                await _offerSetupService
+                    .DeleteSingleInstance(appInstance.AppInstanceId, appInstance.ClientId, appInstance.ClientClientId)
+                    .ConfigureAwait(false);
+                break;
+
+            case true when data.IsSingleInstance:
+                await _offerSetupService
+                    .SetupSingleInstance(appId, data.InstanceUrl!)
+                    .ConfigureAwait(false);
+                break;
+
+            case false when data.IsSingleInstance && existingData.InstanceUrl != data.InstanceUrl:
+                appInstance = GetAndValidateSingleAppInstance(result.AppInstanceData);
+                await _offerSetupService
+                    .UpdateSingleInstance(appInstance.ClientClientId, data.InstanceUrl!)
+                    .ConfigureAwait(false);
+                break;
+        }
+    }
+
+    private static (Guid AppInstanceId, Guid ClientId, string ClientClientId) GetAndValidateSingleAppInstance(IEnumerable<(Guid AppInstanceId, Guid ClientId, string ClientClientId)> appInstanceData)
+    {
+        if (appInstanceData.Count() != 1)
+        {
+            throw new ConflictException("The must be at exactly one AppInstance");
+        }
+
+        return appInstanceData.Single();
     }
 }

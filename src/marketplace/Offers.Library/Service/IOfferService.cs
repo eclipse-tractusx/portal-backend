@@ -129,12 +129,13 @@ public interface IOfferService
     /// <summary>
     /// Approve App Status from IN_Review to Active
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="offerId"></param>
     /// <param name="iamUserId"></param>
+    /// <param name="offerTypeId"></param>
     /// <param name="notificationTypeIds"></param>
     /// <param name="approveOfferRoles"></param>
     /// <returns></returns>
-    Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> approveOfferRoles);
+    Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles);
 
     /// <summary>
     /// Update offer status and create notification for App 
@@ -171,15 +172,15 @@ public interface IOfferService
     /// <summary>
     /// Upload Document the given offertypeId by Id
     /// </summary>
-    /// <param name="Id"></param>
+    /// <param name="id"></param>
     /// <param name="documentTypeId"></param>
     /// <param name="document"></param>
     /// <param name="iamUserId"></param>
     /// <param name="cancellationToken"></param>
-    /// <param name="offertypeId"></param>
+    /// <param name="offerTypeId"></param>
     /// <param name="documentTypeIdSettings"></param>
     /// <param name="contentTypeSettings"></param>
-    Task UploadDocumentAsync(Guid Id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offertypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings, CancellationToken cancellationToken);
+    Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings, CancellationToken cancellationToken);
 
     /// <summary>
     /// Update offer status and create notification for Service

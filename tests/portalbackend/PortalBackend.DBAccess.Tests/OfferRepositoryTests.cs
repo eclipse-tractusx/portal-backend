@@ -1114,6 +1114,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetAllInReviewStatusServiceAsync
+
     [Theory]
     [InlineData(new[] { OfferStatusId.ACTIVE }, OfferSorting.NameDesc,null,"en")]
     [InlineData(new[] { OfferStatusId.ACTIVE }, OfferSorting.NameAsc,null,"en")]
@@ -1154,6 +1156,124 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             .And.HaveCount(3)
             .And.StartWith(new InReviewServiceData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "Consulting Service - Data Readiness", OfferStatusId.ACTIVE, "Catena-X", "Lorem ipsum dolor sit amet, consectetur adipiscing elit."));
     }
+
+    #endregion
+
+    #region GetOfferStatusDataByIdAsync
+
+    [Fact]
+    public async Task GetOfferStatusDataByIdAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferStatusDataByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.IsStatusInReview.Should().BeFalse();
+        result.OfferName.Should().Be("Trace-X");
+        result.ProviderCompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        result.IsSingleInstance.Should().BeTrue();
+    }
+    
+    #endregion
+    
+    #region GetOfferWithSetupDataById
+    
+    [Fact]
+    public async Task GetOfferWithSetupDataById_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferWithSetupDataById(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.OfferStatus.Should().Be(OfferStatusId.ACTIVE);
+        result.IsUserOfProvidingCompany.Should().BeTrue();
+        result.SetupTransferData.Should().NotBeNull();
+        result.SetupTransferData!.IsSingleInstance.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region AttachAndModifyAppInstanceSetup
+
+    [Fact]
+    public async Task AttachAndModifyAppInstanceSetup_WithAppInstanceSetup_UpdatesStatus()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyAppInstanceSetup(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), data =>
+        {
+            data.InstanceUrl = "https://newtest.de";
+        });
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Modified);
+        changedEntity.Entity.Should().BeOfType<AppInstanceSetup>().Which.InstanceUrl.Should().Be("https://newtest.de");
+    }
+
+    #endregion
+
+    #region CreateAppInstanceSetup
+
+    [Fact]
+    public async Task CreateAppInstanceSetup_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateAppInstanceSetup(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), entity =>
+        {
+            entity.IsSingleInstance = true;
+            entity.InstanceUrl = "https://www.test.de";
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        results.InstanceUrl.Should().Be("https://www.test.de");
+        results.IsSingleInstance.Should().BeTrue();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<AppInstanceSetup>().Which.InstanceUrl.Should().Be("https://www.test.de");
+    }
+
+    #endregion
+
+    #region GetSingleInstanceOfferData
+
+    [Fact]
+    public async Task GetSingleInstanceOfferData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetSingleInstanceOfferData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Instances.Should().HaveCount(1).And.ContainSingle(x => x.InstanceId == new Guid("b161d570-f6ff-45b4-a077-243f72487af6"));
+        result.OfferName.Should().Be("Trace-X");
+    }
+
+    #endregion
 
     #region Setup
     

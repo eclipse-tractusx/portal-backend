@@ -95,10 +95,6 @@ public class ServiceBusinessLogicTests
         var serviceSettings = new ServiceSettings
         {
             ApplicationsMaxPageSize = 15, 
-            ServiceAccountRoles = new Dictionary<string, IEnumerable<string>>
-            {
-                {"Test", new[] {"Technical User"}}
-            }, 
             ITAdminRoles = new Dictionary<string, IEnumerable<string>>
             {
                 {"Cl2-CX-Portal", new[] {"IT Admin"}}
@@ -364,7 +360,7 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         var offerSetupService = A.Fake<IOfferSetupService>();
-        A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._, A<string>._))
+        A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._, A<string>._))
             .ReturnsLazily(() => new OfferAutoSetupResponseData(new TechnicalUserInfoData(Guid.NewGuid(), "abcSecret", "sa1"), new ClientInfoData(Guid.NewGuid().ToString())));
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
         var sut = _fixture.Create<ServiceBusinessLogic>();
@@ -582,6 +578,8 @@ public class ServiceBusinessLogicTests
     }
     #endregion
     
+    #region GetCompanyProvidedServiceStatusDataAsync
+
     [Theory]
     [InlineData(ServiceStatusIdFilter.Active, new []{ OfferStatusId.ACTIVE })]
     [InlineData(ServiceStatusIdFilter.Inactive, new []{ OfferStatusId.INACTIVE })]
@@ -613,6 +611,27 @@ public class ServiceBusinessLogicTests
             .And.ContainInOrder(serviceDetailData.Skip(6).Take(3));
     }
 
+    #endregion
+
+    #region ApproveServiceRequestAsync
+
+    [Fact]
+    public async Task ApproveServiceRequestAsync_WithValid_CallsExpected()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, null!, null!, Options.Create(new ServiceSettings()));
+        
+        // Act
+        await sut.ApproveServiceRequestAsync(appId, _iamUser.UserEntityId).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _offerService.ApproveOfferRequestAsync(appId, _iamUser.UserEntityId, OfferTypeId.SERVICE,
+            A<IEnumerable<NotificationTypeId>>._, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupUpdateService()
@@ -678,9 +697,9 @@ public class ServiceBusinessLogicTests
             .ReturnsLazily(() => (ServiceDetailData?)null);
 
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingServiceId), A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.testurl.com"));
+            .ReturnsLazily(() => new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.testurl.com", false));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingServiceWithFailingAutoSetupId), A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.fail.com"));
+            .ReturnsLazily(() => new OfferProviderDetailsData("Test Service", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.fail.com", false));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId || x == _existingServiceWithFailingAutoSetupId), A<OfferTypeId>._))
             .ReturnsLazily(() => (OfferProviderDetailsData?)null);
 

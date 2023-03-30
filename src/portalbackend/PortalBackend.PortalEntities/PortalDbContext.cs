@@ -51,6 +51,9 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AgreementAssignedOfferType> AgreementAssignedOfferTypes { get; set; } = default!;
     public virtual DbSet<AgreementCategory> AgreementCategories { get; set; } = default!;
     public virtual DbSet<AppInstance> AppInstances { get; set; } = default!;
+    
+    public virtual DbSet<AppInstanceAssignedCompanyServiceAccount> AppInstanceAssignedServiceAccounts { get; set; } = default!;
+    public virtual DbSet<AppInstanceSetup> AppInstanceSetups { get; set; } = default!;
     public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
     public virtual DbSet<AppLanguage> AppLanguages { get; set; } = default!;
     public virtual DbSet<ApplicationChecklistEntry> ApplicationChecklist { get; set; } = default!;
@@ -391,6 +394,27 @@ public class PortalDbContext : DbContext
                 .WithMany(x => x.AppInstances)
                 .HasForeignKey(x => x.IamClientId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<AppInstanceAssignedCompanyServiceAccount>(entity =>
+        {
+            entity.HasKey(x => new {x.AppInstanceId, x.CompanyServiceAccountId});
+            entity.HasOne(x => x.AppInstance)
+                .WithMany(x => x.ServiceAccounts)
+                .HasForeignKey(x => x.AppInstanceId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            entity.HasOne(x => x.CompanyServiceAccount)
+                .WithMany(x => x.AppInstances)
+                .HasForeignKey(x => x.CompanyServiceAccountId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<AppInstanceSetup>(entity =>
+        {
+            entity.HasOne(x => x.App)
+                .WithOne(x => x.AppInstanceSetup)
+                .HasForeignKey<AppInstanceSetup>(x => x.AppId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
         
         modelBuilder.Entity<OfferDescription>(entity =>

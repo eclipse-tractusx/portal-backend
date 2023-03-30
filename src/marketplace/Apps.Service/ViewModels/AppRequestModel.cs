@@ -49,4 +49,5 @@ public record AppRequestModel(
     [ValidateEnumValues] IEnumerable<PrivacyPolicyId> PrivacyPolicies,
     string? ProviderUri,
     string? ContactEmail,
-    string? ContactNumber);
+    string? ContactNumber
+);

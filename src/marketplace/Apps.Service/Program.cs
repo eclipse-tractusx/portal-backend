@@ -42,6 +42,7 @@ builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
                 .AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()            
                 .AddTransient<IOfferService, OfferService>()
                 .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
+                .AddTechnicalUserProfile(builder.Configuration.GetSection("AppMarketPlace"))
                 .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
 
 builder.Services.AddOfferSetupService();
