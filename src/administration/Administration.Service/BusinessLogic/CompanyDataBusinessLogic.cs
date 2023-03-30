@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -47,5 +48,44 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ConflictException($"user {iamUserId} is not associated with any company");
         }
         return result;
+    }
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(string iamUserId) =>
+        _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyAssigendUseCaseDetailsAsync(iamUserId);
+
+    /// <inheritdoc/>
+    public async Task<HttpStatusCode> CreateCompanyAssignedUseCaseDetailsAsync(string iamUserId, Guid useCaseId)
+    {
+        var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
+        var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(iamUserId, useCaseId).ConfigureAwait(false);
+        if(!useCaseDetails.isActiveCompanyStatus)
+        {
+            throw new ConflictException("Company Status is Incorrect");
+        }
+        if(useCaseDetails.isUseCaseIdExists)
+        {
+            return HttpStatusCode.AlreadyReported;
+        }
+        companyRepositories.CreateCompanyAssignedUseCase(useCaseDetails.companyId, useCaseId);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return HttpStatusCode.NoContent;
+    }
+
+    /// <inheritdoc/>
+    public async Task RemoveCompanyAssignedUseCaseDetailsAsync(string iamUserId, Guid useCaseId)
+    {
+        var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
+        var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(iamUserId, useCaseId).ConfigureAwait(false);
+        if(!useCaseDetails.isActiveCompanyStatus)
+        {
+            throw new ConflictException("Company Status is Incorrect");
+        }
+        if(!useCaseDetails.isUseCaseIdExists)
+        {
+            throw new ConflictException($"UseCaseId {useCaseId} is not available");
+        }
+        companyRepositories.RemoveCompanyAssignedUseCase(useCaseDetails.companyId, useCaseId);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

@@ -439,9 +439,14 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var offerDetail = await sut.GetServiceDetailByIdUntrackedAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "de", "502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
 
         // Assert
-        offerDetail.Should().NotBeNull();
+        offerDetail.Should().NotBeNull()
+            .And.BeOfType<ServiceDetailData>();
         offerDetail!.Title.Should().Be("Consulting Service - Data Readiness");
-        Assert.IsType<ServiceDetailData>(offerDetail);
+        offerDetail.Documents.Should()
+            .NotBeEmpty()
+            .And.AllSatisfy(
+                x => x.documentTypeId.Should().Be(DocumentTypeId.ADDITIONAL_DETAILS)
+            );
     }
 
     #endregion
@@ -1106,8 +1111,49 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         result!.Title.Should().Be("SDE with EDC");
         result.Provider.Should().Be("Service Provider");
     }
-    
+
     #endregion
+
+    [Theory]
+    [InlineData(new[] { OfferStatusId.ACTIVE }, OfferSorting.NameDesc,null,"en")]
+    [InlineData(new[] { OfferStatusId.ACTIVE }, OfferSorting.NameAsc,null,"en")]
+    public async Task GetAllInReviewStatusServiceAsync_ReturnsExpectedResult(IEnumerable<OfferStatusId> statusids, OfferSorting? sorting, string? serviceName, string? languagename)
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAllInReviewStatusServiceAsync(statusids, OfferTypeId.SERVICE, sorting,serviceName, languagename)(0, 10).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Data.Should().NotBeEmpty();
+        result!.Data.Should().HaveCount(3);
+        if (sorting == OfferSorting.NameAsc)
+        {
+            result.Data.Select(data => data.Provider).Should().BeInAscendingOrder();
+        }
+        if (sorting == OfferSorting.NameDesc)
+        {
+            result.Data.Select(data => data.Provider).Should().BeInDescendingOrder();
+        }
+    }
+
+    [Fact]
+    public async Task GetAllInReviewStatusServiceAsync_ReturnsExpectedResult_WithDateSorting()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAllInReviewStatusServiceAsync(new[] { OfferStatusId.ACTIVE }, OfferTypeId.SERVICE, OfferSorting.NameAsc, null, "en")(0, 10).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Data.Should().NotBeEmpty()
+            .And.HaveCount(3)
+            .And.StartWith(new InReviewServiceData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "Consulting Service - Data Readiness", OfferStatusId.ACTIVE, "Catena-X", "Lorem ipsum dolor sit amet, consectetur adipiscing elit."));
+    }
 
     #region Setup
     

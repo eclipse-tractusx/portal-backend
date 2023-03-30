@@ -29,8 +29,8 @@ FROM build AS publish
 RUN dotnet publish "Registration.Service.csproj" -c Release -o /app/publish
 
 FROM base AS final
-# temp fix for CVE-2022-1304
-RUN apk upgrade --no-cache libcom_err
+# temp fix for CVE-2022-1304 and CVE-2023-0464
+RUN apk upgrade --no-cache libcom_err libssl3 libcrypto3
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENV ASPNETCORE_URLS http://+:8080

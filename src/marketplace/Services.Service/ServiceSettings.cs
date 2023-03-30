@@ -48,7 +48,7 @@ public class ServiceSettings
     /// </summary>
     /// <value></value>
     [Required]
-    public IEnumerable<NotificationTypeId> SubmitServiceNotificationTypeIds { get; set; } = null!;
+    public IEnumerable<NotificationTypeId> SubmitServiceNotificationTypeIds { get; init; } = null!;
 
     /// <summary>
     /// BasePortalAddress url required for subscription email 
@@ -97,6 +97,20 @@ public class ServiceSettings
     /// </summary>
     [Required(AllowEmptyStrings = false)]
     public string UserManagementAddress { get; init; } = null!;
+
+    /// <summary>
+    /// Service Document Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<DocumentTypeId> ServiceImageDocumentTypeIds{ get; init; } = null!;
+
+    /// <summary>
+    /// Offer Status Ids
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
 }
 
 public static class ServiceSettingsExtension

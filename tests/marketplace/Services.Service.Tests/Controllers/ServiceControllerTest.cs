@@ -123,7 +123,6 @@ public class ServiceControllerTest
         A.CallTo(() => _logic.GetServiceDetailsAsync(serviceId, "en", IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<ServiceDetailResponse>(result);
         result.Should().Be(serviceDetailData);
-        result.Documents.ContainsKey(DocumentTypeId.ADDITIONAL_DETAILS);
     }
         
     [Fact]
@@ -281,5 +280,43 @@ public class ServiceControllerTest
         // Assert
         A.CallTo(() => _logic.CreateServiceDocumentAsync(serviceId,
             DocumentTypeId.ADDITIONAL_DETAILS, file, IamUserId, CancellationToken.None)).MustHaveHappened();
+    }
+    [Fact]
+    public async Task GetServiceDocumentContentAsync_ReturnsExpected()
+    {
+        //Arrange
+        var serviceId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var content = _fixture.Create<byte[]>();
+        var fileName = _fixture.Create<string>();
+        
+        A.CallTo(() => _logic.GetServiceDocumentContentAsync(A<Guid>._ , A<Guid>._, A<CancellationToken>._))
+            .Returns((content,"image/png",fileName));
+
+        //Act
+        var result = await this._controller.GetServiceDocumentContentAsync(serviceId,documentId,CancellationToken.None).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetServiceDocumentContentAsync(A<Guid>._ , A<Guid>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        result.ContentType.Should().Be("image/png");
+        result.FileDownloadName.Should().Be(fileName);
+        result.Should().BeOfType<FileContentResult>();
+    }
+
+     [Fact]
+    public async Task GetCompanyProvidedServiceStatusDataAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = _fixture.CreateMany<AllOfferStatusData>(5);
+        var paginationResponse = new Pagination.Response<AllOfferStatusData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15,IamUserId, null, null,null))
+            .ReturnsLazily(() => paginationResponse);
+
+        //Act
+        var result = await this._controller.GetCompanyProvidedServiceStatusDataAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15,IamUserId, null, null,null)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(5);
     }
 }
