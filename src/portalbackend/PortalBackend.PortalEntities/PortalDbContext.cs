@@ -490,7 +490,7 @@ public class PortalDbContext : DbContext
         });
 
         modelBuilder.Entity<CompanyAssignedUseCase>(entity => {
-            entity.HasKey(e => new { e.UseCaseId, e.CompanyId });
+            entity.HasKey(e => new { e.CompanyId, e.UseCaseId });
 
             entity.HasOne(d => d.Company)
                 .WithMany(p => p.CompanyAssignedUseCase)
