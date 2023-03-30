@@ -2,7 +2,7 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-## 1.3.0
+## 1.3.0-RC1
 
 ### Change
 * App Services
@@ -21,10 +21,12 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * GET: /api/services/provided endpoint released to support the service management function via retrieve all my services for the service owner
   * GET: /api/serviceRelease/inReview released to support the service release decision management function via retrieve all active and waiting-for-decision services for the platform provider/operator
 * Migration/Seeding
-  * added two new document types (CONFORMITY_APPROVAL_SERVICES, SERVICE_LEADIMAGE) 
+  * added two new document types (CONFORMITY_APPROVAL_SERVICES, SERVICE_LEADIMAGE)
 
 ### Technical Support
-* ...
+* added temp fix for CVE-2023-0464
+* added build workflow for v1.3.0 release candidate phase
+* updated actions workflows
 
 ### Bugfix
 * App Service: added SaveAsync method call inside OfferService CreateOrUpdateProviderOfferAgreementConsent method to ensure data storage with POST /{appId}/agreementConsents call
