@@ -384,15 +384,11 @@ public class OfferSetupServiceTests
     public async Task ActivateSingleInstanceAppAsync_WithNoInstanceSetupId_ThrowsConflictException()
     {
         SetupCreateSingleInstance();
-        var serviceAccountRoles = new Dictionary<string, IEnumerable<string>>
-        {
-            { "technical_roles_management", new [] { "Digital Twin Management" } }
-        };
 
         async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithInstanceNotSet).ConfigureAwait(false);
 
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Instance must be set");
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+        ex.Message.Should().Be($"There should always be exactly one instance defined for a single instance offer {_offerIdWithInstanceNotSet}");
     }
 
     [Fact]
@@ -934,7 +930,7 @@ public class OfferSetupServiceTests
             .ReturnsLazily(() => (OfferSubscriptionTechnicalUserCreationData?)null);
 
         // Act
-        async Task Act() => await _sut.CreateTechnicalUser(offerSubscriptionId, null!, null!).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateTechnicalUser(offerSubscriptionId, null!).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -951,7 +947,7 @@ public class OfferSetupServiceTests
             .ReturnsLazily(() => data);
 
         // Act
-        async Task Act() => await _sut.CreateTechnicalUser(offerSubscriptionId, null!, null!).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateTechnicalUser(offerSubscriptionId, null!).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -977,6 +973,8 @@ public class OfferSetupServiceTests
             .ReturnsLazily(() => data);
         A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
             .ReturnsLazily(() => userRoleData.ToAsyncEnumerable());
+        A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
+            .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, new List<Guid>()) });
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, _companyUserCompanyId, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == Bpn), CompanyServiceAccountTypeId.MANAGED, false, A<Action<CompanyServiceAccount>>._))
             .Invokes((ServiceAccountCreationInfo _, Guid _, IEnumerable<string> _, CompanyServiceAccountTypeId _, bool _, Action<CompanyServiceAccount>? setOptionalParameter) =>
             {
@@ -987,11 +985,10 @@ public class OfferSetupServiceTests
                 serviceAccountData,
                 serviceAccountId,
                 userRoleData));
-        var itAdminRoles = new Dictionary<string, IEnumerable<string>> { { "Test", new[] { "AdminRoles" } } };
-        var serviceAccountRoles = new Dictionary<string, IEnumerable<string>> { { "Test", new[] { "ServiceAccount" } } };
+        var itAdminRoles = new Dictionary<string, IEnumerable<string>> {{"Test", new[] {"AdminRoles"}}};
 
         // Act
-        var result = await _sut.CreateTechnicalUser(offerSubscriptionId, itAdminRoles, serviceAccountRoles).ConfigureAwait(false);
+        var result = await _sut.CreateTechnicalUser(offerSubscriptionId, itAdminRoles).ConfigureAwait(false);
 
         // Assert
         companyServiceAccount.OfferSubscriptionId!.Value.Should().Be(offerSubscriptionId);

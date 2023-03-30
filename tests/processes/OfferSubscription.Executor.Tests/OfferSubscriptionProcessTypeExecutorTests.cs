@@ -64,10 +64,6 @@ public class OfferSubscriptionProcessTypeExecutorTests
             {
                 { "Portal", new []{ "ItAdmin", "Admin" }}
             },
-            ServiceAccountRoles = new Dictionary<string, IEnumerable<string>>
-            {
-                { "Portal", new []{ "Service Account", "User" }}
-            }
         };
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>())
             .Returns(_offerSubscriptionRepository);
@@ -336,7 +332,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
             .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION }, null, ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.CreateClient(_subscriptionId))
             .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION }, null, ProcessStepStatusId.DONE, true, null));
-        A.CallTo(() => _offerSetupService.CreateTechnicalUser(_subscriptionId, A<IDictionary<string, IEnumerable<string>>>._, A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _offerSetupService.CreateTechnicalUser(_subscriptionId, A<IDictionary<string, IEnumerable<string>>>._))
             .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION }, null, ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.ActivateSubscription(_subscriptionId, A<IDictionary<string, IEnumerable<string>>>._, A<string>._))
             .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK }, null, ProcessStepStatusId.DONE, true, null));

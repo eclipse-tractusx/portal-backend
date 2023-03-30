@@ -36,10 +36,4 @@ public class OfferSubscriptionsProcessSettings
     /// </summary>
     [Required(AllowEmptyStrings = false)]
     public string BasePortalAddress { get; init; } = null!;
-
-    /// <summary>
-    /// Service Account Roles
-    /// </summary>
-    [Required]
-    public IDictionary<string, IEnumerable<string>> ServiceAccountRoles { get; set; } = null!;
 }

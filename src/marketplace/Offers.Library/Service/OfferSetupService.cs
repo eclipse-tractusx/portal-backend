@@ -474,7 +474,7 @@ public class OfferSetupService : IOfferSetupService
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, IEnumerable<ProcessStepTypeId>? stepsToSkip, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateTechnicalUser(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> itAdminRoles, IDictionary<string, IEnumerable<string>> serviceAccountRoles)
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, IEnumerable<ProcessStepTypeId>? stepsToSkip, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateTechnicalUser(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> itAdminRoles)
     {
         var data = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetTechnicalUserCreationData(offerSubscriptionId)
@@ -559,19 +559,20 @@ public class OfferSetupService : IOfferSetupService
         var notificationTypeId = offerDetails.OfferTypeId == OfferTypeId.APP
             ? NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION
             : NotificationTypeId.SERVICE_ACTIVATION;
-        await _notificationService.CreateNotifications(
+        var userIdsOfNotifications = await _notificationService.CreateNotifications(
             itAdminRoles,
             null,
             new List<(string?, NotificationTypeId)>
             {
                 (notificationContent, notificationTypeId)
             },
-            offerDetails.CompanyId).AwaitAll().ConfigureAwait(false);
+            offerDetails.CompanyId).ToListAsync().ConfigureAwait(false);
 
-        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId, notificationTypeId, false, notification =>
+        if (!userIdsOfNotifications.Contains(offerDetails.RequesterId))
         {
-            notification.Content = notificationContent;
-        });
+            _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId,
+                notificationTypeId, false, notification => { notification.Content = notificationContent; });
+        }
 
         if (string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
         {

@@ -34,8 +34,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using PortalBackend.DBAccess.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Immutable;
 using Xunit;
 

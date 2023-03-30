@@ -108,7 +108,7 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
                     .CreateClient(_offerSubscriptionId)
                     .ConfigureAwait(false),
                 ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION => await _offerSetupService
-                    .CreateTechnicalUser(_offerSubscriptionId, _settings.ItAdminRoles, _settings.ServiceAccountRoles)
+                    .CreateTechnicalUser(_offerSubscriptionId, _settings.ItAdminRoles)
                     .ConfigureAwait(false),
                 ProcessStepTypeId.ACTIVATE_SUBSCRIPTION => await _offerSetupService
                     .ActivateSubscription(_offerSubscriptionId, _settings.ItAdminRoles, _settings.BasePortalAddress)
