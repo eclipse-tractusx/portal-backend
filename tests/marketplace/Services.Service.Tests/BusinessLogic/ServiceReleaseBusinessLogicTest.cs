@@ -31,7 +31,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
+using Microsoft.Extensions.Options;
 using Xunit;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.BusinessLogic;
 
@@ -43,7 +45,7 @@ public class ServiceReleaseBusinessLogicTest
     private readonly IOfferService _offerService;
     private readonly IStaticDataRepository _staticDataRepository;
     private readonly ServiceReleaseBusinessLogic _sut;
-
+    private readonly IOptions<ServiceSettings> _options;
     public ServiceReleaseBusinessLogicTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -57,7 +59,30 @@ public class ServiceReleaseBusinessLogicTest
         _staticDataRepository = A.Fake<IStaticDataRepository>();
 
         SetupRepositories();
-        _sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService);
+         var serviceSettings = new ServiceSettings
+        {
+            ApplicationsMaxPageSize = 15, 
+            ServiceAccountRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                {"Test", new[] {"Technical User"}}
+            }, 
+            ITAdminRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                {"Cl2-CX-Portal", new[] {"IT Admin"}}
+            },
+            SubmitServiceNotificationTypeIds = new List<NotificationTypeId>
+            {
+                NotificationTypeId.SERVICE_RELEASE_REQUEST
+            },
+            OfferStatusIds = new List<OfferStatusId>
+            {
+                OfferStatusId.ACTIVE , 
+                OfferStatusId.IN_REVIEW
+            }
+        };
+        _options = Options.Create(serviceSettings);
+        _fixture.Inject(_options);
+        _sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _options);
     }
 
     [Fact]
@@ -215,6 +240,60 @@ public class ServiceReleaseBusinessLogicTest
         result.ServiceTypeIds.Should().HaveCount(2);
     }
 
+    #region GetAllInReviewStatusApps
+
+    [Fact]
+    public async Task GetAllInReviewStatusServiceAsync_InActiveRequest()
+    {
+        // Arrange
+        var InReviewData = new[] {
+            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.ACTIVE,null!,"test data1"),
+            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.ACTIVE,null!,"test data2"),
+            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.ACTIVE,null!,"test data3"),
+            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.ACTIVE,null!,"test data4"),
+            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.ACTIVE,null!,"test data5")
+        };
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewServiceData>(5, InReviewData.Skip(skip).Take(take)));
+        A.CallTo(() => _offerRepository.GetAllInReviewStatusServiceAsync(A<IEnumerable<OfferStatusId>>._, A<OfferTypeId>._, A<OfferSorting>._, A<string>._, A<string>._))
+            .Returns(paginationResult);
+
+        // Act
+        var result = await _sut.GetAllInReviewStatusServiceAsync(0, 5, OfferSorting.DateAsc, null, "en").ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerRepository.GetAllInReviewStatusServiceAsync(A<IEnumerable<OfferStatusId>>
+            .That.Matches(x => x.Count() == 2 && x.All(y => _options.Value.OfferStatusIds.Contains(y))), OfferTypeId.SERVICE, A<OfferSorting>._, A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<InReviewServiceData>>(result);
+        result.Content.Should().HaveCount(5);
+        result.Content.Should().Contain(x => x.Status == OfferStatusId.ACTIVE);
+    }
+
+    [Fact]
+    public async Task GetAllInReviewStatusServiceAsync_InReviewRequest()
+    {
+        // Arrange
+        var InReviewData = new[]{
+            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.IN_REVIEW,null!,"test data1"),
+            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.IN_REVIEW,null!,"test data2"),
+            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.IN_REVIEW,null!,"test data3"),
+            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.IN_REVIEW,null!,"test data4"),
+            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.IN_REVIEW,null!,"test data5")
+        };
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewServiceData>(5, InReviewData.Skip(skip).Take(take)));
+        A.CallTo(() => _offerRepository.GetAllInReviewStatusServiceAsync(A<IEnumerable<OfferStatusId>>._, A<OfferTypeId>._, A<OfferSorting>._, A<string>._, A<string>._))
+            .Returns(paginationResult);
+
+        // Act
+        var result = await _sut.GetAllInReviewStatusServiceAsync(0, 5, OfferSorting.DateAsc, null, "en").ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerRepository.GetAllInReviewStatusServiceAsync(A<IEnumerable<OfferStatusId>>
+            .That.Matches(x => x.Count() == 2 && x.All(y => _options.Value.OfferStatusIds.Contains(y))), OfferTypeId.SERVICE, A<OfferSorting>._, A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<InReviewServiceData>>(result);
+        result.Content.Should().HaveCount(5);
+        result.Content.Should().Contain(x => x.Status == OfferStatusId.IN_REVIEW);
+    }
+
     [Fact]
     public async Task SubmitOfferConsentAsync_WithValidData_ReturnsExpected()
     {
@@ -240,6 +319,7 @@ public class ServiceReleaseBusinessLogicTest
         ex.Message.Should().Be("ServiceId must not be empty");
     }
 
+    #endregion
     private void SetupRepositories()
     {
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);

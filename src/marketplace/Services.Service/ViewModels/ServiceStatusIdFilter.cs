@@ -18,18 +18,35 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using System.Net;
+namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-
-public interface ICompanyDataBusinessLogic
+/// <summary>
+/// Filters the OfferStatusId information
+/// </summary> 
+public enum ServiceStatusIdFilter
 {
-    Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync(string iamUserId);
+    /// <summary>
+    /// Filters the Active OfferStatusId information
+    /// </summary>    
+    Active = 1,
 
-    IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(string iamUserId);
+    /// <summary>
+    /// Filters the InActive OfferStatusId information
+    /// </summary>    
+    Inactive = 2,
 
-    Task<HttpStatusCode> CreateCompanyAssignedUseCaseDetailsAsync(string iamUserId, Guid useCaseId);
+    /// <summary>
+    /// Filters the InReview OfferStatusId information
+    /// </summary>    
+    InReview = 3,
 
-    Task RemoveCompanyAssignedUseCaseDetailsAsync(string iamUserId, Guid useCaseId);
+    /// <summary>
+    /// Filters the InReview OfferStatusId information
+    /// </summary>    
+    WIP = 4,
+
+    /// <summary>
+    /// Filters the All OfferStatusId information
+    /// </summary>
+    All = 5
 }

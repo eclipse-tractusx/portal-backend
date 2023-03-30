@@ -24,13 +24,13 @@ using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Security.Cryptography;
 using System.Text.Json;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
@@ -167,7 +167,7 @@ public class OfferService : IOfferService
             throw new ControllerArgumentException($"agreements {string.Join(",", invalidConsents.Select(consent => consent.AgreementId))} are not valid for offer {offerId}", nameof(offerAgreementConsent));
         }
 
-        return _portalRepositories.GetInstance<IConsentRepository>()
+        var ConsentStatusdata = _portalRepositories.GetInstance<IConsentRepository>()
             .AddAttachAndModifyConsents(
                 dbAgreements,
                 offerAgreementConsent.Agreements,
@@ -176,6 +176,8 @@ public class OfferService : IOfferService
                 companyUserId,
                 DateTimeOffset.UtcNow)
             .Select(consent => new ConsentStatusData(consent.AgreementId, consent.ConsentStatusId));
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return ConsentStatusdata;
     }
 
     private async Task<OfferAgreementConsentUpdate> GetProviderOfferAgreementConsent(Guid offerId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId)
@@ -391,7 +393,7 @@ public class OfferService : IOfferService
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(catenaAdminRoles, requesterId, content, offerDetails.ProviderCompanyId!.Value).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(catenaAdminRoles, requesterId, content).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -646,5 +648,37 @@ public class OfferService : IOfferService
         });
         _portalRepositories.GetInstance<IOfferRepository>().CreateOfferAssignedDocument(Id, doc.Id);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task<(byte[] Content, string ContentType, string FileName)> GetOfferDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIdSettings, OfferTypeId offerTypeId, CancellationToken cancellationToken)
+    {
+        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+        var result = await documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, cancellationToken).ConfigureAwait(false);
+        if (result is null)
+        {
+            throw new NotFoundException($"document {documentId} does not exist");
+        }
+        if (!result.IsValidDocumentType)
+        {
+            throw new ControllerArgumentException($"Document {documentId} can not get retrieved. Document type not supported.");
+        }
+        if (!result.IsValidOfferType)
+        {
+            throw new ControllerArgumentException($"offer {offerId} is not an {offerTypeId}");
+        }
+        if (!result.IsDocumentLinkedToOffer)
+        {
+            throw new ControllerArgumentException($"Document {documentId} and {offerTypeId} id {offerId} do not match.");
+        }
+        if (result.IsInactive)
+        {
+            throw new ConflictException($"Document {documentId} is in status INACTIVE");
+        }
+        if (result.Content == null)
+        {
+            throw new UnexpectedConditionException($"document content should never be null");
+        }
+        return (result.Content, result.MediaTypeId.MapToMediaType(), result.FileName);
     }
 }

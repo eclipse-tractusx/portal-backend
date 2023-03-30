@@ -23,18 +23,17 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using System.Security.Cryptography;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -307,36 +306,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public async Task<(byte[] Content, string ContentType, string FileName)> GetAppDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken)
-    {
-        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var result = await documentRepository.GetOfferDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken).ConfigureAwait(false);
-        if (result is null)
-        {
-            throw new NotFoundException($"document {documentId} does not exist");
-        }
-        if (!result.IsValidDocumentType)
-        {
-            throw new ControllerArgumentException($"Document {documentId} can not get retrieved. Document type not supported.");
-        }
-        if (!result.IsValidOfferType)
-        {
-            throw new ControllerArgumentException($"offer {appId} is not an app");
-        }
-        if (!result.IsDocumentLinkedToOffer)
-        {
-            throw new ControllerArgumentException($"Document {documentId} and app id {appId} do not match.");
-        }
-        if (result.IsInactive)
-        {
-            throw new ConflictException($"Document {documentId} is in status INACTIVE");
-        }
-        if (result.Content == null)
-        {
-            throw new UnexpectedConditionException($"document content should never be null");
-        }
-        return (result.Content, result.MediaTypeId.MapToMediaType(), result.FileName);
-    }
+    public Task<(byte[] Content, string ContentType, string FileName)> GetAppDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken) =>
+        _offerService.GetOfferDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken);
 
     /// <inheritdoc />
     public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, string iamUserId)

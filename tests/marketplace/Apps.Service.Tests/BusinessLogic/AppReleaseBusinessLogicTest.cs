@@ -55,6 +55,9 @@ public class AppReleaseBusinessLogicTest
     private readonly Guid _activeAppId = Guid.NewGuid();
     private readonly Guid _differentCompanyAppId = Guid.NewGuid();
     private readonly Guid _existingAppId = Guid.NewGuid();
+    private readonly IEnumerable<Guid> _useCases = new [] { Guid.NewGuid(), Guid.NewGuid() };
+    private readonly IEnumerable<string> _languageCodes = new [] { "de", "en" };
+    private readonly AppUpdateData _appUpdateData;
     private readonly ILanguageRepository _languageRepository;
     private readonly AppsSettings _settings;
     private const string ClientId = "catenax-portal";
@@ -106,6 +109,13 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
+
+        _appUpdateData = _fixture.Build<AppUpdateData>()
+            .With(x => x.OfferState, OfferStatusId.CREATED)
+            .With(x => x.IsUserOfProvider, true)
+            .With(x => x.MatchingUseCases, _useCases)
+            .With(x => x.Languages, _languageCodes.Select(x => (x, true)))
+            .Create();
     }
 
     [Fact]
@@ -189,10 +199,9 @@ public class AppReleaseBusinessLogicTest
     public async Task AddAppAsync_WithoutEmptyLanguageCodes_ThrowsException()
     {
         // Arrange
-        var data = new AppRequestModel("test", "test", Guid.NewGuid(), new List<Guid>(), new List<LocalizedDescription>(), new [] { string.Empty }, "123", new[]
-            {
-                PrivacyPolicyId.COMPANY_DATA  
-            });
+        var data = _fixture.Build<AppRequestModel>()
+            .With(x => x.SupportedLanguageCodes, new []{ String.Empty })
+            .Create();
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
@@ -208,10 +217,9 @@ public class AppReleaseBusinessLogicTest
     public async Task AddAppAsync_WithEmptyUseCaseIds_ThrowsException()
     {
         // Arrange
-        var data = new AppRequestModel("test", "test", Guid.NewGuid(), new []{ Guid.Empty }, new List<LocalizedDescription>(), new [] { "de" }, "123", new[]
-            {
-                PrivacyPolicyId.COMPANY_DATA  
-            });
+        var data = _fixture.Build<AppRequestModel>()
+            .With(x => x.UseCaseIds, new []{ Guid.Empty })
+            .Create();
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
@@ -227,41 +235,88 @@ public class AppReleaseBusinessLogicTest
     public async Task AddAppAsync_WithSalesManagerValidData_ReturnsExpected()
     {
         // Arrange
-        var data = new AppRequestModel("test", "test", _companyUser.Id, new []{ Guid.NewGuid() }, new List<LocalizedDescription>{ new("de", "Long description", "desc")}, new [] { "de" }, "123", new[]
+        var data = _fixture.Build<AppRequestModel>()
+            .With(x => x.SalesManagerId, _companyUser.Id)
+            .Create();
+
+        A.CallTo(() => _offerService.ValidateSalesManager(_companyUser.Id, _iamUser.UserEntityId, A<IDictionary<string, IEnumerable<string>>>._)).Returns(_companyUser.CompanyId);
+
+        Offer? created = null;
+        var offerId = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow;
+
+        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer>?>._))
+            .ReturnsLazily((string provider, OfferTypeId offerTypeId, Action<Offer>? modify) =>
             {
-                PrivacyPolicyId.COMPANY_DATA   
+                created = new Offer(offerId, provider, now, offerTypeId);
+                modify?.Invoke(created);
+                return created;
             });
+
+        OfferLicense? offerLicense = null;
+        A.CallTo(() => _offerRepository.CreateOfferLicenses(data.Price)).ReturnsLazily((string text) =>
+        {
+            offerLicense = new OfferLicense(Guid.NewGuid(), text);
+            return offerLicense;
+        });
+
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
-     
+
         // Act
         await sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.ValidateSalesManager(_companyUser.Id, _iamUser.UserEntityId, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer>?>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.AddOfferDescriptions(A<IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)>>._))
+        A.CallTo(() => _offerRepository.AddOfferDescriptions(A<IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)>>.That.Matches(x => x.All(y => y.appId == offerId))))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.AddAppLanguages(A<IEnumerable<(Guid appId, string languageShortName)>>._))
+        A.CallTo(() => _offerRepository.AddAppLanguages(A<IEnumerable<(Guid appId, string languageShortName)>>.That.Matches(x => x.All(y => y.appId == offerId) && x.Select(y => y.languageShortName).SequenceEqual(data.SupportedLanguageCodes))))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.AddAppAssignedUseCases(A<IEnumerable<(Guid appId, Guid useCaseId)>>._))
+        A.CallTo(() => _offerRepository.AddAppAssignedUseCases(A<IEnumerable<(Guid appId, Guid useCaseId)>>.That.Matches(x => x.All(y => y.appId == offerId) && x.Select(y => y.useCaseId).SequenceEqual(data.UseCaseIds))))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.CreateOfferLicenses(A<string>._))
+        A.CallTo(() => _offerRepository.CreateOfferLicenses(data.Price))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.CreateOfferAssignedLicense(A<Guid>._, A<Guid>._))
+
+        offerLicense.Should().NotBeNull();
+        A.CallTo(() => _offerRepository.CreateOfferAssignedLicense(offerId, offerLicense!.Id))
             .MustHaveHappenedOnceExactly();
+        
+        created.Should().NotBeNull()
+            .And.Match<Offer>(x =>
+                x.Id == offerId &&
+                x.Name == data.Title &&
+                x.ProviderCompanyId == _companyUser.CompanyId &&
+                x.OfferStatusId == OfferStatusId.CREATED &&
+                x.SalesManagerId == data.SalesManagerId &&
+                x.ContactEmail == data.ContactEmail &&
+                x.ContactNumber == data.ContactNumber &&
+                x.MarketingUrl == data.ProviderUri
+            );
     }
 
     [Fact]
     public async Task AddAppAsync_WithNullSalesMangerValidData_ReturnsExpected()
     {
         // Arrange
+        var data = _fixture.Build<AppRequestModel>()
+            .With(x => x.SalesManagerId, (Guid?)null)
+            .Create();
         A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>.That.IsEqualTo(_iamUser.UserEntityId))).Returns(_companyUser.CompanyId);
-        var data = new AppRequestModel("test", "test", null, new []{ Guid.NewGuid() }, new List<LocalizedDescription>{ new("de", "Long description", "desc")}, new [] { "de" }, "123", new[]
+
+        Offer? created = null;
+        var offerId = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow;
+
+        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer>?>._))
+            .ReturnsLazily((string provider, OfferTypeId offerTypeId, Action<Offer>? modify) =>
             {
-                PrivacyPolicyId.COMPANY_DATA   
+                created = new Offer(offerId, provider, now, offerTypeId);
+                modify?.Invoke(created);
+                return created;
             });
+
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
@@ -283,6 +338,18 @@ public class AppReleaseBusinessLogicTest
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.CreateOfferAssignedLicense(A<Guid>._, A<Guid>._))
             .MustHaveHappenedOnceExactly();
+
+        created.Should().NotBeNull()
+            .And.Match<Offer>(x =>
+                x.Id == offerId &&
+                x.Name == data.Title &&
+                x.ProviderCompanyId == _companyUser.CompanyId &&
+                x.OfferStatusId == OfferStatusId.CREATED &&
+                x.SalesManagerId == data.SalesManagerId &&
+                x.ContactEmail == data.ContactEmail &&
+                x.ContactNumber == data.ContactNumber &&
+                x.MarketingUrl == data.ProviderUri
+            );
     }
 
     #endregion
@@ -294,10 +361,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateApp();
-        var data = new AppRequestModel("test", "test", Guid.NewGuid(), new List<Guid>(), new List<LocalizedDescription>(), new [] { string.Empty }, "123", new[]
-            {
-                PrivacyPolicyId.COMPANY_DATA   
-            });
+        var data = _fixture.Create<AppRequestModel>();
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
@@ -314,10 +378,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateApp();
-        var data = new AppRequestModel("test", "test", Guid.NewGuid(), new []{ Guid.Empty }, new List<LocalizedDescription>(), new [] { "de" }, "123", new[]
-            {
-                PrivacyPolicyId.COMPANY_DATA  
-            });
+        var data = _fixture.Create<AppRequestModel>();
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
@@ -334,10 +395,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateApp();
-        var data = new AppRequestModel("test", "test", Guid.NewGuid(), new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de" }, "123", new[]
-            {
-                PrivacyPolicyId.COMPANY_DATA  
-            });
+        var data = _fixture.Create<AppRequestModel>();
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
@@ -354,10 +412,9 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateApp();
-        var data = new AppRequestModel("test", "test", _companyUser.Id, new []{ Guid.NewGuid() }, new List<LocalizedDescription>(), new [] { "de", "en", "invalid" }, "123", new[]
-            {
-                PrivacyPolicyId.COMPANY_DATA  
-            });
+        var data = _fixture.Build<AppRequestModel>()
+            .With(x => x.SupportedLanguageCodes, new [] { "de", "en", "invalid" })
+            .Create();
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
         
@@ -374,40 +431,58 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateApp();
-
-        var data = new AppRequestModel(
-            "test",
-            "test",  
-            _companyUser.Id, 
-            new [] { Guid.NewGuid() },
-            new LocalizedDescription[]
-            {
-               new("de", "Long description", "desc") 
-            }, 
-            new [] { "de", "en" },
-            "43",
-            new[]
-            {
-                PrivacyPolicyId.COMPANY_DATA  
-            });
+        var data = _fixture.Build<AppRequestModel>()
+            .With(x => x.SupportedLanguageCodes, new [] { "de", "en" })
+            .Create();
         var settings = new AppsSettings();
         var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
-        
+
+        Offer? initial = null;
+        Offer? modified = null;
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
+            .Invokes((Guid offerId, Action<Offer> modify, Action<Offer>? initialize) =>
+            {
+                initial = new Offer(offerId, null!, default, default);
+                modified = new Offer(offerId, null!, default, default);
+                initialize?.Invoke(initial);
+                modify.Invoke(modified);
+            });
+
         // Act
         await sut.UpdateAppReleaseAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
         
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerService.UpsertRemoveOfferDescription(_existingAppId, A<IEnumerable<LocalizedDescription>>.That.IsSameSequenceAs(new LocalizedDescription("de", "Long description", "desc")), A<IEnumerable<LocalizedDescription>>._))
+        A.CallTo(() => _offerService.UpsertRemoveOfferDescription(_existingAppId, A<IEnumerable<LocalizedDescription>>.That.IsSameSequenceAs(data.Descriptions), A<IEnumerable<LocalizedDescription>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.AddAppLanguages(A<IEnumerable<(Guid appId, string languageShortName)>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.RemoveAppLanguages(A<IEnumerable<(Guid,string)>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.CreateDeleteAppAssignedUseCases(_existingAppId, A<IEnumerable<Guid>>.That.IsEmpty(), A<IEnumerable<Guid>>.That.Matches(x => x.SequenceEqual(data.UseCaseIds))))
+        A.CallTo(() => _offerRepository.CreateDeleteAppAssignedUseCases(_existingAppId, A<IEnumerable<Guid>>.That.Matches(x => x.SequenceEqual(_useCases)), A<IEnumerable<Guid>>.That.Matches(x => x.SequenceEqual(data.UseCaseIds))))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerService.CreateOrUpdateOfferLicense(_existingAppId, A<string>._, A<(Guid OfferLicenseId, string LicenseText, bool AssingedToMultipleOffers)>._)).MustHaveHappenedOnceExactly();
+
+        initial.Should().NotBeNull()
+            .And.Match<Offer>(
+                x => x.Name == _appUpdateData.Name &&
+                x.Provider == _appUpdateData.Provider &&
+                x.SalesManagerId == _appUpdateData.SalesManagerId &&
+                x.ContactEmail == _appUpdateData.ContactEmail &&
+                x.ContactNumber == _appUpdateData.ContactNumber &&
+                x.MarketingUrl == _appUpdateData.MarketingUrl
+            );
+
+        modified.Should().NotBeNull()
+            .And.Match<Offer>(
+                x => x.Name == data.Title &&
+                x.Provider == data.Provider &&
+                x.SalesManagerId == data.SalesManagerId &&
+                x.ContactEmail == data.ContactEmail &&
+                x.ContactNumber == data.ContactNumber &&
+                x.MarketingUrl == data.ProviderUri
+            );
     }
 
     #endregion
@@ -930,15 +1005,25 @@ public class AppReleaseBusinessLogicTest
     private void SetupUpdateApp()
     {
         A.CallTo(() => _languageRepository.GetLanguageCodesUntrackedAsync(A<IEnumerable<string>>._))
-            .Returns(new List<string>() {"de", "en"}.ToAsyncEnumerable());
+            .Returns(_languageCodes.ToAsyncEnumerable());
         A.CallTo(() => _offerRepository.GetAppUpdateData(_notExistingAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._))
-            .ReturnsLazily(() => (AppUpdateData?)null);
+            .Returns((AppUpdateData?)null);
         A.CallTo(() => _offerRepository.GetAppUpdateData(_activeAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._))
-            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<LocalizedDescription>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(), null, Array.Empty<PrivacyPolicyId>()));
+            .Returns(_fixture.Build<AppUpdateData>()
+                .With(x => x.OfferState, OfferStatusId.ACTIVE)
+                .With(x => x.IsUserOfProvider, false)
+                .With(x => x.MatchingUseCases, _useCases)
+                .With(x => x.Languages, _languageCodes.Select(x => (x, true)))
+                .Create());
         A.CallTo(() => _offerRepository.GetAppUpdateData(_differentCompanyAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._))
-            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, false, Array.Empty<LocalizedDescription>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(), null, Array.Empty<PrivacyPolicyId>()));
+            .Returns(_fixture.Build<AppUpdateData>()
+                .With(x => x.OfferState, OfferStatusId.CREATED)
+                .With(x => x.IsUserOfProvider, false)
+                .With(x => x.MatchingUseCases, _useCases)
+                .With(x => x.Languages, _languageCodes.Select(x => (x, true)))
+                .Create());
         A.CallTo(() => _offerRepository.GetAppUpdateData(_existingAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._))
-            .ReturnsLazily(() => new AppUpdateData(OfferStatusId.CREATED, true, Array.Empty<LocalizedDescription>(), Array.Empty<(string Shortname, bool IsMatch)>(), Array.Empty<Guid>(), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false), null, Array.Empty<PrivacyPolicyId>()));
+            .Returns(_appUpdateData);
         A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).Returns(_companyUser.CompanyId);
         
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);

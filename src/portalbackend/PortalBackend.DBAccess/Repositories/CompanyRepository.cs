@@ -182,4 +182,32 @@ public class CompanyRepository : ICompanyRepository
             .Where(x => x.Id == companyId)
             .Select(x => new ValueTuple<string?, Guid?>(x.BusinessPartnerNumber, x.SelfDescriptionDocumentId))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(string iamUserId) =>
+        _context.Companies
+        .Where(company => company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
+        .SelectMany(company => company.CompanyAssignedUseCase)
+        .Select(cauc => new CompanyAssignedUseCaseData(
+            cauc.UseCaseId,
+            cauc.UseCase!.Name))
+        .AsAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<(bool isUseCaseIdExists, bool isActiveCompanyStatus, Guid companyId)> GetCompanyStatusAndUseCaseIdAsync(string iamUserId, Guid useCaseId) =>
+        _context.Companies
+        .Where(company => company.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
+        .Select(company => new ValueTuple<bool,bool, Guid>(
+            company.CompanyAssignedUseCase.Any(cauc => cauc.UseCaseId == useCaseId),
+            company.CompanyStatusId == CompanyStatusId.ACTIVE,
+            company.Id))
+        .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public CompanyAssignedUseCase CreateCompanyAssignedUseCase(Guid companyId, Guid useCaseId) =>
+        _context.CompanyAssignedUseCases.Add( new CompanyAssignedUseCase(companyId, useCaseId)).Entity;
+
+    /// <inheritdoc /> 
+    public void RemoveCompanyAssignedUseCase(Guid companyId, Guid useCaseId) =>
+        _context.CompanyAssignedUseCases.Remove( new CompanyAssignedUseCase(companyId, useCaseId));
 }

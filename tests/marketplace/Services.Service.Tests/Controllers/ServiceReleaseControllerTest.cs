@@ -23,6 +23,7 @@ using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
@@ -151,5 +152,21 @@ public class ServiceReleaseControllerTest
         //Assert
         A.CallTo(() => _logic.SubmitOfferConsentAsync(serviceId, offerAgreementConsentData, IamUserId)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GetAllInReviewStatusServiceAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var paginationResponse = new Pagination.Response<InReviewServiceData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<InReviewServiceData>(5));
+        A.CallTo(() => _logic.GetAllInReviewStatusServiceAsync(A<int>._, A<int>._,A<OfferSorting?>._,A<string>._,A<string>._))
+            .ReturnsLazily(() => paginationResponse);
+
+        //Act
+        var result = await this._controller.GetAllInReviewStatusServiceAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAllInReviewStatusServiceAsync(0, 15, null, null,null)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(5);
     }
 }
