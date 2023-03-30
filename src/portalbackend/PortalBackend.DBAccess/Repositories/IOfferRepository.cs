@@ -461,11 +461,11 @@ public interface IOfferRepository
     /// <summary>
     /// Creates a new instance of <see cref="AppInstanceSetup"/>
     /// </summary>
-    /// <param name="appId">id of the app</param>
+    /// <param name="offerId">id of the app</param>
     /// <param name="isSingleInstance">defines whether the app is a single instance</param>
     /// <param name="setOptionalParameter">Action to set optional parameters for the app instance setup</param>
     /// <returns>The created entity</returns>
-    AppInstanceSetup CreateAppInstanceSetup(Guid appId, Action<AppInstanceSetup>? setOptionalParameter);
+    AppInstanceSetup CreateAppInstanceSetup(Guid offerId, Action<AppInstanceSetup>? setOptionalParameter);
 
     /// <summary>
     /// Gets the single instance offer data

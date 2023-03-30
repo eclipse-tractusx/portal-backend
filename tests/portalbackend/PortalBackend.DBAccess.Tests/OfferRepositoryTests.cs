@@ -1335,6 +1335,122 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetOfferStatusDataByIdAsync
+    
+    [Fact]
+    public async Task GetOfferStatusDataByIdAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferStatusDataByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0573f0009"), OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.IsStatusInReview.Should().BeFalse();
+        result.OfferName.Should().Be("Dismantler Cockpit");
+        result.ProviderCompanyId.Should().Be(new Guid("0dcd8209-85e2-4073-b130-ac094fb47106"));
+        result.IsSingleInstance.Should().BeTrue();
+    }
+    
+    #endregion
+    
+    #region GetOfferWithSetupDataById
+    
+    [Fact]
+    public async Task GetOfferWithSetupDataById_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferWithSetupDataById(new Guid("ac1cf001-7fbc-1f2f-817f-bce0573f0009"), "ad56702b-5908-44eb-a668-9a11a0e100d6", OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.OfferStatus.Should().Be(OfferStatusId.ACTIVE);
+        result.IsUserOfProvidingCompany.Should().BeTrue();
+        result.SetupTransferData.Should().NotBeNull();
+        result.SetupTransferData!.IsSingleInstance.Should().BeTrue();
+    }
+
+    #endregion
+    
+    #region AttachAndModifyAppInstanceSetup
+    
+    [Fact]
+    public async Task AttachAndModifyAppInstanceSetup_WithAppInstanceSetup_UpdatesStatus()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyAppInstanceSetup(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), data =>
+        {
+            data.InstanceUrl = "https://newtest.de";
+        });
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var changedEntity = changedEntries.Single();
+        changedEntity.State.Should().Be(EntityState.Modified);
+        changedEntity.Entity.Should().BeOfType<AppInstanceSetup>().Which.InstanceUrl.Should().Be("https://newtest.de");
+    }
+    
+    #endregion
+
+    #region CreateAppInstanceSetup
+
+    [Fact]
+    public async Task CreateAppInstanceSetup_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        var results = sut.CreateAppInstanceSetup(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), true, entity =>
+        {
+            entity.InstanceUrl = "https://www.test.de";
+        });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        results.InstanceUrl.Should().Be("https://www.test.de");
+        results.IsSingleInstance.Should().BeTrue();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<AppInstanceSetup>().Which.InstanceUrl.Should().Be("https://www.test.de");
+    }
+
+    #endregion
+
+    #region GetSingleInstanceOfferData
+    
+    
+    [Fact]
+    public async Task GetSingleInstanceOfferData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetSingleInstanceOfferData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0573f0009"), OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.InstanceSetupId.Should().Be(new Guid("682d82f7-23e7-4660-99ca-0dadc8b0bdcb"));
+        result.OfferName.Should().Be("Dismantler Cockpit");
+    }
+
+    #endregion
+    
     #region Setup
 
     private async Task<OfferRepository> CreateSut()
