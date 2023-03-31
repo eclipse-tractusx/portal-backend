@@ -723,7 +723,7 @@ public class OfferServiceTests
         await _sut.SubmitOfferAsync(offerId, _iamUserId, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS, DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.APP_IMAGE }).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, userId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._, A<Guid>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, userId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._)).MustHaveHappenedTwiceExactly();
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -936,7 +936,7 @@ public class OfferServiceTests
         await _sut.SubmitServiceAsync(offerId, _iamUserId, offerType, new [] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, userId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._, A<Guid>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, userId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._)).MustHaveHappenedTwiceExactly();
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -1476,6 +1476,165 @@ public class OfferServiceTests
                 x => x.AgreementId == agreementId && x.ConsentStatus == ConsentStatusId.ACTIVE,
                 x => x.AgreementId == additionalAgreementId && x.ConsentStatus == ConsentStatusId.ACTIVE
             );
+    }
+
+    #endregion
+
+    #region GetOfferDocumentContentAsync
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.APP_IMAGE })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task GetOfferDocumentContentAsync_ReturnsExpectedResult(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        // Arrange
+        var offerId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var data = _fixture.Create<byte[]>();
+        var fileName = _fixture.Create<string>()+".jpeg";
+
+        var documentContentData = new OfferDocumentContentData(true, true, true, false, data, fileName, MediaTypeId.JPEG);
+        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, A<CancellationToken>._))
+            .Returns(documentContentData);
+
+
+        // Act
+        var result = await _sut.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        result.Content.Should().BeSameAs(data);
+        result.ContentType.Should().Be("image/jpeg");
+        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.APP_IMAGE })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task GetOfferDocumentContentAsync_ForDocumentIdNotExist_ThrowsArgumentException(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        // Arrange
+        var offerId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+
+        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, A<CancellationToken>._))
+            .Returns((OfferDocumentContentData?)null);
+
+        // Act
+        async Task Act() => await _sut.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"document {documentId} does not exist");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.APP_IMAGE })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task GetOfferDocumentContentAsync_WithInvalidDocumentType_ThrowsArgumentException(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        // Arrange
+        var offerId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var fileName = _fixture.Create<string>()+".jpeg";;
+
+        var documentContentData = new OfferDocumentContentData(false, true, true, false, null, fileName, MediaTypeId.JPEG);
+        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, A<CancellationToken>._))
+            .Returns(documentContentData);
+
+        // Act
+        async Task Act() => await _sut.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"Document {documentId} can not get retrieved. Document type not supported.");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.APP_IMAGE })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task GetOfferDocumentContentAsync_WithInvalidOfferType_ThrowsArgumentException(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        // Arrange
+        var offerId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var fileName = _fixture.Create<string>()+".jpeg";;
+
+        var documentContentData = new OfferDocumentContentData(true, true, false, false, null, fileName, MediaTypeId.JPEG);
+        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, A<CancellationToken>._))
+            .Returns(documentContentData);
+
+        // Act
+        async Task Act() => await _sut.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"offer {offerId} is not an {offerTypeId}");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.APP_IMAGE })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task GetOfferDocumentContentAsync_WithOfferNotLinkToDocument_ThrowsArgumentException(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        // Arrange
+        var offerId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var fileName = _fixture.Create<string>()+".jpeg";;
+
+        var documentContentData = new OfferDocumentContentData(true, false, true, false, null, fileName, MediaTypeId.JPEG);
+        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, A<CancellationToken>._))
+            .Returns(documentContentData);
+
+        // Act
+        async Task Act() => await _sut.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"Document {documentId} and {offerTypeId} id {offerId} do not match.");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.APP_IMAGE })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task GetOfferDocumentContentAsync_WithInvalidStatus_ThrowsConflictException(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        // Arrange
+        var offerId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var fileName = _fixture.Create<string>()+".jpeg";;
+ 
+        var documentContentData = new OfferDocumentContentData(true, true, true, true, null, fileName, MediaTypeId.JPEG);
+        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, A<CancellationToken>._))
+            .Returns(documentContentData);
+
+        // Act
+        async Task Act() => await _sut.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Document {documentId} is in status INACTIVE");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.APP_IMAGE })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task GetAppImageDocumentContentAsync_WithContentNull_ThrowsUnexpectedConditionException(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        // Arrange
+        var offerId = _fixture.Create<Guid>();
+        var documentId = _fixture.Create<Guid>();
+        var fileName = _fixture.Create<string>()+".jpeg";;
+
+        var documentContentData = new OfferDocumentContentData(true, true, true, false, null, fileName, MediaTypeId.JPEG);
+        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, A<CancellationToken>._))
+            .Returns(documentContentData);
+
+        // Act
+        async Task Act() => await _sut.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+        ex.Message.Should().Be($"document content should never be null");
     }
 
     #endregion

@@ -439,8 +439,13 @@ public class OfferRepository : IOfferRepository
                 x.SupportedLanguages.Select(sl => new ValueTuple<string, bool>(sl.ShortName, languageCodes.Any(lc => lc == sl.ShortName))),
                 x.UseCases.Select(uc => uc.Id),
                 x.OfferLicenses.Select(ol => new ValueTuple<Guid, string, bool>(ol.Id, ol.Licensetext, ol.Offers.Count > 1)).FirstOrDefault(),
+                x.OfferAssignedPrivacyPolicies.Select(x => x.PrivacyPolicyId),
+                x.Name,
+                x.Provider,
                 x.SalesManagerId,
-                x.OfferAssignedPrivacyPolicies.Select(x => x.PrivacyPolicyId)
+                x.ContactEmail,
+                x.ContactNumber,
+                x.MarketingUrl
             ))
             .SingleOrDefaultAsync();
     
@@ -664,5 +669,55 @@ public class OfferRepository : IOfferRepository
                 offer.ContactNumber,
                 offer.OfferStatusId
             ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Func<int,int,Task<Pagination.Source<AllOfferStatusData>?>> GetCompanyProvidedServiceStatusDataAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, string userId, OfferSorting? sorting, string? offerName) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            _context.Offers.AsNoTracking()
+                .Where(offer => offer.OfferTypeId == offerTypeId && 
+                    offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId) &&
+                    offerStatusIds.Contains(offer.OfferStatusId) && (offerName == null || EF.Functions.ILike(offer.Name!, $"%{offerName!.EscapeForILike()}%")))
+                .GroupBy(offer=>offer.OfferTypeId),
+            sorting switch
+            {
+                OfferSorting.DateAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.DateCreated),
+                OfferSorting.DateDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.DateCreated),
+                _ => (Expression<Func<IEnumerable<Offer>,IOrderedEnumerable<Offer>>>?)null
+            },
+            offer => new AllOfferStatusData(
+                offer.Id,
+                offer.Name,
+                offer.ProviderCompany!.Name,
+                offer.OfferStatusId
+                ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Func<int,int,Task<Pagination.Source<InReviewServiceData>?>> GetAllInReviewStatusServiceAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, OfferSorting? sorting, string? offerName, string? languageShortName) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            _context.Offers.AsNoTracking()
+                .Where(offer => offer.OfferTypeId == offerTypeId && offerStatusIds.Contains(offer.OfferStatusId) && (offerName == null || EF.Functions.ILike(offer.Name!, $"%{offerName!.EscapeForILike()}%")))
+                .GroupBy(offer=>offer.OfferTypeId),
+            sorting switch
+            {
+                OfferSorting.DateAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.DateCreated),
+                OfferSorting.DateDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.DateCreated),
+                OfferSorting.NameAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.Name),
+                OfferSorting.NameDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.Name),
+                _ => (Expression<Func<IEnumerable<Offer>,IOrderedEnumerable<Offer>>>?)null
+            },
+            offer => new InReviewServiceData(
+                offer.Id,
+                offer.Name,
+                offer.OfferStatusId,
+                offer.ProviderCompany!.Name,
+                offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
+                           ?? offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionShort
+                        ))
             .SingleOrDefaultAsync();
 }

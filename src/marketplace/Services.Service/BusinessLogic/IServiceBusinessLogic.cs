@@ -146,4 +146,25 @@ public interface IServiceBusinessLogic
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Get the document content by given Id for Service
+    /// </summary>
+    /// <param name="serviceId"></param>
+    /// <param name="documentId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<(byte[] Content, string ContentType, string FileName)> GetServiceDocumentContentAsync(Guid serviceId, Guid documentId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retrieves all in review status offer in the marketplace.
+    /// </summary>
+    /// <param name="page"></param>
+    /// <param name="size"></param>
+    /// <param name="userId"></param>
+    /// <param name="sorting"></param>
+    /// <param name="offerName"></param>
+    /// <param name="statusId"></param>
+    Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync(int page, int size, string userId, OfferSorting? sorting, string? offerName, ServiceStatusIdFilter? statusId);
+
 }

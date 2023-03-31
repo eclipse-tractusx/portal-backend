@@ -469,25 +469,6 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.SelfDescriptionDocumentId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasMany(p => p.UseCases)
-                .WithMany(p => p.Companies)
-                .UsingEntity<CompanyAssignedUseCase>(
-                    j => j
-                        .HasOne(d => d.UseCase!)
-                        .WithMany()
-                        .HasForeignKey(d => d.UseCaseId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j => j
-                        .HasOne(d => d.Company!)
-                        .WithMany()
-                        .HasForeignKey(d => d.CompanyId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j =>
-                    {
-                        j.HasKey(e => new { e.CompanyId, e.UseCaseId });
-                    }
-                );
-
             entity.HasMany(p => p.IdentityProviders)
                 .WithMany(p => p.Companies)
                 .UsingEntity<CompanyIdentityProvider>(
@@ -506,6 +487,20 @@ public class PortalDbContext : DbContext
                         j.HasKey(e => new { e.CompanyId, e.IdentityProviderId });
                     }
                 );
+        });
+
+        modelBuilder.Entity<CompanyAssignedUseCase>(entity => {
+            entity.HasKey(e => new { e.CompanyId, e.UseCaseId });
+
+            entity.HasOne(d => d.Company)
+                .WithMany(p => p.CompanyAssignedUseCase)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            
+            entity.HasOne(d => d.UseCase)
+                .WithMany(p => p.CompanyAssignedUseCase)
+                .HasForeignKey(d => d.UseCaseId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<ProviderCompanyDetail>(entity =>

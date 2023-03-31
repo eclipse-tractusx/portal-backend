@@ -29,6 +29,11 @@ public record AppUpdateData(
     IEnumerable<(string Shortname, bool IsMatch)> Languages,
     IEnumerable<Guid> MatchingUseCases, 
     ValueTuple<Guid, string, bool> OfferLicense,
+    IEnumerable<PrivacyPolicyId> MatchingPrivacyPolicies,
+    string? Name,
+    string Provider,
     Guid? SalesManagerId,
-    IEnumerable<PrivacyPolicyId> MatchingPrivacyPolicies
+    string? ContactEmail,
+    string? ContactNumber,
+    string? MarketingUrl
 );
