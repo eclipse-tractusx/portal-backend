@@ -89,14 +89,13 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
         }
 
         IEnumerable<ProcessStepTypeId>? nextStepTypeIds;
-        IEnumerable<ProcessStepTypeId>? stepsToSkip;
         ProcessStepStatusId stepStatusId;
         bool modified;
         string? processMessage;
 
         try
         {
-            (nextStepTypeIds, stepsToSkip, stepStatusId, modified, processMessage) = processStepTypeId switch
+            (nextStepTypeIds, stepStatusId, modified, processMessage) = processStepTypeId switch
             {
                 ProcessStepTypeId.TRIGGER_PROVIDER => await _offerProviderBusinessLogic
                     .TriggerProvider(_offerSubscriptionId, cancellationToken)
@@ -116,17 +115,16 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
                 ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK => await _offerProviderBusinessLogic
                     .TriggerProviderCallback(_offerSubscriptionId, cancellationToken)
                     .ConfigureAwait(false),
-                _ => (null, null, ProcessStepStatusId.TODO, false, null)
+                _ => (null, ProcessStepStatusId.TODO, false, null)
             };
         }
         catch (Exception ex) when (ex is not SystemException)
         {
             (stepStatusId, processMessage, nextStepTypeIds) = ProcessError(ex, processStepTypeId);
             modified = true;
-            stepsToSkip = null;
         }
 
-        return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, stepsToSkip, processMessage);
+        return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, null, processMessage);
     }
 
     private static (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(Exception ex, ProcessStepTypeId processStepTypeId) =>

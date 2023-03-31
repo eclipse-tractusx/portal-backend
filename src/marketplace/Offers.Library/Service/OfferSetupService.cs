@@ -33,6 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Text.Json;
+using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
@@ -161,7 +162,7 @@ public class OfferSetupService : IOfferSetupService
     /// <inheritdoc />
     public async Task SetupSingleInstance(Guid offerId, string instanceUrl)
     {
-        if (!await _portalRepositories.GetInstance<IAppInstanceRepository>()
+        if(await _portalRepositories.GetInstance<IAppInstanceRepository>()
                .CheckInstanceExistsForOffer(offerId)
                .ConfigureAwait(false))
         {
@@ -230,6 +231,26 @@ public class OfferSetupService : IOfferSetupService
         return technicalUserData.Select(x => x.TechnicalClientId);
     }
 
+    private async IAsyncEnumerable<TechnicalUserInfoData> CreateTechnicalUsersForOffer(
+        Guid offerId,
+        OfferTypeId offerTypeId,
+        CreateTechnicalUserData data)
+    {
+        var creationData = await _technicalUserProfileService.GetTechnicalUserProfilesForOffer(offerId, offerTypeId).ConfigureAwait(false);
+        foreach (var creationInfo in creationData)
+        {
+            var (technicalClientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation
+                .CreateServiceAccountAsync(
+                    creationInfo,
+                    data.CompanyId,
+                    data.Bpn == null ? Enumerable.Empty<string>() : new[] { data.Bpn },
+                    CompanyServiceAccountTypeId.MANAGED,
+                    data.EnhanceTechnicalUserName)
+                .ConfigureAwait(false);
+            yield return new TechnicalUserInfoData(serviceAccountId, userRoleData.Select(x => x.UserRoleText), serviceAccountData.AuthData.Secret, technicalClientId);
+        }
+    }
+
     /// <inheritdoc />
     public Task UpdateSingleInstance(string clientClientId, string instanceUrl) =>
         _provisioningManager.UpdateClient(clientClientId, instanceUrl, instanceUrl.AppendToPathEncoded("*"));
@@ -288,26 +309,6 @@ public class OfferSetupService : IOfferSetupService
                 appSubscriptionDetail.AppInstanceId = appInstance.Id;
                 appSubscriptionDetail.AppSubscriptionUrl = offerUrl;
             });
-    }
-
-    private async IAsyncEnumerable<TechnicalUserInfoData> CreateTechnicalUsersForOffer(
-        Guid offerId,
-        OfferTypeId offerTypeId,
-        CreateTechnicalUserData data)
-    {
-        var creationData = await _technicalUserProfileService.GetTechnicalUserProfilesForOffer(offerId, offerTypeId).ConfigureAwait(false);
-        foreach (var creationInfo in creationData)
-        {
-            var (technicalClientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation
-                .CreateServiceAccountAsync(
-                    creationInfo,
-                    data.CompanyId,
-                    data.Bpn == null ? Enumerable.Empty<string>() : new[] { data.Bpn },
-                    CompanyServiceAccountTypeId.MANAGED,
-                    data.EnhanceTechnicalUserName)
-                .ConfigureAwait(false);
-            yield return new TechnicalUserInfoData(serviceAccountId, userRoleData.Select(x => x.UserRoleText), serviceAccountData.AuthData.Secret, technicalClientId);
-        }
     }
 
     private async Task CreateNotifications(
@@ -407,7 +408,7 @@ public class OfferSetupService : IOfferSetupService
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, IEnumerable<ProcessStepTypeId>? stepsToSkip, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSingleInstanceSubscriptionDetail(Guid offerSubscriptionId)
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSingleInstanceSubscriptionDetail(Guid offerSubscriptionId)
     {
         var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerDetails = await offerSubscriptionRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId).ConfigureAwait(false);
@@ -430,12 +431,11 @@ public class OfferSetupService : IOfferSetupService
                         appSubscriptionDetail.AppSubscriptionUrl = offerDetails.InstanceData.InstanceUrl;
                     });
 
-                return new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-                    new[]
+                return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
+                    new []
                     {
                         ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
                     },
-                    null,
                     ProcessStepStatusId.DONE,
                     true,
                     null);
@@ -443,7 +443,7 @@ public class OfferSetupService : IOfferSetupService
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, IEnumerable<ProcessStepTypeId>? stepsToSkip, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateClient(Guid offerSubscriptionId)
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateClient(Guid offerSubscriptionId)
     {
         var clientCreationData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetClientCreationData(offerSubscriptionId).ConfigureAwait(false);
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
@@ -459,22 +459,21 @@ public class OfferSetupService : IOfferSetupService
 
         var (_, iamClientId) = await CreateClient(clientCreationData.OfferUrl, clientCreationData.OfferId, true, userRolesRepository);
         CreateAppInstance(offerSubscriptionId, clientCreationData.OfferUrl, clientCreationData.OfferId, iamClientId);
-
-        return new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
+        
+        return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             new[]
             {
                 clientCreationData.IsTechnicalUserNeeded ?
                     ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION :
                     ProcessStepTypeId.ACTIVATE_APPLICATION
             },
-            null,
             ProcessStepStatusId.DONE,
             true,
             null);
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, IEnumerable<ProcessStepTypeId>? stepsToSkip, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateTechnicalUser(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> itAdminRoles)
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateTechnicalUser(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> itAdminRoles)
     {
         var data = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetTechnicalUserCreationData(offerSubscriptionId)
@@ -508,19 +507,18 @@ public class OfferSetupService : IOfferSetupService
             }!,
             data.CompanyId).AwaitAll().ConfigureAwait(false);
 
-        return new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
+        return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             new[]
             {
                 ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
             },
-            null,
             ProcessStepStatusId.DONE,
             true,
             null);
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, IEnumerable<ProcessStepTypeId>? stepsToSkip, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> ActivateSubscription(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> itAdminRoles, string basePortalAddress)
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> ActivateSubscription(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> itAdminRoles, string basePortalAddress)
     {
         var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerDetails = await offerSubscriptionRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId).ConfigureAwait(false);
@@ -576,10 +574,8 @@ public class OfferSetupService : IOfferSetupService
 
         if (string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
         {
-            return new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId,
-                bool, string?>(
+            return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
                 offerDetails.InstanceData.IsSingleInstance ? null : new[] {ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK},
-                null,
                 ProcessStepStatusId.DONE,
                 true,
                 null);
@@ -594,9 +590,8 @@ public class OfferSetupService : IOfferSetupService
             throw new ServiceException(e.Message, true);
         }
 
-        return new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-            offerDetails.InstanceData.IsSingleInstance ? null : new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK },
-            null,
+        return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
+            offerDetails.InstanceData.IsSingleInstance ? null : new [] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK },
             ProcessStepStatusId.DONE,
             true,
             null);

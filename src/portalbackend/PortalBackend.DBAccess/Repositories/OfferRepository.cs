@@ -778,9 +778,9 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public AppInstanceSetup CreateAppInstanceSetup(Guid appId, Action<AppInstanceSetup>? setOptionalParameter)
+    public AppInstanceSetup CreateAppInstanceSetup(Guid offerId, Action<AppInstanceSetup>? setOptionalParameter)
     {
-        var appInstanceSetup = _context.AppInstanceSetups.Add(new AppInstanceSetup(Guid.NewGuid(), appId)).Entity;
+        var appInstanceSetup = _context.AppInstanceSetups.Add(new AppInstanceSetup(Guid.NewGuid(), offerId)).Entity;
         setOptionalParameter?.Invoke(appInstanceSetup);
         return appInstanceSetup;
     }

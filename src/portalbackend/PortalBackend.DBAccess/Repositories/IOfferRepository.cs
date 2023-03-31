@@ -449,6 +449,7 @@ public interface IOfferRepository
     /// <param name="languageShortName"></param>
     Func<int, int, Task<Pagination.Source<InReviewServiceData>?>> GetAllInReviewStatusServiceAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, OfferSorting? sorting, string? offerName, string languageShortName, string defaultLanguageShortName);
 
+    /// <summary>
     /// Gets the data for the app including the instance type information
     /// </summary>
     /// <param name="offerId"></param>
@@ -461,7 +462,6 @@ public interface IOfferRepository
     /// Creates a new instance of <see cref="AppInstanceSetup"/>
     /// </summary>
     /// <param name="offerId">id of the app</param>
-    /// <param name="isSingleInstance">defines whether the app is a single instance</param>
     /// <param name="setOptionalParameter">Action to set optional parameters for the app instance setup</param>
     /// <returns>The created entity</returns>
     AppInstanceSetup CreateAppInstanceSetup(Guid offerId, Action<AppInstanceSetup>? setOptionalParameter);

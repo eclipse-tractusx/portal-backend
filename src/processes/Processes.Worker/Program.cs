@@ -24,6 +24,7 @@ using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
@@ -41,6 +42,7 @@ try
                 .AddProcessExecutionService(hostContext.Configuration.GetSection("Processes"))
                 .AddTransient<IProcessTypeExecutor, ApplicationChecklistProcessTypeExecutor>()
                 .AddOfferSubscriptionProcessExecutor(hostContext.Configuration)
+                .AddTechnicalUserProfile()
                 .AddTransient<IApplicationChecklistHandlerService, ApplicationChecklistHandlerService>()
                 .AddPortalRepositories(hostContext.Configuration)
                 .AddApplicationChecklist(hostContext.Configuration.GetSection("ApplicationChecklist"))

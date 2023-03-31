@@ -57,7 +57,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, IEnumerable<ProcessStepTypeId>? stepsToSkip, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerProvider(Guid offerSubscriptionId, CancellationToken cancellationToken)
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerProvider(Guid offerSubscriptionId, CancellationToken cancellationToken)
     {
         var data = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetTriggerProviderInformation(offerSubscriptionId).ConfigureAwait(false);
         if (data == null)
@@ -97,7 +97,6 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
                 data.IsSingleInstance ?
                     ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION :
                     ProcessStepTypeId.START_AUTOSETUP }, 
-            null,
             triggerProvider ? ProcessStepStatusId.DONE : ProcessStepStatusId.SKIPPED,
             true,
             null);
@@ -149,7 +148,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, IEnumerable<ProcessStepTypeId>? stepsToSkip, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerProviderCallback(Guid offerSubscriptionId, CancellationToken cancellationToken)
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerProviderCallback(Guid offerSubscriptionId, CancellationToken cancellationToken)
     {
         var data = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetTriggerProviderCallbackInformation(offerSubscriptionId).ConfigureAwait(false);
         if (data == default)
@@ -186,7 +185,6 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             .ConfigureAwait(false);
 
         return (
-            null,
             null,
             ProcessStepStatusId.DONE,
             true,

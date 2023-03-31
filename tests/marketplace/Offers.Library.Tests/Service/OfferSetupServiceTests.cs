@@ -826,7 +826,6 @@ public class OfferSetupServiceTests
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
-        result.stepsToSkip.Should().BeNull();
     }
 
     #endregion
@@ -912,7 +911,6 @@ public class OfferSetupServiceTests
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
-        result.stepsToSkip.Should().BeNull();
         A.CallTo(() => _appInstanceRepository.CreateAppInstance(_validOfferId, iamClientId))
             .MustHaveHappenedOnceExactly();
     }
@@ -997,7 +995,6 @@ public class OfferSetupServiceTests
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
-        result.stepsToSkip.Should().BeNull();
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == NotificationTypeId.TECHNICAL_USER_CREATION), _companyUserCompanyId, null))
             .MustHaveHappenedOnceExactly();
     }
@@ -1073,7 +1070,6 @@ public class OfferSetupServiceTests
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
-        result.stepsToSkip.Should().BeNull();
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>.That.Matches(x => x.Count() == 1 && x.Single().Item2 == notificationTypeId), _companyUserCompanyId, null))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, notificationTypeId, false, A<Action<Notification>>._))

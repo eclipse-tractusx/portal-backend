@@ -184,7 +184,7 @@ public class AppsController : ControllerBase
     /// <response code="500">Internal Server Error</response>
     [HttpPost]
     [Route("{appId}/subscribe")]
-    [Authorize(Roles = "subscribe_apps")]
+    // [Authorize(Roles = "subscribe_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]

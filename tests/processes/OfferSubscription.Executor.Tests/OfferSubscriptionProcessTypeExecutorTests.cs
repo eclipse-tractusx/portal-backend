@@ -327,17 +327,17 @@ public class OfferSubscriptionProcessTypeExecutorTests
             .ReturnsLazily(() => Guid.Empty);
         
         A.CallTo(() => _offerProviderBusinessLogic.TriggerProvider(_subscriptionId, A<CancellationToken>._))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.START_AUTOSETUP }, null, ProcessStepStatusId.DONE, true, null));
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.START_AUTOSETUP }, ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.CreateSingleInstanceSubscriptionDetail(_subscriptionId))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION }, null, ProcessStepStatusId.DONE, true, null));
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION }, ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.CreateClient(_subscriptionId))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION }, null, ProcessStepStatusId.DONE, true, null));
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION }, ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.CreateTechnicalUser(_subscriptionId, A<IDictionary<string, IEnumerable<string>>>._))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION }, null, ProcessStepStatusId.DONE, true, null));
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION }, ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.ActivateSubscription(_subscriptionId, A<IDictionary<string, IEnumerable<string>>>._, A<string>._))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK }, null, ProcessStepStatusId.DONE, true, null));
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK }, ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerProviderBusinessLogic.TriggerProviderCallback(_subscriptionId, A<CancellationToken>._))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(null, null, ProcessStepStatusId.DONE, true, null));
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(null, ProcessStepStatusId.DONE, true, null));
     }
 
     #endregion
