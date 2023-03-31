@@ -194,6 +194,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new UnsupportedMediaTypeException("Only .pdf files are allowed.");
         }
 
+        if(!_settings.DocumentTypeIds.Contains(documentTypeId))
+        {
+            throw new ControllerArgumentException($"documentType must be either: {string.Join(",", _settings.DocumentTypeIds)}");
+        }
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
         if (companyUserId == Guid.Empty)
         {
