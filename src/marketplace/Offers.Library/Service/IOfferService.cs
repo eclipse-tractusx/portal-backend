@@ -191,4 +191,15 @@ public interface IOfferService
     /// <param name="catenaAdminRoles"></param>
     /// <returns></returns>
     Task SubmitServiceAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> catenaAdminRoles);
+
+    /// <summary>
+    /// Get offer Document Content for given offertypeId by Id
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="documentId"></param>
+    /// <param name="documentTypeIds"></param>
+    /// <param name="offerTypeId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<(byte[] Content, string ContentType, string FileName)> GetOfferDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIdSettings, OfferTypeId offerTypeId, CancellationToken cancellationToken);
 }

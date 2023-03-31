@@ -34,7 +34,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using PortalBackend.DBAccess.Models;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic.Tests;
@@ -413,173 +412,18 @@ public class AppBusinessLogicTests
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var data = _fixture.Create<byte[]>();
-        var fileName = _fixture.Create<string>()+".jpeg";
         var settings = new AppsSettings
         {
             AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
         };
-        var documentContentData = new OfferDocumentContentData(true, true, true, false, data, fileName, MediaTypeId.JPEG);
-        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .ReturnsLazily(() => documentContentData);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, Options.Create(settings), null!);
 
         // Act
-        var result = await sut.GetAppDocumentContentAsync(appId, documentId, CancellationToken.None).ConfigureAwait(false);
+        await sut.GetAppDocumentContentAsync(appId, documentId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        result.Content.Should().BeSameAs(data);
-        result.ContentType.Should().Be("image/jpeg");
-        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._)).MustHaveHappened();
-    }
-
-    [Fact]
-    public async Task GetAppDocumentContentAsync_ForDocumentIdNotExist_ThrowsArgumentException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var documentId = _fixture.Create<Guid>();
-        var settings = new AppsSettings
-        {
-            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
-        };
-        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .ReturnsLazily(() => (OfferDocumentContentData?)null);
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
-
-        // Act
-        async Task Act() => await sut.GetAppDocumentContentAsync(appId, documentId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"document {documentId} does not exist");
-    }
-
-    [Fact]
-    public async Task GetAppDocumentContentAsync_WithInvalidDocumentType_ThrowsArgumentException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var documentId = _fixture.Create<Guid>();
-        var fileName = _fixture.Create<string>()+".jpeg";;
-        var settings = new AppsSettings
-        {
-            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
-        };
-        var documentContentData = new OfferDocumentContentData(false, true, true, false, null, fileName, MediaTypeId.JPEG);
-        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .ReturnsLazily(() => documentContentData);
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
-
-        // Act
-        async Task Act() => await sut.GetAppDocumentContentAsync(appId, documentId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Document {documentId} can not get retrieved. Document type not supported.");
-    }
-
-    [Fact]
-    public async Task GetAppDocumentContentAsync_WithInvalidOfferType_ThrowsArgumentException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var documentId = _fixture.Create<Guid>();
-        var fileName = _fixture.Create<string>()+".jpeg";;
-        var settings = new AppsSettings
-        {
-            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
-        };
-        var documentContentData = new OfferDocumentContentData(true, true, false, false, null, fileName, MediaTypeId.JPEG);
-        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .ReturnsLazily(() => documentContentData);
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
-
-        // Act
-        async Task Act() => await sut.GetAppDocumentContentAsync(appId, documentId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"offer {appId} is not an app");
-    }
-
-    [Fact]
-    public async Task GetAppDocumentContentAsync_WithOfferNotLinkToDocument_ThrowsArgumentException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var documentId = _fixture.Create<Guid>();
-        var fileName = _fixture.Create<string>()+".jpeg";;
-        var settings = new AppsSettings
-        {
-            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
-        };
-        var documentContentData = new OfferDocumentContentData(true, false, true, false, null, fileName, MediaTypeId.JPEG);
-        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .ReturnsLazily(() => documentContentData);
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
-
-        // Act
-        async Task Act() => await sut.GetAppDocumentContentAsync(appId, documentId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Document {documentId} and app id {appId} do not match.");
-    }
-
-    [Fact]
-    public async Task GetAppDocumentContentAsync_WithInvalidStatus_ThrowsConflictException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var documentId = _fixture.Create<Guid>();
-        var fileName = _fixture.Create<string>()+".jpeg";;
-        var settings = new AppsSettings
-        {
-            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
-        };
-        var documentContentData = new OfferDocumentContentData(true, true, true, true, null, fileName, MediaTypeId.JPEG);
-        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .ReturnsLazily(() => documentContentData);
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
-
-        // Act
-        async Task Act() => await sut.GetAppDocumentContentAsync(appId, documentId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Document {documentId} is in status INACTIVE");
-    }
-
-    [Fact]
-    public async Task GetAppImageDocumentContentAsync_WithContentNull_ThrowsUnexpectedConditionException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var documentId = _fixture.Create<Guid>();
-        var fileName = _fixture.Create<string>()+".jpeg";;
-        var settings = new AppsSettings
-        {
-            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
-        };
-        var documentContentData = new OfferDocumentContentData(true, true, true, false, null, fileName, MediaTypeId.JPEG);
-        A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
-            .ReturnsLazily(() => documentContentData);
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(settings), null!);
-
-        // Act
-        async Task Act() => await sut.GetAppDocumentContentAsync(appId, documentId, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be($"document content should never be null");
+        A.CallTo(() => _offerService.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._)).MustHaveHappened();
     }
 
     #endregion

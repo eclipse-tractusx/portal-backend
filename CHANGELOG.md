@@ -2,6 +2,36 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.3.0-RC1
+
+### Change
+* App Services
+  * added additional attribute providedUri,contactEmail and contactNumber for update app PUT: /api/apps/appreleaseprocess/{appId}
+* Services Service
+  * change permission role for Get Service Details GET: /api/services/servicerelease/inReview/{serviceId}
+  * updated api response body key form ServiceTypeIds to ServiceTypes for endpoint GET: /api/services/{serviceId} ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+
+### Feature
+* Administration Service - Company preffered use case settings released (Controller: CompanyData)
+  * GET endpoint to receive company preferred use cases
+  * POST endpoint to set new company preferred use cases
+  * DELETE endpoint to delete a use case from company preference list
+* Services Service
+  * New endpoint to retrieve service documents released GET: /api/services/{serviceId}/serviceDocuments/{documentId} supporting service assigned documents
+  * GET: /api/services/provided endpoint released to support the service management function via retrieve all my services for the service owner
+  * GET: /api/serviceRelease/inReview released to support the service release decision management function via retrieve all active and waiting-for-decision services for the platform provider/operator
+* Migration/Seeding
+  * added two new document types (CONFORMITY_APPROVAL_SERVICES, SERVICE_LEADIMAGE)
+
+### Technical Support
+* added temp fix for CVE-2023-0464
+* added build workflow for v1.3.0 release candidate phase
+* updated actions workflows
+
+### Bugfix
+* App Service: added SaveAsync method call inside OfferService CreateOrUpdateProviderOfferAgreementConsent method to ensure data storage with POST /{appId}/agreementConsents call
+* Fixed CX Admin/operator notification creation for endpoint PUT: /api/apps/appreleaseprocess/appId/submit and PUT: /api/services/servicerelease/serviceId/submit by deleting the companyId validation
+
 ## 1.2.0
 
 ### Change
