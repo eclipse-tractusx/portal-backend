@@ -111,6 +111,7 @@ public class ProcessExecutionService
 
                     await foreach (var executionResult in processExecutor.ExecuteProcess(process.Id, process.ProcessTypeId, stoppingToken).WithCancellation(stoppingToken).ConfigureAwait(false))
                     {
+                        
                         if (executionResult switch
                         {
                             IProcessExecutor.ProcessExecutionResult.LockRequested => EnsureLock(),

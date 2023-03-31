@@ -546,8 +546,11 @@ public class OfferSetupService : IOfferSetupService
             subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
         });
 
-        offerSubscriptionRepository.RemoveOfferSubscriptionProcessData(offerSubscriptionId);
-
+        if (!offerDetails.InstanceData.IsSingleInstance)
+        {
+            offerSubscriptionRepository.RemoveOfferSubscriptionProcessData(offerSubscriptionId);
+        }
+        
         var notificationContent = JsonSerializer.Serialize(new
         {
             offerDetails.OfferId,
