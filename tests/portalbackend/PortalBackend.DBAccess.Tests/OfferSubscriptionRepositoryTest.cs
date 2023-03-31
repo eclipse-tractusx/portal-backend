@@ -702,7 +702,37 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
+    
+    #region GetProcessStepsForSubscription
+    
+    [Fact]
+    public async Task GetProcessStepsForSubscription_WithExisting_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
+        // Act
+        var result = await sut.GetProcessStepsForSubscription(new Guid("e8886159-9258-44a5-88d8-f5735a197a09")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GetProcessStepsForSubscription_WithoutExisting_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetProcessStepsForSubscription(Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+    
     #region Setup
     
     private async Task<(IOfferSubscriptionsRepository, PortalDbContext)> CreateSut()

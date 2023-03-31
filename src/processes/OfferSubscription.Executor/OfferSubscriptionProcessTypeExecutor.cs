@@ -18,6 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Collections.Immutable;
+using System.Net;
+using Flurl.Http;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
@@ -33,11 +36,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Execut
 
 public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
 {
+    private static readonly IImmutableList<int> RecoverableStatusCodes = new List<int>
+    {
+        (int) HttpStatusCode.BadGateway,
+        (int) HttpStatusCode.ServiceUnavailable,
+        (int) HttpStatusCode.GatewayTimeout
+    }.ToImmutableList();
+
     private readonly IOfferProviderBusinessLogic _offerProviderBusinessLogic;
     private readonly IOfferSetupService _offerSetupService;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
 
-    private readonly IReadOnlyList<ProcessStepTypeId> _executableProcessSteps = new List<ProcessStepTypeId>
+    private readonly IImmutableList<ProcessStepTypeId> _executableProcessSteps = new List<ProcessStepTypeId>
     {
         ProcessStepTypeId.TRIGGER_PROVIDER,
         ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION,
@@ -45,7 +55,7 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
         ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION,
         ProcessStepTypeId.ACTIVATE_SUBSCRIPTION,
         ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK
-    };
+    }.ToImmutableList();
 
     private Guid _offerSubscriptionId;
     private readonly OfferSubscriptionsProcessSettings _settings;
@@ -127,8 +137,13 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
         return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, null, processMessage);
     }
 
-    private static (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(Exception ex, ProcessStepTypeId processStepTypeId) =>
-        ex is ServiceException { IsRecoverable: true }
-            ? (ProcessStepStatusId.TODO, null, null)
-            : (ProcessStepStatusId.FAILED, ex.Message, processStepTypeId.GetRetriggerStep());
+    private static (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(Exception ex, ProcessStepTypeId processStepTypeId)
+    {
+        return ex switch
+        {
+            ServiceException {IsRecoverable: true} => (ProcessStepStatusId.TODO, null, null),
+            FlurlHttpException {StatusCode: { }} flurlHttpException when RecoverableStatusCodes.Contains(flurlHttpException.StatusCode.Value) => (ProcessStepStatusId.TODO, ex.Message, null),
+            _ => (ProcessStepStatusId.FAILED, ex.Message, processStepTypeId.GetRetriggerStep())
+        };
+    }
 }

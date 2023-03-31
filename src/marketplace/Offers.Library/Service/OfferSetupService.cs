@@ -141,6 +141,7 @@ public class OfferSetupService : IOfferSetupService
         {
             throw new UnexpectedConditionException("There should only be one or none technical user profile configured for ");
         }
+
         if (serviceAccountCreationInfo == null)
         {
             return null;
@@ -489,7 +490,7 @@ public class OfferSetupService : IOfferSetupService
         }
 
         var technicalUserClientId = data.ClientId ?? $"{data.OfferName}-{data.CompanyName}";
-        var createTechnicalUserData = new CreateTechnicalUserData(data.CompanyId, data.OfferName, data.Bpn, technicalUserClientId, true);
+        var createTechnicalUserData = new CreateTechnicalUserData(data.CompanyId, data.OfferName, data.Bpn, technicalUserClientId, data.OfferTypeId == OfferTypeId.APP);
         var technicalUserInfoData = await CreateTechnicalUserForSubscription(offerSubscriptionId, createTechnicalUserData).ConfigureAwait(false);
         var technicalClientId = technicalUserInfoData?.TechnicalClientId;
 

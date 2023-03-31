@@ -78,12 +78,4 @@ public class ProcessStepRepository : IProcessStepRepository
                     step.Id,
                     step.ProcessStepTypeId))
             .AsAsyncEnumerable();
-
-    /// <inheritdoc />
-    public Process AttachAndModifyProcess(Process process, Action<Process> setOptionalField)
-    {
-        _context.Processes.Attach(process);
-        setOptionalField.Invoke(process);
-        return process;
-    }
 }

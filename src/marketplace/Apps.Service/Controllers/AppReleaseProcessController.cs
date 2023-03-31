@@ -240,7 +240,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="403">User is not associated with provider company.</response>
     [HttpPost]
     [Route("createapp")]
-    // [Authorize(Roles = "add_apps")]
+    [Authorize(Roles = "add_apps")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -326,7 +326,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="404">App does not exist.</response>
     [HttpPut]
     [Route("{appId}/approveApp")]
-    // [Authorize(Roles = "approve_app_release")]
+    [Authorize(Roles = "approve_app_release")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
@@ -453,7 +453,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="404">Record not found.</response>
     [HttpPost]
     [Route("instance-type/{appId}")]
-    // [Authorize(Roles = "edit_apps")]
+    [Authorize(Roles = "edit_apps")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]

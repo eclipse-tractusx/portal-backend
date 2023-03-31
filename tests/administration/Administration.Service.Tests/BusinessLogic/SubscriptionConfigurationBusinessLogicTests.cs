@@ -32,6 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 public class SubscriptionConfigurationBusinessLogicTests
 {
     private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
+    private static readonly string NoServiceProviderIamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8B").ToString();
     private static readonly Guid ExistingCompanyId = new("857b93b1-8fcb-4141-81b0-ae81950d489e");
 
     private readonly ICompanyRepository _companyRepository;
@@ -207,6 +208,23 @@ public class SubscriptionConfigurationBusinessLogicTests
     }
 
     [Fact]
+    public async Task SetServiceProviderCompanyDetailsAsync_WithNotServiceProvider_ThrowsException()
+    {
+        //Arrange
+        SetupProviderCompanyDetails();
+        var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
+            
+        //Act
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData, NoServiceProviderIamUserId).ConfigureAwait(false);
+
+        //Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
+        ex.Message.Should().Be($"users {NoServiceProviderIamUserId} company is not a service-provider");
+        _serviceProviderDetails.Should().BeEmpty();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    [Fact]
     public async Task SetServiceProviderCompanyDetailsAsync_WithHttpUrl_ThrowsException()
     {
         //Arrange
@@ -310,7 +328,9 @@ public class SubscriptionConfigurationBusinessLogicTests
     {
         A.CallTo(() => _companyRepository.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(A<string>.That.Matches(x => x == IamUserId), A<IEnumerable<CompanyRoleId>>._))
             .Returns((ExistingCompanyId,true));
-        A.CallTo(() => _companyRepository.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(A<string>.That.Not.Matches(x => x == IamUserId), A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(A<string>.That.Matches(x => x == NoServiceProviderIamUserId), A<IEnumerable<CompanyRoleId>>._))
+            .Returns(new ValueTuple<Guid, bool>(Guid.NewGuid(), false));
+        A.CallTo(() => _companyRepository.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(A<string>.That.Not.Matches(x => x == IamUserId || x == NoServiceProviderIamUserId), A<IEnumerable<CompanyRoleId>>._))
             .Returns(new ValueTuple<Guid, bool>());
 
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>?>._))
