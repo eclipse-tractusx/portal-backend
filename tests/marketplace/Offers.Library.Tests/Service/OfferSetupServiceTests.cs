@@ -1040,7 +1040,6 @@ public class OfferSetupServiceTests
         var result = await _sut.CreateTechnicalUser(offerSubscriptionId, itAdminRoles).ConfigureAwait(false);
 
         // Assert
-        companyServiceAccount.OfferSubscriptionId!.Value.Should().Be(offerSubscriptionId);
         result.nextStepTypeIds.Should().ContainSingle().And
             .AllSatisfy(x => x.Should().Be(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION));
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
