@@ -331,7 +331,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.Requester.Lastname,
                 x.RequesterId,
                 x.Offer.AppInstanceSetup == null ? new ValueTuple<bool, string?>() : new ValueTuple<bool, string?>(x.Offer.AppInstanceSetup.IsSingleInstance, x.Offer.AppInstanceSetup.InstanceUrl),
-                x.Offer.AppInstances.Select(ai => ai.Id)
+                x.Offer.AppInstances.Select(ai => ai.Id),
+                x.OfferSubscriptionProcessData != null
             ))
             .SingleOrDefaultAsync();
 

@@ -490,7 +490,7 @@ public class OfferSetupService : IOfferSetupService
         }
 
         var technicalUserClientId = data.ClientId ?? $"{data.OfferName}-{data.CompanyName}";
-        var createTechnicalUserData = new CreateTechnicalUserData(data.CompanyId, data.OfferName, data.Bpn, technicalUserClientId, data.OfferTypeId == OfferTypeId.APP);
+        var createTechnicalUserData = new CreateTechnicalUserData(data.CompanyId, data.OfferName, data.Bpn, technicalUserClientId, true);
         var technicalUserInfoData = await CreateTechnicalUserForSubscription(offerSubscriptionId, createTechnicalUserData).ConfigureAwait(false);
         var technicalClientId = technicalUserInfoData?.TechnicalClientId;
 
@@ -547,7 +547,7 @@ public class OfferSetupService : IOfferSetupService
             subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
         });
 
-        if (!offerDetails.InstanceData.IsSingleInstance)
+        if (offerDetails.HasOfferSubscriptionProcessData)
         {
             offerSubscriptionRepository.RemoveOfferSubscriptionProcessData(offerSubscriptionId);
         }
