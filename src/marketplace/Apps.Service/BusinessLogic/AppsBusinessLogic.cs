@@ -280,50 +280,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerService.GetOfferDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken);
 
     /// <inheritdoc />
-    public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, string iamUserId)
-    {        
-        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        return await ValidateAndGetAppDescription(appId, iamUserId, offerRepository);        
-    }
-
-    /// <inheritdoc />
-    public async Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas)
-    {
-        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-
-        offerRepository.CreateUpdateDeleteOfferDescriptions(appId,
-            await ValidateAndGetAppDescription(appId, iamUserId, offerRepository),
-            offerDescriptionDatas.Select(od => new ValueTuple<string,string, string>(od.LanguageCode,od.LongDescription,od.ShortDescription)));
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
-
-    private static async Task<IEnumerable<LocalizedDescription>> ValidateAndGetAppDescription(Guid appId, string iamUserId, IOfferRepository offerRepository)
-    {
-        var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, iamUserId).ConfigureAwait(false);
-        if(result == default)
-        {
-            throw new NotFoundException($"App {appId} does not exist.");
-        }
-
-        if(!result.IsStatusActive)
-        {
-            throw new ConflictException($"App {appId} is in InCorrect Status");
-        }
-
-        if(!result.IsProviderCompanyUser)
-        {
-            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of App {appId}");
-        }
-
-        if (result.OfferDescriptionDatas == null)
-        {
-            throw new UnexpectedConditionException("offerDescriptionDatas should never be null here");
-        }
-        return result.OfferDescriptionDatas;
-    }
-
-    /// <inheritdoc />
     public async Task CreatOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken)
     {
         var appLeadImageContentTypes = new []{ "image/jpeg","image/png" };
