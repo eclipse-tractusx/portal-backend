@@ -121,7 +121,7 @@ public class ServiceBusinessLogicTests
         var sut = _fixture.Create<ServiceBusinessLogic>();
 
         // Act
-        var result = await sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _companyUser.Id, new List<LocalizedDescription>(), new List<ServiceTypeId>()), _iamUser.UserEntityId);
+        var result = await sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _companyUser.Id, new List<LocalizedDescription>(), new List<ServiceTypeId>(), "http://google.com"), _iamUser.UserEntityId);
 
         // Assert
         result.Should().Be(serviceId);
@@ -381,7 +381,7 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         SetupUpdateService();
-        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid());
+        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid(), "http://google.com");
         var settings = new ServiceSettings();
         var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, _offerSubscriptionService, null!, Options.Create(settings));
      
@@ -398,7 +398,7 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         SetupUpdateService();
-        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid());
+        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid(), "http://google.com");
         var settings = new ServiceSettings();
         var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, _offerSubscriptionService, null!, Options.Create(settings));
      
@@ -415,7 +415,7 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         SetupUpdateService();
-        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid());
+        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid(), "http://google.com");
         var settings = new ServiceSettings();
         var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, _offerSubscriptionService, null!, Options.Create(settings));
 
@@ -444,7 +444,7 @@ public class ServiceBusinessLogicTests
             }, 
             "43",
             "test@email.com",
-            _companyUser.Id);
+            _companyUser.Id, "http://google.com");
         var settings = new ServiceSettings
         {
             SalesManagerRoles = new Dictionary<string, IEnumerable<string>>

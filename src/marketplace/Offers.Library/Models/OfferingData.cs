@@ -38,7 +38,8 @@ public record ServiceOfferingData(
     string? ContactEmail,
     Guid? SalesManager,
     ICollection<LocalizedDescription> Descriptions,
-    IEnumerable<ServiceTypeId> ServiceTypeIds);
+    IEnumerable<ServiceTypeId> ServiceTypeIds,
+    string? ProviderUri);
 
 /// <summary>
 /// Description of a service
