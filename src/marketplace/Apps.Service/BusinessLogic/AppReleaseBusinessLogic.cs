@@ -433,7 +433,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             result.ContactEmail,
             result.ContactNumber,
             result.Price ?? Constants.ErrorString,
-            result.Tags);
+            result.Tags,
+            result.MatchingPrivacyPolicies);
     }
 
     /// <inheritdoc />

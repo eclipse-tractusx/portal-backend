@@ -42,6 +42,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="ContactNumber">Phone number of the app's primary contact.</param>
 /// <param name="Price">Pricing information of the app.</param>
 /// <param name="Tags">Tags assigned to application.</param>
+/// <param name="PrivacyPolicies">Privacy policy assigned to app.</param>
 
 public record InReviewAppDetails(
     Guid Id,
@@ -58,5 +59,6 @@ public record InReviewAppDetails(
     string? ContactEmail,
     string? ContactNumber,
     string Price,
-    IEnumerable<string> Tags    
+    IEnumerable<string> Tags,
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies    
 );

@@ -350,7 +350,7 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        var data = new InReviewAppDetails(appId,"Catena-X",default,null!,null!,null!,null!,null!,null!,null!,null!,null!,null!,null!,null!);
+        var data = new InReviewAppDetails(appId,"Catena-X",default,null!,null!,null!,null!,null!,null!,null!,null!,null!,null!,null!,null!,new[]{PrivacyPolicyId.COMPANY_DATA});
         A.CallTo(() => _logic.GetInReviewAppDetailsByIdAsync(appId))
             .ReturnsLazily(() => data);
         

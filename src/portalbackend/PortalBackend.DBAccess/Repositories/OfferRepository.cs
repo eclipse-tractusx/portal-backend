@@ -548,7 +548,8 @@ public class OfferRepository : IOfferRepository
                     offer.ContactEmail,
                     offer.ContactNumber,
                     offer.OfferLicenses.Select(license => license.Licensetext).FirstOrDefault(),
-                    offer.Tags.Select(t => t.Name)))
+                    offer.Tags.Select(t => t.Name),
+                    offer.OfferAssignedPrivacyPolicies.Select(p=>p.PrivacyPolicyId)))
             .SingleOrDefaultAsync();
     
     ///<inheritdoc/>
