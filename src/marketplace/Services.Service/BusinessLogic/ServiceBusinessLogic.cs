@@ -162,6 +162,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                 offer.Name = data.Title;
                 offer.SalesManagerId = data.SalesManager;
                 offer.ContactEmail = data.ContactEmail;
+                offer.MarketingUrl = data.ProviderUri;
             },
             offer =>
             {
