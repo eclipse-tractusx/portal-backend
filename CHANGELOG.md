@@ -2,6 +2,22 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.3.0-RC2
+
+### Change
+* Services Service
+  * POST: /api/services/addservice - added "providerUri" inside the request body to store the provider url
+  * PUT: /api/services/{serviceId} - added "providerUri" for endpoint to store the provider url
+
+### Feature
+n/a
+
+### Technical Support
+n/a
+
+### Bugfix
+n/a
+
 ## 1.3.0-RC1
 
 ### Change
