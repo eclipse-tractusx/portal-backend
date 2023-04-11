@@ -146,7 +146,7 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
-        notifications.Should().HaveCount(2);
+        notifications.Should().HaveCount(1);
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
     }
     

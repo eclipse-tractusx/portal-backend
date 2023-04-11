@@ -105,7 +105,7 @@ public class ApplicationActivationService : IApplicationActivationService
         });
 
         var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
-        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).ToListAsync().ConfigureAwait(false);
 
         await PostRegistrationWelcomeEmailAsync(userRolesRepository, applicationRepository, context.ApplicationId).ConfigureAwait(false);
 

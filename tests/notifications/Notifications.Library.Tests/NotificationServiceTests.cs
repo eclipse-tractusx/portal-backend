@@ -90,7 +90,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ConfigureAwait(false);
+        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(1);
@@ -122,7 +122,7 @@ public class NotificationServiceTests
             new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION)
         };
 
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ConfigureAwait(false);
+        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(5);
@@ -153,7 +153,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ConfigureAwait(false);
+        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(3);
@@ -183,7 +183,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        async Task Action() => await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ConfigureAwait(false);
+        async Task Action() => await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         await Assert.ThrowsAsync<ConfigurationException>(Action);

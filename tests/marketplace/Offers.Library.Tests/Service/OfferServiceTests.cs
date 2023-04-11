@@ -1735,7 +1735,7 @@ public class OfferServiceTests
     {
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._,
                 A<Guid>._, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
+            .Returns(new List<Guid>{_companyUser.Id}.ToAsyncEnumerable());
     }
 
     private void SetupCreateDocument(Guid appId, OfferTypeId offerTypeId)
