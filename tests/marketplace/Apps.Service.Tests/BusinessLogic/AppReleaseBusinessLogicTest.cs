@@ -63,7 +63,6 @@ public class AppReleaseBusinessLogicTest
     private readonly ILanguageRepository _languageRepository;
     private readonly AppsSettings _settings;
     private const string ClientId = "catenax-portal";
-    private static readonly Guid ValidDocumentId = Guid.NewGuid();
     private static readonly string IamUserId = Guid.NewGuid().ToString();
     private readonly IOfferSetupService _offerSetupService;
     private readonly AppReleaseBusinessLogic _sut;
@@ -626,210 +625,21 @@ public class AppReleaseBusinessLogicTest
     }
 
     #endregion
-    
-    #region DeleteAppDocument
+
+    #region  DeleteAppDocument
 
     [Fact]
-    public async Task DeleteAppDocumentsAsync_ReturnsExpectedResult()
-    {
-        //Arrange
-        var appId = Guid.NewGuid();
-        _settings.DeleteDocumentTypeIds = new[] {DocumentTypeId.APP_CONTRACT};
-        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, _settings.DeleteDocumentTypeIds, OfferTypeId.APP))
-            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, appId, true) }, true, DocumentStatusId.PENDING, true));
-
-        //Act
-        await _sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
-
-        // Assert 
-        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, _settings.DeleteDocumentTypeIds, OfferTypeId.APP))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.RemoveOfferAssignedDocument(appId, ValidDocumentId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _documentRepository.RemoveDocument(ValidDocumentId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-    }
-    
-    [Fact]
-    public async Task DeleteAppDocumentsAsync_WithNoDocument_ThrowsNotFoundException()
-    {
-        //Arrange
-        _settings.DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT };
-        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, _settings.DeleteDocumentTypeIds, OfferTypeId.APP))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)>, bool, DocumentStatusId, bool>());
-
-        //Act
-        async Task Act() => await _sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
-
-        // Assert 
-        // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Document {ValidDocumentId} does not exist");
-    }
-
-    [Fact]
-    public async Task DeleteAppDocumentsAsync_WithNoAssignedOfferDocument_ThrowsConflictException()
-    {
-        //Arrange
-        _settings.DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT };
-        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, _settings.DeleteDocumentTypeIds, OfferTypeId.APP))
-            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>() }, true, DocumentStatusId.PENDING, true));
-
-        //Act
-        async Task Act() => await _sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
-
-        // Assert 
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Document {ValidDocumentId} is not assigned to an app");
-    }
-    
-    [Fact]
-    public async Task DeleteAppDocumentsAsync_WithMultipleDocumentsAssigned_ThrowsConflictException()
-    {
-        //Arrange
-        _settings.DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT };
-        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, _settings.DeleteDocumentTypeIds, OfferTypeId.APP))
-            .ReturnsLazily(() => (
-                new []
-                {
-                    new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, Guid.NewGuid(), true), 
-                    new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, Guid.NewGuid(), true)
-                }, 
-                true, 
-                DocumentStatusId.PENDING, 
-                true));
-
-        //Act
-        async Task Act() => await _sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
-
-        // Assert 
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Document {ValidDocumentId} is assigned to more than one app");
-    }
-
-    [Fact]
-    public async Task DeleteAppDocumentsAsync_WithDocumentAssignedToService_ThrowsConflictException()
-    {
-        //Arrange
-        var appId = Guid.NewGuid();
-        _settings.DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT };
-        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, _settings.DeleteDocumentTypeIds, OfferTypeId.APP))
-            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, appId, false) }, true, DocumentStatusId.PENDING, true));
-
-        //Act
-        async Task Act() => await _sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
-
-        // Assert 
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Document {ValidDocumentId} is not assigned to an app");
-    }
-
-    [Fact]
-    public async Task DeleteAppDocumentsAsync_WithInvalidProviderCompanyUser_ThrowsForbiddenException()
-    {
-        //Arrange
-        var appId = Guid.NewGuid();
-        _settings.DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT };
-        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, _settings.DeleteDocumentTypeIds, OfferTypeId.APP))
-            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, appId, true) }, true, DocumentStatusId.PENDING, false));
-
-        //Act
-        async Task Act() => await _sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"user {IamUserId} is not a member of the same company of document {ValidDocumentId}");
-    }
-
-    [Fact]
-    public async Task DeleteAppDocumentsAsync_WithInvalidOfferStatus_ThrowsConflictException()
-    {
-        //Arrange
-        var appId = Guid.NewGuid();
-        _settings.DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT };
-        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, _settings.DeleteDocumentTypeIds, OfferTypeId.APP))
-            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.ACTIVE, appId, true) }, true, DocumentStatusId.PENDING, true));
-
-        //Act
-        async Task Act() => await _sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"App {appId} is in locked state");
-    }
-
-    [Fact]
-    public async Task DeleteAppDocumentsAsync_WithInvalidDocumentType_ThrowsArgumentException()
-    {
-        //Arrange
-        var appId = Guid.NewGuid();
-        _settings.DeleteDocumentTypeIds = new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT };
-        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, _settings.DeleteDocumentTypeIds, OfferTypeId.APP))
-            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, appId, true) }, false, DocumentStatusId.PENDING, true));
-
-        //Act
-        async Task Act() => await _sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Document {ValidDocumentId} can not get retrieved. Document type not supported");
-    }
-
-    [Fact]
-    public async Task DeleteAppDocumentsAsync_WithInvalidDocumentStatus_ThrowsConflictException()
-    {
-        //Arrange
-        var appId = Guid.NewGuid();
-        _settings.DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT };
-        A.CallTo(() => _documentRepository.GetAppDocumentsAsync(ValidDocumentId, IamUserId, _settings.DeleteDocumentTypeIds, OfferTypeId.APP))
-            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, appId, true) }, true, DocumentStatusId.LOCKED, true));
-
-        //Act
-        async Task Act() => await _sut.DeleteAppDocumentsAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Document in State {DocumentStatusId.LOCKED} can't be updated");
-    }
-    
-    #endregion
-
-    #region GetInReviewAppDetailsById
-
-    [Fact]
-    public async Task GetInReviewAppDetailsByIdAsync_CallsExpected()
+    public async Task DeleteAppDocumentsAsync_ReturnsExpected()
     {
         // Arrange
-        var appId = _fixture.Create<Guid>();
-        var data = _fixture.Create<InReviewOfferData>();
-        A.CallTo(() => _offerRepository.GetInReviewAppDataByIdAsync(appId,OfferTypeId.APP))
-            .ReturnsLazily(() => data);
+        var documentId = _fixture.Create<Guid>();
 
         // Act
-        var result = await _sut.GetInReviewAppDetailsByIdAsync(appId).ConfigureAwait(false);
+        await _sut.DeleteAppDocumentsAsync(documentId, IamUserId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerRepository.GetInReviewAppDataByIdAsync(appId, OfferTypeId.APP)).MustHaveHappened();
-        result.Should().NotBeNull();
-        result.Id.Should().Be(data.id);
-    }
+        A.CallTo(() => _offerService.DeleteDocumentsAsync(documentId, IamUserId, A<IEnumerable<DocumentTypeId>>._, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
 
-    [Fact]
-    public async Task GetInReviewAppDetailsByIdAsync_ThrowsNotFoundException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _offerRepository.GetInReviewAppDataByIdAsync(appId,OfferTypeId.APP))
-            .ReturnsLazily(() => (InReviewOfferData?)null);
-
-        //Act
-        async Task Act() => await _sut.GetInReviewAppDetailsByIdAsync(appId).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be($"App {appId} not found or Incorrect Status");
     }
 
     #endregion

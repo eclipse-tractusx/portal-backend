@@ -164,4 +164,28 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<InReviewServiceData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, [FromQuery] string? serviceName = null, [FromQuery] string? languageShortName = null) =>
         _serviceReleaseBusinessLogic.GetAllInReviewStatusServiceAsync(page, size, sorting,serviceName, languageShortName);
+
+    /// <summary>
+    /// Delete Document Assigned to Offer
+    /// </summary>
+    /// <param name="documentId">ID of the document to be deleted.</param>
+    /// <remarks>Example: DELETE: /api/services/servicerelease/documents/{documentId}</remarks>
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">Record not found.</response>
+    /// <response code="409">Document or App is in InCorrect Status</response>
+    /// <response code="403">User is not allowed to delete the document</response>
+    /// <response code="400"> parameters are invalid.</response>
+    [HttpDelete]
+    [Route("documents/{documentId}")]
+    [Authorize(Roles = "add_service_offering")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<NoContentResult> DeleteServiceDocumentsAsync([FromRoute] Guid documentId)
+    {
+        await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.DeleteServiceDocumentsAsync(documentId, iamUserId));
+        return NoContent();
+    }
 }
