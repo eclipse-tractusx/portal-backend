@@ -316,6 +316,26 @@ public class ServiceReleaseBusinessLogicTest
     }
 
     #endregion
+
+    #region  DeleteServiceDocument
+
+    [Fact]
+    public async Task DeleteServiceDocumentsAsync_ReturnsExpected()
+    {
+        // Arrange
+        var documentId = _fixture.Create<Guid>();
+        var IamUserId = _fixture.Create<Guid>().ToString();
+
+        // Act
+        await _sut.DeleteServiceDocumentsAsync(documentId, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.DeleteDocumentsAsync(documentId, IamUserId, A<IEnumerable<DocumentTypeId>>._, OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();
+
+    }
+
+    #endregion
+
     private void SetupRepositories()
     {
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);

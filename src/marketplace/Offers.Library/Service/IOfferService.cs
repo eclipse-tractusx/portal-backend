@@ -203,4 +203,14 @@ public interface IOfferService
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<(byte[] Content, string ContentType, string FileName)> GetOfferDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIdSettings, OfferTypeId offerTypeId, CancellationToken cancellationToken);
+
+     /// <summary>
+    /// Get offer Document Content for given offertypeId by Id
+    /// </summary>
+    /// <param name="documentId"></param>
+    /// <param name="iamUserId"></param>
+    /// <param name="documentTypeIdSettings"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task DeleteDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIdSettings, OfferTypeId offerTypeId);
 }
