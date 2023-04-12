@@ -225,6 +225,7 @@ public class OfferService : IOfferService
             service.OfferStatusId = OfferStatusId.CREATED;
             service.ProviderCompanyId = iamUserResult.CompanyId;
             service.MarketingUrl = data.ProviderUri;
+            service.LicenseTypeId = LicenseTypeId.COTS;
         });
         var licenseId = offerRepository.CreateOfferLicenses(data.Price).Id;
         offerRepository.CreateOfferAssignedLicense(service.Id, licenseId);
