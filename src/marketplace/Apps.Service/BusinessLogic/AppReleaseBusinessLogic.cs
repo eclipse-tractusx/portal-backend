@@ -271,6 +271,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             app.ContactEmail = appRequestModel.ContactEmail;
             app.ContactNumber = appRequestModel.ContactNumber;
             app.MarketingUrl = appRequestModel.ProviderUri;
+            app.LicenseTypeId = LicenseTypeId.COTS;
         }).Id;
         appRepository.AddOfferDescriptions(appRequestModel.Descriptions.Select(d =>
               (appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));

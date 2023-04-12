@@ -26,7 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditOffer20230119))]
+[AuditEntityV1(typeof(AuditOffer20230406))]
 public class Offer : IAuditableV1, IBaseEntity
 {
     private Offer()
@@ -87,6 +87,8 @@ public class Offer : IAuditableV1, IBaseEntity
 
     public OfferStatusId OfferStatusId { get; set; }
 
+    public LicenseTypeId LicenseTypeId { get; set; }
+
     public DateTimeOffset? DateLastChanged { get; set; }
     
     [AuditLastEditorV1]
@@ -96,6 +98,8 @@ public class Offer : IAuditableV1, IBaseEntity
     public virtual OfferType? OfferType { get; private set; }
     
     public virtual OfferStatus? OfferStatus{ get; set; }
+
+    public virtual LicenseType? LicenseType{ get; set; }
     
     public virtual AppInstanceSetup? AppInstanceSetup{ get; set; }
     public virtual ICollection<AgreementAssignedOffer> AgreementAssignedOffers { get; private set; }

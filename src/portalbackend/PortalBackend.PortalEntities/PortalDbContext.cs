@@ -62,6 +62,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AppSubscriptionDetail> AppSubscriptionDetails { get; set; } = default!;
     public virtual DbSet<AuditAppSubscriptionDetail20221118> AuditAppSubscriptionDetail20221118 { get; set; } = default!;
     public virtual DbSet<AuditOffer20230119> AuditOffer20230119 { get; set; } = default!;
+    public virtual DbSet<AuditOffer20230406> AuditOffer20230406 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20230214> AuditCompanyApplication20230214 { get; set; } = default!;
@@ -141,7 +142,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<UserRoleCollection> UserRoleCollections { get; set; } = default!;
     public virtual DbSet<UserRoleCollectionDescription> UserRoleCollectionDescriptions { get; set; } = default!;
     public virtual DbSet<UserRoleDescription> UserRoleDescriptions { get; set; } = default!;
-
+    public virtual DbSet<LicenseType> LicenseTypes { get; set; } = default!;
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSnakeCaseNamingConvention();
@@ -353,7 +354,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<Offer, AuditOffer20230119>();
+            entity.HasAuditV1Triggers<Offer, AuditOffer20230406>();
         });
 
         modelBuilder.Entity<AppSubscriptionDetail>(entity =>
@@ -1090,6 +1091,13 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.PrivacyPolicyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
+        
+        modelBuilder.Entity<LicenseType>()
+            .HasData(
+                Enum.GetValues(typeof(LicenseTypeId))
+                    .Cast<LicenseTypeId>()
+                    .Select(e => new LicenseType(e))
+            );
 
         modelBuilder.Entity<ServiceDetail>(entity =>
         {
