@@ -374,8 +374,8 @@ public class UserRepository : IUserRepository
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new {
                 User = companyUser,
-                Offers = companyUser.Company!.CompanyRoles
-                    .SelectMany(companyRole => companyRole.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(role => role.OfferId == offerId))
+                Offers = companyUser.Company!.CompanyAssignedRoles
+                    .SelectMany(assigned => assigned.CompanyRole!.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(role => role.OfferId == offerId))
                     .Select(userrole => userrole.Offer)
             })
             .Select(x => new OfferIamUserData(

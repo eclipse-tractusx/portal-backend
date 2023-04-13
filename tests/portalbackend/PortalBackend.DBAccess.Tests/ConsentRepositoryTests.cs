@@ -207,7 +207,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         //Act
-        var result = sut.AddAttachAndModifyConsents(appAgreementConsentStatus, agreementConsentStatus, offerId, companyId, companyUserId, utcNow);
+        var result = sut.AddAttachAndModifyOfferConsents(appAgreementConsentStatus, agreementConsentStatus, offerId, companyId, companyUserId, utcNow);
 
         //Assert
         result.Should().HaveCount(6)
@@ -238,6 +238,64 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
             );
     }
 
+
+    [Fact]
+    public async Task AddAttachAndModifyConsents_CompanyRole_ReturnsExpected()
+    {
+        //Arrange
+        var companyId = Guid.NewGuid();
+        var companyUserId = Guid.NewGuid();
+        var agreementId_1 = Guid.NewGuid();
+        var agreementId_2 = Guid.NewGuid();
+        var agreementId_3 = Guid.NewGuid();
+        var agreementId_4 = Guid.NewGuid();
+        var agreementId_5 = Guid.NewGuid();
+        var agreementId_6 = Guid.NewGuid();
+        var consentId_1 = Guid.NewGuid();
+        var consentId_2 = Guid.NewGuid();
+        var consentId_3 = Guid.NewGuid();
+        var consentId_4 = Guid.NewGuid();
+        var utcNow = DateTimeOffset.UtcNow;
+        var agreementAssingedConsenetData = new (Guid, ConsentStatusId)[] {
+            new(agreementId_1, ConsentStatusId.ACTIVE),   // shall remain unchanged
+            new(agreementId_2, ConsentStatusId.INACTIVE), // shall remain unchanged
+            new(agreementId_3, ConsentStatusId.ACTIVE),   // shall be updated
+            new(agreementId_4, ConsentStatusId.INACTIVE), // shall be updated
+            new(agreementId_5, ConsentStatusId.ACTIVE),   // shall be added
+            new(agreementId_6, ConsentStatusId.INACTIVE), // shall be added
+        };
+        var consentStatusDetails = new ConsentStatusDetails[] {
+            new( consentId_1,agreementId_1, ConsentStatusId.ACTIVE),
+            new( consentId_2,agreementId_2, ConsentStatusId.INACTIVE),
+            new( consentId_3,agreementId_3, ConsentStatusId.INACTIVE),
+            new( consentId_4,agreementId_4, ConsentStatusId.ACTIVE),
+        };
+
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        //Act
+        var result = sut.AddAttachAndModifyConsents(consentStatusDetails, agreementAssingedConsenetData, companyId, companyUserId, utcNow);
+
+        //Assert
+        result.Should().HaveCount(6)
+            .And.Satisfy(
+                x => x.Id == consentId_1 && x.AgreementId == agreementId_1 && x.ConsentStatusId == ConsentStatusId.ACTIVE,
+                x => x.Id == consentId_2 && x.AgreementId == agreementId_2 && x.ConsentStatusId == ConsentStatusId.INACTIVE,
+                x => x.Id == consentId_3 && x.AgreementId == agreementId_3 && x.ConsentStatusId == ConsentStatusId.ACTIVE,
+                x => x.Id == consentId_4 && x.AgreementId == agreementId_4 && x.ConsentStatusId == ConsentStatusId.INACTIVE,
+                x => x.AgreementId == agreementId_5 && x.ConsentStatusId == ConsentStatusId.ACTIVE,
+                x => x.AgreementId == agreementId_6 && x.ConsentStatusId == ConsentStatusId.INACTIVE
+            );
+
+        context.ChangeTracker.Entries().Should().HaveCount(4);
+        context.ChangeTracker.Entries<Consent>().Should().HaveCount(4)
+            .And.Satisfy(
+                x => x.State == EntityState.Modified && x.Entity.Id == consentId_3 && x.Entity.AgreementId == agreementId_3 && x.Entity.ConsentStatusId == ConsentStatusId.ACTIVE,
+                x => x.State == EntityState.Modified && x.Entity.Id == consentId_4 && x.Entity.AgreementId == agreementId_4 && x.Entity.ConsentStatusId == ConsentStatusId.INACTIVE,
+                x => x.State == EntityState.Added && x.Entity.AgreementId == agreementId_5 && x.Entity.ConsentStatusId == ConsentStatusId.ACTIVE,
+                x => x.State == EntityState.Added && x.Entity.AgreementId == agreementId_6 && x.Entity.ConsentStatusId == ConsentStatusId.INACTIVE
+            );
+    }
     #region
 
     #endregion

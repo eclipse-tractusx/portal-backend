@@ -172,7 +172,7 @@ public class OfferService : IOfferService
         }
 
         var ConsentStatusdata = _portalRepositories.GetInstance<IConsentRepository>()
-            .AddAttachAndModifyConsents(
+            .AddAttachAndModifyOfferConsents(
                 dbAgreements,
                 offerAgreementConsent.Agreements,
                 offerId,

@@ -459,31 +459,6 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<Company>(entity =>
         {
-            entity.HasMany(p => p.CompanyRoles)
-                .WithMany(p => p.Companies)
-                .UsingEntity<CompanyAssignedRole>(
-                    j => j
-                        .HasOne(d => d.CompanyRole!)
-                        .WithMany()
-                        .HasForeignKey(d => d.CompanyRoleId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j => j
-                        .HasOne(d => d.Company!)
-                        .WithMany()
-                        .HasForeignKey(d => d.CompanyId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j =>
-                    {
-                        j.HasKey(e => new { e.CompanyId, e.CompanyRoleId });
-                        j.HasAuditV1Triggers<CompanyAssignedRole, AuditCompanyAssignedRole2023316>();
-                    }
-                );
-
-            entity.HasMany(p => p.CompanyAssignedRoles)
-                .WithOne(d => d.Company!)
-                .HasForeignKey(d => d.CompanyId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
             entity.HasMany(p => p.OfferSubscriptions)
                 .WithOne(d => d.Company)
                 .HasForeignKey(d => d.CompanyId)
@@ -596,6 +571,21 @@ public class PortalDbContext : DbContext
         });
 
         modelBuilder.Entity<CompanyRoleRegistrationData>();
+
+        modelBuilder.Entity<CompanyAssignedRole>(entity => {
+            entity.HasKey(e => new { e.CompanyId, e.CompanyRoleId });
+            entity.HasAuditV1Triggers<CompanyAssignedRole, AuditCompanyAssignedRole2023316>();
+
+            entity.HasOne(d => d.Company!)
+                .WithMany(p => p.CompanyAssignedRoles)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            
+            entity.HasOne(d => d.CompanyRole!)
+                .WithMany(p => p.CompanyAssignedRoles)
+                .HasForeignKey(d => d.CompanyRoleId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
 
         modelBuilder.Entity<CompanyServiceAccount>(entity =>
         {
