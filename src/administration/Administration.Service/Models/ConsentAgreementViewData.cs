@@ -17,24 +17,16 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using System.Net;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+public record CompanyRoleConsentViewData(
+    [property: JsonPropertyName("companyRoles")]
+    CompanyRoleId CompanyRoleId,
+    bool CompanyRolesActive,
+    IEnumerable<ConsentAgreementViewData> Agreements
+);
 
-public interface ICompanyDataBusinessLogic
-{
-    Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync(string iamUserId);
-
-    IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(string iamUserId);
-
-    Task<bool> CreateCompanyAssignedUseCaseDetailsAsync(string iamUserId, Guid useCaseId);
-
-    Task RemoveCompanyAssignedUseCaseDetailsAsync(string iamUserId, Guid useCaseId);
-
-    IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId);
-
-    Task CreateCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId, IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails);
-}
+public record ConsentAgreementViewData(Guid AgreementId, string AgreementName, ConsentStatusId? ConsentStatus);

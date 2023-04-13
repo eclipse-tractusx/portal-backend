@@ -82,7 +82,7 @@ public class ConsentRepository : IConsentRepository
         }
     }
 
-    public IEnumerable<Consent> AddAttachAndModifyConsents(IEnumerable<AppAgreementConsentStatus> initialItems, IEnumerable<AgreementConsentStatus> modifyItems, Guid offerId, Guid companyId, Guid companyUserId, DateTimeOffset utcNow) =>
+    public IEnumerable<Consent> AddAttachAndModifyOfferConsents(IEnumerable<AppAgreementConsentStatus> initialItems, IEnumerable<AgreementConsentStatus> modifyItems, Guid offerId, Guid companyId, Guid companyUserId, DateTimeOffset utcNow) =>
         _portalDbContext.AddAttachRange(
             initialItems,
             modifyItems,
@@ -95,6 +95,17 @@ public class ConsentRepository : IConsentRepository
                 CreateConsentAssignedOffer(consent.Id,offerId);
                 return consent;
             },
+            (initial,modify) => initial.ConsentStatusId == modify.ConsentStatusId,
+            (consent,modify) => consent.ConsentStatusId = modify.ConsentStatusId);
+
+    public IEnumerable<Consent> AddAttachAndModifyConsents(IEnumerable<ConsentStatusDetails> initialItems, IEnumerable<(Guid AgreementId, ConsentStatusId ConsentStatusId)> modifyItems, Guid companyId, Guid companyUserId, DateTimeOffset utcNow) =>
+        _portalDbContext.AddAttachRange(
+            initialItems,
+            modifyItems,
+            initial => initial.AgreementId,
+            modify => modify.AgreementId,
+            initial => new Consent(initial.ConsentId, initial.AgreementId, Guid.Empty, Guid.Empty, initial.ConsentStatusId, default),
+            modify => new Consent(Guid.NewGuid(), modify.AgreementId, companyId, companyUserId, modify.ConsentStatusId, utcNow),
             (initial,modify) => initial.ConsentStatusId == modify.ConsentStatusId,
             (consent,modify) => consent.ConsentStatusId = modify.ConsentStatusId);
 }

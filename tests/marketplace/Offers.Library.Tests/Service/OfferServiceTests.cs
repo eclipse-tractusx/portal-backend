@@ -1445,7 +1445,7 @@ public class OfferServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         ex.Message.Should().Be($"agreements {additionalAgreementId} are not valid for offer {offerId} (Parameter 'offerAgreementConsent')");
-        A.CallTo(() => _consentRepository.AddAttachAndModifyConsents(A<IEnumerable<AppAgreementConsentStatus>>._,A<IEnumerable<AgreementConsentStatus>>._,A<Guid>._,A<Guid>._,A<Guid>._,A<DateTimeOffset>._))
+        A.CallTo(() => _consentRepository.AddAttachAndModifyOfferConsents(A<IEnumerable<AppAgreementConsentStatus>>._,A<IEnumerable<AgreementConsentStatus>>._,A<Guid>._,A<Guid>._,A<Guid>._,A<DateTimeOffset>._))
             .MustNotHaveHappened();
     }
 
@@ -1476,7 +1476,7 @@ public class OfferServiceTests
             });
         A.CallTo(() => _agreementRepository.GetOfferAgreementConsent(offerId, _iamUserId, OfferStatusId.CREATED, offerTypeId))
             .ReturnsLazily(() => new ValueTuple<OfferAgreementConsentUpdate, bool>(offerAgreementConsent, true));
-        A.CallTo(() => _consentRepository.AddAttachAndModifyConsents(A<IEnumerable<AppAgreementConsentStatus>>._,A<IEnumerable<AgreementConsentStatus>>._,A<Guid>._,A<Guid>._,A<Guid>._,A<DateTimeOffset>._))
+        A.CallTo(() => _consentRepository.AddAttachAndModifyOfferConsents(A<IEnumerable<AppAgreementConsentStatus>>._,A<IEnumerable<AgreementConsentStatus>>._,A<Guid>._,A<Guid>._,A<Guid>._,A<DateTimeOffset>._))
             .Returns(new Consent[] {
                 new(consentId, agreementId, _companyUserCompanyId, _companyUser.Id, ConsentStatusId.ACTIVE, utcNow),
                 new(newCreatedConsentId, additionalAgreementId, _companyUserCompanyId, _companyUser.Id, ConsentStatusId.ACTIVE, utcNow)
@@ -1486,7 +1486,7 @@ public class OfferServiceTests
         var result = await _sut.CreateOrUpdateProviderOfferAgreementConsent(offerId, consentData, _iamUserId, offerTypeId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _consentRepository.AddAttachAndModifyConsents(A<IEnumerable<AppAgreementConsentStatus>>._,A<IEnumerable<AgreementConsentStatus>>._, offerId, _companyUserCompanyId, _companyUser.Id, A<DateTimeOffset>._))
+        A.CallTo(() => _consentRepository.AddAttachAndModifyOfferConsents(A<IEnumerable<AppAgreementConsentStatus>>._,A<IEnumerable<AgreementConsentStatus>>._, offerId, _companyUserCompanyId, _companyUser.Id, A<DateTimeOffset>._))
             .MustHaveHappenedOnceExactly();
         result.Should()
             .HaveCount(2)
