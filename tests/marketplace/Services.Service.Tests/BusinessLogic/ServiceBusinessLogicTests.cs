@@ -524,7 +524,10 @@ public class ServiceBusinessLogicTests
         // Assert
         A.CallTo(() => _offerService.DeclineOfferAsync(_existingServiceId, _iamUser.UserEntityId, data,
             OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION,
-            A<IDictionary<string, IEnumerable<string>>>._, A<string>._)).MustHaveHappenedOnceExactly();
+            A<IDictionary<string, IEnumerable<string>>>._,
+            A<string>._,
+            A<IEnumerable<NotificationTypeId>>._,
+            A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
     }
     
     #endregion
@@ -627,7 +630,10 @@ public class ServiceBusinessLogicTests
         
         // Assert
         A.CallTo(() => _offerService.ApproveOfferRequestAsync(appId, _iamUser.UserEntityId, OfferTypeId.SERVICE,
-            A<IEnumerable<NotificationTypeId>>._, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+            A<IEnumerable<NotificationTypeId>>._,
+            A<IDictionary<string, IEnumerable<string>>>._,
+            A<IEnumerable<NotificationTypeId>>._,
+            A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

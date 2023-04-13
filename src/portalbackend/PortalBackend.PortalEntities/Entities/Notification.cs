@@ -61,6 +61,8 @@ public class Notification : IBaseEntity
 
     public Guid? CreatorUserId { get; set; }
 
+    public bool Done { get; set; }
+
     // Navigation properties
     public virtual CompanyUser? Receiver { get; set; }
     public virtual NotificationType? NotificationType { get; set; }

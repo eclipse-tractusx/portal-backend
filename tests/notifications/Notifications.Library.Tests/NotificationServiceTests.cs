@@ -314,6 +314,70 @@ public class NotificationServiceTests
 
     #endregion
 
+    #region SetNotificationsForOfferToDone
+    
+    
+    [Fact]
+    public async Task SetNotificationsForOfferToDone_WithMultipleUserRoleAndOneNotificationTypeId_UpdatesThreeNotification()
+    {
+        // Arrange
+        var not1 = Guid.NewGuid();
+        var not2 = Guid.NewGuid();
+        var not3 = Guid.NewGuid();
+        var not4 = Guid.NewGuid();
+        var notifications = new List<Notification>
+        {
+            new(not1, Guid.Empty, DateTimeOffset.UtcNow, NotificationTypeId.APP_RELEASE_REQUEST, false),
+            new(not2, Guid.Empty, DateTimeOffset.UtcNow, NotificationTypeId.APP_RELEASE_REQUEST, false),
+            new(not3, Guid.Empty, DateTimeOffset.UtcNow, NotificationTypeId.APP_RELEASE_REQUEST, false),
+            new(not4, Guid.Empty, DateTimeOffset.UtcNow, NotificationTypeId.APP_RELEASE_REQUEST, false),
+        };
+        var userRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, new []{ "Company Admin" } }
+        };
+        var sut = new NotificationService(_portalRepositories);
+        var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
+        A.CallTo(() => _notificationRepository.GetUpdateData(A<IEnumerable<Guid>>._, A<IEnumerable<NotificationTypeId>>._, appId))
+            .Returns(notifications.Select(x => x.Id).ToAsyncEnumerable());
+        A.CallTo(() => _notificationRepository.AttachAndModifyNotification(A<Guid>._, A<Action<Notification>>._))
+            .Invokes((Guid notificationId, Action<Notification> setOptionalFields) =>
+            {
+                var notification = notifications.Single(x => x.Id == notificationId);
+                setOptionalFields.Invoke(notification);
+            });
+
+        // Act
+        await sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST,1), appId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _notificationRepository.AttachAndModifyNotification(not1, A<Action<Notification>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationRepository.AttachAndModifyNotification(not2, A<Action<Notification>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationRepository.AttachAndModifyNotification(not3, A<Action<Notification>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationRepository.AttachAndModifyNotification(not4, A<Action<Notification>>._)).MustHaveHappenedOnceExactly();
+        notifications.Should().AllSatisfy(x => x.Done.Should().BeTrue());
+    }
+
+    [Fact]
+    public async Task SetNotificationsForOfferToDone_WithNotExistingRole_ThrowsException()
+    {
+        // Arrange
+        var userRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, new []{ "Not Existing" } }
+        };
+        var sut = new NotificationService(_portalRepositories);
+        var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
+
+        // Act
+        async Task Action() => await sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST,1), appId).ConfigureAwait(false);
+
+        // Assert
+        await Assert.ThrowsAsync<ConfigurationException>(Action);
+    }
+    
+    #endregion
+    
     #region Setup
 
     private void SetupFakes()

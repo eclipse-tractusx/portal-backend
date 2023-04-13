@@ -59,7 +59,7 @@ public class NotificationBusinessLogicTests
         var (companyUser, iamUser) = CreateTestUserPair();
         _companyUser = companyUser;
         _iamUser = iamUser;
-        _notificationDetail = new NotificationDetailData(Guid.NewGuid(),  DateTime.UtcNow, NotificationTypeId.INFO, NotificationTopicId.INFO, false, "Test Message", null);
+        _notificationDetail = new NotificationDetailData(Guid.NewGuid(),  DateTime.UtcNow, NotificationTypeId.INFO, NotificationTopicId.INFO, false, "Test Message", null, false);
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _notificationRepository = A.Fake<INotificationRepository>();

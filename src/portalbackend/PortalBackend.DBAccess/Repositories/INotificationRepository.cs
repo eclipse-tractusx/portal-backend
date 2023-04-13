@@ -85,4 +85,13 @@ public interface INotificationRepository
     /// <param name="iamUserId">id of the iam user</param>
     /// <returns>Returns the notification count details</returns>
     IAsyncEnumerable<(bool IsRead, NotificationTopicId NotificationTopicId, int Count)> GetCountDetailsForUserAsync(string iamUserId);
+
+    /// <summary>
+    /// Gets the notification ids that should be updated
+    /// </summary>
+    /// <param name="userRoleIds">ids of the user roles</param>
+    /// <param name="notificationTypeIds">notification type ids</param>
+    /// <param name="offerId">id of the offer to get the notifications for</param>
+    /// <returns>List of the notification ids that should be updated</returns>
+    IAsyncEnumerable<Guid> GetUpdateData(IEnumerable<Guid> userRoleIds, IEnumerable<NotificationTypeId> notificationTypeIds, Guid offerId);
 }

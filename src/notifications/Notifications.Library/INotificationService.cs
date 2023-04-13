@@ -45,4 +45,12 @@ public interface INotificationService
     /// <param name="creatorId">ID of the creator company user</param>
     /// <param name="notifications">combination of notification types with content of the notification</param>
     Task CreateNotifications(IDictionary<string, IEnumerable<string>> receiverUserRoles, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications);
+
+    /// <summary>
+    /// Sets the given notifications to done
+    /// </summary>
+    /// <param name="roles">Roles of the receivers</param>
+    /// <param name="notificationTypeIds">the notification types that should be set to done</param>
+    /// <param name="offerId">Id of the offer</param>
+    Task SetNotificationsForOfferToDone(IDictionary<string, IEnumerable<string>> roles, IEnumerable<NotificationTypeId> notificationTypeIds, Guid offerId);
 }

@@ -132,10 +132,12 @@ public interface IOfferService
     /// <param name="offerId"></param>
     /// <param name="iamUserId"></param>
     /// <param name="offerTypeId"></param>
-    /// <param name="notificationTypeIds"></param>
+    /// <param name="approveOfferNotificationTypeIds"></param>
     /// <param name="approveOfferRoles"></param>
+    /// <param name="submitOfferNotificationTypeIds"></param>
+    /// <param name="catenaAdminRoles"></param>
     /// <returns></returns>
-    Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles);
+    Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
 
     /// <summary>
     /// Update offer status and create notification for App 
@@ -159,7 +161,9 @@ public interface IOfferService
     /// <param name="notificationTypeId">Id of the notification that should be send</param>
     /// <param name="notificationRecipients">Recipients of the notifications</param>
     /// <param name="basePortalAddress">the base portal address</param>
-    Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string,IEnumerable<string>> notificationRecipients, string basePortalAddress);
+    /// <param name="submitOfferNotificationTypeIds">the submit notification notification type ids</param>
+    /// <param name="catenaAdminRoles">The catena x admin roles</param>
+    Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string,IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
  
     /// <summary>
     /// Deactivate the given offerStatus by appsId
