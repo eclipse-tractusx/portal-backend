@@ -383,7 +383,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     
     /// <inheritdoc/>
     public Task ApproveAppRequestAsync(Guid appId, string iamUserId) =>
-        _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, _settings.ApproveAppUserRoles);
+        _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, _settings.ApproveAppUserRoles, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles);
     
     private IEnumerable<OfferStatusId> GetOfferStatusIds(OfferStatusIdFilter? offerStatusIdFilter)
     {
@@ -408,7 +408,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
     /// <inheritdoc />
     public Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data) => 
-        _offerService.DeclineOfferAsync(appId, iamUserId, data, OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.AppOverviewAddress);
+        _offerService.DeclineOfferAsync(appId, iamUserId, data, OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.AppOverviewAddress, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles);
 
     /// <inheritdoc />
     public async Task<InReviewAppDetails> GetInReviewAppDetailsByIdAsync(Guid appId)

@@ -621,7 +621,10 @@ public class AppReleaseBusinessLogicTest
         // Assert
         A.CallTo(() => _offerService.DeclineOfferAsync(appId, IamUserId, data,
             OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION,
-            A<IDictionary<string, IEnumerable<string>>>._, A<string>._)).MustHaveHappenedOnceExactly();
+            A<IDictionary<string, IEnumerable<string>>>._,
+            A<string>._,
+            A<IEnumerable<NotificationTypeId>>._,
+            A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -733,7 +736,10 @@ public class AppReleaseBusinessLogicTest
         await _sut.ApproveAppRequestAsync(offerId, IamUserId).ConfigureAwait(false);
 
         A.CallTo(() => _offerService.ApproveOfferRequestAsync(offerId, IamUserId, OfferTypeId.APP,
-                A<IEnumerable<NotificationTypeId>>._, A<IDictionary<string, IEnumerable<string>>>._))
+                A<IEnumerable<NotificationTypeId>>._,
+                A<IDictionary<string, IEnumerable<string>>>._,
+                A<IEnumerable<NotificationTypeId>>._,
+                A<IDictionary<string, IEnumerable<string>>>._))
             .MustHaveHappenedOnceExactly();
     }
 
