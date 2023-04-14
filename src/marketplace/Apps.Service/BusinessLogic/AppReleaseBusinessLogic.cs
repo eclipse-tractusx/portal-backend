@@ -433,6 +433,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             result.ProviderUri ?? Constants.ErrorString,
             result.ContactEmail,
             result.ContactNumber,
+            result.LicenseTypeId,
             result.Price ?? Constants.ErrorString,
             result.Tags,
             result.MatchingPrivacyPolicies);

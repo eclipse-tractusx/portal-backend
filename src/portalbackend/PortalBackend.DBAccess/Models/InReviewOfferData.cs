@@ -101,5 +101,10 @@ public record InReviewOfferData(
     /// <summary>
     /// Privacy Policy Id assigned to offer.
     /// </summary>
-    IEnumerable<PrivacyPolicyId> MatchingPrivacyPolicies
+    IEnumerable<PrivacyPolicyId> MatchingPrivacyPolicies,
+
+    /// <summary>
+    /// License TypeId for offer.
+    /// </summary>
+    LicenseTypeId LicenseTypeId
 );

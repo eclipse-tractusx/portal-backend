@@ -82,6 +82,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     app.Name ?? Constants.ErrorString,
                     app.ShortDescription ?? Constants.ErrorString,
                     app.VendorCompanyName,
+                    app.LicenseType,
                     app.LicenseText ?? Constants.ErrorString,
                     app.LeadPictureId,
                     app.UseCaseNames));
@@ -119,6 +120,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             result.ContactNumber,
             result.UseCases,
             result.LongDescription ?? Constants.ErrorString,
+            result.LicenseTypeId,
             result.Price ?? Constants.ErrorString,
             result.Tags,
             result.IsSubscribed == default ? null : result.IsSubscribed,
