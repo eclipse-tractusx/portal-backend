@@ -80,7 +80,8 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))),
             result.ProviderUri ?? Constants.ErrorString,
             result.ContactEmail,
-            result.ContactNumber
+            result.ContactNumber,
+            result.LicenseTypeId
         );
     }
 

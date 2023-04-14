@@ -31,6 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="LeadPictureUri">Uri to service's lead picture.</param>
 /// <param name="ContactEmail">Contact email address.</param>
 /// <param name="Description">The description of the service.</param>
+/// <param name="LicenseType">License TypeId for offer.</param>
 /// <param name="Price">Pricing information of the service.</param>
 /// <param name="ServiceTypeIds">Collection of the assigned serviceTypeIds.</param>
 public record ServiceOverviewData(
@@ -39,5 +40,6 @@ public record ServiceOverviewData(
     string Provider,
     string? ContactEmail,
     string? Description,
+    LicenseTypeId LicenseType,
     string Price,
     IEnumerable<ServiceTypeId> ServiceTypeIds);

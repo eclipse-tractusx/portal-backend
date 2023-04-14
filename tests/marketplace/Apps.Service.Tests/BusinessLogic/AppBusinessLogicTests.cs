@@ -119,7 +119,7 @@ public class AppBusinessLogicTests
     public async Task GetAllActiveAppsAsync_ExecutesSuccessfully()
     {
         // Arrange
-        var results = _fixture.CreateMany<ValueTuple<Guid, string?, string, IEnumerable<string>, Guid, string?, string?>>(5);
+        var results = _fixture.CreateMany<ActiveAppData>(5);
         A.CallTo(() => _offerRepository.GetAllActiveAppsAsync(A<string>._)).Returns(results.ToAsyncEnumerable());
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), null!);

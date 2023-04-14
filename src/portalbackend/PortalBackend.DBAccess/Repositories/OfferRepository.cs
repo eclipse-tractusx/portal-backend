@@ -79,16 +79,17 @@ public class OfferRepository : IOfferRepository
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, Guid LeadPictureId, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName) =>
+    public IAsyncEnumerable<ActiveAppData> GetAllActiveAppsAsync(string? languageShortName) =>
         _context.Offers.AsNoTracking()
             .AsSplitQuery()
             .Where(offer => offer.DateReleased.HasValue && offer.DateReleased <= DateTime.UtcNow && offer.OfferTypeId == OfferTypeId.APP && offer.OfferStatusId == OfferStatusId.ACTIVE)
-            .Select(a => new ValueTuple<Guid,string?,string,IEnumerable<string>,Guid,string?,string?>(
+            .Select(a => new ActiveAppData(
                 a.Id,
                 a.Name,
                 a.ProviderCompany!.Name, // This translates into a 'left join' which does return null for all columns if the foreingn key is null. The '!' just makes the compiler happy
                 a.UseCases.Select(uc => uc.Name),
                 a.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
+                a.LicenseTypeId,
                 _context.Languages.Any(l => l.ShortName == languageShortName)
                         ? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
                             ?? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionShort
@@ -130,7 +131,8 @@ public class OfferRepository : IOfferRepository
                     .Where(doc => doc.DocumentTypeId != DocumentTypeId.APP_IMAGE && doc.DocumentTypeId != DocumentTypeId.APP_LEADIMAGE) 
                     .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
                 offer.OfferAssignedPrivacyPolicies.Select(x => x.PrivacyPolicyId),
-                offer.AppInstanceSetup != null && offer.AppInstanceSetup!.IsSingleInstance
+                offer.AppInstanceSetup != null && offer.AppInstanceSetup!.IsSingleInstance,
+                offer.LicenseTypeId
             ))
             .SingleOrDefaultAsync();
 
@@ -269,6 +271,7 @@ public class OfferRepository : IOfferRepository
                 service.Provider,
                 service.ContactEmail,
                 service.OfferDescriptions.SingleOrDefault(ln => ln.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionShort,
+                service.LicenseTypeId,
                 service.OfferLicenses.FirstOrDefault()!.Licensetext,
                 service.ServiceDetails.Select(x => x.ServiceTypeId)))
         .SingleOrDefaultAsync();
@@ -304,7 +307,8 @@ public class OfferRepository : IOfferRepository
                  offer.OfferSubscriptions.Where(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)).Select(x => new OfferSubscriptionStateDetailData(x.Id, x.OfferSubscriptionStatusId)),
                  offer.ServiceDetails.Select(x => x.ServiceTypeId),
                  offer.Documents.Where(doc => doc.DocumentTypeId == DocumentTypeId.ADDITIONAL_DETAILS)
-                    .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName))
+                    .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
+                 offer.LicenseTypeId
              ))
              .SingleOrDefaultAsync();
 
@@ -549,7 +553,8 @@ public class OfferRepository : IOfferRepository
                     offer.ContactNumber,
                     offer.OfferLicenses.Select(license => license.Licensetext).FirstOrDefault(),
                     offer.Tags.Select(t => t.Name),
-                    offer.OfferAssignedPrivacyPolicies.Select(p=>p.PrivacyPolicyId)))
+                    offer.OfferAssignedPrivacyPolicies.Select(p=>p.PrivacyPolicyId),
+                    offer.LicenseTypeId))
             .SingleOrDefaultAsync();
     
     ///<inheritdoc/>
@@ -675,7 +680,8 @@ public class OfferRepository : IOfferRepository
                 offer.MarketingUrl,
                 offer.ContactEmail,
                 offer.ContactNumber,
-                offer.OfferStatusId
+                offer.OfferStatusId,
+                offer.LicenseTypeId
             ))
             .SingleOrDefaultAsync();
 
