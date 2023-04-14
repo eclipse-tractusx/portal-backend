@@ -214,19 +214,19 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
             .And.Satisfy(
                 x => x.Id == consentId_1 && x.AgreementId == agreementId_1 && x.ConsentStatusId == ConsentStatusId.ACTIVE,
                 x => x.Id == consentId_2 && x.AgreementId == agreementId_2 && x.ConsentStatusId == ConsentStatusId.INACTIVE,
-                x => x.Id == consentId_3 && x.AgreementId == agreementId_3 && x.ConsentStatusId == ConsentStatusId.ACTIVE,
-                x => x.Id == consentId_4 && x.AgreementId == agreementId_4 && x.ConsentStatusId == ConsentStatusId.INACTIVE,
-                x => x.AgreementId == agreementId_5 && x.ConsentStatusId == ConsentStatusId.ACTIVE,
-                x => x.AgreementId == agreementId_6 && x.ConsentStatusId == ConsentStatusId.INACTIVE
+                x => x.Id == consentId_3 && x.AgreementId == agreementId_3 && x.ConsentStatusId == ConsentStatusId.ACTIVE && x.LastEditorId == companyUserId,
+                x => x.Id == consentId_4 && x.AgreementId == agreementId_4 && x.ConsentStatusId == ConsentStatusId.INACTIVE && x.LastEditorId == companyUserId,
+                x => x.AgreementId == agreementId_5 && x.ConsentStatusId == ConsentStatusId.ACTIVE && x.LastEditorId == companyUserId,
+                x => x.AgreementId == agreementId_6 && x.ConsentStatusId == ConsentStatusId.INACTIVE && x.LastEditorId == companyUserId
             );
 
         context.ChangeTracker.Entries().Should().HaveCount(6);
         context.ChangeTracker.Entries<Consent>().Should().HaveCount(4)
             .And.Satisfy(
-                x => x.State == EntityState.Modified && x.Entity.Id == consentId_3 && x.Entity.AgreementId == agreementId_3 && x.Entity.ConsentStatusId == ConsentStatusId.ACTIVE,
-                x => x.State == EntityState.Modified && x.Entity.Id == consentId_4 && x.Entity.AgreementId == agreementId_4 && x.Entity.ConsentStatusId == ConsentStatusId.INACTIVE,
-                x => x.State == EntityState.Added && x.Entity.AgreementId == agreementId_5 && x.Entity.ConsentStatusId == ConsentStatusId.ACTIVE,
-                x => x.State == EntityState.Added && x.Entity.AgreementId == agreementId_6 && x.Entity.ConsentStatusId == ConsentStatusId.INACTIVE
+                x => x.State == EntityState.Modified && x.Entity.Id == consentId_3 && x.Entity.AgreementId == agreementId_3 && x.Entity.ConsentStatusId == ConsentStatusId.ACTIVE && x.Entity.LastEditorId == companyUserId,
+                x => x.State == EntityState.Modified && x.Entity.Id == consentId_4 && x.Entity.AgreementId == agreementId_4 && x.Entity.ConsentStatusId == ConsentStatusId.INACTIVE && x.Entity.LastEditorId == companyUserId,
+                x => x.State == EntityState.Added && x.Entity.AgreementId == agreementId_5 && x.Entity.ConsentStatusId == ConsentStatusId.ACTIVE && x.Entity.LastEditorId == companyUserId,
+                x => x.State == EntityState.Added && x.Entity.AgreementId == agreementId_6 && x.Entity.ConsentStatusId == ConsentStatusId.INACTIVE && x.Entity.LastEditorId == companyUserId
             );
 
         var addedConsents = context.ChangeTracker.Entries<Consent>().Where(x => x.State == EntityState.Added).Select(x => x.Entity).ToArray();
@@ -281,19 +281,19 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
             .And.Satisfy(
                 x => x.Id == consentId_1 && x.AgreementId == agreementId_1 && x.ConsentStatusId == ConsentStatusId.ACTIVE,
                 x => x.Id == consentId_2 && x.AgreementId == agreementId_2 && x.ConsentStatusId == ConsentStatusId.INACTIVE,
-                x => x.Id == consentId_3 && x.AgreementId == agreementId_3 && x.ConsentStatusId == ConsentStatusId.ACTIVE,
-                x => x.Id == consentId_4 && x.AgreementId == agreementId_4 && x.ConsentStatusId == ConsentStatusId.INACTIVE,
-                x => x.AgreementId == agreementId_5 && x.ConsentStatusId == ConsentStatusId.ACTIVE,
-                x => x.AgreementId == agreementId_6 && x.ConsentStatusId == ConsentStatusId.INACTIVE
+                x => x.Id == consentId_3 && x.AgreementId == agreementId_3 && x.ConsentStatusId == ConsentStatusId.ACTIVE && x.LastEditorId == companyUserId,
+                x => x.Id == consentId_4 && x.AgreementId == agreementId_4 && x.ConsentStatusId == ConsentStatusId.INACTIVE && x.LastEditorId == companyUserId,
+                x => x.AgreementId == agreementId_5 && x.ConsentStatusId == ConsentStatusId.ACTIVE && x.LastEditorId == companyUserId,
+                x => x.AgreementId == agreementId_6 && x.ConsentStatusId == ConsentStatusId.INACTIVE && x.LastEditorId == companyUserId
             );
 
         context.ChangeTracker.Entries().Should().HaveCount(4);
         context.ChangeTracker.Entries<Consent>().Should().HaveCount(4)
             .And.Satisfy(
-                x => x.State == EntityState.Modified && x.Entity.Id == consentId_3 && x.Entity.AgreementId == agreementId_3 && x.Entity.ConsentStatusId == ConsentStatusId.ACTIVE,
-                x => x.State == EntityState.Modified && x.Entity.Id == consentId_4 && x.Entity.AgreementId == agreementId_4 && x.Entity.ConsentStatusId == ConsentStatusId.INACTIVE,
-                x => x.State == EntityState.Added && x.Entity.AgreementId == agreementId_5 && x.Entity.ConsentStatusId == ConsentStatusId.ACTIVE,
-                x => x.State == EntityState.Added && x.Entity.AgreementId == agreementId_6 && x.Entity.ConsentStatusId == ConsentStatusId.INACTIVE
+                x => x.State == EntityState.Modified && x.Entity.Id == consentId_3 && x.Entity.AgreementId == agreementId_3 && x.Entity.ConsentStatusId == ConsentStatusId.ACTIVE && x.Entity.LastEditorId == companyUserId,
+                x => x.State == EntityState.Modified && x.Entity.Id == consentId_4 && x.Entity.AgreementId == agreementId_4 && x.Entity.ConsentStatusId == ConsentStatusId.INACTIVE && x.Entity.LastEditorId == companyUserId,
+                x => x.State == EntityState.Added && x.Entity.AgreementId == agreementId_5 && x.Entity.ConsentStatusId == ConsentStatusId.ACTIVE && x.Entity.LastEditorId == companyUserId,
+                x => x.State == EntityState.Added && x.Entity.AgreementId == agreementId_6 && x.Entity.ConsentStatusId == ConsentStatusId.INACTIVE && x.Entity.LastEditorId == companyUserId
             );
     }
     #region

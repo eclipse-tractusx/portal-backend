@@ -779,6 +779,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         consentRepository.AttachAndModifiesConsents(consentsToInactivate.Select(x => x.ConsentId), consent =>
         {
             consent.ConsentStatusId = ConsentStatusId.INACTIVE;
+            consent.LastEditorId = companyUserId;
         });
        
         var consentsToActivate = consents
@@ -790,6 +791,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         consentRepository.AttachAndModifiesConsents(consentsToActivate.Select(x => x.ConsentId), consent =>
         {
             consent.ConsentStatusId = ConsentStatusId.ACTIVE;
+            consent.LastEditorId = companyUserId;
         });
 
         foreach (var agreementConsentToAdd in agreementConsentsToSet
