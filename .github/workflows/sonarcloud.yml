@@ -65,7 +65,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           dotnet tool install --global dotnet-coverage
-          ./.sonar/scanner/dotnet-sonarscanner begin /k:"catenax-ng_tx-portal-backend" /o:"catenax-ng" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vscoveragexml.reportsPaths=src/coverage.xml
+          ./.sonar/scanner/dotnet-sonarscanner begin /k:"${{ vars.SONAR_PROJECT_KEY }}" /o:"${{ vars.SONAR_ORGANIZATION }}" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vscoveragexml.reportsPaths=src/coverage.xml
           dotnet build src
           cd src
           dotnet-coverage collect 'dotnet test' -s 'settings-coverage.xml' -f xml -o 'coverage.xml'
