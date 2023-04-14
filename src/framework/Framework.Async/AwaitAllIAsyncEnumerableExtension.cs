@@ -18,33 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Runtime.CompilerServices;
-
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 
-public static class ThrowingIAsyncEnumerableExtension
+public static class AwaitAllIAsyncEnumerableExtension
 {
-    public async static IAsyncEnumerable<TItem> CatchingAsync<TItem>(this IAsyncEnumerable<TItem> asyncItems, Func<Exception,Task> handler, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async static ValueTask AwaitAll<T>(this IAsyncEnumerable<T> asyncItems, CancellationToken cancellationToken = default)
     {
         await using var enumerator = asyncItems.GetAsyncEnumerator(cancellationToken);
-
-        bool hasResult = false;
-        do
+        while(true)
         {
-            try
-            {
-                hasResult = await enumerator.MoveNextAsync().ConfigureAwait(false);
-            }
-            catch(Exception e)
-            {
-                hasResult = false;
-                await handler(e).ConfigureAwait(false);
-            }
-            if (hasResult)
-            {
-                yield return enumerator.Current;
-            }
+            if(!await enumerator.MoveNextAsync().ConfigureAwait(false)) break;
         }
-        while (hasResult);
     }
 }
