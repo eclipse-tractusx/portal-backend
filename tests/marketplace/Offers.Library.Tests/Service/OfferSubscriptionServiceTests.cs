@@ -36,7 +36,8 @@ public class OfferSubscriptionServiceTests
     private const string BasePortalUrl = "http//base-url.com";
     private const string AccessToken = "THISISAACCESSTOKEN";
     private const string ClientId = "Client1";
-    
+    private readonly Guid _salesManagerId = new ("ac1cf001-7fbc-1f2f-817f-bce058020001");
+
     private readonly string _notAssignedCompanyIdUser;
     private readonly string _noBpnSetUserId;
     private readonly string _iamUserId;
@@ -147,6 +148,41 @@ public class OfferSubscriptionServiceTests
         // Assert
         companyAssignedApps.Should().HaveCount(1);
         notifications.Should().HaveCount(2);
+        notifications.Should().OnlyHaveUniqueItems();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
+    }
+    
+    [Theory]
+    [InlineData(OfferTypeId.SERVICE)]
+    [InlineData(OfferTypeId.APP)]
+    public async Task AddOfferSubscription_WithSalesManagerEqualsReceiver_CreatesServiceSubscription(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var companyAssignedApps = new List<OfferSubscription>();
+        A.CallTo(() => _offerSubscriptionsRepository.CreateOfferSubscription(A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._, A<Guid>._))
+            .Invokes((Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid creatorId) =>
+            {
+                var companyAssignedApp = new OfferSubscription(_newOfferSubscriptionId, offerId, companyId, offerSubscriptionStatusId, requesterId, creatorId);
+                companyAssignedApps.Add(companyAssignedApp);
+            });
+        var notificationId = Guid.NewGuid();
+        var notifications = new List<Notification>(); 
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._))
+            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
+            {
+                var notification = new Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
+                setOptionalParameters?.Invoke(notification);
+                notifications.Add(notification);
+            });        
+        var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
+
+        // Act
+        await sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _iamUserId, AccessToken, _serviceManagerRoles, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+
+        // Assert
+        companyAssignedApps.Should().HaveCount(1);
+        notifications.Should().HaveCount(2);
+        notifications.Should().OnlyHaveUniqueItems();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
     }
     
@@ -396,7 +432,7 @@ public class OfferSubscriptionServiceTests
                 Guid.Empty,
                 "test@mail.de"));
         A.CallTo(() => _userRepository.GetServiceProviderCompanyUserWithRoleIdAsync(A<Guid>.That.Matches(x => x == _existingOfferId), A<List<Guid>>.That.Matches(x => x.Count == 1 && x.All(y => y == _userRoleId))))
-            .Returns(new List<Guid> { _companyUserId }.ToAsyncEnumerable());
+            .Returns(new List<Guid> { _companyUserId, _salesManagerId }.ToAsyncEnumerable());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == "Service Manager")))
             .Returns(new List<Guid> { _userRoleId }.ToAsyncEnumerable());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Not.Matches(x => x[ClientId].First() == "Service Manager")))
@@ -414,11 +450,11 @@ public class OfferSubscriptionServiceTests
             .ReturnsLazily(() => (OfferDetailData?)null);
         
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingOfferId), A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferProviderDetailsData("Test Offer", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.testurl.com"));
+            .ReturnsLazily(() => new OfferProviderDetailsData("Test Offer", "Test Company", "provider@mail.de", _salesManagerId, "https://www.testurl.com"));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingOfferWithFailingAutoSetupId), A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferProviderDetailsData("Test Offer", "Test Company", "provider@mail.de", new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.fail.com"));
+            .ReturnsLazily(() => new OfferProviderDetailsData("Test Offer", "Test Company", "provider@mail.de", _salesManagerId, "https://www.fail.com"));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingOfferWithoutDetailsFilled), A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferProviderDetailsData(null, "Test Company", null, new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"), "https://www.fail.com"));
+            .ReturnsLazily(() => new OfferProviderDetailsData(null, "Test Company", null, _salesManagerId, "https://www.fail.com"));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Not.Matches(x => x == _existingOfferId || x == _existingOfferWithFailingAutoSetupId || x == _existingOfferWithoutDetailsFilled), A<OfferTypeId>._))
             .ReturnsLazily(() => (OfferProviderDetailsData?)null);
         

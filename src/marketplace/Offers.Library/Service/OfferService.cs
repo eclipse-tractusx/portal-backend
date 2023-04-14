@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
@@ -361,7 +362,7 @@ public class OfferService : IOfferService
 
     private async Task SubmitAppServiceAsync(Guid offerId, string iamUserId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, OfferReleaseData offerDetails)
     {
-         GetAndValidateOfferDetails(offerDetails);
+        GetAndValidateOfferDetails(offerDetails);
         if(offerDetails.DocumentStatusDatas.Any())
         {
             var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
@@ -482,7 +483,7 @@ public class OfferService : IOfferService
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content, offerDetails.ProviderCompanyId.Value).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content, offerDetails.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -529,7 +530,7 @@ public class OfferService : IOfferService
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = Enumerable.Repeat(notificationTypeId, 1).Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(notificationRecipients, requesterId, content, declineData.CompanyId.Value).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(notificationRecipients, requesterId, content, declineData.CompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         
         await SendMail(notificationRecipients, declineData.OfferName, basePortalAddress, data.Message, declineData.CompanyId.Value);
