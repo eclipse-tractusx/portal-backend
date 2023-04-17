@@ -32,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
 
@@ -159,7 +160,7 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, Guid.Empty);
-        Setup(technicalUserRequired, offerSubscription);
+        var createNotificationsEnumerator = Setup(technicalUserRequired, offerSubscription);
         var clientId = Guid.NewGuid();
         var appInstanceId = Guid.NewGuid();
         var appSubscriptionDetailId = Guid.NewGuid();
@@ -242,6 +243,7 @@ public class OfferSetupServiceTests
 
         notifications.Should().HaveCount(1);
         offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+        A.CallTo(() => createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -326,7 +328,7 @@ public class OfferSetupServiceTests
     
     #region Setup
 
-    private void SetupServices()
+    private IAsyncEnumerator<Guid> SetupServices()
     {
         A.CallTo(() => _provisioningManager.SetupClientAsync(A<string>._, A<string>._, A<IEnumerable<string>?>._))
             .ReturnsLazily(() => "cl1");
@@ -343,12 +345,14 @@ public class OfferSetupServiceTests
 
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._,
                 A<Guid>._, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
+            .Returns(new List<Guid>{Guid.NewGuid()}.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
+
+        return createNotificationsEnumerator;
     }
 
-    private void Setup(bool technicalUserRequired = false, OfferSubscription? offerSubscription = null)
+    private IAsyncEnumerator<Guid> Setup(bool technicalUserRequired = false, OfferSubscription? offerSubscription = null)
     {
-        SetupServices();
+        var createNotificationsEnumerator = SetupServices();
 
         if (offerSubscription != null)
         {
@@ -393,6 +397,7 @@ public class OfferSetupServiceTests
                 string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, null, null, null, technicalUserRequired));
 
+        return createNotificationsEnumerator;
     }
 
     #endregion
