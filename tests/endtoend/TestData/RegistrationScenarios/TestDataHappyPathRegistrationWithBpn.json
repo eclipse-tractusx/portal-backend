@@ -1,0 +1,16 @@
+﻿[
+  {
+    "companyRoles": [
+      "ACTIVE_PARTICIPANT", "APP_PROVIDER"
+    ],
+    "documentTypeId": "COMMERCIAL_REGISTER_EXTRACT",
+    "documentName": "TestDataRegistrationDocument.pdf"
+  },
+  {
+    "companyRoles": [
+      "ACTIVE_PARTICIPANT", "APP_PROVIDER", "SERVICE_PROVIDER"
+    ],
+    "documentTypeId": "COMMERCIAL_REGISTER_EXTRACT",
+    "documentName": "TestDataRegistrationDocument.pdf"
+  }
+]

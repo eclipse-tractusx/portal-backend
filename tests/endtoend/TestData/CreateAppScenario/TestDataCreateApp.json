@@ -1,0 +1,36 @@
+﻿[
+  {
+    "requestModel": {
+      "title": "TestAutomation - MyTestApp",
+      "provider": "Max Mustermann",
+      "salesManagerId": null,
+      "useCaseIds": null,
+      "descriptions": [
+        {
+        "languageCode": "en",
+        "longDescription": "It is a long description for TestApp via TestAutomation",
+        "shortDescription": "It is a short description for TestApp via TestAutomation"
+      }
+      ],
+      "supportedLanguageCodes": null,
+      "price": "99999999",
+      "privacyPolicies": null,
+      "providerUri": "https://catena-x.net",
+      "contactEmail": "maxmustermann@google.com",
+      "contactNumber": "+4912345678910"
+    },
+    "appUserRoles": [
+      {
+        "role": "TestAutomation - MyTestRole",
+        "descriptions": [
+          {
+            "languageCode": "en",
+            "description": "This is a test role for test app via TestAutomation"
+          }
+        ]
+      }
+    ],
+    "documentName": "TestDataCreateAppDocument.pdf",
+    "imageName": "TestDataCreateAppImage.png"
+  }
+]
