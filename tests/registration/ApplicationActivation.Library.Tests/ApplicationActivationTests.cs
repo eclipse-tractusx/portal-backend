@@ -59,6 +59,7 @@ public class ApplicationActivationTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IUserRolesRepository _rolesRepository;
     private readonly List<Notification> _notifications = new();
+    private readonly List<Guid> _notifiedUserIds = new();
     private readonly INotificationService _notificationService;
     private readonly IMailingService _mailingService;
     private readonly IProvisioningManager _provisioningManager;
@@ -143,6 +144,7 @@ public class ApplicationActivationTests
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         _notifications.Should().BeEmpty();
+        _notifiedUserIds.Should().BeEmpty();
     }
 
     [Fact]
@@ -248,6 +250,8 @@ public class ApplicationActivationTests
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync("3", A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
         _notifications.Should().HaveCount(5);
+        _notifiedUserIds.Should().HaveCount(3)
+            .And.ContainInOrder(CompanyUserId1, CompanyUserId2, CompanyUserId3);
         companyApplication.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.CONFIRMED);
         company.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
         var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, default);
@@ -324,6 +328,8 @@ public class ApplicationActivationTests
         A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
         _notifications.Should().HaveCount(5);
+        _notifiedUserIds.Should().HaveCount(3)
+            .And.ContainInOrder(CompanyUserId1, CompanyUserId2, CompanyUserId3);
         companyApplication.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.CONFIRMED);
         company.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
         var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, default);
@@ -686,8 +692,18 @@ public class ApplicationActivationTests
         A.CallTo(() => _portalRepositories.SaveAsync())
             .Returns(1);
 
+        async IAsyncEnumerable<Guid> CreateNotificationsUserIds(IEnumerable<Guid> userIds)
+        {
+            foreach (var userId in userIds)
+            {
+                _notifiedUserIds.Add(userId);
+                yield return userId;
+                await Task.CompletedTask;
+            }
+        }
+
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._))
-            .Invokes((
+            .ReturnsLazily((
                 IDictionary<string,IEnumerable<string>> _, 
                 Guid? creatorId, 
                 IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, 
@@ -703,6 +719,11 @@ public class ApplicationActivationTests
                     };
                     _notifications.Add(notification);
                 }
+                return CreateNotificationsUserIds(new [] {
+                    CompanyUserId1,
+                    CompanyUserId2,
+                    CompanyUserId3
+                });
             });
     }
 
