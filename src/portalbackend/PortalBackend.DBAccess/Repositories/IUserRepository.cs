@@ -104,13 +104,6 @@ public interface IUserRepository
     /// <param name="companyId">Id of the company for the users to select</param>
     /// <returns>Returns a list of the company user emails</returns>
     IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForCompanyAndRoleId(IEnumerable<Guid> userRoleIds, Guid companyId);
-    
-    /// <summary>
-    /// Gets a company Id for the given service account
-    /// </summary>
-    /// <param name="iamUserId">Id of the service account</param>
-    /// <returns>The Id of the company</returns>
-    Task<Guid> GetServiceAccountCompany(string iamUserId);
 
     Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
     Task<OfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);

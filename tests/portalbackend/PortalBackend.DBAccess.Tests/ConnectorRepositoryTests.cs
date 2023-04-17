@@ -221,29 +221,6 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
     
-    #region DeleteConnector
-
-    [Fact]
-    public async Task DeleteConnector_ReturnsExpected()
-    {
-        // Arrange
-        var(sut, dbContext) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        sut.DeleteConnector(new Guid("5aea3711-cc54-47b4-b7eb-ba9f3bf1cb15"));
-
-        // Assert
-        var changeTracker = dbContext.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        var changedEntity = changedEntries.Single();
-        changedEntity.State.Should().Be(EntityState.Deleted);
-    }
-
-    #endregion
-
     #region GetSelfDescriptionDocumentData
 
     [Fact]
@@ -253,7 +230,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetSelfDescriptionDocumentDataAsync(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833")).ConfigureAwait(false);
+        var result = await sut.GetConnectorDeleteDataAsync(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -269,7 +246,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetSelfDescriptionDocumentDataAsync(new Guid("7e86a0b8-6903-496b-96d1-0ef508206839")).ConfigureAwait(false);
+        var result = await sut.GetConnectorDeleteDataAsync(new Guid("7e86a0b8-6903-496b-96d1-0ef508206839")).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -285,7 +262,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetSelfDescriptionDocumentDataAsync(new Guid()).ConfigureAwait(false);
+        var result = await sut.GetConnectorDeleteDataAsync(new Guid()).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -296,6 +273,83 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region CreateConnectorClientDetails
+    
+    [Fact]
+    public async Task CreateConnectorClientDetails_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.CreateConnectorClientDetails(new Guid("ca7259eb-a3a3-4cc6-9e53-463bf0700af5"), "12345");
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<ConnectorClientDetail>().Which.ClientId.Should().Be("12345");
+    }
+    
+    #endregion
+    
+    #region DeleteConnectorClientDetails
+    
+    [Fact]
+    public async Task DeleteConnectorClientDetails_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        sut.DeleteConnectorClientDetails(new Guid("f032a035-d035-11ec-9d64-0242ac120002"));
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var entry = changedEntries.Single();
+        entry.Entity.Should().BeOfType<ConnectorClientDetail>();
+        entry.State.Should().Be(EntityState.Deleted);
+    }
+
+    #endregion
+
+    #region GetManagedConnectorsForIamUser
+    
+    [Fact]
+    public async Task GetManagedConnectorsForIamUser_ReturnsExpectedAppCount()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetManagedConnectorsForIamUser("502dabcf-01c7-47d9-a88e-0be4279097b5").Invoke(0,10).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Count.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task GetManagedConnectorsForIamUser_WithoutMatchingUser_ReturnsIsProviderUserFalse()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetManagedConnectorsForIamUser(Guid.NewGuid().ToString()).Invoke(0,10).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();        
+    }
+
+    #endregion
+    
     private async Task<(ConnectorsRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

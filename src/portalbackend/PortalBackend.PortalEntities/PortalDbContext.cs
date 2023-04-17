@@ -67,6 +67,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20230214> AuditCompanyApplication20230214 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
+    public virtual DbSet<AuditConnector20230405> AuditConnector20230405 { get; set; } = default!;
     public virtual DbSet<AuditUserRole20221017> AuditUserRole20221017 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole20221018> AuditCompanyUserAssignedRole20221018 { get; set; } = default!;
     public virtual DbSet<AuditCompanyAssignedRole2023316> AuditCompanyAssignedRole2023316 { get; set; } = default!;
@@ -92,6 +93,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedRole> CompanyUserAssignedRoles { get; set; } = default!;
     public virtual DbSet<Connector> Connectors { get; set; } = default!;
+    public virtual DbSet<ConnectorClientDetail> ConnectorClientDetails { get; set; } = default!;
     public virtual DbSet<ConnectorStatus> ConnectorStatuses { get; set; } = default!;
     public virtual DbSet<ConnectorType> ConnectorTypes { get; set; } = default!;
     public virtual DbSet<CompanyUserStatus> CompanyUserStatuses { get; set; } = default!;
@@ -920,6 +922,18 @@ public class PortalDbContext : DbContext
 
             entity.HasOne(d => d.Host)
                 .WithMany(p => p.HostedConnectors);
+
+            entity.HasAuditV1Triggers<Connector, AuditConnector20230405>();
+        });
+
+        modelBuilder.Entity<ConnectorClientDetail>(entity =>
+        {
+            entity.HasKey(x => x.ConnectorId);
+            
+            entity.HasOne(c => c.Connector)
+                .WithOne(c => c.ClientDetails)
+                .HasForeignKey<ConnectorClientDetail>(c => c.ConnectorId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<ConnectorStatus>()

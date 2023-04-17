@@ -38,6 +38,7 @@ public class SdFactoryBusinessLogicTests
     private const string CountryCode = "DE";
     private const string Bpn = "BPNL000000000009";
     private static readonly Guid ApplicationId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
+    private static readonly Guid CompanyUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020002");
     private readonly Process _process;
     private static readonly Guid CompanyId = new("b4697623-dd87-410d-abb8-6d4f4d87ab58");
     private static readonly IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers = new List<(UniqueIdentifierId Id, string Value)>
@@ -342,7 +343,7 @@ public class SdFactoryBusinessLogicTests
         SetupForProcessFinishForConnector(connector);
 
         // Act
-        await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CancellationToken.None).ConfigureAwait(false);
+        await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CompanyUserId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _documentRepository.CreateDocument("SelfDescription_Connector.json", A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, DocumentTypeId.SELF_DESCRIPTION, A<Action<Document>?>._)).MustHaveHappenedOnceExactly();
@@ -362,7 +363,7 @@ public class SdFactoryBusinessLogicTests
         var data = new SelfDescriptionResponseData(Guid.NewGuid(), SelfDescriptionStatus.Confirm, null, null);
 
         // Act
-        async Task Act() => await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CompanyUserId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -378,7 +379,7 @@ public class SdFactoryBusinessLogicTests
         SetupForProcessFinishForConnector(connector);
         
         // Act
-        await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CancellationToken.None).ConfigureAwait(false);
+        await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CompanyUserId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connector.Id, A<Action<Connector>>._))
@@ -394,7 +395,7 @@ public class SdFactoryBusinessLogicTests
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Failed, null, null);
         
         // Act
-        async Task Act() => await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CompanyUserId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
