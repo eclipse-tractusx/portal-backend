@@ -39,6 +39,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferService _offerService;
     private readonly ServiceSettings _settings;
+
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -67,10 +68,12 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         {
             throw new NotFoundException($"serviceId {serviceId} does not exist");
         }
+
         if (result.OfferStatusId != OfferStatusId.IN_REVIEW)
         {
             throw new ConflictException($"serviceId {serviceId} is incorrect status");
         }
+
         return new ServiceData(
             result.Id,
             result.Title ?? Constants.ErrorString,
@@ -100,6 +103,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         {
             throw new UnexpectedConditionException("serviceTypeIds should never be null here");
         }
+
         return new ServiceProviderResponse(
             result.Title,
             result.LeadPictureId,
@@ -122,6 +126,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         {
             throw new ControllerArgumentException("ServiceId must not be empty");
         }
+
         return SubmitOfferConsentInternalAsync(serviceId, offerAgreementConsents, userId);
     }
 
@@ -133,6 +138,90 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         Pagination.CreateResponseAsync(page, size, 15,
             _portalRepositories.GetInstance<IOfferRepository>()
                 .GetAllInReviewStatusServiceAsync(_settings.OfferStatusIds, OfferTypeId.SERVICE, sorting ?? OfferSorting.DateDesc,serviceName, languageShortName));
+
+     /// <inheritdoc />
+     public Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId) =>
+         _offerService.CreateServiceOfferingAsync(data, iamUserId, OfferTypeId.SERVICE);
+
+    /// <inheritdoc />
+    public async Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, string iamUserId)
+    {
+        var serviceData = await _portalRepositories
+            .GetInstance<IOfferRepository>()
+            .GetServiceUpdateData(serviceId, data.ServiceTypeIds, iamUserId)
+            .ConfigureAwait(false);
+        if (serviceData is null)
+        {
+            throw new NotFoundException($"Service {serviceId} does not exists");
+        }
+
+        if (serviceData.OfferState != OfferStatusId.CREATED)
+        {
+            throw new ConflictException($"Service in State {serviceData.OfferState} can't be updated");
+        }
+
+        if (!serviceData.IsUserOfProvider)
+        {
+            throw new ForbiddenException($"User {iamUserId} is not allowed to change the service.");
+        }
+
+        if (data.SalesManager.HasValue)
+        {
+            await _offerService.ValidateSalesManager(data.SalesManager.Value, iamUserId, _settings.SalesManagerRoles).ConfigureAwait(false);
+        }
+
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        offerRepository.AttachAndModifyOffer(
+            serviceId,
+            offer =>
+            {
+                offer.Name = data.Title;
+                offer.SalesManagerId = data.SalesManager;
+                offer.ContactEmail = data.ContactEmail;
+                offer.MarketingUrl = data.ProviderUri;
+            },
+            offer =>
+            {
+                offer.SalesManagerId = serviceData.SalesManagerId;
+            });
+
+        _offerService.UpsertRemoveOfferDescription(serviceId, data.Descriptions, serviceData.Descriptions);
+        _offerService.CreateOrUpdateOfferLicense(serviceId, data.Price, serviceData.OfferLicense);
+        var newServiceTypes = data.ServiceTypeIds
+            .Except(serviceData.ServiceTypeIds.Where(x => x.IsMatch).Select(x => x.ServiceTypeId))
+            .Select(sti => (serviceId, sti, sti == ServiceTypeId.DATASPACE_SERVICE)); // TODO (PS): Must be refactored, customer needs to define whether the service needs a technical User
+        var serviceTypeIdsToRemove = serviceData.ServiceTypeIds
+            .Where(x => !x.IsMatch)
+            .Select(sti => (serviceId, sti.ServiceTypeId));
+        UpdateAssignedServiceTypes(
+            newServiceTypes, 
+            serviceTypeIdsToRemove,
+            offerRepository);
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+    
+    private static void UpdateAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId, bool technicalUserNeeded)> newServiceTypes, IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceTypeIdsToRemove, IOfferRepository appRepository)
+    {
+        appRepository.AddServiceAssignedServiceTypes(newServiceTypes);
+        appRepository.RemoveServiceAssignedServiceTypes(serviceTypeIdsToRemove);
+    }
+
+    /// <inheritdoc/>
+    public Task SubmitServiceAsync(Guid serviceId, string iamUserId) => 
+        _offerService.SubmitServiceAsync(serviceId, iamUserId, OfferTypeId.SERVICE, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
+
+    /// <inheritdoc/>
+    public Task ApproveServiceRequestAsync(Guid appId, string iamUserId) =>
+        _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.SERVICE, _settings.ApproveServiceNotificationTypeIds, _settings.ApproveServiceUserRoles, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
+
+    /// <inheritdoc />
+    public Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data) => 
+        _offerService.DeclineOfferAsync(serviceId, iamUserId, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.ServiceMarketplaceAddress, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
+    
+    /// <inheritdoc />
+    public Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken) =>
+        _offerService.UploadDocumentAsync(serviceId, documentTypeId, document, iamUserId, OfferTypeId.SERVICE, _settings.DocumentTypeIds, _settings.ContentTypeSettings, cancellationToken);
 
     /// <inheritdoc/>
     public Task DeleteServiceDocumentsAsync(Guid documentId, string iamUserId) =>

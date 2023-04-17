@@ -49,9 +49,6 @@ public class ServiceBusinessLogicTests
     private readonly Guid _validSubscriptionId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
     private readonly Guid _existingAgreementId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47664");
     private readonly Guid _validConsentId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47665");
-    private readonly Guid _notExistingServiceId = Guid.NewGuid();
-    private readonly Guid _activeServiceId = Guid.NewGuid();
-    private readonly Guid _differentCompanyServiceId = Guid.NewGuid();
     private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
     private readonly IamUser _iamUser;
@@ -107,27 +104,6 @@ public class ServiceBusinessLogicTests
         _options = Options.Create(serviceSettings);
         _fixture.Inject(_options);
     }
-
-    #region Create Service
-
-    [Fact]
-    public async Task CreateServiceOffering_WithValidDataAndEmptyDescriptions_ReturnsCorrectDetails()
-    {
-        // Arrange
-        var serviceId = Guid.NewGuid();
-        var offerService = A.Fake<IOfferService>();
-        _fixture.Inject(offerService);
-        A.CallTo(() => offerService.CreateServiceOfferingAsync(A<ServiceOfferingData>._, A<string>._, A<OfferTypeId>._)).ReturnsLazily(() => serviceId);
-        var sut = _fixture.Create<ServiceBusinessLogic>();
-
-        // Act
-        var result = await sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _companyUser.Id, new List<LocalizedDescription>(), new List<ServiceTypeId>(), "http://google.com"), _iamUser.UserEntityId);
-
-        // Assert
-        result.Should().Be(serviceId);
-    }
-
-    #endregion
 
     #region Get Active Services
 
@@ -374,112 +350,6 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
-    #region UpdateServiceAsync
-    
-    [Fact]
-    public async Task UpdateServiceAsync_WithoutService_ThrowsException()
-    {
-        // Arrange
-        SetupUpdateService();
-        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid(), "http://google.com");
-        var settings = new ServiceSettings();
-        var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, _offerSubscriptionService, null!, Options.Create(settings));
-     
-        // Act
-        async Task Act() => await sut.UpdateServiceAsync(_notExistingServiceId, data, _iamUser.UserEntityId).ConfigureAwait(false);
-
-        // Assert
-        var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be($"Service {_notExistingServiceId} does not exists");
-    }
-    
-    [Fact]
-    public async Task UpdateServiceAsync_WithActiveService_ThrowsException()
-    {
-        // Arrange
-        SetupUpdateService();
-        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid(), "http://google.com");
-        var settings = new ServiceSettings();
-        var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, _offerSubscriptionService, null!, Options.Create(settings));
-     
-        // Act
-        async Task Act() => await sut.UpdateServiceAsync(_activeServiceId, data, _iamUser.UserEntityId).ConfigureAwait(false);
-
-        // Assert
-        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be("Service in State ACTIVE can't be updated");
-    }
-
-    [Fact]
-    public async Task UpdateServiceAsync_WithInvalidUser_ThrowsException()
-    {
-        // Arrange
-        SetupUpdateService();
-        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid(), "http://google.com");
-        var settings = new ServiceSettings();
-        var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, _offerSubscriptionService, null!, Options.Create(settings));
-
-        // Act
-        async Task Act() => await sut.UpdateServiceAsync(_differentCompanyServiceId, data, _iamUser.UserEntityId).ConfigureAwait(false);
-
-        // Assert
-        var error = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be($"User {_iamUser.UserEntityId} is not allowed to change the service.");
-    }
-
-    [Fact]
-    public async Task UpdateServiceAsync_WithValidData_ReturnsExpected()
-    {
-        // Arrange
-        SetupUpdateService();
-        var data = new ServiceUpdateRequestData(
-            "test", 
-            new List<LocalizedDescription>
-            {
-                new("de", "Long description", "desc") 
-            }, 
-            new List<ServiceTypeId>
-            {
-                ServiceTypeId.CONSULTANCE_SERVICE
-            }, 
-            "43",
-            "test@email.com",
-            _companyUser.Id, "http://google.com");
-        var settings = new ServiceSettings
-        {
-            SalesManagerRoles = new Dictionary<string, IEnumerable<string>>
-            {
-                { "portal", new[] { "SalesManager" } }
-            }
-        };
-        var existingOffer = _fixture.Create<Offer>();
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
-            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParameters) =>
-            {
-                initializeParameters?.Invoke(existingOffer);
-                setOptionalParameters(existingOffer);
-            });
-        var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, _offerSubscriptionService, null!, Options.Create(settings));
-
-        // Act
-        await sut.UpdateServiceAsync(_existingServiceId, data, _iamUser.UserEntityId).ConfigureAwait(false);
-        
-        // Assert
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerService.UpsertRemoveOfferDescription(A<Guid>._, A<IEnumerable<LocalizedDescription>>._, A<IEnumerable<LocalizedDescription>>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerService.CreateOrUpdateOfferLicense(A<Guid>._, A<string>._, A<(Guid offerLicenseId, string price, bool assignedToMultipleOffers)>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.AddServiceAssignedServiceTypes(A<IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId, bool technicalUserNeeded)>>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.RemoveServiceAssignedServiceTypes(A<IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)>>._))
-            .MustHaveHappenedOnceExactly();
-        existingOffer.Name.Should().Be("test");
-    }
-
-    #endregion
-    
     #region SubmitServiceAsync
 
     [Fact]
@@ -637,21 +507,8 @@ public class ServiceBusinessLogicTests
     }
 
     #endregion
-    
-    #region Setup
 
-    private void SetupUpdateService()
-    {
-        A.CallTo(() => _offerRepository.GetServiceUpdateData(_notExistingServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUser.UserEntityId))
-            .ReturnsLazily(() => (ServiceUpdateData?)null);
-        A.CallTo(() => _offerRepository.GetServiceUpdateData(_activeServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUser.UserEntityId))
-            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<LocalizedDescription>(), null));
-        A.CallTo(() => _offerRepository.GetServiceUpdateData(_differentCompanyServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUser.UserEntityId))
-            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<LocalizedDescription>(), null));
-        A.CallTo(() => _offerRepository.GetServiceUpdateData(_existingServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUser.UserEntityId))
-            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, true, Enumerable.Repeat(new ValueTuple<ServiceTypeId, bool>(ServiceTypeId.DATASPACE_SERVICE, false), 1), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false), Array.Empty<LocalizedDescription>(), Guid.NewGuid()));
-        A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).Returns(_companyUser.CompanyId);
-    }
+    #region Setup
 
     private void SetupPagination(int count = 5)
     {
