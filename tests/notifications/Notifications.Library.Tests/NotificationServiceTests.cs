@@ -90,11 +90,12 @@ public class NotificationServiceTests
         };
 
         // Act
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ConfigureAwait(false);
+        var userIds = await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(1);
         _notifications.Single().NotificationTypeId.Should().Be(NotificationTypeId.INFO);
+        userIds.Should().HaveCount(1).And.ContainSingle(x => x == new Guid("6bc51706-9a30-4eb9-9e60-77fdd6d9cd6f"));
     }
 
     [Fact]
@@ -122,7 +123,7 @@ public class NotificationServiceTests
             new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION)
         };
 
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ConfigureAwait(false);
+        var userIds = await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(5);
@@ -131,6 +132,7 @@ public class NotificationServiceTests
         _notifications.Should().ContainSingle(x => x.NotificationTypeId == NotificationTypeId.WELCOME_APP_MARKETPLACE);
         _notifications.Should().ContainSingle(x => x.NotificationTypeId == NotificationTypeId.WELCOME_SERVICE_PROVIDER);
         _notifications.Should().ContainSingle(x => x.NotificationTypeId == NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION);
+        userIds.Should().HaveCount(1).And.ContainSingle(x => x == new Guid("6bc51706-9a30-4eb9-9e60-77fdd6d9cd6f"));
     }
 
     [Fact]
@@ -153,7 +155,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ConfigureAwait(false);
+        var userIds = await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(3);
@@ -161,6 +163,10 @@ public class NotificationServiceTests
         _notifications.Should().ContainSingle(x => x.ReceiverUserId == UserId2);
         _notifications.Should().ContainSingle(x => x.ReceiverUserId == UserId3);
         _notifications.Should().NotContain(x => x.ReceiverUserId == CxAdminUserId);
+        userIds.Should().HaveCount(3).And
+            .Contain(new Guid("857b93b1-8fcb-4141-81b0-ae81950d489e")).And
+            .Contain(new Guid("857b93b1-8fcb-4141-81b0-ae81950d489f")).And
+            .Contain(new Guid("857b93b1-8fcb-4141-81b0-ae81950d48af"));
     }
 
     [Fact]
@@ -183,7 +189,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        async Task Action() => await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ConfigureAwait(false);
+        async Task Action() => await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         await Assert.ThrowsAsync<ConfigurationException>(Action);
