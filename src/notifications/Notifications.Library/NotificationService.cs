@@ -42,7 +42,7 @@ public class NotificationService : INotificationService
     }
     
     /// <inheritdoc />
-    public async Task CreateNotifications(
+    public async IAsyncEnumerable<Guid> CreateNotifications(
         IDictionary<string, IEnumerable<string>> receiverUserRoles,
         Guid? creatorId,
         IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications,
@@ -53,6 +53,7 @@ public class NotificationService : INotificationService
         await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleIdForCompany(roleData, companyId))
         {
             CreateNotification(receiver, creatorId, notifications, notificationRepository);
+            yield return receiver;
         }
     }
 

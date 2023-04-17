@@ -323,17 +323,21 @@ public class OfferSetupService : IOfferSetupService
         {
             notifications.Add((null, NotificationTypeId.TECHNICAL_USER_CREATION));
         }
-
-        await _notificationService.CreateNotifications(
+        Guid? creatorId = offerDetails.CompanyUserId != Guid.Empty ? offerDetails.CompanyUserId : null;
+        var userIdsOfNotifications = await _notificationService.CreateNotifications(
             itAdminRoles,
-            offerDetails.CompanyUserId != Guid.Empty ? offerDetails.CompanyUserId : null,
+            creatorId,
             notifications,
-            offerDetails.CompanyId).ConfigureAwait(false);
+            offerDetails.CompanyId).ToListAsync().ConfigureAwait(false);
 
-        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId, appSubscriptionActivation, false, notification =>
+        if (!userIdsOfNotifications.Contains(offerDetails.RequesterId))
         {
-            notification.Content = notificationContent;
-        });
+            _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId, appSubscriptionActivation, false, notification =>
+            {
+                notification.Content = notificationContent;
+                notification.CreatorUserId = creatorId;
+            });
+        }
     }
 
     private async Task SendMail(string basePortalAddress, string userName, string requesterEmail, string? offerName)

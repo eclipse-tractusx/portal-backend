@@ -2,6 +2,20 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.3.0-RC3
+
+### Change
+n/a
+
+### Feature
+n/a
+
+### Technical Support
+* updated sonarcloud workflow: use repo variables for project key and organization
+
+### Bugfix
+* Notification Service: the notifications will only get created once per request for each user and notification type
+
 ## 1.3.0-RC2
 
 ### Change

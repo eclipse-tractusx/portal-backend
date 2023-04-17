@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
@@ -105,7 +106,7 @@ public class ApplicationActivationService : IApplicationActivationService
         });
 
         var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
-        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).AwaitAll().ConfigureAwait(false);
 
         await PostRegistrationWelcomeEmailAsync(userRolesRepository, applicationRepository, context.ApplicationId).ConfigureAwait(false);
 
