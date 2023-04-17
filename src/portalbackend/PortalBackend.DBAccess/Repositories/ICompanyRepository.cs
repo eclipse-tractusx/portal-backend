@@ -156,4 +156,11 @@ public interface ICompanyRepository
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the CompanyStatus Data</returns>
     Task<(bool IsActive, Guid CompanyId)> GetCompanyStatusDataAsync(string iamUserId);
+
+    /// <summary>
+    /// Gets the company id for the calling user and the CompanyUserId if the user is a company user
+    /// </summary>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <returns>Returns the company id and the companyUserId</returns>
+    Task<(Guid CompanyId, Guid CompanyUserId)> GetCompanyIdAndUserIdForUserOrTechnicalUser(string iamUserId);
 }

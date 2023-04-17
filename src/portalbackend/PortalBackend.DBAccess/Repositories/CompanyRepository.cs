@@ -274,4 +274,14 @@ public class CompanyRepository : ICompanyRepository
             company.Id
         )).SingleOrDefaultAsync();
 
+    /// <inheritdoc />
+    public Task<(Guid CompanyId, Guid CompanyUserId)> GetCompanyIdAndUserIdForUserOrTechnicalUser(string iamUserId) =>
+        _context.Companies
+            .Where(x => x.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId) ||
+                        x.CompanyServiceAccounts.Any(x => x.IamServiceAccount!.UserEntityId == iamUserId))
+            .Select(company => new ValueTuple<Guid, Guid>(
+                company.Id,
+                company.CompanyUsers.Select(x => x.Id).SingleOrDefault()
+            ))
+            .SingleOrDefaultAsync();
 }

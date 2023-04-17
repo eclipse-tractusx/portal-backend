@@ -125,7 +125,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task ProcessFinishSelfDescriptionLpForConnector(SelfDescriptionResponseData data, CancellationToken cancellationToken)
+    public async Task ProcessFinishSelfDescriptionLpForConnector(SelfDescriptionResponseData data, Guid companyUserId, CancellationToken cancellationToken)
     {
         var confirm = ValidateData(data);
         Guid? documentId = null; 
@@ -144,6 +144,9 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
             {
                 con.SelfDescriptionMessage = data.Message!;
             }
+
+            con.LastEditorId = companyUserId;
+            con.DateLastChanged = DateTimeOffset.UtcNow;
         });
     }
 

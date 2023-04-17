@@ -18,14 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -46,6 +44,22 @@ public class ConnectorsControllerTests
         _logic = A.Fake<IConnectorsBusinessLogic>();
         this._controller = new ConnectorsController(_logic);
         _controller.AddControllerContextWithClaimAndBearerTokenX(IamUserId, AccessToken);
+    }
+
+    [Fact]
+    public async Task GetManagedConnectorsForCurrentUserAsync_WithValidData_ReturnsExpectedResult()
+    {
+        //Arrange
+        var paginationResponse = new Pagination.Response<ManagedConnectorData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<ManagedConnectorData>(5));
+        A.CallTo(() => _logic.GetManagedConnectorForIamUserAsync(IamUserId, 0, 15))
+            .Returns(paginationResponse);
+
+        //Act
+        var result = await this._controller.GetManagedConnectorsForCurrentUserAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetManagedConnectorForIamUserAsync(IamUserId, 0, 15)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(5);
     }
 
     [Fact]
@@ -115,14 +129,14 @@ public class ConnectorsControllerTests
     {
         //Arrange
         var paginationResponse = new Pagination.Response<ConnectorData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<ConnectorData>(5));
-        A.CallTo(() => _logic.GetAllCompanyConnectorDatasForIamUserAsyncEnum(IamUserId, 0, 15))
+        A.CallTo(() => _logic.GetAllCompanyConnectorDatasForIamUserAsync(IamUserId, 0, 15))
             .Returns(paginationResponse);
 
         //Act
         var result = await this._controller.GetCompanyConnectorsForCurrentUserAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAllCompanyConnectorDatasForIamUserAsyncEnum(IamUserId, 0, 15)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetAllCompanyConnectorDatasForIamUserAsync(IamUserId, 0, 15)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
     
@@ -148,14 +162,14 @@ public class ConnectorsControllerTests
     {
         //Arrange
         var connectorId = Guid.NewGuid();
-        A.CallTo(() => _logic.DeleteConnectorAsync(connectorId))
+        A.CallTo(() => _logic.DeleteConnectorAsync(connectorId, IamUserId, A<CancellationToken>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
-        await this._controller.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        await this._controller.DeleteConnectorAsync(connectorId, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.DeleteConnectorAsync(connectorId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeleteConnectorAsync(connectorId, IamUserId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -184,14 +198,14 @@ public class ConnectorsControllerTests
     {
         // Arrange
         var data = new SelfDescriptionResponseData(Guid.NewGuid(), SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
-        A.CallTo(() => _logic.ProcessClearinghouseSelfDescription(data, A<CancellationToken>._))
+        A.CallTo(() => _logic.ProcessClearinghouseSelfDescription(data, IamUserId, A<CancellationToken>._))
             .ReturnsLazily(() => Task.CompletedTask);
         
         // Act
         var result = await this._controller.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
         
         // Assert
-        A.CallTo(() => _logic.ProcessClearinghouseSelfDescription(data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.ProcessClearinghouseSelfDescription(data, IamUserId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 }

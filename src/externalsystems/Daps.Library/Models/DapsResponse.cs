@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,11 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.Eclipse.TractusX.Portal.Backend.Daps.Library.Models;
 
-public enum ConnectorStatusId
-{
-    PENDING = 1,
-    ACTIVE = 2,
-    INACTIVE = 3
-}
+public record DapsResponse(string ClientId);

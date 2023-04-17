@@ -631,6 +631,38 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetCompanyIdAndUserIdForUserOrTechnicalUser
+
+    [Fact]
+    public async Task GetCompanyIdAndUserIdForUserOrTechnicalUser_WithValidIamUser_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCompanyIdAndUserIdForUserOrTechnicalUser(IamUserId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
+        result.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"));
+    }
+
+    [Fact]
+    public async Task GetCompanyIdAndUserIdForUserOrTechnicalUser_WithNotExistingIamUser_ReturnsDefault()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetCompanyIdAndUserIdForUserOrTechnicalUser(Guid.NewGuid().ToString()).ConfigureAwait(false);
+
+        // Assert
+        (result == default).Should().BeTrue();
+    }
+    
+    #endregion
+    
     #region Setup
     
     private async Task<(CompanyRepository, PortalDbContext)> CreateSut()

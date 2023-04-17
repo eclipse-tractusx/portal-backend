@@ -347,13 +347,6 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<Guid> GetServiceAccountCompany(string iamUserId) =>
-        _dbContext.IamServiceAccounts
-            .Where(x => x.UserEntityId == iamUserId)
-            .Select(x => x.CompanyServiceAccount!.ServiceAccountOwnerId)
-            .SingleOrDefaultAsync();
-
-    /// <inheritdoc />
     public Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId) => 
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)

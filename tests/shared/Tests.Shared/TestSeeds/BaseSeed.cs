@@ -415,7 +415,6 @@ public static class BaseSeed
                 HostId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
                 TypeId = ConnectorTypeId.COMPANY_CONNECTOR,
                 StatusId =ConnectorStatusId.ACTIVE,
-                
             },
             new(new Guid("f7310cff-a51d-4af8-9bc3-1525e9d1601b"), "Con on Air", "PT", "https://api.con-on-air.com")
             {
