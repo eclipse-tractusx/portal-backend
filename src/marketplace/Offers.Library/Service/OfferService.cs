@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
@@ -490,9 +491,10 @@ public class OfferService : IOfferService
             },
             _ => throw new UnexpectedConditionException($"offerTypeId {offerTypeId} is not implemented yet")
         };
+        
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
-        var content = approveOfferNotificationTypeIds.Select(typeId => ((string?)serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content, offerDetails.ProviderCompanyId.Value).ConfigureAwait(false);
+        var content = approveOfferNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content, offerDetails.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _notificationService.SetNotificationsForOfferToDone(catenaAdminRoles, submitOfferNotificationTypeIds, offerId).ConfigureAwait(false);
         
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -541,7 +543,7 @@ public class OfferService : IOfferService
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = Enumerable.Repeat(notificationTypeId, 1).Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(notificationRecipients, requesterId, content, declineData.CompanyId.Value).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(notificationRecipients, requesterId, content, declineData.CompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _notificationService.SetNotificationsForOfferToDone(catenaAdminRoles, submitOfferNotificationTypeIds, offerId).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

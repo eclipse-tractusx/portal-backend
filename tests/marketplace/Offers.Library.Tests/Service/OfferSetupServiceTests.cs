@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
@@ -168,7 +169,7 @@ public class OfferSetupServiceTests
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, Guid.Empty);
         var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), Guid.Empty, CompanyServiceAccountStatusId.ACTIVE, "test", "test", DateTimeOffset.UtcNow, CompanyServiceAccountTypeId.OWN);
-        SetupAutoSetup(technicalUserRequired, offerSubscription, isSingleInstance, companyServiceAccount);
+        var createNotificationsEnumerator = SetupAutoSetup(technicalUserRequired, offerSubscription, isSingleInstance, companyServiceAccount);
         var clientId = Guid.NewGuid();
         var appInstanceId = Guid.NewGuid();
         var appSubscriptionDetailId = Guid.NewGuid();
@@ -260,6 +261,7 @@ public class OfferSetupServiceTests
         }
 
         notifications.Should().HaveCount(1);
+        A.CallTo(() => createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
         offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
         if (!isSingleInstance)
         {
@@ -576,7 +578,7 @@ public class OfferSetupServiceTests
     
     #region Setup
 
-    private void SetupServices(CompanyServiceAccount? companyServiceAccount = null)
+    private IAsyncEnumerator<Guid> SetupServices(CompanyServiceAccount? companyServiceAccount = null)
     {
         A.CallTo(() => _provisioningManager.SetupClientAsync(A<string>._, A<string>._, A<IEnumerable<string>?>._, A<bool>._))
             .ReturnsLazily(() => "cl1");
@@ -600,63 +602,76 @@ public class OfferSetupServiceTests
 
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._,
                 A<Guid>._, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
+            .Returns(new List<Guid>{Guid.NewGuid()}.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
+
+        return createNotificationsEnumerator;
     }
 
-    private void SetupAutoSetup(bool technicalUserRequired = false, OfferSubscription? offerSubscription = null, bool isSingleInstance = false, CompanyServiceAccount? companyServiceAccount = null)
+    private IAsyncEnumerator<Guid> SetupAutoSetup(bool technicalUserRequired = false, OfferSubscription? offerSubscription = null, bool isSingleInstance = false, CompanyServiceAccount? companyServiceAccount = null)
     {
-        SetupServices(companyServiceAccount);
+        var createNotificationsEnumerator = SetupServices(companyServiceAccount);
 
         if (offerSubscription != null)
         {
-            A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(A<Guid>._, A<Action<OfferSubscription>>._))
-                .Invokes((Guid _, Action<OfferSubscription> modify) =>
-                {
-                    modify.Invoke(offerSubscription);
-                });
+            A.CallTo(() =>
+                    _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(A<Guid>._,
+                        A<Action<OfferSubscription>>._))
+                .Invokes((Guid _, Action<OfferSubscription> modify) => { modify.Invoke(offerSubscription); });
         }
 
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _validSubscriptionId),
                 A<string>.That.Matches(x => x == IamUserId),
                 A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.ACTIVE, _companyUser.Id, Guid.Empty,
+            .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.ACTIVE, _companyUser.Id,
+                Guid.Empty,
                 _companyUser.Company!.Name, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
-                Bpn, "user@email.com", "Tony", "Gilbert", technicalUserRequired, (isSingleInstance, "https://test.de"), new []{Guid.NewGuid()}));
+                Bpn, "user@email.com", "Tony", "Gilbert", technicalUserRequired, (isSingleInstance, "https://test.de"),
+                new[] {Guid.NewGuid()}));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
                 A<string>.That.Matches(x => x == IamUserIdWithoutMail),
                 A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id, Guid.Empty,
+            .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id,
+                Guid.Empty,
                 _companyUser.Company!.Name, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
-                Bpn, null, null, null, technicalUserRequired, (isSingleInstance, "https://test.de"), new []{Guid.NewGuid()}));
+                Bpn, null, null, null, technicalUserRequired, (isSingleInstance, "https://test.de"),
+                new[] {Guid.NewGuid()}));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
                 A<string>.That.Matches(x => x == IamUserId),
                 A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id, Guid.Empty,
+            .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id,
+                Guid.Empty,
                 string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
-                Bpn, "user@email.com", "Tony", "Gilbert", technicalUserRequired, (isSingleInstance, "https://test.de"), new []{Guid.NewGuid()}));
+                Bpn, "user@email.com", "Tony", "Gilbert", technicalUserRequired, (isSingleInstance, "https://test.de"),
+                new[] {Guid.NewGuid()}));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _offerIdWithInstanceNotSet),
                 A<string>.That.Matches(x => x == IamUserId),
                 A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id, Guid.Empty,
+            .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id,
+                Guid.Empty,
                 string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
-                Bpn, "user@email.com", "Tony", "Gilbert", technicalUserRequired, (isSingleInstance, null), new List<Guid>()));
+                Bpn, "user@email.com", "Tony", "Gilbert", technicalUserRequired, (isSingleInstance, null),
+                new List<Guid>()));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
-                A<Guid>.That.Not.Matches(x => x == _pendingSubscriptionId || x == _validSubscriptionId || x == _offerIdWithInstanceNotSet),
+                A<Guid>.That.Not.Matches(x =>
+                    x == _pendingSubscriptionId || x == _validSubscriptionId || x == _offerIdWithInstanceNotSet),
                 A<string>.That.Matches(x => x == IamUserId),
                 A<OfferTypeId>._))
-            .ReturnsLazily(() => (OfferSubscriptionTransferData?)null);
+            .ReturnsLazily(() => (OfferSubscriptionTransferData?) null);
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
                 A<string>.That.Not.Matches(x => x == IamUserId || x == IamUserIdWithoutMail),
                 A<OfferTypeId>._))
-            .ReturnsLazily(() =>new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, Guid.Empty, Guid.Empty,
+            .ReturnsLazily(() => new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, Guid.Empty,
+                Guid.Empty,
                 string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
-                Bpn, null, null, null, technicalUserRequired, (isSingleInstance, "https://test.de"), new []{Guid.NewGuid()}));
+                Bpn, null, null, null, technicalUserRequired, (isSingleInstance, "https://test.de"),
+                new[] {Guid.NewGuid()}));
 
+        return createNotificationsEnumerator;
     }
 
     private void SetupCreateSingleInstance(AppInstance? appInstance = null)

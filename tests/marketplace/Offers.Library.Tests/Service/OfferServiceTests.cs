@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
 
@@ -50,6 +51,7 @@ public class OfferServiceTests
     private readonly IConsentAssignedOfferSubscriptionRepository _consentAssignedOfferSubscriptionRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly INotificationService _notificationService;
+    private readonly IAsyncEnumerator<Guid> _createNotificationsEnumerator;
     private readonly IOfferRepository _offerRepository;
     private readonly IUserRepository _userRepository;    
     private readonly IUserRolesRepository _userRolesRepository;
@@ -92,7 +94,7 @@ public class OfferServiceTests
         _sut = new OfferService(_portalRepositories, _notificationService, _mailingService, _offerSetupService);
 
         SetupRepositories();
-        SetupServices();
+        _createNotificationsEnumerator = SetupServices();
     }
 
     #region Create Service
@@ -783,6 +785,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUserId)).MustHaveHappened();
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._)).MustHaveHappened();
+        A.CallTo(() => _createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
         offer.OfferStatusId.Should().Be(OfferStatusId.ACTIVE);
         offer.DateReleased.Should().NotBeNull();
         if (isSingleInstance)
@@ -1065,6 +1068,7 @@ public class OfferServiceTests
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappenedOnceExactly();
         offer.OfferStatusId.Should().Be(OfferStatusId.CREATED);
     }
@@ -1932,11 +1936,13 @@ public class OfferServiceTests
         _fixture.Inject(_portalRepositories);
     }
 
-    private void SetupServices()
+    private IAsyncEnumerator<Guid> SetupServices()
     {
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._,
                 A<Guid>._, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._))
-            .ReturnsLazily(() => Task.CompletedTask);
+            .Returns(new List<Guid>{_companyUser.Id}.AsFakeIAsyncEnumerable(out var createNotificationsResultAsyncEnumerator));
+        
+        return createNotificationsResultAsyncEnumerator;
     }
 
     private void SetupCreateDocument(Guid appId, OfferTypeId offerTypeId)
