@@ -142,4 +142,11 @@ public interface IUserRepository
     /// <param name="businessPartnerNumber"></param>
     /// <returns></returns>
     IAsyncEnumerable<(bool IsApplicationCompany, bool IsApplicationPending, string? BusinessPartnerNumber, Guid CompanyId)> GetBpnForIamUserUntrackedAsync(Guid applicationId, string businessPartnerNumber);
+    
+    /// <summary>
+    /// Gets the users company bpn for the iam user
+    /// </summary>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>The bpn of the company for the user</returns>
+    Task<string?> GetCompanyBpnForIamUserAsync(string iamUserId);
 }

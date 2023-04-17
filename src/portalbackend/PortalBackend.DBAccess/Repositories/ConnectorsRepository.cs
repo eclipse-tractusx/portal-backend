@@ -154,4 +154,18 @@ public class ConnectorsRepository : IConnectorsRepository
     /// <inheritdoc />
     public void DeleteConnectorClientDetails(Guid connectorId) => 
         _context.ConnectorClientDetails.Remove(new ConnectorClientDetail(connectorId, null!));
+
+    /// <inheritdoc />
+    public Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, string iamUser) =>
+        _context.Connectors
+            .Where(c => c.Id == connectorId)
+            .Select(c => new ConnectorUpdateInformation(
+                c.StatusId,
+                c.TypeId,
+                c.Host!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUser),
+                c.ConnectorUrl,
+                c.Provider!.BusinessPartnerNumber,
+                c.ClientDetails!.ClientId
+            ))
+            .SingleOrDefaultAsync();
 }

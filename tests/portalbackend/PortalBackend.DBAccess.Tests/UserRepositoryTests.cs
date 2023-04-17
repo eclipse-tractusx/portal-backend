@@ -348,6 +348,26 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetCompanyBpnForIamUserAsync
+
+    [Fact]
+    public async Task GetCompanyBpnForIamUserAsync_WithExistingUser_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var result = await sut
+            .GetCompanyBpnForIamUserAsync(ValidIamUserId)
+            .ConfigureAwait(false);
+        
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().Be("BPNL00000003CRHK");
+    }
+
+    #endregion
+
     private async Task<(UserRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

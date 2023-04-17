@@ -88,11 +88,10 @@ public interface IConnectorsBusinessLogic
     /// </summary>
     /// <param name="connectorId">Id of the connector the endpoint should get triggered for.</param>
     /// <param name="certificate">The certificate</param>
-    /// <param name="accessToken">Bearer token to be used for authorizing the sd factory request.</param>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="cancellationToken"></param>
     /// <returns><c>true</c> if the call to daps was successful, otherwise <c>false</c>.</returns>
-    Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, string accessToken, string iamUserId, CancellationToken cancellationToken);
+    Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, string iamUserId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Processes the clearinghouse self description
@@ -101,4 +100,13 @@ public interface IConnectorsBusinessLogic
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="cancellationToken">CancellationToken</param>
     Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, string iamUserId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Update the connector url
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    /// <param name="data">Update data for the connector</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data, string iamUserId, CancellationToken cancellationToken);
 }
