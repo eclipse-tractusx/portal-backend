@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Daps.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -333,7 +334,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                     group.Select(x => x.ConnectorEndpoint)));
 
     /// <inheritdoc />
-    public async Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, string accessToken, string iamUserId, CancellationToken cancellationToken)
+    public async Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, string iamUserId, CancellationToken cancellationToken)
     {
         var connectorsRepository = _portalRepositories
             .GetInstance<IConnectorsRepository>();
@@ -408,6 +409,65 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         }
 
         await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, companyUserId, cancellationToken).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data, string iamUserId, CancellationToken cancellationToken)
+    {
+        data.ConnectorUrl.EnsureValidHttpUrl(() => nameof(data.ConnectorUrl));
+        return UpdateConnectorUrlInternal(connectorId, data, iamUserId, cancellationToken);
+    }
+
+    public async Task UpdateConnectorUrlInternal(Guid connectorId, ConnectorUpdateRequest data, string iamUserId, CancellationToken cancellationToken)
+    {
+
+        var connectorsRepository = _portalRepositories
+            .GetInstance<IConnectorsRepository>();
+        var connector = await connectorsRepository
+            .GetConnectorUpdateInformation(connectorId, iamUserId)
+            .ConfigureAwait(false);
+
+        if (connector == null)
+        {
+            throw new NotFoundException($"Connector {connectorId} does not exists");
+        }
+
+        if (connector.ConnectorUrl == data.ConnectorUrl)
+        {
+            return;
+        }
+
+        if (!connector.IsUserOfHostCompany)
+        {
+            throw new ForbiddenException($"User {iamUserId} is no user of the connectors host company");
+        }
+
+        if (connector.Status == ConnectorStatusId.INACTIVE)
+        {
+            throw new ConflictException($"Connector {connectorId} is in state {ConnectorStatusId.INACTIVE}");
+        }
+
+        if (string.IsNullOrWhiteSpace(connector.DapsClientId))
+        {
+            throw new ConflictException($"Connector {connectorId} has no client id");
+        }
+
+        var bpn = connector.Type == ConnectorTypeId.CONNECTOR_AS_A_SERVICE
+            ? connector.Bpn
+            : await _portalRepositories.GetInstance<IUserRepository>()
+                .GetCompanyBpnForIamUserAsync(iamUserId)
+                .ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(bpn))
+        {
+            throw new ConflictException("The business partner number must be set here");
+        }
+
+        await _dapsService
+            .UpdateDapsConnectorUrl(connector.DapsClientId, data.ConnectorUrl, bpn, cancellationToken)
+            .ConfigureAwait(false);
+        connectorsRepository.AttachAndModifyConnector(connectorId, con => { con.ConnectorUrl = data.ConnectorUrl; });
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

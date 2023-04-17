@@ -208,7 +208,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<bool> TriggerDapsAuth([FromRoute] Guid connectorId, [FromForm] IFormFile certificate, CancellationToken cancellationToken) =>
-        await this.WithIamUserAndBearerToken(auth => _businessLogic.TriggerDapsAsync(connectorId, certificate, auth.bearerToken, auth.iamUserId, cancellationToken)).ConfigureAwait(false);
+        await this.WithIamUserId(iamUserId => _businessLogic.TriggerDapsAsync(connectorId, certificate, iamUserId, cancellationToken)).ConfigureAwait(false);
 
     /// <summary>
     /// Removes a connector from persistence layer by id.
@@ -260,6 +260,34 @@ public class ConnectorsController : ControllerBase
     public async Task<NoContentResult> ProcessClearinghouseSelfDescription([FromBody] SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
         await this.WithIamUserId(iamUserId => _businessLogic.ProcessClearinghouseSelfDescription(data, iamUserId, cancellationToken).ConfigureAwait(false));
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Updates the connector url
+    /// </summary>
+    /// <param name="connectorId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">Id of the connector to trigger the daps call.</param>
+    /// <param name="data">The update data</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>NoContent Result.</returns>
+    /// <remarks>Example: PUT: /api/administration/connectors/{connectorId}/connectorUrl</remarks>
+    /// <response code="204">Url was successfully updated.</response>
+    /// <response code="400">Input parameter are invalid.</response>
+    /// <response code="403">user does not belong to host company of the connector.</response>
+    /// <response code="404">Connector was not found.</response>
+    /// <response code="503">Access to Daps failed with the given status code.</response>
+    [HttpPut]
+    [Route("{connectorId:guid}/connectorUrl")]
+    [Authorize(Roles = "modify_connectors")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<NoContentResult> UpdateConnectorUrl([FromRoute] Guid connectorId, [FromBody] ConnectorUpdateRequest data, CancellationToken cancellationToken)
+    {
+        await this.WithIamUserId(iamUserId => _businessLogic.UpdateConnectorUrl(connectorId, data, iamUserId, cancellationToken))
+            .ConfigureAwait(false);
         return NoContent();
     }
 }

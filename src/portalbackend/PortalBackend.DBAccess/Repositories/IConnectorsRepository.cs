@@ -99,4 +99,12 @@ public interface IConnectorsRepository
     /// </summary>
     /// <param name="connectorId">Id of the connector</param>
     void DeleteConnectorClientDetails(Guid connectorId);
+    
+    /// <summary>
+    /// Gets the data required for the connector update
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    /// <param name="iamUser">Id of the IamUser</param>
+    /// <returns>Returns the update information</returns>
+    Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, string iamUser);
 }

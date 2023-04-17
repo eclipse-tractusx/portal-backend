@@ -42,7 +42,6 @@ public class ConnectorsBusinessLogicTests
 {
     private const string ValidCompanyBpn = "CATENAXBPN123";
     private const string CompanyBpnWithoutSdDocument = "NoSdDocument123";
-    private const string AccessToken = "validToken";
     private static readonly Guid CompanyUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020002");
     private static readonly Guid ServiceAccountUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020003");
     private static readonly Guid ValidCompanyId = Guid.NewGuid();
@@ -342,7 +341,7 @@ public class ConnectorsBusinessLogicTests
             .ReturnsLazily(() => new DapsResponse("12345"));
 
         // Act
-        await _logic.TriggerDapsAsync(ExistingConnectorId, file, AccessToken, IamUserId, CancellationToken.None).ConfigureAwait(false);
+        await _logic.TriggerDapsAsync(ExistingConnectorId, file, IamUserId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _dapsService.EnableDapsAuthAsync(A<string>._, A<string>._, A<string>._, A<IFormFile>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -359,7 +358,7 @@ public class ConnectorsBusinessLogicTests
             .ReturnsLazily(() => (DapsResponse?)null);
 
         // Act
-        async Task Act() => await _logic.TriggerDapsAsync(ExistingConnectorId, file, AccessToken, IamUserId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.TriggerDapsAsync(ExistingConnectorId, file, IamUserId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -376,7 +375,7 @@ public class ConnectorsBusinessLogicTests
         var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
 
         // Act
-        async Task Act() => await _logic.TriggerDapsAsync(notExistingConnectorId,  file, AccessToken, IamUserId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.TriggerDapsAsync(notExistingConnectorId,  file, IamUserId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -390,7 +389,7 @@ public class ConnectorsBusinessLogicTests
         var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
 
         // Act
-        async Task Act() => await _logic.TriggerDapsAsync(ExistingConnectorId,  file, AccessToken, Guid.NewGuid().ToString(), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.TriggerDapsAsync(ExistingConnectorId,  file, Guid.NewGuid().ToString(), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -613,7 +612,193 @@ public class ConnectorsBusinessLogicTests
     }
 
     #endregion
-    
+
+    #region UpdateConnectorUrl
+
+    [Fact]
+    public async Task UpdateConnectorUrl_WithoutConnector_ThrowsNotFoundException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, IamUserId))
+            .ReturnsLazily(() => (ConnectorUpdateInformation?)null);
+
+        // Act
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de"), IamUserId, CancellationToken.None).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Connector {connectorId} does not exists");
+    }
+
+    [Fact]
+    public async Task UpdateConnectorUrl_WithSameUrlAsStored_ReturnsWithoutDoing()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var data = _fixture.Build<ConnectorUpdateInformation>()
+            .With(x => x.ConnectorUrl, "https://test.de")
+            .Create();
+        A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, IamUserId))
+            .ReturnsLazily(() => data);
+
+        // Act
+        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de"), IamUserId, CancellationToken.None).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        A.CallTo(() => _dapsService.UpdateDapsConnectorUrl(A<string>._,A<string>._,A<string>._,A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task UpdateConnectorUrl_WithUserNotOfHostCompany_ThrowsForbiddenException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var data = _fixture.Build<ConnectorUpdateInformation>()
+            .With(x => x.ConnectorUrl, "https://old.de")
+            .With(x => x.IsUserOfHostCompany, false)
+            .Create();
+        A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, IamUserId))
+            .ReturnsLazily(() => data);
+
+        // Act
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), IamUserId, CancellationToken.None).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"User {IamUserId} is no user of the connectors host company");
+    }
+
+    [Fact]
+    public async Task UpdateConnectorUrl_WithInactiveConnector_ThrowsConflictException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var data = _fixture.Build<ConnectorUpdateInformation>()
+            .With(x => x.ConnectorUrl, "https://old.de")
+            .With(x => x.IsUserOfHostCompany, true)
+            .With(x => x.Status, ConnectorStatusId.INACTIVE)
+            .Create();
+        A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, IamUserId))
+            .ReturnsLazily(() => data);
+
+        // Act
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), IamUserId, CancellationToken.None).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Connector {connectorId} is in state {ConnectorStatusId.INACTIVE}");
+    }
+
+    [Fact]
+    public async Task UpdateConnectorUrl_WithoutDapsClientId_ThrowsConflictException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var data = _fixture.Build<ConnectorUpdateInformation>()
+            .With(x => x.ConnectorUrl, "https://old.de")
+            .With(x => x.IsUserOfHostCompany, true)
+            .With(x => x.Status, ConnectorStatusId.ACTIVE)
+            .With(x => x.DapsClientId, (string?)null)
+            .Create();
+        A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, IamUserId))
+            .ReturnsLazily(() => data);
+
+        // Act
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), IamUserId, CancellationToken.None).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Connector {connectorId} has no client id");
+    }
+
+    [Fact]
+    public async Task UpdateConnectorUrl_WithBpnNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var data = _fixture.Build<ConnectorUpdateInformation>()
+            .With(x => x.ConnectorUrl, "https://old.de")
+            .With(x => x.IsUserOfHostCompany, true)
+            .With(x => x.Status, ConnectorStatusId.ACTIVE)
+            .With(x => x.DapsClientId, "1234")
+            .With(x => x.Type, ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
+            .With(x => x.Bpn, (string?)null)
+            .Create();
+        A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, IamUserId))
+            .ReturnsLazily(() => data);
+
+        // Act
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), IamUserId, CancellationToken.None).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("The business partner number must be set here");
+    }
+
+    [Fact]
+    public async Task UpdateConnectorUrl_WithCompanyBpnNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var data = _fixture.Build<ConnectorUpdateInformation>()
+            .With(x => x.ConnectorUrl, "https://old.de")
+            .With(x => x.IsUserOfHostCompany, true)
+            .With(x => x.Status, ConnectorStatusId.ACTIVE)
+            .With(x => x.DapsClientId, "1234")
+            .With(x => x.Type, ConnectorTypeId.COMPANY_CONNECTOR)
+            .With(x => x.Bpn, "BPNL123456789")
+            .Create();
+        A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, IamUserId))
+            .ReturnsLazily(() => data);
+        A.CallTo(() => _userRepository.GetCompanyBpnForIamUserAsync(IamUserId))
+            .ReturnsLazily(() => (string?) null);
+
+        // Act
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), IamUserId, CancellationToken.None).ConfigureAwait(false);
+        
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("The business partner number must be set here");
+    }
+
+    [Fact]
+    public async Task UpdateConnectorUrl_WithValidData_CallsExpected()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var connector = _fixture.Build<Connector>()
+            .With(x => x.ConnectorUrl, "https://old.de")
+            .Create();
+        var data = _fixture.Build<ConnectorUpdateInformation>()
+            .With(x => x.ConnectorUrl, "https://old.de")
+            .With(x => x.IsUserOfHostCompany, true)
+            .With(x => x.Status, ConnectorStatusId.ACTIVE)
+            .With(x => x.DapsClientId, "1234")
+            .With(x => x.Type, ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
+            .With(x => x.Bpn, "BPNL123456789")
+            .Create();
+        A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, IamUserId))
+            .ReturnsLazily(() => data);
+        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connectorId, A<Action<Connector>>._))
+            .Invokes((Guid _, Action<Connector> setOptionalProperties) =>
+            {
+                setOptionalProperties.Invoke(connector);
+            });
+
+        // Act
+        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), IamUserId, CancellationToken.None).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connectorId, A<Action<Connector>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _dapsService.UpdateDapsConnectorUrl("1234", "https://new.de", A<string>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        connector.ConnectorUrl.Should().Be("https://new.de");
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupRepositoryMethods()

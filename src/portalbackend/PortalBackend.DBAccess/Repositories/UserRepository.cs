@@ -483,4 +483,11 @@ public class UserRepository : IUserRepository
                 company.BusinessPartnerNumber,
                 company.Id))
             .AsAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<string?> GetCompanyBpnForIamUserAsync(string iamUserId) =>
+        _dbContext.IamUsers
+            .Where(x => x.UserEntityId == iamUserId)
+            .Select(x => x.CompanyUser!.Company!.BusinessPartnerNumber)
+            .SingleOrDefaultAsync();
 }

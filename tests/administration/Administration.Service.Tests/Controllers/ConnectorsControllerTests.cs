@@ -113,14 +113,14 @@ public class ConnectorsControllerTests
         //Arrange
         var connectorId = Guid.NewGuid();
         var file = FormFileHelper.GetFormFile("this is just random content", "cert.pem", "application/x-pem-file");
-        A.CallTo(() => _logic.TriggerDapsAsync(connectorId, file, AccessToken, IamUserId, A<CancellationToken>._))
+        A.CallTo(() => _logic.TriggerDapsAsync(connectorId, file, IamUserId, A<CancellationToken>._))
             .ReturnsLazily(() => true);
 
         //Act
         var result = await this._controller.TriggerDapsAuth(connectorId, file, CancellationToken.None).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.TriggerDapsAsync(connectorId, file, AccessToken, IamUserId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.TriggerDapsAsync(connectorId, file, IamUserId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         result.Should().BeTrue();
     }
     
@@ -206,6 +206,21 @@ public class ConnectorsControllerTests
         
         // Assert
         A.CallTo(() => _logic.ProcessClearinghouseSelfDescription(data, IamUserId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+    
+    [Fact]
+    public async Task UpdateConnectorUrl_ReturnsExpectedResult()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var data = new ConnectorUpdateRequest("https://test.com");
+        
+        // Act
+        var result = await this._controller.UpdateConnectorUrl(connectorId, data, CancellationToken.None);
+        
+        // Assert
+        A.CallTo(() => _logic.UpdateConnectorUrl(connectorId, data, IamUserId, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 }

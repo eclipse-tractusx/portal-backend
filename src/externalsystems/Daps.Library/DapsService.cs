@@ -54,16 +54,6 @@ public class DapsService : IDapsService
         return HandleRequest(clientName, connectorUrl, businessPartnerNumber, formFile, cancellationToken);
     }
 
-    /// <inheritdoc />
-    public async Task<bool> DeleteDapsClient(string dapsClientId, CancellationToken cancellationToken)
-    {
-        var httpClient = await _tokenService.GetAuthorizedClient<DapsService>(_settings, cancellationToken).ConfigureAwait(false);
-        await httpClient.DeleteAsync(dapsClientId, cancellationToken)
-            .CatchingIntoServiceExceptionFor("daps-delete", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
-
-        return true;
-    }
-
     private async Task<DapsResponse?> HandleRequest(string clientName, string connectorUrl, string businessPartnerNumber,
         IFormFile formFile, CancellationToken cancellationToken)
     {
@@ -81,5 +71,26 @@ public class DapsService : IDapsService
             .CatchingIntoServiceExceptionFor("daps-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return await result.Content.ReadFromJsonAsync<DapsResponse>(Options, cancellationToken)
             .ConfigureAwait(false); 
+    }
+    /// <inheritdoc />
+    public async Task<bool> DeleteDapsClient(string dapsClientId, CancellationToken cancellationToken)
+    {
+        var httpClient = await _tokenService.GetAuthorizedClient<DapsService>(_settings, cancellationToken).ConfigureAwait(false);
+        await httpClient.DeleteAsync(dapsClientId, cancellationToken)
+            .CatchingIntoServiceExceptionFor("daps-delete", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+
+        return true;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> UpdateDapsConnectorUrl(string dapsClientId, string connectorUrl, string businessPartnerNumber,
+        CancellationToken cancellationToken)
+    {
+        var dapsUpdate = new DapsUpdateData(connectorUrl.AppendToPathEncoded(businessPartnerNumber));
+        var httpClient = await _tokenService.GetAuthorizedClient<DapsService>(_settings, cancellationToken).ConfigureAwait(false);
+        await httpClient.PutAsJsonAsync(dapsClientId, dapsUpdate, cancellationToken)
+            .CatchingIntoServiceExceptionFor("daps-update", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+
+        return true;
     }
 }
