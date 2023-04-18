@@ -321,7 +321,7 @@ public class OfferSetupService : IOfferSetupService
 
         if (!offerDetails.InstanceData.IsSingleInstance)
         {
-            notifications.Add((null, NotificationTypeId.TECHNICAL_USER_CREATION));
+            notifications.Add((JsonSerializer.Serialize(new { offerDetails.OfferId, offerDetails.OfferName }), NotificationTypeId.TECHNICAL_USER_CREATION));
         }
         Guid? creatorId = offerDetails.CompanyUserId != Guid.Empty ? offerDetails.CompanyUserId : null;
         var userIdsOfNotifications = await _notificationService.CreateNotifications(
