@@ -239,12 +239,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 connector.HostId = host;
                 connector.TypeId = type;
                 connector.LastEditorId = companyUserId;
-                connector.DateLastChanged = DateTimeOffset.Now;
+                connector.DateLastChanged = DateTimeOffset.UtcNow;
             });
 
+        DapsResponse? response = null;
         if (file is not null)
         {
-            DapsResponse? response = null;
             try
             {
                 response = await _dapsService
@@ -255,17 +255,18 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             {
                 // No error should be visible for the user
             }
-            if (!string.IsNullOrWhiteSpace(response?.ClientId))
-            {
-                connectorsRepository.CreateConnectorClientDetails(createdConnector.Id, response!.ClientId);
-                createdConnector.DapsRegistrationSuccessful = true;
-                createdConnector.StatusId = ConnectorStatusId.ACTIVE;
-            }
-            else
-            {
-                createdConnector.DapsRegistrationSuccessful = false;
-                createdConnector.StatusId = ConnectorStatusId.PENDING;
-            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(response?.ClientId))
+        {
+            connectorsRepository.CreateConnectorClientDetails(createdConnector.Id, response.ClientId);
+            createdConnector.DapsRegistrationSuccessful = true;
+            createdConnector.StatusId = ConnectorStatusId.ACTIVE;
+        }
+        else
+        {
+            createdConnector.DapsRegistrationSuccessful = false;
+            createdConnector.StatusId = ConnectorStatusId.PENDING;
         }
 
         var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{selfDescriptionDocumentId}";
