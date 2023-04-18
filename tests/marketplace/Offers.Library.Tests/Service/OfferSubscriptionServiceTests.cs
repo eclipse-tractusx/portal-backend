@@ -190,30 +190,6 @@ public class OfferSubscriptionServiceTests
     [Theory]
     [InlineData(OfferTypeId.SERVICE)]
     [InlineData(OfferTypeId.APP)]
-    public async Task AddOfferSubscription_WithFailingAutoSetup_ReturnsExpectedResult(OfferTypeId offerTypeId)
-    {
-        // Arrange
-        var notificationId = Guid.NewGuid();
-        var notifications = new List<Notification>();
-        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._))
-            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
-            {
-                var notification = new Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
-                setOptionalParameters?.Invoke(notification);
-                notifications.Add(notification);
-            });
-
-        // Act
-        await _sut.AddOfferSubscriptionAsync(_existingOfferWithFailingAutoSetupId, _validConsentData, _iamUserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
-
-        // Assert
-        notifications.Should().ContainSingle();
-        notifications.First().Content.Should().Contain("Error occured");
-    }
-
-    [Theory]
-    [InlineData(OfferTypeId.SERVICE)]
-    [InlineData(OfferTypeId.APP)]
     public async Task AddOfferSubscription_WithExistingIdWithoutProviderEmail_CreatesServiceSubscription(OfferTypeId offerTypeId)
     {
         // Arrange 

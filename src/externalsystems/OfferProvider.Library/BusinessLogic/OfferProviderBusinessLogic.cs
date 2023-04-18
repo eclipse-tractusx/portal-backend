@@ -135,6 +135,11 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
 
         await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetServiceProviderCompanyUserWithRoleIdAsync(offerId, roleData))
         {
+            if (salesManagerId.HasValue && receiver == salesManagerId.Value)
+            {
+                continue;
+            }
+
             notificationRepository.CreateNotification(
                 receiver,
                 notificationTypeId,
