@@ -231,7 +231,7 @@ public class OfferService : IOfferService
         var licenseId = offerRepository.CreateOfferLicenses(data.Price).Id;
         offerRepository.CreateOfferAssignedLicense(service.Id, licenseId);
         
-        offerRepository.AddServiceAssignedServiceTypes(data.ServiceTypeIds.Select(id => (service.Id, id, id == ServiceTypeId.DATASPACE_SERVICE))); // TODO (PS): Must be refactored, customer needs to define whether the service needs a technical User
+        offerRepository.AddServiceAssignedServiceTypes(data.ServiceTypeIds.Select(id => (service.Id, id)));
         offerRepository.AddOfferDescriptions(data.Descriptions.Select(d =>
             new ValueTuple<Guid, string, string, string>(service.Id, d.LanguageCode, d.LongDescription, d.ShortDescription)));
 
@@ -746,6 +746,74 @@ public class OfferService : IOfferService
 
         _portalRepositories.GetInstance<IOfferRepository>().RemoveOfferAssignedDocument(offer.OfferId, documentId);
         _portalRepositories.GetInstance<IDocumentRepository>().RemoveDocument(documentId);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    public async Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId, OfferTypeId offerTypeId)
+    {
+        var result = await _portalRepositories.GetInstance<ITechnicalUserProfileRepository>()
+            .GetTechnicalUserProfileInformation(offerId, iamUserId, offerTypeId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"Offer {offerId} does not exist");
+        }
+
+        if (!result.IsUserOfProvidingCompany)
+        {
+            throw new ForbiddenException($"User {iamUserId} is not in providing company");
+        }
+
+        return result.Information;
+    }
+
+    /// <inheritdoc />
+    public async Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, string iamUserId, string technicalUserProfileClient)
+    {
+        var technicalUserProfileRepository = _portalRepositories.GetInstance<ITechnicalUserProfileRepository>();
+        var offerProfileData = await technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, iamUserId).ConfigureAwait(false);
+        var roles = await _portalRepositories.GetInstance<IUserRolesRepository>()
+            .GetRolesForClient(technicalUserProfileClient)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        if (offerProfileData == null)
+        {
+            throw new NotFoundException($"Offer {offerTypeId} {offerId} does not exist");
+        }
+
+        if (!offerProfileData.IsProvidingCompanyUser)
+        {
+            throw new ForbiddenException($"User {iamUserId} is not in providing company");
+        }
+
+        if (offerProfileData.ServiceTypeIds?.All(x => x == ServiceTypeId.CONSULTANCE_SERVICE) ?? false)
+        {
+            throw new ConflictException("Technical User Profiles can't be set for CONSULTANCE_SERVICE");
+        }
+
+        var notExistingRoles = data.SelectMany(ur => ur.UserRoleIds).Except(roles);
+        if (notExistingRoles.Any())
+        {
+            throw new ConflictException($"Roles {string.Join(",", notExistingRoles)} do not exist");
+        }
+
+        technicalUserProfileRepository.CreateDeleteTechnicalUserProfileAssignedRoles(
+            offerProfileData.ProfileData.SelectMany(profileData => profileData.UserRoleIds.Select(roleId => (profileData.TechnicalUserProfileId, roleId))).ToList(),
+            data.Select(profileData => (
+                    TechnicalUserProfileId: profileData.TechnicalUserProfileId == null
+                        ? technicalUserProfileRepository.CreateTechnicalUserProfile(Guid.NewGuid(), offerId).Id
+                        : profileData.TechnicalUserProfileId.Value,
+                    profileData.UserRoleIds))
+                .SelectMany(data => data.UserRoleIds.Select(roleId => (data.TechnicalUserProfileId, roleId))).ToList());
+        
+        technicalUserProfileRepository.RemoveTechnicalUserProfiles(
+            offerProfileData.ProfileData
+                .ExceptBy(
+                    data.Where(x => x.TechnicalUserProfileId != null)
+                        .Select(x => x.TechnicalUserProfileId!.Value),
+                    x => x.TechnicalUserProfileId)
+                .Select(x => x.TechnicalUserProfileId));
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

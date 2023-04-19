@@ -217,7 +217,7 @@ public class OfferSetupService : IOfferSetupService
         }
         await _provisioningManager.EnableClient(internalClientId).ConfigureAwait(false);
 
-        var technicalUserData = await CreateTechnicalUsersForOffer(offerId, new CreateTechnicalUserData(data.CompanyId, data.OfferName, data.Bpn, internalClientId, true)).ToListAsync()
+        var technicalUserData = await CreateTechnicalUsersForOffer(offerId, OfferTypeId.APP, new CreateTechnicalUserData(data.CompanyId, data.OfferName, data.Bpn, internalClientId, true)).ToListAsync()
             .ConfigureAwait(false);
 
         _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstanceAssignedServiceAccounts(technicalUserData.Select(x => new ValueTuple<Guid, Guid>(instanceId, x.TechnicalUserId)));
@@ -259,7 +259,7 @@ public class OfferSetupService : IOfferSetupService
 
     private async Task<(string clientId, Guid iamClientId)> CreateClient(string offerUrl, Guid offerId, bool enabled, IUserRolesRepository userRolesRepository)
     {
-        var userRoles = await userRolesRepository.GetUserRolesForOfferIdAsync(offerId).ConfigureAwait(false);
+        var userRoles = await userRolesRepository.GetUserRolesForOfferIdAsync(offerId).ToListAsync().ConfigureAwait(false);
         offerUrl.EnsureValidHttpUrl(() => nameof(offerUrl));
         var redirectUrl = offerUrl.AppendToPathEncoded("*");
 
@@ -283,9 +283,10 @@ public class OfferSetupService : IOfferSetupService
 
     private async IAsyncEnumerable<TechnicalUserInfoData> CreateTechnicalUsersForOffer(
         Guid offerId,
+        OfferTypeId offerTypeId,
         CreateTechnicalUserData data)
     {
-        var creationData = await _technicalUserProfileService.GetTechnicalUserProfilesForOffer(offerId).ToListAsync().ConfigureAwait(false);
+        var creationData = await _technicalUserProfileService.GetTechnicalUserProfilesForOffer(offerId, offerTypeId).ToListAsync().ConfigureAwait(false);
         foreach (var creationInfo in creationData)
         {
             var (technicalClientId, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation

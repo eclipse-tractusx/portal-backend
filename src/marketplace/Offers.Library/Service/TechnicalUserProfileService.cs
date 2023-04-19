@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
@@ -31,41 +31,37 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 public class TechnicalUserProfileService : ITechnicalUserProfileService
 {
     private readonly IPortalRepositories _portalRepositories;
-    private readonly TechnicalUserProfileSettings _settings;
 
     /// <summary>
     ///     Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
-    /// <param name="options">Access to the settings</param>
-    public TechnicalUserProfileService(IPortalRepositories portalRepositories,
-        IOptions<TechnicalUserProfileSettings> options)
+    public TechnicalUserProfileService(IPortalRepositories portalRepositories)
     {
         _portalRepositories = portalRepositories;
-        _settings = options.Value;
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ServiceAccountCreationInfo> GetTechnicalUserProfilesForOffer(Guid offerId)
+    public async IAsyncEnumerable<ServiceAccountCreationInfo> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId)
     {
-        // TODO (PS): refactor, request technical user profile from database for a specific offer 
         var data = await _portalRepositories.GetInstance<IOfferRepository>()
-            .GetServiceAccountProfileData(offerId)
+            .GetServiceAccountProfileData(offerId, offerTypeId)
             .ConfigureAwait(false);
         if (data == default)
         {
-            throw new NotFoundException($"Offer {offerId} does not exists");
+            throw new NotFoundException($"Offer {offerTypeId} {offerId} does not exists");
         }
 
-        var serviceAccountData = await GetServiceAccountData(data).ConfigureAwait(false);
-        if (serviceAccountData != null)
+        if (!CheckTechnicalUserData(data)) yield break;
+
+        foreach (var serviceAccountData in data.ServiceAccountProfiles
+                     .Select(x => GetServiceAccountData(data.OfferName!, x)))
             yield return serviceAccountData;
     }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<ServiceAccountCreationInfo> GetTechnicalUserProfilesForOfferSubscription(Guid subscriptionId)
     {
-        // TODO (PS): refactor, request technical user profile from database for a specific offer 
         var data = await _portalRepositories.GetInstance<IOfferRepository>()
             .GetServiceAccountProfileDataForSubscription(subscriptionId)
             .ConfigureAwait(false);
@@ -74,35 +70,27 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
             throw new NotFoundException($"Offer Subscription {subscriptionId} does not exists");
         }
 
-        var serviceAccountData = await GetServiceAccountData(data).ConfigureAwait(false);
-        if (serviceAccountData != null)
+        if (!CheckTechnicalUserData(data)) yield break;
+
+        foreach (var serviceAccountData in data.ServiceAccountProfiles
+                     .Select(x => GetServiceAccountData(data.OfferName!, x)))
             yield return serviceAccountData;
     }
 
-    private async ValueTask<ServiceAccountCreationInfo?> GetServiceAccountData((bool IsSingleInstance, bool TechnicalUserNeeded, string? OfferName) data)
+    private static bool CheckTechnicalUserData((bool IsSingleInstance, IEnumerable<IEnumerable<UserRoleData>>ServiceAccountProfiles, string? OfferName) data)
     {
         if (string.IsNullOrWhiteSpace(data.OfferName))
         {
             throw new ConflictException("Offer name needs to be set here");
         }
 
-        if (data is {IsSingleInstance: false, TechnicalUserNeeded: false})
-        {
-            return null;
-        }
+        return data.IsSingleInstance || !data.ServiceAccountProfiles.Any();
+    }
 
-        var serviceAccountUserRoles = await _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetUserRoleDataUntrackedAsync(_settings.ServiceAccountRoles)
-            .ToListAsync()
-            .ConfigureAwait(false);
-
-        var description =
-            $"Technical User for app {data.OfferName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}";
-        var serviceAccountCreationData = new ServiceAccountCreationInfo(
-            data.OfferName,
-            description,
+    private static ServiceAccountCreationInfo GetServiceAccountData(string offerName, IEnumerable<UserRoleData> serviceAccountUserRoles) =>
+        new ServiceAccountCreationInfo(
+            offerName,
+            $"Technical User for app {offerName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}",
             IamClientAuthMethod.SECRET,
             serviceAccountUserRoles.Select(x => x.UserRoleId));
-        return serviceAccountCreationData;
-    }
 }

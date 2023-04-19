@@ -202,7 +202,7 @@ public interface IOfferService
     /// </summary>
     /// <param name="offerId"></param>
     /// <param name="documentId"></param>
-    /// <param name="documentTypeIds"></param>
+    /// <param name="documentTypeIdSettings"></param>
     /// <param name="offerTypeId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
@@ -217,4 +217,23 @@ public interface IOfferService
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task DeleteDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIdSettings, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Get technical user profiles for a specific offer
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="iamUserId">Id of the iam User</param>
+    /// <param name="offerTypeId">Id of the offer type</param>
+    /// <returns>IEnumerable with the technical user profile information</returns>
+    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// Creates or updates the technical user profiles
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="offerTypeId">The OfferTypeId of the offer</param>
+    /// <param name="data">The technical user profiles</param>
+    /// <param name="iamUserId">id of the iam user</param>
+    /// <param name="technicalUserProfileClient">Client to get the technicalUserProfiles</param>
+    Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, string iamUserId, string technicalUserProfileClient);
 }

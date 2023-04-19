@@ -18,16 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public static class TechnicalUserProfileExtensions
-{
-    public static IServiceCollection AddTechnicalUserProfile(this IServiceCollection services, IConfigurationSection section)
-    {
-        return services.AddTransient<ITechnicalUserProfileService, TechnicalUserProfileService>();
-    }
-}
+public record OfferProfileData(
+    bool IsProvidingCompanyUser,
+    IEnumerable<ServiceTypeId>? ServiceTypeIds,
+    IEnumerable<(Guid TechnicalUserProfileId, IEnumerable<Guid> UserRoleIds)> ProfileData
+);

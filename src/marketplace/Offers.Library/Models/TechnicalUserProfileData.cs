@@ -18,15 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
-
-public class TechnicalUserProfileSettings
-{
-    /// <summary>
-    /// Service account roles
-    /// </summary>
-    [Required]
-    public IDictionary<string,IEnumerable<string>> ServiceAccountRoles { get; set; } = null!;
-}
+public record TechnicalUserProfileData(
+    Guid? TechnicalUserProfileId,
+    IEnumerable<Guid> UserRoleIds
+);

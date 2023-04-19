@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -48,6 +49,7 @@ public class Offer : IAuditableV1, IBaseEntity
         ConsentAssignedOffers = new HashSet<ConsentAssignedOffer>();
         ServiceDetails = new HashSet<ServiceDetail>();
         OfferAssignedPrivacyPolicies = new HashSet<OfferAssignedPrivacyPolicy>();
+        TechnicalUserProfiles = new HashSet<TechnicalUserProfile>();
     }
 
     public Offer(Guid id, string provider, DateTimeOffset dateCreated, OfferTypeId offerTypeId) : this()
@@ -119,4 +121,5 @@ public class Offer : IAuditableV1, IBaseEntity
     public virtual ICollection<ConsentAssignedOffer> ConsentAssignedOffers { get; private set; }
     public virtual ICollection<ServiceDetail> ServiceDetails { get; private set; }
     public virtual ICollection<OfferAssignedPrivacyPolicy> OfferAssignedPrivacyPolicies { get; private set; }
+    public virtual ICollection<TechnicalUserProfile> TechnicalUserProfiles { get; private set; }
 }

@@ -265,7 +265,7 @@ public interface IOfferRepository
     /// Adds the service types to the service
     /// </summary>
     /// <param name="serviceAssignedServiceTypes"></param>
-    void AddServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId, bool technicalUserNeeded)> serviceAssignedServiceTypes);
+    void AddServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceAssignedServiceTypes);
 
     /// <summary>
     /// Removes <see cref="ServiceDetail"/>s to the databasethe database
@@ -489,12 +489,12 @@ public interface IOfferRepository
     /// </summary>
     /// <param name="offerId"></param>
     /// <returns></returns>
-    Task<(bool IsSingleInstance, bool TechnicalUserNeeded, string? OfferName)> GetServiceAccountProfileData(Guid offerId);
+    Task<(bool IsSingleInstance, IEnumerable<IEnumerable<UserRoleData>> ServiceAccountProfiles, string? OfferName)> GetServiceAccountProfileData(Guid offerId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the related service account data
     /// </summary>
     /// <param name="subscriptionId"></param>
     /// <returns></returns>
-    Task<(bool IsSingleInstance, bool TechnicalUserNeeded, string? OfferName)> GetServiceAccountProfileDataForSubscription(Guid subscriptionId);
+    Task<(bool IsSingleInstance, IEnumerable<IEnumerable<UserRoleData>> ServiceAccountProfiles, string? OfferName)> GetServiceAccountProfileDataForSubscription(Guid subscriptionId);
 }

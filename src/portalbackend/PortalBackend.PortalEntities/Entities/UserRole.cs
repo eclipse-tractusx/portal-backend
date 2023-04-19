@@ -37,6 +37,7 @@ public class UserRole : IAuditableV1, IBaseEntity
         CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
         UserRoleCollections = new HashSet<UserRoleCollection>();
         UserRoleDescriptions = new HashSet<UserRoleDescription>();
+        TechnicalUserProfiles = new HashSet<TechnicalUserProfile>();
     }
 
     public UserRole(Guid id, string userRoleText, Guid offerId) : this()
@@ -63,4 +64,5 @@ public class UserRole : IAuditableV1, IBaseEntity
     public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
     public virtual ICollection<UserRoleCollection> UserRoleCollections { get; private set; }
     public virtual ICollection<UserRoleDescription> UserRoleDescriptions { get; private set; }
+    public virtual ICollection<TechnicalUserProfile> TechnicalUserProfiles { get; private set; }
 }

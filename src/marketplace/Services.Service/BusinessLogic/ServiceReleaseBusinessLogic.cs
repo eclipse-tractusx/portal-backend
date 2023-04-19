@@ -189,7 +189,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         _offerService.CreateOrUpdateOfferLicense(serviceId, data.Price, serviceData.OfferLicense);
         var newServiceTypes = data.ServiceTypeIds
             .Except(serviceData.ServiceTypeIds.Where(x => x.IsMatch).Select(x => x.ServiceTypeId))
-            .Select(sti => (serviceId, sti, sti == ServiceTypeId.DATASPACE_SERVICE)); // TODO (PS): Must be refactored, customer needs to define whether the service needs a technical User
+            .Select(sti => (serviceId, sti));
         var serviceTypeIdsToRemove = serviceData.ServiceTypeIds
             .Where(x => !x.IsMatch)
             .Select(sti => (serviceId, sti.ServiceTypeId));
@@ -197,11 +197,16 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             newServiceTypes, 
             serviceTypeIdsToRemove,
             offerRepository);
+        if (data.ServiceTypeIds.All(x => x == ServiceTypeId.CONSULTANCE_SERVICE))
+        {
+            _portalRepositories.GetInstance<ITechnicalUserProfileRepository>()
+                .RemoveTechnicalUserProfilesForOffer(serviceId);
+        }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
     
-    private static void UpdateAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId, bool technicalUserNeeded)> newServiceTypes, IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceTypeIdsToRemove, IOfferRepository appRepository)
+    private static void UpdateAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> newServiceTypes, IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceTypeIdsToRemove, IOfferRepository appRepository)
     {
         appRepository.AddServiceAssignedServiceTypes(newServiceTypes);
         appRepository.RemoveServiceAssignedServiceTypes(serviceTypeIdsToRemove);
