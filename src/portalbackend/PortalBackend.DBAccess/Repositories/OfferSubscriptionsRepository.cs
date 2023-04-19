@@ -369,7 +369,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.Offer!.Id,
                 x.Offer.OfferTypeId,
                 x.OfferSubscriptionProcessData!.OfferUrl,
-                x.Offer.TechnicalUserProfiles.Any()
+                x.Offer!.OfferTypeId == OfferTypeId.APP || x.Offer.TechnicalUserProfiles.Any()
             ))
             .SingleOrDefaultAsync();
 
@@ -378,7 +378,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
         _context.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
             .Select(x => new OfferSubscriptionTechnicalUserCreationData(
-                x.Offer!.TechnicalUserProfiles.Any(),
+                x.Offer!.OfferTypeId == OfferTypeId.APP || x.Offer.TechnicalUserProfiles.Any(),
                 x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId,
                 x.Offer.Name,
                 x.Company!.Name,
@@ -407,7 +407,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     /// <inheritdoc />
     public void RemoveOfferSubscriptionProcessData(Guid offerSubscriptionId) =>
         _context.Remove(new OfferSubscriptionProcessData(offerSubscriptionId, null!));
-    
+
     /// <inheritdoc />
     public IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId) =>
         _context.OfferSubscriptions

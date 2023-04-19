@@ -88,7 +88,7 @@ public class SubscriptionConfigurationControllerTests
         A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, true)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
-    
+
     [Fact]
     public async Task RetriggerCreateTechnicalUser_WithValidData_ReturnsNoContent()
     {
@@ -118,12 +118,12 @@ public class SubscriptionConfigurationControllerTests
         A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, false)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
-    
+
     [Fact]
     public async Task SetCompanyDetail_WithValidData_ReturnsNoContent()
     {
         //Arrange
-        var data = new ProviderDetailData("https://this-is-a-test.de", null);  
+        var data = new ProviderDetailData("https://this-is-a-test.de", null);
         A.CallTo(() => _logic.SetProviderCompanyDetailsAsync(data, IamUserId))
             .ReturnsLazily(() => Task.CompletedTask);
 
@@ -134,13 +134,13 @@ public class SubscriptionConfigurationControllerTests
         A.CallTo(() => _logic.SetProviderCompanyDetailsAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
-    
+
     [Fact]
     public async Task GetProviderCompanyDetail_WithValidData_ReturnsOk()
     {
         //Arrange
         var id = Guid.NewGuid();
-        var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de");  
+        var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de");
         A.CallTo(() => _logic.GetProviderCompanyDetailsAsync(IamUserId))
             .ReturnsLazily(() => data);
 

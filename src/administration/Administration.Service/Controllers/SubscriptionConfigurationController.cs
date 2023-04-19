@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -66,7 +66,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<ProviderDetailReturnData> GetServiceProviderCompanyDetail() =>
         this.WithIamUserId(iamUserId => _businessLogic.GetProviderCompanyDetailsAsync(iamUserId));
-    
+
     /// <summary>
     /// Sets detail data to the calling users service provider
     /// </summary>
@@ -104,7 +104,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription([FromRoute] Guid offerSubscriptionId) => 
+    public IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription([FromRoute] Guid offerSubscriptionId) =>
         _businessLogic.GetProcessStepsForSubscription(offerSubscriptionId);
 
     /// <summary>

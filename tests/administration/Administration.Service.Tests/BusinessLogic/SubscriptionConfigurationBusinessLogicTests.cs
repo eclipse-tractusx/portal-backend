@@ -50,7 +50,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());  
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
@@ -58,7 +58,6 @@ public class SubscriptionConfigurationBusinessLogicTests
         _offerSubscriptionProcessService = A.Fake<IOfferSubscriptionProcessService>();
 
         _serviceProviderDetails = new HashSet<ProviderCompanyDetail>();
-            
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>())
@@ -68,7 +67,7 @@ public class SubscriptionConfigurationBusinessLogicTests
     }
 
     #region GetProcessStepData
-    
+
     [Fact]
     public async Task GetProcessStepData_WithValidInput_ReturnsExpected()
     {
@@ -76,7 +75,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var list = _fixture.CreateMany<ProcessStepData>(5);
         A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepsForSubscription(OfferSubscriptionId))
             .Returns(list.ToAsyncEnumerable());
-        
+
         // Act
         var result = await _sut.GetProcessStepsForSubscription(OfferSubscriptionId).ToListAsync().ConfigureAwait(false);
 
@@ -84,11 +83,11 @@ public class SubscriptionConfigurationBusinessLogicTests
         result.Should().NotBeNull();
         result.Should().HaveCount(5);
     }
-    
+
     #endregion
 
     #region GetProcessStepData
-    
+
     [Theory]
     [InlineData(ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepTypeId.TRIGGER_PROVIDER)]
     [InlineData(ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION)]
@@ -102,7 +101,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var processStep = new ProcessStep(processStepId, retriggerStep, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(OfferSubscriptionId, retriggerStep, null, mustBePending))
             .ReturnsLazily(() => new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(OfferSubscriptionId, _fixture.Create<Process>(), processStepId, Enumerable.Repeat(processStep, 1)));
-        
+
         // Act
         await _sut.TriggerProcessStep(OfferSubscriptionId, retriggerStep, mustBePending);
 
@@ -113,7 +112,7 @@ public class SubscriptionConfigurationBusinessLogicTests
                 A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == nextStep)))
             .MustHaveHappenedOnceExactly();
     }
-    
+
     [Fact]
     public async Task TriggerProcessStep_WithInvalidStep_ThrowsConflictException()
     {
@@ -129,11 +128,11 @@ public class SubscriptionConfigurationBusinessLogicTests
                 A<IEnumerable<ProcessStepTypeId>>._))
             .MustNotHaveHappened();
     }
-    
+
     #endregion
-        
+
     #region Set ProviderCompanyDetails
-        
+
     [Fact]
     public async Task SetProviderCompanyDetailsAsync_EmptyProviderDetailsId_ReturnsExpectedResult()
     {
@@ -141,7 +140,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         SetupProviderCompanyDetails();
         var providerDetailData = new ProviderDetailData("https://www.service-url.com", "https://www.test.com");
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(IamUserId))
-            .Returns((Guid.Empty,null!));
+            .Returns((Guid.Empty, null!));
 
         // Act
         await _sut.SetProviderCompanyDetailsAsync(providerDetailData, IamUserId).ConfigureAwait(false);
@@ -213,7 +212,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         //Arrange
         SetupProviderCompanyDetails();
         var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
-            
+
         //Act
         async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData, NoServiceProviderIamUserId).ConfigureAwait(false);
 
@@ -278,7 +277,7 @@ public class SubscriptionConfigurationBusinessLogicTests
     #endregion
 
     #region Get ProviderCompanyDetails
-        
+
     [Fact]
     public async Task GetProviderCompanyDetailsAsync_WithValidUser_ReturnsDetails()
     {
@@ -327,7 +326,7 @@ public class SubscriptionConfigurationBusinessLogicTests
     private void SetupProviderCompanyDetails()
     {
         A.CallTo(() => _companyRepository.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(A<string>.That.Matches(x => x == IamUserId), A<IEnumerable<CompanyRoleId>>._))
-            .Returns((ExistingCompanyId,true));
+            .Returns((ExistingCompanyId, true));
         A.CallTo(() => _companyRepository.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(A<string>.That.Matches(x => x == NoServiceProviderIamUserId), A<IEnumerable<CompanyRoleId>>._))
             .Returns(new ValueTuple<Guid, bool>(Guid.NewGuid(), false));
         A.CallTo(() => _companyRepository.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(A<string>.That.Not.Matches(x => x == IamUserId || x == NoServiceProviderIamUserId), A<IEnumerable<CompanyRoleId>>._))

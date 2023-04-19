@@ -31,10 +31,10 @@ public static class VerifyOfferSubscriptionProcessDataExtensions
     public static IEnumerable<ProcessStepTypeId>? GetRetriggerStep(this ProcessStepTypeId processStepTypeId) =>
         processStepTypeId switch
         {
-            ProcessStepTypeId.TRIGGER_PROVIDER => new []{ProcessStepTypeId.RETRIGGER_PROVIDER},
-            ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION => new []{ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION},
-            ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION =>new []{ ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION},
-            ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK => new []{ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK},
+            ProcessStepTypeId.TRIGGER_PROVIDER => new[] { ProcessStepTypeId.RETRIGGER_PROVIDER },
+            ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION => new[] { ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION },
+            ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION => new[] { ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION },
+            ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK => new[] { ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK },
             _ => null
         };
 

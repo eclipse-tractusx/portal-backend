@@ -131,24 +131,12 @@ public class OfferSubscriptionServiceTests
                 var companyAssignedApp = new OfferSubscription(_newOfferSubscriptionId, offerId, companyId, offerSubscriptionStatusId, requesterId, creatorId);
                 companyAssignedApps.Add(companyAssignedApp);
             });
-        var notificationId = Guid.NewGuid();
-        var notifications = new List<Notification>();
-        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._))
-            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
-            {
-                var notification = new Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
-                setOptionalParameters?.Invoke(notification);
-                notifications.Add(notification);
-            });
 
         // Act
         await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _iamUserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
-        notifications.Should().HaveCount(2);
-        notifications.Should().OnlyHaveUniqueItems();
-        notifications.Should().AllSatisfy(x => x.Done.Should().NotBeNull().And.BeFalse());
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.Single().ProcessStepTypeId == ProcessStepTypeId.TRIGGER_PROVIDER))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
     }
@@ -166,24 +154,12 @@ public class OfferSubscriptionServiceTests
                 var companyAssignedApp = new OfferSubscription(_newOfferSubscriptionId, offerId, companyId, offerSubscriptionStatusId, requesterId, creatorId);
                 companyAssignedApps.Add(companyAssignedApp);
             });
-        var notificationId = Guid.NewGuid();
-        var notifications = new List<Notification>();
-        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>?>._))
-            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
-            {
-                var notification = new Notification(notificationId, receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
-                setOptionalParameters?.Invoke(notification);
-                notifications.Add(notification);
-            });
 
         // Act
         await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _iamUserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
-        notifications.Should().HaveCount(2);
-        notifications.Should().OnlyHaveUniqueItems();
-        notifications.Should().AllSatisfy(x => x.Done.Should().NotBeNull().And.BeFalse());
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
     }
 

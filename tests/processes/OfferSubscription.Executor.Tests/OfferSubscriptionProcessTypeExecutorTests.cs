@@ -325,7 +325,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
             .ReturnsLazily(() => _subscriptionId);
         A.CallTo(() => _offerSubscriptionRepository.GetOfferSubscriptionDataForProcessIdAsync(A<Guid>.That.Not.Matches(x => x == _processId || x == _failingProcessId)))
             .ReturnsLazily(() => Guid.Empty);
-        
+
         A.CallTo(() => _offerProviderBusinessLogic.TriggerProvider(_subscriptionId, A<CancellationToken>._))
             .ReturnsLazily(() => new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(new[] { ProcessStepTypeId.START_AUTOSETUP }, ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.CreateSingleInstanceSubscriptionDetail(_subscriptionId))

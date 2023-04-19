@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -39,7 +39,7 @@ public interface ISubscriptionConfigurationBusinessLogic
     /// <param name="offerSubscriptionId">Id of the offer subscription</param>
     /// <returns>Returns the process steps with their status</returns>
     IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId);
-    
+
     /// <summary>
     /// Gets the service provider company details
     /// </summary>

@@ -145,14 +145,14 @@ public class ClientManagerTests
         // Arrange
         const string clientId = "cl1";
         var clientClientId = Guid.NewGuid().ToString();
-        var client = new Client { Id = clientClientId ,ClientId = clientId };
+        var client = new Client { Id = clientClientId, ClientId = clientId };
         using var httpTest = new HttpTest();
         A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).Returns(1);
         httpTest.WithAuthorization()
             .WithGetClientsAsync("test", Enumerable.Repeat(client, 1))
             .WithGetClientAsync("test", clientClientId, client)
-            .WithGetClientSecretAsync(clientId, new Credentials {Value = "super-secret"});
-        
+            .WithGetClientSecretAsync(clientId, new Credentials { Value = "super-secret" });
+
         // Act
         await _sut.EnableClient(clientId).ConfigureAwait(false);
 
@@ -161,7 +161,7 @@ public class ClientManagerTests
             .WithVerb(HttpMethod.Put)
             .Times(1);
     }
-    
+
     [Fact]
     public async Task EnableClient_WithoutClient_ThrowsException()
     {
@@ -171,7 +171,7 @@ public class ClientManagerTests
         A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).Returns(1);
         httpTest.WithAuthorization()
             .WithGetClientsAsync("test", Enumerable.Empty<Client>());
-        
+
         // Act
         async Task Act() => await _sut.EnableClient(clientId).ConfigureAwait(false);
 

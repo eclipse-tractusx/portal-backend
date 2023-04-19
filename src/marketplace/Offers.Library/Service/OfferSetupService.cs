@@ -162,7 +162,7 @@ public class OfferSetupService : IOfferSetupService
     /// <inheritdoc />
     public async Task SetupSingleInstance(Guid offerId, string instanceUrl)
     {
-        if(await _portalRepositories.GetInstance<IAppInstanceRepository>()
+        if (await _portalRepositories.GetInstance<IAppInstanceRepository>()
                .CheckInstanceExistsForOffer(offerId)
                .ConfigureAwait(false))
         {
@@ -398,7 +398,7 @@ public class OfferSetupService : IOfferSetupService
 
         var nextProcessStepTypeIds = new[]
         {
-            offerTypeId == OfferTypeId.APP ? 
+            offerTypeId == OfferTypeId.APP ?
                 ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION :
                 ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION
         };
@@ -432,7 +432,7 @@ public class OfferSetupService : IOfferSetupService
                     });
 
                 return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-                    new []
+                    new[]
                     {
                         ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
                     },
@@ -459,7 +459,7 @@ public class OfferSetupService : IOfferSetupService
 
         var (_, iamClientId) = await CreateClient(clientCreationData.OfferUrl, clientCreationData.OfferId, true, userRolesRepository);
         CreateAppInstance(offerSubscriptionId, clientCreationData.OfferUrl, clientCreationData.OfferId, iamClientId);
-        
+
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             new[]
             {
@@ -550,7 +550,7 @@ public class OfferSetupService : IOfferSetupService
         {
             offerSubscriptionRepository.RemoveOfferSubscriptionProcessData(offerSubscriptionId);
         }
-        
+
         var notificationContent = JsonSerializer.Serialize(new
         {
             offerDetails.OfferId,
@@ -578,7 +578,7 @@ public class OfferSetupService : IOfferSetupService
         if (string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
         {
             return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-                offerDetails.InstanceData.IsSingleInstance ? null : new[] {ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK},
+                offerDetails.InstanceData.IsSingleInstance ? null : new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK },
                 ProcessStepStatusId.DONE,
                 true,
                 null);
@@ -594,7 +594,7 @@ public class OfferSetupService : IOfferSetupService
         }
 
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-            offerDetails.InstanceData.IsSingleInstance ? null : new [] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK },
+            offerDetails.InstanceData.IsSingleInstance ? null : new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK },
             ProcessStepStatusId.DONE,
             true,
             null);

@@ -269,7 +269,7 @@ public class OfferSetupServiceTests
                 new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, new List<Guid>()),
                 new(Guid.NewGuid().ToString(), "test1", IamClientAuthMethod.SECRET, new List<Guid>())
             });
-    
+
         A.CallTo(() => _appInstanceRepository.CreateAppInstance(A<Guid>._, A<Guid>._))
             .Returns(new AppInstance(appInstanceId, _existingServiceId, clientId));
         var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
@@ -285,7 +285,7 @@ public class OfferSetupServiceTests
 
         // Act
         async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, IamUserId, OfferTypeId.APP, "https://base-address.com", serviceManagerAdminRoles).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
         ex.Message.Should().Be($"There should only be one or none technical user profile configured for {data.RequestId}");
@@ -738,7 +738,7 @@ public class OfferSetupServiceTests
 
         // Act
         async Task Act() => await _sut.StartAutoSetupAsync(data, IamUserId, offerTypeId).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("This step is not eligible to run for single instance apps");
@@ -1034,7 +1034,7 @@ public class OfferSetupServiceTests
                 serviceAccountData,
                 serviceAccountId,
                 userRoleData));
-        var itAdminRoles = new Dictionary<string, IEnumerable<string>> {{"Test", new[] {"AdminRoles"}}};
+        var itAdminRoles = new Dictionary<string, IEnumerable<string>> { { "Test", new[] { "AdminRoles" } } };
 
         // Act
         var result = await _sut.CreateTechnicalUser(offerSubscriptionId, itAdminRoles).ConfigureAwait(false);
@@ -1087,7 +1087,7 @@ public class OfferSetupServiceTests
             new(offerSubscription.Id, "https://www.test.de")
         };
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, offerTypeId, "Test App", "Stark Industries", _companyUserCompanyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new (isSingleInstance, null), new []{Guid.NewGuid()}, true));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, offerTypeId, "Test App", "Stark Industries", _companyUserCompanyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(isSingleInstance, null), new[] { Guid.NewGuid() }, true));
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscription.Id, A<Action<OfferSubscription>>._))
             .Invokes((Guid _, Action<OfferSubscription> setOptionalParameter) =>
             {
@@ -1263,11 +1263,11 @@ public class OfferSetupServiceTests
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(_validOfferId, OfferTypeId.APP))
             .Returns(new SingleInstanceOfferData(_companyUserCompanyId, "app1", Bpn, true, new[] { (_validInstanceSetupId, "cl1") }));
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(_offerIdWithoutClient, OfferTypeId.APP))
-            .Returns(new SingleInstanceOfferData(_companyUserCompanyId, "app1", Bpn, true, new [] { (_validInstanceSetupId, string.Empty) }));
+            .Returns(new SingleInstanceOfferData(_companyUserCompanyId, "app1", Bpn, true, new[] { (_validInstanceSetupId, string.Empty) }));
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(_offerIdWithMultipleInstances, OfferTypeId.APP))
-            .Returns(new SingleInstanceOfferData(_companyUserCompanyId, "app1", Bpn, false, Enumerable.Empty<(Guid,string)>()));
+            .Returns(new SingleInstanceOfferData(_companyUserCompanyId, "app1", Bpn, false, Enumerable.Empty<(Guid, string)>()));
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(_offerIdWithWithNoInstanceSetupIds, OfferTypeId.APP))
-            .Returns(new SingleInstanceOfferData(_companyUserCompanyId, "app1", Bpn, true, Enumerable.Empty<(Guid,string)>()));
+            .Returns(new SingleInstanceOfferData(_companyUserCompanyId, "app1", Bpn, true, Enumerable.Empty<(Guid, string)>()));
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(A<Guid>.That.Not.Matches(x => x == _offerIdWithoutClient || x == _validOfferId || x == _offerIdWithMultipleInstances || x == _offerIdWithWithNoInstanceSetupIds), OfferTypeId.APP))
             .Returns((SingleInstanceOfferData?)null);
     }

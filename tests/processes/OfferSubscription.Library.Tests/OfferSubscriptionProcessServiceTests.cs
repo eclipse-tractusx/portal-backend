@@ -69,7 +69,8 @@ public class OfferSubscriptionProcessServiceTests
         IEnumerable<ProcessStep>? processSteps = null;
 
         A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._, A<bool>._))
-            .ReturnsLazily((Guid id, IEnumerable<ProcessStepTypeId> processStepTypes, bool _) => {
+            .ReturnsLazily((Guid id, IEnumerable<ProcessStepTypeId> processStepTypes, bool _) =>
+            {
                 processSteps = processStepTypes.Select(typeId => new ProcessStep(Guid.NewGuid(), typeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)).ToImmutableArray();
                 return subscriptionId == id ?
                     new VerifyOfferSubscriptionProcessData(

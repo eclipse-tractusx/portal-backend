@@ -8,7 +8,7 @@ public class OfferSubscriptionProcessData
     }
 
     public OfferSubscriptionProcessData(Guid offerSubscriptionId, string offerUrl)
-        :this()
+        : this()
     {
         OfferSubscriptionId = offerSubscriptionId;
         OfferUrl = offerUrl;

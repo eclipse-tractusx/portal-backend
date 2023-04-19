@@ -18,8 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections.Immutable;
-using System.Net;
 using Flurl.Http;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -31,6 +29,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
+using System.Collections.Immutable;
+using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor;
 
@@ -141,8 +141,8 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
     {
         return ex switch
         {
-            ServiceException {IsRecoverable: true} => (ProcessStepStatusId.TODO, null, null),
-            FlurlHttpException {StatusCode: { }} flurlHttpException when RecoverableStatusCodes.Contains(flurlHttpException.StatusCode.Value) => (ProcessStepStatusId.TODO, ex.Message, null),
+            ServiceException { IsRecoverable: true } => (ProcessStepStatusId.TODO, null, null),
+            FlurlHttpException { StatusCode: { } } flurlHttpException when RecoverableStatusCodes.Contains(flurlHttpException.StatusCode.Value) => (ProcessStepStatusId.TODO, ex.Message, null),
             _ => (ProcessStepStatusId.FAILED, ex.Message, processStepTypeId.GetRetriggerStep())
         };
     }

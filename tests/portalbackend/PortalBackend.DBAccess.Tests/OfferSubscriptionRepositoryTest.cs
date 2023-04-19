@@ -702,9 +702,9 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region GetProcessStepsForSubscription
-    
+
     [Fact]
     public async Task GetProcessStepsForSubscription_WithExisting_ReturnsExpected()
     {
@@ -732,9 +732,9 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region Setup
-    
+
     private async Task<(IOfferSubscriptionsRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

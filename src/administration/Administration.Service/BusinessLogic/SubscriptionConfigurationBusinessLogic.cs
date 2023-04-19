@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -39,7 +39,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
         _offerSubscriptionProcessService = offerSubscriptionProcessService;
         _portalRepositories = portalRepositories;
     }
-    
+
     /// <inheritdoc />
     public async Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync(string iamUserId)
     {
@@ -82,7 +82,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
         if (providerDetailData == default)
         {
             var result = await companyRepository
-                .GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(iamUserId, new []{CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER})
+                .GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(iamUserId, new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER })
                 .ConfigureAwait(false);
             if (result == default)
             {
@@ -116,7 +116,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
         var nextStep = stepToTrigger.GetStepToRetrigger();
         var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, stepToTrigger, null)
             .ConfigureAwait(false);
-        
+
         _offerSubscriptionProcessService.FinalizeProcessSteps(context, Enumerable.Repeat(nextStep, 1));
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
