@@ -138,6 +138,8 @@ public class PortalDbContext : DbContext
     public virtual DbSet<PrivacyPolicy> PrivacyPolicies { get; set; } = default!;
     public virtual DbSet<ServiceDetail> ServiceDetails { get; set; } = default!;
     public virtual DbSet<ServiceType> ServiceTypes { get; set; } = default!;
+    public virtual DbSet<TechnicalUserProfile> TechnicalUserProfiles { get; set; } = default!;
+    public virtual DbSet<TechnicalUserProfileAssignedUserRole> TechnicalUserProfileAssignedUserRoles { get; set; } = default!;
     public virtual DbSet<UniqueIdentifier> UniqueIdentifiers { get; set; } = default!;
     public virtual DbSet<UseCase> UseCases { get; set; } = default!;
     public virtual DbSet<UserRole> UserRoles { get; set; } = default!;
@@ -1119,6 +1121,21 @@ public class PortalDbContext : DbContext
                 .WithMany(e => e.ServiceDetails)
                 .HasForeignKey(e => e.ServiceId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<TechnicalUserProfile>(entity =>
+        {
+            entity.HasOne(t => t.Offer)
+                .WithMany(o => o.TechnicalUserProfiles)
+                .HasForeignKey(t => t.OfferId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasMany(t => t.UserRoles)
+                .WithMany(u => u.TechnicalUserProfiles)
+                .UsingEntity<TechnicalUserProfileAssignedUserRole>(tu =>
+                {
+                    tu.HasKey(x => new { x.TechnicalUserProfileId, x.UserRoleId });
+                });
         });
     }
 }

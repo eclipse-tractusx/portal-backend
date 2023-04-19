@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,16 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
-
-public static class TechnicalUserProfileExtensions
+public class TechnicalUserProfileAssignedUserRole
 {
-    public static IServiceCollection AddTechnicalUserProfile(this IServiceCollection services, IConfigurationSection section)
+    private TechnicalUserProfileAssignedUserRole()
     {
-        return services.AddTransient<ITechnicalUserProfileService, TechnicalUserProfileService>();
     }
+
+    public TechnicalUserProfileAssignedUserRole(Guid technicalUserProfileId, Guid userRoleId)
+        :this()
+    {
+        TechnicalUserProfileId = technicalUserProfileId;
+        UserRoleId = userRoleId;
+    }
+    
+    public Guid TechnicalUserProfileId { get; }
+    public Guid UserRoleId { get; }
+
+    public virtual TechnicalUserProfile? TechnicalUserProfile { get; set; }
+    public virtual UserRole? UserRole { get; set; }
 }

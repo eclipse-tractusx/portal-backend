@@ -296,7 +296,7 @@ public static class BaseSeed
 
         dbContext.ServiceDetails.AddRange(new List<ServiceDetail>
         {
-            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.CONSULTANCE_SERVICE, false)
+            new (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.CONSULTANCE_SERVICE)
         });
 
         dbContext.OfferAssignedDocuments.AddRange(new List<OfferAssignedDocument>

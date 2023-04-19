@@ -53,6 +53,7 @@ public class PortalRepositories : IPortalRepositories
         { typeof(IProcessStepRepository), context => new ProcessStepRepository(context) },
         { typeof(IServiceAccountRepository), context => new ServiceAccountRepository(context) },
         { typeof(IStaticDataRepository), context => new StaticDataRepository(context) },
+        { typeof(ITechnicalUserProfileRepository), context => new TechnicalUserProfileRepository(context) },
         { typeof(IUserBusinessPartnerRepository), context => new UserBusinessPartnerRepository(context) },
         { typeof(IUserRepository), context => new UserRepository(context) },
         { typeof(IUserRolesRepository), context => new UserRolesRepository(context) },

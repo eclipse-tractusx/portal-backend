@@ -115,6 +115,11 @@ public class ServiceSettings
     /// <value></value>
     [Required]
     public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds{ get; init; } = null!;
+
+    /// <summary>
+    /// Client to get the technical user profile client
+    /// </summary>
+    public string TechnicalUserProfileClient { get; set; } = null!;
 }
 
 public static class ServiceSettingsExtension

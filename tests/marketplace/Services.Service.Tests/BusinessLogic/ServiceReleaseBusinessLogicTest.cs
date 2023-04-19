@@ -53,6 +53,7 @@ public class ServiceReleaseBusinessLogicTest
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferService _offerService;
     private readonly IStaticDataRepository _staticDataRepository;
+    private readonly ITechnicalUserProfileRepository _technicalUserProfileRepository;
     private readonly ServiceReleaseBusinessLogic _sut;
     private readonly IOptions<ServiceSettings> _options;
     public ServiceReleaseBusinessLogicTest()
@@ -66,9 +67,10 @@ public class ServiceReleaseBusinessLogicTest
         _offerRepository = A.Fake<IOfferRepository>();
         _offerService = A.Fake<IOfferService>();
         _staticDataRepository = A.Fake<IStaticDataRepository>();
+        _technicalUserProfileRepository = A.Fake<ITechnicalUserProfileRepository>();
 
         SetupRepositories();
-         var serviceSettings = new ServiceSettings
+        var serviceSettings = new ServiceSettings
         {
             ApplicationsMaxPageSize = 15, 
             ITAdminRoles = new Dictionary<string, IEnumerable<string>>
@@ -374,8 +376,7 @@ public class ServiceReleaseBusinessLogicTest
         // Arrange
         SetupUpdateService();
         var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid(), null);
-        var settings = new ServiceSettings();
-        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, Options.Create(settings));
+        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, Options.Create(new ServiceSettings()));
      
         // Act
         async Task Act() => await sut.UpdateServiceAsync(_notExistingServiceId, data, _iamUserId).ConfigureAwait(false);
@@ -391,8 +392,7 @@ public class ServiceReleaseBusinessLogicTest
         // Arrange
         SetupUpdateService();
         var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid(), null);
-        var settings = new ServiceSettings();
-        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, Options.Create(settings));
+        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, Options.Create(new ServiceSettings()));
      
         // Act
         async Task Act() => await sut.UpdateServiceAsync(_activeServiceId, data, _iamUserId).ConfigureAwait(false);
@@ -408,8 +408,7 @@ public class ServiceReleaseBusinessLogicTest
         // Arrange
         SetupUpdateService();
         var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid(), null);
-        var settings = new ServiceSettings();
-        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, Options.Create(settings));
+        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, Options.Create(new ServiceSettings()));
 
         // Act
         async Task Act() => await sut.UpdateServiceAsync(_differentCompanyServiceId, data, _iamUserId).ConfigureAwait(false);
@@ -464,10 +463,11 @@ public class ServiceReleaseBusinessLogicTest
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerService.CreateOrUpdateOfferLicense(A<Guid>._, A<string>._, A<(Guid offerLicenseId, string price, bool assignedToMultipleOffers)>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.AddServiceAssignedServiceTypes(A<IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId, bool technicalUserNeeded)>>._))
+        A.CallTo(() => _offerRepository.AddServiceAssignedServiceTypes(A<IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.RemoveServiceAssignedServiceTypes(A<IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)>>._))
             .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _technicalUserProfileRepository.RemoveTechnicalUserProfilesForOffer(_existingServiceId)).MustHaveHappenedOnceExactly();
         existingOffer.Name.Should().Be("test");
     }
 
@@ -583,6 +583,7 @@ public class ServiceReleaseBusinessLogicTest
     {
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IStaticDataRepository>()).Returns(_staticDataRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ITechnicalUserProfileRepository>()).Returns(_technicalUserProfileRepository);
         _fixture.Inject(_portalRepositories);
     }
 }

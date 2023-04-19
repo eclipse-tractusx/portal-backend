@@ -333,7 +333,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
 
         // Act
-        sut.AddServiceAssignedServiceTypes(new [] { (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.DATASPACE_SERVICE, true) });
+        sut.AddServiceAssignedServiceTypes(new [] { (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.DATASPACE_SERVICE) });
 
         // Assert
         var changeTracker = context.ChangeTracker;

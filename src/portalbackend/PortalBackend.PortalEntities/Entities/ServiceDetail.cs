@@ -26,18 +26,15 @@ public class ServiceDetail
 {
     private ServiceDetail() {}
 
-    public ServiceDetail(Guid serviceId, ServiceTypeId serviceTypeId, bool technicalUserNeeded)
+    public ServiceDetail(Guid serviceId, ServiceTypeId serviceTypeId)
     {
         ServiceId = serviceId;
         ServiceTypeId = serviceTypeId;
-        TechnicalUserNeeded = technicalUserNeeded;
     }
 
     public Guid ServiceId { get; private set; }
 
     public ServiceTypeId ServiceTypeId { get; private set; }
-
-    public bool TechnicalUserNeeded { get; set; }
 
     // Navigation properties
     public virtual Offer? Service { get; private set; }

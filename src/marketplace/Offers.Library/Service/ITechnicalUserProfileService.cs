@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -29,7 +30,7 @@ public interface ITechnicalUserProfileService
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
     /// <returns></returns>
-    IAsyncEnumerable<ServiceAccountCreationInfo> GetTechnicalUserProfilesForOffer(Guid offerId);
+    IAsyncEnumerable<ServiceAccountCreationInfo> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId);
 
     /// <summary>
     ///  Gets the technical user profiles for the specific offer subscription
