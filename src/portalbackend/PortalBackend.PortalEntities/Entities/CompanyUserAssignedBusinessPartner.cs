@@ -24,13 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyUserAssignedBusinessPartner
 {
-    public CompanyUserAssignedBusinessPartner()
-    {
-        BusinessPartnerNumber = null!;
-    }
-
     public CompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber)
-        :base()
     {
         CompanyUserId = companyUserId;
         BusinessPartnerNumber = businessPartnerNumber;
