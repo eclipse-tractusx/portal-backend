@@ -195,7 +195,7 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync(cancellationToken);
 
     /// <inheritdoc />
-    public Task<(IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)> OfferData, bool IsDocumentTypeMatch, DocumentStatusId DocumentStatusId, bool IsProviderCompanyUser)> GetAppDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId) =>
+    public Task<(IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)> OfferData, bool IsDocumentTypeMatch, DocumentStatusId DocumentStatusId, bool IsProviderCompanyUser)> GetOfferDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId) =>
         _dbContext.Documents
             .Where(document => document.Id == documentId)
             .Select(document => new {

@@ -82,4 +82,12 @@ public interface IServiceReleaseBusinessLogic
     /// <param name="serviceName"></param>
     /// <param name="languageShortName"></param>
     Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync(int page, int size, OfferSorting? sorting, string? serviceName, string? languageShortName);
+
+    /// <summary>
+    /// Delete the Service Document
+    /// </summary>
+    /// <param name="documentId"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns></returns>
+    Task DeleteServiceDocumentsAsync(Guid documentId, string iamUserId);
 }
