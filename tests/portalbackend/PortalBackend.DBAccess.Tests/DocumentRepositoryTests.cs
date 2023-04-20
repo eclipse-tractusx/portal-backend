@@ -335,10 +335,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetAppDocumentsAsync
+    #region GetOfferDocumentsAsync
 
     [Fact]
-    public async Task GetAppDocumentsAsync_ReturnsExpectedResult()
+    public async Task GetOfferDocumentsAsync_ReturnsExpectedResult()
     {
         // Arrange
         var documentId = new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b2");
@@ -346,7 +346,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
     
         // Act
-        var result = await sut.GetAppDocumentsAsync(documentId ,iamUserId, new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferDocumentsAsync(documentId ,iamUserId, new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
