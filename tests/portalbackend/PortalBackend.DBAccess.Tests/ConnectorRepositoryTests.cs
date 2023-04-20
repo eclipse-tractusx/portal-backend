@@ -332,7 +332,8 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.Count.Should().Be(2);
+        result!.Count.Should().Be(1);
+        result.Data.Should().ContainSingle().Which.Name.Should().Be("Test Connector 3");
     }
 
     [Fact]

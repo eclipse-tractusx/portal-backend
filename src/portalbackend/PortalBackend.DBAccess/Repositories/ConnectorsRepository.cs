@@ -54,7 +54,8 @@ public class ConnectorsRepository : IConnectorsRepository
             take,
             _context.Connectors.AsNoTracking()
                 .Where(c => c.Host!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId) &&
-                            c.StatusId != ConnectorStatusId.INACTIVE)
+                            c.StatusId != ConnectorStatusId.INACTIVE &&
+                            c.TypeId == ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
                 .GroupBy(c => c.HostId),
             connectors => connectors.OrderByDescending(connector => connector.Name),
             c => new ManagedConnectorData(
