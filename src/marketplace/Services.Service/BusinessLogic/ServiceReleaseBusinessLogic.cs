@@ -133,4 +133,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             _portalRepositories.GetInstance<IOfferRepository>()
                 .GetAllInReviewStatusServiceAsync(_settings.OfferStatusIds, OfferTypeId.SERVICE, sorting ?? OfferSorting.DateDesc,serviceName, languageShortName));
 
+    /// <inheritdoc/>
+    public Task DeleteServiceDocumentsAsync(Guid documentId, string iamUserId) =>
+        _offerService.DeleteDocumentsAsync(documentId, iamUserId, _settings.DeleteDocumentTypeIds, OfferTypeId.SERVICE);
 }

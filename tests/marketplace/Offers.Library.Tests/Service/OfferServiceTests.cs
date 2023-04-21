@@ -40,6 +40,7 @@ public class OfferServiceTests
     private readonly Guid _existingAgreementForSubscriptionId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47665");
     private readonly Guid _differentCompanyUserId = Guid.NewGuid();
     private readonly Guid _noSalesManagerUserId = Guid.NewGuid();
+    private readonly Guid _validDocumentId = Guid.NewGuid();
 
     private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
@@ -1639,6 +1640,189 @@ public class OfferServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
         ex.Message.Should().Be($"document content should never be null");
+    }
+
+    #endregion
+
+    #region  DeleteDocument
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_CONTRACT })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task DeleteDocumentsAsync_ReturnsExpectedResult(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        //Arrange
+        var offerId = Guid.NewGuid();
+
+        A.CallTo(() => _documentRepository.GetOfferDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId))
+            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, offerId, true) }, true, DocumentStatusId.PENDING, true));
+
+
+        //Act
+        await _sut.DeleteDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+
+        // Assert 
+        A.CallTo(() => _documentRepository.GetOfferDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferAssignedDocument(offerId, _validDocumentId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.RemoveDocument(_validDocumentId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_CONTRACT })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task DeleteDocumentsAsync_WithNoDocument_ThrowsNotFoundException(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        //Arrange
+        A.CallTo(() => _documentRepository.GetOfferDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId))
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)>, bool, DocumentStatusId, bool>());
+
+
+        //Act
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Document {_validDocumentId} does not exist");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_CONTRACT })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task DeleteDocumentsAsync_WithNoAssignedOfferDocument_ThrowsConflictException(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        //Arrange
+        A.CallTo(() => _documentRepository.GetOfferDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId))
+            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>() }, true, DocumentStatusId.PENDING, true));
+
+        //Act
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Document {_validDocumentId} is not assigned to an {offerTypeId}");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_CONTRACT })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task DeleteDocumentsAsync_WithMultipleDocumentsAssigned_ThrowsConflictException(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        //Arrange
+        A.CallTo(() => _documentRepository.GetOfferDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId))
+            .ReturnsLazily(() => (
+                new []
+                {
+                    new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, Guid.NewGuid(), true), 
+                    new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, Guid.NewGuid(), true)
+                }, 
+                true, 
+                DocumentStatusId.PENDING, 
+                true));
+
+        //Act
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Document {_validDocumentId} is assigned to more than one {offerTypeId}");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_CONTRACT })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task DeleteDocumentsAsync_WithDocumentAssignedToService_ThrowsConflictException(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        //Arrange
+        var offerId = Guid.NewGuid();
+
+        A.CallTo(() => _documentRepository.GetOfferDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId))
+            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, offerId, false) }, true, DocumentStatusId.PENDING, true));
+
+        //Act
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Document {_validDocumentId} is not assigned to an {offerTypeId}");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_CONTRACT })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task DeleteDocumentsAsync_WithInvalidProviderCompanyUser_ThrowsForbiddenException(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        //Arrange
+        var offerId = Guid.NewGuid();
+
+        A.CallTo(() => _documentRepository.GetOfferDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId))
+            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, offerId, true) }, true, DocumentStatusId.PENDING, false));
+
+
+        //Act
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"user {_iamUserId} is not a member of the same company of document {_validDocumentId}");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_CONTRACT })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task DeleteDocumentsAsync_WithInvalidOfferStatus_ThrowsConflictException(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        //Arrange
+        var offerId = Guid.NewGuid();
+
+        A.CallTo(() => _documentRepository.GetOfferDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId))
+            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.ACTIVE, offerId, true) }, true, DocumentStatusId.PENDING, true));
+
+
+        //Act
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"{offerTypeId} {offerId} is in locked state");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_CONTRACT })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task DeleteDocumentsAsync_WithInvalidDocumentType_ThrowsArgumentException(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        //Arrange
+        var offerId = Guid.NewGuid();
+
+        A.CallTo(() => _documentRepository.GetOfferDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId))
+            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, offerId, true) }, false, DocumentStatusId.PENDING, true));
+
+        //Act
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"Document {_validDocumentId} can not get retrieved. Document type not supported");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP, new[] { DocumentTypeId.APP_CONTRACT })]
+    [InlineData(OfferTypeId.SERVICE, new[] { DocumentTypeId.ADDITIONAL_DETAILS })]
+    public async Task DeleteDocumentsAsync_WithInvalidDocumentStatus_ThrowsConflictException(OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings)
+    {
+        //Arrange
+        var offerId = Guid.NewGuid();
+
+        A.CallTo(() => _documentRepository.GetOfferDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId))
+            .ReturnsLazily(() => (new [] { new ValueTuple<OfferStatusId, Guid, bool>(OfferStatusId.CREATED, offerId, true) }, true, DocumentStatusId.LOCKED, true));
+        //Act
+        async Task Act() => await _sut.DeleteDocumentsAsync(_validDocumentId, _iamUserId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Document in State {DocumentStatusId.LOCKED} can't be deleted");
     }
 
     #endregion
