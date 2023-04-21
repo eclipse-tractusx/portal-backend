@@ -2,6 +2,20 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.3.0-RC4
+
+### Change
+* Seeding Data: update agreement name for app marketplace offers - CX Conformity
+
+### Feature
+* Services Service: released document delete endpoint DELETE: /api/services/servicerelease/documents/{documentId}
+
+### Technical Support
+n/a
+
+### Bugfix
+n/a
+
 ## 1.3.0-RC3
 
 ### Change
