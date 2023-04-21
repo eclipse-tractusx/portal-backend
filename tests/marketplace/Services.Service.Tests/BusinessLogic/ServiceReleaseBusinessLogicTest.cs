@@ -328,7 +328,7 @@ public class ServiceReleaseBusinessLogicTest
 
     #endregion
 
-    #region  DeleteServiceDocument
+    #region DeleteServiceDocument
 
     [Fact]
     public async Task DeleteServiceDocumentsAsync_ReturnsExpected()
