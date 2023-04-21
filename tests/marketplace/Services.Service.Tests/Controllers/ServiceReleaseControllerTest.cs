@@ -169,4 +169,21 @@ public class ServiceReleaseControllerTest
         A.CallTo(() => _logic.GetAllInReviewStatusServiceAsync(0, 15, null, null,null)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
+
+    [Fact]
+    public async Task DeleteServiceDocumentsAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var documentId = Guid.NewGuid();
+        A.CallTo(() => _logic.DeleteServiceDocumentsAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(()=> Task.CompletedTask);
+
+        //Act
+        var result = await this._controller.DeleteServiceDocumentsAsync(documentId).ConfigureAwait(false);
+        
+        // Assert 
+        Assert.IsType<NoContentResult>(result);
+        A.CallTo(() => _logic.DeleteServiceDocumentsAsync(documentId, IamUserId))
+            .MustHaveHappenedOnceExactly();
+    }
 }
