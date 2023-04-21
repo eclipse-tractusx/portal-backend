@@ -224,7 +224,7 @@ public class OfferSetupService : IOfferSetupService
             creatorId,
             new (string?, NotificationTypeId)[]
             {
-                (null, NotificationTypeId.TECHNICAL_USER_CREATION),
+                (JsonSerializer.Serialize(new { offerDetails.OfferId, offerDetails.OfferName }), NotificationTypeId.TECHNICAL_USER_CREATION),
                 (notificationContent, appSubscriptionActivation)
             },
             offerDetails.CompanyId).ToListAsync().ConfigureAwait(false);
@@ -251,4 +251,6 @@ public class OfferSetupService : IOfferSetupService
             .SendMails(requesterEmail, mailParams, new List<string> {"subscription-activation"})
             .ConfigureAwait(false);
     }
+
+    internal record CreateTechnicalUserData(Guid CompanyId, string? OfferName, string? Bpn, string TechnicalUserName, bool EnhanceTechnicalUserName);
 }
