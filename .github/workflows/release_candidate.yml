@@ -17,12 +17,12 @@
 # SPDX-License-Identifier: Apache-2.0
 ###############################################################
 
-name: Release Candidate
+name: Release Candidate (RC)
 
 on: 
   push:
     branches:
-      - 'release/1.3.0*'
+      - 'release/*.*.*-RC*'
   workflow_dispatch:
 
 env:
