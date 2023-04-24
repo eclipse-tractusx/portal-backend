@@ -22,7 +22,8 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
+      - '!v*.*.*-RC*'
 
 env:
   REGISTRY: ghcr.io
