@@ -41,13 +41,6 @@ public class AppsSettings
     /// <value></value>
     [Required]
     public IEnumerable<NotificationTypeId> SubmitAppNotificationTypeIds { get; set; } = null!;
-    
-    /// <summary>
-    /// Document Type Id
-    /// </summary>
-    /// <value></value>
-    [Required]
-    public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// BasePortalAddress url required for subscription email 
@@ -72,16 +65,9 @@ public class AppsSettings
     /// </summary>
     [Required]
     public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; set; } = null!;
-    
-    /// <summary>
-    /// Document Content Type Settings
-    /// </summary>
-    /// <value></value>
-    [Required]
-    public IEnumerable<string> ContentTypeSettings { get; set; } = null!;
 
     /// <summary>
-    /// Document Type Id
+    /// Offer Status Id
     /// </summary>
     /// <value></value>
     [Required]
@@ -150,6 +136,13 @@ public class AppsSettings
     /// <value></value>
     [Required]
     public IEnumerable<DocumentTypeId> SubmitAppDocumentTypeIds { get; set; } = null!;
+
+    /// <summary>
+    /// Document Type Id and ContentType to be uploaded
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IDictionary<DocumentTypeId, IEnumerable<string>> UploadAppDocumentTypeIds {get; set;} = null!;
 }
 
 /// <summary>

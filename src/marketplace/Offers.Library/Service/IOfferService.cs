@@ -184,7 +184,7 @@ public interface IOfferService
     /// <param name="offerTypeId"></param>
     /// <param name="documentTypeIdSettings"></param>
     /// <param name="contentTypeSettings"></param>
-    Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings, CancellationToken cancellationToken);
+    Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, IDictionary<DocumentTypeId,IEnumerable<string>> uploadDocumentTypeIdSettings, CancellationToken cancellationToken);
 
     /// <summary>
     /// Update offer status and create notification for Service

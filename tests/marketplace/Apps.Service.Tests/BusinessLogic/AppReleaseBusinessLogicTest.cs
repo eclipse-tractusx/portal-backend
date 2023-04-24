@@ -485,14 +485,14 @@ public class AppReleaseBusinessLogicTest
         var appId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
-        _settings.ContentTypeSettings = new[] {"application/pdf"};
-        _settings.DocumentTypeIds = new[] {DocumentTypeId.APP_CONTRACT};
+        _settings.UploadAppDocumentTypeIds = new Dictionary<DocumentTypeId, IEnumerable<string>>{
+                { DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" }}};
 
         // Act
         await _sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.UploadDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, OfferTypeId.APP, _settings.DocumentTypeIds, _settings.ContentTypeSettings, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.UploadDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, OfferTypeId.APP, _settings.UploadAppDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
     
     #endregion

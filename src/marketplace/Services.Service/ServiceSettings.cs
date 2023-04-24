@@ -72,20 +72,6 @@ public class ServiceSettings
     [Required]
     public IDictionary<string, IEnumerable<string>> ApproveServiceUserRoles { get; init; } = null!;
 
-    /// <summary>
-    /// Document Type Id
-    /// </summary>
-    /// <value></value>
-    [Required]
-    public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; } = null!;
-
-    /// <summary>
-    /// Document Content Type Settings
-    /// </summary>
-    /// <value></value>
-    [Required]
-    public IEnumerable<string> ContentTypeSettings { get; set; } = null!;
-
     [Required]
     public IDictionary<string,IEnumerable<string>> ITAdminRoles { get; init; } = null!;
 
@@ -120,6 +106,13 @@ public class ServiceSettings
     /// Client to get the technical user profile client
     /// </summary>
     public string TechnicalUserProfileClient { get; set; } = null!;
+
+   /// <summary>
+    /// Document Type Id and ContentType to be uploaded
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IDictionary<DocumentTypeId, IEnumerable<string>> UploadServiceDocumentTypeIds {get; set;} = null!;
 }
 
 public static class ServiceSettingsExtension
