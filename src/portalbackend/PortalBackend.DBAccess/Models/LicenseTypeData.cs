@@ -18,30 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using  Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-
-/// <summary>
-/// Business logic for handling static data api requests.
-/// </summary>
-public interface IStaticDataBusinessLogic
-{
-    /// <summary>
-    /// Get all Use Case.
-    /// </summary>
-    /// <returns>AsyncEnumerable of the result Use Case</returns>
-    IAsyncEnumerable<UseCaseData> GetAllUseCase();
-
-    /// <summary>
-    /// Get all Language.
-    /// </summary>
-    /// <returns>AsyncEnumerable of the result Language</returns>
-    IAsyncEnumerable<LanguageData> GetAllLanguage();
-
-    /// <summary>
-    /// Get all License Type.
-    /// </summary>
-    /// <returns>AsyncEnumerable of the License Type</returns>
-    IAsyncEnumerable<LicenseTypeData> GetAllLicenseType();
-}
+public record LicenseTypeData(int LicenseTypeId, string Name);

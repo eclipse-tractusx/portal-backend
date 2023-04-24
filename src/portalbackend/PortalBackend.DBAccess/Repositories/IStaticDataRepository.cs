@@ -54,4 +54,10 @@ public interface IStaticDataRepository
     /// </summary>
     /// <returns></returns>
     IAsyncEnumerable<ServiceTypeData> GetServiceTypeData();
+    
+    /// <summary>
+    /// Return all License Type Data
+    /// </summary>
+    /// <returns>Returns a async enumerable of <see cref="LicenseTypeData"/></returns>
+    IAsyncEnumerable<LicenseTypeData> GetLicenseTypeData();
 }
