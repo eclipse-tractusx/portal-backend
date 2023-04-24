@@ -24,6 +24,7 @@ on:
     tags:
       - 'v*.*.*'
       - '!v*.*.*-RC*'
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
