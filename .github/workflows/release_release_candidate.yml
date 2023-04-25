@@ -17,13 +17,12 @@
 # SPDX-License-Identifier: Apache-2.0
 ###############################################################
 
-name: Release
+name: Release RC
 
 on:
   push:
     tags:
-      - 'v*.*.*'
-      - '!v*.*.*-RC*'
+      - 'v*.*.*-RC*'
   workflow_dispatch:
 
 env:
@@ -396,5 +395,5 @@ jobs:
             --url https://api.github.com/repos/catenax-ng/tx-portal-cd/actions/workflows/portal-backend-release-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --data '{"ref":"helm-environments", "inputs": { "new-image":"${{ env.RELEASE_VERSION }}" }}' \
+            --data '{"ref":"release-candidate", "inputs": { "new-image":"${{ env.RELEASE_VERSION }}" }}' \
             --fail
