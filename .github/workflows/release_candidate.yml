@@ -37,7 +37,7 @@ env:
   IMAGE_NAME_NOTIFICATION: ${{ github.repository }}_notification-service
   IMAGE_NAME_SERVICES: ${{ github.repository }}_services-service
   IMAGE_NAME_PROVISIONING_MIGRATIONS: ${{ github.repository }}_provisioning-migrations
-  IMAGE_NAME_CHECKLIST_WORKER: ${{ github.repository }}_checklist-worker
+  IMAGE_NAME_PROCESSES_WORKER: ${{ github.repository }}_processes-worker
 
 jobs:
   administration-service-release:
@@ -73,7 +73,7 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_ADMINISTRATION }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_ADMINISTRATION }}:rc
           labels: ${{ steps.meta.outputs.labels }}
 
-  checklist-worker-release:
+  processes-worker-release:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -94,16 +94,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CHECKLIST_WORKER }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/Dockerfile-checklist-worker
+          file: docker/Dockerfile-processes-worker
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CHECKLIST_WORKER }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CHECKLIST_WORKER }}:rc
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}:rc
           labels: ${{ steps.meta.outputs.labels }}
 
   registration-service-release:
@@ -371,7 +371,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   auth-and-dispatch:
-    needs: [ administration-service-release, registration-service-release, provisioning-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release, services-service-release, provisioning-migrations-release, checklist-worker-release ]
+    needs: [ administration-service-release, registration-service-release, provisioning-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release, services-service-release, provisioning-migrations-release, processes-worker-release ]
     runs-on: ubuntu-latest
 
     steps:
