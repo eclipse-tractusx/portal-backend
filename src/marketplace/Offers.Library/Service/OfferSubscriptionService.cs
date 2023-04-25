@@ -246,6 +246,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                 {
                     notification.CreatorUserId = companyUserId;
                     notification.Content = notificationContent;
+                    notification.Done = false;
                 });
         }
 
@@ -274,6 +275,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                 {
                     notification.CreatorUserId = companyUserId;
                     notification.Content = notificationContent;
+                    notification.Done = false;
                 });
         }
     }

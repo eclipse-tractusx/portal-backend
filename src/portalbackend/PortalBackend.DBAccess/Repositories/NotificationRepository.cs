@@ -59,6 +59,13 @@ public class NotificationRepository : INotificationRepository
         setOptionalParameters.Invoke(notification);
     }
 
+    public void AttachAndModifyNotifications(IEnumerable<Guid> notificationIds, Action<Notification> setOptionalParameters)
+    {
+        var notifications = notificationIds.Select(notificationId => new Notification(notificationId, Guid.Empty, default, default, default)).ToList();
+        _dbContext.AttachRange(notifications);
+        notifications.ForEach(notification => setOptionalParameters.Invoke(notification));
+    }
+
     public Notification DeleteNotification(Guid notificationId) =>
         _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
 
@@ -132,15 +139,15 @@ public class NotificationRepository : INotificationRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<Guid> GetUpdateData(IEnumerable<Guid> userRoleIds, IEnumerable<NotificationTypeId> notificationTypeIds, Guid offerId) =>
+    public IAsyncEnumerable<Guid> GetNotificationUpdateIds(IEnumerable<Guid> userRoleIds, IEnumerable<Guid>? companyUserIds, IEnumerable<NotificationTypeId> notificationTypeIds, Guid offerId) =>
         _dbContext.CompanyUsers
             .Where(x => 
-                x.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && 
-                x.UserRoles.Any(ur => userRoleIds.Contains(ur.Id)))
+                x.CompanyUserStatusId == CompanyUserStatusId.ACTIVE &&
+                (companyUserIds != null && companyUserIds.Any(cu => cu == x.Id)) || x.UserRoles.Any(ur => userRoleIds.Contains(ur.Id)))
             .SelectMany(x => x.Notifications
                 .Where(n =>
                     notificationTypeIds.Contains(n.NotificationTypeId) &&
-                    n.Content!.Contains($"\"offerId\":\"{offerId}\"")
+                    EF.Functions.ILike(n.Content!, $"%\"offerId\":\"{offerId}\"%")
                 )
                 .Select(n => n.Id))
             .ToAsyncEnumerable();

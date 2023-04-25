@@ -51,7 +51,8 @@ public class OfferSetupServiceTests
     private readonly Guid _offerIdWithoutClient = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47665");
     private readonly Guid _offerIdWithInstanceNotSet = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47667");
     private readonly Guid _validInstanceSetupId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47666");
-    private readonly Guid _technicalUserId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47999");
+    private readonly Guid _technicalUserId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47998");
+    private readonly Guid _salesManagerId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47999");
 
     private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
@@ -190,6 +191,10 @@ public class OfferSetupServiceTests
             A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
                 .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, new List<Guid>()) }.ToAsyncEnumerable());
         }
+        var serviceManagerRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { "Cl2-CX-Portal", new [] { "Service Manager" } }
+        };
         
         A.CallTo(() => _appInstanceRepository.CreateAppInstance(A<Guid>._, A<Guid>._))
             .Invokes((Guid appId, Guid iamClientId) =>
@@ -222,7 +227,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
         // Act
-        var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, IamUserId, offerTypeId, "https://base-address.com").ConfigureAwait(false);
+        var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, IamUserId, offerTypeId, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
         
         // Assert
         result.Should().NotBeNull();
@@ -260,7 +265,17 @@ public class OfferSetupServiceTests
             }
         }
 
+        var notificationTypeId = offerTypeId == OfferTypeId.APP
+            ? NotificationTypeId.APP_SUBSCRIPTION_REQUEST
+            : NotificationTypeId.SERVICE_REQUEST;
         notifications.Should().HaveCount(1);
+        A.CallTo(() => _notificationService.SetNotificationsForOfferToDone(
+                A<IDictionary<string, IEnumerable<string>>>._,
+                A<IEnumerable<NotificationTypeId>>.That.Matches(x =>
+                    x.Count() == 1 && x.Single() == notificationTypeId),
+                _existingServiceId,
+                A<IEnumerable<Guid>?>.That.Matches(x => x != null && x.Count() == 1 && x.Single() == _salesManagerId)))
+            .MustHaveHappenedOnceExactly();
         A.CallTo(() => createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
         offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
         if (!isSingleInstance)
@@ -279,11 +294,15 @@ public class OfferSetupServiceTests
         {
             { "Cl2-CX-Portal", new [] { "IT Admin" } }
         };
+        var serviceManagerRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { "Cl2-CX-Portal", new [] { "Service Manager" } }
+        };
 
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
         // Act
-        var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, IamUserIdWithoutMail, OfferTypeId.SERVICE, "https://base-address.com").ConfigureAwait(false);
+        var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, IamUserIdWithoutMail, OfferTypeId.SERVICE, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
         
         // Assert
         result.Should().NotBeNull();
@@ -302,11 +321,15 @@ public class OfferSetupServiceTests
         {
             { "Cl2-CX-Portal", new [] { "IT Admin" } }
         };
+        var serviceManagerRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { "Cl2-CX-Portal", new [] { "Service Manager" } }
+        };
 
         var data = new OfferAutoSetupData(_offerIdWithInstanceNotSet, "https://new-url.com/");
 
         // Act
-        async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, IamUserId, OfferTypeId.APP, "https://base-address.com").ConfigureAwait(false);
+        async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, IamUserId, OfferTypeId.APP, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
         
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -323,7 +346,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://new-url.com/");
 
         // Act
-        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), IamUserId, OfferTypeId.SERVICE, "https://base-address.com");
+        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), IamUserId, OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
         
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -340,7 +363,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_validSubscriptionId, "https://new-url.com/");
 
         // Act
-        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), IamUserId, OfferTypeId.SERVICE, "https://base-address.com");
+        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), IamUserId, OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
         
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -356,7 +379,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
         // Act
-        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), Guid.NewGuid().ToString(), OfferTypeId.SERVICE, "https://base-address.com");
+        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), Guid.NewGuid().ToString(), OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
         
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
@@ -601,7 +624,7 @@ public class OfferSetupServiceTests
                 new List<UserRoleData>()));
 
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._,
-                A<Guid>._, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._))
+                A<Guid>._, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<bool?>._))
             .Returns(new List<Guid>{Guid.NewGuid()}.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
 
         return createNotificationsEnumerator;
@@ -627,7 +650,8 @@ public class OfferSetupServiceTests
                 Guid.Empty,
                 _companyUser.Company!.Name, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),
-                new[] {Guid.NewGuid()}));
+                new[] {Guid.NewGuid()},
+                _salesManagerId));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
                 A<string>.That.Matches(x => x == IamUserIdWithoutMail),
@@ -636,7 +660,8 @@ public class OfferSetupServiceTests
                 Guid.Empty,
                 _companyUser.Company!.Name, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, null, null, null, (isSingleInstance, "https://test.de"),
-                new[] {Guid.NewGuid()}));
+                new[] {Guid.NewGuid()},
+                _salesManagerId));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
                 A<string>.That.Matches(x => x == IamUserId),
@@ -645,7 +670,8 @@ public class OfferSetupServiceTests
                 Guid.Empty,
                 string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),
-                new[] {Guid.NewGuid()}));
+                new[] {Guid.NewGuid()},
+                _salesManagerId));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _offerIdWithInstanceNotSet),
                 A<string>.That.Matches(x => x == IamUserId),
@@ -654,7 +680,8 @@ public class OfferSetupServiceTests
                 Guid.Empty,
                 string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, null),
-                new List<Guid>()));
+                new List<Guid>(),
+                null));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Not.Matches(x =>
                     x == _pendingSubscriptionId || x == _validSubscriptionId || x == _offerIdWithInstanceNotSet),
@@ -669,7 +696,8 @@ public class OfferSetupServiceTests
                 Guid.Empty,
                 string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, null, null, null, (isSingleInstance, "https://test.de"),
-                new[] {Guid.NewGuid()}));
+                new[] {Guid.NewGuid()},
+                null));
 
         return createNotificationsEnumerator;
     }
