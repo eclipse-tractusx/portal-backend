@@ -149,6 +149,7 @@ public class OfferSubscriptionServiceTests
         companyAssignedApps.Should().HaveCount(1);
         notifications.Should().HaveCount(2);
         notifications.Should().OnlyHaveUniqueItems();
+        notifications.Should().AllSatisfy(x => x.Done.Should().NotBeNull().And.BeFalse());
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
     }
     
@@ -183,6 +184,7 @@ public class OfferSubscriptionServiceTests
         companyAssignedApps.Should().HaveCount(1);
         notifications.Should().HaveCount(2);
         notifications.Should().OnlyHaveUniqueItems();
+        notifications.Should().AllSatisfy(x => x.Done.Should().NotBeNull().And.BeFalse());
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
     }
     

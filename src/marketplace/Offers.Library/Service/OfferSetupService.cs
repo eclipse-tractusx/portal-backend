@@ -83,7 +83,7 @@ public class OfferSetupService : IOfferSetupService
             .ConfigureAwait(false);
     }
     
-    public async Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> itAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress)
+    public async Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> itAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress, IDictionary<string,IEnumerable<string>> serviceManagerRoles)
     {
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerDetails = await GetAndValidateOfferDetails(data.RequestId, iamUserId, offerTypeId, offerSubscriptionsRepository).ConfigureAwait(false);
@@ -102,7 +102,8 @@ public class OfferSetupService : IOfferSetupService
                     appSubscriptionDetail.AppInstanceId = offerDetails.AppInstanceIds.Single();
                     appSubscriptionDetail.AppSubscriptionUrl = offerDetails.InstanceData.InstanceUrl;
                 });
-            await CreateNotifications(itAdminRoles, offerTypeId, offerDetails);
+            await CreateNotifications(itAdminRoles, offerTypeId, offerDetails).ConfigureAwait(false);
+            await SetNotificationsToDone(serviceManagerRoles, offerTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(false);
             await _portalRepositories.SaveAsync().ConfigureAwait(false);
             return new OfferAutoSetupResponseData(null, null);
         }
@@ -111,7 +112,7 @@ public class OfferSetupService : IOfferSetupService
         ClientInfoData? clientInfoData = null;
         if (offerTypeId == OfferTypeId.APP)
         {
-            var (clientId, iamClientId) = await CreateClient(data.OfferUrl, offerDetails.OfferId, true, userRolesRepository);
+            var (clientId, iamClientId) = await CreateClient(data.OfferUrl, offerDetails.OfferId, true, userRolesRepository).ConfigureAwait(false);
             clientInfoData = new ClientInfoData(clientId);
             CreateAppInstance(data, offerDetails, iamClientId);
         }
@@ -120,7 +121,8 @@ public class OfferSetupService : IOfferSetupService
         var createTechnicalUserData = new CreateTechnicalUserData(offerDetails.CompanyId, offerDetails.OfferName, offerDetails.Bpn, technicalUserClientId, offerTypeId == OfferTypeId.APP);
         var technicalUserInfoData = await CreateTechnicalUserForSubscription(data.RequestId, createTechnicalUserData).ConfigureAwait(false);
         
-        await CreateNotifications(itAdminRoles, offerTypeId, offerDetails);
+        await CreateNotifications(itAdminRoles, offerTypeId, offerDetails).ConfigureAwait(false);
+        await SetNotificationsToDone(serviceManagerRoles, offerTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
@@ -339,6 +341,23 @@ public class OfferSetupService : IOfferSetupService
                 notification.CreatorUserId = creatorId;
             });
         }
+    }
+
+    private async Task SetNotificationsToDone(
+        IDictionary<string, IEnumerable<string>> serviceManagerRoles,
+        OfferTypeId offerTypeId,
+        Guid offerId,
+        Guid? salesManagerId)
+    {
+        var notificationType = offerTypeId == OfferTypeId.APP
+            ? NotificationTypeId.APP_SUBSCRIPTION_REQUEST
+            : NotificationTypeId.SERVICE_REQUEST;
+        await _notificationService.SetNotificationsForOfferToDone(
+            serviceManagerRoles,
+            Enumerable.Repeat(notificationType, 1),
+            offerId,
+            salesManagerId == null ? Enumerable.Empty<Guid>(): Enumerable.Repeat(salesManagerId.Value, 1))
+            .ConfigureAwait(false);
     }
 
     private async Task SendMail(string basePortalAddress, string userName, string requesterEmail, string? offerName)

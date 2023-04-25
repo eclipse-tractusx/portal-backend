@@ -40,4 +40,4 @@ public record NotificationDetailData(
     bool IsRead,
     string? Content,
     DateTimeOffset? DueDate,
-    bool Done);
+    bool? Done);

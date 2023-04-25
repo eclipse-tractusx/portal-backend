@@ -36,8 +36,8 @@ public interface IOfferSetupService
     /// <param name="accessToken">the access token</param>
     /// <param name="autoSetupUrl">the autosetup url</param>
     /// <returns></returns>
-    Task AutoSetupOfferSubscription(OfferThirdPartyAutoSetupData autoSetupData, string accessToken, string autoSetupUrl);  
-    
+    Task AutoSetupOfferSubscription(OfferThirdPartyAutoSetupData autoSetupData, string accessToken, string autoSetupUrl);
+
     /// <summary>
     /// Internally auto setup the offer.
     /// </summary>
@@ -46,8 +46,9 @@ public interface IOfferSetupService
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="offerTypeId">OfferTypeId of offer to be created</param>
     /// <param name="basePortalAddress">Address of the portal</param>
+    /// <param name="serviceManagerRoles">Roles of the service Managers</param>
     /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> itAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress);
+    Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> itAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress, IDictionary<string,IEnumerable<string>> serviceManagerRoles);
 
     /// <summary>
     /// Setup a single instance app

@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -101,7 +102,36 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
     
     #endregion
+
+    #region AttachAndModifyNotifications
     
+    [Fact]
+    public async Task AttachAndModifyNotifications_WithExistingNotification_UpdatesStatus()
+    {
+        // Arrange
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var notificationIds = _fixture.CreateMany<Guid>().ToImmutableArray();
+
+        // Act
+        sut.AttachAndModifyNotifications(notificationIds, notification =>
+        {
+            notification.IsRead = true;
+        });
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        changeTracker.HasChanges().Should().BeTrue();
+        changeTracker.Entries()
+            .Should().HaveSameCount(notificationIds)
+            .And.AllSatisfy(x => x.State.Should().Be(EntityState.Modified));
+        changeTracker.Entries().Select(entry => entry.Entity)
+            .Should().HaveSameCount(notificationIds)
+            .And.AllBeOfType<Notification>()
+            .And.AllSatisfy(x => ((Notification)x).IsRead.Should().BeTrue());
+    }
+    
+    #endregion
+
     #region Delete Notification
     
     [Fact]
@@ -380,15 +410,18 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #region GetUpdateData
 
-    [Fact]
-    public async Task GetUpdateData_ReturnsExpectedCount()
+    [Theory]
+    [InlineData(new [] { "efc20368-9e82-46ff-b88f-6495b9810253" }, null)]
+    [InlineData(new [] { "efc20368-9e82-46ff-b88f-6495b9810253" }, new [] { "ac1cf001-7fbc-1f2f-817f-bce058020001" })]
+    [InlineData(new string [] { }, new [] { "ac1cf001-7fbc-1f2f-817f-bce058020001" })]
+    public async Task GetUpdateData_ReturnsExpectedCount(IEnumerable<string> roleIds, IEnumerable<string>? userIds)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
         var results = await sut
-            .GetUpdateData(new [] { new Guid("efc20368-9e82-46ff-b88f-6495b9810253") }, new [] { NotificationTypeId.APP_RELEASE_REQUEST }, new Guid("0fc768e5-d4cf-4d3d-a0db-379efedd60f5"))
+            .GetNotificationUpdateIds(roleIds.Select(x => new Guid(x)), userIds == null ? null : userIds.Select(x => new Guid(x)), new [] { NotificationTypeId.APP_RELEASE_REQUEST }, new Guid("0fc768e5-d4cf-4d3d-a0db-379efedd60f5"))
             .ToListAsync()
             .ConfigureAwait(false);
 
