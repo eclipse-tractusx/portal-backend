@@ -41,7 +41,7 @@ try
                 .AddTransient<IProcessTypeExecutor, ApplicationChecklistProcessTypeExecutor>()
                 .AddTransient<IApplicationChecklistHandlerService, ApplicationChecklistHandlerService>()
                 .AddPortalRepositories(hostContext.Configuration)
-                .AddApplicationChecklist(hostContext.Configuration.GetSection("Checklist"))
+                .AddApplicationChecklist(hostContext.Configuration.GetSection("ApplicationChecklist"))
                 .AddApplicationChecklistCreation()
                 .AddApplicationActivation(hostContext.Configuration);
 
