@@ -72,7 +72,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 
         CreateConsentsForSubscription(offerSubscriptionId, offerAgreementConsentData, companyInformation.CompanyId, companyUserId);
         
-        var autoSetupResult = await AutoSetupOfferSubscription(offerId, accessToken, offerProviderDetails, companyInformation, userEmail, offerSubscriptionId).ConfigureAwait(false);
+        var autoSetupResult = await AutoSetupOfferSubscription(offerId, accessToken, offerProviderDetails, companyInformation, userEmail, offerSubscriptionId, offerProviderDetails.IsSingleInstance).ConfigureAwait(false);
         var notificationContent = JsonSerializer.Serialize(new
         {
             AppName = offerProviderDetails.OfferName,
@@ -152,8 +152,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         return (companyInformation, companyUserId, userEmail);
     }
 
-    private static async Task<Guid> HandleAppSubscriptionAsync(
-        Guid offerId,
+    private static async Task<Guid> HandleAppSubscriptionAsync(Guid offerId,
         IOfferSubscriptionsRepository offerSubscriptionsRepository,
         CompanyInformationData companyInformation,
         Guid companyUserId)
@@ -198,9 +197,10 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         OfferProviderDetailsData offerProviderDetails, 
         CompanyInformationData companyInformation, 
         string? userEmail,
-        Guid offerSubscriptionId)
+        Guid offerSubscriptionId,
+        bool isSingleInstance)
     {
-        if (string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl)) return null;
+        if (string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl) || isSingleInstance) return null;
         
         try
         {
@@ -246,6 +246,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                 {
                     notification.CreatorUserId = companyUserId;
                     notification.Content = notificationContent;
+                    notification.Done = false;
                 });
         }
 
@@ -274,6 +275,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                 {
                     notification.CreatorUserId = companyUserId;
                     notification.Content = notificationContent;
+                    notification.Done = false;
                 });
         }
     }

@@ -17,6 +17,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -93,7 +94,17 @@ public record InReviewOfferData(
     string? Price,
 
     /// <summary>
-    /// Tags assigned to application.
+    /// Tags assigned to offer.
     /// </summary>
-    IEnumerable<string> Tags
+    IEnumerable<string> Tags,
+    
+    /// <summary>
+    /// Privacy Policy Id assigned to offer.
+    /// </summary>
+    IEnumerable<PrivacyPolicyId> MatchingPrivacyPolicies,
+
+    /// <summary>
+    /// License TypeId for offer.
+    /// </summary>
+    LicenseTypeId LicenseTypeId
 );

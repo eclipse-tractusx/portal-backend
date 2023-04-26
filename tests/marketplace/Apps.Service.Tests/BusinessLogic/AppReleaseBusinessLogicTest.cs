@@ -35,6 +35,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Collections.Immutable;
+using PortalBackend.DBAccess.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic.Tests;
@@ -61,8 +63,9 @@ public class AppReleaseBusinessLogicTest
     private readonly ILanguageRepository _languageRepository;
     private readonly AppsSettings _settings;
     private const string ClientId = "catenax-portal";
-    private static readonly Guid ValidDocumentId = Guid.NewGuid();
     private static readonly string IamUserId = Guid.NewGuid().ToString();
+    private readonly IOfferSetupService _offerSetupService;
+    private readonly AppReleaseBusinessLogic _sut;
 
     public AppReleaseBusinessLogicTest()
     {
@@ -78,6 +81,7 @@ public class AppReleaseBusinessLogicTest
         _documentRepository = A.Fake<IDocumentRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
         _offerService = A.Fake<IOfferService>();
+        _offerSetupService = A.Fake<IOfferSetupService>();
         _options = A.Fake<IOptions<AppsSettings>>();
         _companyUser = _fixture.Build<CompanyUser>()
             .Without(u => u.IamUser)
@@ -87,24 +91,29 @@ public class AppReleaseBusinessLogicTest
             .Create();
         _companyUser.IamUser = _iamUser;
         
-        _settings = A.Fake<AppsSettings>();
-        _settings.OfferStatusIds = new [] 
+        _settings = new AppsSettings
         {
-            OfferStatusId.IN_REVIEW,
-            OfferStatusId.ACTIVE
+            BasePortalAddress = "https://test.com/",
+            OfferStatusIds = new [] 
+            {
+                OfferStatusId.IN_REVIEW,
+                OfferStatusId.ACTIVE
+            },
+            ActiveAppNotificationTypeIds = new []
+            {
+                NotificationTypeId.APP_ROLE_ADDED
+            },
+            SubmitAppNotificationTypeIds = new []
+            {
+                NotificationTypeId.APP_RELEASE_REQUEST
+            },
+            ActiveAppCompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                { ClientId, new [] { "Company Admin" } }
+            }
         };
-        _settings.ActiveAppNotificationTypeIds = new []
-        {
-            NotificationTypeId.APP_ROLE_ADDED
-        };
-        _settings.SubmitAppNotificationTypeIds = new []
-        {
-            NotificationTypeId.APP_RELEASE_REQUEST
-        };
-         _settings.ActiveAppCompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
-        {
-            { ClientId, new [] { "Company Admin" } }
-        };
+
+        A.CallTo(() => _options.Value).Returns(_settings);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
@@ -116,6 +125,8 @@ public class AppReleaseBusinessLogicTest
             .With(x => x.MatchingUseCases, _useCases)
             .With(x => x.Languages, _languageCodes.Select(x => (x, true)))
             .Create();
+        
+        _sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, _offerSetupService);
     }
 
     [Fact]
@@ -146,10 +157,8 @@ public class AppReleaseBusinessLogicTest
                 return createdUserRoleDescriptions;
             });
 
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, null!);
-
         // Act
-        var result = await sut.AddAppUserRoleAsync(appId, appUserRoles, iamUserId).ConfigureAwait(false);
+        var result = await _sut.AddAppUserRoleAsync(appId, appUserRoles, iamUserId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>._, A<string>._, A<OfferTypeId>._)).MustHaveHappened();
@@ -202,11 +211,9 @@ public class AppReleaseBusinessLogicTest
         var data = _fixture.Build<AppRequestModel>()
             .With(x => x.SupportedLanguageCodes, new []{ String.Empty })
             .Create();
-        var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
         // Act
-        async Task Act() => await sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
+        async Task Act() => await _sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -220,11 +227,9 @@ public class AppReleaseBusinessLogicTest
         var data = _fixture.Build<AppRequestModel>()
             .With(x => x.UseCaseIds, new []{ Guid.Empty })
             .Create();
-        var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
         // Act
-        async Task Act() => await sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
+        async Task Act() => await _sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -260,11 +265,8 @@ public class AppReleaseBusinessLogicTest
             return offerLicense;
         });
 
-        var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
-
         // Act
-        await sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
+        await _sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerService.ValidateSalesManager(_companyUser.Id, _iamUser.UserEntityId, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
@@ -316,12 +318,9 @@ public class AppReleaseBusinessLogicTest
                 modify?.Invoke(created);
                 return created;
             });
-
-        var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
         // Act
-        await sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
+        await _sut.AddAppAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).MustNotHaveHappened();
@@ -362,11 +361,9 @@ public class AppReleaseBusinessLogicTest
         // Arrange
         SetupUpdateApp();
         var data = _fixture.Create<AppRequestModel>();
-        var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
         // Act
-        async Task Act() => await sut.UpdateAppReleaseAsync(_notExistingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateAppReleaseAsync(_notExistingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -379,11 +376,9 @@ public class AppReleaseBusinessLogicTest
         // Arrange
         SetupUpdateApp();
         var data = _fixture.Create<AppRequestModel>();
-        var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
         // Act
-        async Task Act() => await sut.UpdateAppReleaseAsync(_activeAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateAppReleaseAsync(_activeAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -396,11 +391,9 @@ public class AppReleaseBusinessLogicTest
         // Arrange
         SetupUpdateApp();
         var data = _fixture.Create<AppRequestModel>();
-        var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
      
         // Act
-        async Task Act() => await sut.UpdateAppReleaseAsync(_differentCompanyAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateAppReleaseAsync(_differentCompanyAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
@@ -415,11 +408,9 @@ public class AppReleaseBusinessLogicTest
         var data = _fixture.Build<AppRequestModel>()
             .With(x => x.SupportedLanguageCodes, new [] { "de", "en", "invalid" })
             .Create();
-        var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
         
         // Act
-        async Task Act() => await sut.UpdateAppReleaseAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateAppReleaseAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -434,8 +425,6 @@ public class AppReleaseBusinessLogicTest
         var data = _fixture.Build<AppRequestModel>()
             .With(x => x.SupportedLanguageCodes, new [] { "de", "en" })
             .Create();
-        var settings = new AppsSettings();
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
 
         Offer? initial = null;
         Offer? modified = null;
@@ -449,7 +438,7 @@ public class AppReleaseBusinessLogicTest
             });
 
         // Act
-        await sut.UpdateAppReleaseAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
+        await _sut.UpdateAppReleaseAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
         
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
@@ -496,19 +485,14 @@ public class AppReleaseBusinessLogicTest
         var appId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
-        var settings = new AppsSettings()
-        {
-            ContentTypeSettings = new[] { "application/pdf" },
-            DocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
-        };
-
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
+        _settings.UploadAppDocumentTypeIds = new Dictionary<DocumentTypeId, IEnumerable<string>>{
+                { DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" }}};
 
         // Act
-        await sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, CancellationToken.None).ConfigureAwait(false);
+        await _sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.UploadDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, OfferTypeId.APP, settings.DocumentTypeIds, settings.ContentTypeSettings, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.UploadDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, OfferTypeId.APP, _settings.UploadAppDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
     
     #endregion
@@ -518,11 +502,8 @@ public class AppReleaseBusinessLogicTest
     [Fact]
     public async Task SubmitAppReleaseRequestAsync_CallsOfferService()
     {
-        // Arrange
-        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService);
-
         // Act
-        await sut.SubmitAppReleaseRequestAsync(_existingAppId, _iamUser.UserEntityId).ConfigureAwait(false);
+        await _sut.SubmitAppReleaseRequestAsync(_existingAppId, _iamUser.UserEntityId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => 
@@ -542,11 +523,8 @@ public class AppReleaseBusinessLogicTest
     [Fact]
     public async Task SubmitOfferConsentAsync_WithEmptyAppId_ThrowsControllerArgumentException()
     {
-        // Arrange
-        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService);
-
         // Act
-        async Task Act() => await sut.SubmitOfferConsentAsync(Guid.Empty, _fixture.Create<OfferAgreementConsent>(), _iamUser.UserEntityId).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, _fixture.Create<OfferAgreementConsent>(), _iamUser.UserEntityId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -558,10 +536,9 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         var data = _fixture.Create<OfferAgreementConsent>();
-        var sut = new AppReleaseBusinessLogic(null!, _options, _offerService);
 
         // Act
-        await sut.SubmitOfferConsentAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
+        await _sut.SubmitOfferConsentAsync(_existingAppId, data, _iamUser.UserEntityId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(_existingAppId, data, _iamUser.UserEntityId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
@@ -576,20 +553,19 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         var offerStatus = new[] { OfferStatusId.ACTIVE , OfferStatusId.IN_REVIEW };
-        var InReviewData = new[] {
+        var inReviewData = new[] {
             new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
             new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
             new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.ACTIVE),
             new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.ACTIVE),
             new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.ACTIVE)
         };
-        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, InReviewData.Skip(skip).Take(take)));
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, inReviewData.Skip(skip).Take(take)));
         A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._,A<OfferSorting>._))
             .Returns(paginationResult);
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService);
 
         // Act
-        var result = await sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, null).ConfigureAwait(false);
+        var result = await _sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, null).ConfigureAwait(false);
         
         // Assert
         A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>
@@ -605,20 +581,19 @@ public class AppReleaseBusinessLogicTest
     { 
         // Arrange
         var offerStatus = new[] { OfferStatusId.IN_REVIEW };
-        var InReviewData = new[]{
+        var inReviewData = new[]{
             new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
             new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
             new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
             new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
             new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW)
         };
-        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, InReviewData.Skip(skip).Take(take)));
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, inReviewData.Skip(skip).Take(take)));
         A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._,A<OfferSorting>._))
             .Returns(paginationResult);
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService);
 
         // Act
-        var result = await sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, OfferStatusIdFilter.InReview).ConfigureAwait(false);
+        var result = await _sut.GetAllInReviewStatusAppsAsync(0, 5, OfferSorting.DateAsc, OfferStatusIdFilter.InReview).ConfigureAwait(false);
         
         // Assert
         A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>
@@ -637,42 +612,33 @@ public class AppReleaseBusinessLogicTest
     public async Task DeclineAppRequestAsync_CallsExpected()
     {
         // Arrange
-        string IamUserId = "3e8343f7-4fe5-4296-8312-f33aa6dbde5d";
         var appId = _fixture.Create<Guid>();
         var data = new OfferDeclineRequest("Just a test");
-        var settings = new AppsSettings
-        {
-            ServiceManagerRoles = _fixture.Create<Dictionary<string, IEnumerable<string>>>(),
-            BasePortalAddress = "test"
-        };
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(_settings), _offerService);
      
         // Act
-        await sut.DeclineAppRequestAsync(appId, IamUserId, data).ConfigureAwait(false);
+        await _sut.DeclineAppRequestAsync(appId, IamUserId, data).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerService.DeclineOfferAsync(appId, IamUserId, data,
             OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION,
-            A<IDictionary<string, IEnumerable<string>>>._, A<string>._)).MustHaveHappenedOnceExactly();
+            A<IDictionary<string, IEnumerable<string>>>._,
+            A<string>._,
+            A<IEnumerable<NotificationTypeId>>._,
+            A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
 
-    #region DeleteAppDocument
+    #region  DeleteAppDocument
 
     [Fact]
     public async Task DeleteAppDocumentsAsync_ReturnsExpected()
     {
         // Arrange
         var documentId = _fixture.Create<Guid>();
-        var settings = new AppsSettings
-        {
-            DeleteDocumentTypeIds = new[] { DocumentTypeId.APP_CONTRACT }
-        };
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, Options.Create(settings), _offerService);
 
         // Act
-        await sut.DeleteAppDocumentsAsync(documentId, IamUserId).ConfigureAwait(false);
+        await _sut.DeleteAppDocumentsAsync(documentId, IamUserId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerService.DeleteDocumentsAsync(documentId, IamUserId, A<IEnumerable<DocumentTypeId>>._, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
@@ -693,10 +659,8 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _offerRepository.GetAppDeleteDataAsync(appId, OfferTypeId.APP, IamUserId, OfferStatusId.CREATED))
             .Returns((true,true,true,true,appDeleteData));
 
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService);
-
         //Act
-        await sut.DeleteAppAsync(appId, IamUserId).ConfigureAwait(false);
+        await _sut.DeleteAppAsync(appId, IamUserId).ConfigureAwait(false);
 
         // Assert 
         A.CallTo(() => _offerRepository.GetAppDeleteDataAsync(appId, OfferTypeId.APP, IamUserId, OfferStatusId.CREATED))
@@ -730,10 +694,8 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _offerRepository.GetAppDeleteDataAsync(appId, OfferTypeId.APP, IamUserId, OfferStatusId.CREATED))
             .Returns((true, true, true, false, appDeleteData));
 
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService);
-
         //Act
-        async Task Act() =>  await sut.DeleteAppAsync(appId, IamUserId).ConfigureAwait(false);
+        async Task Act() =>  await _sut.DeleteAppAsync(appId, IamUserId).ConfigureAwait(false);
 
         // Assert 
         // Assert
@@ -751,10 +713,8 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _offerRepository.GetAppDeleteDataAsync(appId, OfferTypeId.APP, IamUserId, OfferStatusId.CREATED))
             .Returns((true, true, false, true, appDeleteData));
 
-        var sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService);
-
         //Act
-        async Task Act() =>  await sut.DeleteAppAsync(appId, IamUserId).ConfigureAwait(false);
+        async Task Act() =>  await _sut.DeleteAppAsync(appId, IamUserId).ConfigureAwait(false);
 
         // Assert 
         // Assert
@@ -764,6 +724,290 @@ public class AppReleaseBusinessLogicTest
 
     #endregion 
 
+    #region ApproveAppRequestAsync
+
+    [Fact]
+    public async Task ApproveAppRequestAsync_CallsExpected()
+    {
+        // Arrange
+        var offerId = Guid.NewGuid();
+
+        // Act
+        await _sut.ApproveAppRequestAsync(offerId, IamUserId).ConfigureAwait(false);
+
+        A.CallTo(() => _offerService.ApproveOfferRequestAsync(offerId, IamUserId, OfferTypeId.APP,
+                A<IEnumerable<NotificationTypeId>>._,
+                A<IDictionary<string, IEnumerable<string>>>._,
+                A<IEnumerable<NotificationTypeId>>._,
+                A<IDictionary<string, IEnumerable<string>>>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
+    #region SetInstanceType
+
+    [Fact]
+    public async Task SetInstanceType_WithSingleInstanceWithoutUrl_ThrowsControllerArgumentException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var data = new AppInstanceSetupData(true, null);
+
+        //Act
+        async Task Act() =>  await _sut.SetInstanceType(appId, data, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("InstanceUrl must be set for a single instance app (Parameter 'InstanceUrl')");
+    }
+
+    [Fact]
+    public async Task SetInstanceType_WithMultiInstanceWithUrl_ThrowsControllerArgumentException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var data = new AppInstanceSetupData(false, "https://test.de");
+
+        //Act
+        async Task Act() =>  await _sut.SetInstanceType(appId, data, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("Multi instance app must not have a instance url set (Parameter 'InstanceUrl')");
+    }
+
+    [Fact]
+    public async Task SetInstanceType_WithNotExistingApp_NotFoundException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var data = new AppInstanceSetupData(true, "https://test.de");
+        A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, IamUserId, OfferTypeId.APP))
+            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>());
+
+        //Act
+        async Task Act() =>  await _sut.SetInstanceType(appId, data, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"App {appId} does not exist");
+    }
+
+    [Fact]
+    public async Task SetInstanceType_WithInvalidUser_ThrowsForbiddenException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var data = new AppInstanceSetupData(true, "https://test.de");
+        A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, IamUserId, OfferTypeId.APP))
+            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.ACTIVE, false, null, new List<(Guid, Guid, string)>()));
+
+        //Act
+        async Task Act() =>  await _sut.SetInstanceType(appId, data, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"User {IamUserId} is not a user of the provider company");
+    }
+
+    [Fact]
+    public async Task SetInstanceType_WithWrongOfferState_ThrowsConflictException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var data = new AppInstanceSetupData(true, "https://test.de");
+        A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, IamUserId, OfferTypeId.APP))
+            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.ACTIVE, true, null, new List<(Guid, Guid, string)>()));
+
+        //Act
+        async Task Act() =>  await _sut.SetInstanceType(appId, data, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"App {appId} is not in Status {OfferStatusId.CREATED} or {OfferStatusId.IN_REVIEW}");
+    }
+
+    [Fact]
+    public async Task SetInstanceType_FromSingleToMultiWithoutAppInstance_ThrowsConflictException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var instanceSetupId = Guid.NewGuid();
+        var data = new AppInstanceSetupData(false, null);
+        var instanceSetupTransferData = new AppInstanceSetupTransferData(instanceSetupId, true, null);
+        A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, IamUserId, OfferTypeId.APP))
+            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.CREATED, true, instanceSetupTransferData, new List<(Guid, Guid, string)>()));
+
+        //Act
+        async Task Act() => await _sut.SetInstanceType(appId, data, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("The must be at exactly one AppInstance");
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task SetInstanceType_WithNewEntry_CreatesEntry()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var instanceSetupId = Guid.NewGuid();
+        var data = new AppInstanceSetupData(true, "https://test.de");
+        AppInstanceSetup? instanceSetupData = null;
+        A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, IamUserId, OfferTypeId.APP))
+            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.CREATED, true, null, new List<(Guid, Guid, string)>()));
+        A.CallTo(() => _offerRepository.CreateAppInstanceSetup(appId, A<Action<AppInstanceSetup>>._))
+            .Invokes((Guid callingAppId, Action<AppInstanceSetup> setOptionalParameters) =>
+            {
+                instanceSetupData = new AppInstanceSetup(instanceSetupId, callingAppId);
+                setOptionalParameters.Invoke(instanceSetupData);
+            });
+
+        //Act
+        await _sut.SetInstanceType(appId, data, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        instanceSetupData.Should().NotBeNull();
+        instanceSetupData!.IsSingleInstance.Should().BeTrue();
+        instanceSetupData.InstanceUrl.Should().Be("https://test.de");
+        A.CallTo(() => _offerSetupService.SetupSingleInstance(appId, "https://test.de")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task SetInstanceType_WithUrlUpdate_CreatesEntry()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var instanceSetupId = Guid.NewGuid();
+        var internalClientId = Guid.NewGuid().ToString();
+        var appInstanceData = new List<(Guid, Guid, string)>
+        {
+            (Guid.NewGuid(), Guid.NewGuid(), internalClientId)
+        };
+        var data = new AppInstanceSetupData(true, "https://new-url.de");
+        var instanceSetupTransferData = new AppInstanceSetupTransferData(instanceSetupId, true, "https://test.de");
+        var instanceSetupData = new AppInstanceSetup(instanceSetupId, appId) { IsSingleInstance = true };
+        A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, IamUserId, OfferTypeId.APP))
+            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.CREATED, true, instanceSetupTransferData, appInstanceData));
+        A.CallTo(() => _offerRepository.AttachAndModifyAppInstanceSetup(instanceSetupId, appId, A<Action<AppInstanceSetup>>._, A<Action<AppInstanceSetup>>._))
+            .Invokes((Guid _, Guid _, Action<AppInstanceSetup> setOptionalParameters,
+                Action<AppInstanceSetup>? initializeParameter) =>
+            {
+                initializeParameter?.Invoke(instanceSetupData);
+                setOptionalParameters.Invoke(instanceSetupData);
+            });
+
+        //Act
+        await _sut.SetInstanceType(appId, data, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        instanceSetupData.InstanceUrl.Should().Be("https://new-url.de");
+        A.CallTo(() => _offerSetupService.UpdateSingleInstance(internalClientId, "https://new-url.de")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSetupService.SetupSingleInstance(A<Guid>._, A<string>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task SetInstanceType_WithExistingEntryButNoAppInstance_ThrowsConflictException()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var instanceSetupId = Guid.NewGuid();
+        var data = new AppInstanceSetupData(true, "https://test.de");
+        var instanceSetupTransferData = new AppInstanceSetupTransferData(instanceSetupId, false, null);
+        var instanceSetupData = new AppInstanceSetup(instanceSetupId, appId) { IsSingleInstance = false };
+        A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, IamUserId, OfferTypeId.APP))
+            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.CREATED, true, instanceSetupTransferData, new List<(Guid, Guid, string)>()));
+        A.CallTo(() => _offerRepository.AttachAndModifyAppInstanceSetup(instanceSetupId, appId, A<Action<AppInstanceSetup>>._, A<Action<AppInstanceSetup>>._))
+            .Invokes((Guid _, Guid _, Action<AppInstanceSetup> setOptionalParameters,
+                Action<AppInstanceSetup>? initializeParameter) =>
+            {
+                initializeParameter?.Invoke(instanceSetupData);
+                setOptionalParameters.Invoke(instanceSetupData);
+            });
+
+        //Act
+        await _sut.SetInstanceType(appId, data, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        instanceSetupData.InstanceUrl.Should().Be(data.InstanceUrl);
+        instanceSetupData.IsSingleInstance.Should().BeTrue();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSetupService.SetupSingleInstance(appId, data.InstanceUrl!)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task SetInstanceType_WithExistingEntry_UpdatesEntry()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var instanceSetupId = Guid.NewGuid();
+        var appInstanceData = new List<(Guid, Guid, string)>
+        {
+            (Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid().ToString())
+        };
+        var instanceSetupData = new AppInstanceSetup(instanceSetupId, appId) { IsSingleInstance = false };
+        var data = new AppInstanceSetupData(true, "https://test.de");
+        var instanceSetupTransferData = new AppInstanceSetupTransferData(instanceSetupId, false, null);
+        A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, IamUserId, OfferTypeId.APP))
+            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.CREATED, true, instanceSetupTransferData, appInstanceData));
+        A.CallTo(() => _offerRepository.AttachAndModifyAppInstanceSetup(instanceSetupId, appId, A<Action<AppInstanceSetup>>._, A<Action<AppInstanceSetup>>._))
+            .Invokes((Guid _, Guid _, Action<AppInstanceSetup> setOptionalParameters,
+                Action<AppInstanceSetup>? initializeParameter) =>
+            {
+                initializeParameter?.Invoke(instanceSetupData);
+                setOptionalParameters.Invoke(instanceSetupData);
+            });
+
+        //Act
+        await _sut.SetInstanceType(appId, data, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        instanceSetupData.InstanceUrl.Should().Be(data.InstanceUrl);
+        instanceSetupData.IsSingleInstance.Should().BeTrue();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSetupService.SetupSingleInstance(appId, data.InstanceUrl!)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task SetInstanceType_FromSingleToMulti_UpdatesEntry()
+    {
+        //Arrange
+        var appId = Guid.NewGuid();
+        var instanceSetupId = Guid.NewGuid();
+        var appInstanceData = new List<(Guid, Guid, string)>
+        {
+            (Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid().ToString())
+        };
+        var instanceSetupData = new AppInstanceSetup(instanceSetupId, appId) { IsSingleInstance = true };
+        var data = new AppInstanceSetupData(false, null);
+        var instanceSetupTransferData = new AppInstanceSetupTransferData(instanceSetupId, true, null);
+        A.CallTo(() => _offerRepository.GetOfferWithSetupDataById(appId, IamUserId, OfferTypeId.APP))
+            .ReturnsLazily(() => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(OfferStatusId.CREATED, true, instanceSetupTransferData, appInstanceData));
+        A.CallTo(() => _offerRepository.AttachAndModifyAppInstanceSetup(instanceSetupId, appId, A<Action<AppInstanceSetup>>._, A<Action<AppInstanceSetup>>._))
+            .Invokes((Guid _, Guid _, Action<AppInstanceSetup> setOptionalParameters,
+                Action<AppInstanceSetup>? initializeParameter) =>
+            {
+                initializeParameter?.Invoke(instanceSetupData);
+                setOptionalParameters.Invoke(instanceSetupData);
+            });
+
+        //Act
+        await _sut.SetInstanceType(appId, data, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        instanceSetupData.InstanceUrl.Should().BeNull();
+        instanceSetupData.IsSingleInstance.Should().BeFalse();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSetupService.DeleteSingleInstance(A<Guid>._, A<Guid>._, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSetupService.SetupSingleInstance(appId, data.InstanceUrl!)).MustNotHaveHappened();
+    }
+
+    #endregion
+    
     #region Setup
 
     private void SetupUpdateApp()
@@ -788,7 +1032,8 @@ public class AppReleaseBusinessLogicTest
                 .Create());
         A.CallTo(() => _offerRepository.GetAppUpdateData(_existingAppId, _iamUser.UserEntityId, A<IEnumerable<string>>._))
             .Returns(_appUpdateData);
-        A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).Returns(_companyUser.CompanyId);
+        A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
+            .Returns(_companyUser.CompanyId);
         
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
     }

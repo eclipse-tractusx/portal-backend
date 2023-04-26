@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.OpenIDConfigur
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests.FlurlSetup;
 using Config = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders.Config;
 using IdentityProvider = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders.IdentityProvider;
@@ -41,7 +42,8 @@ public class ProvisioningManagerTests
     private const string LoginTheme = "colorful-theme";
     private const string CentralUrl = "https://central.de";
     private const string SharedUrl = "https://shared.de";
-    private readonly ProvisioningManager _sut;
+    private readonly IProvisioningManager _sut;
+    private readonly IProvisioningDBAccess _provisioningDbAccess;
 
     public ProvisioningManagerTests()
     {
@@ -51,6 +53,7 @@ public class ProvisioningManagerTests
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         var keycloakFactory = A.Fake<IKeycloakFactory>();
+        _provisioningDbAccess = A.Fake<IProvisioningDBAccess>();
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("central"))
             .Returns(new KeycloakClient(CentralUrl, "test", "test", "test"));
         A.CallTo(() => keycloakFactory.CreateKeycloakClient("shared"))
@@ -59,6 +62,11 @@ public class ProvisioningManagerTests
             .Returns(new KeycloakClient(SharedUrl, "test", "test", "test"));
         var settings = new ProvisioningSettings
         {
+            ClientPrefix = "cl",
+            CentralOIDCClient = new Client
+            {
+                RedirectUris = new List<string>()
+            },
             CentralRealm = CentralRealm,
             CentralIdentityProvider = new IdentityProvider
             {
@@ -89,7 +97,31 @@ public class ProvisioningManagerTests
             },
         };
 
-        _sut = new ProvisioningManager(keycloakFactory, null, Options.Create(settings));
+        _sut = new ProvisioningManager(keycloakFactory, _provisioningDbAccess, Options.Create(settings));
+    }
+
+    [Fact]
+    public async Task SetupClientAsync_CallsExpected()
+    {
+        // Arrange
+        const string url = "https://newurl.com";
+        const string newClientId = "cl1";
+        using var httpTest = new HttpTest();
+        A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).ReturnsLazily(() => 1);
+        httpTest.WithAuthorization(CentralRealm)
+            .WithCreateClient(newClientId)
+            .WithGetClientSecretAsync(newClientId, new Credentials {Value = "super-secret"});
+        
+        // Act
+        await _sut.SetupClientAsync($"{url}/*", url, new []{ "adminRole" }).ConfigureAwait(false);
+
+        // Assert
+        httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/clients/{newClientId}/protocol-mappers/models")
+            .WithVerb(HttpMethod.Post)
+            .Times(1);
+        httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/clients/{newClientId}/roles")
+            .WithVerb(HttpMethod.Post)
+            .Times(1);
     }
 
     [Fact]
@@ -104,7 +136,7 @@ public class ProvisioningManagerTests
             .WithGetUserForServiceAccount(newClientId, new User{ Id = userId })
             .WithGetRoleByNameAsync(newClientId, "create-realm", new Role())
             .WithGetClientSecretAsync(newClientId, new Credentials { Value = "super-secret" })
-            .WithGetOpenIDConfigurationAsync(new OpenIDConfiguration
+            .WithGetOpenIdConfigurationAsync(new OpenIDConfiguration
             {
                 AuthorizationEndpoint = new Uri("https://test.com/auth"),
                 TokenEndpoint = new Uri("https://test.com/token"),

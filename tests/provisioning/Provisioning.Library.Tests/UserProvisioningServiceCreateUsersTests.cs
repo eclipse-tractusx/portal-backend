@@ -39,6 +39,7 @@ public class UserProvisioningServiceCreateUsersTests
     private readonly IProvisioningManager _provisioningManager;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserRepository _userRepository;
+    private readonly IUserBusinessPartnerRepository _businessPartnerRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly CompanyNameIdpAliasData _companyNameIdpAliasData;
     private readonly CompanyNameIdpAliasData _companyNameIdpAliasDataSharedIdp;
@@ -68,6 +69,7 @@ public class UserProvisioningServiceCreateUsersTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _provisioningManager = A.Fake<IProvisioningManager>();
         _userRepository = A.Fake<IUserRepository>();
+        _businessPartnerRepository = A.Fake<IUserBusinessPartnerRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
 
         SetupRepositories();
@@ -231,7 +233,7 @@ public class UserProvisioningServiceCreateUsersTests
     }
 
     [Fact]
-    public async void TestCreateUsersExistingCompanyUserWithoutKeycloakUserSuccess()
+    public async void TestCreateUsersNotExistingCompanyUserWithoutKeycloakUserSuccess()
     {
         var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
 
@@ -239,9 +241,17 @@ public class UserProvisioningServiceCreateUsersTests
 
         var userInfo = userCreationInfoIdp.ElementAt(_indexSpecialUser);
         var companyUserId = _fixture.Create<Guid>();
+        var centralUserId = _fixture.Create<string>();
+        var utcNow = DateTimeOffset.UtcNow;
 
         A.CallTo(() => _userRepository.GetMatchingCompanyIamUsersByNameEmail(A<string>.That.IsEqualTo(userInfo.FirstName), A<string>._, A<string>._, A<Guid>._, A<IEnumerable<CompanyUserStatusId>>._))
-            .Returns(new [] { (UserEntityId: (string?)null, CompanyUserId: companyUserId) }.ToAsyncEnumerable());
+            .Returns(new [] { (UserEntityId: (string?)null, CompanyUserId: Guid.Empty) }.ToAsyncEnumerable());
+
+        A.CallTo(() => _userRepository.CreateCompanyUser(userInfo.FirstName, A<string?>._, A<string>._, A<Guid>._, A<CompanyUserStatusId>._, A<Guid>._))
+            .ReturnsLazily((string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId statusId, Guid creatorId) => new CompanyUser(companyUserId, companyId, statusId, utcNow, creatorId) { Firstname = firstName, Lastname = lastName });
+        
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string,IEnumerable<string>)>>._))
+            .Returns(centralUserId);
 
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
@@ -250,8 +260,51 @@ public class UserProvisioningServiceCreateUsersTests
         ).ToListAsync().ConfigureAwait(false);
 
         A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string,IEnumerable<string>)>>._)).MustHaveHappened();
-        A.CallTo(() => _userRepository.CreateIamUser(A<Guid>.That.IsEqualTo(companyUserId), A<string>._)).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string,IEnumerable<string>)>>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string,IEnumerable<string>)>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.CreateCompanyUser(A<string?>._, A<string?>._, A<string>._, _companyNameIdpAliasData.CompanyId, CompanyUserStatusId.ACTIVE, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _userRepository.CreateCompanyUser(userInfo.FirstName, userInfo.LastName, userInfo.Email, _companyNameIdpAliasData.CompanyId, CompanyUserStatusId.ACTIVE, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, _companyNameIdpAliasData.BusinessPartnerNumber!)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, _companyNameIdpAliasData.BusinessPartnerNumber!)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _userRepository.CreateIamUser(companyUserId, centralUserId)).MustHaveHappenedOnceExactly();
+
+        result.Should().HaveCount(_numUsers);
+        result.Should().AllSatisfy(r => r.Error.Should().BeNull());
+    }
+
+    [Fact]
+    public async void TestCreateUsersExistingCompanyUserWithoutKeycloakUserSuccess()
+    {
+        var sut = new UserProvisioningService(_provisioningManager,_portalRepositories);
+
+        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
+
+        var userInfo = userCreationInfoIdp.ElementAt(_indexSpecialUser);
+        var companyUserId = _fixture.Create<Guid>();
+        var centralUserId = _fixture.Create<string>();
+
+        A.CallTo(() => _userRepository.GetMatchingCompanyIamUsersByNameEmail(A<string>.That.IsEqualTo(userInfo.FirstName), A<string>._, A<string>._, A<Guid>._, A<IEnumerable<CompanyUserStatusId>>._))
+            .Returns(new [] { (UserEntityId: (string?)null, CompanyUserId: companyUserId) }.ToAsyncEnumerable());
+
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string,IEnumerable<string>)>>._))
+            .Returns(centralUserId);
+
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            userCreationInfoIdp.ToAsyncEnumerable(),
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
+
+        A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string,IEnumerable<string>)>>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string,IEnumerable<string>)>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.CreateCompanyUser(A<string?>._, A<string?>._, A<string>._, _companyNameIdpAliasData.CompanyId, CompanyUserStatusId.ACTIVE, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappened(userCreationInfoIdp.Count-1, Times.Exactly);
+        A.CallTo(() => _userRepository.CreateCompanyUser(userInfo.FirstName, A<string?>._, A<string>._, A<Guid>._, A<CompanyUserStatusId>._, A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, _companyNameIdpAliasData.BusinessPartnerNumber!)).MustHaveHappened(userCreationInfoIdp.Count-1, Times.Exactly);
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, A<string?>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _userRepository.CreateIamUser(companyUserId, centralUserId)).MustHaveHappenedOnceExactly();
 
         result.Should().HaveCount(_numUsers);
         result.Should().AllSatisfy(r => r.Error.Should().BeNull());
@@ -338,11 +391,15 @@ public class UserProvisioningServiceCreateUsersTests
     private void SetupRepositories()
     {
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
 
         A.CallTo(() => _userRepository.CreateCompanyUser(A<string>._, A<string>._, A<string>._,  A<Guid>._, A<CompanyUserStatusId>._, A<Guid>._))
             .ReturnsLazily((string firstName, string lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId, Guid lastEditorId) =>
                 new CompanyUser(_fixture.Create<Guid>(), companyId, companyUserStatusId, DateTimeOffset.UtcNow, lastEditorId));
+
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, A<string>._))
+            .ReturnsLazily((Guid companyUserId, string businessPartnerNumber) =>  new CompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber));
 
         A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._))
             .ReturnsLazily((Guid companyUserId, string iamUserId) => new IamUser(iamUserId, companyUserId));

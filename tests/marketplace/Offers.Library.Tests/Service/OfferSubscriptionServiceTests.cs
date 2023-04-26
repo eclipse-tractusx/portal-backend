@@ -149,6 +149,7 @@ public class OfferSubscriptionServiceTests
         companyAssignedApps.Should().HaveCount(1);
         notifications.Should().HaveCount(2);
         notifications.Should().OnlyHaveUniqueItems();
+        notifications.Should().AllSatisfy(x => x.Done.Should().NotBeNull().And.BeFalse());
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
     }
     
@@ -183,6 +184,7 @@ public class OfferSubscriptionServiceTests
         companyAssignedApps.Should().HaveCount(1);
         notifications.Should().HaveCount(2);
         notifications.Should().OnlyHaveUniqueItems();
+        notifications.Should().AllSatisfy(x => x.Done.Should().NotBeNull().And.BeFalse());
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();
     }
     
@@ -450,11 +452,11 @@ public class OfferSubscriptionServiceTests
             .ReturnsLazily(() => (OfferDetailData?)null);
         
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingOfferId), A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferProviderDetailsData("Test Offer", "Test Company", "provider@mail.de", _salesManagerId, "https://www.testurl.com"));
+            .ReturnsLazily(() => new OfferProviderDetailsData("Test Offer", "Test Company", "provider@mail.de", _salesManagerId, "https://www.testurl.com", false));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingOfferWithFailingAutoSetupId), A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferProviderDetailsData("Test Offer", "Test Company", "provider@mail.de", _salesManagerId, "https://www.fail.com"));
+            .ReturnsLazily(() => new OfferProviderDetailsData("Test Offer", "Test Company", "provider@mail.de", _salesManagerId, "https://www.fail.com", false));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Matches(x => x == _existingOfferWithoutDetailsFilled), A<OfferTypeId>._))
-            .ReturnsLazily(() => new OfferProviderDetailsData(null, "Test Company", null, _salesManagerId, "https://www.fail.com"));
+            .ReturnsLazily(() => new OfferProviderDetailsData(null, "Test Company", null, _salesManagerId, "https://www.fail.com", false));
         A.CallTo(() => _offerRepository.GetOfferProviderDetailsAsync(A<Guid>.That.Not.Matches(x => x == _existingOfferId || x == _existingOfferWithFailingAutoSetupId || x == _existingOfferWithoutDetailsFilled), A<OfferTypeId>._))
             .ReturnsLazily(() => (OfferProviderDetailsData?)null);
         

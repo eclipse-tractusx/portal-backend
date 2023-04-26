@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -60,7 +61,7 @@ public interface IOfferRepository
     /// </summary>
     /// <param name="languageShortName">The optional language shortName</param>
     /// <returns>Returns a async enumerable of (Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName)</returns>
-    IAsyncEnumerable<(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, Guid LeadPictureId, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName);
+    IAsyncEnumerable<ActiveAppData> GetAllActiveAppsAsync(string? languageShortName);
 
     /// <summary>
     /// Gets the details of an app by its id
@@ -264,7 +265,7 @@ public interface IOfferRepository
     /// Adds the service types to the service
     /// </summary>
     /// <param name="serviceAssignedServiceTypes"></param>
-    void AddServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId, bool technicalUserNeeded)> serviceAssignedServiceTypes);
+    void AddServiceAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceAssignedServiceTypes);
 
     /// <summary>
     /// Removes <see cref="ServiceDetail"/>s to the databasethe database
@@ -296,7 +297,7 @@ public interface IOfferRepository
     /// <param name="appId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(bool IsStatusInReview, string? OfferName, Guid? ProviderCompanyId)> GetOfferStatusDataByIdAsync(Guid appId, OfferTypeId offerTypeId);
+    Task<(bool IsStatusInReview, string? OfferName, Guid? ProviderCompanyId, bool IsSingleInstance, IEnumerable<(Guid InstanceId, string ClientId)> Instances)> GetOfferStatusDataByIdAsync(Guid offerId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the data needed for declining an offer
@@ -448,4 +449,52 @@ public interface IOfferRepository
     /// <param name="offerName"></param>
     /// <param name="languageShortName"></param>
     Func<int,int,Task<Pagination.Source<InReviewServiceData>?>> GetAllInReviewStatusServiceAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, OfferSorting? sorting, string? offerName, string? languageShortName);
+
+    /// Gets the data for the app including the instance type information
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="iamUserId"></param>
+    /// <param name="offerTypeId"></param>
+    /// <returns></returns>
+    Task<(OfferStatusId OfferStatus, bool IsUserOfProvidingCompany, AppInstanceSetupTransferData? SetupTransferData, IEnumerable<(Guid AppInstanceId, Guid ClientId, string ClientClientId)> AppInstanceData)> GetOfferWithSetupDataById(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Creates a new instance of <see cref="AppInstanceSetup"/>
+    /// </summary>
+    /// <param name="appId">id of the app</param>
+    /// <param name="isSingleInstance">defines whether the app is a single instance</param>
+    /// <param name="setOptionalParameter">Action to set optional parameters for the app instance setup</param>
+    /// <returns>The created entity</returns>
+    AppInstanceSetup CreateAppInstanceSetup(Guid appId, Action<AppInstanceSetup>? setOptionalParameter);
+
+    /// <summary>
+    /// Gets the single instance offer data
+    /// </summary>
+    /// <param name="offerId">id of the offer</param>
+    /// <param name="offerTypeId">id of the offer type</param>
+    /// <returns>Returns the single instance offer data</returns>
+    Task<SingleInstanceOfferData?> GetSingleInstanceOfferData(Guid offerId, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Updates the <see cref="AppInstanceSetup"/>
+    /// </summary>
+    /// <param name="appInstanceSetupId">Id of the appInstanceSetup that should be updated</param>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="setOptionalParameters">Sets the values that should be updated</param>
+    /// <param name="initializeParameter">Initializes the parameters</param>
+    void AttachAndModifyAppInstanceSetup(Guid appInstanceSetupId, Guid offerId, Action<AppInstanceSetup> setOptionalParameters, Action<AppInstanceSetup>? initializeParameter = null);
+
+    /// <summary>
+    /// Gets the related service account data
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <returns></returns>
+    Task<(bool IsSingleInstance, IEnumerable<IEnumerable<UserRoleData>> ServiceAccountProfiles, string? OfferName)> GetServiceAccountProfileData(Guid offerId, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Gets the related service account data
+    /// </summary>
+    /// <param name="subscriptionId"></param>
+    /// <returns></returns>
+    Task<(bool IsSingleInstance, IEnumerable<IEnumerable<UserRoleData>> ServiceAccountProfiles, string? OfferName)> GetServiceAccountProfileDataForSubscription(Guid subscriptionId);
 }

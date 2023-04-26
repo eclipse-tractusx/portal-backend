@@ -36,6 +36,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 /// <param name="ProviderUri">Provider Uri of the service</param>
 /// <param name="ContactEmail">Contact Email of the service.</param>
 /// <param name="ContactNumber">Contact Number of the service. </param>
+/// <param name="LicenseType">License Type for offer </param>
 public record ServiceData(
     Guid Id,
     string? Title,
@@ -45,4 +46,5 @@ public record ServiceData(
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
     string ProviderUri,
     string? ContactEmail,
-    string? ContactNumber);
+    string? ContactNumber,
+    LicenseTypeId LicenseType);

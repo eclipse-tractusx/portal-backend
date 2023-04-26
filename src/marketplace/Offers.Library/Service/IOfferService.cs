@@ -129,12 +129,15 @@ public interface IOfferService
     /// <summary>
     /// Approve App Status from IN_Review to Active
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="offerId"></param>
     /// <param name="iamUserId"></param>
-    /// <param name="notificationTypeIds"></param>
+    /// <param name="offerTypeId"></param>
+    /// <param name="approveOfferNotificationTypeIds"></param>
     /// <param name="approveOfferRoles"></param>
+    /// <param name="submitOfferNotificationTypeIds"></param>
+    /// <param name="catenaAdminRoles"></param>
     /// <returns></returns>
-    Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> approveOfferRoles);
+    Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
 
     /// <summary>
     /// Update offer status and create notification for App 
@@ -158,7 +161,9 @@ public interface IOfferService
     /// <param name="notificationTypeId">Id of the notification that should be send</param>
     /// <param name="notificationRecipients">Recipients of the notifications</param>
     /// <param name="basePortalAddress">the base portal address</param>
-    Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string,IEnumerable<string>> notificationRecipients, string basePortalAddress);
+    /// <param name="submitOfferNotificationTypeIds">the submit notification notification type ids</param>
+    /// <param name="catenaAdminRoles">The catena x admin roles</param>
+    Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string,IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
  
     /// <summary>
     /// Deactivate the given offerStatus by appsId
@@ -171,15 +176,15 @@ public interface IOfferService
     /// <summary>
     /// Upload Document the given offertypeId by Id
     /// </summary>
-    /// <param name="Id"></param>
+    /// <param name="id"></param>
     /// <param name="documentTypeId"></param>
     /// <param name="document"></param>
     /// <param name="iamUserId"></param>
     /// <param name="cancellationToken"></param>
-    /// <param name="offertypeId"></param>
+    /// <param name="offerTypeId"></param>
     /// <param name="documentTypeIdSettings"></param>
     /// <param name="contentTypeSettings"></param>
-    Task UploadDocumentAsync(Guid Id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offertypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings, CancellationToken cancellationToken);
+    Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, IDictionary<DocumentTypeId,IEnumerable<string>> uploadDocumentTypeIdSettings, CancellationToken cancellationToken);
 
     /// <summary>
     /// Update offer status and create notification for Service
@@ -197,7 +202,7 @@ public interface IOfferService
     /// </summary>
     /// <param name="offerId"></param>
     /// <param name="documentId"></param>
-    /// <param name="documentTypeIds"></param>
+    /// <param name="documentTypeIdSettings"></param>
     /// <param name="offerTypeId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
@@ -212,4 +217,23 @@ public interface IOfferService
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task DeleteDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIdSettings, OfferTypeId offerTypeId);
+
+    /// <summary>
+    /// Get technical user profiles for a specific offer
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="iamUserId">Id of the iam User</param>
+    /// <param name="offerTypeId">Id of the offer type</param>
+    /// <returns>IEnumerable with the technical user profile information</returns>
+    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
+    
+    /// <summary>
+    /// Creates or updates the technical user profiles
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="offerTypeId">The OfferTypeId of the offer</param>
+    /// <param name="data">The technical user profiles</param>
+    /// <param name="iamUserId">id of the iam user</param>
+    /// <param name="technicalUserProfileClient">Client to get the technicalUserProfiles</param>
+    Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, string iamUserId, string technicalUserProfileClient);
 }

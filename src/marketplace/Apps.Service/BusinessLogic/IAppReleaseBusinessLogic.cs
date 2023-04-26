@@ -180,4 +180,12 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task DeleteAppAsync(Guid appId, string iamUserId);
+
+    /// <summary>
+    /// Sets the instance type and all related data for the app
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="data">the data for the app instance</param>
+    /// <param name="iamUserId">the current user</param>
+    Task SetInstanceType(Guid appId, AppInstanceSetupData data, string iamUserId);
 }

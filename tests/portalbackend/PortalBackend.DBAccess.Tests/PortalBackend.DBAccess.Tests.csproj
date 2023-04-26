@@ -301,5 +301,17 @@
     <Content Update="Seeder\Data\company_assigned_use_cases.consortia.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
+    <Content Update="Seeder\Data\agreement_assigned_company_roles.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\agreement_assigned_company_roles.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\technical_user_profiles.test.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\technical_user_profile_assigned_roles.test.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
   </ItemGroup>
 </Project>
