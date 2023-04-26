@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
@@ -220,6 +221,7 @@ public class OfferService : IOfferService
             service.Provider = iamUserResult.CompanyName;
             service.OfferStatusId = OfferStatusId.CREATED;
             service.ProviderCompanyId = iamUserResult.CompanyId;
+            service.MarketingUrl = data.ProviderUri;
         });
         var licenseId = offerRepository.CreateOfferLicenses(data.Price).Id;
         offerRepository.CreateOfferAssignedLicense(service.Id, licenseId);
@@ -360,7 +362,7 @@ public class OfferService : IOfferService
 
     private async Task SubmitAppServiceAsync(Guid offerId, string iamUserId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, OfferReleaseData offerDetails)
     {
-         GetAndValidateOfferDetails(offerDetails);
+        GetAndValidateOfferDetails(offerDetails);
         if(offerDetails.DocumentStatusDatas.Any())
         {
             var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
@@ -481,7 +483,7 @@ public class OfferService : IOfferService
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content, offerDetails.ProviderCompanyId.Value).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content, offerDetails.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -528,7 +530,7 @@ public class OfferService : IOfferService
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = Enumerable.Repeat(notificationTypeId, 1).Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(notificationRecipients, requesterId, content, declineData.CompanyId.Value).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(notificationRecipients, requesterId, content, declineData.CompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         
         await SendMail(notificationRecipients, declineData.OfferName, basePortalAddress, data.Message, declineData.CompanyId.Value);
@@ -680,5 +682,55 @@ public class OfferService : IOfferService
             throw new UnexpectedConditionException($"document content should never be null");
         }
         return (result.Content, result.MediaTypeId.MapToMediaType(), result.FileName);
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIdSettings, OfferTypeId offerTypeId)
+    {
+        var result = await _portalRepositories.GetInstance<IDocumentRepository>().GetOfferDocumentsAsync(documentId, iamUserId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"Document {documentId} does not exist");
+        }
+        
+        if (!result.IsProviderCompanyUser)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not a member of the same company of document {documentId}");
+        }
+        
+        if (!result.OfferData.Any())
+        {
+            throw new ControllerArgumentException($"Document {documentId} is not assigned to an {offerTypeId}");
+        }
+
+        if (result.OfferData.Count() > 1)
+        {
+            throw new ConflictException($"Document {documentId} is assigned to more than one {offerTypeId}");
+        }
+        
+        var offer = result.OfferData.Single();
+        if (!offer.IsOfferType)
+        {
+            throw new ConflictException($"Document {documentId} is not assigned to an {offerTypeId}");
+        }
+
+        if (offer.OfferStatusId != OfferStatusId.CREATED)
+        {
+            throw new ConflictException($"{offerTypeId} {offer.OfferId} is in locked state");
+        }
+
+        if (!result.IsDocumentTypeMatch)
+        {
+            throw new ControllerArgumentException($"Document {documentId} can not get retrieved. Document type not supported");
+        }
+
+        if (result.DocumentStatusId == DocumentStatusId.LOCKED)
+        {
+            throw new ConflictException($"Document in State {result.DocumentStatusId} can't be deleted");
+        }
+
+        _portalRepositories.GetInstance<IOfferRepository>().RemoveOfferAssignedDocument(offer.OfferId, documentId);
+        _portalRepositories.GetInstance<IDocumentRepository>().RemoveDocument(documentId);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

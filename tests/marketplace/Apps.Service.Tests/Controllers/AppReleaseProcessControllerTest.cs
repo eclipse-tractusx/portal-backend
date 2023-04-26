@@ -366,7 +366,6 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var documentId = Guid.NewGuid();
-        var roleId = Guid.NewGuid();
         A.CallTo(() => _logic.DeleteAppDocumentsAsync(A<Guid>._, A<string>._))
             .ReturnsLazily(()=> Task.CompletedTask);
 
