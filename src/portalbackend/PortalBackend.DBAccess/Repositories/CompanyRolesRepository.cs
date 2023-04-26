@@ -43,6 +43,9 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                 companyRoleId
             )).Entity;
 
+    public void CreateCompanyAssignedRoles(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
+        _dbContext.AddRange(companyRoleIds.Select(companyRoleId => new CompanyAssignedRole(companyId, companyRoleId)));
+
     public void RemoveCompanyAssignedRoles(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
         _dbContext.RemoveRange(companyRoleIds.Select(companyRoleId => new CompanyAssignedRole(companyId, companyRoleId)));
 

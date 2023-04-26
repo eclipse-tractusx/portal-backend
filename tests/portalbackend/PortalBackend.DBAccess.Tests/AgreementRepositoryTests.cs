@@ -122,7 +122,7 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(5);
+        results.Should().HaveCount(6);
     }
 
     #endregion

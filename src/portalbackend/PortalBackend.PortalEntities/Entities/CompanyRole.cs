@@ -28,9 +28,9 @@ public class CompanyRole
     private CompanyRole()
     {
         Label = null!;
-        Companies = new HashSet<Company>();
         AgreementAssignedCompanyRoles = new HashSet<AgreementAssignedCompanyRole>();
         CompanyRoleDescriptions = new HashSet<CompanyRoleDescription>();
+        CompanyAssignedRoles = new HashSet<CompanyAssignedRole>();
     }
 
     public CompanyRole(CompanyRoleId companyRoleId) : this()
@@ -48,6 +48,6 @@ public class CompanyRole
     public virtual CompanyRoleAssignedRoleCollection? CompanyRoleAssignedRoleCollection { get; set; }
     public virtual CompanyRoleRegistrationData? CompanyRoleRegistrationData { get; set; }
     public virtual ICollection<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; private set; }
-    public virtual ICollection<Company> Companies { get; private set; }
     public virtual ICollection<CompanyRoleDescription> CompanyRoleDescriptions { get; private set; }
+    public virtual ICollection<CompanyAssignedRole> CompanyAssignedRoles { get; private set; }
 }

@@ -13,7 +13,8 @@
     "date_last_changed": "2022-03-24 18:01:33.348000 +00:00",
     "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
     "offer_type_id": 1,
-    "last_editor_id": null
+    "last_editor_id": null,
+    "license_type_id":1
   },
     {
       "id": "ac1cf001-7fbc-1f2f-817f-bce05744000b",
@@ -29,7 +30,8 @@
       "date_last_changed": "2022-03-24 18:01:33.380000 +00:00",
       "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
       "offer_type_id": 1,
-      "last_editor_id": null
+      "last_editor_id": null,
+      "license_type_id":1
     },
     {
       "id": "ac1cf001-7fbc-1f2f-817f-bce0000c0001",
@@ -45,7 +47,8 @@
       "date_last_changed": "2023-01-01 00:00:00.000000 +00:00",
       "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
       "offer_type_id": 3,
-      "last_editor_id": null
+      "last_editor_id": null,
+      "license_type_id":1
     },
     {
       "id": "a16e73b9-5277-4b69-9f8d-3b227495dfea",
@@ -61,7 +64,8 @@
       "date_last_changed": "2022-10-01 00:00:00.000000 +00:00",
       "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020005",
       "offer_type_id": 3,
-      "last_editor_id": null
+      "last_editor_id": null,
+      "license_type_id":1
     },
     {
         "id": "99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4",
@@ -77,7 +81,8 @@
         "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
         "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
         "offer_type_id": 1,
-        "last_editor_id": null
+        "last_editor_id": null,
+        "license_type_id":1
       },
       {
         "id": "99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5",
@@ -93,7 +98,8 @@
         "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
         "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
         "offer_type_id": 3,
-        "last_editor_id": null
+        "last_editor_id": null,
+        "license_type_id":1
       },
       {
         "id": "99C5FD12-8085-4DE2-ABFD-215E1EE4BAA6",
@@ -109,7 +115,8 @@
         "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
         "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
         "offer_type_id": 1,
-        "last_editor_id": null
+        "last_editor_id": null,
+        "license_type_id":1
       },
       {
         "id": "99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7",
@@ -125,6 +132,7 @@
         "date_last_changed": "2022-03-24 18:01:33.388000 +00:00",
         "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
         "offer_type_id": 1,
-        "last_editor_id": null
+        "last_editor_id": null,
+        "license_type_id":1
       }
 ]

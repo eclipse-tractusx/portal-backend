@@ -69,7 +69,7 @@ builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBu
 builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
 builder.Services
     .AddDapsService(builder.Configuration)
-    .AddApplicationChecklist(builder.Configuration.GetSection("Checklist"));
+    .AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"));
 
 builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));

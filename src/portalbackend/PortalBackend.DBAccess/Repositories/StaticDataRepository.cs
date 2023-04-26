@@ -89,4 +89,10 @@ public class StaticDataRepository : IStaticDataRepository
         _dbContext.ServiceTypes.AsNoTracking()
             .Select(serviceType => new ServiceTypeData((int)serviceType.Id, serviceType.Label))
             .AsAsyncEnumerable();
+    
+    ///<inheritdoc />
+    public IAsyncEnumerable<LicenseTypeData> GetLicenseTypeData()=>
+        _dbContext.LicenseTypes.AsNoTracking()
+            .Select(licenseType => new LicenseTypeData((int)licenseType.Id, licenseType.Label))
+            .AsAsyncEnumerable();
 }

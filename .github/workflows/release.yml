@@ -22,10 +22,13 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
+      - '!v*.*.*-RC*'
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
+  TAG_NAME: ${{ github.ref_name }}
   IMAGE_NAME_ADMINISTRATION: ${{ github.repository }}_administration-service
   IMAGE_NAME_REGISTRATION: ${{ github.repository }}_registration-service
   IMAGE_NAME_PROVISIONING: ${{ github.repository }}_provisioning-service
@@ -35,7 +38,7 @@ env:
   IMAGE_NAME_NOTIFICATION: ${{ github.repository }}_notification-service
   IMAGE_NAME_SERVICES: ${{ github.repository }}_services-service
   IMAGE_NAME_PROVISIONING_MIGRATIONS: ${{ github.repository }}_provisioning-migrations
-  IMAGE_NAME_CHECKLIST_WORKER: ${{ github.repository }}_checklist-worker
+  IMAGE_NAME_PROCESSES_WORKER: ${{ github.repository }}_processes-worker
 
 jobs:
   administration-service-release:
@@ -45,10 +48,6 @@ jobs:
       packages: write
 
     steps:
-      - name: Get tag name
-        id: git-tag
-        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -72,20 +71,16 @@ jobs:
           file: docker/Dockerfile-administration-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_ADMINISTRATION }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_ADMINISTRATION }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_ADMINISTRATION }}:${{ env.TAG_NAME }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_ADMINISTRATION }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
-  checklist-worker-release:
+  processes-worker-release:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
 
     steps:
-      - name: Get tag name
-        id: git-tag
-        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -100,16 +95,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CHECKLIST_WORKER }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/Dockerfile-checklist-worker
+          file: docker/Dockerfile-processes-worker
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CHECKLIST_WORKER }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CHECKLIST_WORKER }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}:${{ env.TAG_NAME }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   registration-service-release:
@@ -119,10 +114,6 @@ jobs:
       packages: write
 
     steps:
-      - name: Get tag name
-        id: git-tag
-        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -146,7 +137,7 @@ jobs:
           file: docker/Dockerfile-registration-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_REGISTRATION }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_REGISTRATION }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_REGISTRATION }}:${{ env.TAG_NAME }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_REGISTRATION }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   provisioning-service-release:
@@ -156,10 +147,6 @@ jobs:
       packages: write
 
     steps:
-      - name: Get tag name
-        id: git-tag
-        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -183,7 +170,7 @@ jobs:
           file: docker/Dockerfile-provisioning-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING }}:${{ env.TAG_NAME }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   marketplace-app-service-release:
@@ -193,10 +180,6 @@ jobs:
       packages: write
 
     steps:
-      - name: Get tag name
-        id: git-tag
-        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -220,7 +203,7 @@ jobs:
           file: docker/Dockerfile-marketplace-app-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}:${{ env.TAG_NAME }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   portal-migrations-release:
@@ -230,10 +213,6 @@ jobs:
       packages: write
 
     steps:
-      - name: Get tag name
-        id: git-tag
-        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -257,7 +236,7 @@ jobs:
           file: docker/Dockerfile-portal-migrations
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}:${{ env.TAG_NAME }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   maintenance-service-release:
@@ -267,10 +246,6 @@ jobs:
       packages: write
 
     steps:
-      - name: Get tag name
-        id: git-tag
-        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -294,7 +269,7 @@ jobs:
           file: docker/Dockerfile-maintenance-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MAINTENANCE }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MAINTENANCE }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MAINTENANCE }}:${{ env.TAG_NAME }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MAINTENANCE }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   notification-service-release:
@@ -304,10 +279,6 @@ jobs:
       packages: write
 
     steps:
-      - name: Get tag name
-        id: git-tag
-        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -331,7 +302,7 @@ jobs:
           file: docker/Dockerfile-notification-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_NOTIFICATION }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_NOTIFICATION }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_NOTIFICATION }}:${{ env.TAG_NAME }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_NOTIFICATION }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   services-service-release:
@@ -341,10 +312,6 @@ jobs:
       packages: write
 
     steps:
-      - name: Get tag name
-        id: git-tag
-        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -368,7 +335,7 @@ jobs:
           file: docker/Dockerfile-services-service
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVICES }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVICES }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVICES }}:${{ env.TAG_NAME }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVICES }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   provisioning-migrations-release:
@@ -378,10 +345,6 @@ jobs:
       packages: write
 
     steps:
-      - name: Get tag name
-        id: git-tag
-        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -405,21 +368,16 @@ jobs:
           file: docker/Dockerfile-provisioning-migrations
           pull: true
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}:${{ steps.git-tag.outputs.git-version }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}:${{ env.TAG_NAME }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   auth-and-dispatch:
-    needs: [ administration-service-release, registration-service-release, provisioning-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release, services-service-release, provisioning-migrations-release, checklist-worker-release ]
+    needs: [ administration-service-release, registration-service-release, provisioning-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release, services-service-release, provisioning-migrations-release, processes-worker-release ]
     runs-on: ubuntu-latest
 
     steps:
-
-      - name: Get tag name
-        id: git-tag
-        run: echo ::set-output name=git-version::${GITHUB_REF/refs\/tags\//}
-
       - name: Set env
-        run: echo "RELEASE_VERSION=${{ steps.git-tag.outputs.git-version }}" >> $GITHUB_ENV
+        run: echo "RELEASE_VERSION=${{ env.TAG_NAME }}" >> $GITHUB_ENV
 
       - name: Get token
         id: get_workflow_token

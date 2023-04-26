@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 using System.Text.Json;
 using Xunit;
 
@@ -48,6 +49,7 @@ public class NotificationServiceTests
     private readonly IUserRepository _userRepository;
     private readonly INotificationRepository _notificationRepository;
     private readonly List<Notification> _notifications = new();
+    private readonly INotificationService _sut;
 
     public NotificationServiceTests()
     {
@@ -66,6 +68,8 @@ public class NotificationServiceTests
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
 
         SetupFakes();
+
+        _sut = new NotificationService(_portalRepositories);
     }
 
     #region Create Notification
@@ -78,7 +82,6 @@ public class NotificationServiceTests
         {
             { ClientId, new []{ "CX Admin" } }
         };
-        var sut = new NotificationService(_portalRepositories);
         var notificationContent = new
         {
             appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
@@ -90,7 +93,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        var userIds = await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+        var userIds = await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(1);
@@ -106,7 +109,6 @@ public class NotificationServiceTests
         {
             { ClientId, new []{ "CX Admin" } }
         };
-        var sut = new NotificationService(_portalRepositories);
 
         // Act
         var notificationContent = new
@@ -123,7 +125,7 @@ public class NotificationServiceTests
             new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION)
         };
 
-        var userIds = await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+        var userIds = await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(5);
@@ -143,7 +145,6 @@ public class NotificationServiceTests
         {
             { ClientId, new []{ "Company Admin" } }
         };
-        var sut = new NotificationService(_portalRepositories);
         var notificationContent = new
         {
             appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
@@ -155,7 +156,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        var userIds = await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+        var userIds = await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(3);
@@ -177,7 +178,6 @@ public class NotificationServiceTests
         {
             { ClientId, new []{ "Not Existing" } }
         };
-        var sut = new NotificationService(_portalRepositories);
         var notificationContent = new
         {
             appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
@@ -189,7 +189,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        async Task Action() => await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+        async Task Action() => await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable(), Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
 
         // Assert
         await Assert.ThrowsAsync<ConfigurationException>(Action);
@@ -207,7 +207,6 @@ public class NotificationServiceTests
         {
             { ClientId, new []{ "CX Admin" } }
         };
-        var sut = new NotificationService(_portalRepositories);
         var notificationContent = new
         {
             appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
@@ -219,7 +218,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
+        await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(1);
@@ -234,7 +233,6 @@ public class NotificationServiceTests
         {
             { ClientId, new []{ "CX Admin" } }
         };
-        var sut = new NotificationService(_portalRepositories);
 
         // Act
         var notificationContent = new
@@ -251,7 +249,7 @@ public class NotificationServiceTests
             new(JsonSerializer.Serialize(notificationContent), NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION)
         };
 
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
+        await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(5);
@@ -270,7 +268,6 @@ public class NotificationServiceTests
         {
             { ClientId, new []{ "Company Admin" } }
         };
-        var sut = new NotificationService(_portalRepositories);
         var notificationContent = new
         {
             appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
@@ -282,7 +279,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
+        await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
 
         // Assert
         _notifications.Should().HaveCount(3);
@@ -300,7 +297,6 @@ public class NotificationServiceTests
         {
             { ClientId, new []{ "Not Existing" } }
         };
-        var sut = new NotificationService(_portalRepositories);
         var notificationContent = new
         {
             appId = "5cf74ef8-e0b7-4984-a872-474828beb5d2",
@@ -312,7 +308,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        async Task Action() => await sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
+        async Task Action() => await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content.AsEnumerable()).ConfigureAwait(false);
 
         // Assert
         await Assert.ThrowsAsync<ConfigurationException>(Action);
@@ -320,6 +316,117 @@ public class NotificationServiceTests
 
     #endregion
 
+    #region SetNotificationsForOfferToDone
+    [Fact]
+    public async Task SetNotificationsForOfferToDone_WithAdditionalUsersAndMultipleNotifications_UpdatesThreeNotification()
+    {
+        // Arrange
+        var userIds = _fixture.CreateMany<Guid>(3).ToImmutableArray();
+        var notifications = _fixture.CreateMany<Guid>(3).ToImmutableArray();
+        var userRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, new []{ "Company Admin" } }
+        };
+        var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
+        A.CallTo(() => _notificationRepository.GetNotificationUpdateIds(A<IEnumerable<Guid>>._, A<IEnumerable<Guid>?>._, A<IEnumerable<NotificationTypeId>>._, A<Guid>._))
+            .Returns(notifications.ToAsyncEnumerable());
+
+        IEnumerable<Notification>? modified = null;
+
+        A.CallTo(() => _notificationRepository.AttachAndModifyNotifications(A<IEnumerable<Guid>>._, A<Action<Notification>>._))
+            .Invokes((IEnumerable<Guid> notificationIds, Action<Notification> setOptionalFields) =>
+            {
+                modified = notificationIds.Select(id => new Notification(id, Guid.Empty, default, default, false)).ToImmutableArray();
+                foreach (var notification in modified)
+                {
+                    setOptionalFields.Invoke(notification);
+                }
+            });
+
+        // Act
+        await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST,1), appId, userIds).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _notificationRepository.GetNotificationUpdateIds(
+                A<IEnumerable<Guid>>.That.IsSameSequenceAs(new [] { UserRoleId }),
+                A<IEnumerable<Guid>>.That.IsSameSequenceAs(userIds),
+                A<IEnumerable<NotificationTypeId>>.That.IsSameSequenceAs(new [] { NotificationTypeId.APP_RELEASE_REQUEST }),
+                appId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationRepository.AttachAndModifyNotifications(A<IEnumerable<Guid>>._, A<Action<Notification>>._)).MustHaveHappenedOnceExactly();
+        modified.Should().NotBeNull()
+            .And.HaveCount(3)
+            .And.Satisfy(
+                x => x.Id == notifications[0] && x.Done != null && x.Done.Value,
+                x => x.Id == notifications[1] && x.Done != null && x.Done.Value,
+                x => x.Id == notifications[2] && x.Done != null && x.Done.Value
+            );
+    }
+    
+    [Fact]
+    public async Task SetNotificationsForOfferToDone_WithMultipleUserRoleAndOneNotificationTypeId_UpdatesAllNotification()
+    {
+        // Arrange
+        var notifications = _fixture.CreateMany<Guid>(3).ToImmutableArray();
+        var userRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, new []{ "Company Admin" } }
+        };
+        var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
+        A.CallTo(() => _notificationRepository.GetNotificationUpdateIds(A<IEnumerable<Guid>>._, A<IEnumerable<Guid>?>._, A<IEnumerable<NotificationTypeId>>._, A<Guid>._))
+            .Returns(notifications.ToAsyncEnumerable());
+
+        IEnumerable<Notification>? modified = null;
+
+        A.CallTo(() => _notificationRepository.AttachAndModifyNotifications(A<IEnumerable<Guid>>._, A<Action<Notification>>._))
+            .Invokes((IEnumerable<Guid> notificationIds, Action<Notification> setOptionalFields) =>
+            {
+                modified = notificationIds.Select(id => new Notification(id, Guid.Empty, default, default, false)).ToImmutableArray();
+                foreach (var notification in modified)
+                {
+                    setOptionalFields.Invoke(notification);
+                }
+            });
+
+        // Act
+        await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST,1), appId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _notificationRepository.GetNotificationUpdateIds(
+                A<IEnumerable<Guid>>.That.IsSameSequenceAs(new [] { UserRoleId }),
+                (IEnumerable<Guid>?) null,
+                A<IEnumerable<NotificationTypeId>>.That.IsSameSequenceAs(new [] { NotificationTypeId.APP_RELEASE_REQUEST }),
+                appId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationRepository.AttachAndModifyNotifications(A<IEnumerable<Guid>>._, A<Action<Notification>>._)).MustHaveHappenedOnceExactly();
+        modified.Should().NotBeNull()
+            .And.HaveCount(3)
+            .And.Satisfy(
+                x => x.Id == notifications[0] && x.Done != null && x.Done.Value,
+                x => x.Id == notifications[1] && x.Done != null && x.Done.Value,
+                x => x.Id == notifications[2] && x.Done != null && x.Done.Value
+            );
+    }
+
+    [Fact]
+    public async Task SetNotificationsForOfferToDone_WithNotExistingRole_ThrowsException()
+    {
+        // Arrange
+        var userRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            { ClientId, new []{ "Not Existing" } }
+        };
+        var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
+
+        // Act
+        async Task Action() => await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST,1), appId).ConfigureAwait(false);
+
+        // Assert
+        await Assert.ThrowsAsync<ConfigurationException>(Action);
+    }
+    
+    #endregion
+    
     #region Setup
 
     private void SetupFakes()

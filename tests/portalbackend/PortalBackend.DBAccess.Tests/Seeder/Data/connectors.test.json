@@ -22,5 +22,29 @@
     "location_id": "DE",
     "self_description_document_id": null,
     "daps_registration_successful": null
+  },
+  {
+    "id": "7e86a0b8-6903-496b-96d1-0ef508206839",
+    "name": "Test Connector 2",
+    "connector_url": "www.google.de",
+    "type_id": 1,
+    "status_id": 1,
+    "provider_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
+    "host_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "location_id": "DE",
+    "self_description_document_id": "e020787d-1e04-4c0b-9c06-bd1cd44724b3",
+    "daps_registration_successful": null
+  },
+  {
+    "id": "7e86a0b8-6903-496b-96d1-0ef508206838",
+    "name": "Test Connector 3",
+    "connector_url": "www.google.de",
+    "type_id": 2,
+    "status_id": 1,
+    "provider_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
+    "host_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "location_id": "DE",
+    "self_description_document_id": null,
+    "daps_registration_successful": null
   }
 ]

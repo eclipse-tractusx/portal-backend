@@ -18,8 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Daps.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
@@ -29,6 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
 public class DapsService : IDapsService
 {
     private const string BaseSecurityProfile = "BASE_SECURITY_PROFILE";
+    private static readonly JsonSerializerOptions Options = new (){ PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly ITokenService _tokenService;
     private readonly DapsSettings _settings;
 
@@ -44,13 +48,13 @@ public class DapsService : IDapsService
     }
 
     /// <inheritdoc />
-    public Task<bool> EnableDapsAuthAsync(string clientName, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken)
+    public Task<DapsResponse?> EnableDapsAuthAsync(string clientName, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken)
     {
         connectorUrl.EnsureValidHttpUrl(() => nameof(connectorUrl));
         return HandleRequest(clientName, connectorUrl, businessPartnerNumber, formFile, cancellationToken);
     }
 
-    private async Task<bool> HandleRequest(string clientName, string connectorUrl, string businessPartnerNumber,
+    private async Task<DapsResponse?> HandleRequest(string clientName, string connectorUrl, string businessPartnerNumber,
         IFormFile formFile, CancellationToken cancellationToken)
     {
         var httpClient = await _tokenService.GetAuthorizedClient<DapsService>(_settings, cancellationToken).ConfigureAwait(false);
@@ -63,8 +67,29 @@ public class DapsService : IDapsService
         multiPartStream.Add(new StringContent(BaseSecurityProfile), "securityProfile");
         multiPartStream.Add(new StringContent(connectorUrl.AppendToPathEncoded(businessPartnerNumber)), "referringConnector");
 
-        await httpClient.PostAsync(string.Empty, multiPartStream, cancellationToken)
+        var result = await httpClient.PostAsync(string.Empty, multiPartStream, cancellationToken)
             .CatchingIntoServiceExceptionFor("daps-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+        return await result.Content.ReadFromJsonAsync<DapsResponse>(Options, cancellationToken)
+            .ConfigureAwait(false); 
+    }
+    /// <inheritdoc />
+    public async Task<bool> DeleteDapsClient(string dapsClientId, CancellationToken cancellationToken)
+    {
+        var httpClient = await _tokenService.GetAuthorizedClient<DapsService>(_settings, cancellationToken).ConfigureAwait(false);
+        await httpClient.DeleteAsync(dapsClientId, cancellationToken)
+            .CatchingIntoServiceExceptionFor("daps-delete", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+
+        return true;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> UpdateDapsConnectorUrl(string dapsClientId, string connectorUrl, string businessPartnerNumber,
+        CancellationToken cancellationToken)
+    {
+        var dapsUpdate = new DapsUpdateData(connectorUrl.AppendToPathEncoded(businessPartnerNumber));
+        var httpClient = await _tokenService.GetAuthorizedClient<DapsService>(_settings, cancellationToken).ConfigureAwait(false);
+        await httpClient.PutAsJsonAsync(dapsClientId, dapsUpdate, cancellationToken)
+            .CatchingIntoServiceExceptionFor("daps-update", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
         return true;
     }

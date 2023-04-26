@@ -36,9 +36,8 @@
   </ItemGroup>
   <ItemGroup>
     <SonarQubeSetting Include="sonar.coverage.exclusions">
-      <Value>AuditCompanyAssignedApp.cs</Value>
-      <Value>AuditCompanyUser.cs</Value>
-      <Value>PortalDbContext.cs</Value>
+      <Value>**/PortalDbContext.cs</Value>
+      <Value>**/AuditEntities/*.cs</Value>
     </SonarQubeSetting>
   </ItemGroup>
 

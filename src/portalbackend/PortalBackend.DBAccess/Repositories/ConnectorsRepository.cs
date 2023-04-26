@@ -18,11 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Microsoft.EntityFrameworkCore;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -44,12 +45,34 @@ public class ConnectorsRepository : IConnectorsRepository
     public IQueryable<Connector> GetAllCompanyConnectorsForIamUser(string iamUserId) =>
         _context.IamUsers.AsNoTracking()
             .Where(u => u.UserEntityId == iamUserId)
-            .SelectMany(u => u.CompanyUser!.Company!.ProvidedConnectors);
+            .SelectMany(u => u.CompanyUser!.Company!.ProvidedConnectors.Where(c => c.StatusId != ConnectorStatusId.INACTIVE));
+
+    /// <inheritdoc/>
+    public Func<int,int,Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForIamUser(string iamUserId) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            _context.Connectors.AsNoTracking()
+                .Where(c => c.Host!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId) &&
+                            c.StatusId != ConnectorStatusId.INACTIVE &&
+                            c.TypeId == ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
+                .GroupBy(c => c.HostId),
+            connectors => connectors.OrderByDescending(connector => connector.Name),
+            c => new ManagedConnectorData(
+                    c.Name,
+                    c.Location!.Alpha2Code,
+                    c.Id,
+                    c.TypeId,
+                    c.StatusId,
+                    c.DapsRegistrationSuccessful,
+                    c.Provider!.Name,
+                    c.SelfDescriptionDocumentId)
+        ).SingleOrDefaultAsync();
 
     public Task<(ConnectorData ConnectorData, bool IsProviderUser)> GetConnectorByIdForIamUser(Guid connectorId, string iamUser) =>
         _context.Connectors
             .AsNoTracking()
-            .Where(connector => connector.Id == connectorId)
+            .Where(connector => connector.Id == connectorId && connector.StatusId != ConnectorStatusId.INACTIVE)
             .Select(connector => new ValueTuple<ConnectorData, bool>(
                 new ConnectorData(
                     connector.Name,
@@ -70,7 +93,7 @@ public class ConnectorsRepository : IConnectorsRepository
     public Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, string iamUser) =>
         _context.Connectors
             .AsNoTracking()
-            .Where(connector => connector.Id == connectorId)
+            .Where(connector => connector.Id == connectorId && connector.StatusId != ConnectorStatusId.INACTIVE)
             .Select(connector => new ValueTuple<ConnectorInformationData, bool>(
                 new ConnectorInformationData(connector.Name, connector.Provider!.BusinessPartnerNumber!, connector.Id, connector.ConnectorUrl),
                 connector.Provider!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUser)
@@ -83,22 +106,6 @@ public class ConnectorsRepository : IConnectorsRepository
         var connector = new Connector(Guid.NewGuid(), name, location, connectorUrl);
         setupOptionalFields?.Invoke(connector);
         return _context.Connectors.Add(connector).Entity;
-    }
-
-    /// <inheritdoc/>
-    public async Task DeleteConnectorAsync(Guid connectorId)
-    {
-        try
-        {
-            var connector = new Connector(connectorId, string.Empty, string.Empty, string.Empty);
-            _context.Connectors.Attach(connector);
-            _context.Connectors.Remove(connector);
-            await _context.SaveChangesAsync().ConfigureAwait(false);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            throw new NotFoundException("Connector with provided ID does not exist.");
-        }
     }
     
     /// <inheritdoc/>
@@ -125,7 +132,41 @@ public class ConnectorsRepository : IConnectorsRepository
     /// <inheritdoc />
     public Task<(Guid ConnectorId, Guid? SelfDescriptionDocumentId)> GetConnectorDataById(Guid connectorId) =>
         _context.Connectors
-            .Where(x => x.Id == connectorId)
+            .Where(x => x.Id == connectorId && x.StatusId != ConnectorStatusId.INACTIVE)
             .Select(x => new ValueTuple<Guid, Guid?>(x.Id, x.SelfDescriptionDocumentId))
+            .SingleOrDefaultAsync();
+    
+    /// <inheritdoc />
+    public Task<(bool IsConnectorIdExist, string? DapsClientId, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus)> GetConnectorDeleteDataAsync(Guid connectorId) =>
+        _context.Connectors
+            .Where(x => x.Id == connectorId)
+            .Select(connector => new ValueTuple<bool, string?, Guid?, DocumentStatusId?, ConnectorStatusId>(
+                true,
+                connector.ClientDetails == null ? null : connector.ClientDetails!.ClientId,
+                connector.SelfDescriptionDocumentId,
+                connector.SelfDescriptionDocument!.DocumentStatusId,
+                connector.StatusId
+            )).SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public void CreateConnectorClientDetails(Guid connectorId, string dapsClientId) =>
+        _context.ConnectorClientDetails.Add(new ConnectorClientDetail(connectorId, dapsClientId));
+
+    /// <inheritdoc />
+    public void DeleteConnectorClientDetails(Guid connectorId) => 
+        _context.ConnectorClientDetails.Remove(new ConnectorClientDetail(connectorId, null!));
+
+    /// <inheritdoc />
+    public Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, string iamUser) =>
+        _context.Connectors
+            .Where(c => c.Id == connectorId)
+            .Select(c => new ConnectorUpdateInformation(
+                c.StatusId,
+                c.TypeId,
+                c.Host!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUser),
+                c.ConnectorUrl,
+                c.Provider!.BusinessPartnerNumber,
+                c.ClientDetails!.ClientId
+            ))
             .SingleOrDefaultAsync();
 }

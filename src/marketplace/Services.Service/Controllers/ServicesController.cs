@@ -69,24 +69,6 @@ public class ServicesController : ControllerBase
         _serviceBusinessLogic.GetAllActiveServicesAsync(page, size, sorting, serviceTypeId);
 
     /// <summary>
-    /// Creates a new service offering.
-    /// </summary>
-    /// <param name="data">The data for the new service offering.</param>
-    /// <remarks>Example: POST: /api/services/addservice</remarks>
-    /// <response code="201">Returns the newly created service id.</response>
-    /// <response code="400">The given service offering data were invalid.</response>
-    [HttpPost]
-    [Route("addservice")]
-    [Authorize(Roles = "add_service_offering")]
-    [ProducesResponseType(typeof(OfferProviderResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<CreatedAtRouteResult> CreateServiceOffering([FromBody] ServiceOfferingData data)
-    {
-        var id = await this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateServiceOfferingAsync(data, iamUserId)).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(ServiceReleaseController.GetServiceDetailsForStatusAsync), new { controller = "ServiceRelease", serviceId = id }, id);
-    }
-
-    /// <summary>
     /// Adds a new service subscription.
     /// </summary>
     /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service the user wants to subscribe to.</param>
@@ -183,31 +165,6 @@ public class ServicesController : ControllerBase
         => await this.WithIamUserId(iamUserId => _serviceBusinessLogic.AutoSetupServiceAsync(data, iamUserId));
 
     /// <summary>
-    /// Updates the service
-    /// </summary>
-    /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service to update.</param>
-    /// <param name="data">The request data to update the service</param>
-    /// <remarks>Example: PUT: /api/services/{serviceId}</remarks>
-    /// <response code="204">Service was successfully updated.</response>
-    /// <response code="400">Offer Subscription is not in state created or user is not in the same company.</response>
-    /// <response code="404">Offer Subscription not found.</response>
-    /// <response code="403">User don't have permission to change the service.</response>
-    /// <response code="409">Service is in inCorrect state</response>
-    [HttpPut]
-    [Route("{serviceId:guid}")]
-    [Authorize(Roles = "update_service_offering")]
-    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<NoContentResult> UpdateService([FromRoute] Guid serviceId, [FromBody] ServiceUpdateRequestData data)
-    {
-        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.UpdateServiceAsync(serviceId, data, iamUserId));
-        return NoContent();
-    }
-    
-    /// <summary>
     /// Retrieves subscription statuses of provided services of the currently logged in user's company.
     /// </summary>
     /// <remarks>Example: GET: /api/services/provided/subscription-status</remarks>
@@ -220,107 +177,6 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null) =>
         this.WithIamUserId(userId => _serviceBusinessLogic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(page, size, userId, sorting, statusId));
-
-    /// <summary>
-    /// Submit an Service for release
-    /// </summary>
-    /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the service.</param>
-    /// <remarks>Example: PUT: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/submit</remarks>
-    /// <response code="204">The service was successfully submitted for release.</response>
-    /// <response code="400">Either the sub claim is empty/invalid, user does not exist or the subscription might not have the correct status or the companyID is incorrect.</response>
-    /// <response code="404">service does not exist.</response>
-    [HttpPut]
-    [Route("{serviceId:guid}/submit")]
-    [Authorize(Roles = "add_service_offering")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<NoContentResult> SubmitService([FromRoute] Guid serviceId)
-    {
-        await this.WithIamUserId(userId => _serviceBusinessLogic.SubmitServiceAsync(serviceId, userId)).ConfigureAwait(false);
-        return NoContent();
-    }
-
-    /// <summary>
-    /// Approve Service to change status from IN_REVIEW to Active and create notification
-    /// </summary>
-    /// <param name="serviceId"></param>
-    /// <remarks>Example: PUT: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/approveService</remarks>
-    /// <response code="204">The service was successfully submitted to Active State.</response>
-    /// <response code="409">Service is in InCorrect Status</response>
-    /// <response code="404">service does not exist.</response>
-    /// <response code="500">Internal server error</response>
-    [HttpPut]
-    [Route("{serviceId}/approveService")]
-    [Authorize(Roles = "approve_service_release")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<NoContentResult> ApproveServiceRequest([FromRoute] Guid serviceId)
-    {
-        await this.WithIamUserId(userId => _serviceBusinessLogic.ApproveServiceRequestAsync(serviceId, userId)).ConfigureAwait(false);
-        return NoContent();
-    }
-
-    /// <summary>
-    /// Declines the service request
-    /// </summary>
-    /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the service that should be declined</param>
-    /// <param name="data">the data of the decline request</param>
-    /// <remarks>Example: PUT: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/decline</remarks>
-    /// <response code="204">NoContent.</response>
-    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
-    /// <response code="404">If service does not exists.</response>
-    /// <response code="403">User doest not have permission to change</response>
-    /// <response code="409">Offer Type is in inCorrect state.</response>
-    /// <response code="500">Internal Server Error.</response>
-    [HttpPut]
-    [Route("{serviceId:guid}/declineService")]
-    [Authorize(Roles = "decline_service_release")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<NoContentResult> DeclineServiceRequest([FromRoute] Guid serviceId, [FromBody] OfferDeclineRequest data)
-    {
-        await this.WithIamUserId(userId => _serviceBusinessLogic.DeclineServiceRequestAsync(serviceId, userId, data)).ConfigureAwait(false);
-        return NoContent();
-    }
-
-    /// <summary>
-    /// Upload document for active service in the marketplace for given serviceId for same company as user
-    /// </summary>
-    /// <param name="serviceId"></param>
-    /// <param name="documentTypeId"></param>
-    /// <param name="document"></param>
-    /// <param name="cancellationToken"></param>
-    /// <remarks>Example: PUT: /api/services/updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents</remarks>
-    /// <response code="204">Successfully uploaded the document</response>
-    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
-    /// <response code="404">service does not exist.</response>
-    /// <response code="403">The user is not assigned with the service.</response>
-    /// <response code="415">Only PDF files are supported.</response>
-    /// <response code="409">Offer is in inCorrect State.</response>
-    [HttpPut]
-    [Route("updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents")]
-    [Authorize(Roles = "add_service_offering")]
-    [Consumes("multipart/form-data")]
-    [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
-    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
-    public async Task<NoContentResult> UpdateServiceDocumentAsync([FromRoute] Guid serviceId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
-    {
-        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.CreateServiceDocumentAsync(serviceId, documentTypeId, document, iamUserId, cancellationToken));
-        return NoContent();
-    }
 
     /// <summary>
     /// Retrieve Document Content for Service by ID
@@ -346,7 +202,7 @@ public class ServicesController : ControllerBase
         var (content, contentType, fileName) = await _serviceBusinessLogic.GetServiceDocumentContentAsync(serviceId, documentId, cancellationToken).ConfigureAwait(false);
         return File(content, contentType, fileName);
     }
-
+    
     /// <summary>
     /// Retrieves all in review status service in the marketplace .
     /// </summary>
@@ -364,4 +220,40 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<AllOfferStatusData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, [FromQuery] string? offerName = null, [FromQuery] ServiceStatusIdFilter? statusId = null) =>
         this.WithIamUserId(userId =>_serviceBusinessLogic.GetCompanyProvidedServiceStatusDataAsync(page, size, userId, sorting, offerName, statusId));
+
+    /// <summary>
+    /// Retrieve the technical user profile information
+    /// </summary>
+    /// <param name="serviceId">id of the service to receive the technical user profiles for</param>
+    /// <remarks>Example: GET: /api/services/{serviceId}/technical-user-profiles</remarks>
+    /// <response code="200">Returns a list of profiles</response>
+    /// <response code="403">Requesting user is not part of the providing company for the service.</response>
+    [HttpGet]
+    [Route("{serviceId}/technical-user-profiles")]
+    [Authorize(Roles = "add_service_offering")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfiles([FromRoute] Guid serviceId) =>
+        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetTechnicalUserProfilesForOffer(serviceId, iamUserId));
+
+    /// <summary>
+    /// Creates and updates the technical user profiles
+    /// </summary>
+    /// <param name="serviceId">id of the service to receive the technical user profiles for</param>
+    /// <param name="data">The data for the update of the technical user profile</param>
+    /// <remarks>Example: GET: /api/services/{serviceId}/technical-user-profiles</remarks>
+    /// <response code="200">Returns a list of profiles</response>
+    /// <response code="403">Requesting user is not part of the providing company for the service.</response>
+    [HttpPut]
+    [Route("{serviceId}/technical-user-profiles")]
+    [Authorize(Roles = "add_service_offering")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public async Task<NoContentResult> CreateAndUpdateTechnicalUserProfiles([FromRoute] Guid serviceId, [FromBody] IEnumerable<TechnicalUserProfileData> data)
+    {
+        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.UpdateTechnicalUserProfiles(serviceId, data, iamUserId)).ConfigureAwait(false);
+        return NoContent();
+    }
 }

@@ -40,6 +40,7 @@ public class OfferService : IOfferService
     private readonly IPortalRepositories _portalRepositories;
     private readonly INotificationService _notificationService;
     private readonly IMailingService _mailingService;
+    private readonly IOfferSetupService _offerSetupService;
 
     /// <summary>
     /// Constructor.
@@ -47,13 +48,16 @@ public class OfferService : IOfferService
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="notificationService">Creates notifications for the user</param>
     /// <param name="mailingService">Mailing service to send mails to the user</param>
+    /// <param name="offerSetupService">The offer Setup Service</param>
     public OfferService(IPortalRepositories portalRepositories,
         INotificationService notificationService,
-        IMailingService mailingService)
+        IMailingService mailingService,
+        IOfferSetupService offerSetupService)
     {
         _portalRepositories = portalRepositories;
         _notificationService = notificationService;
         _mailingService = mailingService;
+        _offerSetupService = offerSetupService;
     }
 
     /// <inheritdoc />
@@ -169,7 +173,7 @@ public class OfferService : IOfferService
         }
 
         var ConsentStatusdata = _portalRepositories.GetInstance<IConsentRepository>()
-            .AddAttachAndModifyConsents(
+            .AddAttachAndModifyOfferConsents(
                 dbAgreements,
                 offerAgreementConsent.Agreements,
                 offerId,
@@ -222,11 +226,12 @@ public class OfferService : IOfferService
             service.OfferStatusId = OfferStatusId.CREATED;
             service.ProviderCompanyId = iamUserResult.CompanyId;
             service.MarketingUrl = data.ProviderUri;
+            service.LicenseTypeId = LicenseTypeId.COTS;
         });
         var licenseId = offerRepository.CreateOfferLicenses(data.Price).Id;
         offerRepository.CreateOfferAssignedLicense(service.Id, licenseId);
         
-        offerRepository.AddServiceAssignedServiceTypes(data.ServiceTypeIds.Select(id => (service.Id, id, id == ServiceTypeId.DATASPACE_SERVICE))); // TODO (PS): Must be refactored, customer needs to define whether the service needs a technical User
+        offerRepository.AddServiceAssignedServiceTypes(data.ServiceTypeIds.Select(id => (service.Id, id)));
         offerRepository.AddOfferDescriptions(data.Descriptions.Select(d =>
             new ValueTuple<Guid, string, string, string>(service.Id, d.LanguageCode, d.LongDescription, d.ShortDescription)));
 
@@ -395,7 +400,7 @@ public class OfferService : IOfferService
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(catenaAdminRoles, requesterId, content).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(catenaAdminRoles, requesterId, content, false).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -430,7 +435,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc/>
-    public async Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> approveOfferRoles)
+    public async Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var offerDetails = await offerRepository.GetOfferStatusDataByIdAsync(offerId, offerTypeId).ConfigureAwait(false);
@@ -466,6 +471,11 @@ public class OfferService : IOfferService
             offer.OfferStatusId = OfferStatusId.ACTIVE;
             offer.DateReleased = DateTime.UtcNow;
         });
+
+        var technicalUserIds = offerTypeId == OfferTypeId.APP && offerDetails.IsSingleInstance
+            ? await _offerSetupService.ActivateSingleInstanceAppAsync(offerId).ConfigureAwait(false)
+            : null;
+
         object notificationContent = offerTypeId switch
         {
             OfferTypeId.SERVICE => new
@@ -474,21 +484,24 @@ public class OfferService : IOfferService
                 ServiceName = offerDetails.OfferName
             },
             OfferTypeId.APP => new
-                {
-                    OfferId = offerId,
-                    AppName = offerDetails.OfferName
-                },
+            {
+                OfferId = offerId,
+                AppName = offerDetails.OfferName,
+                TechnicalUserIds = technicalUserIds
+            },
             _ => throw new UnexpectedConditionException($"offerTypeId {offerTypeId} is not implemented yet")
         };
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
-        var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+        var content = approveOfferNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
         await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content, offerDetails.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
+        await _notificationService.SetNotificationsForOfferToDone(catenaAdminRoles, submitOfferNotificationTypeIds, offerId).ConfigureAwait(false);
+        
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string,IEnumerable<string>> notificationRecipients, string basePortalAddress)
+    public async Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string,IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var declineData = await offerRepository.GetOfferDeclineDataAsync(offerId, iamUserId, offerType).ConfigureAwait(false);
@@ -531,6 +544,8 @@ public class OfferService : IOfferService
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = Enumerable.Repeat(notificationTypeId, 1).Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
         await _notificationService.CreateNotifications(notificationRecipients, requesterId, content, declineData.CompanyId.Value).AwaitAll().ConfigureAwait(false);
+        await _notificationService.SetNotificationsForOfferToDone(catenaAdminRoles, submitOfferNotificationTypeIds, offerId).ConfigureAwait(false);
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         
         await SendMail(notificationRecipients, declineData.OfferName, basePortalAddress, data.Message, declineData.CompanyId.Value);
@@ -605,34 +620,45 @@ public class OfferService : IOfferService
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task UploadDocumentAsync(Guid Id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offertypeId, IEnumerable<DocumentTypeId> documentTypeIdSettings, IEnumerable<string> contentTypeSettings, CancellationToken cancellationToken)
+    public async Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, IDictionary<DocumentTypeId, IEnumerable<string>> uploadDocumentTypeIdSettings, CancellationToken cancellationToken)
     {
-        if (Id == Guid.Empty)
-            throw new ControllerArgumentException($"{offertypeId}id should not be null");
+        if (id == Guid.Empty)
+        {
+            throw new ControllerArgumentException($"{offerTypeId}id should not be null");
+        }
 
         if (string.IsNullOrEmpty(document.FileName))
+        {
             throw new ControllerArgumentException("File name should not be null");
+        }
 
-        if (!documentTypeIdSettings.Contains(documentTypeId))
-            throw new ControllerArgumentException($"documentType must be either: {string.Join(",", documentTypeIdSettings)}");
-
+        if (!uploadDocumentTypeIdSettings.TryGetValue(documentTypeId, out var uploadContentTypeSettings))
+        {
+            throw new ControllerArgumentException($"documentType must be either: {string.Join(",", uploadDocumentTypeIdSettings.Keys)}");
+        }
         // Check if document is a pdf,jpeg and png file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
         var documentContentType = document.ContentType;
-        if (!contentTypeSettings.Contains(documentContentType))
-            throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType :{string.Join(",", contentTypeSettings)} are allowed.");
+        if (!uploadContentTypeSettings.Contains(documentContentType))
+        {
+            throw new UnsupportedMediaTypeException($"Document type {documentTypeId} is not supported. File with contentType :{string.Join(",", uploadContentTypeSettings)} are allowed.");
+        }
         
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(Id, iamUserId, OfferStatusId.CREATED, offertypeId).ConfigureAwait(false);
+        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, iamUserId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
 
         if (result == default)
-            throw new NotFoundException($"{offertypeId} {Id} does not exist");
+        {
+            throw new NotFoundException($"{offerTypeId} {id} does not exist");
+        }
 
         if(!result.IsStatusCreated)
             throw new ConflictException($"offerStatus is in Incorrect State");
 
         var companyUserId = result.CompanyUserId;
         if (companyUserId == Guid.Empty)
-            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of {offertypeId} {Id}");
+        {
+            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of {offerTypeId} {id}");
+        }
 
         var documentName = document.FileName;
         using var sha512Hash = SHA512.Create();
@@ -642,13 +668,15 @@ public class OfferService : IOfferService
         var hash = sha512Hash.ComputeHash(ms);
         var documentContent = ms.GetBuffer();
         if (ms.Length != document.Length || documentContent.Length != document.Length)
+        {
             throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
+        }
         
         var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, documentContentType.ParseMediaTypeId(), documentTypeId, x =>
         {
             x.CompanyUserId = companyUserId;
         });
-        _portalRepositories.GetInstance<IOfferRepository>().CreateOfferAssignedDocument(Id, doc.Id);
+        _portalRepositories.GetInstance<IOfferRepository>().CreateOfferAssignedDocument(id, doc.Id);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -731,6 +759,74 @@ public class OfferService : IOfferService
 
         _portalRepositories.GetInstance<IOfferRepository>().RemoveOfferAssignedDocument(offer.OfferId, documentId);
         _portalRepositories.GetInstance<IDocumentRepository>().RemoveDocument(documentId);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    public async Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId, OfferTypeId offerTypeId)
+    {
+        var result = await _portalRepositories.GetInstance<ITechnicalUserProfileRepository>()
+            .GetTechnicalUserProfileInformation(offerId, iamUserId, offerTypeId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new NotFoundException($"Offer {offerId} does not exist");
+        }
+
+        if (!result.IsUserOfProvidingCompany)
+        {
+            throw new ForbiddenException($"User {iamUserId} is not in providing company");
+        }
+
+        return result.Information;
+    }
+
+    /// <inheritdoc />
+    public async Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, string iamUserId, string technicalUserProfileClient)
+    {
+        var technicalUserProfileRepository = _portalRepositories.GetInstance<ITechnicalUserProfileRepository>();
+        var offerProfileData = await technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, iamUserId).ConfigureAwait(false);
+        var roles = await _portalRepositories.GetInstance<IUserRolesRepository>()
+            .GetRolesForClient(technicalUserProfileClient)
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        if (offerProfileData == null)
+        {
+            throw new NotFoundException($"Offer {offerTypeId} {offerId} does not exist");
+        }
+
+        if (!offerProfileData.IsProvidingCompanyUser)
+        {
+            throw new ForbiddenException($"User {iamUserId} is not in providing company");
+        }
+
+        if (offerProfileData.ServiceTypeIds?.All(x => x == ServiceTypeId.CONSULTANCE_SERVICE) ?? false)
+        {
+            throw new ConflictException("Technical User Profiles can't be set for CONSULTANCE_SERVICE");
+        }
+
+        var notExistingRoles = data.SelectMany(ur => ur.UserRoleIds).Except(roles);
+        if (notExistingRoles.Any())
+        {
+            throw new ConflictException($"Roles {string.Join(",", notExistingRoles)} do not exist");
+        }
+
+        technicalUserProfileRepository.CreateDeleteTechnicalUserProfileAssignedRoles(
+            offerProfileData.ProfileData.SelectMany(profileData => profileData.UserRoleIds.Select(roleId => (profileData.TechnicalUserProfileId, roleId))).ToList(),
+            data.Select(profileData => (
+                    TechnicalUserProfileId: profileData.TechnicalUserProfileId == null
+                        ? technicalUserProfileRepository.CreateTechnicalUserProfile(Guid.NewGuid(), offerId).Id
+                        : profileData.TechnicalUserProfileId.Value,
+                    profileData.UserRoleIds))
+                .SelectMany(data => data.UserRoleIds.Select(roleId => (data.TechnicalUserProfileId, roleId))).ToList());
+        
+        technicalUserProfileRepository.RemoveTechnicalUserProfiles(
+            offerProfileData.ProfileData
+                .ExceptBy(
+                    data.Where(x => x.TechnicalUserProfileId != null)
+                        .Select(x => x.TechnicalUserProfileId!.Value),
+                    x => x.TechnicalUserProfileId)
+                .Select(x => x.TechnicalUserProfileId));
+
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

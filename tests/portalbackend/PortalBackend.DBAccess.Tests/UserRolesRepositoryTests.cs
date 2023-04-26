@@ -84,6 +84,23 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetRolesForClient
+    
+    [Fact]
+    public async Task GetRolesForClient_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetRolesForClient("Cl1-CX-Registration").ToListAsync().ConfigureAwait(false);
+        
+        // Assert
+        data.Should().HaveCount(3);
+    }
+
+    #endregion
+
     private async Task<UserRolesRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
