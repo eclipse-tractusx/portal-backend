@@ -438,7 +438,7 @@ jobs:
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
           include: 'Org.CatenaX.Ng.Portal.Backend.Provisioning.Migrations.dll'
 
-  analyze-checklist-worker:
+  analyze-processes-worker:
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -465,18 +465,18 @@ jobs:
 
       - name: "Bundle files to scan"
         run: >
-          zip -r portal-backend-checklist-worker.zip
+          zip -r portal-backend-processes-worker.zip
           src/processes/Processes.Worker/.publish
 
       - name: Run Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.1
         with:
           # Specify Veracode application name
-          appname: "Portal-Backend_Checklist-Worker"
+          appname: "Portal-Backend_Processes-Worker"
           createprofile: true
           teams: 'portal'
           # Specify path to upload
-          filepath: "portal-backend-checklist-worker.zip"
+          filepath: "portal-backend-processes-worker.zip"
           vid: "${{ secrets.ORG_VERACODE_API_ID }}"
           vkey: "${{ secrets.ORG_VERACODE_API_KEY }}"
           include: 'Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.dll'
