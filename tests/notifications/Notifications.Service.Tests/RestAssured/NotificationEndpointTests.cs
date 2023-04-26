@@ -1,24 +1,24 @@
-using AutoFixture;
 using Microsoft.Extensions.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit;
 using static RestAssured.Dsl;
 
 namespace Notifications.Service.Tests.RestAssured;
 
+[TestCaseOrderer("Notifications.Service.Tests.RestAssured.AlphabeticalOrderer",
+    "Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests")]
 public class NotificationEndpointTests
 {
-    private readonly IFixture _fixture;
     private readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
     private readonly string _endPoint = "/api/notification";
     private readonly Guid _companyUserId;
     private readonly string _token;
-
-    // private readonly string _notificationId;
+    private static string _notificationId = "";
 
     public NotificationEndpointTests()
     {
-        _fixture = new Fixture();
         var configuration = new ConfigurationBuilder()
             .AddUserSecrets<NotificationEndpointTests>()
             .Build();
@@ -27,30 +27,34 @@ public class NotificationEndpointTests
     }
 
     [Fact]
-    public void CreateNotification_ReturnsExpectedResult()
+    public void Test1_CreateNotification_ReturnsExpectedResult()
     {
         // Given
-        var creationData = _fixture.Create<NotificationCreationData>();
-
-        Given()
+        var creationData = new
+            NotificationCreationData("test", NotificationTypeId.INFO, false);
+        //     { Content = "test", NotificationTypeId = NotificationTypeId.INFO, IsRead = false };
+        _notificationId = (string)Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
                 $"Bearer {_token}")
             .ContentType("application/json")
-            .Body(creationData)
+            .Body(
+                "{\"content\": \"test\",\"notificationTypeId\": \"INFO\",\"isRead\": false}")
+            // .Body(creationData)
             .When()
-            .Post($"{_baseUrl}{_endPoint}/{_companyUserId}")
+            .Post($"{_baseUrl}{_endPoint}?companyUserId={_companyUserId}")
             .Then()
-            .Body("")
-            .StatusCode(201);
+            .StatusCode(201)
+            .Extract()
+            .As(typeof(string));
     }
 
     [Fact]
-    public void GetNotifications_ReturnsExpectedResult()
+    public void Test2_GetNotifications_ReturnsExpectedResult()
     {
         // Given
-        Given()
+        Pagination.Response<NotificationDetailData> data = (Pagination.Response<NotificationDetailData>)Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
@@ -58,12 +62,14 @@ public class NotificationEndpointTests
             .When()
             .Get($"{_baseUrl}{_endPoint}/?page=0&size=10&sorting=DateDesc")
             .Then()
-            .Body("{\"meta\":{\"totalElements\":0,\"totalPages\":0,\"page\":0,\"contentSize\":0},\"content\":[]}")
-            .StatusCode(200);
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(Pagination.Response<NotificationDetailData>));
+        Assert.Equal(_notificationId, data.Content.First().ToString());
     }
 
     [Fact]
-    public void GetNotification_ReturnsExpectedResult()
+    public void Test3_GetNotification_ReturnsExpectedResult()
     {
         // Given
         Given()
@@ -72,13 +78,13 @@ public class NotificationEndpointTests
                 "authorization",
                 $"Bearer {_token}")
             .When()
-            .Get($"{_baseUrl}{_endPoint}/notification-id")
+            .Get($"{_baseUrl}{_endPoint}/{_notificationId}")
             .Then()
             .StatusCode(200);
     }
 
     [Fact]
-    public void NotificationCount_ReturnsExpectedResult()
+    public void Test4_NotificationCount_ReturnsExpectedResult()
     {
         // Given
         Given()
@@ -89,15 +95,15 @@ public class NotificationEndpointTests
             .When()
             .Get($"{_baseUrl}{_endPoint}/count")
             .Then()
-            .Body("0")
+            .Body("1")
             .StatusCode(200);
     }
 
     [Fact]
-    public void NotificationCountDetails_ReturnsExpectedResult()
+    public void Test5_NotificationCountDetails_ReturnsExpectedResult()
     {
         // Given
-        Given()
+        var notificationCountDetails = (NotificationCountDetails)Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
@@ -105,12 +111,17 @@ public class NotificationEndpointTests
             .When()
             .Get($"{_baseUrl}{_endPoint}/count-details")
             .Then()
-            .Body("{\"read\":0,\"unread\":0,\"infoUnread\":0,\"offerUnread\":0,\"actionRequired\":0}")
-            .StatusCode(200);
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(NotificationCountDetails));
+        Assert.Equal(1, notificationCountDetails.Unread);
+        Assert.Equal(1, notificationCountDetails.InfoUnread);
+        Assert.Equal(0, notificationCountDetails.OfferUnread);
+        Assert.Equal(0, notificationCountDetails.ActionRequired);
     }
 
     [Fact]
-    public void SetNotificationStatus_ReturnsExpectedResult()
+    public void Test6_SetNotificationStatus_ReturnsExpectedResult()
     {
         // Given
         Given()
@@ -119,13 +130,13 @@ public class NotificationEndpointTests
                 "authorization",
                 $"Bearer {_token}")
             .When()
-            .Put($"{_baseUrl}{_endPoint}/read/f22f2b57-426a-4ac3-b3af-7924a1c61590")
+            .Put($"{_baseUrl}{_endPoint}/{_notificationId}/read")
             .Then()
             .StatusCode(204);
     }
 
     [Fact]
-    public void DeleteNotification_ReturnsExpectedResult()
+    public void Test7_DeleteNotification_ReturnsExpectedResult()
     {
         // Given
         Given()
@@ -134,46 +145,8 @@ public class NotificationEndpointTests
                 "authorization",
                 $"Bearer {_token}")
             .When()
-            .Delete($"{_baseUrl}{_endPoint}/f22f2b57-426a-4ac3-b3af-7924a1c615901")
+            .Delete($"{_baseUrl}{_endPoint}/{_notificationId}")
             .Then()
             .StatusCode(204);
     }
-
-    // [Fact]
-    // public void CompanyDataOwnCompanyDetails()
-    // {
-    //     // Given
-    //     CompanyAddressDetailData companyAddressDetailData = (CompanyAddressDetailData)Given()
-    //         .RelaxedHttpsValidation()
-    //         .Header(
-    //             "authorization",
-    //             $"Bearer {token}")
-    //         .When()
-    //         .Get($"{baseUrl}/api/administration/companydata/ownCompanyDetails")
-    //         .Then()
-    //         .StatusCode(200)
-    //         .Extract()
-    //         .As(typeof(CompanyAddressDetailData));
-    //     // companyId = companyAddressDetailData.CompanyId;
-    //     Assert.Matches(companyId.ToString(), companyAddressDetailData.CompanyId.ToString());
-    // }
-
-    // [Fact]
-    // public void GetOwnUserDetails()
-    // {
-    //     // Given
-    //     CompanyUserDetails companyUserDetails = (CompanyUserDetails)Given()
-    //         .RelaxedHttpsValidation()
-    //         .Header(
-    //             "authorization",
-    //             $"Bearer {_token}")
-    //         .When()
-    //         .Get($"{_baseUrl}/api/administration/user/ownUser")
-    //         .Then()
-    //         .StatusCode(200)
-    //         .Extract()
-    //         .As(typeof(CompanyUserDetails));
-    //     // companyId = companyAddressDetailData.CompanyId;
-    //     Assert.Matches("a", companyUserDetails.companyUserId.ToString());
-    // }
 }
