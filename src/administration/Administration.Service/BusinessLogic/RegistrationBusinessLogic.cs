@@ -397,11 +397,13 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public async Task DeclineRegistrationVerification(Guid applicationId, string comment)
     {
-        var companyId = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyIdForSubmittedApplication(applicationId).ConfigureAwait(false);
-        if (companyId == Guid.Empty)
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyIdNameForSubmittedApplication(applicationId).ConfigureAwait(false);
+        if (result == default)
         {
             throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
         }
+
+        var (companyId, companyName) = result;
 
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(
@@ -435,36 +437,33 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await PostRegistrationCancelEmailAsync(applicationId, comment).ConfigureAwait(false);
+        await PostRegistrationCancelEmailAsync(applicationId, companyName, comment).ConfigureAwait(false);
     }
 
-    private async Task PostRegistrationCancelEmailAsync(Guid applicationId, string comment)
+    private async Task PostRegistrationCancelEmailAsync(Guid applicationId, string companyName, string comment)
     {
-        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetUserRoleIdsUntrackedAsync(_settings.PartnerUserInitialRoles).ToListAsync().ConfigureAwait(false);
-
         if (string.IsNullOrWhiteSpace(comment))
         {
             throw new ConflictException("No comment set.");
         }
         
-        await foreach (var user in _portalRepositories.GetInstance<IApplicationRepository>().GetRegistrationDeclineEmailDataUntrackedAsync(applicationId, userRoleIds).ConfigureAwait(false))
+        await foreach (var user in _portalRepositories.GetInstance<IApplicationRepository>().GetEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
         {
             var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
 
             if (string.IsNullOrWhiteSpace(user.Email))
             {
-                throw new ArgumentException($"user {userName} has no assigned email");
+                throw new ConflictException($"user {userName} has no assigned email");
             }
 
             var mailParameters = new Dictionary<string, string>
             {
                 { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
-                { "companyName", user.CompanyName },
+                { "companyName", companyName },
                 { "declineComment", comment}
             };
 
-            await _mailingService.SendMails(user.Email, mailParameters, new List<string> { "EmailRegistrationDeclineTemplate" }).ConfigureAwait(false);
+            await _mailingService.SendMails(user.Email, mailParameters, new [] { "EmailRegistrationDeclineTemplate" }).ConfigureAwait(false);
         }
     }
 
