@@ -21,9 +21,10 @@ name: Unit-Tests
 
 on:
   push:
-    branches: [main, dev]
+    branches: [ main, dev ]
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [ opened, synchronize, reopened ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -31,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dotnet-version: ['6.0']
+        dotnet-version: [ '6.0' ]
 
     steps:
       - uses: actions/checkout@v3
@@ -44,4 +45,7 @@ jobs:
       - name: Build
         run: dotnet build src --configuration Release --no-restore
       - name: Test
+        env:
+          companyUserId: ${{ secrets.COMPANY_USER_ID }}
+          token: ${{ secrets.TOKEN }}
         run: dotnet test src --no-restore --verbosity normal
