@@ -65,7 +65,7 @@ public class NotificationEndpointTests
             .StatusCode(200)
             .Extract()
             .As(typeof(Pagination.Response<NotificationDetailData>));
-        Assert.Equal(_notificationId, data.Content.First().ToString());
+        Assert.Contains(_notificationId, data.Content.Select(content => content.Id.ToString()));
     }
 
     [Fact]
