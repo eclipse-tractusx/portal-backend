@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 - Copyright (c) 2021, 2023 BMW Group AG
 - Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
 -
@@ -25,6 +25,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UserSecretsId>aa61b934-a2aa-4158-8762-07c48da8643c</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

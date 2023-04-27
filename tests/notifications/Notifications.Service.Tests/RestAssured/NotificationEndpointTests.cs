@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit;
 using static RestAssured.Dsl;
 
@@ -20,10 +21,10 @@ public class NotificationEndpointTests
     public NotificationEndpointTests()
     {
         var configuration = new ConfigurationBuilder()
-            .AddUserSecrets<NotificationEndpointTests>()
+            .AddUserSecrets<Secrets>()
             .Build();
-        _companyUserId = new (configuration.GetValue<string>("CompanyUserId"));
-        _token = configuration.GetValue<string>("token");
+        _companyUserId = new (configuration.GetValue<string>("Secrets:CompanyUserId"));
+        _token = configuration.GetValue<string>("Secrets:UserToken");
     }
 
     [Fact]
