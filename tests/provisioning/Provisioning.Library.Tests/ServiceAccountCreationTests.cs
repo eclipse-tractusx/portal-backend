@@ -47,7 +47,7 @@ public class ServiceAccountCreationTests
     private readonly IProvisioningManager _provisioningManager;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningDBAccess _provisioningDbAccess;
-    private readonly ServiceAccountCreation _sut;
+    private readonly IServiceAccountCreation _sut;
 
     public ServiceAccountCreationTests()
     {
@@ -124,13 +124,14 @@ public class ServiceAccountCreationTests
     public async Task CreateServiceAccountAsync_WithNameSetAndValidData_ReturnsExpected()
     {
         // Arrange
+        var serviceAccounts = new List<CompanyServiceAccount>();
         var creationData = new ServiceAccountCreationInfo("testName", "abc", IamClientAuthMethod.SECRET, new []{ _validUserRoleId });
         var bpns = new[]
         {
             Bpn
         };
-        Setup();
-        
+        Setup(serviceAccounts);
+
         // Act
         var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, true).ConfigureAwait(false);
         
@@ -139,16 +140,18 @@ public class ServiceAccountCreationTests
         result.serviceAccountData.InternalClientId.Should().Be("internal-sa1");
         result.serviceAccountData.UserEntityId.Should().Be(_iamUserId);
         result.serviceAccountData.AuthData.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
+        A.CallTo(() => _provisioningManager.SetupCentralServiceAccountClientAsync(A<string>._, A<ClientConfigRolesData>.That.Matches(x => x.Name == "sa1-testName"))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(_iamUserId, bpns)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.AddProtocolMapperAsync("internal-sa1")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccountAssignedRole(_serviceAccountId, A<Guid>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _serviceAccountRepository.CreateIamServiceAccount("internal-sa1", A<string>._, _iamUserId, _serviceAccountId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        serviceAccounts.Should().ContainSingle().Which.Name.Should().Be("sa1-testName");
     }
 
     #region Setup
 
-    private void Setup()
+    private void Setup(ICollection<CompanyServiceAccount>? serviceAccounts = null)
     {
         A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync())
             .ReturnsLazily(() => 1);
@@ -156,8 +159,21 @@ public class ServiceAccountCreationTests
         A.CallTo(() => _provisioningManager.SetupCentralServiceAccountClientAsync(A<string>._, A<ClientConfigRolesData>._))
             .ReturnsLazily(() => new ServiceAccountData("internal-sa1", _iamUserId, new ClientAuthData(IamClientAuthMethod.SECRET)));
 
-        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(_companyId, CompanyServiceAccountStatusId.ACTIVE, A<string>._, A<string>._, A<CompanyServiceAccountTypeId>._, null))
-            .ReturnsLazily(() => new CompanyServiceAccount(_serviceAccountId, default, CompanyServiceAccountStatusId.ACTIVE, null!, null!, default, default));
+        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(_companyId, CompanyServiceAccountStatusId.ACTIVE, A<string>._, A<string>._, A<CompanyServiceAccountTypeId>._, A<Action<CompanyServiceAccount>>._))
+            .Invokes((Guid companyId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description, CompanyServiceAccountTypeId companyServiceAccountTypeId, Action<CompanyServiceAccount>? setOptionalParameters) =>
+            {
+                var sa = new CompanyServiceAccount(
+                    Guid.NewGuid(),
+                    companyId,
+                    companyServiceAccountStatusId,
+                    name,
+                    description,
+                    DateTimeOffset.UtcNow,
+                    companyServiceAccountTypeId);
+                setOptionalParameters?.Invoke(sa);
+                serviceAccounts?.Add(sa);
+            })
+            .ReturnsLazily(() => new CompanyServiceAccount(_serviceAccountId, Guid.Empty, CompanyServiceAccountStatusId.ACTIVE, null!, null!, default, default));
         
         A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<Guid>>.That.Matches(x => x.Count(y => y == _validUserRoleId) == 1)))
             .ReturnsLazily(() => new[] {new UserRoleData(_validUserRoleId, Guid.NewGuid().ToString(), "UserRole")}.ToAsyncEnumerable());
