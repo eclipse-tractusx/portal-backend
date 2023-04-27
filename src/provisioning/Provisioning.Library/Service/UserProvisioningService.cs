@@ -56,8 +56,26 @@ public class UserProvisioningService : IUserProvisioningService
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
         var (companyId, companyName, businessPartnerNumber, creatorId, alias, isSharedIdp) = companyNameIdpAliasData;
+
+        IamUser CreateOptionalCompanyUserIamUserAssigningBusinessPartner(UserCreationRoleDataIdpInfo user, string centralUserId, Guid existingCompanyUserId)
+        {
+            if (existingCompanyUserId == Guid.Empty)
+            {
+                var newCompanyUserId = userRepository.CreateCompanyUser(user.FirstName, user.LastName, user.Email, companyId, CompanyUserStatusId.ACTIVE, creatorId).Id;
+                if (businessPartnerNumber != null)
+                {
+                    businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(newCompanyUserId, businessPartnerNumber);
+                }
+                return userRepository.CreateIamUser(newCompanyUserId, centralUserId);
+            }
+            else
+            {
+                return userRepository.CreateIamUser(existingCompanyUserId, centralUserId);                    
+            }
+        }
 
         var passwordProvider = new OptionalPasswordProvider(isSharedIdp);
 
@@ -91,7 +109,7 @@ public class UserProvisioningService : IUserProvisioningService
 
                 await _provisioningManager.AddProviderUserLinkToCentralUserAsync(centralUserId, new IdentityProviderLink(alias, providerUserId, user.UserName)).ConfigureAwait(false);
 
-                iamUser = CreateOptionalCompanyUserAndIamUser(userRepository, user, centralUserId, companyId, creatorId, existingCompanyUserId);
+                iamUser = CreateOptionalCompanyUserIamUserAssigningBusinessPartner(user, centralUserId, existingCompanyUserId);
 
                 await AssignRolesToNewUserAsync(userRolesRepository, user.RoleDatas, iamUser).ConfigureAwait(false);
             }
@@ -137,15 +155,6 @@ public class UserProvisioningService : IUserProvisioningService
                     user.Email,
                     password))
             : Task.FromResult(user.UserId);
-
-    private static IamUser CreateOptionalCompanyUserAndIamUser(IUserRepository userRepository, UserCreationRoleDataIdpInfo user, string centralUserId, Guid companyId, Guid creatorId, Guid existingCompanyUserId)
-    {
-        var companyUserId = existingCompanyUserId == Guid.Empty
-            ? userRepository.CreateCompanyUser(user.FirstName, user.LastName, user.Email, companyId, CompanyUserStatusId.ACTIVE, creatorId).Id
-            : existingCompanyUserId;
-
-        return userRepository.CreateIamUser(companyUserId, centralUserId);
-    }
 
     public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId)
     {

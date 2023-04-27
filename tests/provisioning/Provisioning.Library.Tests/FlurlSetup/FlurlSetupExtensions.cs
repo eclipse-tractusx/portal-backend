@@ -50,7 +50,7 @@ public static class FlurlSetupExtensions
         return testClient;
     }
 
-    public static HttpTest WithGetOpenIDConfigurationAsync(this HttpTest testClient, OpenIDConfiguration config)
+    public static HttpTest WithGetOpenIdConfigurationAsync(this HttpTest testClient, OpenIDConfiguration config)
     {
         testClient.ForCallsTo($"*/realms/*/.well-known/openid-configuration")
             .WithVerb(HttpMethod.Get)
@@ -71,6 +71,14 @@ public static class FlurlSetupExtensions
         testClient.ForCallsTo($"*/admin/realms/{alias}/clients")
             .WithVerb(HttpMethod.Get)
             .RespondWithJson(clients);
+        return testClient;
+    }
+
+    public static HttpTest WithGetClientAsync(this HttpTest testClient, string alias, string clientId, Client client)
+    {
+        testClient.ForCallsTo($"*/admin/realms/{alias}/clients/{clientId}")
+            .WithVerb(HttpMethod.Get)
+            .RespondWithJson(client);
         return testClient;
     }
 

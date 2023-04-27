@@ -34,16 +34,26 @@ using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 using Microsoft.Extensions.Options;
 using Xunit;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.BusinessLogic;
 
 public class ServiceReleaseBusinessLogicTest
 {
+    private readonly Guid _notExistingServiceId = Guid.NewGuid();
+    private readonly Guid _companyUserId = Guid.NewGuid();
+    private readonly Guid _companyUserCompanyId = Guid.NewGuid();
+    private readonly Guid _existingServiceId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
+    private readonly Guid _activeServiceId = Guid.NewGuid();
+    private readonly Guid _differentCompanyServiceId = Guid.NewGuid();
+    private readonly string _iamUserId = Guid.NewGuid().ToString();
     private readonly IFixture _fixture;
     private readonly IOfferRepository _offerRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferService _offerService;
     private readonly IStaticDataRepository _staticDataRepository;
+    private readonly ITechnicalUserProfileRepository _technicalUserProfileRepository;
     private readonly ServiceReleaseBusinessLogic _sut;
     private readonly IOptions<ServiceSettings> _options;
     public ServiceReleaseBusinessLogicTest()
@@ -57,15 +67,12 @@ public class ServiceReleaseBusinessLogicTest
         _offerRepository = A.Fake<IOfferRepository>();
         _offerService = A.Fake<IOfferService>();
         _staticDataRepository = A.Fake<IStaticDataRepository>();
+        _technicalUserProfileRepository = A.Fake<ITechnicalUserProfileRepository>();
 
         SetupRepositories();
-         var serviceSettings = new ServiceSettings
+        var serviceSettings = new ServiceSettings
         {
             ApplicationsMaxPageSize = 15, 
-            ServiceAccountRoles = new Dictionary<string, IEnumerable<string>>
-            {
-                {"Test", new[] {"Technical User"}}
-            }, 
             ITAdminRoles = new Dictionary<string, IEnumerable<string>>
             {
                 {"Cl2-CX-Portal", new[] {"IT Admin"}}
@@ -321,7 +328,7 @@ public class ServiceReleaseBusinessLogicTest
 
     #endregion
 
-    #region  DeleteServiceDocument
+    #region DeleteServiceDocument
 
     [Fact]
     public async Task DeleteServiceDocumentsAsync_ReturnsExpected()
@@ -340,10 +347,243 @@ public class ServiceReleaseBusinessLogicTest
 
     #endregion
 
+    #region Create Service
+
+    [Fact]
+    public async Task CreateServiceOffering_WithValidDataAndEmptyDescriptions_ReturnsCorrectDetails()
+    {
+        // Arrange
+        var serviceId = Guid.NewGuid();
+        var offerService = A.Fake<IOfferService>();
+        _fixture.Inject(offerService);
+        A.CallTo(() => offerService.CreateServiceOfferingAsync(A<ServiceOfferingData>._, A<string>._, A<OfferTypeId>._)).ReturnsLazily(() => serviceId);
+        var sut = _fixture.Create<ServiceReleaseBusinessLogic>();
+
+        // Act
+        var result = await sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _companyUserId, new List<LocalizedDescription>(), new List<ServiceTypeId>(), null), _iamUserId);
+
+        // Assert
+        result.Should().Be(serviceId);
+    }
+
+    #endregion
+
+    #region UpdateServiceAsync
+    
+    [Fact]
+    public async Task UpdateServiceAsync_WithoutService_ThrowsException()
+    {
+        // Arrange
+        SetupUpdateService();
+        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid(), null);
+        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, Options.Create(new ServiceSettings()));
+     
+        // Act
+        async Task Act() => await sut.UpdateServiceAsync(_notExistingServiceId, data, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be($"Service {_notExistingServiceId} does not exists");
+    }
+    
+    [Fact]
+    public async Task UpdateServiceAsync_WithActiveService_ThrowsException()
+    {
+        // Arrange
+        SetupUpdateService();
+        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid(), null);
+        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, Options.Create(new ServiceSettings()));
+     
+        // Act
+        async Task Act() => await sut.UpdateServiceAsync(_activeServiceId, data, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be("Service in State ACTIVE can't be updated");
+    }
+
+    [Fact]
+    public async Task UpdateServiceAsync_WithInvalidUser_ThrowsException()
+    {
+        // Arrange
+        SetupUpdateService();
+        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123","test@email.com", Guid.NewGuid(), null);
+        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, Options.Create(new ServiceSettings()));
+
+        // Act
+        async Task Act() => await sut.UpdateServiceAsync(_differentCompanyServiceId, data, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be($"User {_iamUserId} is not allowed to change the service.");
+    }
+
+    [Fact]
+    public async Task UpdateServiceAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        SetupUpdateService();
+        var data = new ServiceUpdateRequestData(
+            "test", 
+            new List<LocalizedDescription>
+            {
+                new("de", "Long description", "desc") 
+            }, 
+            new List<ServiceTypeId>
+            {
+                ServiceTypeId.CONSULTANCE_SERVICE
+            }, 
+            "43",
+            "test@email.com",
+            _companyUserId,
+            null);
+        var settings = new ServiceSettings
+        {
+            SalesManagerRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                { "portal", new[] { "SalesManager" } }
+            }
+        };
+        var existingOffer = _fixture.Create<Offer>();
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
+            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParameters) =>
+            {
+                initializeParameters?.Invoke(existingOffer);
+                setOptionalParameters(existingOffer);
+            });
+        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, Options.Create(settings));
+
+        // Act
+        await sut.UpdateServiceAsync(_existingServiceId, data, _iamUserId).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.UpsertRemoveOfferDescription(A<Guid>._, A<IEnumerable<LocalizedDescription>>._, A<IEnumerable<LocalizedDescription>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.CreateOrUpdateOfferLicense(A<Guid>._, A<string>._, A<(Guid offerLicenseId, string price, bool assignedToMultipleOffers)>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AddServiceAssignedServiceTypes(A<IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveServiceAssignedServiceTypes(A<IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _technicalUserProfileRepository.RemoveTechnicalUserProfilesForOffer(_existingServiceId)).MustHaveHappenedOnceExactly();
+        existingOffer.Name.Should().Be("test");
+    }
+
+    #endregion
+    
+    #region SubmitServiceAsync
+
+    [Fact]
+    public async Task SubmitServiceAsync_CallsOfferService()
+    {
+        // Arrange
+        var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _options);
+
+        // Act
+        await sut.SubmitServiceAsync(_existingServiceId, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => 
+                _offerService.SubmitServiceAsync(
+                    _existingServiceId,
+                    _iamUserId,
+                    OfferTypeId.SERVICE,
+                    A<IEnumerable<NotificationTypeId>>._,
+                    A<IDictionary<string, IEnumerable<string>>>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
+    #region DeclineServiceRequest
+    
+    [Fact]
+    public async Task DeclineServiceRequestAsync_CallsExpected()
+    {
+        // Arrange
+        var data = new OfferDeclineRequest("Just a test");
+        var settings = new ServiceSettings
+        {
+            ServiceManagerRoles = _fixture.Create<Dictionary<string, IEnumerable<string>>>(),
+            BasePortalAddress = "test"
+        };
+        var sut = new ServiceReleaseBusinessLogic(null!, _offerService, Options.Create(settings));
+     
+        // Act
+        await sut.DeclineServiceRequestAsync(_existingServiceId, _iamUserId, data).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.DeclineOfferAsync(_existingServiceId, _iamUserId, data,
+            OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION,
+            A<IDictionary<string, IEnumerable<string>>>._, A<string>._,
+            A<IEnumerable<NotificationTypeId>>._, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+    }
+    
+    #endregion
+
+    #region Create Service Document
+    [Fact]
+    public async Task CreateServiceDocument_ExecutesSuccessfully()
+    {
+        // Arrange
+        var serviceId = _fixture.Create<Guid>();
+        var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
+        var settings = new ServiceSettings()
+        {
+            UploadServiceDocumentTypeIds = new Dictionary<DocumentTypeId, IEnumerable<string>>{
+                { DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" } }}
+        };
+        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, Options.Create(settings));
+
+        // Act
+        await sut.CreateServiceDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.UploadDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, _iamUserId, OfferTypeId.SERVICE, settings.UploadServiceDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region ApproveServiceRequestAsync
+
+    [Fact]
+    public async Task ApproveServiceRequestAsync_WithValid_CallsExpected()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, Options.Create(new ServiceSettings()));
+        
+        // Act
+        await sut.ApproveServiceRequestAsync(appId, _iamUserId).ConfigureAwait(false);
+        
+        // Assert
+        A.CallTo(() => _offerService.ApproveOfferRequestAsync(appId, _iamUserId, OfferTypeId.SERVICE,
+            A<IEnumerable<NotificationTypeId>>._, A<IDictionary<string, IEnumerable<string>>>._,
+            A<IEnumerable<NotificationTypeId>>._, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    private void SetupUpdateService()
+    {
+        A.CallTo(() => _offerRepository.GetServiceUpdateData(_notExistingServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUserId))
+            .ReturnsLazily(() => (ServiceUpdateData?)null);
+        A.CallTo(() => _offerRepository.GetServiceUpdateData(_activeServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUserId))
+            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<LocalizedDescription>(), null));
+        A.CallTo(() => _offerRepository.GetServiceUpdateData(_differentCompanyServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUserId))
+            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<LocalizedDescription>(), null));
+        A.CallTo(() => _offerRepository.GetServiceUpdateData(_existingServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUserId))
+            .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, true, Enumerable.Repeat(new ValueTuple<ServiceTypeId, bool>(ServiceTypeId.DATASPACE_SERVICE, false), 1), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false), Array.Empty<LocalizedDescription>(), Guid.NewGuid()));
+        A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).Returns(_companyUserCompanyId);
+    }
+
     private void SetupRepositories()
     {
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IStaticDataRepository>()).Returns(_staticDataRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ITechnicalUserProfileRepository>()).Returns(_technicalUserProfileRepository);
         _fixture.Inject(_portalRepositories);
     }
 }

@@ -53,6 +53,7 @@ public record OfferDetailData(
 /// <param name="OfferSubscriptionDetailData">Detail Data of the offer subscription</param>
 /// <param name="ServiceTypeIds">Collection of the assigned serviceTypeIds.</param>
 /// <param name="Documents">Collections of the Document type Data.</param>
+/// <param name="LicenseTypeId">LicenseType Id for offer</param>
 public record ServiceDetailData(
     Guid Id, 
     string? Title, 
@@ -62,7 +63,9 @@ public record ServiceDetailData(
     string Price, 
     IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData,
     IEnumerable<ServiceTypeId> ServiceTypeIds,
-    IEnumerable<DocumentTypeData> Documents);
+    IEnumerable<DocumentTypeData> Documents,
+    LicenseTypeId LicenseTypeId
+);
 
 /// <summary>
 /// View Model of the offer subscription data

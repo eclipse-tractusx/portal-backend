@@ -28,10 +28,46 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 public interface IAppInstanceRepository
 {
     /// <summary>
-    /// Add app Id and Document Id in App Assigned Document table 
+    /// Creates an app instance 
     /// </summary>
     /// <param name="appId">Id of the app</param>
     /// <param name="iamClientId">Id of the iam client</param>
     /// <returns>The created App Instance</returns>
     AppInstance CreateAppInstance(Guid appId, Guid iamClientId);
+    
+    /// <summary>
+    /// Removes the app instance
+    /// </summary>
+    /// <param name="appInstanceId">Id of the app instance</param>
+    void RemoveAppInstance(Guid appInstanceId);
+
+    void CreateAppInstanceAssignedServiceAccounts(IEnumerable<(Guid AppInstanceId, Guid CompanyServiceAccountId)> instanceAccounts);
+    
+    /// <summary>
+    /// Checks whether there is already an app instance for the given offer
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <returns><c>true</c> if an app instance exists, otherwise <c>false</c></returns>
+    Task<bool> CheckInstanceExistsForOffer(Guid offerId);
+
+    /// <summary>
+    /// Gets the service accounts for an app instance
+    /// </summary>
+    /// <param name="appInstanceId">Id of the app instance</param>
+    /// <returns>A list of the service account ids</returns>
+    IAsyncEnumerable<Guid> GetAssignedServiceAccounts(Guid appInstanceId);
+
+    /// <summary>
+    /// Checks whether an appinstance has any assigned subscriptions
+    /// </summary>
+    /// <param name="appInstanceId">Id of the app instance</param>
+    /// <returns><c>true</c> if subscriptions exists for this instance, otherwise <c>false</c></returns>
+    Task<bool> CheckInstanceHasAssignedSubscriptions(Guid appInstanceId);
+
+    /// <summary>
+    /// Removes the app instance assigned service accounts
+    /// </summary>
+    /// <param name="appInstanceId">id of the app instance</param>
+    /// <param name="serviceAccountIds">Ids of the assigned service accounts</param>
+    void RemoveAppInstanceAssignedServiceAccounts(Guid appInstanceId, IEnumerable<Guid> serviceAccountIds);
 }

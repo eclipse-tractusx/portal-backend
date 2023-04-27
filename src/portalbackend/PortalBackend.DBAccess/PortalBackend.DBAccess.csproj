@@ -19,6 +19,14 @@
 -->
 
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess</RootNamespace>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Seeding\Framework.Seeding.csproj" />
@@ -26,10 +34,4 @@
     <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
     <ProjectReference Include="..\..\framework\Framework.DBAccess\Framework.DBAccess.csproj" />
   </ItemGroup>
-  <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess</AssemblyName>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
 </Project>

@@ -82,6 +82,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     app.Name ?? Constants.ErrorString,
                     app.ShortDescription ?? Constants.ErrorString,
                     app.VendorCompanyName,
+                    app.LicenseType,
                     app.LicenseText ?? Constants.ErrorString,
                     app.LeadPictureId,
                     app.UseCaseNames));
@@ -119,12 +120,14 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             result.ContactNumber,
             result.UseCases,
             result.LongDescription ?? Constants.ErrorString,
+            result.LicenseTypeId,
             result.Price ?? Constants.ErrorString,
             result.Tags,
             result.IsSubscribed == default ? null : result.IsSubscribed,
             result.Languages,
             result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))),
-            result.PrivacyPolicies
+            result.PrivacyPolicies,
+            result.IsSingleInstance
         );
     }
 
@@ -259,43 +262,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task<Guid> CreateAppAsync(AppInputModel appInputModel)
-    {
-        // Add app to db
-        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
-
-        var appId = appRepository.CreateOffer(appInputModel.Provider, OfferTypeId.APP, app =>
-        {
-            app.Name = appInputModel.Title;
-            app.MarketingUrl = appInputModel.ProviderUri;
-            app.ContactEmail = appInputModel.ContactEmail;
-            app.ContactNumber = appInputModel.ContactNumber;
-            app.ProviderCompanyId = appInputModel.ProviderCompanyId;
-            app.OfferStatusId = OfferStatusId.CREATED;
-            app.SalesManagerId = appInputModel.SalesManagerId;
-        }).Id;
-
-        var licenseId = appRepository.CreateOfferLicenses(appInputModel.Price).Id;
-        appRepository.CreateOfferAssignedLicense(appId, licenseId);
-        appRepository.AddAppAssignedUseCases(appInputModel.UseCaseIds.Select(uc =>
-            new ValueTuple<Guid, Guid>(appId, uc)));
-        appRepository.AddOfferDescriptions(appInputModel.Descriptions.Select(d =>
-            new ValueTuple<Guid, string, string, string>(appId, d.LanguageCode, d.LongDescription, d.ShortDescription)));
-        appRepository.AddAppLanguages(appInputModel.SupportedLanguageCodes.Select(c =>
-            new ValueTuple<Guid, string>(appId, c)));
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
-        return appId;
-    }
-
-    /// <inheritdoc/>
     public IAsyncEnumerable<AllOfferData> GetCompanyProvidedAppsDataForUserAsync(string userId) =>
         _portalRepositories.GetInstance<IOfferRepository>().GetProvidedOffersData(OfferTypeId.APP, userId);
     
     /// <inheritdoc />
     public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId) =>
-        _offerSetupService.AutoSetupOfferAsync(data, _settings.ServiceAccountRoles, _settings.ITAdminRoles, iamUserId, OfferTypeId.APP, _settings.UserManagementAddress);
+        _offerSetupService.AutoSetupOfferAsync(data, _settings.ITAdminRoles, iamUserId, OfferTypeId.APP, _settings.UserManagementAddress, _settings.ServiceManagerRoles);
 
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId) =>
@@ -308,50 +280,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc />
     public Task<(byte[] Content, string ContentType, string FileName)> GetAppDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken) =>
         _offerService.GetOfferDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken);
-
-    /// <inheritdoc />
-    public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, string iamUserId)
-    {        
-        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        return await ValidateAndGetAppDescription(appId, iamUserId, offerRepository);        
-    }
-
-    /// <inheritdoc />
-    public async Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas)
-    {
-        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-
-        offerRepository.CreateUpdateDeleteOfferDescriptions(appId,
-            await ValidateAndGetAppDescription(appId, iamUserId, offerRepository),
-            offerDescriptionDatas.Select(od => new ValueTuple<string,string, string>(od.LanguageCode,od.LongDescription,od.ShortDescription)));
-
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
-
-    private static async Task<IEnumerable<LocalizedDescription>> ValidateAndGetAppDescription(Guid appId, string iamUserId, IOfferRepository offerRepository)
-    {
-        var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, iamUserId).ConfigureAwait(false);
-        if(result == default)
-        {
-            throw new NotFoundException($"App {appId} does not exist.");
-        }
-
-        if(!result.IsStatusActive)
-        {
-            throw new ConflictException($"App {appId} is in InCorrect Status");
-        }
-
-        if(!result.IsProviderCompanyUser)
-        {
-            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of App {appId}");
-        }
-
-        if (result.OfferDescriptionDatas == null)
-        {
-            throw new UnexpectedConditionException("offerDescriptionDatas should never be null here");
-        }
-        return result.OfferDescriptionDatas;
-    }
 
     /// <inheritdoc />
     public async Task CreatOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken)

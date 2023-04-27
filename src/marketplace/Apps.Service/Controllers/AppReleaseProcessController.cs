@@ -407,7 +407,7 @@ public class AppReleaseProcessController : ControllerBase
     [HttpDelete]
     [Route("documents/{documentId}")]
     [Authorize(Roles = "edit_apps")]
-    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
@@ -430,13 +430,36 @@ public class AppReleaseProcessController : ControllerBase
     [HttpDelete]
     [Route("{appId}")]
     [Authorize(Roles = "edit_apps")]
-    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> DeleteAppAsync([FromRoute] Guid appId)
     {
-        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.DeleteAppAsync(appId, iamUserId));
+        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.DeleteAppAsync(appId, iamUserId)).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Sets the instance type and all related data for the app
+    /// </summary>
+    /// <param name="appId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">ID of the app to be deleted.</param>
+    /// <param name="data">Data needed for the instance setup</param>
+    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/instance-type/{appId}</remarks>
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="400">Input is incorrect.</response>
+    /// <response code="403">User is not associated with provider company.</response>
+    /// <response code="404">Record not found.</response>
+    [HttpPost]
+    [Route("instance-type/{appId}")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> SetInstanceType([FromRoute] Guid appId, [FromBody] AppInstanceSetupData data)
+    {
+        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.SetInstanceType(appId, data, iamUserId)).ConfigureAwait(false);
         return NoContent();
     }
 }

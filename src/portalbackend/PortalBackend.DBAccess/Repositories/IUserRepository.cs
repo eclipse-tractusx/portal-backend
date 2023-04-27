@@ -104,13 +104,6 @@ public interface IUserRepository
     /// <param name="companyId">Id of the company for the users to select</param>
     /// <returns>Returns a list of the company user emails</returns>
     IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForCompanyAndRoleId(IEnumerable<Guid> userRoleIds, Guid companyId);
-    
-    /// <summary>
-    /// Gets a company Id for the given service account
-    /// </summary>
-    /// <param name="iamUserId">Id of the service account</param>
-    /// <returns>The Id of the company</returns>
-    Task<Guid> GetServiceAccountCompany(string iamUserId);
 
     Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
     Task<OfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
@@ -132,22 +125,28 @@ public interface IUserRepository
     /// <param name="iamUserId"></param>
     /// <returns>CompanyUserId, UserEntityId, BusinessPartnerNumbers, RoleIds, OfferIds, InvitationIds</returns>
     IAsyncEnumerable<CompanyUserAccountData> GetCompanyUserAccountDataUntrackedAsync(IEnumerable<Guid> companyUserIds, Guid companyUserId);
-    
+
     /// <summary>
     /// Validate CompanyUser is Member of all roleIds and belongs to same company as executing user 
     /// </summary>
     /// <param name="iamUserId"></param>
     /// <param name="roleIds"></param>
-    /// <param name="companyUserIdId"></param>
+    /// <param name="companyUserId"></param>
     /// <returns></returns>
     Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany, Guid UserCompanyId)> GetRolesAndCompanyMembershipUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid companyUserId);
 
     /// <summary>
     /// Retrieve BPN for applicationId and Logged In User Company
     /// </summary>
-    /// <param name="iamUserId"></param>
     /// <param name="applicationId"></param>
     /// <param name="businessPartnerNumber"></param>
     /// <returns></returns>
     IAsyncEnumerable<(bool IsApplicationCompany, bool IsApplicationPending, string? BusinessPartnerNumber, Guid CompanyId)> GetBpnForIamUserUntrackedAsync(Guid applicationId, string businessPartnerNumber);
+    
+    /// <summary>
+    /// Gets the users company bpn for the iam user
+    /// </summary>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>The bpn of the company for the user</returns>
+    Task<string?> GetCompanyBpnForIamUserAsync(string iamUserId);
 }

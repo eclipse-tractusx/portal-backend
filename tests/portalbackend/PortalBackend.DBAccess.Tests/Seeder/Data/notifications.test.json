@@ -48,5 +48,15 @@
     "is_read": false,
     "due_date": "2022-09-10 18:01:33.570000 +00:00",
     "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
+  },
+  {
+    "id": "1836bbf6-b067-4126-9745-a22a098d3486",
+    "receiver_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "date_created": "2022-08-10 18:01:33.570000 +00:00",
+    "content": "{\"offerId\":\"0fc768e5-d4cf-4d3d-a0db-379efedd60f5\",\"RequestorCompanyName\":\"DNS\"}",
+    "notification_type_id": 11,
+    "is_read": false,
+    "due_date": "2022-09-10 18:01:33.570000 +00:00",
+    "creator_user_id": "ac1cf001-7fbc-1f2f-817f-bce058020001"
   }
 ]

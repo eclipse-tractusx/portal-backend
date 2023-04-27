@@ -38,4 +38,10 @@ public interface IStaticDataBusinessLogic
     /// </summary>
     /// <returns>AsyncEnumerable of the result Language</returns>
     IAsyncEnumerable<LanguageData> GetAllLanguage();
+
+    /// <summary>
+    /// Get all License Type.
+    /// </summary>
+    /// <returns>AsyncEnumerable of the License Type</returns>
+    IAsyncEnumerable<LicenseTypeData> GetAllLicenseType();
 }

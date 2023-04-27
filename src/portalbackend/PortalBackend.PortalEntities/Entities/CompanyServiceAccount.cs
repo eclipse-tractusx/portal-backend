@@ -32,6 +32,7 @@ public class CompanyServiceAccount : IBaseEntity
         Description = default!;
         UserRoles = new HashSet<UserRole>();
         CompanyServiceAccountAssignedRoles = new HashSet<CompanyServiceAccountAssignedRole>();
+        AppInstances = new HashSet<AppInstanceAssignedCompanyServiceAccount>();
     }
     
     public CompanyServiceAccount(Guid id, Guid serviceAccountOwnerId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description, DateTimeOffset dateCreated, CompanyServiceAccountTypeId companyServiceAccountTypeId) : this()
@@ -71,4 +72,6 @@ public class CompanyServiceAccount : IBaseEntity
     public virtual OfferSubscription? OfferSubscription { get; set; }
     public virtual ICollection<UserRole> UserRoles { get; private set; }
     public virtual ICollection<CompanyServiceAccountAssignedRole> CompanyServiceAccountAssignedRoles { get; private set; }
+
+    public virtual ICollection<AppInstanceAssignedCompanyServiceAccount> AppInstances { get; private set; }
 }

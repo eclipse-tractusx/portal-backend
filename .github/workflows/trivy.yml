@@ -369,7 +369,7 @@ jobs:
         with:
           sarif_file: "trivy-results10.sarif"
 
-  analyze-portal-backend_checklist-worker:
+  analyze-portal-backend_processes-worker:
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -390,7 +390,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # Path to Docker image
-          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_checklist-worker:latest"
+          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_processes-worker:latest"
           format: "sarif"
           output: "trivy-results11.sarif"
           exit-code: "1"

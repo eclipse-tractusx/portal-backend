@@ -97,23 +97,6 @@ public class AppsController : ControllerBase
         this.WithIamUserId(userId => _appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang));
 
     /// <summary>
-    /// Creates an app according to input model.
-    /// </summary>
-    /// <param name="appInputModel">Input model for app creation.</param>
-    /// <returns>ID of created application.</returns>
-    /// <remarks>Example: POST: /api/apps</remarks>
-    /// <response code="201">Returns created app's ID.</response>
-    [HttpPost]
-    [Route("")]
-    [Authorize(Roles = "add_apps")]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
-    public async Task<CreatedAtRouteResult> CreateAppAsync([FromBody] AppInputModel appInputModel)
-    {
-        var appId = await _appsBusinessLogic.CreateAppAsync(appInputModel).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetAppDetailsByIdAsync), new { appId }, appId);
-    }
-
-    /// <summary>
     /// Retrieves IDs of all favourite apps of the current user (by sub claim).
     /// </summary>
     /// <returns>Collection of IDs of favourite apps.</returns>
@@ -162,7 +145,6 @@ public class AppsController : ControllerBase
         await this.WithIamUserId(userId => _appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();
     }
-        
 
     /// <summary>
     /// Retrieves subscription statuses of subscribed apps of the currently logged in user's company.
@@ -348,43 +330,6 @@ public class AppsController : ControllerBase
     {
         var (content, contentType, fileName) = await _appsBusinessLogic.GetAppDocumentContentAsync(appId, documentId, cancellationToken).ConfigureAwait(false);
         return File(content, contentType, fileName);
-    }
-
-    /// <summary>
-    /// Get description of the app by Id.
-    /// </summary>
-    /// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id for the app description to retrieve.</param>
-    /// <returns>collection of descriptions of app by Id that are provided by the calling users company</returns>
-    /// <remarks>Example: Get: /api/apps/092bdae3-a044-4314-94f4-85c65a09e31b/appupdate/description</remarks>
-    /// <response code="200">returns list of app descriptions</response>
-    [HttpGet]
-    [Route("{appId}/appupdate/description")]
-    [Authorize(Roles = "edit_apps")]
-    [ProducesResponseType(typeof(IEnumerable<LocalizedDescription>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionsAsync([FromRoute] Guid appId) =>
-        await this.WithIamUserId(userId => _appsBusinessLogic.GetAppUpdateDescriptionByIdAsync(appId, userId)).ConfigureAwait(false);
-    
-    /// <summary>
-    /// Create or Update description of the app by Id.
-    /// </summary>
-    /// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id for the app description to create or update.</param>
-    /// <param name="offerDescriptionDatas">app description data to create or update.</param>
-    /// <remarks>Example: Put: /api/apps/092bdae3-a044-4314-94f4-85c65a09e31b/appupdate/description</remarks>
-    /// <response code="204">The app description succesFully created or updated</response>
-    [HttpPut]
-    [Route("{appId}/appupdate/description")]
-    [Authorize(Roles = "edit_apps")]
-    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<NoContentResult> CreateOrUpdateAppDescriptionsByIdAsync([FromRoute] Guid appId, [FromBody] IEnumerable<LocalizedDescription> offerDescriptionDatas)
-    {
-        await this.WithIamUserId(userId => _appsBusinessLogic.CreateOrUpdateAppDescriptionByIdAsync(appId, userId, offerDescriptionDatas)).ConfigureAwait(false);
-        return NoContent();
     }
 
     /// <summary>

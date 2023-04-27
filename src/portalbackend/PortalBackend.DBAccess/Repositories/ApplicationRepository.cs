@@ -246,8 +246,8 @@ public class ApplicationRepository : IApplicationRepository
                     companyApplication.Company.Address.Streetnumber,
                     companyApplication.Company.Address.Zipcode,
                     companyApplication.Company.Address.Country!.CountryNameDe,
-                    companyApplication.Company.CompanyRoles.SelectMany(companyRole =>
-                        companyRole.AgreementAssignedCompanyRoles.Select(x =>
+                    companyApplication.Company.CompanyAssignedRoles.SelectMany(assigned =>
+                        assigned.CompanyRole!.AgreementAssignedCompanyRoles.Select(x =>
                             new AgreementsData(
                                 x.CompanyRoleId,
                                 x.AgreementId,

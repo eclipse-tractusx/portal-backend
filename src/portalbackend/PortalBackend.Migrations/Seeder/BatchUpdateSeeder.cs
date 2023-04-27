@@ -101,7 +101,7 @@ public class BatchUpdateSeeder : ICustomSeeder
             {
                 dbEntry.Value = entry.Value;
             }, cancellationToken).ConfigureAwait(false);
-         
+
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
     }
