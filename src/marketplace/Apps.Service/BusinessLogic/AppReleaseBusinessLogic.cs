@@ -61,6 +61,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
     
     /// <inheritdoc/>
+    [Obsolete("This Method is not used anymore,  Planning to delete it with release 3.1")]
     public  Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
         if (appId == Guid.Empty)
@@ -74,6 +75,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         return EditAppAsync(appId, updateModel, userId);
     }
 
+    [Obsolete("This Method is not used anymore,  Planning to delete it with release 3.1")]
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
