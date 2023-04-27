@@ -395,7 +395,8 @@ public class OfferService : IOfferService
         var notificationContent = new
         {
             offerId,
-            RequestorCompanyName = offerDetails.CompanyName
+            RequestorCompanyName = offerDetails.CompanyName,
+            OfferName = offerDetails.Name
         };
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
