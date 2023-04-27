@@ -62,6 +62,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="404">App does not exist.</response>
     /// <response code="403">User does not have edit permission.</response>
     /// <response code="409">App is in incorrect state.</response>
+    [Obsolete("This endpoint is not used anymore, Planning to delete it with release 3.1")]
     [HttpPut]
     [Route("updateapp/{appId}")]
     [Authorize(Roles = "app_management")]

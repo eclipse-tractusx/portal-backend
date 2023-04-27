@@ -38,6 +38,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="updateModel"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
+    [Obsolete("This Method is not used anymore,  Planning to delete it with release 3.1")]
     Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, string userId);
     
     /// <summary>
