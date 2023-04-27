@@ -112,7 +112,7 @@ public class ConnectorsRepository : IConnectorsRepository
     public IAsyncEnumerable<(string BusinessPartnerNumber, string ConnectorEndpoint)> GetConnectorEndPointDataAsync(IEnumerable<string> bpns) =>
         _context.Connectors
             .AsNoTracking()
-            .Where(connector => bpns.Contains(connector.Provider!.BusinessPartnerNumber))
+            .Where(connector => connector.StatusId==ConnectorStatusId.ACTIVE && (!bpns.Any() || bpns.Contains(connector.Provider!.BusinessPartnerNumber)))
             .OrderBy(connector => connector.ProviderId)
             .Select(connector => new ValueTuple<string,string>
             (
