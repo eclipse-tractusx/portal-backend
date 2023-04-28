@@ -24,16 +24,34 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 
 public static class HttpAsyncResponseMessageExtension
 {
-    public static async Task<HttpResponseMessage> CatchingIntoServiceExceptionFor(this Task<HttpResponseMessage> response, string systemName, RecoverOptions recoverOptions = RecoverOptions.None)
+    public static async Task<HttpResponseMessage> CatchingIntoServiceExceptionFor(this Task<HttpResponseMessage> response, string systemName, RecoverOptions recoverOptions = RecoverOptions.None, Func<HttpContent,ValueTask<string?>>? createErrorMessage = null)
     {
         try
         {
             var message = await response.ConfigureAwait(false);
-            if (!message.IsSuccessStatusCode)
+            if (message.IsSuccessStatusCode)
             {
-                throw new ServiceException($"call to external system {systemName} failed with statuscode {(int)message.StatusCode}", message.StatusCode, (recoverOptions & RecoverOptions.RESPONSE_RECEIVED) == RecoverOptions.RESPONSE_RECEIVED);
+                return message;
             }
-            return message;
+
+            string? errorMessage;
+            try
+            {
+                errorMessage = (int) message.StatusCode < 500 && createErrorMessage != null
+                    ? await createErrorMessage(message.Content).ConfigureAwait(false)
+                    : null;
+            }
+            catch(Exception)
+            {
+                errorMessage = null;
+            }
+
+            throw new ServiceException(
+                string.IsNullOrWhiteSpace(errorMessage)
+                    ? $"call to external system {systemName} failed with statuscode {(int)message.StatusCode}"
+                    : $"call to external system {systemName} failed with statuscode {(int)message.StatusCode} - Message: {errorMessage}",
+                message.StatusCode,
+                (recoverOptions & RecoverOptions.RESPONSE_RECEIVED) == RecoverOptions.RESPONSE_RECEIVED);
         }
         catch(HttpRequestException e)
         {
