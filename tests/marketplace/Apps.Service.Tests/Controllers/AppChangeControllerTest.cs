@@ -23,6 +23,9 @@ using FakeItEasy;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
@@ -62,5 +65,40 @@ public class AppChangeControllerTest
             Assert.NotNull(item);
             Assert.IsType<AppRoleData>(item);
         }
+    }
+
+    [Fact]
+    public async Task GetAppUpdateDescriptionsAsync_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
+
+        A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(() => offerDescriptionData);
+        
+        //Act
+        var result = await this._controller.GetAppUpdateDescriptionsAsync(appId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<string>._)).MustHaveHappened();
+    }
+
+    [Fact]
+    public async Task CreateOrUpdateAppDescriptionsAsync_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
+
+        A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<string>._, A<IEnumerable<LocalizedDescription>>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+        
+        //Act
+        var result = await this._controller.CreateOrUpdateAppDescriptionsByIdAsync(appId,offerDescriptionData).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<string>._, A<IEnumerable<LocalizedDescription>>._)).MustHaveHappened();
+        result.Should().BeOfType<NoContentResult>(); 
     }
 }

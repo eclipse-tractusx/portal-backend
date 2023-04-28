@@ -47,3 +47,17 @@ public record ConnectorInformationData(
     string Bpn,
     Guid Id,
     string Url);
+
+/// <summary>
+/// View model for connectors.
+/// </summary>
+public record ManagedConnectorData(
+    string Name,
+    [StringLength(2, MinimumLength = 2)]
+    string Location,
+    Guid Id,
+    ConnectorTypeId Type,
+    ConnectorStatusId Status,
+    bool? DapsRegistrationSuccessful,
+    string? ProviderCompanyName,
+    Guid? SelfDescriptionDocumentId);

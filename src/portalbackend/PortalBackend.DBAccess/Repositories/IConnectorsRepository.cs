@@ -18,8 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -35,6 +37,13 @@ public interface IConnectorsRepository
     /// <returns>Queryable of connectors that allows transformation.</returns>
     IQueryable<Connector> GetAllCompanyConnectorsForIamUser(string iamUserId);
 
+    /// <summary>
+    /// Get all managed connectors of a user's company by iam user ID.
+    /// </summary>
+    /// <param name="iamUserId">ID of the iam user used to determine company's connectors for.</param>
+    /// <returns>Pagination.Source of connectors that allows transformation.</returns>
+    Func<int,int,Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForIamUser(string iamUserId);
+
     Task<(ConnectorData ConnectorData, bool IsProviderUser)> GetConnectorByIdForIamUser(Guid connectorId, string iamUser);
 
     Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, string iamUser);
@@ -48,12 +57,6 @@ public interface IConnectorsRepository
     /// <param name="setupOptionalFields">Action to setup optional fields.</param>
     /// <returns>Created and persisted connector.</returns>
     Connector CreateConnector(string name, string location, string connectorUrl, Action<Connector>? setupOptionalFields);
-
-    /// <summary>
-    /// Removes a connector from persistence layer by id.
-    /// </summary>
-    /// <param name="connectorId">ID of the connector to be deleted.</param>
-    Task DeleteConnectorAsync(Guid connectorId);
     
     /// <summary>
     /// Get Connector End Point Grouped By Business Partner Number
@@ -76,4 +79,32 @@ public interface IConnectorsRepository
     /// <param name="connectorId">Id of the connector</param>
     /// <returns><c>true</c> if the connector exists, otherwise <c>false</c></returns>
     Task<(Guid ConnectorId, Guid? SelfDescriptionDocumentId)> GetConnectorDataById(Guid connectorId);
+
+    /// <summary>
+    /// Gets SelfDescriptionDocument Data
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    /// <returns>returns SelfDescriptionDocument Data/c></returns>
+    Task<(bool IsConnectorIdExist, string? DapsClientId, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus)> GetConnectorDeleteDataAsync(Guid connectorId);
+
+    /// <summary>
+    /// Creates the connector details
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    /// <param name="dapsClientId">client id of daps</param>
+    void CreateConnectorClientDetails(Guid connectorId, string dapsClientId);
+
+    /// <summary>
+    /// Deletes the connector client details
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    void DeleteConnectorClientDetails(Guid connectorId);
+    
+    /// <summary>
+    /// Gets the data required for the connector update
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    /// <param name="iamUser">Id of the IamUser</param>
+    /// <returns>Returns the update information</returns>
+    Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, string iamUser);
 }

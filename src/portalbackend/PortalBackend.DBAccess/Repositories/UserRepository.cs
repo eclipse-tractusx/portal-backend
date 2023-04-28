@@ -347,13 +347,6 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<Guid> GetServiceAccountCompany(string iamUserId) =>
-        _dbContext.IamServiceAccounts
-            .Where(x => x.UserEntityId == iamUserId)
-            .Select(x => x.CompanyServiceAccount!.ServiceAccountOwnerId)
-            .SingleOrDefaultAsync();
-
-    /// <inheritdoc />
     public Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId) => 
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
@@ -374,8 +367,8 @@ public class UserRepository : IUserRepository
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new {
                 User = companyUser,
-                Offers = companyUser.Company!.CompanyRoles
-                    .SelectMany(companyRole => companyRole.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(role => role.OfferId == offerId))
+                Offers = companyUser.Company!.CompanyAssignedRoles
+                    .SelectMany(assigned => assigned.CompanyRole!.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(role => role.OfferId == offerId))
                     .Select(userrole => userrole.Offer)
             })
             .Select(x => new OfferIamUserData(
@@ -490,4 +483,11 @@ public class UserRepository : IUserRepository
                 company.BusinessPartnerNumber,
                 company.Id))
             .AsAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<string?> GetCompanyBpnForIamUserAsync(string iamUserId) =>
+        _dbContext.IamUsers
+            .Where(x => x.UserEntityId == iamUserId)
+            .Select(x => x.CompanyUser!.Company!.BusinessPartnerNumber)
+            .SingleOrDefaultAsync();
 }
