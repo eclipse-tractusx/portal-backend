@@ -548,6 +548,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         new [] {
             "ac1cf001-7fbc-1f2f-817f-bce0000c0001",
             "99c5fd12-8085-4de2-abfd-215e1ee4baa5",
+            "99c5fd12-8085-4de2-abfd-215e1ee4baa8"
         },
         new [] {
             "00000000-0000-0000-0000-000000000000",
@@ -672,6 +673,20 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var documenttypeId = InReviewAppofferDetail!.Documents.Select(x => x.documentTypeId);
         documenttypeId.Should().NotContain(DocumentTypeId.APP_LEADIMAGE);
         documenttypeId.Should().NotContain(DocumentTypeId.APP_IMAGE);
+        InReviewAppofferDetail.OfferStatusId.Should().Be(OfferStatusId.IN_REVIEW);
+    }
+
+    [Fact]
+    public async Task GetInReviewAppDataByIdAsync_InCorrectOfferStatus_ReturnsNullt()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var InReviewAppofferDetail = await sut.GetInReviewAppDataByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        InReviewAppofferDetail.Should().BeNull();
     }
 
     #endregion
@@ -1110,6 +1125,19 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result!.Title.Should().Be("SDE with EDC");
         result.Provider.Should().Be("Service Provider");
+        result.OfferStatusId.Should().Be(OfferStatusId.ACTIVE);
+    }
+    [Fact]
+    public async Task GetServiceDetailsByIdAsync_InCorrectOfferStatus_ReturnsNull()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceDetailsByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA8")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
     }
 
     #endregion

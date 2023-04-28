@@ -1008,6 +1008,50 @@ public class AppReleaseBusinessLogicTest
 
     #endregion
     
+    #region  GetInReviewAppDetailsById
+
+    [Fact]
+    public async Task GetInReviewAppDetailsByIdAsync_ReturnsExpected()
+    {
+        // Arrange
+        var data = _fixture.Create<InReviewOfferData>();
+        var appId = _fixture.Create<Guid>();
+
+        A.CallTo(() => _offerRepository.GetInReviewAppDataByIdAsync(appId, OfferTypeId.APP))
+            .ReturnsLazily(() => data);
+
+        // Act
+        var result = await _sut.GetInReviewAppDetailsByIdAsync(appId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.ContactNumber.Should().Be(data.ContactNumber);
+        result.LicenseType.Should().Be(data.LicenseTypeId);
+        result.LeadPictureId.Should().Be(data.leadPictureId);
+        result.Provider.Should().Be(data.Provider);
+        result.ProviderUri.Should().Be(data.ProviderUri);
+        result.OfferStatusId.Should().Be(data.OfferStatusId);
+    }
+
+    [Fact]
+    public async Task GetInReviewAppDetailsByIdAsync_ThrowsNotFoundException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+
+        A.CallTo(() => _offerRepository.GetInReviewAppDataByIdAsync(appId, OfferTypeId.APP))
+            .ReturnsLazily(() => (InReviewOfferData?)default!);
+
+         //Act
+        async Task Act() => await _sut.GetInReviewAppDetailsByIdAsync(appId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"App {appId} not found or Incorrect Status");
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupUpdateApp()
