@@ -782,9 +782,9 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, IamUserId))
             .ReturnsLazily(() => data);
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connectorId, A<Action<Connector>>._))
-            .Invokes((Guid _, Action<Connector> setOptionalProperties) =>
+            .Invokes((Guid _, Action<Connector>? setOptionalProperties) =>
             {
-                setOptionalProperties.Invoke(connector);
+                setOptionalProperties?.Invoke(connector);
             });
 
         // Act
@@ -882,11 +882,11 @@ public class ConnectorsBusinessLogicTests
             })
             .Returns(new Connector(Guid.NewGuid(), null!, null!, null!));
 
-        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>>._))
-            .Invokes((Guid connectorId, Action<Connector> setOptionalParameters) =>
+        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>>._!))
+            .Invokes((Guid connectorId, Action<Connector>? setOptionalParameters) =>
             {
                 var connector = _connectors.First(x => x.Id == connectorId);
-                setOptionalParameters.Invoke(connector);
+                setOptionalParameters?.Invoke(connector);
             });
 
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(ExistingConnectorId, IamUserId))

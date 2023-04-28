@@ -27,6 +27,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private static readonly Guid ApplicationWithBpn = new("6b2d1263-c073-4a48-bfaf-704dc154ca9e");
+    private const string ClientId = "technical_roles_management";
+    private const string ValidIamUserId = "502dabcf-01c7-47d9-a88e-0be4279097b5";
     private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
 
@@ -101,10 +103,27 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    private async Task<UserRolesRepository> CreateSut()
+    #region GetServiceAccountRolesAsync
+    
+    [Fact]
+    public async Task GetServiceAccountRolesAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetServiceAccountRolesAsync(ValidIamUserId, ClientId).ToListAsync().ConfigureAwait(false);
+        
+        // Assert
+        data.Should().HaveCount(9);
+        data.Should().OnlyHaveUniqueItems();
+    }
+
+    #endregion
+    
+    private async Task<IUserRolesRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
-        var sut = new UserRolesRepository(context);
-        return sut;
+        return new UserRolesRepository(context);
     }
 }
