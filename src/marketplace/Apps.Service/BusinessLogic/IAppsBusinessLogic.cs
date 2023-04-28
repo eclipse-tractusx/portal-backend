@@ -90,8 +90,9 @@ public interface IAppsBusinessLogic
     /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
     /// <param name="sorting"></param>
     /// <param name="statusId"></param>
+    /// <param name="offerId"></param>
     /// <returns>Async enumberable of user's company's provided apps' statuses.</returns>
-    public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId);
+    public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId);
 
     /// <summary>
     /// Adds a subscription relation between an application and a user's company.
