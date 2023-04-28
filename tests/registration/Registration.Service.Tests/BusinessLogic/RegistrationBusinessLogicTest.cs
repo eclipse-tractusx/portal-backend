@@ -1090,6 +1090,13 @@ public class RegistrationBusinessLogicTest
         var documentId = Guid.NewGuid();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         var documents = new List<Document>();
+        var settings = new RegistrationSettings
+        {
+            DocumentTypeIds = new []{ 
+                DocumentTypeId.CX_FRAME_CONTRACT,
+                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
+            }
+        };
         A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._,A<Action<Document>?>._))
             .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? action) =>
             {
@@ -1097,10 +1104,19 @@ public class RegistrationBusinessLogicTest
                 action?.Invoke(document);
                 documents.Add(document);
             });
-        var sut = _fixture.Create<RegistrationBusinessLogic>();
+
+        var sut = new RegistrationBusinessLogic(
+            Options.Create(settings),
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories,
+            null!);
 
         // Act
-        await sut.UploadDocumentAsync(_existingApplicationId, file, DocumentTypeId.ADDITIONAL_DETAILS, _iamUserId, CancellationToken.None);
+        await sut.UploadDocumentAsync(_existingApplicationId, file, DocumentTypeId.CX_FRAME_CONTRACT, _iamUserId, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -1142,11 +1158,26 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
-        var sut = _fixture.Create<RegistrationBusinessLogic>();
+        var settings = new RegistrationSettings
+        {
+            DocumentTypeIds = new []{ 
+                DocumentTypeId.CX_FRAME_CONTRACT,
+                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
+            }
+        };
+        var sut = new RegistrationBusinessLogic(
+            Options.Create(settings),
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories,
+            null!);
         var notExistingId = Guid.NewGuid();
 
         // Act
-        async Task Action() => await sut.UploadDocumentAsync(notExistingId, file, DocumentTypeId.ADDITIONAL_DETAILS, _iamUserId, CancellationToken.None);
+        async Task Action() => await sut.UploadDocumentAsync(notExistingId, file, DocumentTypeId.CX_FRAME_CONTRACT, _iamUserId, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
@@ -1158,15 +1189,59 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
-        var sut = _fixture.Create<RegistrationBusinessLogic>();
+        var settings = new RegistrationSettings
+        {
+            DocumentTypeIds = new []{ 
+                DocumentTypeId.CX_FRAME_CONTRACT,
+                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
+            }
+        };
+        var sut = new RegistrationBusinessLogic(
+            Options.Create(settings),
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories,
+            null!);
         var notExistingId = Guid.NewGuid();
 
         // Act
-        async Task Action() => await sut.UploadDocumentAsync(_existingApplicationId, file, DocumentTypeId.ADDITIONAL_DETAILS, notExistingId.ToString(), CancellationToken.None);
+        async Task Action() => await sut.UploadDocumentAsync(_existingApplicationId, file, DocumentTypeId.CX_FRAME_CONTRACT, notExistingId.ToString(), CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
         ex.Message.Should().Be($"iamUserId {notExistingId} is not assigned with CompanyApplication {_existingApplicationId}");
+    }
+
+    [Fact]
+    public async Task UploadDocumentAsync_WithInvalidDocumentTypeId_ThrowsException()
+    {
+        // Arrange
+        var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
+        var settings = new RegistrationSettings
+        {
+            DocumentTypeIds = new []{ 
+                DocumentTypeId.CX_FRAME_CONTRACT,
+                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
+            }
+        };
+        var sut = new RegistrationBusinessLogic(
+            Options.Create(settings),
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories,
+            null!);
+        // Act
+        async Task Action() => await sut.UploadDocumentAsync(_existingApplicationId, file, DocumentTypeId.ADDITIONAL_DETAILS, _iamUserId, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.Message.Should().Be($"documentType must be either: {string.Join(",", settings.DocumentTypeIds)}");
     }
 
     #endregion

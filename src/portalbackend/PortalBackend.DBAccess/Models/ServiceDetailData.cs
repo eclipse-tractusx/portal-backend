@@ -75,7 +75,12 @@ public record ServiceDetailsData(
     /// <summary>
     /// Offer Status Id
     /// </summary>
-    OfferStatusId OfferStatusId
+    OfferStatusId OfferStatusId,
+    
+    /// <summary>
+    /// License Type Id
+    /// </summary>
+    LicenseTypeId LicenseTypeId
 );
 
 

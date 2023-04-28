@@ -42,6 +42,8 @@ public interface INotificationRepository
 
     void AttachAndModifyNotification(Guid notificationId, Action<Notification> setOptionalParameters);
 
+    void AttachAndModifyNotifications(IEnumerable<Guid> notificationIds, Action<Notification> setOptionalParameters);
+
     Notification DeleteNotification(Guid notificationId);
 
     /// <summary>
@@ -85,4 +87,14 @@ public interface INotificationRepository
     /// <param name="iamUserId">id of the iam user</param>
     /// <returns>Returns the notification count details</returns>
     IAsyncEnumerable<(bool IsRead, NotificationTopicId NotificationTopicId, int Count)> GetCountDetailsForUserAsync(string iamUserId);
+
+    /// <summary>
+    /// Gets the notification ids that should be updated
+    /// </summary>
+    /// <param name="userRoleIds">ids of the user roles</param>
+    /// <param name="companyUserIds">(optional) ids of companyUsers</param>
+    /// <param name="notificationTypeIds">notification type ids</param>
+    /// <param name="offerId">id of the offer to get the notifications for</param>
+    /// <returns>List of the notification ids that should be updated</returns>
+    IAsyncEnumerable<Guid> GetNotificationUpdateIds(IEnumerable<Guid> userRoleIds, IEnumerable<Guid>? companyUserIds, IEnumerable<NotificationTypeId> notificationTypeIds, Guid offerId);
 }

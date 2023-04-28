@@ -35,19 +35,19 @@ public class AuditOffer20230119 : IAuditEntityV1
     public Guid AuditV1Id { get; set; }
 
     public Guid Id { get; set; }
-    
+
     public string? Name { get; set; }
 
-    public DateTimeOffset DateCreated { get; private set; }
+    public DateTimeOffset DateCreated { get; set; }
 
     public DateTimeOffset? DateReleased { get; set; }
 
     public string? MarketingUrl { get; set; }
-    
+
     public string? ContactEmail { get; set; }
-    
+
     public string? ContactNumber { get; set; }
-    
+
     public string Provider { get; set; }
 
     public OfferTypeId OfferTypeId { get; set; }
@@ -59,6 +59,7 @@ public class AuditOffer20230119 : IAuditEntityV1
     public OfferStatusId OfferStatusId { get; set; }
 
     public DateTimeOffset? DateLastChanged { get; set; }
+
     public Guid? LastEditorId { get; set; }
     /// <inheritdoc />
     public Guid? AuditV1LastEditorId { get; set; }

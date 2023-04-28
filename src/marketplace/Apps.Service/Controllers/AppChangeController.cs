@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers;
 
@@ -68,4 +69,41 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<IEnumerable<AppRoleData>> AddActiveAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> userRoles)=>
         await this.WithIamUserId(iamUserId => _businessLogic.AddActiveAppUserRoleAsync(appId, userRoles, iamUserId)).ConfigureAwait(false);
+
+    /// <summary>
+    /// Get description of the app by Id.
+    /// </summary>
+    /// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id for the app description to retrieve.</param>
+    /// <returns>collection of descriptions of app by Id that are provided by the calling users company</returns>
+    /// <remarks>Example: Get: /api/apps/appchange/092bdae3-a044-4314-94f4-85c65a09e31b/appupdate/description</remarks>
+    /// <response code="200">returns list of app descriptions</response>
+    [HttpGet]
+    [Route("{appId}/appupdate/description")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(IEnumerable<LocalizedDescription>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionsAsync([FromRoute] Guid appId) =>
+        await this.WithIamUserId(userId => _businessLogic.GetAppUpdateDescriptionByIdAsync(appId, userId)).ConfigureAwait(false);
+
+    /// <summary>
+    /// Create or Update description of the app by Id.
+    /// </summary>
+    /// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id for the app description to create or update.</param>
+    /// <param name="offerDescriptionDatas">app description data to create or update.</param>
+    /// <remarks>Example: Put: /api/apps/appchanges/092bdae3-a044-4314-94f4-85c65a09e31b/appupdate/description</remarks>
+    /// <response code="204">The app description succesFully created or updated</response>
+    [HttpPut]
+    [Route("{appId}/appupdate/description")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<NoContentResult> CreateOrUpdateAppDescriptionsByIdAsync([FromRoute] Guid appId, [FromBody] IEnumerable<LocalizedDescription> offerDescriptionDatas)
+    {
+        await this.WithIamUserId(userId => _businessLogic.CreateOrUpdateAppDescriptionByIdAsync(appId, userId, offerDescriptionDatas)).ConfigureAwait(false);
+        return NoContent();
+    }
 }
