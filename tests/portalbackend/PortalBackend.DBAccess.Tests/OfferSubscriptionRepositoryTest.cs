@@ -140,23 +140,33 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     #region GetOwnCompanyProvidedOfferSubscriptionStatusesUntracked
     
     [Theory]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc)]
-    [InlineData(SubscriptionStatusSorting.OfferIdDesc)]
-    [InlineData(SubscriptionStatusSorting.CompanyNameAsc)]
-    [InlineData(SubscriptionStatusSorting.CompanyNameDesc)]
-    public async Task GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpectedNotificationDetailData(SubscriptionStatusSorting sorting)
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, 1)]
+    [InlineData(SubscriptionStatusSorting.OfferIdDesc, null, 1)]
+    [InlineData(SubscriptionStatusSorting.CompanyNameAsc, null, 1)]
+    [InlineData(SubscriptionStatusSorting.CompanyNameDesc, null, 1)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfea", 1)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "deadbeef-dead-beef-dead-beefdeadbeef", 0)]
+    public async Task GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpectedNotificationDetailData(SubscriptionStatusSorting sorting, string? offerIdTxt, int count)
     {
         // Arrange
+        Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync("8be5ee49-4b9c-4008-b641-138305430cc4", OfferTypeId.SERVICE, sorting, OfferSubscriptionStatusId.ACTIVE)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync("8be5ee49-4b9c-4008-b641-138305430cc4", OfferTypeId.SERVICE, sorting, OfferSubscriptionStatusId.ACTIVE, offerId)(0, 15).ConfigureAwait(false);
 
         // Assert
-        results.Should().NotBeNull();
-        results!.Count.Should().Be(1);
-        results.Data.Should().HaveCount(1);
-        results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().HaveCount(1);
+        if (count > 0)
+        {
+            results.Should().NotBeNull();
+            results!.Count.Should().Be(count);
+            results.Data.Should().HaveCount(count);
+            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().HaveCount(1);
+        }
+        else
+        {
+            results.Should().BeNull();
+        }
     }
     
     #endregion

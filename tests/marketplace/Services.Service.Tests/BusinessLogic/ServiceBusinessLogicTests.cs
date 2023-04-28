@@ -178,14 +178,16 @@ public class ServiceBusinessLogicTests
 
     #region GetCompanyProvidedServiceSubscriptionStatusesForUser
     
-    [Fact]
-    public async Task GetCompanyProvidedServiceSubscriptionStatusesForUserAsync_ReturnsExpectedCount()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("c714b905-9d2a-4cf3-b9f7-10be4eeddfc8")]
+    public async Task GetCompanyProvidedServiceSubscriptionStatusesForUserAsync_ReturnsExpectedCount(string? offerIdTxt)
     {
         // Arrange
         var (_, iamUser) = CreateTestUserPair();
-
+        Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
         var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5);
-        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUser.UserEntityId, OfferTypeId.SERVICE, null, OfferSubscriptionStatusId.ACTIVE))
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUser.UserEntityId, OfferTypeId.SERVICE, null, OfferSubscriptionStatusId.ACTIVE, A<Guid?>._))
             .Returns((skip, take) => Task.FromResult(new Pagination.Source<OfferCompanySubscriptionStatusData>(data.Count(), data.Skip(skip).Take(take)))!);
 
         var serviceSettings = new ServiceSettings
@@ -195,10 +197,12 @@ public class ServiceBusinessLogicTests
         var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(serviceSettings));
 
         // Act
-        var result = await sut.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 10, iamUser.UserEntityId, null, null).ConfigureAwait(false);
+        var result = await sut.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 10, iamUser.UserEntityId, null, null, offerId).ConfigureAwait(false);
 
         // Assert
         result.Content.Should().HaveCount(5);
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUser.UserEntityId, OfferTypeId.SERVICE, null, OfferSubscriptionStatusId.ACTIVE, offerId))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion

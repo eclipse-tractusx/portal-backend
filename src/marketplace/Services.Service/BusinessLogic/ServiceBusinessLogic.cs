@@ -125,9 +125,9 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerSetupService.AutoSetupOfferAsync(data, _settings.ITAdminRoles, iamUserId, OfferTypeId.SERVICE, _settings.UserManagementAddress, _settings.ServiceManagerRoles);
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId) =>
+    public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId) =>
         Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.SERVICE, sorting, statusId ?? OfferSubscriptionStatusId.ACTIVE));
+            .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.SERVICE, sorting, statusId ?? OfferSubscriptionStatusId.ACTIVE, offerId));
 
     /// <inheritdoc/>
     public Task SubmitServiceAsync(Guid serviceId, string iamUserId) => 

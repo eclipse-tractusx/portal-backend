@@ -231,13 +231,16 @@ public class AppBusinessLogicTests
 
     #region GetCompanyProvidedAppSubscriptionStatusesForUser
     
-    [Fact]
-    public async Task GetCompanyProvidedAppSubscriptionStatusesForUserAsync_ReturnsExpectedCount()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("c714b905-9d2a-4cf3-b9f7-10be4eeddfc8")]
+    public async Task GetCompanyProvidedAppSubscriptionStatusesForUserAsync_ReturnsExpectedCount(string? offerIdTxt)
     {
         // Arrange
         var iamUserId = _fixture.Create<string>();
+        Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
         var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5);
-        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.APP, default, OfferSubscriptionStatusId.ACTIVE))
+        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.APP, default, OfferSubscriptionStatusId.ACTIVE, A<Guid?>._))
             .Returns((skip, take) => Task.FromResult(new Pagination.Source<OfferCompanySubscriptionStatusData>(data.Count(), data.Skip(skip).Take(take)))!);
 
         var appsSettings = new AppsSettings
@@ -248,10 +251,12 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(appsSettings), null!);
 
         // Act
-        var result = await sut.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 10, iamUserId, null, null).ConfigureAwait(false);
+        var result = await sut.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 10, iamUserId, null, null, offerId).ConfigureAwait(false);
 
         // Assert
         result.Content.Should().HaveCount(5);
+        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.APP, default, OfferSubscriptionStatusId.ACTIVE, offerId))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
