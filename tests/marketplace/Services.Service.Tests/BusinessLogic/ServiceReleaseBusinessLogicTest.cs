@@ -115,12 +115,6 @@ public class ServiceReleaseBusinessLogicTest
         //Arrange
         var data = _fixture.Build<ServiceDetailsData>()
                            .With(x=>x.OfferStatusId, OfferStatusId.IN_REVIEW)
-                           .With(x=>x.Title, "ServiceTest")
-                           .With(x=>x.Provider, "TestProvider")
-                           .With(x=>x.ProviderUri, "TestProviderUri")
-                           .With(x=>x.ContactEmail, "test@gmail.com")
-                           .With(x=>x.ContactNumber, "6754321786")
-                           .With(x=>x.ServiceTypeIds, new []{ServiceTypeId.CONSULTANCE_SERVICE.ToString(),ServiceTypeId.DATASPACE_SERVICE.ToString()})
                            .Create();
         var serviceId = _fixture.Create<Guid>();
        
@@ -134,33 +128,43 @@ public class ServiceReleaseBusinessLogicTest
         A.CallTo(() => _offerRepository.GetServiceDetailsByIdAsync(A<Guid>._))
             .MustHaveHappenedOnceExactly();
         result.Should().BeOfType<ServiceData>();
-        result.Title.Should().Be("ServiceTest");
-        result.Provider.Should().Be("TestProvider");
-        result.ProviderUri.Should().Be("TestProviderUri");
-        result.ContactEmail.Should().Be("test@gmail.com");
-        result.ContactNumber.Should().Be("6754321786");
+        result.Title.Should().NotBeNull().And.Be(data.Title);
+        result.Provider.Should().Be(data.Provider);
+        result.ProviderUri.Should().NotBeNull().And.Be(data.ProviderUri);
+        result.ContactEmail.Should().NotBeNull().And.Be(data.ContactEmail);
+        result.ContactNumber.Should().NotBeNull().And.Be(data.ContactNumber);
+        result.OfferStatus.Should().Be(data.OfferStatusId);
     }
 
     [Fact]
-    public async Task GetServiceDetailsByIdAsync_WithInvalidOfferStatus_ThrowsException()
+    public async Task GetServiceDetailsByIdWillNullPropertiesAsync_ReturnsExpectedResult()
     {
-        // Arrange
+        //Arrange
         var data = _fixture.Build<ServiceDetailsData>()
-                            .With(x=>x.OfferStatusId, OfferStatusId.CREATED)
-                            .Create();
+                           .With(x=>x.OfferStatusId, OfferStatusId.IN_REVIEW)
+                           .With(x=>x.Title, (string?)null)
+                           .With(x => x.ProviderUri, (string?)null)
+                           .With(x => x.ContactEmail, (string?)null)
+                           .With(x => x.ContactNumber, (string?)null)
+                           .Create();
         var serviceId = _fixture.Create<Guid>();
        
         A.CallTo(() => _offerRepository.GetServiceDetailsByIdAsync(serviceId))
             .ReturnsLazily(() => data);
 
-        // Act
-        async Task Act() => await _sut.GetServiceDetailsByIdAsync(serviceId).ConfigureAwait(false);
-
-        // Assert
-        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be($"serviceId {serviceId} is incorrect status");
+        //Act
+        var result = await _sut.GetServiceDetailsByIdAsync(serviceId).ConfigureAwait(false);
+        
+        // Assert 
+        A.CallTo(() => _offerRepository.GetServiceDetailsByIdAsync(A<Guid>._))
+            .MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<ServiceData>();
+        result.Title.Should().Be(Constants.ErrorString);
+        result.ProviderUri.Should().Be(Constants.ErrorString);
+        result.ContactEmail.Should().BeNull();
+        result.ContactNumber.Should().BeNull();
     }
-    
+
     [Fact]
     public async Task GetServiceDetailsByIdAsync_WithInvalidServiceId_ThrowsException()
     {
@@ -174,7 +178,7 @@ public class ServiceReleaseBusinessLogicTest
 
         // Assert
         var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be($"serviceId {invalidServiceId} does not exist");
+        error.Message.Should().Be($"serviceId {invalidServiceId} not found or Incorrect Status");
     }
 
     [Fact]

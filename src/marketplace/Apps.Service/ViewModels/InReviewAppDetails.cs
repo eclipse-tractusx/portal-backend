@@ -44,6 +44,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="Price">Pricing information of the app.</param>
 /// <param name="Tags">Tags assigned to application.</param>
 /// <param name="PrivacyPolicies">Privacy policy assigned to app.</param>
+/// <param name="OfferStatusId">OfferStatusId of the app.</param>
 
 
 public record InReviewAppDetails(
@@ -63,5 +64,6 @@ public record InReviewAppDetails(
     LicenseTypeId  LicenseType,
     string Price,
     IEnumerable<string> Tags,
-    IEnumerable<PrivacyPolicyId> PrivacyPolicies
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies,
+    OfferStatusId OfferStatusId
 );

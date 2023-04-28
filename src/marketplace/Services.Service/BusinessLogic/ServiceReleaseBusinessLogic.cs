@@ -64,14 +64,9 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     {
         var result = await _portalRepositories.GetInstance<IOfferRepository>()
             .GetServiceDetailsByIdAsync(serviceId).ConfigureAwait(false);
-        if (result == null)
+        if (result == default)
         {
-            throw new NotFoundException($"serviceId {serviceId} does not exist");
-        }
-
-        if (result.OfferStatusId != OfferStatusId.IN_REVIEW)
-        {
-            throw new ConflictException($"serviceId {serviceId} is incorrect status");
+            throw new NotFoundException($"serviceId {serviceId} not found or Incorrect Status");
         }
 
         return new ServiceData(
@@ -84,7 +79,8 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             result.ProviderUri ?? Constants.ErrorString,
             result.ContactEmail,
             result.ContactNumber,
-            result.LicenseTypeId
+            result.LicenseTypeId,
+            result.OfferStatusId
         );
     }
 

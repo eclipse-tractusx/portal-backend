@@ -40,7 +40,7 @@ public record ServiceDetailsData(
     /// <summary>
     /// Service Type Id of the offer
     /// </summary>
-    IEnumerable<string> ServiceTypeIds,
+    IEnumerable<ServiceTypeId> ServiceTypeIds,
 
     /// <summary>
     /// Provider of the offer.

@@ -82,7 +82,7 @@ public class ServiceReleaseControllerTest
         
         // Assert 
         A.CallTo(() => _logic.GetServiceDetailsByIdAsync(serviceId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<ServiceData>(result);
+        result.Should().BeOfType<ServiceData>();
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public class ServiceReleaseControllerTest
         
         // Assert 
         A.CallTo(() => _logic.GetServiceTypeDataAsync()).MustHaveHappenedOnceExactly();
-        Assert.IsType<List<ServiceTypeData>>(result);
+        result.Should().AllBeOfType<ServiceTypeData>();
         result.Should().HaveCount(5);
     }
 
