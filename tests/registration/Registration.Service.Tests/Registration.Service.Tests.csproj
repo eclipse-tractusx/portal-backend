@@ -51,6 +51,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\registration\Registration.Service\Registration.Service.csproj" />
     <ProjectReference Include="..\..\..\src\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
+    <ProjectReference Include="..\..\administration\Administration.Service.Tests\Administration.Service.Tests.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
 
