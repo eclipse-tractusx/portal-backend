@@ -333,14 +333,16 @@ public class NotificationBusinessLogicTests
     public async Task GetNotificationCountDetailsAsync()
     {
         // Arrange
-        var data = new AsyncEnumerableStub<(bool IsRead, NotificationTopicId NotificationTopicId, int Count)>(new List<(bool IsRead, NotificationTopicId NotificationTopicId, int Count)>
+        var data = new AsyncEnumerableStub<(bool IsRead, bool? Done, NotificationTopicId NotificationTopicId, int Count)>(new List<(bool IsRead, bool? Done, NotificationTopicId NotificationTopicId, int Count)>
         {
-            new (true, NotificationTopicId.INFO, 2),
-            new (false, NotificationTopicId.INFO, 3),
-            new (true, NotificationTopicId.OFFER, 6),
-            new (false, NotificationTopicId.OFFER, 4),
-            new (true, NotificationTopicId.ACTION, 1),
-            new (false, NotificationTopicId.ACTION, 5),
+            new (true, null, NotificationTopicId.INFO, 2),
+            new (false, null, NotificationTopicId.INFO, 3),
+            new (true, null, NotificationTopicId.OFFER, 6),
+            new (false, null, NotificationTopicId.OFFER, 4),
+            new (true, null, NotificationTopicId.ACTION, 1),
+            new (false, null, NotificationTopicId.ACTION, 5),
+            new (false, true, NotificationTopicId.ACTION, 3),
+            new (false, false, NotificationTopicId.ACTION, 2),
         });
         A.CallTo(() => _notificationRepository.GetCountDetailsForUserAsync(_iamUser.UserEntityId)).Returns(data.AsAsyncEnumerable());
         var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
@@ -353,10 +355,11 @@ public class NotificationBusinessLogicTests
 
         // Assert
         result.Read.Should().Be(9);
-        result.Unread.Should().Be(12);
+        result.Unread.Should().Be(17);
         result.InfoUnread.Should().Be(3);
         result.OfferUnread.Should().Be(4);
-        result.ActionRequired.Should().Be(5);
+        result.ActionRequired.Should().Be(8);
+        result.UnreadActionRequired.Should().Be(10);
     }
 
     #endregion
