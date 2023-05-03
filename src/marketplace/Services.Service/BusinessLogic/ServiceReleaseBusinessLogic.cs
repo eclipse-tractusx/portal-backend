@@ -130,10 +130,26 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, offerAgreementConsents, userId, OfferTypeId.SERVICE);
 
      /// <inheritdoc/>
-    public Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync(int page, int size, OfferSorting? sorting, string? serviceName, string? languageShortName) =>
+    public Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync(int page, int size, OfferSorting? sorting, string? serviceName, string? languageShortName, ServiceReleaseStatusIdFilter? statusId) =>
         Pagination.CreateResponseAsync(page, size, 15,
             _portalRepositories.GetInstance<IOfferRepository>()
-                .GetAllInReviewStatusServiceAsync(_settings.OfferStatusIds, OfferTypeId.SERVICE, sorting ?? OfferSorting.DateDesc,serviceName, languageShortName));
+                .GetAllInReviewStatusServiceAsync(GetOfferStatusIds(statusId), OfferTypeId.SERVICE, sorting ?? OfferSorting.DateDesc,serviceName, languageShortName));
+    
+    private IEnumerable<OfferStatusId> GetOfferStatusIds(ServiceReleaseStatusIdFilter? serviceStatusIdFilter)
+    {
+        switch(serviceStatusIdFilter)
+        {
+            case ServiceReleaseStatusIdFilter.InReview:
+            {
+                return new []{ OfferStatusId.IN_REVIEW };
+            }
+            
+            default :
+            {
+                return _settings.OfferStatusIds;
+            }
+        }       
+    }
 
      /// <inheritdoc />
      public Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId) =>

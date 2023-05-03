@@ -156,6 +156,7 @@ public class ServiceReleaseController : ControllerBase
     /// <param name="sorting">sort by</param>
     /// <param name="serviceName">search by service name</param>
     /// <param name="languageShortName">Filter by language shortname</param>
+    /// <param name="status">Filter by status</param>
     /// <returns>Collection of all in review status marketplace service.</returns>
     /// <remarks>Example: GET: /api/services/servicerelease/inReview</remarks>
     /// <response code="200">Returns the list of all in review status marketplace service.</response>
@@ -163,8 +164,8 @@ public class ServiceReleaseController : ControllerBase
     [Route("inReview")]
     [Authorize(Roles = "approve_service_release,decline_service_release")]
     [ProducesResponseType(typeof(Pagination.Response<InReviewServiceData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, [FromQuery] string? serviceName = null, [FromQuery] string? languageShortName = null) =>
-        _serviceReleaseBusinessLogic.GetAllInReviewStatusServiceAsync(page, size, sorting,serviceName, languageShortName);
+    public Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, [FromQuery] string? serviceName = null, [FromQuery] string? languageShortName = null, [FromQuery] ServiceReleaseStatusIdFilter? status = null) =>
+        _serviceReleaseBusinessLogic.GetAllInReviewStatusServiceAsync(page, size, sorting,serviceName, languageShortName, status);
 
     /// <summary>
     /// Delete Document Assigned to Offer

@@ -22,20 +22,21 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
-using Microsoft.Extensions.Options;
-using Xunit;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using System.Collections.Immutable;
+using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.BusinessLogic;
 
@@ -253,57 +254,47 @@ public class ServiceReleaseBusinessLogicTest
 
     #region GetAllInReviewStatusApps
 
-    [Fact]
-    public async Task GetAllInReviewStatusServiceAsync_InActiveRequest()
+    [Theory]
+    [InlineData(ServiceReleaseStatusIdFilter.All, true)]
+    [InlineData(ServiceReleaseStatusIdFilter.InReview, false)]
+    [InlineData(null, true)]
+    public async Task GetAllInReviewStatusServiceAsync_ReturnsExpected(ServiceReleaseStatusIdFilter? filter, bool isOptions)
     {
         // Arrange
-        var InReviewData = new[] {
-            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.ACTIVE,null!,"test data1"),
-            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.ACTIVE,null!,"test data2"),
-            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.ACTIVE,null!,"test data3"),
-            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.ACTIVE,null!,"test data4"),
-            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.ACTIVE,null!,"test data5")
-        };
-        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewServiceData>(5, InReviewData.Skip(skip).Take(take)));
+        var inReviewData = _fixture.CreateMany<InReviewServiceData>(15).ToImmutableArray();
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewServiceData>(15, inReviewData.Skip(skip).Take(take)));
         A.CallTo(() => _offerRepository.GetAllInReviewStatusServiceAsync(A<IEnumerable<OfferStatusId>>._, A<OfferTypeId>._, A<OfferSorting>._, A<string>._, A<string>._))
             .Returns(paginationResult);
 
         // Act
-        var result = await _sut.GetAllInReviewStatusServiceAsync(0, 5, OfferSorting.DateAsc, null, "en").ConfigureAwait(false);
+        var result = await _sut.GetAllInReviewStatusServiceAsync(1, 5, OfferSorting.DateAsc, null, "en", filter).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerRepository.GetAllInReviewStatusServiceAsync(A<IEnumerable<OfferStatusId>>
-            .That.Matches(x => x.Count() == 2 && x.All(y => _options.Value.OfferStatusIds.Contains(y))), OfferTypeId.SERVICE, A<OfferSorting>._, A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
-        Assert.IsType<Pagination.Response<InReviewServiceData>>(result);
-        result.Content.Should().HaveCount(5);
-        result.Content.Should().Contain(x => x.Status == OfferStatusId.ACTIVE);
+        A.CallTo(() => _offerRepository.GetAllInReviewStatusServiceAsync(
+            A<IEnumerable<OfferStatusId>>.That.Matches(x =>
+                x.SequenceEqual(isOptions
+                    ? _options.Value.OfferStatusIds
+                    : new [] { OfferStatusId.IN_REVIEW })),
+            OfferTypeId.SERVICE, A<OfferSorting>._, A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
+
+        result.Should().BeOfType<Pagination.Response<InReviewServiceData>>()
+            .Which.Meta.Should().Match<Pagination.Metadata>(x =>
+                x.NumberOfElements == 15 &&
+                x.NumberOfPages == 3 &&
+                x.Page == 1 &&
+                x.PageSize == 5);
+        result.Content.Should().HaveCount(5).And.Satisfy(
+            x => x == inReviewData[5],
+            x => x == inReviewData[6],
+            x => x == inReviewData[7],
+            x => x == inReviewData[8],
+            x => x == inReviewData[9]
+        );
     }
 
-    [Fact]
-    public async Task GetAllInReviewStatusServiceAsync_InReviewRequest()
-    {
-        // Arrange
-        var InReviewData = new[]{
-            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.IN_REVIEW,null!,"test data1"),
-            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.IN_REVIEW,null!,"test data2"),
-            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.IN_REVIEW,null!,"test data3"),
-            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.IN_REVIEW,null!,"test data4"),
-            new InReviewServiceData(Guid.NewGuid(),null!, OfferStatusId.IN_REVIEW,null!,"test data5")
-        };
-        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewServiceData>(5, InReviewData.Skip(skip).Take(take)));
-        A.CallTo(() => _offerRepository.GetAllInReviewStatusServiceAsync(A<IEnumerable<OfferStatusId>>._, A<OfferTypeId>._, A<OfferSorting>._, A<string>._, A<string>._))
-            .Returns(paginationResult);
+    #endregion
 
-        // Act
-        var result = await _sut.GetAllInReviewStatusServiceAsync(0, 5, OfferSorting.DateAsc, null, "en").ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _offerRepository.GetAllInReviewStatusServiceAsync(A<IEnumerable<OfferStatusId>>
-            .That.Matches(x => x.Count() == 2 && x.All(y => _options.Value.OfferStatusIds.Contains(y))), OfferTypeId.SERVICE, A<OfferSorting>._, A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
-        Assert.IsType<Pagination.Response<InReviewServiceData>>(result);
-        result.Content.Should().HaveCount(5);
-        result.Content.Should().Contain(x => x.Status == OfferStatusId.IN_REVIEW);
-    }
+    #region SubmitOfferConsentAsync
 
     [Fact]
     public async Task SubmitOfferConsentAsync_WithValidData_ReturnsExpected()
