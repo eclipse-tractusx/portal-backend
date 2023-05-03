@@ -82,7 +82,8 @@ public interface IServiceReleaseBusinessLogic
     /// <param name="sorting"></param>
     /// <param name="serviceName"></param>
     /// <param name="languageShortName"></param>
-    Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync(int page, int size, OfferSorting? sorting, string? serviceName, string? languageShortName);
+    /// <param name="statusId"></param>
+    Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync(int page, int size, OfferSorting? sorting, string? serviceName, string? languageShortName, ServiceReleaseStatusIdFilter? statusId);
     
     /// <summary>
     /// Creates a new service offering
