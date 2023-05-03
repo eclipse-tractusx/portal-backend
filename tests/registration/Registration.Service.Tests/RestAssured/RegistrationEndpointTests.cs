@@ -5,6 +5,7 @@ using Microsoft.Net.Http.Headers;
 using MimeKit;
 using Npgsql.Internal.TypeHandlers;
 using Org.BouncyCastle.Asn1.Ocsp;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestAssured;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -26,7 +27,11 @@ public class RegistrationEndpointTests
     private static string _applicationId;
     private readonly IFixture _fixture;
     private readonly string pdfFileName = @"TestDocument.pdf";
-
+    
+    private readonly string _adminEndPoint = "/api/administration";
+    private readonly string _operatorToken;
+    private static string _companyName = "Test-Catena-X";
+    
     public RegistrationEndpointTests()
     {
         var configuration = new ConfigurationBuilder()
@@ -34,6 +39,7 @@ public class RegistrationEndpointTests
             .Build();
         _companyToken = configuration.GetValue<string>("Secrets:CompanyToken");
         _applicationId = new (configuration.GetValue<string>("Secrets:ApplicationId"));
+        _operatorToken = configuration.GetValue<string>("Secrets:OperatorToken");
         _fixture = new Fixture();
     }
     
@@ -57,6 +63,24 @@ public class RegistrationEndpointTests
     #region Happy Path - new registration without BPN
 
     // POST api/administration/invitation
+    
+    [Fact]
+    public void ExecuteInvitation_ReturnsExpectedResult()
+    {
+        CompanyInvitationData invitationData = new CompanyInvitationData("user", "myFirstName", "myLastName",
+            "irina.meshcheryakova@office365.tngtech.com", "Test-Catena-X");
+         Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_operatorToken}")
+            .ContentType("application/json")
+            .Body(invitationData)
+            .When()
+            .Post($"{_baseUrl}{_adminEndPoint}/invitation")
+            .Then()
+            .StatusCode(200);
+    }
     
     
     // POST /api/registration/application/{applicationId}/companyDetailsWithAddress
@@ -144,14 +168,44 @@ public class RegistrationEndpointTests
                 .WithStatusCode(201));
     }
     */
-
-    
+   
     
     // POST /api/registration/application/{applicationId}/submitRegistration
     // GET: api/administration/registration/applications?companyName={companyName}
     
+    [Fact]
+    public void GetApplicationDetails_ReturnsExpectedResult()
+    {
+        // Given
+        Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_operatorToken}")
+            .When()
+            .Get($"{_baseUrl}{_adminEndPoint}/registration/applications?companyName={_companyName}/?page=0&size=10&sorting=DateDesc")
+            .Then()
+            .StatusCode(200);
+    }
     
     // GET: api/administration/registration/application/{applicationId}/companyDetailsWithAddress
+    
+    [Fact]
+    public void GetCompanyWithAddress_ReturnsExpectedResult()
+    {
+        // Given
+        Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_operatorToken}")
+            .When()
+            .Get($"{_baseUrl}{_adminEndPoint}/registration/application/{_applicationId}/companyDetailsWithAddress")
+            .Then()
+            .StatusCode(200);
+    }
+    
+    #endregion
     
     [Fact]
     public void GetCompanyDetailData_ReturnsExpectedResult()
@@ -168,10 +222,7 @@ public class RegistrationEndpointTests
             .StatusCode(200)
             .Body("");
     }
-
-    //var applicationId = _fixture.Create<DocumentTypeData>();
-    #endregion
-
+    
     #region UnHappy Path - new registration without document
 
     // POST api/administration/invitation
