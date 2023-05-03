@@ -40,12 +40,14 @@ public class JwtBearerConfigurationHealthCheck : IHealthCheck
                 ServerCertificateCustomValidationCallback = (_,_,_,_) => true
             };
         }
-        _configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-            options.MetadataAddress,
-            new OpenIdConnectConfigurationRetriever(),
-            options.BackchannelHttpHandler == null
-                ? null
-                : new HttpClient(options.BackchannelHttpHandler));
+        _configurationManager = options.BackchannelHttpHandler == null
+            ? new ConfigurationManager<OpenIdConnectConfiguration>(
+                options.MetadataAddress,
+                new OpenIdConnectConfigurationRetriever())
+            : new ConfigurationManager<OpenIdConnectConfiguration>(
+                options.MetadataAddress,
+                new OpenIdConnectConfigurationRetriever(),
+                new HttpClient(options.BackchannelHttpHandler));
     }
 
     public async Task<HealthCheckResult> CheckHealthAsync(
