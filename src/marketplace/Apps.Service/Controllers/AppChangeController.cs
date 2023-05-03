@@ -49,7 +49,7 @@ public class AppChangeController : ControllerBase
     }
     
     /// <summary>
-    /// dd role and role description for Active App 
+    /// update app roles and related description for "active" owned app offers
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="userRoles"></param>

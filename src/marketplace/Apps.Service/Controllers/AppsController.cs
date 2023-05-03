@@ -196,7 +196,7 @@ public class AppsController : ControllerBase
     }
 
     /// <summary>
-    /// Gets all agreements 
+    /// Retrieve all app marketplace agreements mandatory to be agreed before releasing an app on the CX marketplace 
     /// </summary>
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the app consent to retrieve.</param>
     /// <remarks>Example: GET: /api/apps/appAgreementData/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
