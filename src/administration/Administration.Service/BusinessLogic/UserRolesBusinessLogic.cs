@@ -73,7 +73,8 @@ public class UserRolesBusinessLogic: IUserRolesBusinessLogic
             },
             (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
                 .GetAssignedAndMatchingCoreOfferRoles(companyUserId, roles, offerId),
-            offerId, companyUserId, roles, iamUserId,             data =>
+            offerId, companyUserId, roles, iamUserId,
+            data =>
             {
                 var userName = $"{data.firstname} {data.lastname}";
                 return (JsonSerializer.Serialize(new

@@ -18,24 +18,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 
-public static class PortalRepositoriesStartupServiceExtensions
+public static class ProvisioningDBAccessStartupServiceExtensions
 {
-    public static IServiceCollection AddPortalRepositories(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddProvisioningDBAccess(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IPortalRepositories, PortalRepositories>()
-            .AddDbContext<PortalDbContext>(o => o
-                    .UseNpgsql(configuration.GetConnectionString("PortalDB"))
-                    .UsePostgreSqlTriggers())
+        services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>()
+            .AddDbContext<ProvisioningDbContext>(options =>
+                options.UseNpgsql(configuration.GetConnectionString("ProvisioningDB")))
             .AddHealthChecks()
-            .AddDbContextCheck<PortalDbContext>("PortalDbContext", tags: new [] { "portaldb" });
+            .AddDbContextCheck<ProvisioningDbContext>("ProvisioningDbContext", tags: new [] { "provisioningdb" });
         return services;
     }
 }

@@ -18,18 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 
 var VERSION = "v2";
 
@@ -57,7 +55,7 @@ builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusine
                 .ConfigureServiceAccountSettings(builder.Configuration.GetSection("ServiceAccount"));
 
 builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>()
-    .ConfigureDocumentSettings(builder.Configuration.GetSection("Document"));
+                .ConfigureDocumentSettings(builder.Configuration.GetSection("Document"));
 builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
 builder.Services.AddTransient<IPartnerNetworkBusinessLogic, PartnerNetworkBusinessLogic>();
 builder.Services.AddTransient<INotificationService, NotificationService>();
@@ -66,18 +64,15 @@ builder.Services.AddTransient<ICompanyDataBusinessLogic, CompanyDataBusinessLogi
 builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
                 .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
-builder.Services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>();
-builder.Services
-    .AddDapsService(builder.Configuration)
-    .AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"));
+builder.Services.AddDapsService(builder.Configuration)
+                .AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"));
 
 builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
 builder.Services.AddTransient<IServiceProviderBusinessLogic, ServiceProviderBusinessLogic>();
 
-builder.Services.AddDbContext<ProvisioningDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("ProvisioningDB")));
+builder.Services.AddProvisioningDBAccess(builder.Configuration);
 
 builder.Build()
     .CreateApp<Program>("administration", VERSION, builder.Environment)
