@@ -78,7 +78,7 @@ public class AppReleaseProcessController : ControllerBase
     }
 
     /// <summary>
-    /// Upload document for active apps in the marketplace for given appId for same company as user
+    /// Upload document for apps in status CREATED and document in status PENDING in the marketplace for given appId for same company as user
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="documentTypeId"></param>
