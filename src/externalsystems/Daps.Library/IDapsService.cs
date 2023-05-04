@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Daps.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
@@ -37,5 +38,23 @@ public interface IDapsService
     /// <param name="formFile">The file</param>
     /// <param name="cancellationToken">cancellation token</param>
     /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task<bool> EnableDapsAuthAsync(string clientName, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken);
+    Task<DapsResponse?> EnableDapsAuthAsync(string clientName, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Deletes the daps client
+    /// </summary>
+    /// <param name="dapsClientId">name of the client</param>
+    /// <param name="cancellationToken">cancellation token</param>
+    /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
+    Task<bool> DeleteDapsClient(string dapsClientId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Updates the url of the connector
+    /// </summary>
+    /// <param name="dapsClientId">name of the client</param>
+    /// <param name="connectorUrl">the connectors url with bpn of the company append to it</param>
+    /// <param name="businessPartnerNumber">the business partner number</param>
+    /// <param name="cancellationToken">cancellation token</param>
+    /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
+    Task<bool> UpdateDapsConnectorUrl(string dapsClientId, string connectorUrl, string businessPartnerNumber, CancellationToken cancellationToken);
 }

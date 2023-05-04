@@ -33,4 +33,10 @@ public interface IClientRepository
     /// <param name="clientId">ClientId of keycloak</param>
     /// <returns>Returns the created iam client</returns>
     IamClient CreateClient(string clientId);
+
+    /// <summary>
+    /// Removes the client
+    /// </summary>
+    /// <param name="clientId">Id of the client that should be removed</param>
+    void RemoveClient(Guid clientId);
 }

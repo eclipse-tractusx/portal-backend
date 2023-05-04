@@ -38,6 +38,10 @@ public class ClientRepository : IClientRepository
     }
 
     /// <inheritdoc />
-    public IamClient CreateClient(string clientId) =>
+    public IamClient CreateClient(string clientId) => 
         _dbContext.IamClients.Add(new IamClient(Guid.NewGuid(), clientId)).Entity;
+
+    /// <inheritdoc />
+    public void RemoveClient(Guid clientId) =>
+        _dbContext.IamClients.Remove(new IamClient(clientId, null!));
 }

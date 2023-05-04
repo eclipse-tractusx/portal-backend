@@ -79,7 +79,7 @@ public interface IAppsBusinessLogic
     /// Retrieves subscription statuses of subscribed apps of the provided user's company.
     /// </summary>
     /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
-    /// <returns>Async enumberable of user's company's subscribed apps' statuses.</returns>
+    /// <returns>Async enumerable of user's company's subscribed apps' statuses.</returns>
     public IAsyncEnumerable<AppWithSubscriptionStatus> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId);
 
     /// <summary>
@@ -118,13 +118,6 @@ public interface IAppsBusinessLogic
     public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId);
 
     /// <summary>
-    /// Creates an application and returns its generated ID.
-    /// </summary>
-    /// <param name="appInputModel">Input model for app creation.</param>
-    /// <returns>Guid of the created app.</returns>
-    public Task<Guid> CreateAppAsync(AppInputModel appInputModel);
-
-    /// <summary>
     /// Retrieve Company Owned App Data
     /// </summary>
     /// <param name="userId">IAM ID of the user to retrieve own company app.</param>
@@ -161,21 +154,6 @@ public interface IAppsBusinessLogic
     /// <param name="cancellationToken"></param>
     /// <returns>byte Array Content</returns>
     Task<(byte[] Content, string ContentType, string FileName)> GetAppDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Get OfferDescription by appId
-    /// </summary>
-    /// <param name="appId">Id of the app</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, string iamUserId);
-
-    /// <summary>
-    /// Create or Update OfferDescription by appId
-    /// </summary>
-    /// <param name="appId">Id of the app</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    /// <param name="offerDescriptionDatas">OfferDescription Data</param>
-    Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas);
 
     /// <summary>
     /// Create OfferAssigned AppLeadImage Document by appId

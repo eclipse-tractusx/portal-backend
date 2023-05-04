@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
 
@@ -186,6 +187,150 @@ public class ServiceReleaseController : ControllerBase
     public async Task<NoContentResult> DeleteServiceDocumentsAsync([FromRoute] Guid documentId)
     {
         await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.DeleteServiceDocumentsAsync(documentId, iamUserId));
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// Creates a new service offering.
+    /// </summary>
+    /// <param name="data">The data for the new service offering.</param>
+    /// <remarks>Example: POST: /api/services/servicerelease/addservice</remarks>
+    /// <response code="201">Returns the newly created service id.</response>
+    /// <response code="400">The given service offering data were invalid.</response>
+    [HttpPost]
+    [Route("addservice")]
+    [Authorize(Roles = "add_service_offering")]
+    [ProducesResponseType(typeof(OfferProviderResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public async Task<CreatedAtRouteResult> CreateServiceOffering([FromBody] ServiceOfferingData data)
+    {
+        var id = await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.CreateServiceOfferingAsync(data, iamUserId)).ConfigureAwait(false);
+        return CreatedAtRoute(nameof(ServiceReleaseController.GetServiceDetailsForStatusAsync), new { controller = "ServiceRelease", serviceId = id }, id);
+    }
+
+    /// <summary>
+    /// Updates the service
+    /// </summary>
+    /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the service to update.</param>
+    /// <param name="data">The request data to update the service</param>
+    /// <remarks>Example: PUT: /api/services/servicerelease/{serviceId}</remarks>
+    /// <response code="204">Service was successfully updated.</response>
+    /// <response code="400">Offer Subscription is not in state created or user is not in the same company.</response>
+    /// <response code="404">Offer Subscription not found.</response>
+    /// <response code="403">User don't have permission to change the service.</response>
+    /// <response code="409">Service is in inCorrect state</response>
+    [HttpPut]
+    [Route("{serviceId:guid}")]
+    [Authorize(Roles = "update_service_offering")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<NoContentResult> UpdateService([FromRoute] Guid serviceId, [FromBody] ServiceUpdateRequestData data)
+    {
+        await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.UpdateServiceAsync(serviceId, data, iamUserId));
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// Submit an Service for release
+    /// </summary>
+    /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the service.</param>
+    /// <remarks>Example: PUT: /api/services/servicerelease/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/submit</remarks>
+    /// <response code="204">The service was successfully submitted for release.</response>
+    /// <response code="400">Either the sub claim is empty/invalid, user does not exist or the subscription might not have the correct status or the companyID is incorrect.</response>
+    /// <response code="404">service does not exist.</response>
+    [HttpPut]
+    [Route("{serviceId:guid}/submit")]
+    [Authorize(Roles = "add_service_offering")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<NoContentResult> SubmitService([FromRoute] Guid serviceId)
+    {
+        await this.WithIamUserId(userId => _serviceReleaseBusinessLogic.SubmitServiceAsync(serviceId, userId)).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Approve Service to change status from IN_REVIEW to Active and create notification
+    /// </summary>
+    /// <param name="serviceId"></param>
+    /// <remarks>Example: PUT: /api/services/servicerelease/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/approveService</remarks>
+    /// <response code="204">The service was successfully submitted to Active State.</response>
+    /// <response code="409">Service is in InCorrect Status</response>
+    /// <response code="404">service does not exist.</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPut]
+    [Route("{serviceId}/approveService")]
+    [Authorize(Roles = "approve_service_release")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<NoContentResult> ApproveServiceRequest([FromRoute] Guid serviceId)
+    {
+        await this.WithIamUserId(userId => _serviceReleaseBusinessLogic.ApproveServiceRequestAsync(serviceId, userId)).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Declines the service request
+    /// </summary>
+    /// <param name="serviceId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the service that should be declined</param>
+    /// <param name="data">the data of the decline request</param>
+    /// <remarks>Example: PUT: /api/services/servicerelease/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/decline</remarks>
+    /// <response code="204">NoContent.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    /// <response code="404">If service does not exists.</response>
+    /// <response code="403">User doest not have permission to change</response>
+    /// <response code="409">Offer Type is in inCorrect state.</response>
+    /// <response code="500">Internal Server Error.</response>
+    [HttpPut]
+    [Route("{serviceId:guid}/declineService")]
+    [Authorize(Roles = "decline_service_release")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<NoContentResult> DeclineServiceRequest([FromRoute] Guid serviceId, [FromBody] OfferDeclineRequest data)
+    {
+        await this.WithIamUserId(userId => _serviceReleaseBusinessLogic.DeclineServiceRequestAsync(serviceId, userId, data)).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Upload document for active service in the marketplace for given serviceId for same company as user
+    /// </summary>
+    /// <param name="serviceId"></param>
+    /// <param name="documentTypeId"></param>
+    /// <param name="document"></param>
+    /// <param name="cancellationToken"></param>
+    /// <remarks>Example: PUT: /api/services/servicerelease/updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents</remarks>
+    /// <response code="204">Successfully uploaded the document</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="404">service does not exist.</response>
+    /// <response code="403">The user is not assigned with the service.</response>
+    /// <response code="415">Only PDF files are supported.</response>
+    /// <response code="409">Offer is in inCorrect State.</response>
+    [HttpPut]
+    [Route("updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents")]
+    [Authorize(Roles = "add_service_offering")]
+    [Consumes("multipart/form-data")]
+    [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
+    public async Task<NoContentResult> UpdateServiceDocumentAsync([FromRoute] Guid serviceId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
+    {
+        await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.CreateServiceDocumentAsync(serviceId, documentTypeId, document, iamUserId, cancellationToken));
         return NoContent();
     }
 }

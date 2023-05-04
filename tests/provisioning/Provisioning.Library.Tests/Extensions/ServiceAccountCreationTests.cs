@@ -30,7 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests.Extensions;
 
 public class ServiceAccountCreationTests
 {

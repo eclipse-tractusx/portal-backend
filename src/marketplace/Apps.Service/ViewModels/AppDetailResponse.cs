@@ -37,12 +37,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="ContactNumber">Phone number of the app's primary contact.</param>
 /// <param name="UseCases">Names of the app's use cases.</param>
 /// <param name="LongDescription">Long description of the app.</param>
+/// <param name="LicenseType">License Type for app.</param>
 /// <param name="Price">Pricing information of the app.</param>
 /// <param name="Tags">Tags assigned to application.</param>
 /// <param name="IsSubscribed">Whether app has been purchased by the user's company.</param>
 /// <param name="Languages">Languages that the app is available in.</param>
 /// <param name="Documents">documents assigned to offer</param>
 /// <param name="PrivacyPolicies">Privacy Policies assigned to offer</param>
+/// <param name="IsSingleInstance">Defines whether the app is a single instance</param>
 public record AppDetailResponse(
     Guid Id,
     string Title,
@@ -54,10 +56,12 @@ public record AppDetailResponse(
     string? ContactNumber,
     IEnumerable<AppUseCaseData> UseCases,
     string LongDescription,
+    LicenseTypeId LicenseType,
     string Price,
     IEnumerable<string> Tags,
     OfferSubscriptionStatusId? IsSubscribed,
     IEnumerable<string> Languages,
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
-    IEnumerable<PrivacyPolicyId> PrivacyPolicies
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies,
+    bool IsSingleInstance
 );

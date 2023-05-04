@@ -22,11 +22,12 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditOffer20230119))]
+[AuditEntityV1(typeof(AuditOffer20230406))]
 public class Offer : IAuditableV1, IBaseEntity
 {
     private Offer()
@@ -48,6 +49,7 @@ public class Offer : IAuditableV1, IBaseEntity
         ConsentAssignedOffers = new HashSet<ConsentAssignedOffer>();
         ServiceDetails = new HashSet<ServiceDetail>();
         OfferAssignedPrivacyPolicies = new HashSet<OfferAssignedPrivacyPolicy>();
+        TechnicalUserProfiles = new HashSet<TechnicalUserProfile>();
     }
 
     public Offer(Guid id, string provider, DateTimeOffset dateCreated, OfferTypeId offerTypeId) : this()
@@ -87,6 +89,8 @@ public class Offer : IAuditableV1, IBaseEntity
 
     public OfferStatusId OfferStatusId { get; set; }
 
+    public LicenseTypeId LicenseTypeId { get; set; }
+
     public DateTimeOffset? DateLastChanged { get; set; }
     
     [AuditLastEditorV1]
@@ -96,6 +100,10 @@ public class Offer : IAuditableV1, IBaseEntity
     public virtual OfferType? OfferType { get; private set; }
     
     public virtual OfferStatus? OfferStatus{ get; set; }
+
+    public virtual LicenseType? LicenseType{ get; set; }
+    
+    public virtual AppInstanceSetup? AppInstanceSetup{ get; set; }
     public virtual ICollection<AgreementAssignedOffer> AgreementAssignedOffers { get; private set; }
     public virtual ICollection<OfferDescription> OfferDescriptions { get; private set; }
     public virtual ICollection<AppInstance> AppInstances { get; private set; }
@@ -113,4 +121,5 @@ public class Offer : IAuditableV1, IBaseEntity
     public virtual ICollection<ConsentAssignedOffer> ConsentAssignedOffers { get; private set; }
     public virtual ICollection<ServiceDetail> ServiceDetails { get; private set; }
     public virtual ICollection<OfferAssignedPrivacyPolicy> OfferAssignedPrivacyPolicies { get; private set; }
+    public virtual ICollection<TechnicalUserProfile> TechnicalUserProfiles { get; private set; }
 }

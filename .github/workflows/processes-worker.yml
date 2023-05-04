@@ -17,7 +17,7 @@
 # SPDX-License-Identifier: Apache-2.0
 ###############################################################
 
-name: Checklist-worker
+name: Processes-worker
 
 on:
   push:
@@ -29,9 +29,9 @@ on:
       - 'src/framework/**'
       - 'src/portalbackend/PortalBackend.PortalEntities/**'
       # workflow file
-      - '.github/workflows/checklist-worker.yml'
+      - '.github/workflows/processes-worker.yml'
       # dockerfile
-      - 'docker/Dockerfile-checklist-worker'
+      - 'docker/Dockerfile-processes-worker'
 
     branches:
       - 'dev'
@@ -39,7 +39,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}_checklist-worker
+  IMAGE_NAME: ${{ github.repository }}_processes-worker
   COMMIT_SHA: ${{ github.sha }}
 
 jobs:
@@ -70,7 +70,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/Dockerfile-checklist-worker
+          file: docker/Dockerfile-processes-worker
           pull: true
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev
@@ -95,7 +95,7 @@ jobs:
         run: |
           curl -v \
             --request POST \
-            --url https://api.github.com/repos/catenax-ng/tx-portal-cd/actions/workflows/checklist-worker-image-update.yml/dispatches \
+            --url https://api.github.com/repos/catenax-ng/tx-portal-cd/actions/workflows/processes-worker-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
             --data '{"ref":"helm-environments", "inputs": { "new-image":"${{ env.COMMIT_SHA }}" }}' \

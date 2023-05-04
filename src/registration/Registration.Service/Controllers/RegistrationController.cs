@@ -122,7 +122,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// </summary>
         /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3"></param>
         /// <returns></returns>
-        /// <remarks>Example: Post: /api/registration/documents/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
+        /// <remarks>Example: Get: /api/registration/documents/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
         /// <response code="200">Successfully uploaded the document</response>
         /// <response code="403">User does not have the relevant rights to request for the document.</response>
         /// <response code="404">No document with the given id was found.</response>

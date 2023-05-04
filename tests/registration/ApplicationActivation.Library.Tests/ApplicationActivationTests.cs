@@ -702,12 +702,13 @@ public class ApplicationActivationTests
             }
         }
 
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._))
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._))
             .ReturnsLazily((
                 IDictionary<string,IEnumerable<string>> _, 
                 Guid? creatorId, 
                 IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, 
-                Guid _) =>
+                Guid _,
+                bool? done) =>
             {
                 foreach (var notificationData in notifications)
                 {
@@ -715,7 +716,8 @@ public class ApplicationActivationTests
                         DateTimeOffset.UtcNow, notificationData.notificationTypeId, false)
                     {
                         CreatorUserId = creatorId,
-                        Content = notificationData.content
+                        Content = notificationData.content,
+                        Done = done
                     };
                     _notifications.Add(notification);
                 }
