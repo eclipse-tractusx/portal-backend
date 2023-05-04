@@ -265,15 +265,12 @@ public class UserBusinessLogic : IUserBusinessLogic
             throw new NotFoundException($"app {appId} does not found");
         }
 
-        if (languageShortName != null)
+        if (languageShortName != null && !await _portalRepositories.GetInstance<ILanguageRepository>().IsValidLanguageCode(languageShortName))
         {
-            var language = await _portalRepositories.GetInstance<ILanguageRepository>().GetLanguageAsync(languageShortName);
-            if (language == null)
-            {
-                throw new ArgumentException($"language {languageShortName} does not exist");
-            }
+            throw new ArgumentException($"language {languageShortName} does not exist");
         }
-        await foreach (var roles in appRepository.GetClientRolesAsync(appId, languageShortName).ConfigureAwait(false))
+
+        await foreach (var roles in appRepository.GetClientRolesAsync(appId, languageShortName ?? Constants.DefaultLanguage).ConfigureAwait(false))
         {
             yield return new ClientRoles(roles.RoleId, roles.Role, roles.Description);
         }

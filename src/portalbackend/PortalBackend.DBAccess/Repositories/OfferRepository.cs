@@ -33,7 +33,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// Implementation of <see cref="IOfferRepository"/> accessing database with EF Core.
 public class OfferRepository : IOfferRepository
 {
-    private const string DEFAULT_LANGUAGE = "en";
     private readonly PortalDbContext _context;
 
     /// <summary>
@@ -79,7 +78,7 @@ public class OfferRepository : IOfferRepository
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<ActiveAppData> GetAllActiveAppsAsync(string? languageShortName) =>
+    public IAsyncEnumerable<ActiveAppData> GetAllActiveAppsAsync(string? languageShortName, string defaultLanguageShortName) =>
         _context.Offers.AsNoTracking()
             .AsSplitQuery()
             .Where(offer => offer.DateReleased.HasValue && offer.DateReleased <= DateTime.UtcNow && offer.OfferTypeId == OfferTypeId.APP && offer.OfferStatusId == OfferStatusId.ACTIVE)
@@ -92,7 +91,7 @@ public class OfferRepository : IOfferRepository
                 a.LicenseTypeId,
                 _context.Languages.Any(l => l.ShortName == languageShortName)
                         ? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
-                            ?? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionShort
+                            ?? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == defaultLanguageShortName)!.DescriptionShort
                         : null,
                 a.OfferLicenses
                     .Select(license => license.Licensetext)
@@ -234,20 +233,18 @@ public class OfferRepository : IOfferRepository
        
     /// <inheritdoc />
     [Obsolete("only referenced by code that is marked as obsolte")]
-    public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null) =>
+    public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string languageShortName) =>
         _context.Offers
             .Where(app => app.Id == appId)
             .SelectMany(app => app.UserRoles)
             .Select(roles => new ClientRoles(
                 roles.Id,
                 roles.UserRoleText,
-                languageShortName == null
-                    ? roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == DEFAULT_LANGUAGE)!.Description
-                    : roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
+                roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
             )).AsAsyncEnumerable();
     
      /// <inheritdoc />
-    public Func<int,int,Task<Pagination.Source<ServiceOverviewData>?>> GetActiveServicesPaginationSource(ServiceOverviewSorting? sorting, ServiceTypeId? serviceTypeId) =>
+    public Func<int,int,Task<Pagination.Source<ServiceOverviewData>?>> GetActiveServicesPaginationSource(ServiceOverviewSorting? sorting, ServiceTypeId? serviceTypeId, string languageShortName) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
@@ -271,7 +268,7 @@ public class OfferRepository : IOfferRepository
                 service.Name!,
                 service.Provider,
                 service.ContactEmail,
-                service.OfferDescriptions.SingleOrDefault(ln => ln.LanguageShortName == DEFAULT_LANGUAGE)!.DescriptionShort,
+                service.OfferDescriptions.SingleOrDefault(ln => ln.LanguageShortName == languageShortName)!.DescriptionShort,
                 service.LicenseTypeId,
                 service.OfferLicenses.FirstOrDefault()!.Licensetext,
                 service.ServiceDetails.Select(x => x.ServiceTypeId)))
@@ -714,7 +711,7 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Func<int,int,Task<Pagination.Source<InReviewServiceData>?>> GetAllInReviewStatusServiceAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, OfferSorting? sorting, string? offerName, string? languageShortName) =>
+    public Func<int,int,Task<Pagination.Source<InReviewServiceData>?>> GetAllInReviewStatusServiceAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, OfferSorting? sorting, string? offerName, string languageShortName, string defaultLanguageShortName) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
@@ -735,7 +732,7 @@ public class OfferRepository : IOfferRepository
                 offer.OfferStatusId,
                 offer.ProviderCompany!.Name,
                 offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
-                           ?? offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == Constants.DefaultLanguage)!.DescriptionShort
+                           ?? offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == defaultLanguageShortName)!.DescriptionShort
                         ))
             .SingleOrDefaultAsync();
 

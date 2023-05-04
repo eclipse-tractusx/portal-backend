@@ -54,10 +54,10 @@ public class LanguageRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetLanguageAsync("de").ConfigureAwait(false);
+        var result = await sut.IsValidLanguageCode("de").ConfigureAwait(false);
 
         // Assert
-        result.Should().Be("de");
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -67,10 +67,10 @@ public class LanguageRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetLanguageAsync("notExisting").ConfigureAwait(false);
+        var result = await sut.IsValidLanguageCode("notExisting").ConfigureAwait(false);
 
         // Assert
-        result.Should().BeNullOrWhiteSpace();
+        result.Should().BeFalse();
     }
 
     #endregion

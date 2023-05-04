@@ -75,8 +75,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName = null) =>
-        _portalRepositories.GetInstance<IOfferRepository>().GetAllActiveAppsAsync(languageShortName)
+    public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName) =>
+        _portalRepositories.GetInstance<IOfferRepository>().GetAllActiveAppsAsync(languageShortName, Constants.DefaultLanguage)
             .Select(app => new AppData(
                     app.Id,
                     app.Name ?? Constants.ErrorString,
