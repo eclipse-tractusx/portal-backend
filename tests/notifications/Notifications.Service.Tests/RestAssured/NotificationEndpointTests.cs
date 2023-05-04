@@ -15,7 +15,7 @@ public class NotificationEndpointTests
     private readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
     private readonly string _endPoint = "/api/notification";
     private readonly Guid _companyUserId;
-    private readonly string _token;
+    private readonly string _userToken;
     private static string _notificationId = "";
 
     public NotificationEndpointTests()
@@ -24,7 +24,7 @@ public class NotificationEndpointTests
             .AddUserSecrets<Secrets>()
             .Build();
         _companyUserId = new (configuration.GetValue<string>("Secrets:CompanyUserId"));
-        _token = configuration.GetValue<string>("Secrets:UserToken");
+        _userToken = configuration.GetValue<string>("Secrets:UserToken");
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class NotificationEndpointTests
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_token}")
+                $"Bearer {_userToken}")
             .ContentType("application/json")
             .Body(
                 "{\"content\": \"test\",\"notificationTypeId\": \"INFO\",\"isRead\": false}")
@@ -59,7 +59,7 @@ public class NotificationEndpointTests
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_token}")
+                $"Bearer {_userToken}")
             .When()
             .Get($"{_baseUrl}{_endPoint}/?page=0&size=10&sorting=DateDesc")
             .Then()
@@ -77,7 +77,7 @@ public class NotificationEndpointTests
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_token}")
+                $"Bearer {_userToken}")
             .When()
             .Get($"{_baseUrl}{_endPoint}/{_notificationId}")
             .Then()
@@ -92,7 +92,7 @@ public class NotificationEndpointTests
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_token}")
+                $"Bearer {_userToken}")
             .When()
             .Get($"{_baseUrl}{_endPoint}/count")
             .Then()
@@ -108,7 +108,7 @@ public class NotificationEndpointTests
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_token}")
+                $"Bearer {_userToken}")
             .When()
             .Get($"{_baseUrl}{_endPoint}/count-details")
             .Then()
@@ -129,7 +129,7 @@ public class NotificationEndpointTests
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_token}")
+                $"Bearer {_userToken}")
             .When()
             .Put($"{_baseUrl}{_endPoint}/{_notificationId}/read")
             .Then()
@@ -144,7 +144,7 @@ public class NotificationEndpointTests
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_token}")
+                $"Bearer {_userToken}")
             .When()
             .Delete($"{_baseUrl}{_endPoint}/{_notificationId}")
             .Then()
