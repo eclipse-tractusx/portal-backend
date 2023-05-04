@@ -41,6 +41,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="Languages">Languages that the app is available in</param>
 /// <param name="Documents">document assigned to offer</param>
 /// <param name="PrivacyPolicies">privacy policy assigned to offer</param>
+/// <param name="IsSingleInstance">defines whether the offer is a single instance</param>
+/// <param name="LicenseTypeId">LicenseTypeId for APp</param>
 public record OfferDetailsData(
     Guid Id,
     string? Title,
@@ -57,7 +59,9 @@ public record OfferDetailsData(
     OfferSubscriptionStatusId IsSubscribed,
     IEnumerable<string> Languages,
     IEnumerable<DocumentTypeData> Documents,
-    IEnumerable<PrivacyPolicyId> PrivacyPolicies
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies,
+    bool IsSingleInstance,
+    LicenseTypeId LicenseTypeId
 );
 
 /// <summary>

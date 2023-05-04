@@ -20,11 +20,14 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class Consent : IBaseEntity
+[AuditEntityV1(typeof(AuditConsent20230412))]
+public class Consent : IAuditableV1, IBaseEntity
 {
     private Consent()
     {
@@ -59,6 +62,9 @@ public class Consent : IBaseEntity
     public Guid CompanyId { get; set; }
     public Guid? DocumentId { get; set; }
     public Guid CompanyUserId { get; set; }
+
+    [AuditLastEditorV1]
+    public Guid? LastEditorId { get; set; }
 
     // Navigation properties
     public virtual Agreement? Agreement { get; private set; }

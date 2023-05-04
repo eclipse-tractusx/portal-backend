@@ -18,11 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using System.Net;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -55,21 +57,21 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyAssigendUseCaseDetailsAsync(iamUserId);
 
     /// <inheritdoc/>
-    public async Task<HttpStatusCode> CreateCompanyAssignedUseCaseDetailsAsync(string iamUserId, Guid useCaseId)
+    public async Task<bool> CreateCompanyAssignedUseCaseDetailsAsync(string iamUserId, Guid useCaseId)
     {
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
         var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(iamUserId, useCaseId).ConfigureAwait(false);
-        if(!useCaseDetails.isActiveCompanyStatus)
+        if(!useCaseDetails.IsActiveCompanyStatus)
         {
             throw new ConflictException("Company Status is Incorrect");
         }
-        if(useCaseDetails.isUseCaseIdExists)
+        if(useCaseDetails.IsUseCaseIdExists)
         {
-            return HttpStatusCode.AlreadyReported;
+            return false;
         }
-        companyRepositories.CreateCompanyAssignedUseCase(useCaseDetails.companyId, useCaseId);
+        companyRepositories.CreateCompanyAssignedUseCase(useCaseDetails.CompanyId, useCaseId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return HttpStatusCode.NoContent;
+        return true;
     }
 
     /// <inheritdoc/>
@@ -77,15 +79,107 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     {
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
         var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(iamUserId, useCaseId).ConfigureAwait(false);
-        if(!useCaseDetails.isActiveCompanyStatus)
+        if(!useCaseDetails.IsActiveCompanyStatus)
         {
             throw new ConflictException("Company Status is Incorrect");
         }
-        if(!useCaseDetails.isUseCaseIdExists)
+        if(!useCaseDetails.IsUseCaseIdExists)
         {
             throw new ConflictException($"UseCaseId {useCaseId} is not available");
         }
-        companyRepositories.RemoveCompanyAssignedUseCase(useCaseDetails.companyId, useCaseId);
+        companyRepositories.RemoveCompanyAssignedUseCase(useCaseDetails.CompanyId, useCaseId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    public async IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId)
+    {
+        var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
+        var companyData = await companyRepositories.GetCompanyStatusDataAsync(iamUserId).ConfigureAwait(false);
+        if(companyData == default)
+        {
+            throw new NotFoundException($"User {iamUserId} is not associated with any company");
+        }
+        if(!companyData.IsActive)
+        {
+            throw new ConflictException("Company Status is Incorrect");
+        }
+        await foreach (var data in companyRepositories.GetCompanyRoleAndConsentAgreementDataAsync(companyData.CompanyId).ConfigureAwait(false))
+        {
+            yield return new CompanyRoleConsentViewData(
+                data.CompanyRoleId,
+                data.CompanyRolesActive,
+                data.Agreements.Select(x => new ConsentAgreementViewData(
+                    x.AgreementId,
+                    x.AgreementName,
+                    x.ConsentStatus == 0
+                        ? null
+                        : x.ConsentStatus
+                ))
+            );
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task CreateCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId, IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails)
+    {
+        if (!companyRoleConsentDetails.Any())
+        {
+            return;
+        }
+        var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
+        var result = await companyRepositories.GetCompanyRolesDataAsync(iamUserId, companyRoleConsentDetails.Select(x => x.CompanyRole)).ConfigureAwait(false);
+        if(result == default)
+        {
+            throw new ForbiddenException($"user {iamUserId} is not associated with any company");
+        }
+        if(!result.IsCompanyActive)
+        {
+            throw new ConflictException("Company Status is Incorrect");
+        }
+        if (result.CompanyRoleIds == null || result.ConsentStatusDetails == null)
+        {
+            throw new UnexpectedConditionException("neither CompanyRoleIds nor ConsentStatusDetails should ever be null here");
+        }
+        if (result.CompanyRoleIds.Any())
+        {
+            throw new ConflictException($"companyRoles [{string.Join(", ",result.CompanyRoleIds)}] are already assigned to company {result.CompanyId}");
+        }
+
+        var agreementAssignedRoleData = await companyRepositories.GetAgreementAssignedRolesDataAsync(companyRoleConsentDetails.Select(x => x.CompanyRole))
+                .PreSortedGroupBy(x => x.CompanyRoleId, x => x.AgreementId)
+                .ToDictionaryAsync(g => g.Key, g => g.AsEnumerable()).ConfigureAwait(false);
+
+        var joined = companyRoleConsentDetails
+            .Join(agreementAssignedRoleData,
+                details => details.CompanyRole,
+                data => data.Key,
+                (details, data) => (
+                    CompanyRoleId: details.CompanyRole,
+                    ActiveAgreements: details.Agreements.Where(x => x.ConsentStatus == ConsentStatusId.ACTIVE),
+                    MissingAgreementIds: data.Value.Except(details.Agreements.Where(x => x.ConsentStatus == ConsentStatusId.ACTIVE).Select(x => x.AgreementId)),
+                    ExtraAgreementIds: details.Agreements.ExceptBy(data.Value, x => x.AgreementId).Select(x => x.AgreementId)))
+            .ToList();
+
+        var missing = joined.Where(x => x.MissingAgreementIds.Any());
+        if (missing.Any())
+        {
+            throw new ControllerArgumentException($"All agreements need to get signed. Missing active consents: [{string.Join(", ", missing.Select(x => $"{x.CompanyRoleId}: [{string.Join(", ", x.MissingAgreementIds)}]"))}]");
+        }
+        var extra = joined.Where(x => x.ExtraAgreementIds.Any());
+        if (extra.Any())
+        {
+            throw new ControllerArgumentException($"Agreements not associated with requested companyRoles: [{string.Join(", ", extra.Select(x => $"{x.CompanyRoleId}: [{string.Join(", ", x.ExtraAgreementIds)}]"))}]");
+        }
+
+        _portalRepositories.GetInstance<IConsentRepository>().AddAttachAndModifyConsents(
+            result.ConsentStatusDetails,
+            joined.SelectMany(x => x.ActiveAgreements).DistinctBy(active => active.AgreementId).Select(active => (active.AgreementId, active.ConsentStatus)).ToList(),
+            result.CompanyId,
+            result.CompanyUserId,
+            DateTimeOffset.UtcNow);
+
+        _portalRepositories.GetInstance<ICompanyRolesRepository>().CreateCompanyAssignedRoles(result.CompanyId, joined.Select(x => x.CompanyRoleId));
+
+        await _portalRepositories.SaveAsync();
     }
 }

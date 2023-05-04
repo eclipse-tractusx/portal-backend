@@ -48,4 +48,8 @@ public class StaticDataBusinessLogic : IStaticDataBusinessLogic
     /// <inheritdoc/>
     public IAsyncEnumerable<LanguageData> GetAllLanguage() =>
         _portalRepositories.GetInstance<IStaticDataRepository>().GetAllLanguage();  
+
+    /// <inheritdoc/>
+    public IAsyncEnumerable<LicenseTypeData> GetAllLicenseType() =>
+        _portalRepositories.GetInstance<IStaticDataRepository>().GetLicenseTypeData(); 
 }

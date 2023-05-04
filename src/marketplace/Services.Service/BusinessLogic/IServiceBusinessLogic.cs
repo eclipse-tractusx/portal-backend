@@ -38,14 +38,6 @@ public interface IServiceBusinessLogic
     Task<Pagination.Response<ServiceOverviewData>> GetAllActiveServicesAsync(int page, int size, ServiceOverviewSorting? sorting, ServiceTypeId? serviceTypeId);
 
     /// <summary>
-    /// Creates a new service offering
-    /// </summary>
-    /// <param name="data">The data to create the service offering</param>
-    /// <param name="iamUserId">the iamUser id</param>
-    /// <returns>The id of the newly created service</returns>
-    Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId);
-
-    /// <summary>
     /// Adds a subscription to the given service
     /// </summary>
     /// <param name="serviceId">Id of the service the users company should be subscribed to</param>
@@ -95,14 +87,6 @@ public interface IServiceBusinessLogic
     Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, string iamUserId);
 
     /// <summary>
-    /// Updates the given service
-    /// </summary>
-    /// <param name="serviceId">Id of the service to update</param>
-    /// <param name="data">Data of the updated entry</param>
-    /// <param name="iamUserId">Id of the current user</param>
-    Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, string iamUserId);
-
-    /// <summary>
     /// Retrieves subscription statuses of provided services of the provided user's company.
     /// </summary>
     /// <param name="page"></param>
@@ -112,40 +96,6 @@ public interface IServiceBusinessLogic
     /// <param name="statusId"></param>
     /// <returns>Pagination of user's company's provided service' statuses.</returns>
     Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId);
-
-    /// <summary>
-    /// Update app status and create notification
-    /// </summary>
-    /// <param name="serviceId">Id of the service that should be submitted</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    Task SubmitServiceAsync(Guid serviceId, string iamUserId);
-
-    /// <summary>
-    /// Approve Service Status from IN_Review to Active
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="iamUserId"></param>
-    /// <returns></returns>
-    Task ApproveServiceRequestAsync(Guid appId, string iamUserId);
-
-    /// <summary>
-    /// Declines the service request
-    /// </summary>
-    /// <param name="serviceId">Id of the service</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    /// <param name="data">The decline request data</param>
-    Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data);
-
-    /// <summary>
-    /// Upload document for given company user for Service
-    /// </summary>
-    /// <param name="serviceId"></param>
-    /// <param name="documentTypeId"></param>
-    /// <param name="document"></param>
-    /// <param name="iamUserId"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Get the document content by given Id for Service
@@ -167,4 +117,19 @@ public interface IServiceBusinessLogic
     /// <param name="statusId"></param>
     Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync(int page, int size, string userId, OfferSorting? sorting, string? offerName, ServiceStatusIdFilter? statusId);
 
+    /// <summary>
+    /// Get technical user profiles for a specific offer
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>AsyncEnumerable with the technical user profile information</returns>
+    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId);
+    
+    /// <summary>
+    /// Creates or updates the technical user profiles
+    /// </summary>
+    /// <param name="serviceId">Id of the service</param>
+    /// <param name="data">The technical user profiles</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    Task UpdateTechnicalUserProfiles(Guid serviceId, IEnumerable<TechnicalUserProfileData> data, string iamUserId);
 }

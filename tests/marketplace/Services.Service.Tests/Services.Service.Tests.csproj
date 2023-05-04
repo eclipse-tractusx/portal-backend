@@ -22,6 +22,7 @@
 
     <PropertyGroup>
         <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests</AssemblyName>
+        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests</RootNamespace>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>

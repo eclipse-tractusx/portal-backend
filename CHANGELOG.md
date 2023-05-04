@@ -2,6 +2,65 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.4.0
+
+### Change
+* Administration Service - Connector Controller
+  * Delete Connector endpoint business logic enhanced to update DocumentStatus to InActive when connector is getting deleted
+  * added status "INACTIVE" state for connectors
+  * new endpoint to retrieve managed connectors (for service providers) GET /api/administration/connectors/managed
+  * connectorLastChangeDate dateTimeOffset set to utcNow
+* Registration Service
+  * POST api/registration/application/{applicationId}/documentType/{documentTypeId}/documents limited allowed documents types to only support "CX_FRAME_CONTRACT" and "COMMERCIAL_REGISTER_EXTRACT"
+* App Service
+  * GET api/apps/appreleaseprocess/inReview/appId  endpoint response body enhanced by privacypolicies attribute
+* Notification Service - enabled automatic notification done state
+  * portal.notifications table enhanced by new attribute "done" (false/true)
+  * added business logic to set respective related notifications to "done", when approving or declining an app / service
+  * added offerId and offerName to notification content for TECHNICAL_USER_CREATION
+* Services Service
+  * enhanced PUT endpoint /api/services/updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents to support the documentType "SERVICE_LEADIMAGE" allowing png/jpeg/svg file types
+  * enhanced end point api/services/provided/subscription-status by adding additional attribute i.e Customer Country, Email and Company BpnNumber
+* Checklist Worker
+  * renamed to Processes Worker
+
+### Feature
+* Administration Service - Connector Controller
+  * Change connector endpoint released for change of the connector url PUT /api/administration/connectors/{connectorId}/connectorUrl
+* App Service - released app instance handling (single instance vs multiple instances)
+  * add endpoint to add app instance information
+  * enhanced activate app process by differentiating the activation process steps based on the app instance setting
+  * released single app instance subscription process
+  * new table "app_instance_assigned_service_accounts"
+  * new table "app_instance_setups"
+* Services Service - released individual technical user profile for services (only relevant for service type "DATASPACE_SERVICE"
+  * new table "technical_user_profiles" added
+  * new table "technical_user_profile_assigned_user_roles" added
+  * new endpoint GET /api/services/{serviceId}/technical-user-profiles released to view technical user profiles set for the specific service
+  * new endpoint POST /api/services/{serviceId}/technical-user-profiles released to update technical user profiles set for the specific service
+* App Service & Services Service - released app "license_type" to manage license type FOSS/COTS
+  * new table "license_types" added
+  * portal.offer table enhanced by "license_type_id" attribute
+  * added license_type information to all response bodies for the GET endpoints ../inReview/{appId}, ../{appId}, .../active for apps and services service
+  * added backend business logic to automatically set the license_type_id for a new offer to "COTS" as default value (endpoints: /createapp & /addservice)
+  * new endpoint GET /api/administration/StaticData/licenseType released to view all available license types
+* Services Service
+  * released DELETE endpoint /api/services/servicerelease/documents/{documentId} to allow to delete documents in status "PENDING" or "INACTIVE" which are of the type "SERVICE_LEADIMAGES" and "ADDITIONAL_DETAILS"
+
+### Technical Support
+* Service clean-up ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * endpoints /api/apps/{appId}/appupdate/description moved from app controller to appChange controller
+  * endpoints ../addservice, ../{serviceId}, ../{serviceId}/submit, ../{serviceId}/approveService, ../{serviceId}/declineService, ../updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents moved from services controller to serviceRelease controller
+* changed release workflow to retrieve tag from github.ref_name (set-output command deprecated)
+* added release workflow for release-candidates
+* Db Auditing
+  * audit table added for portal.consent
+  * audit table added for portal.connector
+
+### Bugfix
+* updated busness logic to assign new user accounts the company bpn as user attribute (fix implemented for user accounts created for ownIdp customers)
+* backend business logic fixed for GET api/administration/companydata/companyRolesAndConsents & POST api/administration/companydata/companyRolesAndConsents
+
 ## 1.3.0
 
 ### Change
@@ -317,7 +376,6 @@ n/a
 * GET company application filters enabled
 * App LeadPicture (GET /api/apps/{appId} & GET /api/apps/appreleaseprocess/{appId}/appStatus) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
 * App LeadImage/Thumbnail URL got exchanged from a document name to an document id to be able to fetch the image from the portal.documents table
-
 
 ### Feature
 * App Service

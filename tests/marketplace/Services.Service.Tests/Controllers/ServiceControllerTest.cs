@@ -54,24 +54,6 @@ public class ServiceControllerTest
     }
 
     [Fact]
-    public async Task CreateServiceOffering_ReturnsExpectedId()
-    {
-        //Arrange
-        var id = new Guid("d90995fe-1241-4b8d-9f5c-f3909acc6383");
-        var serviceOfferingData = _fixture.Create<ServiceOfferingData>();
-        A.CallTo(() => _logic.CreateServiceOfferingAsync(A<ServiceOfferingData>._, IamUserId))
-            .Returns(id);
-
-        //Act
-        var result = await this._controller.CreateServiceOffering(serviceOfferingData).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.CreateServiceOfferingAsync(serviceOfferingData, IamUserId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<CreatedAtRouteResult>(result);
-        result.Value.Should().Be(id);
-    }
-
-    [Fact]
     public async Task GetAllActiveServicesAsync_ReturnsExpectedId()
     {
         //Arrange
@@ -197,24 +179,7 @@ public class ServiceControllerTest
         Assert.IsType<OfferAutoSetupResponseData>(result);
         result.Should().Be(responseData);
     }
-        
-    [Fact]
-    public async Task UpdateService_ReturnsExpected()
-    {
-        //Arrange
-        var serviceId = _fixture.Create<Guid>();
-        var data = _fixture.Create<ServiceUpdateRequestData>();
-        A.CallTo(() => _logic.UpdateServiceAsync(A<Guid>._, A<ServiceUpdateRequestData>._, A<string>.That.Matches(x => x== IamUserId)))
-            .Returns(Task.CompletedTask);
-
-        //Act
-        var result = await this._controller.UpdateService(serviceId, data).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.UpdateServiceAsync(serviceId, data, IamUserId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<NoContentResult>(result);
-    }
-    
+      
     [Fact]
     public async Task GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount()
     {
@@ -231,56 +196,7 @@ public class ServiceControllerTest
         A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 15, IamUserId, null, null)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
-    
-    [Fact]
-    public async Task SubmitService_ReturnsExpectedCount()
-    {
-        //Arrange
-        A.CallTo(() => _logic.SubmitServiceAsync(A<Guid>._, A<string>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
-
-        //Act
-        var result = await this._controller.SubmitService(ServiceId).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.SubmitServiceAsync(ServiceId, IamUserId)).MustHaveHappenedOnceExactly();
-    }
-        
-    [Fact]
-    public async Task DeclineServiceRequest_ReturnsNoContent()
-    {
-        //Arrange
-        var serviceId = _fixture.Create<Guid>();
-        var data = new OfferDeclineRequest("Just a test");
-        A.CallTo(() => _logic.DeclineServiceRequestAsync(A<Guid>._, A<string>._, A<OfferDeclineRequest>._))
-            .ReturnsLazily(() => Task.CompletedTask);
-
-        //Act
-        var result = await this._controller.DeclineServiceRequest(serviceId, data).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.DeclineServiceRequestAsync(serviceId, IamUserId, data)).MustHaveHappenedOnceExactly();
-        result.Should().BeOfType<NoContentResult>();
-    }
-
-    [Fact]
-    public async Task UpdateServiceDocumentAsync_CallExpected()
-    {
-        // Arrange
-        var serviceId = _fixture.Create<Guid>();
-        var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
-        A.CallTo(() => _logic.CreateServiceDocumentAsync(A<Guid>._,
-            A<DocumentTypeId>._, A<IFormFile>._, A<string>._, CancellationToken.None))
-            .ReturnsLazily(() => Task.CompletedTask);
-        
-        // Act
-        await this._controller.UpdateServiceDocumentAsync(serviceId,DocumentTypeId.ADDITIONAL_DETAILS,file,CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _logic.CreateServiceDocumentAsync(serviceId,
-            DocumentTypeId.ADDITIONAL_DETAILS, file, IamUserId, CancellationToken.None)).MustHaveHappened();
-    }
     [Fact]
     public async Task GetServiceDocumentContentAsync_ReturnsExpected()
     {
@@ -318,5 +234,38 @@ public class ServiceControllerTest
         //Assert
         A.CallTo(() => _logic.GetCompanyProvidedServiceStatusDataAsync(0, 15,IamUserId, null, null,null)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
+    }
+    
+    [Fact]
+    public async Task GetTechnicalUserProfiles_ReturnsExpectedCount()
+    {
+        //Arrange
+        var offerId = Guid.NewGuid();
+        
+        var data = _fixture.CreateMany<TechnicalUserProfileInformation>(5);
+        A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId, IamUserId))
+            .ReturnsLazily(() => data);
+
+        //Act
+        var result = await this._controller.GetTechnicalUserProfiles(offerId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+    
+    [Fact]
+    public async Task UpdateTechnicalUserProfiles_ReturnsExpectedCount()
+    {
+        //Arrange
+        var offerId = Guid.NewGuid();
+        var data = _fixture.CreateMany<TechnicalUserProfileData>(5);
+
+        //Act
+        var result = await this._controller.CreateAndUpdateTechnicalUserProfiles(offerId, data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.UpdateTechnicalUserProfiles(offerId, A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5),IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 }

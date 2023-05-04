@@ -20,11 +20,14 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class Connector : IBaseEntity
+[AuditEntityV1(typeof(AuditConnector20230405))]
+public class Connector : IAuditableV1, IBaseEntity
 {
     public Connector(Guid id, string name, string locationId, string connectorUrl)
     {
@@ -62,13 +65,20 @@ public class Connector : IBaseEntity
 
     public string? SelfDescriptionMessage { get; set; }
 
+    public DateTimeOffset? DateLastChanged { get; set; }
+
+    [AuditLastEditorV1]
+    public Guid? LastEditorId { get; set; }
+
     // Navigation properties
     public virtual ConnectorType? Type { get; set; }
     public virtual ConnectorStatus? Status { get; set; }
     public virtual Company? Provider { get; set; }
     public virtual Company? Host { get; set; }
     public virtual Country? Location { get; set; }
-    
+    public virtual ConnectorClientDetail? ClientDetails { get; set; }
+    public virtual CompanyUser? LastEditor { get; set; }
+
     /// <summary>
     /// Mapping to the assigned document
     /// </summary>

@@ -75,4 +75,19 @@ public class StaticDataController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<LanguageData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<LanguageData> GetLanguages() =>
         _logic.GetAllLanguage();
+
+    /// <summary>
+    /// Retrieve all license types
+    /// </summary>
+    /// <returns>AsyncEnumerable of license type Data</returns>
+    /// <remarks>
+    /// Example: GET: /api/administration/staticdata/licenseType
+    /// </remarks>
+    /// <response code="200">Returns a list of all the license type i.e COTS and FOSS</response>
+    [HttpGet]
+    [Authorize(Roles = "view_license_types")]
+    [Route("licenseType")]
+    [ProducesResponseType(typeof(IAsyncEnumerable<LicenseTypeData>), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<LicenseTypeData> GetLicenseTypes() =>
+        _logic.GetAllLicenseType();
 }

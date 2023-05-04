@@ -194,6 +194,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new UnsupportedMediaTypeException("Only .pdf files are allowed.");
         }
 
+        if(!_settings.DocumentTypeIds.Contains(documentTypeId))
+        {
+            throw new ControllerArgumentException($"documentType must be either: {string.Join(",", _settings.DocumentTypeIds)}");
+        }
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, iamUserId).ConfigureAwait(false);
         if (companyUserId == Guid.Empty)
         {
@@ -775,6 +779,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         consentRepository.AttachAndModifiesConsents(consentsToInactivate.Select(x => x.ConsentId), consent =>
         {
             consent.ConsentStatusId = ConsentStatusId.INACTIVE;
+            consent.LastEditorId = companyUserId;
         });
        
         var consentsToActivate = consents
@@ -786,6 +791,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         consentRepository.AttachAndModifiesConsents(consentsToActivate.Select(x => x.ConsentId), consent =>
         {
             consent.ConsentStatusId = ConsentStatusId.ACTIVE;
+            consent.LastEditorId = companyUserId;
         });
 
         foreach (var agreementConsentToAdd in agreementConsentsToSet
