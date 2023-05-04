@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Xunit.Extensions.AssemblyFixture;
@@ -112,7 +113,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
         
         // Act
-        var data = await sut.GetServiceAccountRolesAsync(ValidIamUserId, ClientId).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetServiceAccountRolesAsync(ValidIamUserId, ClientId, Constants.DefaultLanguage).ToListAsync().ConfigureAwait(false);
         
         // Assert
         data.Should().HaveCount(9);

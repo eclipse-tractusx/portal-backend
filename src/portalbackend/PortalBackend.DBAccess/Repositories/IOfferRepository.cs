@@ -61,7 +61,7 @@ public interface IOfferRepository
     /// </summary>
     /// <param name="languageShortName">The optional language shortName</param>
     /// <returns>Returns a async enumerable of (Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, string? ThumbnailUrl, string? ShortDescription, string? LicenseText)> GetAllActiveAppsAsync(string? languageShortName)</returns>
-    IAsyncEnumerable<ActiveAppData> GetAllActiveAppsAsync(string? languageShortName);
+    IAsyncEnumerable<ActiveAppData> GetAllActiveAppsAsync(string? languageShortName, string defaultLanguageShortName);
 
     /// <summary>
     /// Gets the details of an app by its id
@@ -142,7 +142,7 @@ public interface IOfferRepository
     /// <param name="languageShortName">The language short names</param>
     /// <returns>Returns an asyncEnumerable from ClientRoles</returns>
     [Obsolete("only referenced by code that is marked as obsolte")]
-    IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
+    IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string languageShortName);
 
     /// <summary>
     /// Check whether the app is in status created and whether the
@@ -165,7 +165,7 @@ public interface IOfferRepository
     /// Gets all service detail data from the persistence storage as pagination 
     /// </summary>
     /// <returns>Returns an Pagination</returns>
-    Func<int,int,Task<Pagination.Source<ServiceOverviewData>?>> GetActiveServicesPaginationSource(ServiceOverviewSorting? sorting, ServiceTypeId? serviceTypeId);
+    Func<int,int,Task<Pagination.Source<ServiceOverviewData>?>> GetActiveServicesPaginationSource(ServiceOverviewSorting? sorting, ServiceTypeId? serviceTypeId, string languageShortName);
 
     /// <summary>
     /// Gets the service details for the given id
@@ -448,7 +448,7 @@ public interface IOfferRepository
     /// <param name="sorting"></param>
     /// <param name="offerName"></param>
     /// <param name="languageShortName"></param>
-    Func<int,int,Task<Pagination.Source<InReviewServiceData>?>> GetAllInReviewStatusServiceAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, OfferSorting? sorting, string? offerName, string? languageShortName);
+    Func<int,int,Task<Pagination.Source<InReviewServiceData>?>> GetAllInReviewStatusServiceAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, OfferSorting? sorting, string? offerName, string languageShortName, string defaultLanguageShortName);
 
     /// Gets the data for the app including the instance type information
     /// </summary>

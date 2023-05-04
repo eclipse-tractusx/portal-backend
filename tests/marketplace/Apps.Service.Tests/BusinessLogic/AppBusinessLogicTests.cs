@@ -120,12 +120,12 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var results = _fixture.CreateMany<ActiveAppData>(5);
-        A.CallTo(() => _offerRepository.GetAllActiveAppsAsync(A<string>._)).Returns(results.ToAsyncEnumerable());
+        A.CallTo(() => _offerRepository.GetAllActiveAppsAsync(A<string>._, A<string>._)).Returns(results.ToAsyncEnumerable());
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), null!);
 
         // Act
-        var result = await sut.GetAllActiveAppsAsync().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllActiveAppsAsync(null).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(5);

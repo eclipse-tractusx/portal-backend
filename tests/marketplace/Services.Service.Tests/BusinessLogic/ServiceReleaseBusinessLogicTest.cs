@@ -263,7 +263,7 @@ public class ServiceReleaseBusinessLogicTest
         // Arrange
         var inReviewData = _fixture.CreateMany<InReviewServiceData>(15).ToImmutableArray();
         var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewServiceData>(15, inReviewData.Skip(skip).Take(take)));
-        A.CallTo(() => _offerRepository.GetAllInReviewStatusServiceAsync(A<IEnumerable<OfferStatusId>>._, A<OfferTypeId>._, A<OfferSorting>._, A<string>._, A<string>._))
+        A.CallTo(() => _offerRepository.GetAllInReviewStatusServiceAsync(A<IEnumerable<OfferStatusId>>._, A<OfferTypeId>._, A<OfferSorting>._, A<string>._, A<string>._, A<string>._))
             .Returns(paginationResult);
 
         // Act
@@ -275,7 +275,7 @@ public class ServiceReleaseBusinessLogicTest
                 x.SequenceEqual(isOptions
                     ? _options.Value.OfferStatusIds
                     : new [] { OfferStatusId.IN_REVIEW })),
-            OfferTypeId.SERVICE, A<OfferSorting>._, A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
+            OfferTypeId.SERVICE, A<OfferSorting>._, A<string>._, A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
 
         result.Should().BeOfType<Pagination.Response<InReviewServiceData>>()
             .Which.Meta.Should().Match<Pagination.Metadata>(x =>

@@ -386,14 +386,14 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange
         var data = _fixture.CreateMany<UserRoleWithDescription>(15);
-        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(ValidAdminId, ClientId, null))
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(ValidAdminId, ClientId, A<string>._))
             .Returns(data.ToAsyncEnumerable());
         
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         IServiceAccountBusinessLogic sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        var result = await sut.GetServiceAccountRolesAsync(ValidAdminId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetServiceAccountRolesAsync(ValidAdminId, null).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -401,8 +401,7 @@ public class ServiceAccountBusinessLogicTests
         // Sonar fix -> Return value of pure method is not used
         result.Should().AllSatisfy(ur =>
         {
-            var contains = data.Contains(ur);
-            contains.Should().BeTrue();
+            data.Contains(ur).Should().BeTrue();
         });
     }
     

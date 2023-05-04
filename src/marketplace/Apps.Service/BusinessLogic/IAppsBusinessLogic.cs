@@ -36,7 +36,7 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="languageShortName">Optional two character language specifier for the app description. No description if not provided.</param>
     /// <returns>List of active marketplace apps.</returns>
-    public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName = null);
+    public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName);
 
     /// <summary>
     /// Get all apps that a user has been assigned roles in.
