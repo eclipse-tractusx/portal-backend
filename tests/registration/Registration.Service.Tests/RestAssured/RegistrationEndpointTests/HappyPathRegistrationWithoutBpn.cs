@@ -1,4 +1,6 @@
-﻿using AutoFixture;
+﻿using System.Json;
+using AutoFixture;
+using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
@@ -29,7 +31,6 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             .AddUserSecrets<Secrets>()
             .Build();
         _companyToken = configuration.GetValue<string>("Secrets:CompanyToken");
-        _applicationId = new (configuration.GetValue<string>("Secrets:ApplicationId"));
         _operatorToken = configuration.GetValue<string>("Secrets:OperatorToken");
         _fixture = new Fixture();
         // CreateFilesToUpload();
@@ -57,30 +58,63 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     //         .StatusCode(200);
     // }
 
+    private string GetFirstApplicationId()
+    {
+        var applicationIDs = (List<CompanyApplicationData>)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .When()
+            .Get($"{_baseUrl}{_endPoint}/applications")
+            .Then()
+            .StatusCode(200)
+         .Extract()
+            .As(typeof(List<CompanyApplicationData>));
+
+        return applicationIDs[0].ApplicationId.ToString();
+    }
+    
+    private CompanyDetailData GetCompanyDetailData()
+    {
+        _applicationId = GetFirstApplicationId();
+        // Given
+        CompanyDetailData companyDetailData = (CompanyDetailData)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .When()
+            .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
+            .Then()
+            .And()
+            .StatusCode(200)
+            .Extract().As(typeof(CompanyDetailData));
+
+        return companyDetailData;
+    }
 
     // POST /api/registration/application/{applicationId}/companyDetailsWithAddress
 
     [Fact]
     public void Test2_SetCompanyDetailData_ReturnsExpectedResult()
     {
-        CompanyDetailData companyDetailData = _fixture.Create<CompanyDetailData>();
-
+        CompanyDetailData companyDetailData = GetCompanyDetailData();
+        string companyId = companyDetailData.CompanyId.ToString();
         var response = Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
                 $"Bearer {_companyToken}")
             .ContentType("application/json")
-            .Body(
-                "{\"companyId\":\"d6ba04c9-edd0-47b5-a639-c6b5256b1aec\",\"name\":\"TestAutomationReg 01\",\"city\":\"München\",\"streetName\":\"Streetfgh\",\"countryAlpha2Code\":\"DE\",\"shortName\":\"TestAutomationReg 01\",\"region\":null,\"streetAdditional\":null,\"streetNumber\":null,\"zipCode\":null,\"countryDe\":\"Deutschland\",\"uniqueIds\":[{\"type\":\"VAT_ID\",\"value\":\"DE123456788\"}]}")
-            // .Body(
-            //     "{\"companyId\":\"f42b94b5-6003-43dc-a14a-6b88ed7b1e8a\",\"name\":\"TestAutomationReg 02\",\"city\":\"München\",\"streetName\":\"Streetfgh\",\"countryAlpha2Code\":\"DE\",\"bpn\":null,\"shortName\":\"TestAutomationReg 02\",\"region\":null,\"streetAdditional\":null,\"streetNumber\":null,\"zipCode\":null,\"countryDe\":\"Deutschland\",\"uniqueIds\":[{\"type\":\"VAT_ID\",\"value\":\"DE123456789\"}]}")
             .When()
+            .Body("{\"companyId\":" + "\"" + companyId + "\"" + ",\"name\":\"TestAutomationReg 01\",\"city\":\"München\",\"streetName\":\"Streetfgh\",\"countryAlpha2Code\":\"DE\",\"bpn\":null, \"shortName\":\"TestAutomationReg 01\",\"region\":null,\"streetAdditional\":null,\"streetNumber\":null,\"zipCode\":null,\"countryDe\":\"Deutschland\",\"uniqueIds\":[{\"type\":\"VAT_ID\",\"value\":\"DE123456788\"}]}")
+            //.Body(companyDetailData)
             .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
             .Then()
             .StatusCode(200);
     }
-
+    
     // POST /api/registration/application/{applicationId}/companyRoleAgreementConsents
 
     [Fact]
