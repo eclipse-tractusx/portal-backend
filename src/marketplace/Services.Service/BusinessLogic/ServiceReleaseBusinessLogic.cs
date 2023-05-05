@@ -80,7 +80,8 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             result.ContactEmail,
             result.ContactNumber,
             result.LicenseTypeId,
-            result.OfferStatusId
+            result.OfferStatusId,
+            result.TechnicalUserProfile.GroupBy(x => x.TechnicalUserProfileId).ToDictionary(g => g.Key, g => g.SelectMany(d => d.AdditionalProp))
         );
     }
 
