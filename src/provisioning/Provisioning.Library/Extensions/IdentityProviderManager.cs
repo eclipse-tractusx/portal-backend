@@ -195,23 +195,6 @@ public partial class ProvisioningManager
                 }
             });
 
-    private Task CreateCentralIdentityProviderUsernameMapperAsync(string alias) =>
-        _CentralIdp.AddIdentityProviderMapperAsync(
-            _Settings.CentralRealm,
-            alias,
-            new IdentityProviderMapper
-            {
-                Name="username-mapper",
-                _IdentityProviderMapper="oidc-username-idp-mapper",
-                IdentityProviderAlias=alias,
-                Config=new Dictionary<string,object>
-                {
-                    ["syncMode"]="INHERIT",
-                    ["target"]="LOCAL",
-                    ["template"]=_Settings.UserNameMapperTemplate
-                }
-            });
-
     private IdentityProvider GetIdentityProviderTemplate(IamIdentityProviderProtocol providerProtocol)
     {
         switch (providerProtocol)
