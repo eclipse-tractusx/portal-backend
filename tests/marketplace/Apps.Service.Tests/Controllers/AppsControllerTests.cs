@@ -365,4 +365,37 @@ public class AppsControllerTests
         A.CallTo(() => _logic.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, IamUserId, file, CancellationToken.None)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
+    
+    [Fact]
+    public async Task GetTechnicalUserProfiles_ReturnsExpectedCount()
+    {
+        //Arrange
+        var offerId = Guid.NewGuid();
+        
+        var data = _fixture.CreateMany<TechnicalUserProfileInformation>(5);
+        A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId, IamUserId))
+            .ReturnsLazily(() => data);
+
+        //Act
+        var result = await this._controller.GetTechnicalUserProfiles(offerId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+    
+    [Fact]
+    public async Task UpdateTechnicalUserProfiles_ReturnsExpectedCount()
+    {
+        //Arrange
+        var offerId = Guid.NewGuid();
+        var data = _fixture.CreateMany<TechnicalUserProfileData>(5);
+
+        //Act
+        var result = await this._controller.CreateAndUpdateTechnicalUserProfiles(offerId, data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.UpdateTechnicalUserProfiles(offerId, A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5),IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
 }

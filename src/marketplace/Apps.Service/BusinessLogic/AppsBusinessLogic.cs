@@ -334,4 +334,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
+    
+    /// <inheritdoc />
+    public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId) =>
+        _offerService.GetTechnicalUserProfilesForOffer(offerId, iamUserId, OfferTypeId.APP);
+    
+    /// <inheritdoc />
+    public Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data, string iamUserId) =>
+        _offerService.UpdateTechnicalUserProfiles(appId, OfferTypeId.APP, data, iamUserId, _settings.TechnicalUserProfileClient);
 }

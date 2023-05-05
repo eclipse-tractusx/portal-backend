@@ -143,6 +143,11 @@ public class AppsSettings
     /// <value></value>
     [Required]
     public IDictionary<DocumentTypeId, IEnumerable<string>> UploadAppDocumentTypeIds {get; set;} = null!;
+
+    /// <summary>
+    /// Client to get the technical user profile client
+    /// </summary>
+    public string TechnicalUserProfileClient { get; set; } = null!;
 }
 
 /// <summary>

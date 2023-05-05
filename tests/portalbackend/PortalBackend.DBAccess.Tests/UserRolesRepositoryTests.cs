@@ -43,6 +43,24 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
+
+    #region GetCoreOfferRolesAsync
+    
+    [Fact]
+    public async Task GetCoreOfferRolesAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        
+        // Act
+        var data = await sut.GetCoreOfferRolesAsync(ValidIamUserId, "en", ClientId).ToListAsync().ConfigureAwait(false);
+        
+        // Assert
+        data.Should().HaveCount(9);
+    }
+
+    #endregion
+
     #region GetUserWithUserRolesForApplicationId
 
     [Fact]
