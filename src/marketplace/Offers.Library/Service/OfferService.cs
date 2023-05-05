@@ -334,10 +334,10 @@ public class OfferService : IOfferService
     {
         var offerDetails = await GetOfferReleaseData(offerId, offerTypeId).ConfigureAwait(false);
 
-        var isvalidDocumentType = submitAppDocumentTypeIds.All(x=> offerDetails.DocumentTypeIds.Contains(x));
-        if (!isvalidDocumentType)
+        var missingDocumentTypes = submitAppDocumentTypeIds.Except(offerDetails.DocumentDatas.Select(data => data.DocumentTypeId));
+        if (missingDocumentTypes.Any())
         {
-            throw new ConflictException($"{string.Join(",", submitAppDocumentTypeIds)} are mandatory document types");
+            throw new ConflictException($"{string.Join(", ", submitAppDocumentTypeIds)} are mandatory document types, ({string.Join(", ", missingDocumentTypes)} are missing)");
         }
         if (!offerDetails.HasUserRoles)
         {
@@ -368,15 +368,15 @@ public class OfferService : IOfferService
     private async Task SubmitAppServiceAsync(Guid offerId, string iamUserId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, OfferReleaseData offerDetails)
     {
         GetAndValidateOfferDetails(offerDetails);
-        if(offerDetails.DocumentStatusDatas.Any())
+        var pendingDocuments = offerDetails.DocumentDatas.Where(data => data.StatusId == DocumentStatusId.PENDING);
+        if(pendingDocuments.Any())
         {
-            var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-            foreach(var documentStatusData in offerDetails.DocumentStatusDatas)
-            {
-                documentRepository.AttachAndModifyDocument(documentStatusData!.DocumentId,
-                a => { a.DocumentStatusId = documentStatusData.StatusId; },
-                a => { a.DocumentStatusId = DocumentStatusId.LOCKED; });
-            }
+            _portalRepositories.GetInstance<IDocumentRepository>()
+                .AttachAndModifyDocuments(
+                    pendingDocuments.Select(x => new ValueTuple<Guid,Action<Document>?,Action<Document>>(
+                        x.DocumentId,
+                        document => document.DocumentStatusId = x.StatusId,
+                        document => document.DocumentStatusId = DocumentStatusId.LOCKED)));
         }
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         offerRepository.AttachAndModifyOffer(offerId, offer =>

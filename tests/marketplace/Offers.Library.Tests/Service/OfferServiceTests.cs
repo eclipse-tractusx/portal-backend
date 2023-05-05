@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
 
@@ -607,7 +608,7 @@ public class OfferServiceTests
     public async Task SubmitOffer_WithInvalidOffer_ThrowsConflictException(string? name, string? providerCompanyId, bool isDescriptionLongNotSet, bool isDescriptionShortNotSet, bool hasUserRoles)
     {
         // Arrange
-        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._,A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, null!, new [] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }));
+        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._,A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, new [] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS ) }));
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>._)).Returns(Guid.NewGuid());
 
         // Act
@@ -632,7 +633,7 @@ public class OfferServiceTests
         var data = _fixture.Build<OfferReleaseData>()
             .With(x => x.IsDescriptionLongNotSet, false)
             .With(x => x.IsDescriptionShortNotSet, false)
-            .With(x => x.DocumentTypeIds, new [] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS })
+            .With(x => x.DocumentDatas, new [] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS )})
             .Create();
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._,A<OfferTypeId>._)).Returns(data);
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>._)).Returns(Guid.Empty);
@@ -652,18 +653,19 @@ public class OfferServiceTests
         var data = _fixture.Build<OfferReleaseData>()
             .With(x => x.IsDescriptionLongNotSet, false)
             .With(x => x.IsDescriptionShortNotSet, false)
-            .With(x => x.DocumentTypeIds, new [] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS })
+            .With(x => x.DocumentDatas, new [] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS )})
             .Create();
         var submitAppDocumentTypeIds = new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE,DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS };
+        var missingAppDocumentTypeIds = new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE };
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._,A<OfferTypeId>._)).Returns(data);
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>._)).Returns(Guid.Empty);
 
         // Act
-        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _iamUserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.Create<IDictionary<string, IEnumerable<string>>>(),  new [] { DocumentTypeId.APP_IMAGE,DocumentTypeId.APP_LEADIMAGE,DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _iamUserId, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.Create<IDictionary<string, IEnumerable<string>>>(), submitAppDocumentTypeIds).ConfigureAwait(false);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        result.Message.Should().StartWith($"{string.Join(",", submitAppDocumentTypeIds)} are mandatory document types");
+        result.Message.Should().StartWith($"{string.Join(", ", submitAppDocumentTypeIds)} are mandatory document types, ({string.Join(", ", missingAppDocumentTypeIds)} are missing)");
     }
 
     [Fact]
@@ -674,7 +676,7 @@ public class OfferServiceTests
             .With(x => x.IsDescriptionLongNotSet, false)
             .With(x => x.IsDescriptionShortNotSet, false)
             .With(x => x.HasUserRoles, false)
-            .With(x => x.DocumentTypeIds, new [] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS })
+            .With(x => x.DocumentDatas, new [] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS )})
             .Create();
 
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._,A<OfferTypeId>._)).Returns(data);
@@ -700,22 +702,38 @@ public class OfferServiceTests
         var data = _fixture.Build<OfferReleaseData>()
             .With(x => x.IsDescriptionLongNotSet, false)
             .With(x => x.IsDescriptionShortNotSet, false)
-            .With(x => x.DocumentStatusDatas,new DocumentStatusData[] {
-                new(Guid.NewGuid(), DocumentStatusId.PENDING),
-                new(Guid.NewGuid(), DocumentStatusId.INACTIVE)})
+            .With(x => x.DocumentDatas, new [] {
+                (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS),
+                (Guid.NewGuid(), DocumentStatusId.INACTIVE, DocumentTypeId.APP_LEADIMAGE),
+                (Guid.NewGuid(), DocumentStatusId.LOCKED, DocumentTypeId.APP_IMAGE) })
             .With(x => x.HasUserRoles, true)
-            .With(x => x.DocumentTypeIds, new [] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS, DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.APP_IMAGE})
             .Create();
         var userId = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerType)).Returns(data);
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>._)).Returns(userId);
-        A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._,A<Action<Document>>._, A<Action<Document>>._))
-            .Invokes((Guid docId, Action<Document>? initialize, Action<Document> modify)
-                => {
-                        var document = new Document(docId, null!, null!, null!, default, default, default, default);
-                        initialize?.Invoke(document);
-                        modify(document);
-                    });
+
+        IEnumerable<Document>? initial = null;
+        IEnumerable<Document>? modified = null;
+
+        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid DocumentId, Action<Document>? Initialize, Action<Document> Modify)>>._))
+            .Invokes((IEnumerable<(Guid DocumentId, Action<Document>? Initialize, Action<Document> Modify)> data) =>
+            {
+                initial = data.Select(x =>
+                    {
+                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                        x.Initialize?.Invoke(document);
+                        return document;
+                    }
+                ).ToImmutableArray();
+                modified = data.Select(x =>
+                    {
+                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                        x.Modify(document);
+                        return document;
+                    }
+                ).ToImmutableArray();
+            });
+
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).Invokes(
             (Guid _, 
                 Action<Offer> setOptionalParameters, 
@@ -730,7 +748,9 @@ public class OfferServiceTests
 
         // Assert
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, userId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._, false)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._)).MustHaveHappenedTwiceExactly();
+        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid,Action<Document>?,Action<Document>)>>._)).MustHaveHappenedOnceExactly();
+        initial.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.Id == data.DocumentDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.PENDING);
+        modified.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.Id == data.DocumentDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.LOCKED);
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -889,8 +909,7 @@ public class OfferServiceTests
     public async Task SubmitService_WithInvalidOffer_ThrowsConflictException(string? name, string? providerCompanyId, bool isDescriptionLongNotSet, bool isDescriptionShortNotSet, bool hasUserRoles)
     {
         // Arrange
-        var documentStatusData = _fixture.CreateMany<DocumentStatusData>(1);
-        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._,A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, documentStatusData, new [] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }));
+        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._,A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, new [] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS ) }));
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>._)).Returns(Guid.NewGuid());
 
         // Act
@@ -908,7 +927,7 @@ public class OfferServiceTests
         var data = _fixture.Build<OfferReleaseData>()
             .With(x => x.IsDescriptionLongNotSet, false)
             .With(x => x.IsDescriptionShortNotSet, false)
-            .With(x => x.DocumentTypeIds, new [] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS })
+            .With(x => x.DocumentDatas, new [] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) })
             .Create();
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._,A<OfferTypeId>._)).Returns(data);
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>._)).Returns(Guid.Empty);
@@ -931,14 +950,14 @@ public class OfferServiceTests
         var data = _fixture.Build<OfferReleaseData>()
             .With(x => x.IsDescriptionLongNotSet, false)
             .With(x => x.IsDescriptionShortNotSet, false)
-            .With(x => x.DocumentStatusDatas,new[]{
-                new DocumentStatusData(Guid.NewGuid(), DocumentStatusId.PENDING),
-                new DocumentStatusData(Guid.NewGuid(), DocumentStatusId.INACTIVE)})
-            .With(x=> x.DocumentTypeIds, new [] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS })
+            .With(x => x.DocumentDatas,new[]{
+                (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS),
+                (Guid.NewGuid(), DocumentStatusId.INACTIVE, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) })
             .Create();
         var userId = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerType)).Returns(data);
         A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>._)).Returns(userId);
+
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._,A<Action<Document>>._, A<Action<Document>>._))
             .Invokes((Guid docId, Action<Document>? initialize, Action<Document> modify)
                 => {
@@ -946,6 +965,29 @@ public class OfferServiceTests
                         initialize?.Invoke(document);
                         modify(document);
                     });
+
+        IEnumerable<Document>? initial = null;
+        IEnumerable<Document>? modified = null;
+
+        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid DocumentId, Action<Document>? Initialize, Action<Document> Modify)>>._))
+            .Invokes((IEnumerable<(Guid DocumentId, Action<Document>? Initialize, Action<Document> Modify)> data) =>
+            {
+                initial = data.Select(x =>
+                    {
+                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                        x.Initialize?.Invoke(document);
+                        return document;
+                    }
+                ).ToImmutableArray();
+                modified = data.Select(x =>
+                    {
+                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                        x.Modify(document);
+                        return document;
+                    }
+                ).ToImmutableArray();
+            });
+
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).Invokes(
             (Guid _, 
                 Action<Offer> setOptionalParameters, 
@@ -960,7 +1002,9 @@ public class OfferServiceTests
 
         // Assert
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, userId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._, A<bool?>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._)).MustHaveHappenedTwiceExactly();
+        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid,Action<Document>?,Action<Document>)>>._)).MustHaveHappenedOnceExactly();
+        initial.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.Id == data.DocumentDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.PENDING);
+        modified.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.Id == data.DocumentDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.LOCKED);
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
