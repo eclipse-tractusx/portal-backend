@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -37,15 +38,17 @@ public class UserRolesBusinessLogic: IUserRolesBusinessLogic
     private static readonly JsonSerializerOptions _options = new (){ PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly UserSettings _settings;
 
-    public UserRolesBusinessLogic(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager)
+    public UserRolesBusinessLogic(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager, IOptions<UserSettings> options)
     {
         _portalRepositories = portalRepositories;
         _provisioningManager = provisioningManager;
+        _settings = options.Value;
     }
 
     public IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles(string iamUserId, string? languageShortName) =>
-        _portalRepositories.GetInstance<IUserRolesRepository>().GetCoreOfferRolesAsync(iamUserId, languageShortName ?? Constants.DefaultLanguage)
+        _portalRepositories.GetInstance<IUserRolesRepository>().GetCoreOfferRolesAsync(iamUserId, languageShortName ?? Constants.DefaultLanguage, _settings.Portal.KeycloakClientID)
             .PreSortedGroupBy(x => x.OfferId)
             .Select(x => new OfferRoleInfos(x.Key, x.Select(s => new OfferRoleInfo(s.RoleId,s.RoleText,s.Description))));
 

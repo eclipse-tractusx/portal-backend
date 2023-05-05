@@ -29,6 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -138,26 +139,32 @@ public class OfferSetupService : IOfferSetupService
 
     private async Task<TechnicalUserInfoData?> CreateTechnicalUserForSubscription(Guid subscriptionId, CreateTechnicalUserData data)
     {
-        var technicalUserInfoCreations = await _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(subscriptionId).ToListAsync().ConfigureAwait(false);
-        if (!technicalUserInfoCreations.Any())
+        var technicalUserInfoCreations = await _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(subscriptionId).ConfigureAwait(false);
+
+        ServiceAccountCreationInfo? serviceAccountCreationInfo;
+        try
+        {
+            serviceAccountCreationInfo = technicalUserInfoCreations.SingleOrDefault();
+        }
+        catch(InvalidOperationException)
+        {
+            throw new UnexpectedConditionException("There should only be one or none technical user profile configured for ");
+        }
+        if (serviceAccountCreationInfo == null)
         {
             return null;
         }
 
-        if (technicalUserInfoCreations.Count != 1)
-        {
-            throw new UnexpectedConditionException("There should only be one or none technical user profile configured for ");
-        }
-
         var (technicalClientId, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation
             .CreateServiceAccountAsync(
-                technicalUserInfoCreations.Single(),
+                serviceAccountCreationInfo,
                 data.CompanyId,
                 data.Bpn == null ? Enumerable.Empty<string>() : Enumerable.Repeat(data.Bpn, 1),
                 CompanyServiceAccountTypeId.MANAGED,
                 data.EnhanceTechnicalUserName,
                 sa => { sa.OfferSubscriptionId = subscriptionId; })
             .ConfigureAwait(false);
+
         return new TechnicalUserInfoData(serviceAccountId, serviceAccountData.AuthData.Secret, technicalClientId);
     }
 
@@ -207,12 +214,18 @@ public class OfferSetupService : IOfferSetupService
         {
             throw new ConflictException($"offer {offerId} is not set up as single instance app");
         }
-        if (data.Instances.Count() != 1)
+
+        Guid instanceId;
+        string internalClientId;
+        try
+        {
+            (instanceId, internalClientId) = data.Instances.Single();
+        }
+        catch(InvalidOperationException)
         {
             throw new UnexpectedConditionException($"There should always be exactly one instance defined for a single instance offer {offerId}");
         }
 
-        var (instanceId, internalClientId) = data.Instances.Single();
         if (string.IsNullOrEmpty(internalClientId))
         {
             throw new ConflictException($"clientId must not be empty for single instance offer {offerId}");
@@ -288,7 +301,7 @@ public class OfferSetupService : IOfferSetupService
         OfferTypeId offerTypeId,
         CreateTechnicalUserData data)
     {
-        var creationData = await _technicalUserProfileService.GetTechnicalUserProfilesForOffer(offerId, offerTypeId).ToListAsync().ConfigureAwait(false);
+        var creationData = await _technicalUserProfileService.GetTechnicalUserProfilesForOffer(offerId, offerTypeId).ConfigureAwait(false);
         foreach (var creationInfo in creationData)
         {
             var (technicalClientId, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation
