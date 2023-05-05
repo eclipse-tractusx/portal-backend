@@ -105,6 +105,12 @@ public interface IDocumentRepository
     void AttachAndModifyDocument(Guid documentId, Action<Document>? initialize, Action<Document> modify);
 
     /// <summary>
+    /// Attaches a range of documents optionally initializing them before and modifying them afer the attach
+    /// </summary>
+    /// <param name="documentData">IEnumerable of tuple of Id, (optional) Action to initialize the entity with values before the change and Action to set the values that are subject to change</param>
+    void AttachAndModifyDocuments(IEnumerable<(Guid DocumentId, Action<Document>? Initialize, Action<Document> Modify)> documentData);
+
+    /// <summary>
     /// Gets the document seed data for the given id
     /// </summary>
     /// <param name="documentId">Id of the document</param>
