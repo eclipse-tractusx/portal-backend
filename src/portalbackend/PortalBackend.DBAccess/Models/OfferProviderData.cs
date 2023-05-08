@@ -58,7 +58,8 @@ public record OfferProviderData(
     IEnumerable<DocumentTypeData> Documents,
     Guid? SalesManagerId,
     IEnumerable<PrivacyPolicyId> PrivacyPolicies,
-    IEnumerable<ServiceTypeId>? ServiceTypeIds
+    IEnumerable<ServiceTypeId>? ServiceTypeIds,
+    IEnumerable<TechnicalUserRoleData> TechnicalUserProfile
 );
 
 /// <summary>

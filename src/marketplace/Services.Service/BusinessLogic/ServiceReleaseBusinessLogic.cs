@@ -81,7 +81,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             result.ContactNumber,
             result.LicenseTypeId,
             result.OfferStatusId,
-            result.TechnicalUserProfile.GroupBy(x => x.TechnicalUserProfileId).ToDictionary(g => g.Key, g => g.SelectMany(d => d.AdditionalProp))
+            result.TechnicalUserProfile.ToDictionary(g => g.TechnicalUserProfileId, g => g.UserRoles)
         );
     }
 
@@ -113,7 +113,8 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             result.ContactNumber,
             result.Documents,
             result.SalesManagerId,
-            result.ServiceTypeIds);
+            result.ServiceTypeIds,
+            result.TechnicalUserProfile);
     }
     
     /// <inheritdoc/>
