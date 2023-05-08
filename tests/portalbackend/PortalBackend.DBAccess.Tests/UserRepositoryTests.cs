@@ -447,6 +447,29 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
     
+    #region  GetUserDetails
+
+    [Fact]
+    public async Task GetUserDetailsUntrackedAsync_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetUserDetailsUntrackedAsync(ValidIamUserId).ConfigureAwait(false);
+        var res = result;
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.companyName.Should().Be("Catena-X");
+        result.companyUserId.Should().Be("ac1cf001-7fbc-1f2f-817f-bce058020006");
+        result.Email.Should().Be("tobeadded@cx.com");
+        result.FirstName.Should().Be("Operator");
+        result.businessPartnerNumbers.Should().BeEmpty();
+    }
+
+    #endregion
+
     private async Task<UserRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

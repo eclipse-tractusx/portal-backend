@@ -311,7 +311,7 @@ public class UserBusinessLogic : IUserBusinessLogic
     public Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId) =>
         AddOwnCompanyUsersBusinessPartnerNumbersAsync(companyUserId, Enumerable.Repeat(businessPartnerNumber, 1), adminUserId);
 
-    public async Task<CompanyUserDetails> GetOwnUserDetails(string iamUserId)
+    public async Task<CompanyOwnUserDetails> GetOwnUserDetails(string iamUserId)
     {
         var details = await _portalRepositories.GetInstance<IUserRepository>().GetUserDetailsUntrackedAsync(iamUserId).ConfigureAwait(false);
         if (details == null)

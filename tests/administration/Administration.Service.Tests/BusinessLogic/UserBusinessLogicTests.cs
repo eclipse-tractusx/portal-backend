@@ -1303,6 +1303,48 @@ public class UserBusinessLogicTests
     }
 
     #endregion
+
+    #region GetOwnUserDetails
+
+    [Fact]
+    public async Task GetOwnUserDetails_ReturnsExpected()
+    {
+        // Arrange
+        SetupFakesForUserRoleModification();
+        var companyOwnUserDetails = _fixture.Create<CompanyOwnUserDetails>();
+        var iamuserId = _fixture.Create<Guid>().ToString();
+        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamuserId))
+        .Returns(companyOwnUserDetails);
+        var sut = new UserBusinessLogic(_provisioningManager,null!,null!,_portalRepositories,null!,_logger,_options);
+
+        // Act
+        var result = await sut.GetOwnUserDetails(iamuserId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(A<string>._)).MustHaveHappenedOnceExactly();
+        result.Should().Be(companyOwnUserDetails);
+    }
+
+    [Fact]
+    public async Task GetOwnUserDetails_ThrowsNotFoundException()
+    {
+        // Arrange
+        SetupFakesForUserRoleModification();
+
+        var iamuserId = _fixture.Create<Guid>().ToString();
+        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamuserId))
+        .Returns((CompanyOwnUserDetails) default!);
+        var sut = new UserBusinessLogic(_provisioningManager,null!,null!,_portalRepositories,null!,_logger,_options);
+
+        // Act
+        async Task Act() => await sut.GetOwnUserDetails(iamuserId).ConfigureAwait(false);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be($"no company-user data found for user {iamuserId}");
+    }
+
+    #endregion
     
     #region Setup
 
