@@ -90,5 +90,5 @@ public record ServiceDetailsData(
 
 public record TechnicalUserRoleData(
     Guid TechnicalUserProfileId,
-    IEnumerable<string> AdditionalProp
+    IEnumerable<string> UserRoles
 );

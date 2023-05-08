@@ -275,7 +275,8 @@ public class OfferService : IOfferService
             data.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))),
             data.SalesManagerId,
             data.PrivacyPolicies,
-            data.ServiceTypeIds);
+            data.ServiceTypeIds,
+            data.TechnicalUserProfile.ToDictionary(g => g.TechnicalUserProfileId, g => g.UserRoles));
     }
     
     /// <inheritdoc />
