@@ -554,7 +554,10 @@ public class OfferRepository : IOfferRepository
                     offer.Tags.Select(t => t.Name),
                     offer.OfferAssignedPrivacyPolicies.Select(p=>p.PrivacyPolicyId),
                     offer.LicenseTypeId,
-                    offer.OfferStatusId))
+                    offer.OfferStatusId,
+                    offer.TechnicalUserProfiles.Select(tup => new TechnicalUserRoleData(
+                        tup.Id,
+                        tup.UserRoles.Select(ur => ur.UserRoleText)))))
             .SingleOrDefaultAsync();
     
     ///<inheritdoc/>

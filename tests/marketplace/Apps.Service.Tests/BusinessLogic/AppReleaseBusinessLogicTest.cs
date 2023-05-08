@@ -1031,6 +1031,9 @@ public class AppReleaseBusinessLogicTest
         result.Provider.Should().Be(data.Provider);
         result.ProviderUri.Should().Be(data.ProviderUri);
         result.OfferStatusId.Should().Be(data.OfferStatusId);
+        result.TechnicalUserProfile.Should().HaveSameCount(data.TechnicalUserProfile).And.AllSatisfy(
+            x => data.TechnicalUserProfile.Should().ContainSingle(d => d.TechnicalUserProfileId == x.Key).Which.UserRoles.Should().ContainInOrder(x.Value)
+        );
     }
 
     [Fact]
