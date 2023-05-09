@@ -93,6 +93,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             .GetAllBusinessAppDataForUserIdAsync(userId)
             .Select(x => 
                 new BusinessAppData(
+                    x.OfferId,
                     x.SubscriptionId,
                     x.OfferName ?? Constants.ErrorString,
                     x.SubscriptionUrl,
