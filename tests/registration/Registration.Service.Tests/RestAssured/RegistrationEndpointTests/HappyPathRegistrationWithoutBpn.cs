@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using AutoFixture;
+﻿using AutoFixture;
 using Microsoft.Extensions.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
@@ -111,124 +110,19 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     {
         _applicationId = GetFirstApplicationId();
         string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
-        var formFile = FormFileHelper.GetFormFile("this is just a test", "testfile.pdf", "application/pdf");
-        // File.WriteAllText("testfile.pdf", "Some Text");
-        // new FormFile()
-        // await CreateFilesToUpload();
-        // pdfFileName.Close();
-        var formData = new[]
-        {
-            new KeyValuePair<string, Stream>("document", formFile.OpenReadStream()),
-        };
+        File.WriteAllText("testfile.pdf", "Some Text");
         Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
                 $"Bearer {_companyToken}")
             .ContentType("multipart/form-data")
-            // .Body($"{{\"document\": {new MultipartFormDataContent()}")
-            // .MultiPart("testfile.pdf")
-            // .MultiPart(new FileInfo("testfile.pdf"), "testfile", MediaTypeHeaderValue.Parse("multipart/form-data"))
-            // .Body($"{{\"document\": {formFile.OpenReadStream()}")
-            // .Body($"\"document\":{formFile.OpenReadStream()}")
-            // .MultiPart(new FileInfo("testfile.pdf"))
-            // .FormData(formData)
+            .MultiPart(new FileInfo("testfile.pdf"), "document")
             .When()
             .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
             .Then()
-            .Body("")
+            .Body("1")
             .StatusCode(200);
-    }
-
-    // [Fact]
-    // public async Task Test4_UploadDocument_WithEmptyTitle_ReturnsExpectedResult_HttpClient()
-    // {
-    //     await File.WriteAllTextAsync("testfile.pdf", "Some Text");
-    //     _applicationId = GetFirstApplicationId();
-    //     string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
-    //     await using var stream = File.OpenRead("./testfile.pdf");
-    //     using var formContent = new MultipartFormDataContent
-    //     {
-    //         { new StreamContent(stream), "document", "testfile.pdf" }
-    //     };
-    //
-    //     var requestUri =
-    //         new Uri($"{_baseUrl}{_endPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents");
-    //     var requestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri);
-    //     requestMessage.Headers.Add("authorization", $"Bearer {_companyToken}");
-    //     requestMessage.Content = formContent;
-    //
-    //     var response = await _httpClient.SendAsync(requestMessage);
-    //     if (!response.IsSuccessStatusCode)
-    //     {
-    //         var errorMessage = await response.Content.ReadAsStringAsync();
-    //         throw new Exception(errorMessage);
-    //     }
-    // }
-
-    [Fact]
-    public async Task Test4_UploadDocument_WithEmptyTitle_ReturnsExpectedResult_HttpClient()
-    {
-        File.WriteAllText("testfile.pdf", "Some Text");
-        _applicationId = GetFirstApplicationId();
-        string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
-        var formFile = FormFileHelper.GetFormFile("this is just a test", "testfile.pdf", "application/pdf");
-        var formContent = new MultipartFormDataContent();
-        var fileContent = new StreamContent(formFile.OpenReadStream());
-        formContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
-        {
-            Name = "document",
-            FileName = "testfile.pdf",
-        };
-        formContent.Add(fileContent);
-
-        var requestUri =
-            new Uri($"{_baseUrl}{_endPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents");
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri);
-        requestMessage.Headers.Add("authorization", $"Bearer {_companyToken}");
-        requestMessage.Content = formContent;
-
-        var response = await _httpClient.SendAsync(requestMessage);
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorMessage = await response.Content.ReadAsStringAsync();
-            throw new Exception(errorMessage);
-        }
-    }
-
-    // [Fact]
-    // public void DownloadDocument_WithEmptyTitle_ReturnsExpectedResult()
-    // {
-    //     _applicationId = GetFirstApplicationId();
-    //     string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
-    //     Given()
-    //         .RelaxedHttpsValidation()
-    //         .Header(
-    //             "authorization",
-    //             $"Bearer {_companyToken}")
-    //         .When()
-    //         .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
-    //         .Then()
-    //         .Body("")
-    //         .StatusCode(200);
-    // }
-    //
-    // [Fact]
-    // public async Task DownloadDocument_WithEmptyTitle_ReturnsExpectedResult_HttpClient()
-    // {
-    //     var expectedStatusCode = HttpStatusCode.OK;
-    //     _applicationId = GetFirstApplicationId();
-    //     string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
-    //     var request = new HttpRequestMessage(HttpMethod.Get,
-    //         $"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress");
-    //     request.Headers.Add("authorization", $"Bearer {_companyToken}");
-    //     var response = await _httpClient.SendAsync(request);
-    //     var content = await response.Content.ReadAsStringAsync();
-    // }
-
-    private async Task CreateFilesToUpload()
-    {
-        await File.WriteAllLinesAsync("testfile.pdf", new string[] { "Some text" });
     }
 
 
@@ -268,7 +162,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     }
 
     #endregion
-    
+
     private string GetFirstApplicationId()
     {
         var applicationIDs = (List<CompanyApplicationData>)Given()

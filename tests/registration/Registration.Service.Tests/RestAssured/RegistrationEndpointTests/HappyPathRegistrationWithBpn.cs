@@ -137,26 +137,25 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
 
     // POST /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents
 
-    // [Fact]
-    // public void Test5_UploadDocument_WithEmptyTitle_ReturnsExpectedResult()
-    // {
-    //     //this.CreateStubForPdfMultiPartFormData();
-    //
-    //     string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
-    //     var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
-    //     var pdfFileName = File.Create("testfile.pdf");
-    //     Given()
-    //         .RelaxedHttpsValidation()
-    //         .Header(
-    //             "authorization",
-    //             $"Bearer {_companyToken}")
-    //         .ContentType("application/pdf")
-    //         .MultiPart(new FileInfo(file.FileName), file.FileName, new MediaTypeHeaderValue("application/pdf"))
-    //         .When()
-    //         .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
-    //         .Then()
-    //         .StatusCode(200);
-    // }
+    [Fact]
+    public void Test5_UploadDocument_WithEmptyTitle_ReturnsExpectedResult()
+    {
+        _applicationId = GetFirstApplicationId();
+        string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
+        File.WriteAllText("testfile.pdf", "Some Text");
+        Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .ContentType("multipart/form-data")
+            .MultiPart(new FileInfo("testfile.pdf"), "document")
+            .When()
+            .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
+            .Then()
+            .Body("1")
+            .StatusCode(200);
+    }
 
     //POST /api/registration/application/{applicationId}/submitRegistration
 
@@ -196,4 +195,21 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     }
 
     #endregion
+
+    private string GetFirstApplicationId()
+    {
+        var applicationIDs = (List<CompanyApplicationData>)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .When()
+            .Get($"{_baseUrl}{_endPoint}/applications")
+            .Then()
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(List<CompanyApplicationData>));
+
+        return applicationIDs[0].ApplicationId.ToString();
+    }
 }
