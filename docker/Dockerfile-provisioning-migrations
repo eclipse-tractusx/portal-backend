@@ -32,8 +32,6 @@ FROM build AS publish
 RUN dotnet publish "Provisioning.Migrations.csproj" -c Release -o /migrations/publish
 
 FROM base AS final
-# temp fix for CVE-2022-1304 and CVE-2023-0464
-RUN apk upgrade --no-cache libcom_err libssl3 libcrypto3
 WORKDIR /migrations
 COPY --from=publish /migrations/publish .
 ENV ASPNETCORE_URLS http://+:8080
