@@ -61,7 +61,7 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }} 
 
-      - name: Extract Metadata (tags, labels) for Docker
+      - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
@@ -95,6 +95,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Get token
         id: get_workflow_token
         uses: peter-murray/workflow-application-token-action@v2
@@ -112,5 +113,5 @@ jobs:
             --url https://api.github.com/repos/eclipse-tractusx/portal-cd/actions/workflows/administration-service-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --data '{"ref":"enable-auto-deployment-tractusx", "inputs": { "new-image":"${{ github.sha }}" }}' \
+            --data '{"ref":"dev", "inputs": { "new-image":"${{ github.sha }}" }}' \
             --fail
