@@ -190,7 +190,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             result.ContactNumber,
             result.Documents,
             result.SalesManagerId,
-            result.PrivacyPolicies);
+            result.PrivacyPolicies,
+            result.TechnicalUserProfile);
     }
 
     /// <inheritdoc/>

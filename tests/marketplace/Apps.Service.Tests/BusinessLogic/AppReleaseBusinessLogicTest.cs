@@ -546,6 +546,70 @@ public class AppReleaseBusinessLogicTest
 
     #endregion
 
+    #region GetAppDetailsForStatusAsync
+
+    [Fact]
+    public async Task GetAppDetailsForStatusAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        var userId = _fixture.Create<string>();
+        var data = _fixture.Create<OfferProviderResponse>();
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(A<Guid>._,A<string>._,A<OfferTypeId>._))
+            .Returns(data);
+
+        // Act
+        var result = await _sut.GetAppDetailsForStatusAsync(appId, userId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP))
+            .MustHaveHappenedOnceExactly();
+
+        result.Title.Should().Be(data.Title);
+        result.Provider.Should().Be(data.Provider);
+        result.LeadPictureId.Should().Be(data.LeadPictureId);
+        result.ProviderName.Should().Be(data.ProviderName);
+        result.UseCase.Should().HaveSameCount(data.UseCase).And.ContainInOrder(data.UseCase);
+        result.Descriptions.Should().HaveSameCount(data.Descriptions).And.ContainInOrder(data.Descriptions);
+        result.Agreements.Should().HaveSameCount(data.Agreements).And.ContainInOrder(data.Agreements);
+        result.SupportedLanguageCodes.Should().HaveSameCount(data.SupportedLanguageCodes).And.ContainInOrder(data.SupportedLanguageCodes);
+        result.Price.Should().Be(data.Price);
+        result.Images.Should().HaveSameCount(data.Images).And.ContainInOrder(data.Images);
+        result.ProviderUri.Should().Be(data.ProviderUri);
+        result.ContactEmail.Should().Be(data.ContactEmail);
+        result.Documents.Should().HaveSameCount(data.Documents).And.ContainInOrder(data.Documents);
+        result.SalesManagerId.Should().Be(data.SalesManagerId);
+        result.PrivacyPolicies.Should().HaveSameCount(data.PrivacyPolicies).And.ContainInOrder(data.PrivacyPolicies);
+        result.TechnicalUserProfile.Should().HaveSameCount(data.TechnicalUserProfile).And.ContainInOrder(data.TechnicalUserProfile);
+    }
+
+    [Fact]
+    public async Task GetAppDetailsForStatusAsync_NullUseCase_ThrowsUnexpectedConditionException()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        var userId = _fixture.Create<string>();
+        var data = _fixture.Build<OfferProviderResponse>()
+                        .With(x => x.UseCase, (IEnumerable<AppUseCaseData>?)null)
+                        .Create();
+
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(A<Guid>._,A<string>._,A<OfferTypeId>._))
+            .Returns(data);
+
+        var Act = () => _sut.GetAppDetailsForStatusAsync(appId, userId);
+
+        // Act
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP))
+            .MustHaveHappenedOnceExactly();
+
+        result.Message.Should().Be("usecase should never be null here");
+    }
+
+    #endregion
+
     #region GetAllInReviewStatusApps
 
     [Fact]
