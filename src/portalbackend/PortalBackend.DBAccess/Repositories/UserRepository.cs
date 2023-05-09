@@ -229,6 +229,7 @@ public class UserRepository : IUserRepository
     public Task<CompanyOwnUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
+            .AsSplitQuery()
             .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
             .Select(companyUser => new CompanyOwnUserDetails(
                 companyUser.Id,

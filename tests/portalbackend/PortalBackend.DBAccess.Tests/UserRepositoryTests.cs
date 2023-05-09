@@ -461,11 +461,11 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.companyName.Should().Be("Catena-X");
-        result.companyUserId.Should().Be("ac1cf001-7fbc-1f2f-817f-bce058020006");
+        result!.CompanyName.Should().Be("Catena-X");
+        result.CompanyUserId.Should().Be("ac1cf001-7fbc-1f2f-817f-bce058020006");
         result.Email.Should().Be("tobeadded@cx.com");
         result.FirstName.Should().Be("Operator");
-        result.businessPartnerNumbers.Should().BeEmpty();
+        result.BusinessPartnerNumbers.Should().BeEmpty();
     }
 
     #endregion

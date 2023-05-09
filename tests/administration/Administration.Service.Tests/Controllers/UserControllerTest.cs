@@ -71,7 +71,7 @@ public class UserControllerTest
         // Arrange
         var data = _fixture.Create<CompanyOwnUserDetails>();
         A.CallTo(() => _logic.GetOwnUserDetails(IamUserId))
-        .Returns(data);
+            .Returns(data);
 
         // Act
         var result = await this._controller.GetOwnUserDetails().ConfigureAwait(false);
