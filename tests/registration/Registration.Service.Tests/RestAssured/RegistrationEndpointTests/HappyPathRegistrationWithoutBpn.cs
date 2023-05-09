@@ -1,13 +1,12 @@
-﻿using System.Json;
+﻿using System.Net.Http.Headers;
 using AutoFixture;
-using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit;
 using static RestAssured.Dsl;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests.RestAssured;
+namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
 
 [TestCaseOrderer("Notifications.Service.Tests.RestAssured.AlphabeticalOrderer",
     "Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests")]
@@ -20,11 +19,13 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
 
     private readonly IFixture _fixture;
     // private readonly string pdfFileName = @"TestDocument.pdf";
-    
+
     private readonly string _adminEndPoint = "/api/administration";
     private readonly string _operatorToken;
     private static string _companyName = "Test-Catena-X";
-    
+    private readonly HttpClient _httpClient;
+    private static string[] _userEmailAddress;
+
     public RegistrationEndpointTestsHappyPathRegistrationWithoutBpn()
     {
         var configuration = new ConfigurationBuilder()
@@ -33,19 +34,21 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
         _companyToken = configuration.GetValue<string>("Secrets:CompanyToken");
         _operatorToken = configuration.GetValue<string>("Secrets:OperatorToken");
         _fixture = new Fixture();
+        _httpClient = new () { BaseAddress = new Uri(_baseUrl) };
         // CreateFilesToUpload();
     }
 
     #region Happy Path - new registration without BPN
 
     // POST api/administration/invitation
-    
+
     // [Fact]
     // public void Test1_ExecuteInvitation_ReturnsExpectedResult()
     // {
-    //     CompanyInvitationData invitationData = new CompanyInvitationData("user", "myFirstName", "myLastName",
-    //         "myEmail", "Test-Catena-X");
-    //      Given()
+    //     var emailAddress = GenerateRandomEmailAddress();
+    //     CompanyInvitationData invitationData = new CompanyInvitationData("testuser", "myFirstName", "myLastName",
+    //         emailAddress, "Test-Catena-X");
+    //     Given()
     //         .RelaxedHttpsValidation()
     //         .Header(
     //             "authorization",
@@ -56,43 +59,10 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     //         .Post($"{_baseUrl}{_adminEndPoint}/invitation")
     //         .Then()
     //         .StatusCode(200);
+    //     var messageData = FetchPassword();
+    //     AuthenticationFlow();
     // }
 
-    private string GetFirstApplicationId()
-    {
-        var applicationIDs = (List<CompanyApplicationData>)Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_companyToken}")
-            .When()
-            .Get($"{_baseUrl}{_endPoint}/applications")
-            .Then()
-            .StatusCode(200)
-         .Extract()
-            .As(typeof(List<CompanyApplicationData>));
-
-        return applicationIDs[0].ApplicationId.ToString();
-    }
-    
-    private CompanyDetailData GetCompanyDetailData()
-    {
-        _applicationId = GetFirstApplicationId();
-        // Given
-        CompanyDetailData companyDetailData = (CompanyDetailData)Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_companyToken}")
-            .When()
-            .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
-            .Then()
-            .And()
-            .StatusCode(200)
-            .Extract().As(typeof(CompanyDetailData));
-
-        return companyDetailData;
-    }
 
     // POST /api/registration/application/{applicationId}/companyDetailsWithAddress
 
@@ -108,13 +78,14 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
                 $"Bearer {_companyToken}")
             .ContentType("application/json")
             .When()
-            .Body("{\"companyId\":" + "\"" + companyId + "\"" + ",\"name\":\"TestAutomationReg 01\",\"city\":\"München\",\"streetName\":\"Streetfgh\",\"countryAlpha2Code\":\"DE\",\"bpn\":null, \"shortName\":\"TestAutomationReg 01\",\"region\":null,\"streetAdditional\":null,\"streetNumber\":null,\"zipCode\":null,\"countryDe\":\"Deutschland\",\"uniqueIds\":[{\"type\":\"VAT_ID\",\"value\":\"DE123456788\"}]}")
+            .Body("{\"companyId\":" + "\"" + companyId + "\"" +
+                  ",\"name\":\"TestAutomationReg 01\",\"city\":\"München\",\"streetName\":\"Streetfgh\",\"countryAlpha2Code\":\"DE\",\"bpn\":null, \"shortName\":\"TestAutomationReg 01\",\"region\":null,\"streetAdditional\":null,\"streetNumber\":null,\"zipCode\":null,\"countryDe\":\"Deutschland\",\"uniqueIds\":[{\"type\":\"VAT_ID\",\"value\":\"DE123456788\"}]}")
             //.Body(companyDetailData)
             .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
             .Then()
             .StatusCode(200);
     }
-    
+
     // POST /api/registration/application/{applicationId}/companyRoleAgreementConsents
 
     [Fact]
@@ -135,31 +106,135 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     }
     // POST /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents
 
+    [Fact]
+    public void Test4_UploadDocument_WithEmptyTitle_ReturnsExpectedResult()
+    {
+        _applicationId = GetFirstApplicationId();
+        string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
+        var formFile = FormFileHelper.GetFormFile("this is just a test", "testfile.pdf", "application/pdf");
+        // File.WriteAllText("testfile.pdf", "Some Text");
+        // new FormFile()
+        // await CreateFilesToUpload();
+        // pdfFileName.Close();
+        var formData = new[]
+        {
+            new KeyValuePair<string, Stream>("document", formFile.OpenReadStream()),
+        };
+        Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .ContentType("multipart/form-data")
+            // .Body($"{{\"document\": {new MultipartFormDataContent()}")
+            // .MultiPart("testfile.pdf")
+            // .MultiPart(new FileInfo("testfile.pdf"), "testfile", MediaTypeHeaderValue.Parse("multipart/form-data"))
+            // .Body($"{{\"document\": {formFile.OpenReadStream()}")
+            // .Body($"\"document\":{formFile.OpenReadStream()}")
+            // .MultiPart(new FileInfo("testfile.pdf"))
+            // .FormData(formData)
+            .When()
+            .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
+            .Then()
+            .Body("")
+            .StatusCode(200);
+    }
+
     // [Fact]
-    // public void Test4_UploadDocument_WithEmptyTitle_ReturnsExpectedResult()
+    // public async Task Test4_UploadDocument_WithEmptyTitle_ReturnsExpectedResult_HttpClient()
     // {
-    //     //this.CreateStubForPdfMultiPartFormData();
-    //
+    //     await File.WriteAllTextAsync("testfile.pdf", "Some Text");
+    //     _applicationId = GetFirstApplicationId();
     //     string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
-    //     var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
-    //     var pdfFileName = File.Create("testfile.pdf");
+    //     await using var stream = File.OpenRead("./testfile.pdf");
+    //     using var formContent = new MultipartFormDataContent
+    //     {
+    //         { new StreamContent(stream), "document", "testfile.pdf" }
+    //     };
+    //
+    //     var requestUri =
+    //         new Uri($"{_baseUrl}{_endPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents");
+    //     var requestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri);
+    //     requestMessage.Headers.Add("authorization", $"Bearer {_companyToken}");
+    //     requestMessage.Content = formContent;
+    //
+    //     var response = await _httpClient.SendAsync(requestMessage);
+    //     if (!response.IsSuccessStatusCode)
+    //     {
+    //         var errorMessage = await response.Content.ReadAsStringAsync();
+    //         throw new Exception(errorMessage);
+    //     }
+    // }
+
+    [Fact]
+    public async Task Test4_UploadDocument_WithEmptyTitle_ReturnsExpectedResult_HttpClient()
+    {
+        File.WriteAllText("testfile.pdf", "Some Text");
+        _applicationId = GetFirstApplicationId();
+        string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
+        var formFile = FormFileHelper.GetFormFile("this is just a test", "testfile.pdf", "application/pdf");
+        var formContent = new MultipartFormDataContent();
+        var fileContent = new StreamContent(formFile.OpenReadStream());
+        formContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+        {
+            Name = "document",
+            FileName = "testfile.pdf",
+        };
+        formContent.Add(fileContent);
+
+        var requestUri =
+            new Uri($"{_baseUrl}{_endPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri);
+        requestMessage.Headers.Add("authorization", $"Bearer {_companyToken}");
+        requestMessage.Content = formContent;
+
+        var response = await _httpClient.SendAsync(requestMessage);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            throw new Exception(errorMessage);
+        }
+    }
+
+    // [Fact]
+    // public void DownloadDocument_WithEmptyTitle_ReturnsExpectedResult()
+    // {
+    //     _applicationId = GetFirstApplicationId();
+    //     string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
     //     Given()
     //         .RelaxedHttpsValidation()
     //         .Header(
     //             "authorization",
     //             $"Bearer {_companyToken}")
-    //         .ContentType("application/pdf")
-    //         .MultiPart(new FileInfo(file.FileName), file.FileName, new MediaTypeHeaderValue("application/pdf"))
     //         .When()
-    //         .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
+    //         .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
     //         .Then()
+    //         .Body("")
     //         .StatusCode(200);
     // }
+    //
+    // [Fact]
+    // public async Task DownloadDocument_WithEmptyTitle_ReturnsExpectedResult_HttpClient()
+    // {
+    //     var expectedStatusCode = HttpStatusCode.OK;
+    //     _applicationId = GetFirstApplicationId();
+    //     string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
+    //     var request = new HttpRequestMessage(HttpMethod.Get,
+    //         $"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress");
+    //     request.Headers.Add("authorization", $"Bearer {_companyToken}");
+    //     var response = await _httpClient.SendAsync(request);
+    //     var content = await response.Content.ReadAsStringAsync();
+    // }
+
+    private async Task CreateFilesToUpload()
+    {
+        await File.WriteAllLinesAsync("testfile.pdf", new string[] { "Some text" });
+    }
 
 
     // POST /api/registration/application/{applicationId}/submitRegistration
     // GET: api/administration/registration/applications?companyName={companyName}
-    
+
     [Fact]
     public void Test6_GetApplicationDetails_ReturnsExpectedResult()
     {
@@ -170,11 +245,12 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
                 "authorization",
                 $"Bearer {_operatorToken}")
             .When()
-            .Get($"{_baseUrl}{_adminEndPoint}/registration/applications?companyName={_companyName}/?page=0&size=10&sorting=DateDesc")
+            .Get(
+                $"{_baseUrl}{_adminEndPoint}/registration/applications?companyName={_companyName}/?page=0&size=10&sorting=DateDesc")
             .Then()
             .StatusCode(200);
     }
-    
+
     // GET: api/administration/registration/application/{applicationId}/companyDetailsWithAddress
     [Fact]
     public void Test7_GetCompanyWithAddress_ReturnsExpectedResult()
@@ -190,6 +266,99 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             .Then()
             .StatusCode(200);
     }
-    
+
     #endregion
+    
+    private string GetFirstApplicationId()
+    {
+        var applicationIDs = (List<CompanyApplicationData>)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .When()
+            .Get($"{_baseUrl}{_endPoint}/applications")
+            .Then()
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(List<CompanyApplicationData>));
+
+        return applicationIDs[0].ApplicationId.ToString();
+    }
+
+    private CompanyDetailData GetCompanyDetailData()
+    {
+        _applicationId = GetFirstApplicationId();
+        // Given
+        CompanyDetailData companyDetailData = (CompanyDetailData)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .When()
+            .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
+            .Then()
+            .And()
+            .StatusCode(200)
+            .Extract().As(typeof(CompanyDetailData));
+
+        return companyDetailData;
+    }
+
+    private string GenerateRandomEmailAddress()
+    {
+        // Given
+        var emailAddress = (string[])Given()
+            .RelaxedHttpsValidation()
+            .When()
+            .Get("https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1")
+            .Then()
+            .And()
+            .StatusCode(200)
+            .Extract().As(typeof(string[]));
+        _userEmailAddress = emailAddress[0].Split("@");
+        return emailAddress[0];
+    }
+
+    private MailboxData[] CheckMailBox()
+    {
+        // Given
+        var emails = (MailboxData[])Given()
+            .RelaxedHttpsValidation()
+            .When()
+            .Get(
+                $"https://www.1secmail.com/api/v1/?action=getMessages&login={_userEmailAddress[0]}&domain={_userEmailAddress[1]}")
+            .Then()
+            .And()
+            .StatusCode(200)
+            .Extract().As(typeof(MailboxData[]));
+        return emails;
+    }
+
+    [Fact]
+    private EmailMessageData? FetchPassword()
+    {
+        // Given
+        var emails = CheckMailBox();
+        if (emails.Length != 0)
+        {
+            var passwordMail = emails[0]?.Id;
+            var messageData = (EmailMessageData)Given()
+                .RelaxedHttpsValidation()
+                .When()
+                .Get(
+                    $"https://www.1secmail.com/api/v1/?action=readMessage&login={_userEmailAddress[0]}&domain={_userEmailAddress[1]}&id={passwordMail}")
+                .Then()
+                .And()
+                .StatusCode(200)
+                .Extract().As(typeof(EmailMessageData));
+            return messageData;
+        }
+
+        return null;
+    }
+
+    private void AuthenticationFlow()
+    {
+    }
 }

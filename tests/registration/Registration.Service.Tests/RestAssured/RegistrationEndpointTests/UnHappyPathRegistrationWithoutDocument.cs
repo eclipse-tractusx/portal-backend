@@ -5,7 +5,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit;
 using static RestAssured.Dsl;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests.RestAssured;
+namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
 
 [TestCaseOrderer("Notifications.Service.Tests.RestAssured.AlphabeticalOrderer",
     "Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests")]

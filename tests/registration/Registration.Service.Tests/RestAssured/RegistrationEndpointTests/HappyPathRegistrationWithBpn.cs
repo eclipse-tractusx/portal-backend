@@ -5,7 +5,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit;
 using static RestAssured.Dsl;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests.RestAssured;
+namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
 
 [TestCaseOrderer("Notifications.Service.Tests.RestAssured.AlphabeticalOrderer",
     "Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests")]
@@ -18,12 +18,12 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
 
     private readonly IFixture _fixture;
     // private readonly string pdfFileName = @"TestDocument.pdf";
-    
+
     private readonly string _adminEndPoint = "/api/administration";
     private readonly string _operatorToken;
     private static string _companyName = "Test-Catena-X";
     private static string _bpn = "1234";
-    
+
     public RegistrationEndpointTestsHappyPathRegistrationWithBpn()
     {
         var configuration = new ConfigurationBuilder()
@@ -39,8 +39,24 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
 
     #region Happy Path - new registration with BPN
 
+    [Fact]
+    public void Test0_GetBpn_ReturnsExpectedResult()
+    {
+        // Given
+        Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .When()
+            .Get($"https://partners-pool.dev.demo.catena-x.net/api/catena/legal-entities?page=0&size=20")
+            .Then()
+            .StatusCode(200)
+            .Body("");
+    }
+
     // POST api/administration/invitation
-    
+
     // [Fact]
     // public void Test1_ExecuteInvitation_ReturnsExpectedResult()
     // {
@@ -58,9 +74,9 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     //         .Then()
     //         .StatusCode(200);
     // }
-    
+
     //GET /api/registration/legalEntityAddress/{bpn}
-    
+
     [Fact]
     public void Test2_GetCompanyBpdmDetailData_ReturnsExpectedResult()
     {
@@ -76,9 +92,9 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
             .StatusCode(200)
             .Body("");
     }
-    
+
     //POST /api/registration/application/{applicationId}/companyDetailsWithAddress
-    
+
     [Fact]
     public void Test3_SetCompanyDetailData_ReturnsExpectedResult()
     {
@@ -141,11 +157,11 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     //         .Then()
     //         .StatusCode(200);
     // }
-    
+
     //POST /api/registration/application/{applicationId}/submitRegistration
-    
+
     // GET: api/administration/registration/applications?companyName={companyName}
-    
+
     [Fact]
     public void Test7_GetApplicationDetails_ReturnsExpectedResult()
     {
@@ -156,13 +172,14 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
                 "authorization",
                 $"Bearer {_operatorToken}")
             .When()
-            .Get($"{_baseUrl}{_adminEndPoint}/registration/applications?companyName={_companyName}/?page=0&size=10&sorting=DateDesc")
+            .Get(
+                $"{_baseUrl}{_adminEndPoint}/registration/applications?companyName={_companyName}/?page=0&size=10&sorting=DateDesc")
             .Then()
             .StatusCode(200);
     }
-    
+
     // GET: api/administration/registration/application/{applicationId}/companyDetailsWithAddress
-    
+
     [Fact]
     public void Test8_GetCompanyWithAddress_ReturnsExpectedResult()
     {

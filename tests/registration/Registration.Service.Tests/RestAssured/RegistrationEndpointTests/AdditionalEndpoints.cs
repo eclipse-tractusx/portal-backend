@@ -1,22 +1,10 @@
-﻿using System.Net.Http.Headers;
-using AutoFixture;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Net.Http.Headers;
-using MimeKit;
-using Npgsql.Internal.TypeHandlers;
-using Org.BouncyCastle.Asn1.Ocsp;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestAssured;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+﻿using Microsoft.Extensions.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit;
 using static RestAssured.Dsl;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests.RestAssured;
+namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
 
 public class AdditionalEndpoints
 {
