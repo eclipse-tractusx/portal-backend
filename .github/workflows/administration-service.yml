@@ -98,7 +98,8 @@ jobs:
       - name: Extract sha for workflow dispatch
         id: sha
         uses: docker/metadata-action@v4
-          tags: type=sha
+          tags: |
+            type=sha
 
       - name: Get token
         id: get_workflow_token
