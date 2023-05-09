@@ -345,10 +345,8 @@ public class OfferRepository : IOfferRepository
                 o.OfferDescriptions.Any(description => description.DescriptionLong == ""),
                 o.OfferDescriptions.Any(description => description.DescriptionShort == ""),
                 o.UserRoles.Any(),
-                o.Documents.Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED )
-                    .Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId)),
-                o.Documents.Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED )
-                    .Select(doc => doc.DocumentTypeId)
+                o.Documents.Where(doc => doc.DocumentStatusId == DocumentStatusId.PENDING || doc.DocumentStatusId == DocumentStatusId.LOCKED )
+                    .Select(doc => new ValueTuple<Guid,DocumentStatusId,DocumentTypeId>(doc.Id, doc.DocumentStatusId, doc.DocumentTypeId))
             ))
             .SingleOrDefaultAsync();
 
@@ -392,7 +390,10 @@ public class OfferRepository : IOfferRepository
                         x.Offer.OfferAssignedPrivacyPolicies.Select(x => x.PrivacyPolicyId),
                         offerTypeId == OfferTypeId.SERVICE
                             ? x.Offer.ServiceDetails.Select(x => x.ServiceTypeId)
-                            : null)
+                            : null,
+                        x.Offer.TechnicalUserProfiles.Select(tup => new TechnicalUserRoleData(
+                            tup.Id,
+                            tup.UserRoles.Select(ur => ur.UserRoleText))))
                     : null,
                 x.IsProviderCompany))
             .SingleOrDefaultAsync();
@@ -553,7 +554,10 @@ public class OfferRepository : IOfferRepository
                     offer.Tags.Select(t => t.Name),
                     offer.OfferAssignedPrivacyPolicies.Select(p=>p.PrivacyPolicyId),
                     offer.LicenseTypeId,
-                    offer.OfferStatusId))
+                    offer.OfferStatusId,
+                    offer.TechnicalUserProfiles.Select(tup => new TechnicalUserRoleData(
+                        tup.Id,
+                        tup.UserRoles.Select(ur => ur.UserRoleText)))))
             .SingleOrDefaultAsync();
     
     ///<inheritdoc/>
@@ -682,7 +686,10 @@ public class OfferRepository : IOfferRepository
                 offer.ContactEmail,
                 offer.ContactNumber,
                 offer.OfferStatusId,
-                offer.LicenseTypeId
+                offer.LicenseTypeId,
+                offer.TechnicalUserProfiles.Select(tup => new TechnicalUserRoleData(
+                    tup.Id,
+                    tup.UserRoles.Select(ur => ur.UserRoleText)))
             ))
             .SingleOrDefaultAsync();
 

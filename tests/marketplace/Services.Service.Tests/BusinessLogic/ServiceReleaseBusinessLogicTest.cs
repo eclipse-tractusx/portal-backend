@@ -120,7 +120,7 @@ public class ServiceReleaseBusinessLogicTest
         var serviceId = _fixture.Create<Guid>();
        
         A.CallTo(() => _offerRepository.GetServiceDetailsByIdAsync(serviceId))
-            .ReturnsLazily(() => data);
+            .Returns(data);
 
         //Act
         var result = await _sut.GetServiceDetailsByIdAsync(serviceId).ConfigureAwait(false);
@@ -135,6 +135,9 @@ public class ServiceReleaseBusinessLogicTest
         result.ContactEmail.Should().NotBeNull().And.Be(data.ContactEmail);
         result.ContactNumber.Should().NotBeNull().And.Be(data.ContactNumber);
         result.OfferStatus.Should().Be(data.OfferStatusId);
+        result.TechnicalUserProfile.Should().HaveSameCount(data.TechnicalUserProfile).And.AllSatisfy(
+            x => data.TechnicalUserProfile.Should().ContainSingle(d => d.TechnicalUserProfileId == x.Key).Which.UserRoles.Should().ContainInOrder(x.Value)
+        );
     }
 
     [Fact]
@@ -142,8 +145,8 @@ public class ServiceReleaseBusinessLogicTest
     {
         //Arrange
         var data = _fixture.Build<ServiceDetailsData>()
-                           .With(x=>x.OfferStatusId, OfferStatusId.IN_REVIEW)
-                           .With(x=>x.Title, (string?)null)
+                           .With(x => x.OfferStatusId, OfferStatusId.IN_REVIEW)
+                           .With(x => x.Title, (string?)null)
                            .With(x => x.ProviderUri, (string?)null)
                            .With(x => x.ContactEmail, (string?)null)
                            .With(x => x.ContactNumber, (string?)null)
@@ -151,7 +154,7 @@ public class ServiceReleaseBusinessLogicTest
         var serviceId = _fixture.Create<Guid>();
        
         A.CallTo(() => _offerRepository.GetServiceDetailsByIdAsync(serviceId))
-            .ReturnsLazily(() => data);
+            .Returns(data);
 
         //Act
         var result = await _sut.GetServiceDetailsByIdAsync(serviceId).ConfigureAwait(false);
@@ -172,7 +175,7 @@ public class ServiceReleaseBusinessLogicTest
         // Arrange
         var invalidServiceId = Guid.NewGuid();
         A.CallTo(() => _offerRepository.GetServiceDetailsByIdAsync(invalidServiceId))
-           .ReturnsLazily(() => (ServiceDetailsData?)null);
+           .Returns((ServiceDetailsData?)null);
 
         // Act
         async Task Act() => await _sut.GetServiceDetailsByIdAsync(invalidServiceId).ConfigureAwait(false);
@@ -242,7 +245,7 @@ public class ServiceReleaseBusinessLogicTest
             .Create();
 
         A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, iamUserId, OfferTypeId.SERVICE))
-            .ReturnsLazily(() => data);
+            .Returns(data);
 
         var result = await _sut.GetServiceDetailsForStatusAsync(serviceId, iamUserId).ConfigureAwait(false);
 
@@ -250,6 +253,9 @@ public class ServiceReleaseBusinessLogicTest
         result.Title.Should().Be("test title");
         result.ContactEmail.Should().Be("info@test.de");
         result.ServiceTypeIds.Should().HaveCount(2);
+        result.TechnicalUserProfile.Should().HaveSameCount(data.TechnicalUserProfile).And.AllSatisfy(
+            x => data.TechnicalUserProfile.Should().ContainSingle(d => d.Key == x.Key).Which.Value.Should().ContainInOrder(x.Value)
+        );
     }
 
     #region GetAllInReviewStatusApps

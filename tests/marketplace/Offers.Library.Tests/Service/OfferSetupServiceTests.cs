@@ -189,7 +189,7 @@ public class OfferSetupServiceTests
         if (technicalUserRequired)
         {
             A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
-                .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, new List<Guid>()) }.ToAsyncEnumerable());
+                .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()) });
         }
         var serviceManagerRoles = new Dictionary<string, IEnumerable<string>>
         {
@@ -399,7 +399,7 @@ public class OfferSetupServiceTests
         var appInstance = new AppInstance(appInstanceId, _validOfferId, default);
         SetupCreateSingleInstance(appInstance);
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOffer(_validOfferId, A<OfferTypeId>._))
-            .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()) }.ToAsyncEnumerable());
+            .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()) }.AsFakeIEnumerable(out var enumerator));
         
         // Act
         var result = await _sut.ActivateSingleInstanceAppAsync(_validOfferId).ConfigureAwait(false);
@@ -409,7 +409,8 @@ public class OfferSetupServiceTests
         appInstance.ServiceAccounts.Should().HaveCount(1);
         A.CallTo(() => _provisioningManager.EnableClient(A<string>._))
             .MustHaveHappenedOnceExactly();
-        
+        A.CallTo(() => enumerator.MoveNext())
+            .MustHaveHappened(2,Times.Exactly);
     }
 
     [Fact]

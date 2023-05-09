@@ -167,7 +167,7 @@ public class ProvisioningManagerTests
             .Times(2);
         httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/identity-provider/instances/{ValidClientName}/mappers")
             .WithVerb(HttpMethod.Post)
-            .Times(2);
+            .Times(1);
     }
 
     [Fact]

@@ -40,6 +40,5 @@ public record OfferReleaseData(
     bool IsDescriptionLongNotSet,
     bool IsDescriptionShortNotSet,
     bool HasUserRoles,
-    IEnumerable<DocumentStatusData?> DocumentStatusDatas,
-    IEnumerable<DocumentTypeId> DocumentTypeIds
+    IEnumerable<(Guid DocumentId, DocumentStatusId StatusId, DocumentTypeId DocumentTypeId)> DocumentDatas
 );

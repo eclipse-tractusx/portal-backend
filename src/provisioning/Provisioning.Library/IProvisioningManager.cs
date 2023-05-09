@@ -27,7 +27,6 @@ public interface IProvisioningManager
 {
     ValueTask<string> GetNextCentralIdentityProviderNameAsync();
     Task SetupSharedIdpAsync(string idpName, string organisationName, string? loginTheme);
-    Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes);
     Task<string> CreateSharedRealmUserAsync(string realm, UserProfile profile);
     Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes);
     IAsyncEnumerable<(string Client, IEnumerable<string> Roles)> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames);

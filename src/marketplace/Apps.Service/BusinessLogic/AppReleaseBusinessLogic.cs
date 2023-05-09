@@ -441,7 +441,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             result.Price ?? Constants.ErrorString,
             result.Tags,
             result.MatchingPrivacyPolicies,
-            result.OfferStatusId);
+            result.OfferStatusId,
+            result.TechnicalUserProfile.ToDictionary(g => g.TechnicalUserProfileId, g => g.UserRoles));
     }
 
     /// <inheritdoc />

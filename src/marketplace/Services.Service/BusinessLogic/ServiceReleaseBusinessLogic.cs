@@ -80,7 +80,8 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             result.ContactEmail,
             result.ContactNumber,
             result.LicenseTypeId,
-            result.OfferStatusId
+            result.OfferStatusId,
+            result.TechnicalUserProfile.ToDictionary(g => g.TechnicalUserProfileId, g => g.UserRoles)
         );
     }
 
@@ -112,7 +113,8 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             result.ContactNumber,
             result.Documents,
             result.SalesManagerId,
-            result.ServiceTypeIds);
+            result.ServiceTypeIds,
+            result.TechnicalUserProfile);
     }
     
     /// <inheritdoc/>

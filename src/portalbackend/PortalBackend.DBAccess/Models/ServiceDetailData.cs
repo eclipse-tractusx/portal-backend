@@ -80,7 +80,15 @@ public record ServiceDetailsData(
     /// <summary>
     /// License Type Id
     /// </summary>
-    LicenseTypeId LicenseTypeId
+    LicenseTypeId LicenseTypeId,
+    
+    ///<summary>
+    /// Technical User Profile
+    ///</summary>
+    IEnumerable<TechnicalUserRoleData> TechnicalUserProfile
 );
 
-
+public record TechnicalUserRoleData(
+    Guid TechnicalUserProfileId,
+    IEnumerable<string> UserRoles
+);
