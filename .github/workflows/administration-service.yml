@@ -66,9 +66,9 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}
-        tags: |
-          type=raw,value=dev
-          type=sha
+          tags: |
+            type=raw,value=dev
+            type=sha
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -98,7 +98,7 @@ jobs:
       - name: Extract sha for workflow dispatch
         id: sha
         uses: docker/metadata-action@v4
-        tags: type=sha
+          tags: type=sha
 
       - name: Get token
         id: get_workflow_token
