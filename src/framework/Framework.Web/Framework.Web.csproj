@@ -34,4 +34,7 @@
     <ProjectReference Include="..\Framework.Authorization\Framework.Authorization.csproj" />
     <ProjectReference Include="..\Framework.Linq\Framework.Linq.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
+  </ItemGroup>
 </Project>

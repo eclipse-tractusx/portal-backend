@@ -18,20 +18,39 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Serilog;
 
 var VERSION = "v2";
 
-var builder = WebApplication.CreateBuilder(args);
+LoggingExtensions.EnsureInitialized();
+Log.Information("Starting the application");
+try
+{
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Host.AddLogging(builder.Configuration);
 
-builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-                .AddPortalRepositories(builder.Configuration);
+    builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
+                    .AddPortalRepositories(builder.Configuration);
 
-builder.Services.AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>()
-    .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
+    builder.Services.AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>()
+        .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
 
-builder.Build()
-    .CreateApp<Program>("notification", VERSION, builder.Environment)
-    .Run();
+    builder.Build()
+        .CreateApp<Program>("notification", VERSION, builder.Environment)
+        .Run();
+}
+catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
+{
+    LoggingExtensions.EnsureInitialized();
+    Log.Fatal(ex, "Unhandled exception");
+}
+finally
+{
+    LoggingExtensions.EnsureInitialized();
+    Log.Information("Server Shutting down");
+    Log.CloseAndFlush();
+}

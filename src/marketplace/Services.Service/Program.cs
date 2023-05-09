@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
@@ -27,15 +28,21 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.DependencyInjection;
+using Serilog;
 
 var VERSION = "v2";
 
-var builder = WebApplication.CreateBuilder(args);
+LoggingExtensions.EnsureInitialized();
+Log.Information("Starting the application");
+try
+{
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Host.AddLogging(builder.Configuration);
 
-builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-    .AddMailingAndTemplateManager(builder.Configuration)
-    .AddPortalRepositories(builder.Configuration)
-    .AddProvisioningManager(builder.Configuration);
+    builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
+        .AddMailingAndTemplateManager(builder.Configuration)
+        .AddPortalRepositories(builder.Configuration)
+        .AddProvisioningManager(builder.Configuration);
 
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services
@@ -47,6 +54,18 @@ builder.Services
 
 builder.Services.AddOfferServices();
 
-builder.Build()
-    .CreateApp<Program>("services", VERSION, builder.Environment)
-    .Run();
+    builder.Build()
+        .CreateApp<Program>("services", VERSION, builder.Environment)
+        .Run();
+}
+catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
+{
+    LoggingExtensions.EnsureInitialized();
+    Log.Fatal(ex, "Unhandled exception");
+}
+finally
+{
+    LoggingExtensions.EnsureInitialized();
+    Log.Information("Server Shutting down");
+    Log.CloseAndFlush();
+}

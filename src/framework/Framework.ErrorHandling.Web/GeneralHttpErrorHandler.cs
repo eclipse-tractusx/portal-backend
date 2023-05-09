@@ -20,7 +20,8 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using System.Net;
 using System.Text.Json;
 
@@ -31,7 +32,7 @@ public class GeneralHttpErrorHandler
     private readonly RequestDelegate _next;
     private readonly ILogger _logger;
 
-    private static readonly IReadOnlyDictionary<HttpStatusCode, MetaData> _metadata = new Dictionary<HttpStatusCode, MetaData>()
+    private static readonly IReadOnlyDictionary<HttpStatusCode, MetaData> Metadata = new Dictionary<HttpStatusCode, MetaData>()
     {
         { HttpStatusCode.BadRequest, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.1", "One or more validation errors occurred.") },
         { HttpStatusCode.Conflict, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.8", "The resorce is in conflict with the current request.") },
@@ -57,78 +58,89 @@ public class GeneralHttpErrorHandler
         }
         catch (Exception error)
         {
-            var logLevel = LogLevel.Information;
-            HttpStatusCode statusCode;
-            Func<Exception, (string?, IEnumerable<string>)>? messageFunc = null;
+            var errorId = Guid.NewGuid().ToString();
+            var (statusCode, messageFunc, logLevel) = GetErrorInformation(error, errorId);
 
-            if (error is ArgumentException)
-            {
-                statusCode = HttpStatusCode.BadRequest;
-                messageFunc = error => ((error as ArgumentException)!.ParamName, Enumerable.Repeat(error.Message, 1));
-            }
-            else if (error is ControllerArgumentException)
-            {
-                statusCode = HttpStatusCode.BadRequest;
-                messageFunc = error => ((error as ControllerArgumentException)!.ParamName, Enumerable.Repeat(error.Message, 1));
-            }
-            else if (error is NotFoundException)
-            {
-                statusCode = HttpStatusCode.NotFound;
-            }
-            else if (error is ConflictException)
-            {
-                statusCode = HttpStatusCode.Conflict;
-            }
-            else if (error is ForbiddenException)
-            {
-                statusCode = HttpStatusCode.Forbidden;
-            }
-            else if (error is ServiceException)
-            {
-                statusCode = HttpStatusCode.BadGateway;
-                var serviceStatus = (error as ServiceException)!.StatusCode;
-                messageFunc = error => (error.Source, new[] {
-                    serviceStatus == null
-                        ? $"remote service call failed"
-                        : $"remote service returned status code: {(int)serviceStatus} {serviceStatus}",
-                    error.Message });
-            }
-            else if (error is UnsupportedMediaTypeException)
-            {
-                statusCode = HttpStatusCode.UnsupportedMediaType;
-            }
-            else if (error is ConfigurationException)
-            {
-                statusCode = HttpStatusCode.InternalServerError;
-                messageFunc = error => (error.Source, new[] { $"Invalid service configuration: {error.Message}" });
-            }
-            else
-            {
-                statusCode = HttpStatusCode.InternalServerError;
-                logLevel = LogLevel.Error;
-            }
-            _logger.Log(logLevel, error, "GeneralErrorHandler caught {Error} resulting in response status code {StatusCode}, message '{Message}'", error.GetType().Name, (int)statusCode, error.Message);
+            _logger.Log(logLevel, error, "GeneralErrorHandler caught {Error} with errorId: {ErrorId} resulting in response status code {StatusCode}, message '{Message}'", error.GetType().Name, errorId, (int)statusCode, error.Message);
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(JsonSerializer.Serialize(CreateErrorResponse(statusCode, error, messageFunc))).ConfigureAwait(false);
+            await context.Response.WriteAsync(JsonSerializer.Serialize(CreateErrorResponse(statusCode, error, errorId, messageFunc))).ConfigureAwait(false);
         }
     }
 
-    private static ErrorResponse CreateErrorResponse(HttpStatusCode statusCode, Exception error, Func<Exception, (string?, IEnumerable<string>)>? getSourceAndMessages = null)
+    private static (HttpStatusCode StatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel) GetErrorInformation(Exception error, string errorId)
     {
-        var meta = _metadata.GetValueOrDefault(statusCode, _metadata[HttpStatusCode.InternalServerError]);
-        var (source, messages) = getSourceAndMessages == null
-            ? (error.Source, Enumerable.Repeat(error.Message, 1))
-            : getSourceAndMessages(error);
+        HttpStatusCode statusCode;
+        var logLevel = LogLevel.Information;
+        Func<Exception, (string?, IEnumerable<string>)>? messageFunc = null;
 
-        var messageMap = new Dictionary<string, IEnumerable<string>>() { { source ?? "unknown", messages } };
+        if (error is ArgumentException argumentException)
+        {
+            statusCode = HttpStatusCode.BadRequest;
+            messageFunc = _ => (argumentException.ParamName, Enumerable.Repeat(argumentException.Message, 1));
+        }
+        else if (error is ControllerArgumentException caException)
+        {
+            statusCode = HttpStatusCode.BadRequest;
+            messageFunc = _ => (caException.ParamName, Enumerable.Repeat(caException.Message, 1));
+        }
+        else if (error is NotFoundException)
+        {
+            statusCode = HttpStatusCode.NotFound;
+        }
+        else if (error is ConflictException)
+        {
+            statusCode = HttpStatusCode.Conflict;
+        }
+        else if (error is ForbiddenException)
+        {
+            statusCode = HttpStatusCode.Forbidden;
+        }
+        else if (error is ServiceException serviceException)
+        {
+            statusCode = HttpStatusCode.BadGateway;
+            var serviceStatus = serviceException.StatusCode;
+            messageFunc = ex => (ex.Source, new[]
+            {
+                serviceStatus == null
+                    ? "remote service call failed"
+                    : $"remote service returned status code: {(int) serviceStatus} {serviceStatus}",
+                error.Message
+            });
+        }
+        else if (error is UnsupportedMediaTypeException)
+        {
+            statusCode = HttpStatusCode.UnsupportedMediaType;
+        }
+        else if (error is ConfigurationException)
+        {
+            statusCode = HttpStatusCode.InternalServerError;
+            messageFunc = ex => (ex.Source, new[] { $"Invalid service configuration: {ex.Message}" });
+        }
+        else
+        {
+            statusCode = HttpStatusCode.InternalServerError;
+            logLevel = LogLevel.Error;
+        }
+
+        LoggingExtensions.LogErrorInformation(errorId, error);
+
+        return (statusCode, messageFunc, logLevel);
+    }
+
+    private static ErrorResponse CreateErrorResponse(HttpStatusCode statusCode, Exception error, string errorId, Func<Exception, (string?, IEnumerable<string>)>? getSourceAndMessages = null)
+    {
+        var meta = Metadata.GetValueOrDefault(statusCode, Metadata[HttpStatusCode.InternalServerError]);
+        var (source, messages) = getSourceAndMessages?.Invoke(error) ?? (error.Source, Enumerable.Repeat(error.Message, 1));
+
+        var messageMap = new Dictionary<string, IEnumerable<string>> { { source ?? "unknown", messages } };
         while (error.InnerException != null)
         {
             error = error.InnerException;
             source = error.Source ?? "inner";
 
             messageMap[source] = messageMap.TryGetValue(source, out messages)
-                ? Enumerable.Append(messages, error.Message)
+                ? messages.Append(error.Message)
                 : Enumerable.Repeat(error.Message, 1);
         }
 
@@ -136,18 +148,10 @@ public class GeneralHttpErrorHandler
             meta.Url,
             meta.Description,
             (int)statusCode,
-            messageMap
+            messageMap,
+            errorId
         );
     }
 
-    private sealed class MetaData
-    {
-        public MetaData(string url, string description)
-        {
-            Url = url;
-            Description = description;
-        }
-        public string Url;
-        public string Description;
-    }
+    private sealed record MetaData(string Url, string Description);
 }
