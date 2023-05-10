@@ -1,6 +1,14 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Schema;
+using Newtonsoft.Json.Schema.Generation;
+using NJsonSchema;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using RestAssured.Request.Logging;
 using Xunit;
 using static RestAssured.Dsl;
 
@@ -26,23 +34,26 @@ public class AdditionalEndpoints
     public void GetCompanyDetailData_ReturnsExpectedResult()
     {
         // Given
-        Given()
+        var data = (CompanyDetailData)Given()
             .RelaxedHttpsValidation()
+            .Log(RequestLogLevel.All)
             .Header(
                 "authorization",
                 $"Bearer {_companyToken}")
             .When()
             .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
             .Then()
-            .Body("")
-            .StatusCode(200);
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(CompanyDetailData));
+        Assert.NotEqual(0, data.CompanyId.ToString().Length);
     }
 
     [Fact]
     public void GetApplicationStatus_ReturnsExpectedResult()
     {
         // Given
-        var data = Given()
+        var data = (CompanyApplicationStatusId)Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
@@ -53,13 +64,15 @@ public class AdditionalEndpoints
             .StatusCode(200)
             .Extract()
             .As(typeof(CompanyApplicationStatusId));
+        Assert.True(Enum.IsDefined(typeof(CompanyApplicationStatusId), data));
     }
 
     [Fact]
     public void GetAgreementConsentStatuses_ReturnsExpectedResult()
     {
         // Given
-        var data = Given()
+        var data = (CompanyRoleAgreementConsents)Given()
+            .Log(RequestLogLevel.All)
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
@@ -67,24 +80,29 @@ public class AdditionalEndpoints
             .When()
             .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyRoleAgreementConsents")
             .Then()
-            // .Body("")
-            .StatusCode(200);
-        //.Extract()
-        //.As(typeof(CompanyRoleAgreementConsents))
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(CompanyRoleAgreementConsents));
     }
 
     [Fact]
     public void GetInvitedUsers_ReturnsExpectedResult()
     {
+        /*JSchemaGenerator generator = new JSchemaGenerator();
+        JSchema schemaJson = generator.Generate(typeof(InvitedUserDetail));*/
         // Given
-        var data = Given()
+        var data = (InvitedUser[])Given()
             .RelaxedHttpsValidation()
+            .Log(RequestLogLevel.All)
             .Header(
                 "authorization",
                 $"Bearer {_companyToken}")
             .When()
             .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/invitedusers")
             .Then()
-            .StatusCode(200);
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(InvitedUser[]));
+        Assert.NotEmpty(data);
     }
 }
