@@ -90,4 +90,15 @@ public interface IOfferSubscriptionsRepository
     /// <param name="iamUserId">Id of the user to get the app data for.</param>
     /// <returns>Returns an IAsyncEnumerable of app data</returns>
     IAsyncEnumerable<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId);
+
+    /// <summary>
+    /// Gets the needed details for the offer subscription
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="offerTypeId">Offer type</param>
+    /// <param name="userRoleIds">Ids of the user roles the contacts should be in</param>
+    /// <returns>Returns details for the offer subscription</returns>
+    Task<(bool Exists, bool IsUserOfCompany, OfferSubscriptionDetailData Details)> GetSubscriptionDetailsAsync(Guid offerId, Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds, bool forProvider);
 }

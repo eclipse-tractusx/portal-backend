@@ -133,4 +133,22 @@ public interface IServiceBusinessLogic
     /// <param name="data">The technical user profiles</param>
     /// <param name="iamUserId">Id of the iam user</param>
     Task UpdateTechnicalUserProfiles(Guid serviceId, IEnumerable<TechnicalUserProfileData> data, string iamUserId);
+
+    /// <summary>
+    /// Gets the information for the subscription
+    /// </summary>
+    /// <param name="serviceId">Id of the app</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the details of the subscription</returns>
+    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid serviceId, Guid subscriptionId, string iamUserId);
+
+    /// <summary>
+    /// Gets the information for the subscription
+    /// </summary>
+    /// <param name="serviceId">Id of the app</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the details of the subscription</returns>
+    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid serviceId, Guid subscriptionId, string iamUserId);
 }

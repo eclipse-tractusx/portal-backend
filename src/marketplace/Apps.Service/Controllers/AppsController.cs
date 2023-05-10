@@ -352,9 +352,9 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
-    public async Task<NoContentResult> CreatOfferAssignedAppLeadImageDocumentByIdAsync([FromRoute] Guid appId,  [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
+    public async Task<NoContentResult> CreateOfferAssignedAppLeadImageDocumentByIdAsync([FromRoute] Guid appId,  [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {
-        await this.WithIamUserId(iamUserId => _appsBusinessLogic.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, document, cancellationToken));
+        await this.WithIamUserId(iamUserId => _appsBusinessLogic.CreateOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, document, cancellationToken));
         return NoContent();
     }
     
@@ -393,4 +393,40 @@ public class AppsController : ControllerBase
         await this.WithIamUserId(iamUserId => _appsBusinessLogic.UpdateTechnicalUserProfiles(appId, data, iamUserId)).ConfigureAwait(false);
         return NoContent();
     }
+
+    /// <summary>
+    /// Retrieves the details of a subscription
+    /// </summary>
+    /// <param name="appId">id of the app to receive the details for</param>
+    /// <param name="subscriptionId">id of the subscription to receive the details for</param>
+    /// <remarks>Example: GET: /api/apps/{appId}/subscription/{subscriptionId}/provider</remarks>
+    /// <response code="200">Returns the subscription details for the provider</response>
+    /// <response code="403">User's company does not provide the app.</response>
+    /// <response code="404">No app or subscription found.</response>
+    [HttpGet]
+    [Authorize(Roles = "app_management")]
+    [Route("{appId}/subscription/{subscriptionId}/provider")]
+    [ProducesResponseType(typeof(ProviderSubscriptionDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider([FromRoute] Guid appId, [FromRoute] Guid subscriptionId) =>
+        this.WithIamUserId(iamUserId => _appsBusinessLogic.GetSubscriptionDetailForProvider(appId, subscriptionId, iamUserId));
+        
+    /// <summary>
+    /// Retrieves the details of a subscription
+    /// </summary>
+    /// <param name="appId">id of the app to receive the details for</param>
+    /// <param name="subscriptionId">id of the subscription to receive the details for</param>
+    /// <remarks>Example: GET: /api/apps/{appId}/subscription/{subscriptionId}/subscriber</remarks>
+    /// <response code="200">Returns the subscription details for the subscriber</response>
+    /// <response code="403">User's company does not provide the app.</response>
+    /// <response code="404">No app or subscription found.</response>
+    [HttpGet]
+    [Authorize(Roles = "subscribe_apps")]
+    [Route("{appId}/subscription/{subscriptionId}/subscriber")]
+    [ProducesResponseType(typeof(SubscriberSubscriptionDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber([FromRoute] Guid appId, [FromRoute] Guid subscriptionId) =>
+        this.WithIamUserId(iamUserId => _appsBusinessLogic.GetSubscriptionDetailForSubscriber(appId, subscriptionId, iamUserId));
 }

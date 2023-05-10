@@ -25,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -187,4 +186,30 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 offerSubscription.Offer!.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 offerSubscription.Offer!.Provider
             )).ToAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<(bool Exists, bool IsUserOfCompany, OfferSubscriptionDetailData Details)> GetSubscriptionDetailsAsync(Guid offerId, Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds, bool forProvider) =>
+        _context.OfferSubscriptions
+            .Where(os => os.Id == subscriptionId && os.OfferId == offerId && os.Offer!.OfferTypeId == offerTypeId)
+            .Select(os => new
+            {
+                UserCompany = forProvider ? os.Offer!.ProviderCompany : os.Company,
+                OtherCompany = forProvider ? os.Company : os.Offer!.ProviderCompany,
+                OfferName = os.Offer!.Name,
+                os.OfferId,
+                os.Offer!.OfferStatusId,
+                os.CompanyServiceAccounts
+            })
+            .Select(x => new ValueTuple<bool, bool, OfferSubscriptionDetailData>(
+                true,
+                x.UserCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
+                new OfferSubscriptionDetailData(
+                    x.OfferId,
+                    x.OfferStatusId,
+                    x.OfferName,
+                    x.OtherCompany!.Name,
+                    x.OtherCompany!.BusinessPartnerNumber,
+                    x.OtherCompany.CompanyUsers.Where(cu => cu.Email != null && cu.UserRoles.Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
+                    x.CompanyServiceAccounts.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.UserRoles.Select(x => x.UserRoleText))))))
+            .SingleOrDefaultAsync();
 }

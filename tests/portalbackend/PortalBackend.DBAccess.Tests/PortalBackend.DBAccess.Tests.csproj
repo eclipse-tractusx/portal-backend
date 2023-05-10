@@ -143,7 +143,7 @@
     <Content Update="Seeder\Data\company_service_account_assigned_roles.consortia.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
-    <Content Update="Seeder\Data\company_service_accounts.json">
+    <Content Update="Seeder\Data\company_service_accounts.test.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
     <Content Update="Seeder\Data\company_service_accounts.consortia.json">
@@ -312,6 +312,9 @@
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
     <Content Update="Seeder\Data\technical_user_profile_assigned_roles.test.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_service_accounts.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
   </ItemGroup>

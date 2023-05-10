@@ -38,6 +38,7 @@ public class OfferServiceTests
     private readonly Guid _existingServiceId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
     private readonly Guid _existingAgreementId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47664");
     private readonly Guid _validConsentId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47664");
+    private readonly Guid _validUserRoleId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47665");
     private readonly Guid _existingAgreementForSubscriptionId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47665");
     private readonly Guid _differentCompanyUserId = Guid.NewGuid();
     private readonly Guid _noSalesManagerUserId = Guid.NewGuid();
@@ -861,7 +862,7 @@ public class OfferServiceTests
         var iamUserId = _fixture.Create<string>();
 
         A.CallTo(() => _offerRepository.GetOfferStatusDataByIdAsync(offerId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, "The name", null, false, Enumerable.Empty<(Guid,string)>()));
+            .Returns((true, "The name", null, false, Enumerable.Empty<(Guid,string)>()));
 
         var approveAppNotificationTypeIds = new []
         {
@@ -1183,7 +1184,7 @@ public class OfferServiceTests
         var offer = _fixture.Create<Offer>();
         var appid = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(appid, offerTypeId, _iamUserId))
-            .ReturnsLazily(() => new ValueTuple<bool, bool>(true, true));
+            .Returns(new ValueTuple<bool, bool>(true, true));
         
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(appid, A<Action<Offer>>._, A<Action<Offer>?>._))
             .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
@@ -2151,6 +2152,97 @@ public class OfferServiceTests
 
     #endregion
     
+    #region GetSubscriptionDetailForProvider
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task GetSubscriptionDetailForProvider_WithNotMatchingUserRoles_ThrowsConfigurationException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var offerId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                {"ClientTest", new[] {"Wrong"}}
+            };
+
+        // Act
+        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _iamUserId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
+        ex.Message.Should().Contain("invalid configuration, at least one of the configured roles does not exist in the database:");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task GetSubscriptionDetailForProvider_WithNotExistingOffer_ThrowsNotFoundException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var offerId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                {"ClientTest", new[] {"Test"}}
+            };
+        SetupGetSubscriptionDetailForProvider();
+
+        // Act
+        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _iamUserId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Contain($"subscription {subscriptionId} for offer {offerId} of type {offerTypeId} does not exist");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task GetSubscriptionDetailForProvider_WithUserNotInProvidingCompany_ThrowsForbiddenException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var userId = Guid.NewGuid().ToString();
+        var subscriptionId = Guid.NewGuid();
+        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            {"ClientTest", new[] {"Test"}}
+        };
+        SetupGetSubscriptionDetailForProvider();
+        
+        // Act
+        async Task Act() => await _sut.GetSubscriptionDetailsForProviderAsync(_existingServiceId, subscriptionId, userId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Contain($"User {userId} is not part of the Provider company");
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task GetSubscriptionDetailForProvider_WithValidData_ReturnsExpected(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var companyAdminRoles = new Dictionary<string, IEnumerable<string>>
+        {
+            {"ClientTest", new[] {"Test"}}
+        };
+        SetupGetSubscriptionDetailForProvider();
+
+        // Act
+        var result = await _sut.GetSubscriptionDetailsForProviderAsync(_existingServiceId, Guid.NewGuid(), _iamUserId, offerTypeId, companyAdminRoles).ConfigureAwait(false);
+
+        // Assert
+        result.Name.Should().Be("Test App");
+        result.Customer.Should().Be("Stark Industry");
+        result.Contact.Should().HaveCount(2);
+        result.TechnicalUserData.Should().HaveCount(5);
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupValidateSalesManager()
@@ -2159,13 +2251,13 @@ public class OfferServiceTests
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
             .Returns(roleIds.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetRolesAndCompanyMembershipUntrackedAsync(A<string>._, A<IEnumerable<Guid>>._, A<Guid>.That.Matches(x => x == _companyUser.Id)))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool, Guid>(roleIds, true, _companyUser.CompanyId));
+            .Returns(new ValueTuple<IEnumerable<Guid>, bool, Guid>(roleIds, true, _companyUser.CompanyId));
         A.CallTo(() => _userRepository.GetRolesAndCompanyMembershipUntrackedAsync(A<string>._, A<IEnumerable<Guid>>._, A<Guid>.That.Matches(x => x == _differentCompanyUserId)))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool, Guid>(Enumerable.Repeat(roleIds.First(), 1), false, Guid.NewGuid()));
+            .Returns(new ValueTuple<IEnumerable<Guid>, bool, Guid>(Enumerable.Repeat(roleIds.First(), 1), false, Guid.NewGuid()));
         A.CallTo(() => _userRepository.GetRolesAndCompanyMembershipUntrackedAsync(A<string>._, A<IEnumerable<Guid>>._, A<Guid>.That.Matches(x => x == _noSalesManagerUserId)))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool, Guid>(Enumerable.Repeat(roleIds.First(), 1), true, _companyUser.CompanyId));
+            .Returns(new ValueTuple<IEnumerable<Guid>, bool, Guid>(Enumerable.Repeat(roleIds.First(), 1), true, _companyUser.CompanyId));
         A.CallTo(() => _userRepository.GetRolesAndCompanyMembershipUntrackedAsync(A<string>._, A<IEnumerable<Guid>>._, A<Guid>.That.Not.Matches(x => x == _companyUser.Id || x == _differentCompanyUserId || x == _noSalesManagerUserId)))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<Guid>, bool, Guid>());
+            .Returns(new ValueTuple<IEnumerable<Guid>, bool, Guid>());
         A.CallTo(() => _userRepository.GetOwnCompanyId(A<string>.That.IsEqualTo(_iamUserId))).Returns(_companyUser.CompanyId);
     }
 
@@ -2257,6 +2349,25 @@ public class OfferServiceTests
             .Returns((true, true, _companyUser.Id));
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
+    }
+
+    private void SetupGetSubscriptionDetailForProvider()
+    {
+        var data = new OfferSubscriptionDetailData(Guid.NewGuid(), OfferStatusId.ACTIVE, "Test App", "Stark Industry", "BPN123456789",
+            new[] {"tony@stark.com", "steven@strange.com"}, _fixture.CreateMany<SubscriptionTechnicalUserData>(5));
+
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x.ContainsKey("ClientTest"))))
+            .Returns(new[] {_validUserRoleId}.ToAsyncEnumerable());
+
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsAsync(_existingServiceId, A<Guid>._, _iamUserId, A<OfferTypeId>._, A<IEnumerable<Guid>>._, A<bool>._))
+            .Returns(new ValueTuple<bool, bool, OfferSubscriptionDetailData>(true, true, data));
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsAsync(_existingServiceId, A<Guid>._, A<string>.That.Not.Matches(x => x == _iamUserId), A<OfferTypeId>._, A<IEnumerable<Guid>>._, A<bool>._))
+            .Returns(new ValueTuple<bool, bool, OfferSubscriptionDetailData>(true, false, data));
+        A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<Guid>._, _iamUserId, A<OfferTypeId>._, A<IEnumerable<Guid>>._, A<bool>._))
+            .Returns(new ValueTuple<bool, bool, OfferSubscriptionDetailData>(false, false, default!));
+
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
     }
 
     #endregion

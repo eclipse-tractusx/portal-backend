@@ -553,6 +553,64 @@ public class ServiceBusinessLogicTests
 
     #endregion
     
+    #region GetSubscriptionDetailForProvider
+
+    [Fact]
+    public async Task GetSubscriptionDetailForProvider_WithNotMatchingUserRoles_ThrowsException()
+    {
+        // Arrange
+        var offerId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var data = _fixture.Create<ProviderSubscriptionDetailData>();
+        var settings = new ServiceSettings
+        {
+            CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                {"ClientTest", new[] {"Test"}}
+            }
+        };
+        A.CallTo(() => _offerService.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _iamUser.UserEntityId, OfferTypeId.SERVICE, A<IDictionary<string, IEnumerable<string>>>._))
+            .Returns(data);
+        var sut = new ServiceBusinessLogic(null!, _offerService,  null!, null!, Options.Create(settings));
+
+        // Act
+        var result = await sut.GetSubscriptionDetailForProvider(offerId, subscriptionId, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(data);
+    }
+
+    #endregion
+
+    #region GetSubscriptionDetailForSubscriber
+
+    [Fact]
+    public async Task GetSubscriptionDetailForSubscriber_WithNotMatchingUserRoles_ThrowsException()
+    {
+        // Arrange
+        var offerId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var data = _fixture.Create<SubscriberSubscriptionDetailData>();
+        var settings = new ServiceSettings
+        {
+            CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                {"ClientTest", new[] {"Test"}}
+            }
+        };
+        A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(offerId, subscriptionId, _iamUser.UserEntityId, OfferTypeId.SERVICE, A<IDictionary<string, IEnumerable<string>>>._))
+            .Returns(data);
+        var sut = new ServiceBusinessLogic(null!, _offerService,  null!, null!, Options.Create(settings));
+
+        // Act
+        var result = await sut.GetSubscriptionDetailForSubscriber(offerId, subscriptionId, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(data);
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupPagination(int count = 5)

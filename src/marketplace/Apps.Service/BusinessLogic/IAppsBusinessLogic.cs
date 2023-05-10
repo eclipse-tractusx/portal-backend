@@ -163,7 +163,7 @@ public interface IAppsBusinessLogic
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="document">Document Data</param>
     /// <param name="cancellationToken">cancellationToken</param>
-    Task CreatOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken);
+    Task CreateOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken);
     
     /// <summary>
     /// Get technical user profiles for a specific offer
@@ -180,4 +180,22 @@ public interface IAppsBusinessLogic
     /// <param name="data">The technical user profiles</param>
     /// <param name="iamUserId">Id of the iam user</param>
     Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data, string iamUserId);
+
+    /// <summary>
+    /// Gets the information for the subscription
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the details of the subscription</returns>
+    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid appId, Guid subscriptionId, string iamUserId);
+    
+    /// <summary>
+    /// Gets the information for the subscription
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the details of the subscription</returns>
+    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid appId, Guid subscriptionId, string iamUserId);
 }

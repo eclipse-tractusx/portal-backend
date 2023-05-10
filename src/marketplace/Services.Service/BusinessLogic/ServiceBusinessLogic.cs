@@ -192,4 +192,12 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc />
     public Task UpdateTechnicalUserProfiles(Guid serviceId, IEnumerable<TechnicalUserProfileData> data, string iamUserId) =>
         _offerService.UpdateTechnicalUserProfiles(serviceId, OfferTypeId.SERVICE, data, iamUserId, _settings.TechnicalUserProfileClient);
+
+    /// <inheritdoc />
+    public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid serviceId, Guid subscriptionId, string iamUserId) =>
+        _offerService.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, iamUserId, OfferTypeId.SERVICE, _settings.CompanyAdminRoles);
+
+    /// <inheritdoc />
+    public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid serviceId, Guid subscriptionId, string iamUserId) =>
+        _offerService.GetSubscriptionDetailsForSubscriberAsync(serviceId, subscriptionId, iamUserId, OfferTypeId.SERVICE, _settings.SalesManagerRoles);
 }
