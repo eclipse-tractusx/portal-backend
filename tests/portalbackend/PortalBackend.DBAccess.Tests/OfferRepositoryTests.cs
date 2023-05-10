@@ -401,7 +401,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     [Theory]
     [InlineData(ServiceTypeId.CONSULTANCE_SERVICE, 0, 2, 1, 1)]
-    [InlineData(ServiceTypeId.DATASPACE_SERVICE, 0, 2, 1, 1)]
+    [InlineData(ServiceTypeId.DATASPACE_SERVICE, 0, 2, 2, 2)]
     [InlineData(null, 0, 2, 3, 2)]
     [InlineData(null, 1, 1, 3, 1)]
     [InlineData(null, 2, 1, 3, 1)]
