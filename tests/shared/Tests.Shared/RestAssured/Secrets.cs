@@ -6,4 +6,5 @@ public class Secrets
     public string UserToken { get; set; }
     public string CompanyToken { get; set; }
     public string CompanyUserId { get; set; }
+    public string TempMailApiKey { get; set; }
 }
