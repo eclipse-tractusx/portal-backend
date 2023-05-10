@@ -1,10 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json.Schema;
-using Newtonsoft.Json.Schema.Generation;
-using NJsonSchema;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
@@ -88,8 +83,6 @@ public class AdditionalEndpoints
     [Fact]
     public void GetInvitedUsers_ReturnsExpectedResult()
     {
-        /*JSchemaGenerator generator = new JSchemaGenerator();
-        JSchema schemaJson = generator.Generate(typeof(InvitedUserDetail));*/
         // Given
         var data = (InvitedUser[])Given()
             .RelaxedHttpsValidation()
