@@ -30,7 +30,6 @@ env:
   COMMIT_SHA: ${{ github.sha }}
   IMAGE_NAME_ADMINISTRATION: ${{ github.repository }}_administration-service
   IMAGE_NAME_REGISTRATION: ${{ github.repository }}_registration-service
-  IMAGE_NAME_PROVISIONING: ${{ github.repository }}_provisioning-service
   IMAGE_NAME_MARKETPLACE_APP: ${{ github.repository }}_marketplace-app-service
   IMAGE_NAME_PORTAL_MIGRATIONS: ${{ github.repository }}_portal-migrations
   IMAGE_NAME_MAINTENANCE: ${{ github.repository }}_maintenance-service
@@ -137,39 +136,6 @@ jobs:
           pull: true
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_REGISTRATION }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_REGISTRATION }}:rc
-          labels: ${{ steps.meta.outputs.labels }}
-
-  provisioning-service-release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract Metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING }}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/Dockerfile-provisioning-service
-          pull: true
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING }}:rc
           labels: ${{ steps.meta.outputs.labels }}
 
   marketplace-app-service-release:
@@ -371,7 +337,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   auth-and-dispatch:
-    needs: [ administration-service-release, registration-service-release, provisioning-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release, services-service-release, provisioning-migrations-release, processes-worker-release ]
+    needs: [ administration-service-release, registration-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release, services-service-release, provisioning-migrations-release, processes-worker-release ]
     runs-on: ubuntu-latest
 
     steps:
