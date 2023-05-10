@@ -46,11 +46,11 @@ public class LoggingHandler<TLogger> : DelegatingHandler
         _logger.LogInformation("Request: {@Request}", request);
         if (request.Content is { } content)
         {
-            _logger.LogDebug("Request Content: {@Content}", content);
+            _logger.LogDebug("Request Content: {@Content}", await content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
         }
         var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Response: {@Response}", response);
-        _logger.LogDebug("Responded with status code: {@StatusCode} and data: {@Data}", response.StatusCode, response.Content);
+        _logger.LogDebug("Responded with status code: {@StatusCode} and data: {@Data}", response.StatusCode, await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
         return response;
     }
 }

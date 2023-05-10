@@ -115,6 +115,24 @@ public class GeneralHttpErrorHandlerTests
     }
 
     [Fact]
+    public async Task Invoke_WithConflictException_ContentStatus409()
+    {
+        // Arrange
+        var expectedException = new ConflictException("That's a test");
+        Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
+        var httpContext = new DefaultHttpContext();
+        var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
+
+        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
+        
+        // Act
+        await generalHttpErrorHandler.Invoke(httpContext);
+        
+        // Assert
+        ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
     public async Task Invoke_WithServiceException_ContentStatusCodeIs502()
     {
         // Arrange
@@ -130,5 +148,59 @@ public class GeneralHttpErrorHandlerTests
 
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.BadGateway);
+    }
+    
+    [Fact]
+    public async Task Invoke_WithConfigurationException_ContentStatusCodeIs500()
+    {
+        // Arrange
+        var expectedException = new ConfigurationException("That's a test");
+        Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
+        var httpContext = new DefaultHttpContext();
+        var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
+
+        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
+        
+        // Act
+        await generalHttpErrorHandler.Invoke(httpContext);
+        
+        // Assert
+        ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.InternalServerError);
+    }
+    
+    [Fact]
+    public async Task Invoke_WithControllerArgumentException_ContentStatusCodeIs400()
+    {
+        // Arrange
+        var expectedException = new ControllerArgumentException("That's a test", "testParam");
+        Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
+        var httpContext = new DefaultHttpContext();
+        var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
+
+        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
+        
+        // Act
+        await generalHttpErrorHandler.Invoke(httpContext);
+        
+        // Assert
+        ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.BadRequest);
+    }
+    
+    [Fact]
+    public async Task Invoke_WithUnhandledSpecificException_ContentStatusCodeIs500()
+    {
+        // Arrange
+        var expectedException = new AggregateException("That's a test");
+        Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
+        var httpContext = new DefaultHttpContext();
+        var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
+
+        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
+        
+        // Act
+        await generalHttpErrorHandler.Invoke(httpContext);
+        
+        // Assert
+        ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.InternalServerError);
     }
 }

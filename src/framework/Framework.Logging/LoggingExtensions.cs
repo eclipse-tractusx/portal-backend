@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -22,6 +22,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Context;
+using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting.Json;
 
@@ -40,6 +41,19 @@ public static class LoggingExtensions
         });
     }
 
+    public static Logger CreateLogger(IConfiguration? config)
+    {
+        var loggerConfig = new LoggerConfiguration();
+        if (config is not null)
+        {
+            loggerConfig.ReadFrom.Configuration(config);
+        }
+
+        return loggerConfig.Enrich.FromLogContext()
+            .WriteTo.Console(new JsonFormatter())
+            .CreateLogger();
+    }
+
     /// <summary>
     /// Creates a static logger
     /// </summary>
@@ -49,13 +63,9 @@ public static class LoggingExtensions
     /// </remarks>
     public static void EnsureInitialized()
     {
-        if (Log.Logger is not Serilog.Core.Logger)
-        {
-            Log.Logger = new LoggerConfiguration()
-                .Enrich.FromLogContext()
-                .WriteTo.Console(new JsonFormatter())
-                .CreateLogger();
-        }
+        if (Log.Logger is Logger) return;
+
+        Log.Logger = CreateLogger(null);
     }
 
     public static void LogErrorInformation(string errorId, Exception exception)

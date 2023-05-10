@@ -44,14 +44,8 @@ try
             services
                 .AddLogging(builder =>
                 {
-
-                    var logging = new LoggerConfiguration() // initiate the logger configuration
-                        .ReadFrom.Configuration(hostContext.Configuration) // connect serilog to our configuration folder
-                        .Enrich.FromLogContext() //Adds more information to our logs from built in Serilog 
-                        .WriteTo.Console() // decide where the logs are going to be shown
-                        .CreateLogger();
-
-                    builder.AddSerilog(logging);
+                    var logger = LoggingExtensions.CreateLogger(hostContext.Configuration);
+                    builder.AddSerilog(logger);
                 })
                 .AddProcessExecutionService(hostContext.Configuration.GetSection("Processes"))
                 .AddTransient<IProcessTypeExecutor, ApplicationChecklistProcessTypeExecutor>()
