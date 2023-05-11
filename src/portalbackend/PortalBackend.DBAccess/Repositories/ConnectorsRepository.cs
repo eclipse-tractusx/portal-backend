@@ -122,10 +122,12 @@ public class ConnectorsRepository : IConnectorsRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Connector AttachAndModifyConnector(Guid connectorId, Action<Connector> setOptionalParameters)
+    public Connector AttachAndModifyConnector(Guid connectorId, Action<Connector>? initialize, Action<Connector> setOptionalParameters)
     {
-        var connector = _context.Connectors.Attach(new Connector(connectorId, null!, null!, null!)).Entity;
-        setOptionalParameters.Invoke(connector);
+        var connector = new Connector(connectorId, null!, null!, null!);
+        initialize?.Invoke(connector);
+        _context.Attach(connector);
+        setOptionalParameters(connector);
         return connector;
     }
 

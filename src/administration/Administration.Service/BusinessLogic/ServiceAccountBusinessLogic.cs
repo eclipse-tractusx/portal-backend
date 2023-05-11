@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
@@ -39,7 +40,6 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IServiceAccountCreation _serviceAccountCreation;
     private readonly ServiceAccountSettings _settings;
-    
 
     public ServiceAccountBusinessLogic(
         IProvisioningManager provisioningManager,
@@ -98,21 +98,39 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
     public async Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId, string iamAdminId)
     {
         var serviceAccountRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
-        var serviceAccount = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, iamAdminId).ConfigureAwait(false);
-        if (serviceAccount == null)
+        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, iamAdminId).ConfigureAwait(false);
+        if (result == default)
         {
             throw new NotFoundException($"serviceAccount {serviceAccountId} not found in company of user {iamAdminId}");
         }
-        serviceAccount.CompanyServiceAccountStatusId = CompanyServiceAccountStatusId.INACTIVE;
-        if (serviceAccount.IamServiceAccount != null)
+
+        serviceAccountRepository.AttachAndModifyCompanyServiceAccount(serviceAccountId, null, serviceAccount =>
         {
-            await _provisioningManager.DeleteCentralClientAsync(serviceAccount.IamServiceAccount.ClientId).ConfigureAwait(false);
-            serviceAccountRepository.RemoveIamServiceAccount(serviceAccount.IamServiceAccount);
-        }
-        foreach(var companyServiceAccountAssignedRole in serviceAccount.CompanyServiceAccountAssignedRoles)
+            serviceAccount.CompanyServiceAccountStatusId = CompanyServiceAccountStatusId.INACTIVE;
+        });
+        
+        // serviceAccount
+        if (!string.IsNullOrWhiteSpace(result.ClientId))
         {
-            serviceAccountRepository.RemoveCompanyServiceAccountAssignedRole(companyServiceAccountAssignedRole);
+            await _provisioningManager.DeleteCentralClientAsync(result.ClientId).ConfigureAwait(false);
+            serviceAccountRepository.RemoveIamServiceAccount(result.ClientId);
         }
+
+        serviceAccountRepository.RemoveCompanyServiceAccountAssignedRoles(result.UserRoleIds.Select(userRoleId => (serviceAccountId, userRoleId)));
+
+        if (result.ConnectorId != null)
+        {
+            _portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(result.ConnectorId.Value,
+                connector =>
+                {
+                    connector.CompanyServiceAccountId = serviceAccountId;
+                },
+                connector =>
+                {
+                    connector.CompanyServiceAccountId = null;
+                });
+        }
+        
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

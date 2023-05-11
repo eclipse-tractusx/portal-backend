@@ -70,6 +70,7 @@ public class ConnectorsControllerTests
             "New Connector", 
             "https://connec-tor.com",
             "the location",
+            null,
             null);
         var connectorId = _fixture.Create<Guid>();
         A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, IamUserId, A<CancellationToken>._))
@@ -93,6 +94,7 @@ public class ConnectorsControllerTests
             "https://connec-tor.com",
             "the location",
             "VALIDBPN1234",
+            null,
             null);
         var connectorId = _fixture.Create<Guid>();
         A.CallTo(() => _logic.CreateManagedConnectorAsync(connectorInputModel, IamUserId, A<CancellationToken>._))

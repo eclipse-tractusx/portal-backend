@@ -81,7 +81,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        sut.AttachAndModifyConnector(new Guid("5aea3711-cc54-47b4-b7eb-ba9f3bf1cb15"), con =>
+        sut.AttachAndModifyConnector(new Guid("5aea3711-cc54-47b4-b7eb-ba9f3bf1cb15"), null, con =>
         {
             con.ProviderId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
             con.TypeId = ConnectorTypeId.CONNECTOR_AS_A_SERVICE;
