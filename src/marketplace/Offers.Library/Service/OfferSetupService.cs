@@ -138,7 +138,7 @@ public class OfferSetupService : IOfferSetupService
         }
         catch (InvalidOperationException)
         {
-            throw new UnexpectedConditionException("There should only be one or none technical user profile configured for ");
+            throw new UnexpectedConditionException($"There should only be one or none technical user profile configured for {subscriptionId}");
         }
 
         if (serviceAccountCreationInfo == null)
