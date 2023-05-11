@@ -46,7 +46,7 @@ DockerHub:
 * https://hub.docker.com/r/tractusx/portal-provisioning-migrations
 * https://hub.docker.com/r/tractusx/portal-maintenance-service
 
-Base images:
+### Base images
 
 mcr.microsoft.com/dotnet/aspnet:6.0-alpine:
 
