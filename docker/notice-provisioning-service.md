@@ -13,7 +13,7 @@ __Portal Administration Service__
 
 __Used base images__
 
-- [mcr.microsoft.com/dotnet/aspnet:6.0-alpine](https://github.com/dotnet/dotnet-docker/blob/e1984aaea51a796b68f6672749d280525c30e063/src/aspnet/6.0/alpine3.17/amd64/Dockerfile)
+- [mcr.microsoft.com/dotnet/aspnet:6.0-alpine](https://github.com/dotnet/dotnet-docker/blob/main/src/aspnet/6.0/alpine3.17/amd64/Dockerfile)
 - GitHub project: [https://github.com/dotnet/dotnet-docker](https://github.com/dotnet/dotnet-docker)
 - DockerHub: [https://hub.docker.com/_/microsoft-dotnet-aspnet](https://hub.docker.com/_/microsoft-dotnet-aspnet)
 
