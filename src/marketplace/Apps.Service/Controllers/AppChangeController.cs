@@ -155,4 +155,25 @@ public class AppChangeController : ControllerBase
         await this.WithIamUserId(userId => _businessLogic.DeactivateOfferByAppIdAsync(appId,userId)).ConfigureAwait(false);
         return NoContent();
     }
+
+    /// <summary>
+    /// Updates the url for a specific subscription
+    /// </summary>
+    /// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id of the app.</param>
+    /// <param name="subscriptionId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id of the subscription.</param>
+    /// <param name="tenantUrl">new url for the subscription.</param>
+    /// <remarks>Example: Put: /api/apps/appchanges/{appId}/subscription/{subscriptionId}/tenantUrl</remarks>
+    /// <response code="204">The app description succesFully created or updated</response>
+    [HttpPut]
+    [Route("{appId}/subscription/{subscriptionId}/tenantUrl")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<NoContentResult> UpdateTenantUrl([FromRoute] Guid appId, [FromRoute] Guid subscriptionId, [FromBody] string tenantUrl)
+    {
+        await this.WithIamUserId(iamUserId => _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, tenantUrl, iamUserId)).ConfigureAwait(false);
+        return NoContent();
+    }
 }

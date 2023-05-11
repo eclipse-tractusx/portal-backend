@@ -101,4 +101,21 @@ public interface IOfferSubscriptionsRepository
     /// <param name="userRoleIds">Ids of the user roles the contacts should be in</param>
     /// <returns>Returns details for the offer subscription</returns>
     Task<(bool Exists, bool IsUserOfCompany, OfferSubscriptionDetailData Details)> GetSubscriptionDetailsAsync(Guid offerId, Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds, bool forProvider);
+
+    /// <summary>
+    /// Get the data to update the subscription url
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the data needed to update the subscription url</returns>
+    Task<OfferUpdateUrlData?> GetUpdateUrlDataAsync(Guid offerId, Guid subscriptionId, string iamUserId);
+
+    /// <summary>
+    /// The subscription details
+    /// </summary>
+    /// <param name="detailId">Id of the detail to update</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="setParameters">Updates the fields</param>
+    void AttachAndModifyAppSubscriptionDetail(Guid detailId, Guid subscriptionId, Action<AppSubscriptionDetail> setParameters);
 }
