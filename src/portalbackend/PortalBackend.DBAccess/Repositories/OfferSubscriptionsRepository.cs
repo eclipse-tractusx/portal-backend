@@ -47,11 +47,20 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
         _context.OfferSubscriptions.Add(new OfferSubscription(Guid.NewGuid(), offerId, companyId, offerSubscriptionStatusId, requesterId, creatorId)).Entity;
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AppWithSubscriptionStatus> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId) =>
-        _context.IamUsers.AsNoTracking()
-            .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .SelectMany(iamUser => iamUser.CompanyUser!.Company!.OfferSubscriptions)
-            .Select(s => new AppWithSubscriptionStatus(s.OfferId, s.OfferSubscriptionStatusId, s.Offer!.Name, s.Offer!.Provider))
+    public IAsyncEnumerable<(Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatusId, string? Name, string Provider, Guid Image)> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId) =>
+        _context.OfferSubscriptions.AsNoTracking()
+            .Where(subscription => subscription.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
+            .Select(s => new ValueTuple<Guid,OfferSubscriptionStatusId,string?,string,Guid>(
+                s.OfferId,
+                s.OfferSubscriptionStatusId,
+                s.Offer!.Name,
+                s.Offer.Provider,
+                s.Offer.Documents
+                    .Where(document =>
+                        document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE &&
+                        document.DocumentStatusId == DocumentStatusId.LOCKED)
+                    .Select(document => document.Id)
+                    .FirstOrDefault()))
             .ToAsyncEnumerable();
 
     /// <inheritdoc />

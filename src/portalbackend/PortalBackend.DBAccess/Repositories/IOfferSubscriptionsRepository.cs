@@ -44,7 +44,7 @@ public interface IOfferSubscriptionsRepository
     ///
     /// </summary>
     /// <param name="iamUserId"></param>
-    IAsyncEnumerable<AppWithSubscriptionStatus> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId);
+    IAsyncEnumerable<(Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatusId, string? Name, string Provider, Guid Image)> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId);
 
     /// <summary>
     /// Gets the provided offer subscription statuses for the user and given company

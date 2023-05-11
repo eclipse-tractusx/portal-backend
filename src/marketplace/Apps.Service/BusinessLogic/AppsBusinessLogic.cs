@@ -141,37 +141,30 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task RemoveFavouriteAppForUserAsync(Guid appId, string userId)
     {
-        try
-        {
-            var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(userId).ConfigureAwait(false);
-            _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, companyUserId));
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            throw new ArgumentException($"Parameters are invalid or favourite does not exist.");
-        }
+        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(userId).ConfigureAwait(false);
+        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, companyUserId));
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task AddFavouriteAppForUserAsync(Guid appId, string userId)
     {
-        try
-        {
-            var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(userId).ConfigureAwait(false);
-            _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, companyUserId);
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        }
-        catch (DbUpdateException)
-        {
-            throw new ArgumentException($"Parameters are invalid or app is already favourited.");
-        }
+        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(userId).ConfigureAwait(false);
+        _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, companyUserId);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<AppWithSubscriptionStatus> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId) =>
         _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(iamUserId);
+            .GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(iamUserId)
+            .Select(x => new AppWithSubscriptionStatus(
+                x.AppId,
+                x.OfferSubscriptionStatusId,
+                x.Name,
+                x.Provider,
+                x.Image == Guid.Empty ? null : x.Image
+            ));
 
     /// <inheritdoc/>
     public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId) =>

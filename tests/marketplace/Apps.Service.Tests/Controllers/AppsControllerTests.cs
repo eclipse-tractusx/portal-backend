@@ -32,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
@@ -149,21 +150,25 @@ public class AppsControllerTests
         Assert.IsType<NoContentResult>(result);
     }
 
+    #region GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync
+
     [Fact]
     public async Task GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount()
     {
         //Arrange
-        var data = new AsyncEnumerableStub<AppWithSubscriptionStatus>(_fixture.CreateMany<AppWithSubscriptionStatus>(5));
+        var data = _fixture.CreateMany<AppWithSubscriptionStatus>(3).ToImmutableArray();
         A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(A<string>._))
-            .Returns(data.AsAsyncEnumerable());
+            .Returns(data.ToAsyncEnumerable());
 
         //Act
         var result = await this._controller.GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync().ToListAsync().ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(IamUserId)).MustHaveHappenedOnceExactly();
-        result.Should().HaveCount(5);
+        result.Should().HaveCount(3).And.ContainInOrder(data);
     }
+
+    #endregion
 
     [Theory]
     [InlineData(null)]

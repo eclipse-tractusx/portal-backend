@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic.Tests;
@@ -455,24 +456,56 @@ public class AppBusinessLogicTests
 
     #endregion
 
+    #region GetCompanySubscribedAppSubscriptionStatusesForUserAsync
+
     [Fact]
-    public async Task GetCompanySubscribedAppSubscriptionStatusesForUserAsync_ReturnsExpectedCount()
+    public async Task GetCompanySubscribedAppSubscriptionStatusesForUserAsync_ReturnsExpected()
     {
         // Arrange
         var iamUserId = _fixture.Create<string>();
-        var data = _fixture.CreateMany<AppWithSubscriptionStatus>(5);
+        var data = _fixture.CreateMany<(Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatusId, string? Name, string Provider, Guid Image)>(3).ToImmutableArray();
         A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(iamUserId))
             .Returns(data.ToAsyncEnumerable());
-        
+
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!,  null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
 
         // Act
         var result = await sut.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(iamUserId).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().HaveCount(5);
+        result.Should().HaveCount(3).And.Satisfy(
+            x => x.AppId == data[0].AppId && x.Name == data[0].Name && x.OfferSubscriptionStatus == data[0].OfferSubscriptionStatusId && x.Provider == data[0].Provider && x.Image == data[0].Image,
+            x => x.AppId == data[1].AppId && x.Name == data[1].Name && x.OfferSubscriptionStatus == data[1].OfferSubscriptionStatusId && x.Provider == data[1].Provider && x.Image == data[1].Image,
+            x => x.AppId == data[2].AppId && x.Name == data[2].Name && x.OfferSubscriptionStatus == data[2].OfferSubscriptionStatusId && x.Provider == data[2].Provider && x.Image == data[2].Image
+        );
     }
-    
+
+    [Fact]
+    public async Task GetCompanySubscribedAppSubscriptionStatusesForUserAsync_NullableProperties_ReturnsExpected()
+    {
+        // Arrange
+        var iamUserId = _fixture.Create<string>();
+        var data = new (Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatusId, string? Name, string Provider, Guid Image) [] {
+            ( Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE, null, _fixture.Create<string>(), Guid.Empty )
+        };
+
+        _fixture.CreateMany<(Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatusId, string? Name, string Provider, Guid Image)>(3).ToImmutableArray();
+        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(iamUserId))
+            .Returns(data.ToAsyncEnumerable());
+
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!,  null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+
+        // Act
+        var result = await sut.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(iamUserId).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().HaveCount(1).And.Satisfy(
+            x => x.AppId == data[0].AppId && x.Name == null && x.Image == null
+        );
+    }
+
+    #endregion
+
     #region  CreateOfferAssignedAppLeadImageDocumentById
 
     [Fact]
