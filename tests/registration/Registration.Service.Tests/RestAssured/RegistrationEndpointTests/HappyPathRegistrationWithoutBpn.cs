@@ -1,7 +1,10 @@
 ﻿using AutoFixture;
 using Microsoft.Extensions.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using RestAssured.Request.Logging;
 using Xunit;
 using static RestAssured.Dsl;
 
@@ -13,7 +16,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
 {
     private readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
     private readonly string _endPoint = "/api/registration";
-    private readonly string _companyToken;
+    private string _companyToken;
     private static string _applicationId;
 
     private readonly IFixture _fixture;
@@ -124,25 +127,48 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             .Body("1")
             .StatusCode(200);
     }
-
-
+    
     // POST /api/registration/application/{applicationId}/submitRegistration
+
+    [Fact]
+    public void Test5_SubmitRegistration_ReturnsExpectedResult()
+    {
+        var status = (bool)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .ContentType("application/json")
+            .Body("")
+            .When()
+            .Post(
+                $"{_baseUrl}{_endPoint}/application/{_applicationId}/submitRegistration")
+            .Then()
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(bool));
+        Assert.True(status);
+    }
+    
     // GET: api/administration/registration/applications?companyName={companyName}
 
     [Fact]
     public void Test6_GetApplicationDetails_ReturnsExpectedResult()
     {
         // Given
-        Given()
+        var data = (CompanyApplicationDetails)Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
                 $"Bearer {_operatorToken}")
             .When()
             .Get(
-                $"{_baseUrl}{_adminEndPoint}/registration/applications?companyName={_companyName}/?page=0&size=10&sorting=DateDesc")
+                $"{_baseUrl}{_adminEndPoint}/registration/applications?companyName={_companyName}&page=0&size=4&companyApplicationStatus=Closed")
             .Then()
-            .StatusCode(200);
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(CompanyApplicationDetails));
+        Assert.NotNull(data.Documents);
     }
 
     // GET: api/administration/registration/application/{applicationId}/companyDetailsWithAddress
@@ -150,7 +176,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     public void Test7_GetCompanyWithAddress_ReturnsExpectedResult()
     {
         // Given
-        Given()
+        var data = (CompanyDetailData)Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
@@ -158,7 +184,10 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             .When()
             .Get($"{_baseUrl}{_adminEndPoint}/registration/application/{_applicationId}/companyDetailsWithAddress")
             .Then()
-            .StatusCode(200);
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(CompanyDetailData));
+        Assert.NotNull(data);
     }
 
     #endregion
