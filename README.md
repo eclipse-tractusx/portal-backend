@@ -29,3 +29,38 @@ Run the following command from the CLI in the directory of the service you want 
 ```console
 dotnet run
 ```
+
+## Notice for Docker image
+
+This application provides container images for demonstration purposes.
+
+DockerHub:
+
+* https://hub.docker.com/r/tractusx/portal-registration-service
+* https://hub.docker.com/r/tractusx/portal-administration-service
+* https://hub.docker.com/r/tractusx/portal-marketplace-app-service
+* https://hub.docker.com/r/tractusx/portal-services-service
+* https://hub.docker.com/r/tractusx/portal-notification-service
+* https://hub.docker.com/r/tractusx/portal-processes-worker
+* https://hub.docker.com/r/tractusx/portal-portal-migrations
+* https://hub.docker.com/r/tractusx/portal-provisioning-migrations
+* https://hub.docker.com/r/tractusx/portal-maintenance-service
+
+Base images:
+
+mcr.microsoft.com/dotnet/aspnet:6.0-alpine:
+
+* Dockerfile: [mcr.microsoft.com/dotnet/aspnet:6.0-alpine](https://github.com/dotnet/dotnet-docker/blob/main/src/aspnet/6.0/alpine3.17/amd64/Dockerfile)
+* GitHub project: [https://github.com/dotnet/dotnet-docker](https://github.com/dotnet/dotnet-docker)
+* DockerHub: [https://hub.docker.com/_/microsoft-dotnet-aspnet](https://hub.docker.com/_/microsoft-dotnet-aspnet)
+
+mcr.microsoft.com/dotnet/runtime:6.0-alpine:
+
+* Dockerfile: [mcr.microsoft.com/dotnet/runtime:6.0-alpine](https://github.com/dotnet/dotnet-docker/blob/main/src/runtime/6.0/alpine3.17/amd64/Dockerfile)
+* GitHub project: [https://github.com/dotnet/dotnet-docker](https://github.com/dotnet/dotnet-docker)
+* DockerHub: [https://hub.docker.com/_/microsoft-dotnet-runtime](https://hub.docker.com/_/microsoft-dotnet-runtime)
+
+## License
+
+Distributed under the Apache 2.0 License.
+See [LICENSE](./LICENSE) for more information.
