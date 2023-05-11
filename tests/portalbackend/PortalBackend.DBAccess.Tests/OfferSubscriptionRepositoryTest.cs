@@ -205,11 +205,18 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync("502dabcf-01c7-47d9-a88e-0be4279097b5").ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull();
-        result.First().AppId.Should().Be("a16e73b9-5277-4b69-9f8d-3b227495dfea");
-        result.First().OfferSubscriptionStatus.Should().Be(OfferSubscriptionStatusId.ACTIVE);
-        result.First().Name.Should().Be("SDE with EDC");
-        result.First().Provider.Should().Be("Service Provider");
+        result.Should().HaveCount(2).And.Satisfy(
+            x => x.AppId == new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea") &&
+                x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
+                x.Name == "SDE with EDC" &&
+                x.Provider == "Service Provider" &&
+                x.Image == Guid.Empty,
+            x => x.AppId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
+                x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
+                x.Name == "Trace-X" &&
+                x.Provider == "Catena-X" &&
+                x.Image == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1")
+        );
     }
 
     #endregion

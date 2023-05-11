@@ -20,6 +20,20 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
-public record AppWithSubscriptionStatus(Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatus, string? Name, string Provider);
+/// <summary>
+/// Request Model for App Subscription Status
+/// </summary>
+/// <param name="AppId">Application Id</param>
+/// <param name="OfferSubscriptionStatus">Status of app subscription</param>
+/// <param name="Name">name of the app</param>
+/// <param name="Provider">provider company</param>
+/// <param name="Image">Guic of the apps leadimage</param>
+public record AppWithSubscriptionStatus(
+    Guid AppId,
+    OfferSubscriptionStatusId OfferSubscriptionStatus,
+    string? Name,
+    string Provider,
+    Guid? Image
+);

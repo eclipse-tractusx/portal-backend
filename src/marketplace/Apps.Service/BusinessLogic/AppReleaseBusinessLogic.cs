@@ -210,15 +210,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new NotFoundException($"role {roleId} does not exist");
         }
-        try
-        {
-            _portalRepositories.GetInstance<IUserRolesRepository>().DeleteUserRole(roleId);
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            throw new NotFoundException($"role {roleId} does not exist");
-        }
+        _portalRepositories.GetInstance<IUserRolesRepository>().DeleteUserRole(roleId);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
