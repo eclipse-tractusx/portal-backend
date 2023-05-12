@@ -20,14 +20,14 @@
 
 using AutoFixture;
 using FakeItEasy;
+using FluentAssertions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using Microsoft.AspNetCore.Http;
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
@@ -119,5 +119,21 @@ public class AppChangeControllerTest
         // Assert
         A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, IamUserId, file, CancellationToken.None)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task DeactivateApp_ReturnsNoContent()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(A<Guid>._, A<string>._))
+            .ReturnsLazily(() => Task.CompletedTask);
+        
+        //Act
+        var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);
+        
+        //Assert
+        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>(); 
     }
 }

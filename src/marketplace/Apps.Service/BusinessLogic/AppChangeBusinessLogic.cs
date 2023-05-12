@@ -25,12 +25,13 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
@@ -44,6 +45,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     private readonly AppsSettings _settings;
     private readonly INotificationService _notificationService;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly IOfferService _offerService;
 
     /// <summary>
     /// Constructor.
@@ -52,12 +54,13 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     /// <param name="notificationService">the notification service</param>
     /// <param name="provisioningManager">The provisioning manager</param>
     /// <param name="settings">Settings for the app change bl</param>
-    public AppChangeBusinessLogic(IPortalRepositories portalRepositories, INotificationService notificationService, IProvisioningManager provisioningManager, IOptions<AppsSettings> settings)
+    public AppChangeBusinessLogic(IPortalRepositories portalRepositories, INotificationService notificationService, IProvisioningManager provisioningManager, IOptions<AppsSettings> settings, IOfferService offerService)
     {
         _portalRepositories = portalRepositories;
         _notificationService = notificationService;
         _provisioningManager = provisioningManager;
         _settings = settings.Value;
+        _offerService = offerService;
     }
 
     /// <inheritdoc/>
@@ -189,4 +192,8 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
+
+    /// <inheritdoc />
+    public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId) =>
+        _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
 }

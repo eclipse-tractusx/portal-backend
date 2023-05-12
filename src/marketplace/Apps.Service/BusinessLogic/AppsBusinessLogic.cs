@@ -285,10 +285,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerService.GetOfferAgreementsAsync(appId, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId) =>
-        _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
-
-    /// <inheritdoc />
     public Task<(byte[] Content, string ContentType, string FileName)> GetAppDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken) =>
         _offerService.GetOfferDocumentContentAsync(appId, documentId, _settings.AppImageDocumentTypeIds, OfferTypeId.APP, cancellationToken);
 

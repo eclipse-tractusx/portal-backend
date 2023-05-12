@@ -131,4 +131,28 @@ public class AppChangeController : ControllerBase
         await this.WithIamUserId(iamUserId => _businessLogic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, document, cancellationToken));
         return NoContent();
     }
+
+    /// <summary>
+    /// Deactivate the OfferStatus By appId
+    /// </summary>
+    /// <param name="appId" example="3c77a395-a7e7-40f2-a519-ac16498e0a79">Id of the app that should be deactive</param>
+    /// <remarks>Example: PUT: /api/apps/3c77a395-a7e7-40f2-a519-ac16498e0a79/deactivateApp</remarks>
+    /// <response code="204">The App Successfully Deactivated</response>
+    /// <response code="400">invalid or user does not exist.</response>
+    /// <response code="404">If app does not exists.</response>
+    /// <response code="403">Missing Permission</response>
+    /// <response code="409">Offer is in incorrect state</response>
+    [HttpPut]
+    [Route("{appId:guid}/deactivateApp")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
+    {
+        await this.WithIamUserId(userId => _businessLogic.DeactivateOfferByAppIdAsync(appId,userId)).ConfigureAwait(false);
+        return NoContent();
+    }
 }
