@@ -137,6 +137,26 @@ public class UnHappyPathRegistrationWithoutDocument
 
     // POST /api/registration/application/{applicationId}/submitRegistration
     // => expecting an error because of missing documents
+    
+    [Fact]
+    public void Test5_SubmitRegistration_ReturnsExpectedResult()
+    {
+        var status = (bool)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .ContentType("application/json")
+            .Body("")
+            .When()
+            .Post(
+                $"{_baseUrl}{_endPoint}/application/{_applicationId}/submitRegistration")
+            .Then()
+            .StatusCode(403)
+            .Extract()
+            .As(typeof(bool));
+        Assert.True(status);
+    }
 
     #endregion
 }
