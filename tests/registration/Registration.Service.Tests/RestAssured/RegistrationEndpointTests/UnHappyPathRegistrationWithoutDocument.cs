@@ -1,7 +1,10 @@
 ﻿using AutoFixture;
 using Microsoft.Extensions.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using RestAssured.Request.Logging;
 using Xunit;
 using static RestAssured.Dsl;
 
@@ -17,7 +20,6 @@ public class UnHappyPathRegistrationWithoutDocument
     private static string _applicationId;
 
     private readonly IFixture _fixture;
-    // private readonly string pdfFileName = @"TestDocument.pdf";
     
     private readonly string _adminEndPoint = "/api/administration";
     private readonly string _operatorToken;
@@ -30,11 +32,10 @@ public class UnHappyPathRegistrationWithoutDocument
             .AddUserSecrets<Secrets>()
             .Build();
         _companyToken = configuration.GetValue<string>("Secrets:CompanyToken");
+        //_companyToken = "TestUserToken";
         _operatorToken = configuration.GetValue<string>("Secrets:OperatorToken");
         _userToken = configuration.GetValue<string>("Secrets:UserToken");
-        _applicationId = new (configuration.GetValue<string>("Secrets:ApplicationId"));
         _fixture = new Fixture();
-        // CreateFilesToUpload();
     }
 
     #region UnHappy Path - new registration without document
@@ -57,23 +58,29 @@ public class UnHappyPathRegistrationWithoutDocument
 
     // POST api/administration/invitation
     
-    // [Fact]
-    // public void Test1_ExecuteInvitation_ReturnsExpectedResult()
-    // {
-    //     CompanyInvitationData invitationData = new CompanyInvitationData("user", "myFirstName", "myLastName",
-    //         "myEmail", "Test-Catena-X");
-    //      Given()
-    //         .RelaxedHttpsValidation()
-    //         .Header(
-    //             "authorization",
-    //             $"Bearer {_operatorToken}")
-    //         .ContentType("application/json")
-    //         .Body(invitationData)
-    //         .When()
-    //         .Post($"{_baseUrl}{_adminEndPoint}/invitation")
-    //         .Then()
-    //         .StatusCode(200);
-    // }
+    /*[Fact]
+    public void Test1_ExecuteInvitation_ReturnsExpectedResult()
+    {
+        DevMailApiRequests devMailApiRequests = new DevMailApiRequests();
+        var devUser = devMailApiRequests.GenerateRandomEmailAddress();
+        var emailAddress = devUser.Result.Name + "@developermail.com";
+        CompanyInvitationData invitationData = new CompanyInvitationData("testuser", "myFirstName", "myLastName",
+            emailAddress, "Test-Catena-X-10");
+        Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_operatorToken}")
+            .ContentType("application/json")
+            .Body(invitationData)
+            .When()
+            .Post($"{_baseUrl}{_adminEndPoint}/invitation")
+            .Then()
+            .StatusCode(200);
+        //Thread.Sleep(2000);
+        var messageData = devMailApiRequests.FetchPassword();
+        //AuthenticationFlow();
+    }*/
 
 
     // GET /api/registration/legalEntityAddress/{bpn}
@@ -97,19 +104,18 @@ public class UnHappyPathRegistrationWithoutDocument
     [Fact]
     public void Test3_SetCompanyDetailData_ReturnsExpectedResult()
     {
-        CompanyDetailData companyDetailData = _fixture.Create<CompanyDetailData>();
-
+        CompanyDetailData companyDetailData = GetCompanyDetailData();
+        string companyId = companyDetailData.CompanyId.ToString();
         var response = Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
                 $"Bearer {_companyToken}")
             .ContentType("application/json")
-            .Body(
-                "{\"companyId\":\"d6ba04c9-edd0-47b5-a639-c6b5256b1aec\",\"name\":\"TestAutomationReg 01\",\"city\":\"München\",\"streetName\":\"Streetfgh\",\"countryAlpha2Code\":\"DE\",\"bpn\":null,\"shortName\":\"TestAutomationReg 01\",\"region\":null,\"streetAdditional\":null,\"streetNumber\":null,\"zipCode\":null,\"countryDe\":\"Deutschland\",\"uniqueIds\":[{\"type\":\"VAT_ID\",\"value\":\"DE123456789\"}]}")
-            // .Body(
-            //     "{\"companyId\":\"f42b94b5-6003-43dc-a14a-6b88ed7b1e8a\",\"name\":\"TestAutomationReg 02\",\"city\":\"München\",\"streetName\":\"Streetfgh\",\"countryAlpha2Code\":\"DE\",\"bpn\":null,\"shortName\":\"TestAutomationReg 02\",\"region\":null,\"streetAdditional\":null,\"streetNumber\":null,\"zipCode\":null,\"countryDe\":\"Deutschland\",\"uniqueIds\":[{\"type\":\"VAT_ID\",\"value\":\"DE123456789\"}]}")
             .When()
+            .Body("{\"companyId\":" + "\"" + companyId + "\"" +
+                  ",\"name\":" + "\"" + _companyName + "\"" + ",\"city\":\"München\",\"streetName\":\"Street\",\"countryAlpha2Code\":\"DE\",\"bpn\":null, \"shortName\":" + "\"" + _companyName + "\"" + ",\"region\":null,\"streetAdditional\":null,\"streetNumber\":null,\"zipCode\":null,\"countryDe\":\"Deutschland\",\"uniqueIds\":[{\"type\":\"VAT_ID\",\"value\":\"DE123456788\"}]}")
+            //.Body(companyDetailData)
             .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
             .Then()
             .StatusCode(200);
@@ -120,6 +126,7 @@ public class UnHappyPathRegistrationWithoutDocument
     [Fact]
     public void Test4_SubmitCompanyRoleConsentToAgreements_ReturnsExpectedResult()
     {
+        //_applicationId = GetFirstApplicationId();
         Given()
             .RelaxedHttpsValidation()
             .Header(
@@ -141,22 +148,101 @@ public class UnHappyPathRegistrationWithoutDocument
     [Fact]
     public void Test5_SubmitRegistration_ReturnsExpectedResult()
     {
-        var status = (bool)Given()
+        //_applicationId = GetFirstApplicationId();
+        //var applicationStatus = GetApplicationStatus();
+        var status = Given()
             .RelaxedHttpsValidation()
+            .Log(RequestLogLevel.All)
             .Header(
                 "authorization",
                 $"Bearer {_companyToken}")
             .ContentType("application/json")
-            .Body("")
             .When()
             .Post(
                 $"{_baseUrl}{_endPoint}/application/{_applicationId}/submitRegistration")
             .Then()
             .StatusCode(403)
-            .Extract()
-            .As(typeof(bool));
-        Assert.True(status);
+            .Body(NHamcrest.Contains.String("Application status is not fitting to the pre-requisite"));
+            //.Body("$.errors.[Org.Eclipse.TractusX.Portal.Backend.Registration.Service][0]");
+            // Assert.Equal("Application status is not fitting to the pre-requisite", status.ToString());
     }
 
     #endregion
+    
+    private string GetFirstApplicationId()
+    {
+        var applicationIDs = (List<CompanyApplicationData>)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .When()
+            .Get($"{_baseUrl}{_endPoint}/applications")
+            .Then()
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(List<CompanyApplicationData>));
+
+        return applicationIDs[0].ApplicationId.ToString();
+    }
+
+    private CompanyDetailData GetCompanyDetailData()
+    {
+        _applicationId = GetFirstApplicationId();
+        // Given
+        CompanyDetailData companyDetailData = (CompanyDetailData)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .When()
+            .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
+            .Then()
+            .And()
+            .StatusCode(200)
+            .Extract().As(typeof(CompanyDetailData));
+
+        _companyName = companyDetailData.Name;
+
+        return companyDetailData;
+    }
+    
+    private string GetApplicationStatus()
+    {
+        _applicationId = GetFirstApplicationId();
+        var applicationStatus = (string)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .ContentType("application/json")
+            .When()
+            .Get(
+                $"{_baseUrl}{_endPoint}/application/{_applicationId}/status")
+            .Then()
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(string));
+        return applicationStatus;
+        // Assert.Equal(0, status);
+    }
+    
+    private void SetApplicationStatus(string applicationStatus)
+    {
+        _applicationId = GetFirstApplicationId();
+        var status = (int)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .ContentType("application/json")
+            .When()
+            .Put(
+                $"{_baseUrl}{_endPoint}/application/{_applicationId}/status?status={applicationStatus}")
+            .Then()
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(int));
+        Assert.Equal(0, status);
+    }
 }
