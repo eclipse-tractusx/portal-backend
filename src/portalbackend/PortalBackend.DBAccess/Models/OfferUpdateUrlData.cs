@@ -33,6 +33,6 @@ public record OfferUpdateUrlData(
 
 public record OfferUpdateUrlSubscriptionDetailData (
     Guid DetailId,
-    string ClientClientId,
+    string? ClientClientId,
     string? SubscriptionUrl
 );
