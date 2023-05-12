@@ -155,8 +155,10 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     [Fact]
     public void Test6_GetApplicationDetails_ReturnsExpectedResult()
     {
+        //_companyName = "Test-Catena-X-3";
         // Given
-        var data = (CompanyApplicationDetails)Given()
+        //var data = (Pagination.Response<CompanyApplicationDetails>)
+        var data = Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
@@ -167,8 +169,10 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             .Then()
             .StatusCode(200)
             .Extract()
-            .As(typeof(CompanyApplicationDetails));
-        Assert.NotNull(data.Documents);
+            .Body("$.content[0].applicationStatus");
+        Assert.Equal("SUBMITTED", data);
+            //.As(typeof(Pagination.Response<CompanyApplicationDetails>));
+        //Assert.Contains(_companyName, data.Content.Select(content => content.CompanyName.ToString()));
     }
 
     // GET: api/administration/registration/application/{applicationId}/companyDetailsWithAddress
