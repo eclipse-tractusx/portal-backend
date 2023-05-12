@@ -18,7 +18,6 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     private static string _applicationId;
 
     private readonly IFixture _fixture;
-    // private readonly string pdfFileName = @"TestDocument.pdf";
 
     private readonly string _adminEndPoint = "/api/administration";
     private readonly string _operatorToken;
@@ -99,19 +98,18 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     [Fact]
     public void Test3_SetCompanyDetailData_ReturnsExpectedResult()
     {
-        CompanyDetailData companyDetailData = _fixture.Create<CompanyDetailData>();
-
+        CompanyDetailData companyDetailData = GetCompanyDetailData();
+        string companyId = companyDetailData.CompanyId.ToString();
         var response = Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
                 $"Bearer {_companyToken}")
             .ContentType("application/json")
-            .Body(
-                $"{{\"companyId\":\"d6ba04c9-edd0-47b5-a639-c6b5256b1aec\",\"name\":\"TestAutomationReg 01\",\"city\":\"München\",\"streetName\":\"Streetfgh\",\"countryAlpha2Code\":\"DE\",\"bpn\":{_bpn} \"shortName\":\"TestAutomationReg 01\",\"region\":null,\"streetAdditional\":null,\"streetNumber\":null,\"zipCode\":null,\"countryDe\":\"Deutschland\",\"uniqueIds\":[{{\"type\":\"VAT_ID\",\"value\":\"DE123456788\"}}]}}")
-            // .Body(
-            //     "{\"companyId\":\"f42b94b5-6003-43dc-a14a-6b88ed7b1e8a\",\"name\":\"TestAutomationReg 02\",\"city\":\"München\",\"streetName\":\"Streetfgh\",\"countryAlpha2Code\":\"DE\",\"bpn\":null,\"shortName\":\"TestAutomationReg 02\",\"region\":null,\"streetAdditional\":null,\"streetNumber\":null,\"zipCode\":null,\"countryDe\":\"Deutschland\",\"uniqueIds\":[{\"type\":\"VAT_ID\",\"value\":\"DE123456789\"}]}")
             .When()
+            .Body("{\"companyId\":" + "\"" + companyId + "\"" +
+                  ",\"name\":" + "\"" + _companyName + "\"" + ",\"city\":\"München\",\"streetName\":\"Street\",\"countryAlpha2Code\":\"DE\",\"bpn\":" + "\"" + _bpn + "\"" + ", \"shortName\":" + "\"" + _companyName + "\"" + ",\"region\":null,\"streetAdditional\":null,\"streetNumber\":null,\"zipCode\":null,\"countryDe\":\"Deutschland\",\"uniqueIds\":[{\"type\":\"VAT_ID\",\"value\":\"DE123456788\"}]}")
+            //.Body(companyDetailData)
             .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
             .Then()
             .StatusCode(200);
@@ -141,10 +139,9 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     [Fact]
     public void Test5_UploadDocument_WithEmptyTitle_ReturnsExpectedResult()
     {
-        _applicationId = GetFirstApplicationId();
         string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
         File.WriteAllText("testfile.pdf", "Some Text");
-        Given()
+        var result = (int)Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
@@ -154,8 +151,11 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
             .When()
             .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
             .Then()
-            .Body("1")
-            .StatusCode(200);
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(int));
+        Assert.Equal(1, result);
+        if (result == 1) SetApplicationStatus();
     }
 
     //POST /api/registration/application/{applicationId}/submitRegistration
@@ -169,7 +169,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
                 "authorization",
                 $"Bearer {_companyToken}")
             .ContentType("application/json")
-            .Body("")
+            //.Body("")
             .When()
             .Post(
                 $"{_baseUrl}{_endPoint}/application/{_applicationId}/submitRegistration")
@@ -222,11 +222,33 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
             .StatusCode(200)
             .Extract()
             .As(typeof(CompanyDetailData));
+        
         Assert.NotNull(data);
     }
 
     #endregion
 
+    private CompanyDetailData GetCompanyDetailData()
+    {
+        _applicationId = GetFirstApplicationId();
+        // Given
+        CompanyDetailData companyDetailData = (CompanyDetailData)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .When()
+            .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
+            .Then()
+            .And()
+            .StatusCode(200)
+            .Extract().As(typeof(CompanyDetailData));
+
+        _companyName = companyDetailData.Name;
+
+        return companyDetailData;
+    }
+    
     private string GetFirstApplicationId()
     {
         var applicationIDs = (List<CompanyApplicationData>)Given()
@@ -242,5 +264,23 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
             .As(typeof(List<CompanyApplicationData>));
 
         return applicationIDs[0].ApplicationId.ToString();
+    }
+    
+    private void SetApplicationStatus()
+    {
+        var status = (bool)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .ContentType("application/json")
+            .When()
+            .Put(
+                $"{_baseUrl}{_endPoint}/application/{_applicationId}/status?status=VERIFY")
+            .Then()
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(bool));
+        Assert.True(status);
     }
 }

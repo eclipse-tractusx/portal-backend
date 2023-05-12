@@ -10,7 +10,7 @@ using static RestAssured.Dsl;
 
 namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
 
-[TestCaseOrderer("Notifications.Service.Tests.RestAssured.AlphabeticalOrderer",
+[TestCaseOrderer("Registration.Service.Tests.RestAssured.AlphabeticalOrderer",
     "Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests")]
 public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
 {
@@ -20,11 +20,10 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     private static string _applicationId;
 
     private readonly IFixture _fixture;
-    // private readonly string pdfFileName = @"TestDocument.pdf";
 
     private readonly string _adminEndPoint = "/api/administration";
     private readonly string _operatorToken;
-    private static string _companyName = "Test-Catena-X";
+    private static string _companyName;
     private readonly HttpClient _httpClient;
     private static string[] _userEmailAddress;
 
@@ -34,6 +33,8 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             .AddUserSecrets<Secrets>()
             .Build();
         _companyToken = configuration.GetValue<string>("Secrets:CompanyToken");
+        //_companyToken = "TestUserToken";
+
         _operatorToken = configuration.GetValue<string>("Secrets:OperatorToken");
         _fixture = new Fixture();
         _httpClient = new () { BaseAddress = new Uri(_baseUrl) };
@@ -44,26 +45,29 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
 
     // POST api/administration/invitation
 
-    // [Fact]
-    // public void Test1_ExecuteInvitation_ReturnsExpectedResult()
-    // {
-    //     var emailAddress = GenerateRandomEmailAddress();
-    //     CompanyInvitationData invitationData = new CompanyInvitationData("testuser", "myFirstName", "myLastName",
-    //         emailAddress, "Test-Catena-X");
-    //     Given()
-    //         .RelaxedHttpsValidation()
-    //         .Header(
-    //             "authorization",
-    //             $"Bearer {_operatorToken}")
-    //         .ContentType("application/json")
-    //         .Body(invitationData)
-    //         .When()
-    //         .Post($"{_baseUrl}{_adminEndPoint}/invitation")
-    //         .Then()
-    //         .StatusCode(200);
-    //     var messageData = FetchPassword();
-    //     AuthenticationFlow();
-    // }
+    /*[Fact]
+    public void Test1_ExecuteInvitation_ReturnsExpectedResult()
+    {
+        DevMailApiRequests devMailApiRequests = new DevMailApiRequests();
+        var devUser = devMailApiRequests.GenerateRandomEmailAddress();
+        var emailAddress = devUser.Result.Name + "@developermail.com";
+        CompanyInvitationData invitationData = new CompanyInvitationData("testuser", "myFirstName", "myLastName",
+            emailAddress, "Test-Catena-X-6");
+        Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_operatorToken}")
+            .ContentType("application/json")
+            .Body(invitationData)
+            .When()
+            .Post($"{_baseUrl}{_adminEndPoint}/invitation")
+            .Then()
+            .StatusCode(200);
+        //Thread.Sleep(2000);
+        var messageData = devMailApiRequests.FetchPassword();
+        AuthenticationFlow();
+    }*/
 
 
     // POST /api/registration/application/{applicationId}/companyDetailsWithAddress
@@ -81,7 +85,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             .ContentType("application/json")
             .When()
             .Body("{\"companyId\":" + "\"" + companyId + "\"" +
-                  ",\"name\":\"TestAutomationReg 01\",\"city\":\"München\",\"streetName\":\"Streetfgh\",\"countryAlpha2Code\":\"DE\",\"bpn\":null, \"shortName\":\"TestAutomationReg 01\",\"region\":null,\"streetAdditional\":null,\"streetNumber\":null,\"zipCode\":null,\"countryDe\":\"Deutschland\",\"uniqueIds\":[{\"type\":\"VAT_ID\",\"value\":\"DE123456788\"}]}")
+                  ",\"name\":" + "\"" + _companyName + "\"" + ",\"city\":\"München\",\"streetName\":\"Street\",\"countryAlpha2Code\":\"DE\",\"bpn\":null, \"shortName\":" + "\"" + _companyName + "\"" + ",\"region\":null,\"streetAdditional\":null,\"streetNumber\":null,\"zipCode\":null,\"countryDe\":\"Deutschland\",\"uniqueIds\":[{\"type\":\"VAT_ID\",\"value\":\"DE123456788\"}]}")
             //.Body(companyDetailData)
             .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
             .Then()
@@ -111,10 +115,9 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     [Fact]
     public void Test4_UploadDocument_WithEmptyTitle_ReturnsExpectedResult()
     {
-        _applicationId = GetFirstApplicationId();
         string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
         File.WriteAllText("testfile.pdf", "Some Text");
-        Given()
+        var result = (int)Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
@@ -124,10 +127,14 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             .When()
             .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
             .Then()
-            .Body("1")
-            .StatusCode(200);
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(int));
+        Assert.Equal(1, result);
+        if (result == 1) SetApplicationStatus();
     }
     
+
     // POST /api/registration/application/{applicationId}/submitRegistration
 
     [Fact]
@@ -139,7 +146,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
                 "authorization",
                 $"Bearer {_companyToken}")
             .ContentType("application/json")
-            .Body("")
+            //.Body("")
             .When()
             .Post(
                 $"{_baseUrl}{_endPoint}/application/{_applicationId}/submitRegistration")
@@ -155,9 +162,6 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     [Fact]
     public void Test6_GetApplicationDetails_ReturnsExpectedResult()
     {
-        //_companyName = "Test-Catena-X-3";
-        // Given
-        //var data = (Pagination.Response<CompanyApplicationDetails>)
         var data = Given()
             .RelaxedHttpsValidation()
             .Header(
@@ -171,8 +175,6 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             .Extract()
             .Body("$.content[0].applicationStatus");
         Assert.Equal("SUBMITTED", data);
-            //.As(typeof(Pagination.Response<CompanyApplicationDetails>));
-        //Assert.Contains(_companyName, data.Content.Select(content => content.CompanyName.ToString()));
     }
 
     // GET: api/administration/registration/application/{applicationId}/companyDetailsWithAddress
@@ -229,10 +231,30 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             .StatusCode(200)
             .Extract().As(typeof(CompanyDetailData));
 
+        _companyName = companyDetailData.Name;
+
         return companyDetailData;
     }
+    
+    private void SetApplicationStatus()
+    {
+        var status = (bool)Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_companyToken}")
+            .ContentType("application/json")
+            .When()
+            .Put(
+                $"{_baseUrl}{_endPoint}/application/{_applicationId}/status?status=VERIFY")
+            .Then()
+            .StatusCode(200)
+            .Extract()
+            .As(typeof(bool));
+        Assert.True(status);
+    }
 
-    private string GenerateRandomEmailAddress()
+    /*private string GenerateRandomEmailAddress()
     {
         // Given
         var emailAddress = (string[])Given()
@@ -245,9 +267,9 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             .Extract().As(typeof(string[]));
         _userEmailAddress = emailAddress[0].Split("@");
         return emailAddress[0];
-    }
+    }*/
 
-    private MailboxData[] CheckMailBox()
+    /*private MailboxData[] CheckMailBox()
     {
         // Given
         var emails = (MailboxData[])Given()
@@ -260,10 +282,9 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             .StatusCode(200)
             .Extract().As(typeof(MailboxData[]));
         return emails;
-    }
+    }*/
 
-    [Fact]
-    private EmailMessageData? FetchPassword()
+    /*private EmailMessageData? FetchPassword()
     {
         // Given
         var emails = CheckMailBox();
@@ -283,7 +304,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
         }
 
         return null;
-    }
+    }*/
 
     private void AuthenticationFlow()
     {

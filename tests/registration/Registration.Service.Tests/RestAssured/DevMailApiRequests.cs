@@ -13,16 +13,14 @@ namespace Registration.Service.Tests.RestAssured;
 
 public class DevMailApiRequests
 {
-    private readonly string _mailServiceBaseUrl = "https://developermail.com/api/v1";
-    private static string devMailToken;
-    private static DevMailboxData devMailboxData;
+    private readonly string _mailServiceBaseUrl = "https://developermail.com/api/v1"; 
+    private static DevMailboxData _devMailboxData;
     
     public DevMailApiRequests()
     {
         var configuration = new ConfigurationBuilder()
             .AddUserSecrets<Secrets>()
             .Build();
-        devMailboxData = GenerateRandomEmailAddress();
     }
     
     [Fact]
@@ -51,9 +49,9 @@ public class DevMailApiRequests
     }
     
     [Fact]
-    private DevMailboxData GenerateRandomEmailAddress()
+    public DevMailboxData GenerateRandomEmailAddress()
     {
-        var devMailboxData = (DevMailboxData) Given()
+        _devMailboxData = (DevMailboxData) Given()
             .RelaxedHttpsValidation()
             .When()
             .Put($"{_mailServiceBaseUrl}/mailbox")
@@ -61,7 +59,7 @@ public class DevMailApiRequests
             .And()
             .StatusCode(200)
             .Extract().As(typeof(DevMailboxData));
-        return devMailboxData;
+        return _devMailboxData;
     }
 
     [Fact]
@@ -73,11 +71,11 @@ public class DevMailApiRequests
             .RelaxedHttpsValidation()
             .Header(
                 "X-MailboxToken",
-                 $"{devMailboxData.Result.Token}")
+                 $"{_devMailboxData.Result.Token}")
             .Body(messageIds)
             .When()
             .Post(
-                $"{_mailServiceBaseUrl}/mailbox/{devMailboxData.Result.Name}/messages")
+                $"{_mailServiceBaseUrl}/mailbox/{_devMailboxData.Result.Name}/messages")
             .Then()
             .And()
             .StatusCode(200)
@@ -93,9 +91,9 @@ public class DevMailApiRequests
             .RelaxedHttpsValidation()
             .Header(
                 "X-MailboxToken",
-                $"{devMailboxData.Result.Token}")
+                $"{_devMailboxData.Result.Token}")
             .When()
-            .Delete($"{_mailServiceBaseUrl}/mailbox/{devMailboxData.Result.Name}")
+            .Delete($"{_mailServiceBaseUrl}/mailbox/{_devMailboxData.Result.Name}")
             .Then()
             .And()
             .StatusCode(200)
@@ -112,10 +110,10 @@ public class DevMailApiRequests
             .RelaxedHttpsValidation()
             .Header(
                 "X-MailboxToken",
-                $"{devMailboxData.Result.Token}")
+                $"{_devMailboxData.Result.Token}")
             .When()
             .Get(
-                $"{_mailServiceBaseUrl}/mailbox/{devMailboxData.Result.Name}")
+                $"{_mailServiceBaseUrl}/mailbox/{_devMailboxData.Result.Name}")
             .Then()
             .And()
             .StatusCode(200)
