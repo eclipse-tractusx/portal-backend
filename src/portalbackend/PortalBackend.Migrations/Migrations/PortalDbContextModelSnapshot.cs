@@ -3355,6 +3355,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 22,
                             Label = "ROLE_UPDATE_APP_OFFER"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            Label = "SUBSCRIPTION_URL_UPDATE"
                         });
                 });
 
