@@ -54,6 +54,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     /// <param name="notificationService">the notification service</param>
     /// <param name="provisioningManager">The provisioning manager</param>
     /// <param name="settings">Settings for the app change bl</param>
+    /// <param name="offerService">Offer Servicel</param>
     public AppChangeBusinessLogic(IPortalRepositories portalRepositories, INotificationService notificationService, IProvisioningManager provisioningManager, IOptions<AppsSettings> settings, IOfferService offerService)
     {
         _portalRepositories = portalRepositories;
