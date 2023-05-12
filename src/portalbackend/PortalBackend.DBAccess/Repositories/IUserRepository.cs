@@ -54,7 +54,7 @@ public interface IUserRepository
     /// <returns>Returns the id of the CompanyUser</returns>
     Task<Guid> GetCompanyUserIdForIamUserUntrackedAsync(string userId);
 
-    Task<CompanyOwnUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId);
+    Task<CompanyOwnUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId, IEnumerable<Guid> userRoleIds);
     Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(string iamUserId);
     Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
 

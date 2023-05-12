@@ -226,7 +226,7 @@ public class UserRepository : IUserRepository
                 iamUser.CompanyUser.Company!.CompanyAssignedRoles.SelectMany(car => car.CompanyRole!.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(ur => ur.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == technicalUserClientId)).Select(ur => ur.Id)).Distinct()))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyOwnUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId) =>
+    public Task<CompanyOwnUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId, IEnumerable<Guid> userRoleIds) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
             .AsSplitQuery()
@@ -246,8 +246,7 @@ public class UserRepository : IUserRepository
                             .Where(role => role.CompanyUsers.Any(user => user.Id == companyUser.Id))
                             .Select(role => role.UserRoleText)
                     )),
-                companyUser.UserRoles.Where(role => role.UserRoleText == "Company Admin" || role.UserRoleText == "IT Admin")
-                    .SelectMany(admin => admin.CompanyUsers.Where(cu => cu.CompanyId == companyUser.CompanyId))
+                companyUser.Company.CompanyUsers.Where(user => user.UserRoles.Any(role => userRoleIds.Contains(role.Id)))
                     .Select(admin => new CompanyUserAdminDetails(
                         admin.Id,
                         admin.Email)).Distinct())

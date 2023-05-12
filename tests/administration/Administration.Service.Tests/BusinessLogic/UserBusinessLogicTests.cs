@@ -1336,7 +1336,15 @@ public class UserBusinessLogicTests
         // Arrange
         var companyOwnUserDetails = _fixture.Create<CompanyOwnUserDetails>();
         var iamUserId = _fixture.Create<Guid>().ToString();
-        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamUserId))
+        var userRoleIds = new [] { _fixture.Create<Guid>(), _fixture.Create<Guid>()};
+        var userRole = new Dictionary<string, IEnumerable<string>>
+            {
+                {"Cl2-CX-Portal", new[] {"Company Admin","IT Admin"}}
+            };
+
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(userRole))
+            .Returns(userRoleIds.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamUserId, A<IEnumerable<Guid>>._))
             .Returns(companyOwnUserDetails);
         var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, null!, _logger, _options);
 
@@ -1344,7 +1352,8 @@ public class UserBusinessLogicTests
         var result = await sut.GetOwnUserDetails(iamUserId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamUserId, A<IEnumerable<Guid>>._)).MustHaveHappenedOnceExactly();
         result.Should().Be(companyOwnUserDetails);
     }
 
@@ -1353,7 +1362,8 @@ public class UserBusinessLogicTests
     {
         // Arrange
         var iamUserId = _fixture.Create<Guid>().ToString();
-        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamUserId))
+        
+        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamUserId,A<IEnumerable<Guid>>._))
             .Returns((CompanyOwnUserDetails) default!);
         var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, null!, _logger, _options);
 

@@ -313,7 +313,9 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<CompanyOwnUserDetails> GetOwnUserDetails(string iamUserId)
     {
-        var details = await _portalRepositories.GetInstance<IUserRepository>().GetUserDetailsUntrackedAsync(iamUserId).ConfigureAwait(false);
+        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
+            .GetUserRoleIdsUntrackedAsync(_settings.UserAdminRoles).ToListAsync().ConfigureAwait(false);
+        var details = await _portalRepositories.GetInstance<IUserRepository>().GetUserDetailsUntrackedAsync(iamUserId, userRoleIds).ConfigureAwait(false);
         if (details == null)
         {
             throw new NotFoundException($"no company-user data found for user {iamUserId}");
