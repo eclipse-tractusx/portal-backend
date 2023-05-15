@@ -27,11 +27,11 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
@@ -55,7 +55,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     /// <param name="provisioningManager">The provisioning manager</param>
     /// <param name="settings">Settings for the app change bl</param>
     /// <param name="offerService">Offer Servicel</param>
-    public AppChangeBusinessLogic(IPortalRepositories portalRepositories, INotificationService notificationService, IProvisioningManager provisioningManager, IOptions<AppsSettings> settings, IOfferService offerService)
+    public AppChangeBusinessLogic(IPortalRepositories portalRepositories, INotificationService notificationService, IProvisioningManager provisioningManager, IOfferService offerService, IOptions<AppsSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _notificationService = notificationService;
