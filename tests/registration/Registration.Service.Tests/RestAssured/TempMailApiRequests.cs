@@ -1,9 +1,8 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json.Schema;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using PasswordGenerator;
 using Xunit;
 using static RestAssured.Dsl;
 namespace Registration.Service.Tests.RestAssured;
@@ -76,9 +75,9 @@ public class TempMailApiRequests
     private string CreateMd5()
     {
         var emailAddress = _apiTestUsername + GetDomain();
-        using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+        using (MD5 md5 = MD5.Create())
         {
-            byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(emailAddress);
+            byte[] inputBytes = Encoding.ASCII.GetBytes(emailAddress);
             byte[] hashBytes = md5.ComputeHash(inputBytes);
 
             return Convert.ToHexString(hashBytes);
