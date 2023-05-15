@@ -106,4 +106,29 @@ public class AppChangeController : ControllerBase
         await this.WithIamUserId(userId => _businessLogic.CreateOrUpdateAppDescriptionByIdAsync(appId, userId, offerDescriptionDatas)).ConfigureAwait(false);
         return NoContent();
     }
+    /// <summary>
+    /// Upload offerassigned AppLeadImage document for active apps for given appId for same company as user
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="document"></param>
+    /// <param name="cancellationToken"></param>
+    /// <remarks>Example: POST: /api/apps/appchanges/{appId}/appLeadImage</remarks>
+    /// <response code="204">Successfully uploaded the document</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="403">The user is not assigned with the app.</response>
+    /// <response code="415">Only PNG and JPEG files are supported.</response>
+    [HttpPost]
+    [Route("{appId}/appLeadImage")]
+    [Authorize(Roles = "edit_apps")]
+    [Consumes("multipart/form-data")]
+    [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
+    public async Task<NoContentResult> UploadOfferAssignedAppLeadImageDocumentByIdAsync([FromRoute] Guid appId,  [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
+    {
+        await this.WithIamUserId(iamUserId => _businessLogic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, document, cancellationToken));
+        return NoContent();
+    }
 }

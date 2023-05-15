@@ -343,22 +343,7 @@ public class AppsControllerTests
         //Assert
         A.CallTo(() => _logic.GetAppDocumentContentAsync(A<Guid>._, A<Guid>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
-
-    [Fact]
-    public async Task CreateOfferAssignedAppLeadImageDocumentByIdAsync_ReturnsExpected()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
-
-        // Act
-        var result = await this._controller.CreateOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _logic.CreateOfferAssignedAppLeadImageDocumentByIdAsync(appId, IamUserId, file, CancellationToken.None)).MustHaveHappenedOnceExactly();
-        result.Should().BeOfType<NoContentResult>();
-    }
-    
+  
     [Fact]
     public async Task GetTechnicalUserProfiles_ReturnsExpectedCount()
     {

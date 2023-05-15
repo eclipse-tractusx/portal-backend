@@ -24,6 +24,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Microsoft.AspNetCore.Http;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Xunit;
@@ -100,5 +102,22 @@ public class AppChangeControllerTest
         //Assert
         A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<string>._, A<IEnumerable<LocalizedDescription>>._)).MustHaveHappened();
         result.Should().BeOfType<NoContentResult>(); 
+    }
+
+    [Fact]
+    public async Task UploadOfferAssignedAppLeadImageDocumentByIdAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
+        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(A<Guid>._, A<string>._, A<IFormFile>._, CancellationToken.None))
+            .ReturnsLazily(() => Task.CompletedTask);
+
+        // Act
+        var result = await this._controller.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, IamUserId, file, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 }

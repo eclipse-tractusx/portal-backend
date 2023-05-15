@@ -119,7 +119,7 @@ public class DocumentRepository : IDocumentRepository
         .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public void RemoveDocument(Guid documentId) => 
+    public void RemoveDocument(Guid documentId) =>
         _dbContext.Documents.Remove(new Document(documentId, null!, null!, null!, default, default, default, default));
 
     /// <inheritdoc />
