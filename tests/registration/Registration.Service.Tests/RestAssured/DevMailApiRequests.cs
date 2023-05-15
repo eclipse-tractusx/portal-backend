@@ -16,14 +16,7 @@ public class DevMailApiRequests
 {
     private readonly string _mailServiceBaseUrl = "https://developermail.com/api/v1"; 
     private static DevMailboxData _devMailboxData;
-    
-    public DevMailApiRequests()
-    {
-        var configuration = new ConfigurationBuilder()
-            .AddUserSecrets<Secrets>()
-            .Build();
-    }
-    
+
     [Fact]
     public string? FetchPassword()
     {
@@ -107,7 +100,6 @@ public class DevMailApiRequests
     private string[] GetMessageIds()
     {
         var messageIdsResult = (DevMailboxMessageIds)Given()
-            .Log(RequestLogLevel.All)
             .RelaxedHttpsValidation()
             .Header(
                 "X-MailboxToken",
