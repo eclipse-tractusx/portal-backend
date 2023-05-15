@@ -19,7 +19,7 @@
 
 name: Registration-Service
 
-on: 
+on:
   push:
     paths:
       # service and transitive paths
@@ -39,33 +39,34 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}_registration-service
-  COMMIT_SHA: ${{ github.sha }}
+  IMAGE_NAMESPACE: "tractusx"
+  IMAGE_NAME: "portal-registration-service"
 
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Extract Metadata (tags, labels) for Docker
+      - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=dev
+            type=raw,value=${{ github.sha }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -73,9 +74,19 @@ jobs:
           context: .
           file: docker/Dockerfile-registration-service
           pull: true
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      # https://github.com/peter-evans/dockerhub-description
+      - name: Update Docker Hub description
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}
+          readme-filepath: "./docker/notice-registration-service.md"
 
   auth-and-dispatch:
     needs: build-and-push-image
@@ -96,8 +107,8 @@ jobs:
         run: |
           curl -v \
             --request POST \
-            --url https://api.github.com/repos/catenax-ng/tx-portal-cd/actions/workflows/registration-service-image-update.yml/dispatches \
+            --url https://api.github.com/repos/eclipse-tractusx/portal-cd/actions/workflows/registration-service-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --data '{"ref":"helm-environments", "inputs": { "new-image":"${{ env.COMMIT_SHA }}" }}' \
+            --data '{"ref":"dev", "inputs": { "new-image":"${{ github.sha }}" }}' \
             --fail
