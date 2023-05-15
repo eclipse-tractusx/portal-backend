@@ -60,4 +60,11 @@ public interface IAppChangeBusinessLogic
     /// <param name="document">Document Data</param>
     /// <param name="cancellationToken">cancellationToken</param>
     Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Deactivate Offer Status by appId
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId);
 }

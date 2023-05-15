@@ -35,6 +35,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using System.Collections.Immutable;
 using Xunit;
 
@@ -53,6 +54,7 @@ public class AppChangeBusinessLogicTest
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly INotificationService _notificationService;
+    private readonly IOfferService _offerService;
     private readonly AppChangeBusinessLogic _sut;
 
     public AppChangeBusinessLogicTest()
@@ -68,6 +70,7 @@ public class AppChangeBusinessLogicTest
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _notificationService = A.Fake<INotificationService>();
+        _offerService = A.Fake<IOfferService>();
 
         var settings = new AppsSettings
         {
@@ -83,7 +86,7 @@ public class AppChangeBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
-        _sut = new AppChangeBusinessLogic(_portalRepositories, _notificationService, _provisioningManager, Options.Create(settings));
+        _sut = new AppChangeBusinessLogic(_portalRepositories, _notificationService, _provisioningManager, _offerService, Options.Create(settings));
     }
 
     #region  AddActiveAppUserRole
@@ -448,7 +451,7 @@ public class AppChangeBusinessLogicTest
 
     #endregion
 
-   #region  UploadOfferAssignedAppLeadImageDocumentById
+    #region  UploadOfferAssignedAppLeadImageDocumentById
 
     [Fact]
     public async Task UploadOfferAssignedAppLeadImageDocumentById_ExpectedCalls()
@@ -571,5 +574,29 @@ public class AppChangeBusinessLogicTest
         var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
         result.Message.Should().Be($"App {appId} does not exist.");
     }
+
+    #endregion
+
+    #region  DeactivateOfferbyAppId
+
+    [Fact]
+    public async Task DeactivateOfferStatusbyAppIdAsync_CallsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var settings = new AppsSettings
+        {
+            ServiceManagerRoles = _fixture.Create<Dictionary<string, IEnumerable<string>>>(),
+            BasePortalAddress = "test"
+        };
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+        
+        // Act
+        await _sut.DeactivateOfferByAppIdAsync(appId, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.DeactivateOfferIdAsync(appId, _iamUserId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
+    }
+
     #endregion
 }
