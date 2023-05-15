@@ -148,22 +148,6 @@ public interface IAppsBusinessLogic
     /// <param name="cancellationToken"></param>
     /// <returns>byte Array Content</returns>
     Task<(byte[] Content, string ContentType, string FileName)> GetAppDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken);
-    
-    /// <summary>
-    /// Get technical user profiles for a specific offer
-    /// </summary>
-    /// <param name="offerId">Id of the offer</param>
-    /// <param name="iamUserId">Id of the iam user</param>
-    /// <returns>AsyncEnumerable with the technical user profile information</returns>
-    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId);
-    
-    /// <summary>
-    /// Creates or updates the technical user profiles
-    /// </summary>
-    /// <param name="appId">Id of the app</param>
-    /// <param name="data">The technical user profiles</param>
-    /// <param name="iamUserId">Id of the iam user</param>
-    Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data, string iamUserId);
 
     /// <summary>
     /// Gets the information for the subscription
