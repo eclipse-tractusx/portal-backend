@@ -155,15 +155,6 @@ public interface IAppsBusinessLogic
     /// <param name="cancellationToken"></param>
     /// <returns>byte Array Content</returns>
     Task<(byte[] Content, string ContentType, string FileName)> GetAppDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Create OfferAssigned AppLeadImage Document by appId
-    /// </summary>
-    /// <param name="appId">Id of the app</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    /// <param name="document">Document Data</param>
-    /// <param name="cancellationToken">cancellationToken</param>
-    Task CreateOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken);
     
     /// <summary>
     /// Get technical user profiles for a specific offer

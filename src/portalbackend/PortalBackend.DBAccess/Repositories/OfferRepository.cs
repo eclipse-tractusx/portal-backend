@@ -573,7 +573,7 @@ public class OfferRepository : IOfferRepository
                 x.IsProviderCompanyUser,
                 x.IsProviderCompanyUser ? x.Offer.OfferDescriptions.Select(od => new LocalizedDescription(od.LanguageShortName, od.DescriptionLong, od.DescriptionShort)) : null))
             .SingleOrDefaultAsync();
-    
+
     ///<inheritdoc/>
     public void CreateUpdateDeleteOfferDescriptions(Guid offerId, IEnumerable<LocalizedDescription> initialItems, IEnumerable<(string LanguageCode, string LongDescription, string ShortDescription)> modifiedItems) =>
         _context.AddAttachRemoveRange(
@@ -597,7 +597,7 @@ public class OfferRepository : IOfferRepository
     /// <inheritdoc />
     public void RemoveOfferAssignedDocument(Guid offerId, Guid documentId) => 
         _context.OfferAssignedDocuments.Remove(new OfferAssignedDocument(offerId, documentId));
-    
+
     ///<inheritdoc/>
     public Task<(bool IsValidApp,bool IsOfferType,bool IsOfferStatus,bool IsProviderCompanyUser,AppDeleteData? DeleteData)> GetAppDeleteDataAsync(Guid offerId, OfferTypeId offerTypeId, string userId, OfferStatusId offerStatusId) =>
         _context.Offers
@@ -627,31 +627,31 @@ public class OfferRepository : IOfferRepository
                     : null
             ))
             .SingleOrDefaultAsync();
-    
+
     ///<inheritdoc/>
     public void RemoveOfferAssignedLicenses(IEnumerable<(Guid OfferId, Guid LicenseId)> offerLicenseIds) =>
         _context.OfferAssignedLicenses.RemoveRange(offerLicenseIds.Select(offerLicenseId => new OfferAssignedLicense(offerLicenseId.OfferId, offerLicenseId.LicenseId)));
-    
+
     ///<inheritdoc/>
     public void RemoveOfferAssignedUseCases(IEnumerable<(Guid OfferId, Guid UseCaseId)> offerUseCaseIds) =>
         _context.AppAssignedUseCases.RemoveRange(offerUseCaseIds.Select(offerUseCaseId => new AppAssignedUseCase(offerUseCaseId.OfferId, offerUseCaseId.UseCaseId)));
-    
+
     ///<inheritdoc/>
     public void RemoveOfferAssignedPrivacyPolicies(IEnumerable<(Guid OfferId, PrivacyPolicyId PrivacyPolicyId)> offerPrivacyPolicyIds) =>
         _context.OfferAssignedPrivacyPolicies.RemoveRange(offerPrivacyPolicyIds.Select(offerPrivacyPolicyId => new OfferAssignedPrivacyPolicy(offerPrivacyPolicyId.OfferId, offerPrivacyPolicyId.PrivacyPolicyId)));
-    
+
     ///<inheritdoc/>
     public void RemoveOfferAssignedDocuments(IEnumerable<(Guid OfferId, Guid DocumentId)> offerDocumentIds) =>
         _context.OfferAssignedDocuments.RemoveRange(offerDocumentIds.Select(offerDocumentId => new OfferAssignedDocument(offerDocumentId.OfferId, offerDocumentId.DocumentId)));
-    
+
     ///<inheritdoc/>
     public void RemoveOfferTags(IEnumerable<(Guid OfferId, string TagName)> offerTagNames) =>
         _context.OfferTags.RemoveRange(offerTagNames.Select(offerTagName => new OfferTag(offerTagName.OfferId, offerTagName.TagName)));
-    
+
     ///<inheritdoc/>
     public void RemoveOfferDescriptions(IEnumerable<(Guid OfferId, string LanguageShortName)> offerLanguageShortNames) =>
         _context.OfferDescriptions.RemoveRange(offerLanguageShortNames.Select(offerLanguageShortName => new OfferDescription(offerLanguageShortName.OfferId, offerLanguageShortName.LanguageShortName, null!, null!)));
-    
+
     ///<inheritdoc/>
     public void RemoveOffer(Guid offerId) => 
         _context.Offers.Remove(new Offer(offerId, null!, default, default));   

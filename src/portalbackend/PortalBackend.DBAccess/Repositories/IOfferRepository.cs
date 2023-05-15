@@ -363,7 +363,7 @@ public interface IOfferRepository
     /// <param name="offerId"></param>
     /// <param name="documentId"></param>
     void RemoveOfferAssignedDocument(Guid offerId, Guid documentId);
-    
+
     /// Verify that user is linked to the appId ,offerstatus is in created state
     /// </summary>
     /// <param name="offerId"></param>
@@ -371,7 +371,7 @@ public interface IOfferRepository
     /// <param name="offerStatusId"></param>
     /// <returns></returns>
     Task<(bool IsValidApp,bool IsOfferType,bool IsOfferStatus,bool IsProviderCompanyUser,AppDeleteData? DeleteData)> GetAppDeleteDataAsync(Guid offerId, OfferTypeId offerTypeId, string userId, OfferStatusId offerStatusId);
-    
+
     /// <summary>
     /// Delete Offer Assigned Licenses
     /// </summary>
