@@ -19,48 +19,49 @@
 
 name: Release Candidate (RC)
 
-on: 
+on:
   push:
     branches:
       - 'release/*.*.*-RC*'
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  COMMIT_SHA: ${{ github.sha }}
-  IMAGE_NAME_ADMINISTRATION: ${{ github.repository }}_administration-service
-  IMAGE_NAME_REGISTRATION: ${{ github.repository }}_registration-service
-  IMAGE_NAME_MARKETPLACE_APP: ${{ github.repository }}_marketplace-app-service
-  IMAGE_NAME_PORTAL_MIGRATIONS: ${{ github.repository }}_portal-migrations
-  IMAGE_NAME_MAINTENANCE: ${{ github.repository }}_maintenance-service
-  IMAGE_NAME_NOTIFICATION: ${{ github.repository }}_notification-service
-  IMAGE_NAME_SERVICES: ${{ github.repository }}_services-service
-  IMAGE_NAME_PROVISIONING_MIGRATIONS: ${{ github.repository }}_provisioning-migrations
-  IMAGE_NAME_PROCESSES_WORKER: ${{ github.repository }}_processes-worker
+  IMAGE_NAMESPACE: "tractusx"
+  IMAGE_NAME_ADMINISTRATION: "portal-administration-service"
+  IMAGE_NAME_PROVISIONING: "portal-provisioning-service"
+  IMAGE_NAME_MARKETPLACE_APP: "portal-marketplace-app-service"
+  IMAGE_NAME_PORTAL_MIGRATIONS: "portal-portal-migrations"
+  IMAGE_NAME_MAINTENANCE: "portal-maintenance-service"
+  IMAGE_NAME_NOTIFICATION: "portal-notification-service"
+  IMAGE_NAME_SERVICES: "portal-services-service"
+  IMAGE_NAME_PROVISIONING_MIGRATIONS: "portal-provisioning-migrations"
+  IMAGE_NAME_PROCESSES_WORKER: "portal-processes-worker"
 
 jobs:
-  administration-service-release:
+  administration-service-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Extract Metadata (tags, labels) for Docker
+      - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_ADMINISTRATION }}
+          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_ADMINISTRATION }}
+          tags: |
+            type=raw,value=rc
+            type=raw,value=${{ github.sha }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -68,32 +69,44 @@ jobs:
           context: .
           file: docker/Dockerfile-administration-service
           pull: true
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_ADMINISTRATION }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_ADMINISTRATION }}:rc
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  processes-worker-release:
+      # https://github.com/peter-evans/dockerhub-description
+      - name: Update Docker Hub description
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_ADMINISTRATION }}
+          readme-filepath: "./docker/notice-administration-service.md"
+
+  processes-worker-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Extract Metadata (tags, labels) for Docker
+      - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}
+          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}
+          tags: |
+            type=raw,value=rc
+            type=raw,value=${{ github.sha }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -101,32 +114,44 @@ jobs:
           context: .
           file: docker/Dockerfile-processes-worker
           pull: true
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}:rc
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  registration-service-release:
+      # https://github.com/peter-evans/dockerhub-description
+      - name: Update Docker Hub description
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}
+          readme-filepath: "./docker/notice-processes-worker.md"
+
+  registration-service-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Extract Metadata (tags, labels) for Docker
+      - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_REGISTRATION }}
+          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_REGISTRATION }}
+          tags: |
+            type=raw,value=rc
+            type=raw,value=${{ github.sha }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -134,32 +159,44 @@ jobs:
           context: .
           file: docker/Dockerfile-registration-service
           pull: true
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_REGISTRATION }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_REGISTRATION }}:rc
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  marketplace-app-service-release:
+      # https://github.com/peter-evans/dockerhub-description
+      - name: Update Docker Hub description
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_REGISTRATION }}
+          readme-filepath: "./docker/notice-registration-service.md"
+
+  marketplace-app-service-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Extract Metadata (tags, labels) for Docker
+      - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}
+          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}
+          tags: |
+            type=raw,value=rc
+            type=raw,value=${{ github.sha }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -167,32 +204,44 @@ jobs:
           context: .
           file: docker/Dockerfile-marketplace-app-service
           pull: true
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}:rc
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  portal-migrations-release:
+      # https://github.com/peter-evans/dockerhub-description
+      - name: Update Docker Hub description
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}
+          readme-filepath: "./docker/notice-marketplace-app-service.md"
+
+  portal-migrations-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Extract Metadata (tags, labels) for Docker
+      - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}
+          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}
+          tags: |
+            type=raw,value=rc
+            type=raw,value=${{ github.sha }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -200,32 +249,44 @@ jobs:
           context: .
           file: docker/Dockerfile-portal-migrations
           pull: true
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}:rc
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  maintenance-service-release:
+      # https://github.com/peter-evans/dockerhub-description
+      - name: Update Docker Hub description
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}
+          readme-filepath: "./docker/notice-portal-migrations.md"
+
+  maintenance-service-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Extract Metadata (tags, labels) for Docker
+      - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MAINTENANCE }}
+          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_MAINTENANCE }}
+          tags: |
+            type=raw,value=rc
+            type=raw,value=${{ github.sha }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -233,32 +294,44 @@ jobs:
           context: .
           file: docker/Dockerfile-maintenance-service
           pull: true
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MAINTENANCE }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_MAINTENANCE }}:rc
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  notification-service-release:
+      # https://github.com/peter-evans/dockerhub-description
+      - name: Update Docker Hub description
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_MAINTENANCE }}
+          readme-filepath: "./docker/notice-maintenance-service.md"
+
+  notification-service-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Extract Metadata (tags, labels) for Docker
+      - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_NOTIFICATION }}
+          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_NOTIFICATION }}
+          tags: |
+            type=raw,value=rc
+            type=raw,value=${{ github.sha }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -266,32 +339,44 @@ jobs:
           context: .
           file: docker/Dockerfile-notification-service
           pull: true
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_NOTIFICATION }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_NOTIFICATION }}:rc
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  services-service-release:
+      # https://github.com/peter-evans/dockerhub-description
+      - name: Update Docker Hub description
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_NOTIFICATION }}
+          readme-filepath: "./docker/notice-notification-service.md"
+
+  services-service-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Extract Metadata (tags, labels) for Docker
+      - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVICES }}
+          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_SERVICES }}
+          tags: |
+            type=raw,value=rc
+            type=raw,value=${{ github.sha }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -299,32 +384,44 @@ jobs:
           context: .
           file: docker/Dockerfile-services-service
           pull: true
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVICES }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVICES }}:rc
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  provisioning-migrations-release:
+      # https://github.com/peter-evans/dockerhub-description
+      - name: Update Docker Hub description
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_SERVICES }}
+          readme-filepath: "./docker/notice-services-service.md"
+
+  provisioning-migrations-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Extract Metadata (tags, labels) for Docker
+      - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}
+          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}
+          tags: |
+            type=raw,value=rc
+            type=raw,value=${{ github.sha }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -332,12 +429,22 @@ jobs:
           context: .
           file: docker/Dockerfile-provisioning-migrations
           pull: true
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}:${{ env.COMMIT_SHA }}, ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}:rc
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+      # https://github.com/peter-evans/dockerhub-description
+      - name: Update Docker Hub description
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}
+          readme-filepath: "./docker/notice-portal-migrations.md"
+
   auth-and-dispatch:
-    needs: [ administration-service-release, registration-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release, services-service-release, provisioning-migrations-release, processes-worker-release ]
+    needs: [ administration-service-image, registration-service-image, marketplace-app-service-image, portal-migrations-image, maintenance-service-image, notification-service-image, services-service-image, provisioning-migrations-image, processes-worker-image ]
     runs-on: ubuntu-latest
 
     steps:
@@ -355,8 +462,8 @@ jobs:
         run: |
           curl -v \
             --request POST \
-            --url https://api.github.com/repos/catenax-ng/tx-portal-cd/actions/workflows/portal-backend-rc-image-update.yml/dispatches \
+            --url https://api.github.com/repos/eclipse-tractusx/portal-cd/actions/workflows/portal-backend-image-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --data '{"ref":"release-candidate", "inputs": { "new-image":"${{ env.COMMIT_SHA }}" }}' \
+            --data '{"ref":"release-candidate", "inputs": { "new-image":"${{ github.sha }}" }}' \
             --fail
