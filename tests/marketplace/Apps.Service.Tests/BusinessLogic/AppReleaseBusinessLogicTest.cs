@@ -1119,6 +1119,49 @@ public class AppReleaseBusinessLogicTest
 
     #endregion
 
+    #region UpdateTechnicalUserProfiles
+
+    [Fact]
+    public async Task UpdateTechnicalUserProfiles_ReturnsExpected()
+    {
+        // Arrange
+        const string clientProfile = "cl";
+        var appId = Guid.NewGuid();
+        var data = _fixture.CreateMany<TechnicalUserProfileData>(5);
+        var sut = new AppReleaseBusinessLogic(null!,  Options.Create(new AppsSettings{TechnicalUserProfileClient = clientProfile}), _offerService, null!);
+
+        // Act
+        await sut
+            .UpdateTechnicalUserProfiles(appId, data, IamUserId)
+            .ConfigureAwait(false);
+
+        A.CallTo(() => _offerService.UpdateTechnicalUserProfiles(appId, OfferTypeId.APP,
+                A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), IamUserId, clientProfile))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region GetTechnicalUserProfilesForOffer
+
+    [Fact]
+    public async Task GetTechnicalUserProfilesForOffer_ReturnsExpected()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        A.CallTo(() => _offerService.GetTechnicalUserProfilesForOffer(appId, IamUserId, OfferTypeId.APP))
+            .Returns(_fixture.CreateMany<TechnicalUserProfileInformation>(5));
+        var sut = new AppReleaseBusinessLogic(null!, Options.Create(new AppsSettings()), _offerService, null!);
+
+        // Act
+        var result = await sut.GetTechnicalUserProfilesForOffer(appId, IamUserId)
+            .ConfigureAwait(false);
+
+        result.Should().HaveCount(5);
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupUpdateApp()

@@ -593,4 +593,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         return appInstanceData.Single();
     }
+        
+    /// <inheritdoc />
+    public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId) =>
+        _offerService.GetTechnicalUserProfilesForOffer(offerId, iamUserId, OfferTypeId.APP);
+
+    /// <inheritdoc />
+    public Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data, string iamUserId) =>
+        _offerService.UpdateTechnicalUserProfiles(appId, OfferTypeId.APP, data, iamUserId, _settings.TechnicalUserProfileClient);
 }

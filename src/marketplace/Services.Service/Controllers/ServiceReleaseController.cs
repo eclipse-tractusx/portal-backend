@@ -334,4 +334,40 @@ public class ServiceReleaseController : ControllerBase
         await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.CreateServiceDocumentAsync(serviceId, documentTypeId, document, iamUserId, cancellationToken));
         return NoContent();
     }
+    
+    /// <summary>
+    /// Retrieve the technical user profile information
+    /// </summary>
+    /// <param name="serviceId">id of the service to receive the technical user profiles for</param>
+    /// <remarks>Example: GET: /api/services/servicerelease/{serviceId}/technical-user-profiles</remarks>
+    /// <response code="200">Returns a list of profiles</response>
+    /// <response code="403">Requesting user is not part of the providing company for the service.</response>
+    [HttpGet]
+    [Route("{serviceId}/technical-user-profiles")]
+    [Authorize(Roles = "add_service_offering")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfiles([FromRoute] Guid serviceId) =>
+        this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(serviceId, iamUserId));
+
+    /// <summary>
+    /// Creates and updates the technical user profiles
+    /// </summary>
+    /// <param name="serviceId">id of the service to receive the technical user profiles for</param>
+    /// <param name="data">The data for the update of the technical user profile</param>
+    /// <remarks>Example: PUT: /api/services/servicerelease/{serviceId}/technical-user-profiles</remarks>
+    /// <response code="200">Returns a list of profiles</response>
+    /// <response code="403">Requesting user is not part of the providing company for the service.</response>
+    [HttpPut]
+    [Route("{serviceId}/technical-user-profiles")]
+    [Authorize(Roles = "add_service_offering")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public async Task<NoContentResult> CreateAndUpdateTechnicalUserProfiles([FromRoute] Guid serviceId, [FromBody] IEnumerable<TechnicalUserProfileData> data)
+    {
+        await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.UpdateTechnicalUserProfiles(serviceId, data, iamUserId)).ConfigureAwait(false);
+        return NoContent();
+    }
 }

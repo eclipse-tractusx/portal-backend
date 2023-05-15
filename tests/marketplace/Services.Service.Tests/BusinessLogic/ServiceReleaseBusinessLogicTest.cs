@@ -567,6 +567,47 @@ public class ServiceReleaseBusinessLogicTest
 
     #endregion
 
+    #region GetTechnicalUserProfilesForOffer
+
+    [Fact]
+    public async Task GetTechnicalUserProfilesForOffer_ReturnsExpected()
+    {
+        // Arrange
+        A.CallTo(() => _offerService.GetTechnicalUserProfilesForOffer(_existingServiceId, _iamUserId, OfferTypeId.SERVICE))
+            .Returns(_fixture.CreateMany<TechnicalUserProfileInformation>(5));
+        var sut = new ServiceReleaseBusinessLogic(null!, _offerService, Options.Create(new ServiceSettings()));
+
+        // Act
+        var result = await sut.GetTechnicalUserProfilesForOffer(_existingServiceId, _iamUserId)
+            .ConfigureAwait(false);
+
+        result.Should().HaveCount(5);
+    }
+
+    #endregion
+
+    #region UpdateTechnicalUserProfiles
+
+    [Fact]
+    public async Task UpdateTechnicalUserProfiles_ReturnsExpected()
+    {
+        // Arrange
+        const string clientProfile = "cl";
+        var data = _fixture.CreateMany<TechnicalUserProfileData>(5);
+        var sut = new ServiceReleaseBusinessLogic(null!, _offerService, Options.Create(new ServiceSettings{TechnicalUserProfileClient = clientProfile}));
+
+        // Act
+        await sut
+            .UpdateTechnicalUserProfiles(_existingServiceId, data, _iamUserId)
+            .ConfigureAwait(false);
+
+        A.CallTo(() => _offerService.UpdateTechnicalUserProfiles(_existingServiceId, OfferTypeId.SERVICE,
+                A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), _iamUserId, clientProfile))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
     private void SetupUpdateService()
     {
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_notExistingServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUserId))
