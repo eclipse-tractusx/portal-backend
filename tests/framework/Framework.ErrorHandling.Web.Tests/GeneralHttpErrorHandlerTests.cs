@@ -124,10 +124,10 @@ public class GeneralHttpErrorHandlerTests
         var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
 
         var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
-        
+
         // Act
         await generalHttpErrorHandler.Invoke(httpContext);
-        
+
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.Conflict);
     }
@@ -149,7 +149,7 @@ public class GeneralHttpErrorHandlerTests
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.BadGateway);
     }
-    
+
     [Fact]
     public async Task Invoke_WithConfigurationException_ContentStatusCodeIs500()
     {
@@ -160,14 +160,14 @@ public class GeneralHttpErrorHandlerTests
         var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
 
         var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
-        
+
         // Act
         await generalHttpErrorHandler.Invoke(httpContext);
-        
+
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.InternalServerError);
     }
-    
+
     [Fact]
     public async Task Invoke_WithControllerArgumentException_ContentStatusCodeIs400()
     {
@@ -178,14 +178,14 @@ public class GeneralHttpErrorHandlerTests
         var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
 
         var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
-        
+
         // Act
         await generalHttpErrorHandler.Invoke(httpContext);
-        
+
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.BadRequest);
     }
-    
+
     [Fact]
     public async Task Invoke_WithUnhandledSpecificException_ContentStatusCodeIs500()
     {
@@ -196,10 +196,10 @@ public class GeneralHttpErrorHandlerTests
         var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
 
         var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
-        
+
         // Act
         await generalHttpErrorHandler.Invoke(httpContext);
-        
+
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.InternalServerError);
     }

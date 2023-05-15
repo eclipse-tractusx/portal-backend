@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+using Serilog.Context;
 using System.Net;
 using System.Text.Json;
 
@@ -122,8 +123,7 @@ public class GeneralHttpErrorHandler
             statusCode = HttpStatusCode.InternalServerError;
             logLevel = LogLevel.Error;
         }
-
-        LoggingExtensions.LogErrorInformation(errorId, error);
+        LogErrorInformation(errorId, error);
 
         return (statusCode, messageFunc, logLevel);
     }
@@ -151,6 +151,12 @@ public class GeneralHttpErrorHandler
             messageMap,
             errorId
         );
+    }
+
+    private static void LogErrorInformation(string errorId, Exception exception)
+    {
+        LogContext.PushProperty("ErrorId", errorId);
+        LogContext.PushProperty("StackTrace", exception.StackTrace);
     }
 
     private sealed record MetaData(string Url, string Description);

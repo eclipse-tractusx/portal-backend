@@ -19,39 +19,24 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Serilog;
-using Serilog.Core;
+using Serilog.Events;
 using Serilog.Formatting.Json;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
-public static class LoggingExtensions
+public static class WebLoggingExtensions
 {
-    public static Logger CreateLogger(IConfiguration? config)
+    public static void AddLogging(this IHostBuilder host, IConfiguration config)
     {
-        var loggerConfig = new LoggerConfiguration();
-        if (config is not null)
+        host.UseSerilog((_, configuration) =>
         {
-            loggerConfig.ReadFrom.Configuration(config);
-        }
-
-        return loggerConfig.Enrich.FromLogContext()
-            .WriteTo.Console(new JsonFormatter())
-            .CreateLogger();
-    }
-
-    /// <summary>
-    /// Creates a static logger
-    /// </summary>
-    /// <remarks>
-    /// This should only be used for logging in the Program.cs
-    /// For all other logging use ILogger
-    /// </remarks>
-    public static void EnsureInitialized()
-    {
-        if (Log.Logger is Logger)
-            return;
-
-        Log.Logger = CreateLogger(null);
+            configuration
+                .WriteTo.Console(new JsonFormatter())
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .ReadFrom.Configuration(config)
+                .Enrich.WithCorrelationIdHeader("X-Request-Id");
+        });
     }
 }
