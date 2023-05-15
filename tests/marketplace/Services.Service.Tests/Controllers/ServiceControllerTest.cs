@@ -187,8 +187,8 @@ public class ServiceControllerTest
     {
         //Arrange
         Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
-        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5);
-        var pagination = new Pagination.Response<OfferCompanySubscriptionStatusData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusResponse>(5);
+        var pagination = new Pagination.Response<OfferCompanySubscriptionStatusResponse>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
         A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._, A<Guid?>._))
                     .Returns(pagination);
 

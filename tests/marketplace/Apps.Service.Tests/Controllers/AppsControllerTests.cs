@@ -176,9 +176,9 @@ public class AppsControllerTests
     public async Task GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount(string? offerIdTxt)
     {
         //Arrange
-        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5);
+        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusResponse>(5);
         Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
-        var pagination = new Pagination.Response<OfferCompanySubscriptionStatusData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        var pagination = new Pagination.Response<OfferCompanySubscriptionStatusResponse>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
         A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._, A<Guid?>._))
             .Returns(pagination);
 
