@@ -293,20 +293,6 @@ public class AppsControllerTests
     }
 
     [Fact]
-    public async Task DeactivateApp_ReturnsNoContent()
-    {
-        //Arrange
-        var appId = _fixture.Create<Guid>();
-        
-        //Act
-        var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);
-        
-        //Assert
-        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
-        result.Should().BeOfType<NoContentResult>(); 
-    }
-
-    [Fact]
     public async Task GetAppImageDocumentContentAsync_ReturnsExpected()
     {
         //Arrange

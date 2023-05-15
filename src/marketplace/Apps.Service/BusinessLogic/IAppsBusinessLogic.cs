@@ -141,13 +141,6 @@ public interface IAppsBusinessLogic
     IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId);
 
     /// <summary>
-    /// Deactivate Offer Status by appId
-    /// </summary>
-    /// <param name="appId">Id of the app</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId);
-
-    /// <summary>
     /// Retrieve Document Content for document type  by ID
     /// </summary>
     /// <param name="appId"></param>
