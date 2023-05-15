@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using AutoFixture;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
@@ -40,7 +41,7 @@ public class DevMailApiRequests
             //search for password in the first span of the body
             Regex r = new Regex(@"<span[^>].*?>([^<]*)<\/span>", RegexOptions.IgnoreCase);
         
-            password = r.Match(message.HtmlBody).Groups[1].Value.Trim('\n').Trim();
+            password = HttpUtility.HtmlDecode(r.Match(message.HtmlBody).Groups[1].Value.Trim('\n').Trim());
         }
 
         DeleteMailbox();
