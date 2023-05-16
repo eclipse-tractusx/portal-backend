@@ -77,7 +77,7 @@ public class AppChangeControllerTest
         var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
 
         A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<string>._))
-            .ReturnsLazily(() => offerDescriptionData);
+            .Returns(offerDescriptionData);
         
         //Act
         var result = await this._controller.GetAppUpdateDescriptionsAsync(appId).ConfigureAwait(false);
@@ -93,9 +93,6 @@ public class AppChangeControllerTest
         var appId = _fixture.Create<Guid>();
         var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
 
-        A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<string>._, A<IEnumerable<LocalizedDescription>>._))
-            .ReturnsLazily(() => Task.CompletedTask);
-        
         //Act
         var result = await this._controller.CreateOrUpdateAppDescriptionsByIdAsync(appId,offerDescriptionData).ConfigureAwait(false);
 
@@ -134,6 +131,21 @@ public class AppChangeControllerTest
         
         //Assert
         A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task UpdateTenantUrl_ReturnsExpected()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var data = new UpdateTenantData("http://test.com");
+
+        //Act
+        var result = await this._controller.UpdateTenantUrl(appId, subscriptionId, data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data, IamUserId)).MustHaveHappened();
         result.Should().BeOfType<NoContentResult>(); 
     }
 }

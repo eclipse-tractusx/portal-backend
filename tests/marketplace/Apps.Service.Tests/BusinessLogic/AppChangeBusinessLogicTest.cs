@@ -50,7 +50,9 @@ public class AppChangeBusinessLogicTest
     private readonly IFixture _fixture;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IPortalRepositories _portalRepositories;
+    private readonly INotificationRepository _notificationRepository;
     private readonly IOfferRepository _offerRepository;
+    private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly INotificationService _notificationService;
@@ -66,7 +68,9 @@ public class AppChangeBusinessLogicTest
 
         _provisioningManager = A.Fake<IProvisioningManager>();
         _portalRepositories = A.Fake<IPortalRepositories>();
+        _notificationRepository = A.Fake<INotificationRepository>();
         _offerRepository = A.Fake<IOfferRepository>();
+        _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _notificationService = A.Fake<INotificationService>();
@@ -81,9 +85,15 @@ public class AppChangeBusinessLogicTest
             ActiveAppCompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
             {
                 { ClientId, new [] { "Company Admin" } }
+            },
+            CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                { ClientId, new [] { "Company Admin" } }
             }
         };
+        A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         _sut = new AppChangeBusinessLogic(_portalRepositories, _notificationService, _provisioningManager, _offerService, Options.Create(settings));
@@ -102,7 +112,7 @@ public class AppChangeBusinessLogicTest
         var clientIds = new[] {"client"};
 
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetInsertActiveAppUserRoleDataAsync(appId, _iamUserId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, appName, _companyUserId, companyId, clientIds));
+            .Returns((true, appName, _companyUserId, companyId, clientIds));
 
         IEnumerable<UserRole>? userRoles = null;
         A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid,string)>>._))
@@ -188,7 +198,7 @@ public class AppChangeBusinessLogicTest
         var appAssignedRoleDesc = new AppUserRole[] { new("Legal Admin", appUserRoleDescription) };
         var clientIds = new[] {"client"};
         A.CallTo(() => _offerRepository.GetInsertActiveAppUserRoleDataAsync(appId, _iamUserId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, appName, Guid.Empty, null, clientIds));
+            .Returns((true, appName, Guid.Empty, null, clientIds));
 
         //Act
         async Task Act() => await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc, _iamUserId).ConfigureAwait(false);
@@ -212,7 +222,7 @@ public class AppChangeBusinessLogicTest
         var appAssignedRoleDesc = new AppUserRole[] { new("Legal Admin", appUserRoleDescription) };
         var clientIds = new[] {"client"};
         A.CallTo(() => _offerRepository.GetInsertActiveAppUserRoleDataAsync(appId, _iamUserId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, appName, _companyUserId, null, clientIds));
+            .Returns((true, appName, _companyUserId, null, clientIds));
 
         //Act
         async Task Act() => await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc, _iamUserId).ConfigureAwait(false);
@@ -224,10 +234,10 @@ public class AppChangeBusinessLogicTest
 
     #endregion
 
-    #region  AppDescription
+    #region GetAppUpdateDescriptionById
 
    [Fact]
-    public async Task GetAppUpdateDescritionByIdAsync_ReturnsExpected()
+    public async Task GetAppUpdateDescriptionByIdAsync_ReturnsExpected()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
@@ -235,10 +245,8 @@ public class AppChangeBusinessLogicTest
         var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _iamUserId))
-            .ReturnsLazily(() => appDescriptionData);
+            .Returns(appDescriptionData);
         
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
-
         // Act
         var result = await _sut.GetAppUpdateDescriptionByIdAsync(appId, _iamUserId).ConfigureAwait(false);
 
@@ -248,16 +256,14 @@ public class AppChangeBusinessLogicTest
     }
 
     [Fact]    
-    public async Task GetAppUpdateDescritionByIdAsync_ThrowsNotFoundException()
+    public async Task GetAppUpdateDescriptionByIdAsync_ThrowsNotFoundException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _iamUserId))
-            .ReturnsLazily(() => ((bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<LocalizedDescription> OfferDescriptionDatas))default);
+            .Returns(((bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<LocalizedDescription> OfferDescriptionDatas))default);
         
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
-
         // Act
         async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId, _iamUserId).ConfigureAwait(false);
 
@@ -267,7 +273,7 @@ public class AppChangeBusinessLogicTest
     }
     
     [Fact]    
-    public async Task GetAppUpdateDescritionByIdAsync_ThrowsConflictException()
+    public async Task GetAppUpdateDescriptionByIdAsync_ThrowsConflictException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
@@ -275,10 +281,8 @@ public class AppChangeBusinessLogicTest
         var appDescriptionData = (IsStatusActive: false, IsProviderCompanyUser: true, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _iamUserId))
-            .ReturnsLazily(() => appDescriptionData);
+            .Returns(appDescriptionData);
         
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
-
         // Act
         async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId, _iamUserId).ConfigureAwait(false);
 
@@ -288,7 +292,7 @@ public class AppChangeBusinessLogicTest
     }
 
     [Fact]    
-    public async Task GetAppUpdateDescritionByIdAsync_ThrowsForbiddenException()
+    public async Task GetAppUpdateDescriptionByIdAsync_ThrowsForbiddenException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
@@ -296,10 +300,8 @@ public class AppChangeBusinessLogicTest
         var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: false, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _iamUserId))
-            .ReturnsLazily(() => appDescriptionData);
+            .Returns(appDescriptionData);
         
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
-
         // Act
         async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId, _iamUserId).ConfigureAwait(false);
 
@@ -309,14 +311,13 @@ public class AppChangeBusinessLogicTest
     }
 
     [Fact]
-    public async Task GetAppUpdateDescritionByIdAsync_withNullDescriptionData_ThowsUnexpectedConditionException()
+    public async Task GetAppUpdateDescriptionByIdAsync_withNullDescriptionData_ThrowsUnexpectedConditionException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var offerDescription = _fixture.CreateMany<LocalizedDescription>(3);
         var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>?)null);
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _iamUserId))
-            .ReturnsLazily(() => appDescriptionData);
+            .Returns(appDescriptionData);
 
         // Act
         var Act = () => _sut.GetAppUpdateDescriptionByIdAsync(appId, _iamUserId);
@@ -327,6 +328,10 @@ public class AppChangeBusinessLogicTest
 
     }
 
+    #endregion
+    
+    #region Add / Update App Description
+    
     [Fact]
     public async Task CreateOrUpdateAppDescriptionByIdAsync_withEmptyExistingDescriptionData_ReturnExpectedResult()
     {
@@ -339,8 +344,7 @@ public class AppChangeBusinessLogicTest
         var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>)updateDescriptionData);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _iamUserId))
-            .ReturnsLazily(() => appDescriptionData);
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+            .Returns(appDescriptionData);
 
         // Act
         await _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, _iamUserId, updateDescriptionData).ConfigureAwait(false);
@@ -362,9 +366,7 @@ public class AppChangeBusinessLogicTest
         var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>)null!);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _iamUserId))
-            .ReturnsLazily(() => appDescriptionData);
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+            .Returns(appDescriptionData);
 
         // Act
         var Act = () => _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, _iamUserId, updateDescriptionData);
@@ -387,9 +389,7 @@ public class AppChangeBusinessLogicTest
         var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: false, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>)null!);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _iamUserId))
-            .ReturnsLazily(() => appDescriptionData);
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+            .Returns(appDescriptionData);
 
         // Act
         var Act = () => _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, _iamUserId, updateDescriptionData);
@@ -412,9 +412,7 @@ public class AppChangeBusinessLogicTest
         var appDescriptionData = (IsStatusActive: false, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>)null!);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _iamUserId))
-            .ReturnsLazily(() => appDescriptionData);
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+            .Returns(appDescriptionData);
 
         // Act
         var Act = () => _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, _iamUserId, updateDescriptionData);
@@ -436,9 +434,7 @@ public class AppChangeBusinessLogicTest
             };
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _iamUserId))
-             .ReturnsLazily(() => ((bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<LocalizedDescription> OfferDescriptionDatas))default);
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+             .Returns(((bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<LocalizedDescription> OfferDescriptionDatas))default);
 
         // Act
         var Act = () => _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, _iamUserId, updateDescriptionData);
@@ -596,6 +592,313 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         A.CallTo(() => _offerService.DeactivateOfferIdAsync(appId, _iamUserId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+    
+    #region Update TenantUrl
+    
+    [Fact]
+    public async Task UpdateTenantUrlAsync_WithValidData_CallsExpected()
+    {
+        // Arrange
+        const string clientClientId = "sa123";
+        const string oldUrl = "https://old-url.com";
+        var data = new UpdateTenantData("https://new-url.com");
+        var appId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var requester = _fixture.Create<Guid>();
+        var subscribingCompany = _fixture.Create<Guid>();
+        var detailId = _fixture.Create<Guid>();
+        var notifications = new List<Notification>();
+        var details = new AppSubscriptionDetail(detailId, subscriptionId)
+        {
+            AppSubscriptionUrl = oldUrl
+        };
+        A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _iamUserId))
+            .Returns(new OfferUpdateUrlData("testApp", false, true, requester, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._))
+            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
+            {
+                var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
+                setOptionalParameters?.Invoke(notification);
+                notifications.Add(notification);
+            });
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(detailId, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._))
+            .Invokes((Guid _, Guid _, Action<AppSubscriptionDetail>? initialize, Action<AppSubscriptionDetail> setParameters) =>
+            {
+                initialize?.Invoke(details);
+                setParameters.Invoke(details);
+            });
+
+        // Act
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, data.Url, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        notifications.Should().ContainSingle().Which
+            .NotificationTypeId.Should().Be(NotificationTypeId.SUBSCRIPTION_URL_UPDATE);
+        details.AppSubscriptionUrl.Should().Be(data.Url);
+    }
+
+    [Fact]
+    public async Task UpdateTenantUrlAsync_WithoutRequesterButValidData_CallsExpected()
+    {
+        // Arrange
+        const string clientClientId = "sa123";
+        const string oldUrl = "https://old-url.com";
+        var data = new UpdateTenantData("https://new-url.com");
+        var appId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var subscribingCompany = _fixture.Create<Guid>();
+        var detailId = _fixture.Create<Guid>();
+        var notifications = new List<Notification>();
+        var details = new AppSubscriptionDetail(detailId, subscriptionId)
+        {
+            AppSubscriptionUrl = oldUrl
+        };
+        A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _iamUserId))
+            .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._))
+            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
+            {
+                var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
+                setOptionalParameters?.Invoke(notification);
+                notifications.Add(notification);
+            });
+
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, null, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._))
+            .Returns(_fixture.CreateMany<Guid>(4).AsFakeIAsyncEnumerable(out var createNotificationsResultAsyncEnumerator));
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(detailId, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._))
+            .Invokes((Guid _, Guid _, Action<AppSubscriptionDetail>? initialize, Action<AppSubscriptionDetail> setParameters) =>
+            {
+                initialize?.Invoke(details);
+                setParameters.Invoke(details);
+            });
+
+        // Act
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, data.Url, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => createNotificationsResultAsyncEnumerator.MoveNextAsync())
+            .MustHaveHappened(5, Times.Exactly);
+        notifications.Should().BeEmpty();
+        details.AppSubscriptionUrl.Should().Be(data.Url);
+    }
+
+    [Fact]
+    public async Task UpdateTenantUrlAsync_WithoutClientId_CallsExpected()
+    {
+        // Arrange
+        const string oldUrl = "https://old-url.com";
+        const string clientClientId = "sa123";
+        var data = new UpdateTenantData("https://new-url.com");
+        var appId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var subscribingCompany = _fixture.Create<Guid>();
+        var detailId = _fixture.Create<Guid>();
+        var notifications = new List<Notification>();
+        var details = new AppSubscriptionDetail(detailId, subscriptionId)
+        {
+            AppSubscriptionUrl = oldUrl
+        };
+        A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _iamUserId))
+            .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, null, oldUrl)));
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._))
+            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
+            {
+                var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
+                setOptionalParameters?.Invoke(notification);
+                notifications.Add(notification);
+            });
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(detailId, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._))
+            .Invokes((Guid _, Guid _, Action<AppSubscriptionDetail>? initialize, Action<AppSubscriptionDetail> setParameters) =>
+            {
+                initialize?.Invoke(details);
+                setParameters.Invoke(details);
+            });
+
+        // Act
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, data.Url, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustHaveHappenedOnceExactly();
+        notifications.Should().BeEmpty();
+        details.AppSubscriptionUrl.Should().Be(data.Url);
+    }
+
+    [Fact]
+    public async Task UpdateTenantUrlAsync_WithSameUrl_CallsNothing()
+    {
+        // Arrange
+        const string clientClientId = "sa123";
+        const string oldUrl = "https://old-url.com";
+        var data = new UpdateTenantData(oldUrl);
+        var appId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var subscribingCompany = _fixture.Create<Guid>();
+        var detailId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _iamUserId))
+            .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
+        
+        // Act
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, oldUrl, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(detailId, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task UpdateTenantUrlAsync_WithInvalidUrl_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        const string clientClientId = "sa123";
+        var data = new UpdateTenantData("https:new-url.com");
+        var appId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+
+        // Act
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.ParamName.Should().Be("Url");
+        ex.Message.Should().Be($"url {data.Url} cannot be parsed: Invalid URI: The Authority/Host could not be parsed. (Parameter 'Url')");
+        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(A<Guid>._, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task UpdateTenantUrlAsync_WithoutApp_ThrowsNotFoundException()
+    {
+        // Arrange
+        const string clientClientId = "sa123";
+        var data = new UpdateTenantData("https://new-url.com");
+        var appId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _iamUserId))
+            .Returns((OfferUpdateUrlData?)null);
+
+        // Act
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Offer {appId} or subscription {subscriptionId} do not exists");
+        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(A<Guid>._, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task UpdateTenantUrlAsync_WithSingleInstanceApp_ThrowsConflictException()
+    {
+        // Arrange
+        const string clientClientId = "sa123";
+        const string oldUrl = "https://old-url.com";
+        var data = new UpdateTenantData("https://new-url.com");
+        var appId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var subscribingCompany = _fixture.Create<Guid>();
+        var detailId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _iamUserId))
+            .Returns(new OfferUpdateUrlData("testApp", true, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
+
+        // Act
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be("Subscription url of single instance apps can't be changed");
+        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(A<Guid>._, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task UpdateTenantUrlAsync_WithUserNotFromProvidingCompany_ThrowsForbiddenException()
+    {
+        // Arrange
+        const string clientClientId = "sa123";
+        const string oldUrl = "https://old-url.com";
+        var data = new UpdateTenantData("https://new-url.com");
+        var appId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var subscribingCompany = _fixture.Create<Guid>();
+        var detailId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _iamUserId))
+            .Returns(new OfferUpdateUrlData("testApp", false, false, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
+
+        // Act
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"User {_iamUserId} is not part of the app's providing company");
+        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(A<Guid>._, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task UpdateTenantUrlAsync_WithInActiveApp_ThrowsConflictException()
+    {
+        // Arrange
+        const string clientClientId = "sa123";
+        const string oldUrl = "https://old-url.com";
+        var data = new UpdateTenantData("https://new-url.com");
+        var appId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var subscribingCompany = _fixture.Create<Guid>();
+        var detailId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _iamUserId))
+            .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.PENDING, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
+        
+        // Act
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Subscription {subscriptionId} must be in status ACTIVE");
+        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(A<Guid>._, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task UpdateTenantUrlAsync_WithoutSubscriptionDetails_ThrowsConflictException()
+    {
+        // Arrange
+        const string clientClientId = "sa123";
+        var data = new UpdateTenantData("https://new-url.com");
+        var appId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var subscribingCompany = _fixture.Create<Guid>();
+        A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _iamUserId))
+            .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, null));
+        
+        // Act
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"There is no subscription detail data configured for subscription {subscriptionId}");
+        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(A<Guid>._, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._)).MustNotHaveHappened();
     }
 
     #endregion

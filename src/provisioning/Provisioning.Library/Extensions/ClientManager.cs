@@ -56,12 +56,14 @@ public partial class ProvisioningManager
     public Task DeleteCentralClientAsync(string internalClientId) =>
         _CentralIdp.DeleteClientAsync(_Settings.CentralRealm, internalClientId);
 
-    public async Task UpdateClient(string internalClientId, string url, string redirectUrl)
-    {
-        var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
+    public async Task UpdateClient(string clientId, string url, string redirectUrl)
+    { 
+        var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(false);
+
+        var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false);
         client.BaseUrl = url;
         client.RedirectUris = Enumerable.Repeat(redirectUrl, 1);
-        await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, internalClientId, client).ConfigureAwait(false);
+        await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, idOfClient, client).ConfigureAwait(false);
     }
 
     public async Task EnableClient(string internalClientId)
@@ -91,11 +93,15 @@ public partial class ProvisioningManager
             };
     }
 
-    private async Task<Client?> GetCentralClientViewableAsync(string clientId)
+    private async Task<string> GetIdOfCentralClientAsync(string clientId)
     {
-        var client = (await _CentralIdp.GetClientsAsync(_Settings.CentralRealm, clientId: clientId, viewableOnly: true).ConfigureAwait(false))
-            .SingleOrDefault();
-        return client;
+        var idOfClient = (await _CentralIdp.GetClientsAsync(_Settings.CentralRealm, clientId: clientId, viewableOnly: true).ConfigureAwait(false))
+            .SingleOrDefault()?.Id;
+        if (idOfClient == null)
+        {
+            throw new KeycloakEntityNotFoundException($"clientId {clientId} not found in central keycloak");
+        }
+        return idOfClient;
     }
 
     private async Task CreateSharedRealmIdentityProviderClientAsync(KeycloakClient keycloak, string realm, IdentityProviderClientConfig config)
@@ -136,9 +142,6 @@ public partial class ProvisioningManager
                 AccessTokenClaim = "true",
             }
         });
-
-    private async Task<string?> GetCentralInternalClientIdFromClientIDAsync(string clientId) =>
-        (await GetCentralClientViewableAsync(clientId).ConfigureAwait(false))?.Id;
 
     private IamClientAuthMethod CredentialsTypeToIamClientAuthMethod(string clientAuthMethod)
     {
