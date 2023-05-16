@@ -92,7 +92,7 @@ public class AppChangeController : ControllerBase
     /// </summary>
     /// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id for the app description to create or update.</param>
     /// <param name="offerDescriptionDatas">app description data to create or update.</param>
-    /// <remarks>Example: Put: /api/apps/appchanges/092bdae3-a044-4314-94f4-85c65a09e31b/appupdate/description</remarks>
+    /// <remarks>Example: Put: /api/apps/appchange/092bdae3-a044-4314-94f4-85c65a09e31b/appupdate/description</remarks>
     /// <response code="204">The app description succesFully created or updated</response>
     [HttpPut]
     [Route("{appId}/appupdate/description")]
@@ -112,7 +112,7 @@ public class AppChangeController : ControllerBase
     /// <param name="appId"></param>
     /// <param name="document"></param>
     /// <param name="cancellationToken"></param>
-    /// <remarks>Example: POST: /api/apps/appchanges/{appId}/appLeadImage</remarks>
+    /// <remarks>Example: POST: /api/apps/appchange/{appId}/appLeadImage</remarks>
     /// <response code="204">Successfully uploaded the document</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="403">The user is not assigned with the app.</response>
@@ -161,8 +161,8 @@ public class AppChangeController : ControllerBase
     /// </summary>
     /// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id of the app.</param>
     /// <param name="subscriptionId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id of the subscription.</param>
-    /// <param name="tenantUrl">new url for the subscription.</param>
-    /// <remarks>Example: Put: /api/apps/appchanges/{appId}/subscription/{subscriptionId}/tenantUrl</remarks>
+    /// <param name="data">new url for the subscription.</param>
+    /// <remarks>Example: Put: /api/apps/appchange/{appId}/subscription/{subscriptionId}/tenantUrl</remarks>
     /// <response code="204">The app description succesFully created or updated</response>
     [HttpPut]
     [Route("{appId}/subscription/{subscriptionId}/tenantUrl")]
@@ -171,9 +171,9 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<NoContentResult> UpdateTenantUrl([FromRoute] Guid appId, [FromRoute] Guid subscriptionId, [FromBody] string tenantUrl)
+    public async Task<NoContentResult> UpdateTenantUrl([FromRoute] Guid appId, [FromRoute] Guid subscriptionId, [FromBody] UpdateTenantData data)
     {
-        await this.WithIamUserId(iamUserId => _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, tenantUrl, iamUserId)).ConfigureAwait(false);
+        await this.WithIamUserId(iamUserId => _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data, iamUserId)).ConfigureAwait(false);
         return NoContent();
     }
 }

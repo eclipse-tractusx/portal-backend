@@ -240,7 +240,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .Where(os => os.Id == subscriptionId && os.OfferId == offerId)
             .Select(os => new OfferUpdateUrlData(
                 os.Offer!.Name,
-                os.Offer!.OfferTypeId != OfferTypeId.APP || os.Offer.AppInstanceSetup!.IsSingleInstance,
+                (os.Offer.AppInstanceSetup != null && os.Offer.AppInstanceSetup!.IsSingleInstance),
                 os.Offer.ProviderCompany!.CompanyUsers.Any(x => x.IamUser!.UserEntityId == iamUserId),
                 os.RequesterId,
                 os.CompanyId,

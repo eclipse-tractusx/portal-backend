@@ -56,12 +56,18 @@ public partial class ProvisioningManager
     public Task DeleteCentralClientAsync(string internalClientId) =>
         _CentralIdp.DeleteClientAsync(_Settings.CentralRealm, internalClientId);
 
-    public async Task UpdateClient(string internalClientId, string url, string redirectUrl)
-    {
-        var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
+    public async Task UpdateClient(string clientId, string url, string redirectUrl)
+    { 
+        var idOfClient = await GetCentralInternalClientIdFromClientIDAsync(clientId).ConfigureAwait(false);
+        if (idOfClient == null)
+        {
+            throw new KeycloakEntityNotFoundException($"clientId {clientId} not found in central keycloak");
+        }
+
+        var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false);
         client.BaseUrl = url;
         client.RedirectUris = Enumerable.Repeat(redirectUrl, 1);
-        await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, internalClientId, client).ConfigureAwait(false);
+        await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, idOfClient, client).ConfigureAwait(false);
     }
 
     public async Task EnableClient(string internalClientId)

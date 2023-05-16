@@ -201,10 +201,10 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, string url, string iamUserId)
+    public Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, string iamUserId)
     {
-        url.EnsureValidHttpUrl(() => nameof(url));
-        return UpdateTenantUrlAsyncInternal(offerId, subscriptionId, url, iamUserId);
+        data.Url.EnsureValidHttpUrl(() => nameof(data.Url));
+        return UpdateTenantUrlAsyncInternal(offerId, subscriptionId, data.Url, iamUserId);
     }
 
     private async Task UpdateTenantUrlAsyncInternal(Guid offerId, Guid subscriptionId, string url, string iamUserId)

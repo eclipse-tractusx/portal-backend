@@ -603,8 +603,8 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         const string clientClientId = "sa123";
-        const string newUrl = "https://new-url.com";
         const string oldUrl = "https://old-url.com";
+        var data = new UpdateTenantData("https://new-url.com");
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         var requester = _fixture.Create<Guid>();
@@ -631,14 +631,14 @@ public class AppChangeBusinessLogicTest
             });
 
         // Act
-        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, newUrl, _iamUserId).ConfigureAwait(false);
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, newUrl, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, data.Url, A<string>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
         notifications.Should().ContainSingle().Which
             .NotificationTypeId.Should().Be(NotificationTypeId.SUBSCRIPTION_URL_UPDATE);
-        details.AppSubscriptionUrl.Should().Be(newUrl);
+        details.AppSubscriptionUrl.Should().Be(data.Url);
     }
 
     [Fact]
@@ -646,8 +646,8 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         const string clientClientId = "sa123";
-        const string newUrl = "https://new-url.com";
         const string oldUrl = "https://old-url.com";
+        var data = new UpdateTenantData("https://new-url.com");
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         var subscribingCompany = _fixture.Create<Guid>();
@@ -673,22 +673,22 @@ public class AppChangeBusinessLogicTest
             });
 
         // Act
-        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, newUrl, _iamUserId).ConfigureAwait(false);
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, newUrl, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, data.Url, A<string>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustHaveHappenedOnceExactly();
         notifications.Should().BeEmpty();
-        details.AppSubscriptionUrl.Should().Be(newUrl);
+        details.AppSubscriptionUrl.Should().Be(data.Url);
     }
 
     [Fact]
     public async Task UpdateTenantUrlAsync_WithoutClientId_CallsExpected()
     {
         // Arrange
-        const string clientClientId = "sa123";
-        const string newUrl = "https://new-url.com";
         const string oldUrl = "https://old-url.com";
+        const string clientClientId = "sa123";
+        var data = new UpdateTenantData("https://new-url.com");
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         var subscribingCompany = _fixture.Create<Guid>();
@@ -714,13 +714,13 @@ public class AppChangeBusinessLogicTest
             });
 
         // Act
-        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, newUrl, _iamUserId).ConfigureAwait(false);
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, newUrl, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, data.Url, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustHaveHappenedOnceExactly();
         notifications.Should().BeEmpty();
-        details.AppSubscriptionUrl.Should().Be(newUrl);
+        details.AppSubscriptionUrl.Should().Be(data.Url);
     }
 
     [Fact]
@@ -729,6 +729,7 @@ public class AppChangeBusinessLogicTest
         // Arrange
         const string clientClientId = "sa123";
         const string oldUrl = "https://old-url.com";
+        var data = new UpdateTenantData(oldUrl);
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         var subscribingCompany = _fixture.Create<Guid>();
@@ -737,7 +738,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
         
         // Act
-        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, oldUrl, _iamUserId).ConfigureAwait(false);
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, oldUrl, A<string>._)).MustNotHaveHappened();
@@ -751,17 +752,17 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         const string clientClientId = "sa123";
-        const string newUrl = "https:new-url.com";
+        var data = new UpdateTenantData("https:new-url.com");
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, newUrl, _iamUserId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.ParamName.Should().Be("url");
-        ex.Message.Should().Be($"url {newUrl} cannot be parsed: Invalid URI: The Authority/Host could not be parsed. (Parameter 'url')");
+        ex.ParamName.Should().Be("Url");
+        ex.Message.Should().Be($"url {data.Url} cannot be parsed: Invalid URI: The Authority/Host could not be parsed. (Parameter 'Url')");
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
@@ -773,14 +774,14 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         const string clientClientId = "sa123";
-        const string newUrl = "https://new-url.com";
+        var data = new UpdateTenantData("https://new-url.com");
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _iamUserId))
             .Returns((OfferUpdateUrlData?)null);
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, newUrl, _iamUserId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -796,8 +797,8 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         const string clientClientId = "sa123";
-        const string newUrl = "https://new-url.com";
         const string oldUrl = "https://old-url.com";
+        var data = new UpdateTenantData("https://new-url.com");
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         var subscribingCompany = _fixture.Create<Guid>();
@@ -806,7 +807,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", true, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, newUrl, _iamUserId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -822,8 +823,8 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         const string clientClientId = "sa123";
-        const string newUrl = "https://new-url.com";
         const string oldUrl = "https://old-url.com";
+        var data = new UpdateTenantData("https://new-url.com");
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         var subscribingCompany = _fixture.Create<Guid>();
@@ -832,7 +833,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", false, false, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, newUrl, _iamUserId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -848,8 +849,8 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         const string clientClientId = "sa123";
-        const string newUrl = "https://new-url.com";
         const string oldUrl = "https://old-url.com";
+        var data = new UpdateTenantData("https://new-url.com");
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         var subscribingCompany = _fixture.Create<Guid>();
@@ -858,7 +859,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.PENDING, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
         
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, newUrl, _iamUserId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -874,7 +875,7 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         const string clientClientId = "sa123";
-        const string newUrl = "https://new-url.com";
+        var data = new UpdateTenantData("https://new-url.com");
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         var subscribingCompany = _fixture.Create<Guid>();
@@ -882,7 +883,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, null));
         
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, newUrl, _iamUserId).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

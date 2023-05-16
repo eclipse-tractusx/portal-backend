@@ -133,18 +133,19 @@ public class AppChangeControllerTest
         A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
     }
 
+    [Fact]
     public async Task UpdateTenantUrl_ReturnsExpected()
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
-        const string url = "http://test.com";
+        var data = new UpdateTenantData("http://test.com");
 
         //Act
-        var result = await this._controller.UpdateTenantUrl(appId, subscriptionId, url).ConfigureAwait(false);
+        var result = await this._controller.UpdateTenantUrl(appId, subscriptionId, data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, url, IamUserId)).MustHaveHappened();
+        A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data, IamUserId)).MustHaveHappened();
         result.Should().BeOfType<NoContentResult>(); 
     }
 }
