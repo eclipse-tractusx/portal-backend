@@ -341,13 +341,14 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     
     #region AttachAndModifyAppSubscriptionDetail
 
-    [Fact]
-    public async Task AttachAndModifyAppSubscriptionDetail_ReturnsExpectedResult()
+    [Theory]
+    [InlineData("https://www.new-url.com")]
+    [InlineData(null)]
+    public async Task AttachAndModifyAppSubscriptionDetail_ReturnsExpectedResult(string? modifiedUrl)
     {
         // Arrange
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
-        const string modifiedUrl = "https://www.new-url.com";
         var detailId = new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93ca");
         var offerSubscriptionId = new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd");
 
@@ -362,9 +363,8 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<AppSubscriptionDetail>()
+        changedEntries.Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<AppSubscriptionDetail>()
             .Which.AppSubscriptionUrl.Should().Be(modifiedUrl);
     }
 
