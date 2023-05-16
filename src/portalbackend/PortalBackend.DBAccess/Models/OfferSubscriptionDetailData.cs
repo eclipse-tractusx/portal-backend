@@ -26,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// Detail data for a offer subscription
 /// </summary>
 /// <param name="Id">Id of the Offer</param>
-/// <param name="OfferStatus">Status of the offer</param>
+/// <param name="OfferSubscriptionStatus">Status of the offer subscription</param>
 /// <param name="Name">Name of the Offer</param>
 /// <param name="CompanyName">When called from /provider name of the company subscribing the offer, otherwise the provider company's name</param>
 /// <param name="Bpn">When called from /provider bpn of the company subscribing the offer, otherwise the provider company's bpn</param>
@@ -34,7 +34,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="TechnicalUserData">Information about the technical user</param>
 public record OfferSubscriptionDetailData (
     Guid Id,
-    OfferStatusId OfferStatus,
+    OfferSubscriptionStatusId OfferSubscriptionStatus,
     string? Name,
     string CompanyName,
     string? Bpn,
