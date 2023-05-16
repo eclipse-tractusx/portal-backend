@@ -58,11 +58,7 @@ public partial class ProvisioningManager
 
     public async Task UpdateClient(string clientId, string url, string redirectUrl)
     { 
-        var idOfClient = await GetCentralInternalClientIdFromClientIDAsync(clientId).ConfigureAwait(false);
-        if (idOfClient == null)
-        {
-            throw new KeycloakEntityNotFoundException($"clientId {clientId} not found in central keycloak");
-        }
+        var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(false);
 
         var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false);
         client.BaseUrl = url;
@@ -97,11 +93,15 @@ public partial class ProvisioningManager
             };
     }
 
-    private async Task<Client?> GetCentralClientViewableAsync(string clientId)
+    private async Task<string> GetIdOfCentralClientAsync(string clientId)
     {
-        var client = (await _CentralIdp.GetClientsAsync(_Settings.CentralRealm, clientId: clientId, viewableOnly: true).ConfigureAwait(false))
-            .SingleOrDefault();
-        return client;
+        var idOfClient = (await _CentralIdp.GetClientsAsync(_Settings.CentralRealm, clientId: clientId, viewableOnly: true).ConfigureAwait(false))
+            .SingleOrDefault()?.Id;
+        if (idOfClient == null)
+        {
+            throw new KeycloakEntityNotFoundException($"clientId {clientId} not found in central keycloak");
+        }
+        return idOfClient;
     }
 
     private async Task CreateSharedRealmIdentityProviderClientAsync(KeycloakClient keycloak, string realm, IdentityProviderClientConfig config)
@@ -142,9 +142,6 @@ public partial class ProvisioningManager
                 AccessTokenClaim = "true",
             }
         });
-
-    private async Task<string?> GetCentralInternalClientIdFromClientIDAsync(string clientId) =>
-        (await GetCentralClientViewableAsync(clientId).ConfigureAwait(false))?.Id;
 
     private IamClientAuthMethod CredentialsTypeToIamClientAuthMethod(string clientAuthMethod)
     {
