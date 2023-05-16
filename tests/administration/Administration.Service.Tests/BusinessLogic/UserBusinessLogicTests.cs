@@ -1338,9 +1338,9 @@ public class UserBusinessLogicTests
         var iamUserId = _fixture.Create<Guid>().ToString();
         var userRoleIds = new [] { _fixture.Create<Guid>(), _fixture.Create<Guid>()};
 
-        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(_options.Value.UserAdminRoles))
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
             .Returns(userRoleIds.ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamUserId, A<IEnumerable<Guid>>._))
+        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(A<string>._, A<IEnumerable<Guid>>._))
             .Returns(companyOwnUserDetails);
         var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, null!, _logger, _options);
 
@@ -1349,7 +1349,7 @@ public class UserBusinessLogicTests
 
         // Assert
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>
-            .That.Matches(x => x.Keys == _options.Value.UserAdminRoles.Keys && x.Values == _options.Value.UserAdminRoles.Values))).MustHaveHappenedOnceExactly();
+            .That.IsSameSequenceAs(_options.Value.UserAdminRoles))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamUserId, A<IEnumerable<Guid>>.That.IsSameSequenceAs(userRoleIds))).MustHaveHappenedOnceExactly();
         result.Should().Be(companyOwnUserDetails);
     }
