@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -41,6 +42,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 /// </summary>
 public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 {
+    private static readonly JsonSerializerOptions Options = new (){ PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly IPortalRepositories _portalRepositories;
     private readonly AppsSettings _settings;
     private readonly INotificationService _notificationService;
@@ -125,7 +127,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
-    
+
     private static async Task<IEnumerable<LocalizedDescription>> ValidateAndGetAppDescription(Guid appId, string iamUserId, IOfferRepository offerRepository)
     {
         var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, iamUserId).ConfigureAwait(false);
@@ -197,4 +199,82 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     /// <inheritdoc />
     public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId) =>
         _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
+
+    /// <inheritdoc />
+    public Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, string iamUserId)
+    {
+        data.Url.EnsureValidHttpUrl(() => nameof(data.Url));
+        return UpdateTenantUrlAsyncInternal(offerId, subscriptionId, data.Url, iamUserId);
+    }
+
+    private async Task UpdateTenantUrlAsyncInternal(Guid offerId, Guid subscriptionId, string url, string iamUserId)
+    {
+        var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+        var result = await offerSubscriptionsRepository.GetUpdateUrlDataAsync(offerId, subscriptionId, iamUserId).ConfigureAwait(false);
+        if (result == null)
+        {
+            throw new NotFoundException($"Offer {offerId} or subscription {subscriptionId} do not exists");
+        }
+
+        var (offerName, isSingleInstance, isUserOfCompany, requesterId, subscribingCompanyId, offerSubscriptionStatusId, detailData) = result;
+        if (isSingleInstance)
+        {
+            throw new ConflictException("Subscription url of single instance apps can't be changed");
+        }
+
+        if (!isUserOfCompany)
+        {
+            throw new ForbiddenException($"User {iamUserId} is not part of the app's providing company");
+        }
+
+        if (offerSubscriptionStatusId != OfferSubscriptionStatusId.ACTIVE)
+        {
+            throw new ConflictException($"Subscription {subscriptionId} must be in status {OfferSubscriptionStatusId.ACTIVE}");
+        }
+
+        if (detailData == null)
+        {
+            throw new ConflictException($"There is no subscription detail data configured for subscription {subscriptionId}");
+        }
+
+        if (url == detailData.SubscriptionUrl)
+            return;
+        
+        offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(detailData.DetailId, subscriptionId,
+            os =>
+            {
+                os.AppSubscriptionUrl = detailData.SubscriptionUrl;
+            },
+            os =>
+            {
+                os.AppSubscriptionUrl = url;
+            });
+
+        if (!string.IsNullOrEmpty(detailData.ClientClientId))
+        {
+            await _provisioningManager.UpdateClient(detailData.ClientClientId, url, url.AppendToPathEncoded("*")).ConfigureAwait(false);
+        }
+
+        var notificationContent = JsonSerializer.Serialize(new
+        {
+            AppId = offerId,
+            AppName = offerName,
+            OldUrl = detailData.SubscriptionUrl,
+            NewUrl = url
+        }, Options);
+        if (requesterId != Guid.Empty)
+        {
+            _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(requesterId, NotificationTypeId.SUBSCRIPTION_URL_UPDATE, false,
+                n =>
+                {
+                    n.Content = notificationContent;
+                });
+        }
+        else
+        {
+            await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, new (string?,NotificationTypeId)[] {(notificationContent, NotificationTypeId.SUBSCRIPTION_URL_UPDATE)}, subscribingCompanyId).AwaitAll().ConfigureAwait(false);
+        }
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 }

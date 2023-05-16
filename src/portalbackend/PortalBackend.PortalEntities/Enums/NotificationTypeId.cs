@@ -133,5 +133,10 @@ public enum NotificationTypeId
     /// <summary>
     /// Notification when a the user roles are updated for an offer
     /// </summary>
-    ROLE_UPDATE_APP_OFFER = 22
+    ROLE_UPDATE_APP_OFFER = 22,
+    
+    /// <summary>
+    /// Notification when the url of a subscription is changed
+    /// </summary>
+    SUBSCRIPTION_URL_UPDATE = 23
 }

@@ -233,4 +233,33 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     x.OtherCompany.CompanyUsers.Where(cu => cu.Email != null && cu.UserRoles.Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
                     x.CompanyServiceAccounts.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.UserRoles.Select(x => x.UserRoleText))))))
             .SingleOrDefaultAsync();
+    
+    /// <inheritdoc />
+    public Task<OfferUpdateUrlData?> GetUpdateUrlDataAsync(Guid offerId, Guid subscriptionId, string iamUserId) =>
+        _context.OfferSubscriptions
+            .Where(os => os.Id == subscriptionId && os.OfferId == offerId)
+            .Select(os => new OfferUpdateUrlData(
+                os.Offer!.Name,
+                (os.Offer.AppInstanceSetup != null && os.Offer.AppInstanceSetup!.IsSingleInstance),
+                os.Offer.ProviderCompany!.CompanyUsers.Any(x => x.IamUser!.UserEntityId == iamUserId),
+                os.RequesterId,
+                os.CompanyId,
+                os.OfferSubscriptionStatusId,
+                os.AppSubscriptionDetail == null ?
+                    null :
+                    new OfferUpdateUrlSubscriptionDetailData(
+                        os.AppSubscriptionDetail.Id,
+                        os.AppSubscriptionDetail.AppInstance!.IamClient!.ClientClientId,
+                        os.AppSubscriptionDetail.AppSubscriptionUrl)
+            ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public void AttachAndModifyAppSubscriptionDetail(Guid detailId, Guid subscriptionId, Action<AppSubscriptionDetail>? initialize, Action<AppSubscriptionDetail> setParameters)
+    {
+        var appSubscriptionDetail = new AppSubscriptionDetail(detailId, subscriptionId);
+        initialize?.Invoke(appSubscriptionDetail);
+        _context.Attach(appSubscriptionDetail);
+        setParameters.Invoke(appSubscriptionDetail);
+    }
 }

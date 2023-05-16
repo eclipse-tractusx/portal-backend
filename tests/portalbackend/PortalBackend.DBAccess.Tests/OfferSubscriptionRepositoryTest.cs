@@ -46,7 +46,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
-    #region AttachAndModifyServiceProviderDetails
+    #region AttachAndModifyOfferSubscription
 
     [Fact]
     public async Task AttachAndModifyOfferSubscription_ReturnsExpectedResult()
@@ -295,6 +295,114 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     #endregion
     
+    #region GetUpdateUrlDataAsync
+
+    [Fact]
+    public async Task GetUpdateUrlDataAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetUpdateUrlDataAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), "8be5ee49-4b9c-4008-b641-138305430cc4").ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.IsUserOfCompany.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetUpdateUrlDataAsync_WithNotExistingId_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetUpdateUrlDataAsync(Guid.NewGuid(), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), "8be5ee49-4b9c-4008-b641-138305430cc4").ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetUpdateUrlDataAsync_WithWrongUser_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetUpdateUrlDataAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), Guid.NewGuid().ToString()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.IsUserOfCompany.Should().BeFalse();
+        result.OfferName.Should().Be("SDE with EDC");
+    }
+
+    #endregion
+
+    #region AttachAndModifyAppSubscriptionDetail
+
+    [Theory]
+    [InlineData("https://www.new-url.com")]
+    [InlineData(null)]
+    public async Task AttachAndModifyAppSubscriptionDetail_ReturnsExpectedResult(string? modifiedUrl)
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        var detailId = new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93ca");
+        var offerSubscriptionId = new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd");
+
+        // Act
+        sut.AttachAndModifyAppSubscriptionDetail(detailId, offerSubscriptionId,
+            os =>
+            {
+                os.AppSubscriptionUrl = "https://test.com";
+            },
+            sub =>
+            {
+                sub.AppSubscriptionUrl = modifiedUrl;
+            });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<AppSubscriptionDetail>()
+            .Which.AppSubscriptionUrl.Should().Be(modifiedUrl);
+    }
+
+    [Theory]
+    [InlineData("https://www.new-url.com")]
+    [InlineData(null)]
+    public async Task AttachAndModifyAppSubscriptionDetail__WithUnchangedUrl_DoesntUpdate(string? modifiedUrl)
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        var detailId = new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93ca");
+        var offerSubscriptionId = new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd");
+
+        // Act
+        sut.AttachAndModifyAppSubscriptionDetail(detailId, offerSubscriptionId,
+            os =>
+            {
+                os.AppSubscriptionUrl = modifiedUrl;
+            },
+            sub =>
+            {
+                sub.AppSubscriptionUrl = modifiedUrl;
+            });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        changeTracker.HasChanges().Should().BeFalse();
+    }
+
+    #endregion
+
     #region Setup
     
     private async Task<(OfferSubscriptionsRepository, PortalDbContext)> CreateSut()
