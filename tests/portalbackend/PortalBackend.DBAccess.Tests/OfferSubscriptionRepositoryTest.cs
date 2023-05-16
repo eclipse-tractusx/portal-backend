@@ -238,6 +238,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.Details.Name.Should().Be("SDE with EDC");
         result.Details.CompanyName.Should().Be("Catena-X");
         result.Details.Contact.Should().ContainSingle().And.Subject.Should().ContainSingle("tobeadded@cx.com");
+        result.Details.OfferSubscriptionStatus.Should().Be(OfferSubscriptionStatusId.ACTIVE);
     }
 
     [Fact]
@@ -255,6 +256,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.Details.Name.Should().Be("SDE with EDC");
         result.Details.CompanyName.Should().Be("Service Provider");
         result.Details.Contact.Should().ContainSingle().And.Subject.Should().ContainSingle("tobeadded@cx.com");
+        result.Details.OfferSubscriptionStatus.Should().Be(OfferSubscriptionStatusId.ACTIVE);
     }
 
     [Theory]
