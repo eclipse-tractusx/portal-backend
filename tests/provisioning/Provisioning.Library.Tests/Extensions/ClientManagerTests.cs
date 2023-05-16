@@ -87,7 +87,7 @@ public class ClientManagerTests
         var clientClientId = Guid.NewGuid().ToString();
         var client = new Client { Id = clientClientId, ClientId = clientId };
         using var httpTest = new HttpTest();
-        A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).ReturnsLazily(() => 1);
+        A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).Returns(1);
         httpTest.WithAuthorization(CentralRealm)
             .WithGetClientsAsync("test", Enumerable.Repeat(client, 1))
             .WithGetClientAsync("test", clientClientId, client)
@@ -109,7 +109,7 @@ public class ClientManagerTests
         const string url = "https://newurl.com";
         const string clientId = "cl1";
         using var httpTest = new HttpTest();
-        A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).ReturnsLazily(() => 1);
+        A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).Returns(1);
         httpTest.WithAuthorization(CentralRealm)
             .WithGetClientsAsync("test", Enumerable.Empty<Client>());
         
@@ -127,7 +127,7 @@ public class ClientManagerTests
         // Arrange
         const string clientId = "cl1";
         using var httpTest = new HttpTest();
-        A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).ReturnsLazily(() => 1);
+        A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).Returns(1);
         httpTest.WithAuthorization(CentralRealm)
             .WithGetClientAsync("test", clientId, new Client { Id = Guid.NewGuid().ToString() ,ClientId = clientId })
             .WithGetClientSecretAsync(clientId, new Credentials {Value = "super-secret"});

@@ -338,7 +338,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region AttachAndModifyAppSubscriptionDetail
 
     [Theory]

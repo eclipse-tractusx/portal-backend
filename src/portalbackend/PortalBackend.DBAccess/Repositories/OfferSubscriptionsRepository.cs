@@ -259,7 +259,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     {
         var appSubscriptionDetail = new AppSubscriptionDetail(detailId, subscriptionId);
         initialize?.Invoke(appSubscriptionDetail);
-        var detail = _context.Attach(appSubscriptionDetail).Entity;
-        setParameters.Invoke(detail);
+        _context.Attach(appSubscriptionDetail);
+        setParameters.Invoke(appSubscriptionDetail);
     }
 }
