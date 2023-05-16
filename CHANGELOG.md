@@ -10,23 +10,30 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * added status "INACTIVE" state for connectors
   * new endpoint to retrieve managed connectors (for service providers) GET /api/administration/connectors/managed
   * connectorLastChangeDate dateTimeOffset set to utcNow
+  * enhanced user controller endpoint GET api/administration/user/ownUser by adding attribute to response back with the users company administrator contact
 * Registration Service
   * POST api/registration/application/{applicationId}/documentType/{documentTypeId}/documents limited allowed documents types to only support "CX_FRAME_CONTRACT" and "COMMERCIAL_REGISTER_EXTRACT"
 * App Service
   * GET api/apps/appreleaseprocess/inReview/appId  endpoint response body enhanced by privacypolicies attribute
+  * enhanced endpoint GET api/apps/appreleaseprocess/inReview/{appId} by adding technical user profile attribute (key and permissions) assigned to the service inside the response body
+  * updated endpoint GET /api/apps/business exchanged "id" content with the appId and added subscriptionId attribute
+  * added leadimage id inside the endpoint api/apps/subscribed/subscription-status
+  * added leadimage id inside the endpoint apps/provided/subscription-status
 * Notification Service - enabled automatic notification done state
   * portal.notifications table enhanced by new attribute "done" (false/true)
   * added business logic to set respective related notifications to "done", when approving or declining an app / service
   * added offerId and offerName to notification content for TECHNICAL_USER_CREATION
 * Services Service
-  * enhanced PUT endpoint /api/services/updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents to support the documentType "SERVICE_LEADIMAGE" allowing png/jpeg/svg file types
-  * enhanced end point api/services/provided/subscription-status by adding additional attribute i.e Customer Country, Email and Company BpnNumber
-* Checklist Worker
-  * renamed to Processes Worker
+  * enhanced endpoint PUT /api/services/updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents to support the documentType "SERVICE_LEADIMAGE" allowing png/jpeg/svg file types
+  * enhanced endpoint GET api/services/provided/subscription-status by adding additional attribute i.e Customer Country, Email and Company BpnNumber
+  * enhanced endpoint GET api/services/servicerelease/{serviceId}/serviceStatus by adding technical user profile attribute (key and permissions) assigned to the service inside the response body
 
 ### Feature
-* Administration Service - Connector Controller
+* Administration Service - Connector Change URL
   * Change connector endpoint released for change of the connector url PUT /api/administration/connectors/{connectorId}/connectorUrl
+* Administration Service - Connector Registration
+  * enable the optional linkage of technical users with connector registrations (managed as well as unmanaged connectors)
+  * new attribute in table "connectors" added to link the service_account to an connector record
 * App Service - released app instance handling (single instance vs multiple instances)
   * add endpoint to add app instance information
   * enhanced activate app process by differentiating the activation process steps based on the app instance setting
@@ -44,18 +51,35 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * added license_type information to all response bodies for the GET endpoints ../inReview/{appId}, ../{appId}, .../active for apps and services service
   * added backend business logic to automatically set the license_type_id for a new offer to "COTS" as default value (endpoints: /createapp & /addservice)
   * new endpoint GET /api/administration/StaticData/licenseType released to view all available license types
-* Services Service
+* Services Service - added endpoints to retrieve subscription details
   * released DELETE endpoint /api/services/servicerelease/documents/{documentId} to allow to delete documents in status "PENDING" or "INACTIVE" which are of the type "SERVICE_LEADIMAGES" and "ADDITIONAL_DETAILS"
+  * new endpoint GET /api/services/{serviceId}/subscription/{subscriptionId}/provider to retrieve subscription status and details for service providers
+  * new endpoint GET /api/services/{serviceId}/subscription/{subscriptionId}/subscriber to retrieve subscription status and details for service customers
+* App Service - added endpoints to retrieve subscription details
+  * new endpoint GET /api/apps/{appId}/subscription/{subscriptionId}/provider to retrieve subscription status and details for app providers
+  * new endpoint GET /api/apps/{appId}/subscription/{subscriptionId}/subscriber to retrieve subscription status and details for app customers
+* App Service - Enable Providers to update the subscription instance url for a specific subscription/app registration
+  * new endpoint PUT /api/apps/appchanges/{appId}/subscription/{subscriptionId}/tenantUrl released
 
 ### Technical Support
 * Service clean-up ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
   * endpoints /api/apps/{appId}/appupdate/description moved from app controller to appChange controller
   * endpoints ../addservice, ../{serviceId}, ../{serviceId}/submit, ../{serviceId}/approveService, ../{serviceId}/declineService, ../updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents moved from services controller to serviceRelease controller
+  * moved GET /api/services/{serviceId}/technical-user-profiless to serviceRelease controller
+  * moved PUT /api/services/{serviceId}/technical-user-profiless to serviceRelease controller
+* App clean-up ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * moved POST /api/apps/{appId}/appLeadImage endpoint to appChange controller
+  * moved PUT /api/apps/{appId}/deactivateApp endpoint to appChange controller
+  * moved GET /api/apps/{appId}/technical-user-profiles to appReleaseProcess controller
+  * moved PUT /api/apps/{appId}/technical-user-profiles to appReleaseProcess controller
 * changed release workflow to retrieve tag from github.ref_name (set-output command deprecated)
 * added release workflow for release-candidates
 * Db Auditing
   * audit table added for portal.consent
   * audit table added for portal.connector
+* Checklist Worker
+  * renamed to Processes Worker
+* Provisioning Service has been discontinued 
 
 ### Bugfix
 * updated busness logic to assign new user accounts the company bpn as user attribute (fix implemented for user accounts created for ownIdp customers)
