@@ -68,6 +68,7 @@ public interface IAppChangeBusinessLogic
     /// <param name="iamUserId">Id of the iamUser</param>
     public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId);
 
+    /// <summary>
     /// Updates the url of the subscription
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
