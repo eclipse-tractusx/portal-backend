@@ -2353,7 +2353,7 @@ public class OfferServiceTests
 
     private void SetupGetSubscriptionDetailForProvider()
     {
-        var data = new OfferSubscriptionDetailData(Guid.NewGuid(), OfferStatusId.ACTIVE, "Test App", "Stark Industry", "BPN123456789",
+        var data = new OfferSubscriptionDetailData(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE, "Test App", "Stark Industry", "BPN123456789",
             new[] {"tony@stark.com", "steven@strange.com"}, _fixture.CreateMany<SubscriptionTechnicalUserData>(5));
 
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x.ContainsKey("ClientTest"))))

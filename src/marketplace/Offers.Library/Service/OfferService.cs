@@ -838,7 +838,7 @@ public class OfferService : IOfferService
         var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, iamUserId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider);
         return new ProviderSubscriptionDetailData(
             details.Id,
-            details.OfferStatus,
+            details.OfferSubscriptionStatus,
             details.Name,
             details.CompanyName,
             details.Bpn,
@@ -852,7 +852,7 @@ public class OfferService : IOfferService
         var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, iamUserId, offerTypeId, contactUserRoles, OfferCompanyRole.Subscriber);
         return new SubscriberSubscriptionDetailData(
             details.Id,
-            details.OfferStatus,
+            details.OfferSubscriptionStatus,
             details.Name,
             details.CompanyName,
             details.Contact,
