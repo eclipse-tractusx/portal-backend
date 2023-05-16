@@ -249,7 +249,7 @@ public class UserRepository : IUserRepository
                 companyUser.Company.CompanyUsers.Where(user => user.UserRoles.Any(role => userRoleIds.Contains(role.Id)))
                     .Select(admin => new CompanyUserAdminDetails(
                         admin.Id,
-                        admin.Email)).Distinct())
+                        admin.Email)))
             {
                 FirstName = companyUser.Firstname,
                 LastName = companyUser.Lastname,

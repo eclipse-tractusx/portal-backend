@@ -1337,12 +1337,8 @@ public class UserBusinessLogicTests
         var companyOwnUserDetails = _fixture.Create<CompanyOwnUserDetails>();
         var iamUserId = _fixture.Create<Guid>().ToString();
         var userRoleIds = new [] { _fixture.Create<Guid>(), _fixture.Create<Guid>()};
-        var userRole = new Dictionary<string, IEnumerable<string>>
-            {
-                {"Cl2-CX-Portal", new[] {"Company Admin","IT Admin"}}
-            };
 
-        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(userRole))
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(_options.Value.UserAdminRoles))
             .Returns(userRoleIds.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamUserId, A<IEnumerable<Guid>>._))
             .Returns(companyOwnUserDetails);
@@ -1352,8 +1348,9 @@ public class UserBusinessLogicTests
         var result = await sut.GetOwnUserDetails(iamUserId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamUserId, A<IEnumerable<Guid>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>
+            .That.Matches(x => x.Keys == _options.Value.UserAdminRoles.Keys && x.Values == _options.Value.UserAdminRoles.Values))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamUserId, A<IEnumerable<Guid>>.That.IsSameSequenceAs(userRoleIds))).MustHaveHappenedOnceExactly();
         result.Should().Be(companyOwnUserDetails);
     }
 
