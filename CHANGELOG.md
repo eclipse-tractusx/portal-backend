@@ -61,51 +61,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * updated busness logic to assign new user accounts the company bpn as user attribute (fix implemented for user accounts created for ownIdp customers)
 * backend business logic fixed for GET api/administration/companydata/companyRolesAndConsents & POST api/administration/companydata/companyRolesAndConsents
 
-## 1.3.0-RC4
-
-### Change
-* Seeding Data: update agreement name for app marketplace offers - CX Conformity
-
-### Feature
-* Services Service: released document delete endpoint DELETE: /api/services/servicerelease/documents/{documentId}
-
-### Technical Support
-n/a
-
-### Bugfix
-n/a
-
-## 1.3.0-RC3
-
-### Change
-n/a
-
-### Feature
-n/a
-
-### Technical Support
-* updated sonarcloud workflow: use repo variables for project key and organization
-
-### Bugfix
-* Notification Service: the notifications will only get created once per request for each user and notification type
-
-## 1.3.0-RC2
-
-### Change
-* Services Service
-  * POST: /api/services/addservice - added "providerUri" inside the request body to store the provider url
-  * PUT: /api/services/{serviceId} - added "providerUri" for endpoint to store the provider url
-
-### Feature
-n/a
-
-### Technical Support
-n/a
-
-### Bugfix
-n/a
-
-## 1.3.0-RC1
+## 1.3.0
 
 ### Change
 * App Services
@@ -113,9 +69,12 @@ n/a
 * Services Service
   * change permission role for Get Service Details GET: /api/services/servicerelease/inReview/{serviceId}
   * updated api response body key form ServiceTypeIds to ServiceTypes for endpoint GET: /api/services/{serviceId} ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * POST: /api/services/addservice - added "providerUri" inside the request body to store the provider url
+  * PUT: /api/services/{serviceId} - added "providerUri" for endpoint to store the provider url
+* Seeding Data: update agreement name for app marketplace offers - CX Conformity
 
 ### Feature
-* Administration Service - Company preffered use case settings released (Controller: CompanyData)
+* Administration Service - Company preferred use case settings released (Controller: CompanyData)
   * GET endpoint to receive company preferred use cases
   * POST endpoint to set new company preferred use cases
   * DELETE endpoint to delete a use case from company preference list
@@ -123,6 +82,7 @@ n/a
   * New endpoint to retrieve service documents released GET: /api/services/{serviceId}/serviceDocuments/{documentId} supporting service assigned documents
   * GET: /api/services/provided endpoint released to support the service management function via retrieve all my services for the service owner
   * GET: /api/serviceRelease/inReview released to support the service release decision management function via retrieve all active and waiting-for-decision services for the platform provider/operator
+  * released document delete endpoint DELETE: /api/services/servicerelease/documents/{documentId}
 * Migration/Seeding
   * added two new document types (CONFORMITY_APPROVAL_SERVICES, SERVICE_LEADIMAGE)
 
@@ -130,10 +90,15 @@ n/a
 * added temp fix for CVE-2023-0464
 * added build workflow for v1.3.0 release candidate phase
 * updated actions workflows
+* updated sonarcloud workflow: use repo variables for project key and organization
 
 ### Bugfix
 * App Service: added SaveAsync method call inside OfferService CreateOrUpdateProviderOfferAgreementConsent method to ensure data storage with POST /{appId}/agreementConsents call
 * Fixed CX Admin/operator notification creation for endpoint PUT: /api/apps/appreleaseprocess/appId/submit and PUT: /api/services/servicerelease/serviceId/submit by deleting the companyId validation
+* Notification Service: the notifications will only get created once per request for each user and notification type
+
+## Known Knowns
+* Registration Approval Flow - Wallet interface error logging not sufficient. Only error code is stored, but no error message.
 
 ## 1.2.0
 

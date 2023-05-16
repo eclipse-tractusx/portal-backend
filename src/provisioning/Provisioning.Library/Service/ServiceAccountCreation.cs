@@ -58,13 +58,13 @@ public class ServiceAccountCreation : IServiceAccountCreation
     }
 
     /// <inheritdoc />
-    public async Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, List<UserRoleData> userRoleData)> CreateServiceAccountAsync(
+    async Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, List<UserRoleData> userRoleData)> IServiceAccountCreation.CreateServiceAccountAsync(
         ServiceAccountCreationInfo creationData,
         Guid companyId,
         IEnumerable<string> bpns,
         CompanyServiceAccountTypeId companyServiceAccountTypeId,
         bool enhanceTechnicalUserName,
-        Action<CompanyServiceAccount>? setOptionalParameter = null)
+        Action<CompanyServiceAccount>? setOptionalParameter)
     {
         var (name, description, iamClientAuthMethod, userRoleIds) = creationData;
         var serviceAccountsRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
@@ -83,8 +83,8 @@ public class ServiceAccountCreation : IServiceAccountCreation
             }
         }
 
-        var (clientId, id) = await GetNextServiceAccountClientIdWithIdAsync().ConfigureAwait(false);
-        var enhancedName = enhanceTechnicalUserName ? $"{name}{id}" : name;
+        var clientId = await GetNextServiceAccountClientIdWithIdAsync().ConfigureAwait(false);
+        var enhancedName = enhanceTechnicalUserName ? $"{clientId}-{name}" : name;
         var serviceAccountData = await _provisioningManager.SetupCentralServiceAccountClientAsync(
             clientId,
             new ClientConfigRolesData(
@@ -126,9 +126,9 @@ public class ServiceAccountCreation : IServiceAccountCreation
         return (clientId, serviceAccountData, serviceAccount.Id, userRoleData);
     }
     
-    private async Task<(string clientId, string id)> GetNextServiceAccountClientIdWithIdAsync()
+    private async Task<string> GetNextServiceAccountClientIdWithIdAsync()
     {
         var id = await _provisioningDbAccess.GetNextClientSequenceAsync().ConfigureAwait(false);
-        return ($"{_settings.ServiceAccountClientPrefix}{id}", id.ToString());
+        return $"{_settings.ServiceAccountClientPrefix}{id}";
     }
 }

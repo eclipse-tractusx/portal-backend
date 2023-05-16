@@ -38,8 +38,8 @@ on:
   # Trigger manually
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: catenax-ng/tx-portal-backend
+  IMAGE_NAMESPACE: "tractusx"
+  IMAGE_NAME: "portal"
 
 jobs:
   analyze-config:
@@ -93,7 +93,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # Path to Docker image
-          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_provisioning-service:dev"
+          image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-provisioning-service:dev"
           format: "sarif"
           output: "trivy-results2.sarif"
           exit-code: "1"
@@ -126,7 +126,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # Path to Docker image
-          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_registration-service:dev"
+          image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-registration-service:dev"
           format: "sarif"
           output: "trivy-results3.sarif"
           exit-code: "1"
@@ -159,7 +159,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # Path to Docker image
-          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_administration-service:dev"
+          image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-administration-service:dev"
           format: "sarif"
           output: "trivy-results4.sarif"
           exit-code: "1"
@@ -192,7 +192,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # Path to Docker image
-          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_marketplace-app-service:dev"
+          image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-marketplace-app-service:dev"
           format: "sarif"
           output: "trivy-results5.sarif"
           exit-code: "1"
@@ -225,7 +225,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # Path to Docker image
-          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_maintenance-service:dev"
+          image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-maintenance-service:dev"
           format: "sarif"
           output: "trivy-results6.sarif"
           exit-code: "1"
@@ -258,7 +258,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # Path to Docker image
-          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_notification-service:dev"
+          image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-notification-service:dev"
           format: "sarif"
           output: "trivy-results7.sarif"
           exit-code: "1"
@@ -291,7 +291,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # Path to Docker image
-          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_services-service:dev"
+          image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-services-service:dev"
           format: "sarif"
           output: "trivy-results8.sarif"
           exit-code: "1"
@@ -324,7 +324,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # Path to Docker image
-          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_portal-migrations:dev"
+          image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-portal-migrations:dev"
           format: "sarif"
           output: "trivy-results9.sarif"
           exit-code: "1"
@@ -357,7 +357,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # Path to Docker image
-          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_provisioning-migrations:dev"
+          image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-provisioning-migrations:dev"
           format: "sarif"
           output: "trivy-results10.sarif"
           exit-code: "1"
@@ -390,7 +390,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           # Path to Docker image
-          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_processes-worker:dev"
+          image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-processes-worker:dev"
           format: "sarif"
           output: "trivy-results11.sarif"
           exit-code: "1"
