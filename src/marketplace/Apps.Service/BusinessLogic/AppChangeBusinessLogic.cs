@@ -272,7 +272,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         }
         else
         {
-            await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, new[] {((string?)notificationContent, NotificationTypeId.SUBSCRIPTION_URL_UPDATE)}, subscribingCompanyId).AwaitAll().ConfigureAwait(false);
+            await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, new (string?,NotificationTypeId)[] {(notificationContent, NotificationTypeId.SUBSCRIPTION_URL_UPDATE)}, subscribingCompanyId).AwaitAll().ConfigureAwait(false);
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
