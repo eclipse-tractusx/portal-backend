@@ -116,6 +116,7 @@ public interface IOfferSubscriptionsRepository
     /// </summary>
     /// <param name="detailId">Id of the detail to update</param>
     /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="initialize">Initializes the entity</param>
     /// <param name="setParameters">Updates the fields</param>
-    void AttachAndModifyAppSubscriptionDetail(Guid detailId, Guid subscriptionId, Action<AppSubscriptionDetail> setParameters);
+    void AttachAndModifyAppSubscriptionDetail(Guid detailId, Guid subscriptionId, Action<AppSubscriptionDetail>? initialize, Action<AppSubscriptionDetail> setParameters);
 }

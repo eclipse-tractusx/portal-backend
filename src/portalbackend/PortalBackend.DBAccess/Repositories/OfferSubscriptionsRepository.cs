@@ -255,9 +255,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public void AttachAndModifyAppSubscriptionDetail(Guid detailId, Guid subscriptionId, Action<AppSubscriptionDetail> setParameters)
+    public void AttachAndModifyAppSubscriptionDetail(Guid detailId, Guid subscriptionId, Action<AppSubscriptionDetail>? initialize, Action<AppSubscriptionDetail> setParameters)
     {
-        var detail = _context.Attach(new AppSubscriptionDetail(detailId, subscriptionId)).Entity;
+        var appSubscriptionDetail = new AppSubscriptionDetail(detailId, subscriptionId);
+        initialize?.Invoke(appSubscriptionDetail);
+        var detail = _context.Attach(appSubscriptionDetail).Entity;
         setParameters.Invoke(detail);
     }
 }

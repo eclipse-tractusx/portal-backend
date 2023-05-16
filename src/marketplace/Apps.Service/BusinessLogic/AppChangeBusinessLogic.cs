@@ -240,10 +240,15 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         if (url == detailData.SubscriptionUrl)
             return;
         
-        offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(detailData.DetailId, subscriptionId, os =>
-        {
-            os.AppSubscriptionUrl = url;
-        });
+        offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(detailData.DetailId, subscriptionId,
+            os =>
+            {
+                os.AppSubscriptionUrl = detailData.SubscriptionUrl;
+            },
+            os =>
+            {
+                os.AppSubscriptionUrl = url;
+            });
 
         if (!string.IsNullOrEmpty(detailData.ClientClientId))
         {
