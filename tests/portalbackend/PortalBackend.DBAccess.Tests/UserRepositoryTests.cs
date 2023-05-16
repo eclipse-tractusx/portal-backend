@@ -447,6 +447,36 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
     
+    #region  GetUserDetails
+
+    [Fact]
+    public async Task GetUserDetailsUntrackedAsync_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+        var userRoleIds = new []{
+            new Guid("efc20368-9e82-46ff-b88f-6495b9810255"),
+            new Guid("efc20368-9e82-46ff-b88f-6495b9810254")};
+
+        // Act
+        var result = await sut.GetUserDetailsUntrackedAsync("e5e403d5-3bd9-48f6-8931-7c0c717c3f40", userRoleIds).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CompanyName.Should().Be("Security Company");
+        result.CompanyUserId.Should().Be("ac1cf001-7fbc-1f2f-817f-bce058019992");
+        result.Email.Should().Be("julia.jeroch@bmw.de");
+        result.FirstName.Should().Be("Test User");
+        result.BusinessPartnerNumbers.Should().BeEmpty();
+        result.AdminDetails.Should().NotBeEmpty()
+            .And.HaveCount(2)
+            .And.Satisfy(
+                x => x.CompanyUserId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058019992") && x.Email == "julia.jeroch@bmw.de",
+                x => x.CompanyUserId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058019993") && x.Email == "julia.jeroch@bmw.de");
+    }
+
+    #endregion
+
     private async Task<UserRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
