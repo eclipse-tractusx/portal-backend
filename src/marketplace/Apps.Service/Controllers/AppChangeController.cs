@@ -136,7 +136,7 @@ public class AppChangeController : ControllerBase
     /// Deactivate the OfferStatus By appId
     /// </summary>
     /// <param name="appId" example="3c77a395-a7e7-40f2-a519-ac16498e0a79">Id of the app that should be deactive</param>
-    /// <remarks>Example: PUT: /api/apps/3c77a395-a7e7-40f2-a519-ac16498e0a79/deactivateApp</remarks>
+    /// <remarks>Example: PUT: /api/apps/appchanges/3c77a395-a7e7-40f2-a519-ac16498e0a79/deactivateApp</remarks>
     /// <response code="204">The App Successfully Deactivated</response>
     /// <response code="400">invalid or user does not exist.</response>
     /// <response code="404">If app does not exists.</response>
