@@ -11,16 +11,17 @@ namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
     "Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests")]
 public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
 {
-    private readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
-    private readonly string _endPoint = "/api/registration";
-    private string _userCompanyToken;
+    private static readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
+    private static readonly string _endPoint = "/api/registration";
+    private static string _userCompanyToken;
     private static string? _applicationId;
 
     private readonly string _adminEndPoint = "/api/administration";
     private string? _operatorToken;
     private readonly string _operatorCompanyName = "CX-Operator";
-    private static string _userCompanyName = "Test-Catena-X";
+    private static string _userCompanyName = "Test-Catena-X-13";
     private static string[] _userEmailAddress;
+    private readonly RegistrationEndpointHelper _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _baseUrl, _endPoint);
 
     #region Happy Path - new registration without BPN
 
@@ -63,7 +64,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
         _userCompanyToken =
             await new AuthFlow(_userCompanyName).UpdatePasswordAndGetAccessToken(emailAddress, messageData,
                 newPassword);
-        _applicationId = GetFirstApplicationId();
+        _applicationId = _regEndpointHelper.GetFirstApplicationId();
     }
 
     // POST /api/registration/application/{applicationId}/companyDetailsWithAddress
@@ -71,10 +72,11 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     [Fact]
     public void Test2_SetCompanyDetailData_ReturnsExpectedResult()
     {
-        if (GetApplicationStatus() == CompanyApplicationStatusId.CREATED.ToString())
+        if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.CREATED.ToString())
         {
-            SetApplicationStatus(CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString());
-            CompanyDetailData companyDetailData = GetCompanyDetailData();
+            _regEndpointHelper.SetApplicationStatus(CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString());
+            CompanyDetailData companyDetailData = _regEndpointHelper.GetCompanyDetailData();
+            _userCompanyName = companyDetailData.Name;
             string companyId = companyDetailData.CompanyId.ToString();
             var response = Given()
                 .RelaxedHttpsValidation()
@@ -101,10 +103,10 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     [Fact]
     public void Test3_SubmitCompanyRoleConsentToAgreements_ReturnsExpectedResult()
     {
-        if (GetApplicationStatus() == CompanyApplicationStatusId.INVITE_USER.ToString())
+        if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.INVITE_USER.ToString())
             //if (GetApplicationStatus() == CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString())
         {
-            SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString());
+            _regEndpointHelper.SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString());
             Given()
                 .RelaxedHttpsValidation()
                 .Header(
@@ -125,7 +127,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     [Fact]
     public void Test4_UploadDocument_WithEmptyTitle_ReturnsExpectedResult()
     {
-        if (GetApplicationStatus() == CompanyApplicationStatusId.UPLOAD_DOCUMENTS.ToString())
+        if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.UPLOAD_DOCUMENTS.ToString())
         {
             string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
             File.WriteAllText("testfile.pdf", "Some Text");
@@ -143,7 +145,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
                 .Extract()
                 .As(typeof(int));
             Assert.Equal(1, result);
-            if (result == 1) SetApplicationStatus(CompanyApplicationStatusId.VERIFY.ToString());
+            if (result == 1) _regEndpointHelper.SetApplicationStatus(CompanyApplicationStatusId.VERIFY.ToString());
         }
         else throw new Exception($"Application status is not fitting to the pre-requisite");
     }
@@ -153,7 +155,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     [Fact]
     public void Test5_SubmitRegistration_ReturnsExpectedResult()
     {
-        if (GetApplicationStatus() == CompanyApplicationStatusId.VERIFY.ToString())
+        if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.VERIFY.ToString())
         {
             var status = (bool)Given()
                 .RelaxedHttpsValidation()
@@ -215,129 +217,4 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
 
     #endregion
     
-    private string? GetFirstApplicationId()
-    {
-        var applicationIDs = (List<CompanyApplicationData>)Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_userCompanyToken}")
-            .When()
-            .Get($"{_baseUrl}{_endPoint}/applications")
-            .Then()
-            .StatusCode(200)
-            .Extract()
-            .As(typeof(List<CompanyApplicationData>));
-
-        return applicationIDs[0].ApplicationId.ToString();
-    }
-
-    private CompanyDetailData GetCompanyDetailData()
-    {
-        // Given
-        CompanyDetailData companyDetailData = (CompanyDetailData)Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_userCompanyToken}")
-            .When()
-            .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
-            .Then()
-            .And()
-            .StatusCode(200)
-            .Extract().As(typeof(CompanyDetailData));
-
-        _userCompanyName = companyDetailData.Name;
-
-        return companyDetailData;
-    }
-
-    private void SetApplicationStatus(string applicationStatus)
-    {
-        var status = (int)Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_userCompanyToken}")
-            .ContentType("application/json")
-            .When()
-            .Put(
-                $"{_baseUrl}{_endPoint}/application/{_applicationId}/status?status={applicationStatus}")
-            .Then()
-            .StatusCode(200)
-            .Extract()
-            .As(typeof(int));
-        Assert.Equal(1, status);
-    }
-
-    private string GetApplicationStatus()
-    {
-        var applicationStatus = (string)Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_userCompanyToken}")
-            .ContentType("application/json")
-            .When()
-            .Get(
-                $"{_baseUrl}{_endPoint}/application/{_applicationId}/status")
-            .Then()
-            .StatusCode(200)
-            .Extract()
-            .As(typeof(string));
-        return applicationStatus;
-        // Assert.Equal(0, status);
-    }
-
-    // private string GenerateRandomEmailAddress()
-    // {
-    //     // Given
-    //     var emailAddress = (string[])Given()
-    //         .RelaxedHttpsValidation()
-    //         .When()
-    //         .Get("https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1")
-    //         .Then()
-    //         .And()
-    //         .StatusCode(200)
-    //         .Extract().As(typeof(string[]));
-    //     _userEmailAddress = emailAddress[0].Split("@");
-    //     return emailAddress[0];
-    // }
-    //
-    // private MailboxData[] CheckMailBox()
-    // {
-    //     // Given
-    //     var emails = (MailboxData[])Given()
-    //         .RelaxedHttpsValidation()
-    //         .When()
-    //         .Get(
-    //             $"https://www.1secmail.com/api/v1/?action=getMessages&login={_userEmailAddress[0]}&domain={_userEmailAddress[1]}")
-    //         .Then()
-    //         .And()
-    //         .StatusCode(200)
-    //         .Extract().As(typeof(MailboxData[]));
-    //     return emails;
-    // }
-    //
-    // private EmailMessageData? FetchPassword()
-    // {
-    //     // Given
-    //     var emails = CheckMailBox();
-    //     if (emails.Length != 0)
-    //     {
-    //         var passwordMail = emails[0]?.Id;
-    //         var messageData = (EmailMessageData)Given()
-    //             .RelaxedHttpsValidation()
-    //             .When()
-    //             .Get(
-    //                 $"https://www.1secmail.com/api/v1/?action=readMessage&login={_userEmailAddress[0]}&domain={_userEmailAddress[1]}&id={passwordMail}")
-    //             .Then()
-    //             .And()
-    //             .StatusCode(200)
-    //             .Extract().As(typeof(EmailMessageData));
-    //         return messageData;
-    //     }
-    //
-    //     return null;
-    // }
 }

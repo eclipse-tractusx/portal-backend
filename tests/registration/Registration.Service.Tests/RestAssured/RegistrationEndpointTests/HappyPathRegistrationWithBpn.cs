@@ -13,9 +13,9 @@ namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
     "Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests")]
 public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
 {
-    private readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
-    private readonly string _endPoint = "/api/registration";
-    private readonly string _companyToken;
+    private static readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
+    private static readonly string _endPoint = "/api/registration";
+    private static readonly string _userCompanyToken;
     private static string _applicationId;
 
     private readonly IFixture _fixture;
@@ -24,13 +24,14 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     private readonly string _operatorToken;
     private static string _companyName = "Test-Catena-X";
     private static string _bpn = "1234";
+    private readonly RegistrationEndpointHelper _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _baseUrl, _endPoint);
 
     public RegistrationEndpointTestsHappyPathRegistrationWithBpn()
     {
         var configuration = new ConfigurationBuilder()
             .AddUserSecrets<Secrets>()
             .Build();
-        _companyToken = configuration.GetValue<string>("Secrets:CompanyToken");
+        //_userCompanyToken = configuration.GetValue<string>("Secrets:CompanyToken");
         _applicationId = new (configuration.GetValue<string>("Secrets:ApplicationId"));
         _operatorToken = configuration.GetValue<string>("Secrets:OperatorToken");
         _fixture = new Fixture();
@@ -48,7 +49,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_companyToken}")
+                $"Bearer {_userCompanyToken}")
             .When()
             .Get($"https://partners-pool.dev.demo.catena-x.net/api/catena/legal-entities?page=0&size=20")
             .Then()
@@ -86,7 +87,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_companyToken}")
+                $"Bearer {_userCompanyToken}")
             .When()
             .Get($"{_baseUrl}{_endPoint}/legalEntityAddress/{_bpn}")
             .Then()
@@ -99,16 +100,17 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     [Fact]
     public void Test3_SetCompanyDetailData_ReturnsExpectedResult()
     {
-        if (GetApplicationStatus() == CompanyApplicationStatusId.CREATED.ToString())
+        if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.CREATED.ToString())
         {
-            SetApplicationStatus(CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString());
-            CompanyDetailData companyDetailData = GetCompanyDetailData();
+            _regEndpointHelper.SetApplicationStatus(CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString());
+            CompanyDetailData companyDetailData = _regEndpointHelper.GetCompanyDetailData();
+            _companyName = companyDetailData.Name;
             string companyId = companyDetailData.CompanyId.ToString();
             var response = Given()
                 .RelaxedHttpsValidation()
                 .Header(
                     "authorization",
-                    $"Bearer {_companyToken}")
+                    $"Bearer {_userCompanyToken}")
                 .ContentType("application/json")
                 .When()
                 .Body("{\"companyId\":" + "\"" + companyId + "\"" +
@@ -129,15 +131,15 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     [Fact]
     public void Test4_SubmitCompanyRoleConsentToAgreements_ReturnsExpectedResult()
     {
-        if(GetApplicationStatus() == CompanyApplicationStatusId.INVITE_USER.ToString()) 
+        if(_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.INVITE_USER.ToString()) 
             //if (GetApplicationStatus() == CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString())
         {
-            SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString());
+            _regEndpointHelper.SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString());
             Given()
                 .RelaxedHttpsValidation()
                 .Header(
                     "authorization",
-                    $"Bearer {_companyToken}")
+                    $"Bearer {_userCompanyToken}")
                 .ContentType("application/json")
                 .Body(
                     "{\"companyRoles\": [\"ACTIVE_PARTICIPANT\", \"APP_PROVIDER\", \"SERVICE_PROVIDER\"], \"agreements\": [{\"agreementId\":\"aa0a0000-7fbc-1f2f-817f-bce0502c1011\",\"consentStatus\":\"ACTIVE\"},{\"agreementId\":\"aa0a0000-7fbc-1f2f-817f-bce0502c1010\",\"consentStatus\":\"ACTIVE\"},{\"agreementId\":\"aa0a0000-7fbc-1f2f-817f-bce0502c1090\",\"consentStatus\":\"ACTIVE\"},{\"agreementId\":\"aa0a0000-7fbc-1f2f-817f-bce0502c1013\",\"consentStatus\":\"ACTIVE\"},{\"agreementId\":\"aa0a0000-7fbc-1f2f-817f-bce0502c1017\",\"consentStatus\":\"ACTIVE\"}]}")
@@ -154,7 +156,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     [Fact]
     public void Test5_UploadDocument_WithEmptyTitle_ReturnsExpectedResult()
     {
-        if (GetApplicationStatus() == CompanyApplicationStatusId.UPLOAD_DOCUMENTS.ToString())
+        if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.UPLOAD_DOCUMENTS.ToString())
         {
             string documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
             File.WriteAllText("testfile.pdf", "Some Text");
@@ -162,7 +164,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
                 .RelaxedHttpsValidation()
                 .Header(
                     "authorization",
-                    $"Bearer {_companyToken}")
+                    $"Bearer {_userCompanyToken}")
                 .ContentType("multipart/form-data")
                 .MultiPart(new FileInfo("testfile.pdf"), "document")
                 .When()
@@ -172,7 +174,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
                 .Extract()
                 .As(typeof(int));
             Assert.Equal(1, result);
-            if (result == 1) SetApplicationStatus(CompanyApplicationStatusId.VERIFY.ToString());
+            if (result == 1) _regEndpointHelper.SetApplicationStatus(CompanyApplicationStatusId.VERIFY.ToString());
         }
         else throw new Exception($"Application status is not fitting to the pre-requisite");
     }
@@ -182,13 +184,13 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     [Fact]
     public void Test6_SubmitRegistration_ReturnsExpectedResult()
     {
-        if (GetApplicationStatus() == CompanyApplicationStatusId.VERIFY.ToString())
+        if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.VERIFY.ToString())
         {
             var status = (bool)Given()
                 .RelaxedHttpsValidation()
                 .Header(
                     "authorization",
-                    $"Bearer {_companyToken}")
+                    $"Bearer {_userCompanyToken}")
                 .ContentType("application/json")
                 //.Body("")
                 .When()
@@ -250,81 +252,4 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     }
 
     #endregion
-
-    private CompanyDetailData GetCompanyDetailData()
-    {
-        _applicationId = GetFirstApplicationId();
-        // Given
-        CompanyDetailData companyDetailData = (CompanyDetailData)Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_companyToken}")
-            .When()
-            .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
-            .Then()
-            .And()
-            .StatusCode(200)
-            .Extract().As(typeof(CompanyDetailData));
-
-        _companyName = companyDetailData.Name;
-
-        return companyDetailData;
-    }
-    
-    private string GetFirstApplicationId()
-    {
-        var applicationIDs = (List<CompanyApplicationData>)Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_companyToken}")
-            .When()
-            .Get($"{_baseUrl}{_endPoint}/applications")
-            .Then()
-            .StatusCode(200)
-            .Extract()
-            .As(typeof(List<CompanyApplicationData>));
-
-        return applicationIDs[0].ApplicationId.ToString();
-    }
-    
-    private void SetApplicationStatus(string applicationStatus)
-    {
-        _applicationId = GetFirstApplicationId();
-        var status = (int)Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_companyToken}")
-            .ContentType("application/json")
-            .When()
-            .Put(
-                $"{_baseUrl}{_endPoint}/application/{_applicationId}/status?status={applicationStatus}")
-            .Then()
-            .StatusCode(200)
-            .Extract()
-            .As(typeof(int));
-        Assert.Equal(1, status);
-    }
-
-    private string GetApplicationStatus()
-    {
-        _applicationId = GetFirstApplicationId();
-        var applicationStatus = (string)Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_companyToken}")
-            .ContentType("application/json")
-            .When()
-            .Get(
-                $"{_baseUrl}{_endPoint}/application/{_applicationId}/status")
-            .Then()
-            .StatusCode(200)
-            .Extract()
-            .As(typeof(string));
-        return applicationStatus;
-        // Assert.Equal(0, status);
-    }
 }

@@ -12,9 +12,9 @@ namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
     "Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests")]
 public class HappyPathInRegistrationUserInvite
 {
-    private readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
-    private readonly string _endPoint = "/api/registration";
-    private string _userCompanyToken;
+    private static readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
+    private static readonly string _endPoint = "/api/registration";
+    private static string _userCompanyToken;
     private static string? _applicationId;
 
     private readonly string _adminEndPoint = "/api/administration";
@@ -22,6 +22,7 @@ public class HappyPathInRegistrationUserInvite
     private readonly string _operatorCompanyName = "CX-Operator";
     private static string _userCompanyName = "Test-Catena-X-C5";
     private static string[] _userEmailAddress;
+    private readonly RegistrationEndpointHelper _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _baseUrl, _endPoint);
 
     // POST api/administration/invitation
 
@@ -62,7 +63,7 @@ public class HappyPathInRegistrationUserInvite
         _userCompanyToken =
             await new AuthFlow(_userCompanyName).UpdatePasswordAndGetAccessToken(emailAddress, messageData,
                 newPassword);
-        _applicationId = GetFirstApplicationId();
+        _applicationId = _regEndpointHelper.GetFirstApplicationId();
     }
 
     // POST /api/registration/application/{applicationId}/inviteNewUser
@@ -90,7 +91,7 @@ public class HappyPathInRegistrationUserInvite
             .Then()
             .StatusCode(200);
 
-        var invitedUsers = GetInvitedUsers();
+        var invitedUsers = _regEndpointHelper.GetInvitedUsers();
         if (invitedUsers.Count != 2)
         {
             throw new Exception("No invited users were found.");
@@ -105,39 +106,5 @@ public class HappyPathInRegistrationUserInvite
         var messageData = devMailApiRequests.FetchPassword();
         Assert.NotNull(messageData);
         Assert.NotEmpty(messageData);
-    }
-
-    private string GetFirstApplicationId()
-    {
-        var applicationIDs = (List<CompanyApplicationData>)Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_userCompanyToken}")
-            .When()
-            .Get($"{_baseUrl}{_endPoint}/applications")
-            .Then()
-            .StatusCode(200)
-            .Extract()
-            .As(typeof(List<CompanyApplicationData>));
-
-        return applicationIDs[0].ApplicationId.ToString();
-    }
-
-    private List<InvitedUser> GetInvitedUsers()
-    {
-        var invitedUsers = (List<InvitedUser>)Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_userCompanyToken}")
-            .When()
-            .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/invitedusers")
-            .Then()
-            .StatusCode(200)
-            .Extract()
-            .As(typeof(List<InvitedUser>));
-
-        return invitedUsers;
     }
 }
