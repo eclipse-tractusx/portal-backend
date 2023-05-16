@@ -19,13 +19,8 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     private readonly string _adminEndPoint = "/api/administration";
     private string? _operatorToken;
     private readonly string _operatorCompanyName = "CX-Operator";
-    private static string? _userCompanyName;
+    private static string _userCompanyName = "Test-Catena-X";
     private static string[] _userEmailAddress;
-
-    public RegistrationEndpointTestsHappyPathRegistrationWithoutBpn()
-    {
-        _userCompanyName = "Test-Catena-X-C4";
-    }
 
     #region Happy Path - new registration without BPN
 
@@ -39,10 +34,11 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
         var emailAddress = devUser.Result.Name + "@developermail.com";
         CompanyInvitationData invitationData = new CompanyInvitationData("testuser", "myFirstName", "myLastName",
             emailAddress, _userCompanyName);
-        _operatorToken = await new AuthFlow(_operatorCompanyName).GetAccessToken();
-
+        
         Thread.Sleep(20000);
-
+        
+        _operatorToken = await new AuthFlow(_operatorCompanyName).GetAccessToken();
+        
         Given()
             .RelaxedHttpsValidation()
             .Header(
@@ -67,6 +63,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
         _userCompanyToken =
             await new AuthFlow(_userCompanyName).UpdatePasswordAndGetAccessToken(emailAddress, messageData,
                 newPassword);
+        _applicationId = GetFirstApplicationId();
     }
 
     // POST /api/registration/application/{applicationId}/companyDetailsWithAddress
@@ -217,8 +214,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     }
 
     #endregion
-
-    [Fact]
+    
     private string? GetFirstApplicationId()
     {
         var applicationIDs = (List<CompanyApplicationData>)Given()
@@ -238,7 +234,6 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
 
     private CompanyDetailData GetCompanyDetailData()
     {
-        _applicationId = GetFirstApplicationId();
         // Given
         CompanyDetailData companyDetailData = (CompanyDetailData)Given()
             .RelaxedHttpsValidation()
@@ -259,7 +254,6 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
 
     private void SetApplicationStatus(string applicationStatus)
     {
-        _applicationId = GetFirstApplicationId();
         var status = (int)Given()
             .RelaxedHttpsValidation()
             .Header(
@@ -278,7 +272,6 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
 
     private string GetApplicationStatus()
     {
-        _applicationId = GetFirstApplicationId();
         var applicationStatus = (string)Given()
             .RelaxedHttpsValidation()
             .Header(
@@ -347,8 +340,4 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     //
     //     return null;
     // }
-
-    private void AuthenticationFlow()
-    {
-    }
 }
