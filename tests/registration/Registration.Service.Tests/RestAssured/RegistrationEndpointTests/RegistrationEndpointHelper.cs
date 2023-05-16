@@ -1,4 +1,7 @@
-﻿using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Xunit;
 using static RestAssured.Dsl;
 
@@ -37,10 +40,10 @@ public class RegistrationEndpointHelper
         return _applicationId;
     }
 
-    public CompanyDetailData GetCompanyDetailData()
+    public CompanyDetailData? GetCompanyDetailData()
     {
         // Given
-        CompanyDetailData companyDetailData = (CompanyDetailData)Given()
+        var companyDetailData = Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
@@ -50,9 +53,21 @@ public class RegistrationEndpointHelper
             .Then()
             .And()
             .StatusCode(200)
-            .Extract().As(typeof(CompanyDetailData));
+            .Extract()
+            .Body("");
+            //.As(typeof(CompanyDetailData));
 
-        return companyDetailData;
+            if (companyDetailData.Equals(null)) return null;
+            dynamic data = JObject.Parse(companyDetailData.ToString());
+            var result = JsonConvert.DeserializeObject<CompanyDetailData>(companyDetailData.ToString());
+        
+            var newCompanyUniqueIdData = new List<CompanyUniqueIdData>()
+            {
+                new CompanyUniqueIdData((UniqueIdentifierId)data.uniqueIds[0].type, data.uniqueIds[0].value.ToString())
+            };
+
+            if (result == null) return null;
+            return result with { UniqueIds = newCompanyUniqueIdData };
     }
 
     public void SetApplicationStatus(string applicationStatus)
