@@ -51,4 +51,29 @@ public interface IAppChangeBusinessLogic
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="offerDescriptionDatas">OfferDescription Data</param>
     Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas);
+
+    /// <summary>
+    /// Upload OfferAssigned AppLeadImage Document by appId
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="document">Document Data</param>
+    /// <param name="cancellationToken">cancellationToken</param>
+    Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Deactivate Offer Status by appId
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId);
+
+    /// <summary>
+    /// Updates the url of the subscription
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="subscriptionId">If of the subscription</param>
+    /// <param name="data">the data to update the url</param>
+    /// <param name="iamUserId">id of the iamuser</param>
+    Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, string iamUserId);
 }

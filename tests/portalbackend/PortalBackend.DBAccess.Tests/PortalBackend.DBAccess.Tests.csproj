@@ -54,6 +54,7 @@
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.Migrations\PortalBackend.Migrations.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.Async\Framework.Async.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -142,7 +143,7 @@
     <Content Update="Seeder\Data\company_service_account_assigned_roles.consortia.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
-    <Content Update="Seeder\Data\company_service_accounts.json">
+    <Content Update="Seeder\Data\company_service_accounts.test.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
     <Content Update="Seeder\Data\company_service_accounts.consortia.json">
@@ -311,6 +312,9 @@
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
     <Content Update="Seeder\Data\technical_user_profile_assigned_roles.test.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\company_service_accounts.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
   </ItemGroup>

@@ -62,6 +62,12 @@
     </Content>
     <None Remove="Seeder\Data" />
     <Content Include="Seeder\Data\**" LinkBase="Seeder\Data" CopyToOutputDirectory="Always" />
+    <Content Update="Seeder\Data\technical_user_profiles.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
+    <Content Update="Seeder\Data\technical_user_profile_assigned_user_roles.consortia.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Migrations" />

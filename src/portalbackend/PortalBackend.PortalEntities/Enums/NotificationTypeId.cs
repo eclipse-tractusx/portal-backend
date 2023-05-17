@@ -123,5 +123,20 @@ public enum NotificationTypeId
     /// <summary>
     /// Notification when a service is rejected
     /// </summary>
-    SERVICE_RELEASE_REJECTION = 20
+    SERVICE_RELEASE_REJECTION = 20,
+    
+    /// <summary>
+    /// Notification when a the user roles are updated
+    /// </summary>
+    ROLE_UPDATE_CORE_OFFER = 21,
+    
+    /// <summary>
+    /// Notification when a the user roles are updated for an offer
+    /// </summary>
+    ROLE_UPDATE_APP_OFFER = 22,
+    
+    /// <summary>
+    /// Notification when the url of a subscription is changed
+    /// </summary>
+    SUBSCRIPTION_URL_UPDATE = 23
 }

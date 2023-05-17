@@ -117,7 +117,7 @@ public class PortalRepositories : IPortalRepositories
         }
         catch(DbUpdateConcurrencyException e)
         {
-            throw new ConflictException("while processing a concurrent update was saved to the database", e);
+            throw new ConflictException("while processing a concurrent update was saved to the database (reason could also be data to be deleted is no longer existing)", e);
         }
     }
     public void Clear() => _dbContext.ChangeTracker.Clear();

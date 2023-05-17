@@ -33,5 +33,5 @@ public interface IServiceAccountBusinessLogic
     Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountDetails, string iamAdminId);
     Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, string iamAdminId);
     Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string iamAdminId);
-    IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName = null);
+    IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string iamUserId, string? languageShortName);
 }

@@ -82,7 +82,8 @@ public interface IServiceReleaseBusinessLogic
     /// <param name="sorting"></param>
     /// <param name="serviceName"></param>
     /// <param name="languageShortName"></param>
-    Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync(int page, int size, OfferSorting? sorting, string? serviceName, string? languageShortName);
+    /// <param name="statusId"></param>
+    Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync(int page, int size, OfferSorting? sorting, string? serviceName, string? languageShortName, ServiceReleaseStatusIdFilter? statusId);
     
     /// <summary>
     /// Creates a new service offering
@@ -141,4 +142,20 @@ public interface IServiceReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task DeleteServiceDocumentsAsync(Guid documentId, string iamUserId);
+
+    /// <summary>
+    /// Get technical user profiles for a specific offer
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>AsyncEnumerable with the technical user profile information</returns>
+    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId);
+    
+    /// <summary>
+    /// Creates or updates the technical user profiles
+    /// </summary>
+    /// <param name="serviceId">Id of the service</param>
+    /// <param name="data">The technical user profiles</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    Task UpdateTechnicalUserProfiles(Guid serviceId, IEnumerable<TechnicalUserProfileData> data, string iamUserId);
 }

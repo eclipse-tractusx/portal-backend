@@ -45,7 +45,7 @@ public interface IUserRepository
     Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, string iamUserId);
     Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, string adminUserId);
     Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId);
-    Task<(Guid CompanyId, string Bpn)> GetCompanyIdAndBpnForIamUserUntrackedAsync(string iamUserId);
+    Task<(Guid CompanyId, string? Bpn, IEnumerable<Guid> TechnicalUserRoleIds)> GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(string iamUserId, string technicalUserClientId);
     
     /// <summary>
     /// Gets the CompanyUser Id for the given IamUser Id
@@ -54,7 +54,7 @@ public interface IUserRepository
     /// <returns>Returns the id of the CompanyUser</returns>
     Task<Guid> GetCompanyUserIdForIamUserUntrackedAsync(string userId);
 
-    Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId);
+    Task<CompanyOwnUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId, IEnumerable<Guid> userRoleIds);
     Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(string iamUserId);
     Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, string iamUserId);
 
@@ -106,7 +106,8 @@ public interface IUserRepository
     IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForCompanyAndRoleId(IEnumerable<Guid> userRoleIds, Guid companyId);
 
     Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
-    Task<OfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
+
+    Task<CoreOfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
     
     IAsyncEnumerable<Guid> GetServiceProviderCompanyUserWithRoleIdAsync(Guid offerId, List<Guid> userRoleIds);
 

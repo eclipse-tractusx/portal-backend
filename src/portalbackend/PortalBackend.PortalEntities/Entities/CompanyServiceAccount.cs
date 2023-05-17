@@ -70,6 +70,7 @@ public class CompanyServiceAccount : IBaseEntity
     public virtual CompanyServiceAccountStatus? CompanyServiceAccountStatus { get; set; }
     public virtual CompanyServiceAccountType? CompanyServiceAccountType { get; set; }
     public virtual OfferSubscription? OfferSubscription { get; set; }
+    public virtual Connector? Connector { get; set; }
     public virtual ICollection<UserRole> UserRoles { get; private set; }
     public virtual ICollection<CompanyServiceAccountAssignedRole> CompanyServiceAccountAssignedRoles { get; private set; }
 

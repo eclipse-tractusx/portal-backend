@@ -236,4 +236,26 @@ public interface IOfferService
     /// <param name="iamUserId">id of the iam user</param>
     /// <param name="technicalUserProfileClient">Client to get the technicalUserProfiles</param>
     Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, string iamUserId, string technicalUserProfileClient);
+
+    /// <summary>
+    /// Gets the information for the subscription for the provider
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="offerTypeId">Offer type</param>
+    /// <param name="contactUserRoles">The roles of the users that will be listed as contact</param>
+    /// <returns>Returns the details of the subscription</returns>
+    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles);
+
+    /// <summary>
+    /// Gets the information for the subscription for the subscriber
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="offerTypeId">Offer type</param>
+    /// <param name="contactUserRoles">The roles of the users that will be listed as contact</param>
+    /// <returns>Returns the details of the subscription</returns>
+    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles);
 }

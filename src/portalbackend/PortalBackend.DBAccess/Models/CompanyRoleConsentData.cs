@@ -22,10 +22,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyRoleConsentData(
     CompanyRoleId CompanyRoleId,
+    string? RoleDescription,
     bool CompanyRolesActive,
     IEnumerable<ConsentAgreementData> Agreements
 );
 
-public record ConsentAgreementData(Guid AgreementId, string AgreementName, ConsentStatusId ConsentStatus);
+public record ConsentAgreementData(Guid AgreementId, string AgreementName, Guid? DocumentId, ConsentStatusId ConsentStatus);
 
 public record ConsentStatusDetails(Guid ConsentId, Guid AgreementId, ConsentStatusId ConsentStatusId);

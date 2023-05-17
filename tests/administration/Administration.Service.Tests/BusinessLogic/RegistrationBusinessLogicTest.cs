@@ -47,6 +47,7 @@ public class RegistrationBusinessLogicTest
     private static readonly Guid IdWithStateCreated = new ("148c0a07-2e1f-4dce-bfe0-4e3d1825c266");
     private static readonly Guid IdWithChecklistEntryInProgress = new ("9b288a8d-1d2f-4b86-be97-da40420dc8e4");
     private static readonly Guid CompanyId = new("95c4339e-e087-4cd2-a5b8-44d385e64630");
+    private static readonly string CompanyName = "TestCompany";
     
     private static readonly Guid IdWithoutBpn = new("d90995fe-1241-4b8d-9f5c-f3909acc6399");
     private static readonly string IamUserId = new Guid("4C1A6851-D4E7-4E10-A011-3732CD045E8A").ToString();
@@ -508,7 +509,7 @@ public class RegistrationBusinessLogicTest
             new(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.IN_PROGRESS, null),
             new(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.IN_PROGRESS, null),
         };
-        var processSteps = new List<ProcessStepTypeId>
+        var processSteps = new ProcessStepTypeId []
         {
             ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET
         };
@@ -569,7 +570,7 @@ public class RegistrationBusinessLogicTest
             typeId,
             new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>()
                 .ToImmutableDictionary(),
-            new List<ProcessStep>());
+            Enumerable.Empty<ProcessStep>());
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(applicationId,
                 typeId,
                 A<IEnumerable<ApplicationChecklistEntryStatusId>>._,
@@ -745,28 +746,28 @@ public class RegistrationBusinessLogicTest
         }
 
         A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(IdWithoutBpn, ValidBpn))
-            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            .ReturnsLazily(() => new (bool, bool, string?, Guid) []
             {
                 new (true, true, null, CompanyId)
             }.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(NotExistingApplicationId, ValidBpn))
-            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            .ReturnsLazily(() => new (bool, bool, string?, Guid) []
             {
                 new (false, true, ValidBpn, CompanyId)
             }.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(IdWithoutBpn, AlreadyTakenBpn))
-            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            .ReturnsLazily(() => new (bool, bool, string?, Guid) []
             {
                 new (true, true, ValidBpn, CompanyId),
                 new (false, true, AlreadyTakenBpn, Guid.NewGuid())
             }.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(ActiveApplicationCompanyId, ValidBpn))
-            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            .ReturnsLazily(() => new (bool, bool, string?, Guid) []
             {
                 new (true, false, ValidBpn, CompanyId)
             }.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(IdWithBpn, ValidBpn))
-            .ReturnsLazily(() => new List<ValueTuple<bool, bool, string?, Guid>>
+            .ReturnsLazily(() => new (bool, bool, string?, Guid) []
             {
                 new (true, true, ValidBpn, CompanyId)
             }.ToAsyncEnumerable());
@@ -775,7 +776,7 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
                 { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE }
-            }.ToImmutableDictionary(), new List<ProcessStep>()));
+            }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
     }
 
     private void SetupForApproveRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry)
@@ -790,15 +791,15 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
                 { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.IN_PROGRESS }
-            }.ToImmutableDictionary(), new List<ProcessStep>()));
+            }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, A<ProcessStepTypeId>._, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
             .ReturnsLazily(() => new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
                 { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE }
-            }.ToImmutableDictionary(), new List<ProcessStep>()));
+            }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
 
-        A.CallTo(() => _applicationRepository.GetCompanyIdForSubmittedApplication(IdWithBpn))
-            .ReturnsLazily(() => CompanyId);
+        A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
+            .Returns((CompanyId, CompanyName));
     }
 
     private void SetupForDeclineRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry, CompanyApplication application, Company company, ApplicationChecklistEntryStatusId checklistStatusId, ProcessStepStatusId processStepStatusId)
@@ -813,15 +814,15 @@ public class RegistrationBusinessLogicTest
             .ReturnsLazily(() => new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
                 { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO }
-            }.ToImmutableDictionary(), new List<ProcessStep>()));
+            }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, A<ProcessStepTypeId>._, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
             .ReturnsLazily(() => new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
                 { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE }
-            }.ToImmutableDictionary(), new List<ProcessStep>()));
+            }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
 
-        A.CallTo(() => _applicationRepository.GetCompanyIdForSubmittedApplication(IdWithBpn))
-            .ReturnsLazily(() => CompanyId);
+        A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
+            .Returns((CompanyId, CompanyName));
         
         
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>?>._))

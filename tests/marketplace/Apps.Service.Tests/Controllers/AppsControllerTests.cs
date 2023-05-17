@@ -32,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
@@ -95,7 +96,7 @@ public class AppsControllerTests
         var appId = _fixture.Create<Guid>();
         var data = _fixture.Create<AppDetailResponse>();
         A.CallTo(() => _logic.GetAppDetailsByIdAsync(A<Guid>._, A<string>._, A<string?>._))
-            .ReturnsLazily(() => data);
+            .Returns(data);
 
         //Act
         var result = await this._controller.GetAppDetailsByIdAsync(appId).ConfigureAwait(false);
@@ -126,8 +127,6 @@ public class AppsControllerTests
     {
         //Arrange
         var id = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.AddFavouriteAppForUserAsync(A<Guid>._, A<string>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.AddFavouriteAppForCurrentUserAsync(id).ConfigureAwait(false);
@@ -142,8 +141,6 @@ public class AppsControllerTests
     {
         //Arrange
         var id = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.RemoveFavouriteAppForUserAsync(A<Guid>._, A<string>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.RemoveFavouriteAppForCurrentUserAsync(id).ConfigureAwait(false);
@@ -153,36 +150,43 @@ public class AppsControllerTests
         Assert.IsType<NoContentResult>(result);
     }
 
+    #region GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync
+
     [Fact]
     public async Task GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount()
     {
         //Arrange
-        var data = new AsyncEnumerableStub<AppWithSubscriptionStatus>(_fixture.CreateMany<AppWithSubscriptionStatus>(5));
+        var data = _fixture.CreateMany<AppWithSubscriptionStatus>(3).ToImmutableArray();
         A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(A<string>._))
-            .Returns(data.AsAsyncEnumerable());
+            .Returns(data.ToAsyncEnumerable());
 
         //Act
         var result = await this._controller.GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync().ToListAsync().ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(IamUserId)).MustHaveHappenedOnceExactly();
-        result.Should().HaveCount(5);
+        result.Should().HaveCount(3).And.ContainInOrder(data);
     }
 
-    [Fact]
-    public async Task GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount()
+    #endregion
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("c714b905-9d2a-4cf3-b9f7-10be4eeddfc8")]
+    public async Task GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount(string? offerIdTxt)
     {
         //Arrange
-        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5);
-        var pagination = new Pagination.Response<OfferCompanySubscriptionStatusData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
-        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._))
-            .ReturnsLazily(() => pagination);
+        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusResponse>(5);
+        Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
+        var pagination = new Pagination.Response<OfferCompanySubscriptionStatusResponse>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._, A<Guid?>._))
+            .Returns(pagination);
 
         //Act
-        var result = await this._controller.GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync().ConfigureAwait(false);
+        var result = await this._controller.GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync(offerId: offerId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 15, IamUserId, null, null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 15, IamUserId, null, null, offerId)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
 
@@ -210,8 +214,6 @@ public class AppsControllerTests
         //Arrange
         var appId = _fixture.Create<Guid>();
         var companyId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.ActivateOwnCompanyProvidedAppSubscriptionAsync(A<Guid>._, A<Guid>._, A<string>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.ActivateCompanyAppSubscriptionAsync(appId, companyId).ConfigureAwait(false);
@@ -226,8 +228,6 @@ public class AppsControllerTests
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.UnsubscribeOwnCompanyAppSubscriptionAsync(A<Guid>._, A<string>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.UnsubscribeCompanyAppSubscriptionAsync(appId).ConfigureAwait(false);
@@ -293,22 +293,6 @@ public class AppsControllerTests
     }
 
     [Fact]
-    public async Task DeactivateApp_ReturnsNoContent()
-    {
-        //Arrange
-        var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(A<Guid>._, A<string>._))
-            .ReturnsLazily(() => Task.CompletedTask);
-        
-        //Act
-        var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);
-        
-        //Assert
-        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
-        result.Should().BeOfType<NoContentResult>(); 
-    }
-
-    [Fact]
     public async Task GetAppImageDocumentContentAsync_ReturnsExpected()
     {
         //Arrange
@@ -318,7 +302,7 @@ public class AppsControllerTests
         var fileName = _fixture.Create<string>();
         
         A.CallTo(() => _logic.GetAppDocumentContentAsync(A<Guid>._ , A<Guid>._, A<CancellationToken>._))
-            .ReturnsLazily(() => (content,"image/png",fileName));
+            .Returns((content,"image/png",fileName));
 
         //Act
         var result = await this._controller.GetAppDocumentContentAsync(appId,documentId,CancellationToken.None).ConfigureAwait(false);
@@ -337,7 +321,7 @@ public class AppsControllerTests
         var fileName = _fixture.Create<string>();
 
         A.CallTo(() => _logic.GetAppDocumentContentAsync(A<Guid>._, A<Guid>._, A<CancellationToken>._))
-            .ReturnsLazily(() => (content, "application/pdf", fileName));
+            .Returns((content, "application/pdf", fileName));
 
         //Act
         var result = await this._controller.GetAppDocumentContentAsync(appId, documentId, CancellationToken.None).ConfigureAwait(false);
@@ -347,19 +331,38 @@ public class AppsControllerTests
     }
 
     [Fact]
-    public async Task CreatOfferAssignedAppLeadImageDocumentByIdAsync_ReturnsExpected()
+    public async Task GetSubscriptionDetailForProvider_ReturnsExpected()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
-        A.CallTo(() => _logic.CreatOfferAssignedAppLeadImageDocumentByIdAsync(A<Guid>._, A<string>._, A<IFormFile>._, CancellationToken.None))
-            .ReturnsLazily(() => Task.CompletedTask);
+        var subscriptionId = _fixture.Create<Guid>();
+        var data = _fixture.Create<ProviderSubscriptionDetailData>();
+        A.CallTo(() => _logic.GetSubscriptionDetailForProvider(appId, subscriptionId, IamUserId))
+            .Returns(data);
 
         // Act
-        var result = await this._controller.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None).ConfigureAwait(false);
+        var result = await this._controller.GetSubscriptionDetailForProvider(appId, subscriptionId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, IamUserId, file, CancellationToken.None)).MustHaveHappenedOnceExactly();
-        result.Should().BeOfType<NoContentResult>();
+        A.CallTo(() => _logic.GetSubscriptionDetailForProvider(appId, subscriptionId, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().Be(data);
+    }
+    
+    [Fact]
+    public async Task GetSubscriptionDetailForSubscriber_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var data = _fixture.Create<SubscriberSubscriptionDetailData>();
+        A.CallTo(() => _logic.GetSubscriptionDetailForSubscriber(appId, subscriptionId, IamUserId))
+            .Returns(data);
+
+        // Act
+        var result = await this._controller.GetSubscriptionDetailForSubscriber(appId, subscriptionId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.GetSubscriptionDetailForSubscriber(appId, subscriptionId, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().Be(data);
     }
 }

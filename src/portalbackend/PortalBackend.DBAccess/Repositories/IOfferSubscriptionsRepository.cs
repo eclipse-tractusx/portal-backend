@@ -44,7 +44,7 @@ public interface IOfferSubscriptionsRepository
     ///
     /// </summary>
     /// <param name="iamUserId"></param>
-    IAsyncEnumerable<AppWithSubscriptionStatus> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId);
+    IAsyncEnumerable<(Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatusId, string? Name, string Provider, Guid Image)> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId);
 
     /// <summary>
     /// Gets the provided offer subscription statuses for the user and given company
@@ -54,7 +54,7 @@ public interface IOfferSubscriptionsRepository
     /// <param name="sorting"></param>
     /// <param name="statusId"></param>
     /// <returns>Returns a func with skip, take and the pagination of the source</returns>
-    Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(string iamUserId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId statusId);
+    Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(string iamUserId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId statusId, Guid? offerId);
 
     Task<(Guid SubscriptionId, OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, string? AppName, Guid CompanyUserId, RequesterData Requester)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, string iamUserId);
 
@@ -89,5 +89,34 @@ public interface IOfferSubscriptionsRepository
     /// </summary>
     /// <param name="iamUserId">Id of the user to get the app data for.</param>
     /// <returns>Returns an IAsyncEnumerable of app data</returns>
-    IAsyncEnumerable<(Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId);
+    IAsyncEnumerable<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId);
+
+    /// <summary>
+    /// Gets the needed details for the offer subscription
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="offerTypeId">Offer type</param>
+    /// <param name="userRoleIds">Ids of the user roles the contacts should be in</param>
+    /// <returns>Returns details for the offer subscription</returns>
+    Task<(bool Exists, bool IsUserOfCompany, OfferSubscriptionDetailData Details)> GetSubscriptionDetailsAsync(Guid offerId, Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds, bool forProvider);
+
+    /// <summary>
+    /// Get the data to update the subscription url
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the data needed to update the subscription url</returns>
+    Task<OfferUpdateUrlData?> GetUpdateUrlDataAsync(Guid offerId, Guid subscriptionId, string iamUserId);
+
+    /// <summary>
+    /// The subscription details
+    /// </summary>
+    /// <param name="detailId">Id of the detail to update</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="initialize">Initializes the entity</param>
+    /// <param name="setParameters">Updates the fields</param>
+    void AttachAndModifyAppSubscriptionDetail(Guid detailId, Guid subscriptionId, Action<AppSubscriptionDetail>? initialize, Action<AppSubscriptionDetail> setParameters);
 }

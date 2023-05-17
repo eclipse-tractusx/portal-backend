@@ -230,7 +230,7 @@ public class ConnectorsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves company connector end point for the input bpn.
+    /// Retrieve company connector end point with bpn.
     /// </summary>
     /// <param name="bpns" example="BPNL00000003CRHK">Single or List of Business Partner Number of the company.</param>
     /// <remarks>Example: POST: /api/administration/connectors/discovery</remarks>

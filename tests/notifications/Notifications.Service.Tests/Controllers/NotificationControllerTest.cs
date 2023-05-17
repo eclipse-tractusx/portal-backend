@@ -49,25 +49,6 @@ public class ServiceControllerTest
     }
 
     [Fact]
-    public async Task CreateNotification_ReturnsExpectedResult()
-    {
-        //Arrange
-        var data = _fixture.Create<NotificationDetailData>();
-        var creationData = _fixture.Create<NotificationCreationData>();
-        var companyUserId = Guid.NewGuid();
-        A.CallTo(() => _logic.CreateNotificationAsync(IamUserId, A<NotificationCreationData>._, A<Guid>._))
-            .ReturnsLazily(() => data.Id);
-
-        //Act
-        var result = await this._controller.CreateNotification(companyUserId, creationData).ConfigureAwait(false);
-
-        //Assert
-        A.CallTo(() => _logic.CreateNotificationAsync(IamUserId, creationData, companyUserId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<CreatedAtRouteResult>(result);
-        result.Value.Should().Be(data.Id);
-    }
-
-    [Fact]
     public async Task GetNotifications_ReturnsExpectedCount()
     {
         //Arrange

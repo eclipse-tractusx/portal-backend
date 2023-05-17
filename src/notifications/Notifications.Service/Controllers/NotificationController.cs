@@ -50,30 +50,9 @@ public class NotificationController : ControllerBase
     }
 
     /// <summary>
-    ///     Creates a new notification for the given user.
-    /// </summary>
-    /// <param name="companyUserId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">
-    ///     Id of the user to create the notification
-    ///     for.
-    /// </param>
-    /// <param name="data">Contains the information needed to create the notification.</param>
-    /// <remarks>Example: POST: /api/notification/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
-    /// <response code="201">Notification was successfully created.</response>
-    /// <response code="400">UserId not found or the NotificationType or NotificationStatus don't exist.</response>
-    [HttpPost]
-    [Authorize(Roles = "view_notifications")]
-    [ProducesResponseType(typeof(NotificationDetailData), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<CreatedAtRouteResult> CreateNotification([FromQuery] Guid companyUserId,
-        [FromBody] NotificationCreationData data)
-    {
-        var notificationId = await this.WithIamUserId(iamUserId => _logic.CreateNotificationAsync(iamUserId, data, companyUserId)).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetNotification), new { notificationId }, notificationId);
-    }
-
-    /// <summary>
     ///     Gets all notifications for the logged in user
     /// </summary>
+    /// <remarks>Example: Get: /api/notification/</remarks>
     /// <param name="page">The page to get</param>
     /// <param name="size">Amount of entries</param>
     /// <param name="isRead">OPTIONAL: Filter for read or unread notifications</param>
@@ -81,7 +60,6 @@ public class NotificationController : ControllerBase
     /// <param name="notificationTopicId">OPTIONAL: Topic of the notifications</param>
     /// <param name="onlyDueDate">OPTIONAL: If true only notifications with a due date will be returned</param>
     /// <param name="sorting">Defines the sorting of the list</param>
-    /// <remarks>Example: Get: /api/notification/</remarks>
     /// <response code="200">Collection of the unread notifications for the user.</response>
     /// <response code="400">NotificationType or NotificationStatus don't exist.</response>
     [HttpGet]
@@ -113,8 +91,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(NotificationDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public Task<NotificationDetailData> GetNotification(
-        [FromRoute] Guid notificationId) =>
+    public Task<NotificationDetailData> GetNotification([FromRoute] Guid notificationId) =>
         this.WithIamUserId(userId => _logic.GetNotificationDetailDataAsync(userId, notificationId));
     
     /// <summary>
@@ -134,7 +111,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<int> NotificationCount([FromQuery] bool? isRead) =>
-        this.WithIamUserId((iamUser) => _logic.GetNotificationCountAsync(iamUser, isRead));
+        this.WithIamUserId(iamUser => _logic.GetNotificationCountAsync(iamUser, isRead));
 
     /// <summary>
     /// Gets the notification count for the current logged in user
@@ -145,9 +122,9 @@ public class NotificationController : ControllerBase
     [HttpGet]
     [Route("count-details")]
     [Authorize(Roles = "view_notifications")]
-    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(NotificationCountDetails), StatusCodes.Status200OK)]
     public Task<NotificationCountDetails> NotificationCountDetails() =>
-        this.WithIamUserId((iamUser) => _logic.GetNotificationCountDetailsAsync(iamUser));
+        this.WithIamUserId(iamUser => _logic.GetNotificationCountDetailsAsync(iamUser));
 
     /// <summary>
     /// Changes the read status of a notification
@@ -155,15 +132,16 @@ public class NotificationController : ControllerBase
     /// <param name="notificationId" example="f22f2b57-426a-4ac3-b3af-7924a1c61590">OPTIONAL: Id of the notification status</param>
     /// <param name="isRead" example="false">OPTIONAL: <c>true</c> if the notification is read, otherwise <c>false</c></param>
     /// <returns>Return NoContent</returns>
-    /// <remarks>Example: PUT: /api/notification/read/f22f2b57-426a-4ac3-b3af-7924a1c61590</remarks>
-    /// <remarks>Example: PUT: /api/notification/read/f22f2b57-426a-4ac3-b3af-7924a1c61590?statusId=1</remarks>
+    /// <remarks>Example: PUT: /api/notification/read/f22f2b57-426a-4ac3-b3af-7924a1c61590/read</remarks>
+    /// <remarks>Example: PUT: /api/notification/read/f22f2b57-426a-4ac3-b3af-7924a1c61590/read?isRead=false</remarks>
     /// <response code="204">The Read status was updated.</response>
     /// <response code="400">NotificationStatus does not exist.</response>
     /// <response code="403">IamUserId is not assigned.</response>
     [HttpPut]
     [Route("{notificationId:guid}/read")]
     [Authorize(Roles = "view_notifications")]
-    [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]   [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> SetNotificationToRead([FromRoute] Guid notificationId, [FromQuery] bool isRead = true)
     {

@@ -216,18 +216,22 @@ public class UserRepository : IUserRepository
             .Select(iamUser => iamUser.CompanyUser!.Company!.Id)
             .SingleOrDefaultAsync();
 
-    public Task<(Guid CompanyId, string Bpn)> GetCompanyIdAndBpnForIamUserUntrackedAsync(string iamUserId) =>
+    public Task<(Guid CompanyId, string? Bpn, IEnumerable<Guid> TechnicalUserRoleIds)> GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(string iamUserId, string technicalUserClientId) =>
         _dbContext.IamUsers
             .AsNoTracking()
             .Where(iamUser => iamUser.UserEntityId == iamUserId)
-            .Select(iamUser => new ValueTuple<Guid, string>(iamUser.CompanyUser!.Company!.Id, iamUser.CompanyUser!.Company!.BusinessPartnerNumber!))
+            .Select(iamUser => new ValueTuple<Guid,string?,IEnumerable<Guid>>(
+                iamUser.CompanyUser!.Company!.Id,
+                iamUser.CompanyUser!.Company!.BusinessPartnerNumber,
+                iamUser.CompanyUser.Company!.CompanyAssignedRoles.SelectMany(car => car.CompanyRole!.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(ur => ur.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == technicalUserClientId)).Select(ur => ur.Id)).Distinct()))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId) =>
+    public Task<CompanyOwnUserDetails?> GetUserDetailsUntrackedAsync(string iamUserId, IEnumerable<Guid> userRoleIds) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
+            .AsSplitQuery()
             .Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
-            .Select(companyUser => new CompanyUserDetails(
+            .Select(companyUser => new CompanyOwnUserDetails(
                 companyUser.Id,
                 companyUser.DateCreated,
                 companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
@@ -241,8 +245,11 @@ public class UserRepository : IUserRepository
                         app.Offer!.UserRoles
                             .Where(role => role.CompanyUsers.Any(user => user.Id == companyUser.Id))
                             .Select(role => role.UserRoleText)
-                    ))
-                    )
+                    )),
+                companyUser.Company.CompanyUsers.Where(user => user.UserRoles.Any(role => userRoleIds.Contains(role.Id)))
+                    .Select(admin => new CompanyUserAdminDetails(
+                        admin.Id,
+                        admin.Email)))
             {
                 FirstName = companyUser.Firstname,
                 LastName = companyUser.Lastname,
@@ -358,24 +365,30 @@ public class UserRepository : IUserRepository
                 x.Subscriptions.Any(),
                 x.Subscriptions.Select(subscription => subscription.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId).Distinct(), 
                 x.User.IamUser!.UserEntityId,
-                x.User.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
+                x.User.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
+                x.Subscriptions.Select(s => s.Offer!.Name).FirstOrDefault(),
+                x.User.Firstname,
+                x.User.Lastname))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<OfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId) => 
+    public Task<CoreOfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId) =>
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new {
                 User = companyUser,
-                Offers = companyUser.Company!.CompanyAssignedRoles
-                    .SelectMany(assigned => assigned.CompanyRole!.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(role => role.OfferId == offerId))
-                    .Select(userrole => userrole.Offer)
+                Offer = companyUser.Company!.CompanyAssignedRoles
+                    .SelectMany(assigned => assigned.CompanyRole!.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles)
+                    .Select(role => role.Offer)
+                    .FirstOrDefault(offer => offer!.Id == offerId)
             })
-            .Select(x => new OfferIamUserData(
-                x.Offers.Any(),
-                x.Offers.SelectMany(offer => offer!.AppInstances.Select(instance => instance.IamClient!.ClientClientId)).Distinct(),
+            .Select(x => new CoreOfferIamUserData(
+                x.Offer != null,
+                x.Offer!.AppInstances.Select(instance => instance.IamClient!.ClientClientId),
                 x.User.IamUser!.UserEntityId,
-                x.User.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
+                x.User.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
+                x.User.Firstname,
+                x.User.Lastname))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

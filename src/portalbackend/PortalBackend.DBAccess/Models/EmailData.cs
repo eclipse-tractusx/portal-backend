@@ -18,21 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Service.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-var VERSION = "v2";
-
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-                .AddPortalRepositories(builder.Configuration)
-                .AddProvisioningManager(builder.Configuration);
-
-builder.Services.AddTransient<IClientBusinessLogic,ClientBusinessLogic>();
-
-builder.Build()
-    .CreateApp<Program>("provisioning", VERSION, builder.Environment)
-    .Run();
+public record EmailData(Guid CompanyUserId, string? FirstName, string? LastName, string? Email);

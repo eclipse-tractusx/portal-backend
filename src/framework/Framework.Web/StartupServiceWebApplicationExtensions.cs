@@ -73,6 +73,7 @@ public static class StartupServiceWebApplicationExtensions
         app.UseAuthorization();
 
         app.MapControllers();
+        app.MapDefaultHealthChecks(app.Configuration.GetSection("HealthChecks").Get<IEnumerable<HealthCheckSettings>>());
 
         return app;
     }

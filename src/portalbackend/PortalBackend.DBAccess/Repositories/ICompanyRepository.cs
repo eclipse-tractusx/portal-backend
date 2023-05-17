@@ -134,7 +134,7 @@ public interface ICompanyRepository
     /// </summary>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the companyRole and ConsentAgreemnet</returns>
-    IAsyncEnumerable<CompanyRoleConsentData> GetCompanyRoleAndConsentAgreementDataAsync(Guid companyId);
+    IAsyncEnumerable<CompanyRoleConsentData> GetCompanyRoleAndConsentAgreementDataAsync(Guid companyId, string languageShortName);
 
     /// <summary>
     /// Gets the the companyRole
