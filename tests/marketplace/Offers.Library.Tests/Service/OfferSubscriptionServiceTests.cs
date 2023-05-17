@@ -254,7 +254,6 @@ public class OfferSubscriptionServiceTests
     {
         // Arrange
         var invalidUser = _fixture.Create<string>();
-        ;
         var sut = new OfferSubscriptionService(_portalRepositories, _offerSetupService, _mailingService, A.Fake<ILogger<OfferSubscriptionService>>());
 
         // Act
