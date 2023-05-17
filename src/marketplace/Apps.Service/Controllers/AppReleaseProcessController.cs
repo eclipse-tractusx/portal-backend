@@ -62,6 +62,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="404">App does not exist.</response>
     /// <response code="403">User does not have edit permission.</response>
     /// <response code="409">App is in incorrect state.</response>
+    [Obsolete("This endpoint is not used anymore, Planning to delete it with release 3.1")]
     [HttpPut]
     [Route("updateapp/{appId}")]
     [Authorize(Roles = "app_management")]
@@ -77,7 +78,7 @@ public class AppReleaseProcessController : ControllerBase
     }
 
     /// <summary>
-    /// Upload document for active apps in the marketplace for given appId for same company as user
+    /// Upload document for apps in status CREATED and document in status PENDING in the marketplace for given appId for same company as user
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="documentTypeId"></param>
@@ -460,6 +461,42 @@ public class AppReleaseProcessController : ControllerBase
     public async Task<NoContentResult> SetInstanceType([FromRoute] Guid appId, [FromBody] AppInstanceSetupData data)
     {
         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.SetInstanceType(appId, data, iamUserId)).ConfigureAwait(false);
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// Retrieve the technical user profile information
+    /// </summary>
+    /// <param name="appId">id of the app to receive the technical user profiles for</param>
+    /// <remarks>Example: GET: /api/apps/{appId}/appreleaseprocess/technical-user-profiles</remarks>
+    /// <response code="200">Returns a list of profiles</response>
+    /// <response code="403">Requesting user is not part of the providing company for the service.</response>
+    [HttpGet]
+    [Route("{appId}/technical-user-profiles")]
+    [Authorize(Roles = "add_apps")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfiles([FromRoute] Guid appId) =>
+        this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(appId, iamUserId));
+
+    /// <summary>
+    /// Creates and updates the technical user profiles
+    /// </summary>
+    /// <param name="appId">id of the app to receive the technical user profiles for</param>
+    /// <param name="data">The data for the update of the technical user profile</param>
+    /// <remarks>Example: PUT: /api/apps/appreleaseprocess/{appId}/technical-user-profiles</remarks>
+    /// <response code="200">Returns a list of profiles</response>
+    /// <response code="403">Requesting user is not part of the providing company for the service.</response>
+    [HttpPut]
+    [Route("{appId}/technical-user-profiles")]
+    [Authorize(Roles = "add_apps")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public async Task<NoContentResult> CreateAndUpdateTechnicalUserProfiles([FromRoute] Guid appId, [FromBody] IEnumerable<TechnicalUserProfileData> data)
+    {
+        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.UpdateTechnicalUserProfiles(appId, data, iamUserId)).ConfigureAwait(false);
         return NoContent();
     }
 }

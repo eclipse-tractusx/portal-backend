@@ -68,6 +68,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditCompanyApplication20230214> AuditCompanyApplication20230214 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
     public virtual DbSet<AuditConnector20230405> AuditConnector20230405 { get; set; } = default!;
+    public virtual DbSet<AuditConnector20230503> AuditConnector20230503 { get; set; } = default!;
     public virtual DbSet<AuditUserRole20221017> AuditUserRole20221017 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole20221018> AuditCompanyUserAssignedRole20221018 { get; set; } = default!;
     public virtual DbSet<AuditCompanyAssignedRole2023316> AuditCompanyAssignedRole2023316 { get; set; } = default!;
@@ -925,7 +926,12 @@ public class PortalDbContext : DbContext
             entity.HasOne(d => d.Host)
                 .WithMany(p => p.HostedConnectors);
 
-            entity.HasAuditV1Triggers<Connector, AuditConnector20230405>();
+            entity.HasOne(d => d.CompanyServiceAccount)
+                .WithOne(p => p.Connector)
+                .HasForeignKey<Connector>(d => d.CompanyServiceAccountId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasAuditV1Triggers<Connector, AuditConnector20230503>();
         });
 
         modelBuilder.Entity<ConnectorClientDetail>(entity =>

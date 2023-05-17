@@ -58,7 +58,7 @@ public class ServiceAccountCreation : IServiceAccountCreation
     }
 
     /// <inheritdoc />
-    async Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, List<UserRoleData> userRoleData)> IServiceAccountCreation.CreateServiceAccountAsync(
+    async Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, IEnumerable<UserRoleData> userRoleData)> IServiceAccountCreation.CreateServiceAccountAsync(
         ServiceAccountCreationInfo creationData,
         Guid companyId,
         IEnumerable<string> bpns,
@@ -73,13 +73,11 @@ public class ServiceAccountCreation : IServiceAccountCreation
             .GetUserRoleDataUntrackedAsync(userRoleIds).ToListAsync().ConfigureAwait(false);
         if (userRoleData.Count != userRoleIds.Count())
         {
-            var missingRoleIds = userRoleIds
-                .Where(userRoleId => userRoleData.All(userRole => userRole.UserRoleId != userRoleId))
-                .ToList();
+            var missingRoleIds = userRoleIds.Except(userRoleData.Select(x => x.UserRoleId));
 
             if (missingRoleIds.Any())
             {
-                throw new NotFoundException($"{missingRoleIds.First()} is not a valid UserRoleId");
+                throw new NotFoundException($"{string.Join(", ", missingRoleIds)} are not a valid UserRoleIds");
             }
         }
 
@@ -118,10 +116,7 @@ public class ServiceAccountCreation : IServiceAccountCreation
             serviceAccountData.UserEntityId,
             serviceAccount.Id);
 
-        foreach (var userRole in userRoleData)
-        {
-            serviceAccountsRepository.CreateCompanyServiceAccountAssignedRole(serviceAccount.Id, userRole.UserRoleId);
-        }
+        serviceAccountsRepository.CreateCompanyServiceAccountAssignedRoles(userRoleData.Select(data => (serviceAccount.Id, data.UserRoleId)));
 
         return (clientId, serviceAccountData, serviceAccount.Id, userRoleData);
     }

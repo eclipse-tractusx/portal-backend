@@ -42,7 +42,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ServiceAccountCreationInfo> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId)
+    public async Task<IEnumerable<ServiceAccountCreationInfo>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId)
     {
         var data = await _portalRepositories.GetInstance<IOfferRepository>()
             .GetServiceAccountProfileData(offerId, offerTypeId)
@@ -52,15 +52,13 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
             throw new NotFoundException($"Offer {offerTypeId} {offerId} does not exists");
         }
 
-        if (!CheckTechnicalUserData(data)) yield break;
-
-        foreach (var serviceAccountData in data.ServiceAccountProfiles
-                     .Select(x => GetServiceAccountData(data.OfferName!, x)))
-            yield return serviceAccountData;
+        return CheckTechnicalUserData(data)
+            ? data.ServiceAccountProfiles.Select(x => GetServiceAccountData(data.OfferName!, x))
+            : Enumerable.Empty<ServiceAccountCreationInfo>();
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ServiceAccountCreationInfo> GetTechnicalUserProfilesForOfferSubscription(Guid subscriptionId)
+    public async Task<IEnumerable<ServiceAccountCreationInfo>> GetTechnicalUserProfilesForOfferSubscription(Guid subscriptionId)
     {
         var data = await _portalRepositories.GetInstance<IOfferRepository>()
             .GetServiceAccountProfileDataForSubscription(subscriptionId)
@@ -70,11 +68,9 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
             throw new NotFoundException($"Offer Subscription {subscriptionId} does not exists");
         }
 
-        if (!CheckTechnicalUserData(data)) yield break;
-
-        foreach (var serviceAccountData in data.ServiceAccountProfiles
-                     .Select(x => GetServiceAccountData(data.OfferName!, x)))
-            yield return serviceAccountData;
+        return CheckTechnicalUserData(data)
+            ? data.ServiceAccountProfiles.Select(x => GetServiceAccountData(data.OfferName!, x))
+            : Enumerable.Empty<ServiceAccountCreationInfo>();
     }
 
     private static bool CheckTechnicalUserData((bool IsSingleInstance, IEnumerable<IEnumerable<UserRoleData>>ServiceAccountProfiles, string? OfferName) data)
@@ -84,7 +80,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
             throw new ConflictException("Offer name needs to be set here");
         }
 
-        return data.IsSingleInstance || !data.ServiceAccountProfiles.Any();
+        return !data.IsSingleInstance && data.ServiceAccountProfiles.Any();
     }
 
     private static ServiceAccountCreationInfo GetServiceAccountData(string offerName, IEnumerable<UserRoleData> serviceAccountUserRoles) =>

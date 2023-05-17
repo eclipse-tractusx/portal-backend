@@ -546,6 +546,70 @@ public class AppReleaseBusinessLogicTest
 
     #endregion
 
+    #region GetAppDetailsForStatusAsync
+
+    [Fact]
+    public async Task GetAppDetailsForStatusAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        var userId = _fixture.Create<string>();
+        var data = _fixture.Create<OfferProviderResponse>();
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(A<Guid>._,A<string>._,A<OfferTypeId>._))
+            .Returns(data);
+
+        // Act
+        var result = await _sut.GetAppDetailsForStatusAsync(appId, userId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP))
+            .MustHaveHappenedOnceExactly();
+
+        result.Title.Should().Be(data.Title);
+        result.Provider.Should().Be(data.Provider);
+        result.LeadPictureId.Should().Be(data.LeadPictureId);
+        result.ProviderName.Should().Be(data.ProviderName);
+        result.UseCase.Should().HaveSameCount(data.UseCase).And.ContainInOrder(data.UseCase);
+        result.Descriptions.Should().HaveSameCount(data.Descriptions).And.ContainInOrder(data.Descriptions);
+        result.Agreements.Should().HaveSameCount(data.Agreements).And.ContainInOrder(data.Agreements);
+        result.SupportedLanguageCodes.Should().HaveSameCount(data.SupportedLanguageCodes).And.ContainInOrder(data.SupportedLanguageCodes);
+        result.Price.Should().Be(data.Price);
+        result.Images.Should().HaveSameCount(data.Images).And.ContainInOrder(data.Images);
+        result.ProviderUri.Should().Be(data.ProviderUri);
+        result.ContactEmail.Should().Be(data.ContactEmail);
+        result.Documents.Should().HaveSameCount(data.Documents).And.ContainInOrder(data.Documents);
+        result.SalesManagerId.Should().Be(data.SalesManagerId);
+        result.PrivacyPolicies.Should().HaveSameCount(data.PrivacyPolicies).And.ContainInOrder(data.PrivacyPolicies);
+        result.TechnicalUserProfile.Should().HaveSameCount(data.TechnicalUserProfile).And.ContainInOrder(data.TechnicalUserProfile);
+    }
+
+    [Fact]
+    public async Task GetAppDetailsForStatusAsync_NullUseCase_ThrowsUnexpectedConditionException()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        var userId = _fixture.Create<string>();
+        var data = _fixture.Build<OfferProviderResponse>()
+                        .With(x => x.UseCase, (IEnumerable<AppUseCaseData>?)null)
+                        .Create();
+
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(A<Guid>._,A<string>._,A<OfferTypeId>._))
+            .Returns(data);
+
+        var Act = () => _sut.GetAppDetailsForStatusAsync(appId, userId);
+
+        // Act
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, userId, OfferTypeId.APP))
+            .MustHaveHappenedOnceExactly();
+
+        result.Message.Should().Be("usecase should never be null here");
+    }
+
+    #endregion
+
     #region GetAllInReviewStatusApps
 
     [Fact]
@@ -1008,6 +1072,96 @@ public class AppReleaseBusinessLogicTest
 
     #endregion
     
+    #region  GetInReviewAppDetailsById
+
+    [Fact]
+    public async Task GetInReviewAppDetailsByIdAsync_ReturnsExpected()
+    {
+        // Arrange
+        var data = _fixture.Create<InReviewOfferData>();
+        var appId = _fixture.Create<Guid>();
+
+        A.CallTo(() => _offerRepository.GetInReviewAppDataByIdAsync(appId, OfferTypeId.APP))
+            .ReturnsLazily(() => data);
+
+        // Act
+        var result = await _sut.GetInReviewAppDetailsByIdAsync(appId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.ContactNumber.Should().Be(data.ContactNumber);
+        result.LicenseType.Should().Be(data.LicenseTypeId);
+        result.LeadPictureId.Should().Be(data.leadPictureId);
+        result.Provider.Should().Be(data.Provider);
+        result.ProviderUri.Should().Be(data.ProviderUri);
+        result.OfferStatusId.Should().Be(data.OfferStatusId);
+        result.TechnicalUserProfile.Should().HaveSameCount(data.TechnicalUserProfile).And.AllSatisfy(
+            x => data.TechnicalUserProfile.Should().ContainSingle(d => d.TechnicalUserProfileId == x.Key).Which.UserRoles.Should().ContainInOrder(x.Value)
+        );
+    }
+
+    [Fact]
+    public async Task GetInReviewAppDetailsByIdAsync_ThrowsNotFoundException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+
+        A.CallTo(() => _offerRepository.GetInReviewAppDataByIdAsync(appId, OfferTypeId.APP))
+            .ReturnsLazily(() => (InReviewOfferData?)default!);
+
+         //Act
+        async Task Act() => await _sut.GetInReviewAppDetailsByIdAsync(appId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"App {appId} not found or Incorrect Status");
+    }
+
+    #endregion
+
+    #region UpdateTechnicalUserProfiles
+
+    [Fact]
+    public async Task UpdateTechnicalUserProfiles_ReturnsExpected()
+    {
+        // Arrange
+        const string clientProfile = "cl";
+        var appId = Guid.NewGuid();
+        var data = _fixture.CreateMany<TechnicalUserProfileData>(5);
+        var sut = new AppReleaseBusinessLogic(null!,  Options.Create(new AppsSettings{TechnicalUserProfileClient = clientProfile}), _offerService, null!);
+
+        // Act
+        await sut
+            .UpdateTechnicalUserProfiles(appId, data, IamUserId)
+            .ConfigureAwait(false);
+
+        A.CallTo(() => _offerService.UpdateTechnicalUserProfiles(appId, OfferTypeId.APP,
+                A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), IamUserId, clientProfile))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region GetTechnicalUserProfilesForOffer
+
+    [Fact]
+    public async Task GetTechnicalUserProfilesForOffer_ReturnsExpected()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        A.CallTo(() => _offerService.GetTechnicalUserProfilesForOffer(appId, IamUserId, OfferTypeId.APP))
+            .Returns(_fixture.CreateMany<TechnicalUserProfileInformation>(5));
+        var sut = new AppReleaseBusinessLogic(null!, Options.Create(new AppsSettings()), _offerService, null!);
+
+        // Act
+        var result = await sut.GetTechnicalUserProfilesForOffer(appId, IamUserId)
+            .ConfigureAwait(false);
+
+        result.Should().HaveCount(5);
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupUpdateApp()

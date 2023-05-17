@@ -106,5 +106,15 @@ public record InReviewOfferData(
     /// <summary>
     /// License TypeId for offer.
     /// </summary>
-    LicenseTypeId LicenseTypeId
-);
+    LicenseTypeId LicenseTypeId,
+
+    /// <summary>
+    /// License TypeId for offer.
+    /// </summary>
+    OfferStatusId OfferStatusId,
+    
+    /// <summary>
+    /// Technical User Role Data
+    /// </summary>
+    IEnumerable<TechnicalUserRoleData> TechnicalUserProfile
+); 

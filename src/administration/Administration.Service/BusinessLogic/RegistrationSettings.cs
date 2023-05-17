@@ -27,15 +27,11 @@ public class RegistrationSettings
 {
     public RegistrationSettings()
     {
-        PartnerUserInitialRoles = null!;
         DocumentTypeIds = null!;
     }
 
     public int ApplicationsMaxPageSize { get; set; }
     
-    [Required]
-    public IDictionary<string,IEnumerable<string>> PartnerUserInitialRoles { get; set; }
-
     /// <summary>
     /// Document Type Id
     /// </summary>

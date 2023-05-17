@@ -212,17 +212,19 @@ public class CompanyRepository : ICompanyRepository
         _context.CompanyAssignedUseCases.Remove( new CompanyAssignedUseCase(companyId, useCaseId));
 
     /// <inheritdoc />
-    public IAsyncEnumerable<CompanyRoleConsentData> GetCompanyRoleAndConsentAgreementDataAsync(Guid companyId) =>
+    public IAsyncEnumerable<CompanyRoleConsentData> GetCompanyRoleAndConsentAgreementDataAsync(Guid companyId, string languageShortName) =>
         _context.CompanyRoles
             .AsSplitQuery()
             .Where(companyRole => companyRole.CompanyRoleRegistrationData!.IsRegistrationRole)
             .Select(companyRole => new CompanyRoleConsentData(
                 companyRole.Id,
+                companyRole.CompanyRoleDescriptions.SingleOrDefault(lc => lc.LanguageShortName == languageShortName)!.Description,
                 companyRole.CompanyAssignedRoles.Any(assigned => assigned.CompanyId == companyId),
                 companyRole.AgreementAssignedCompanyRoles
                     .Select(assigned => new ConsentAgreementData(
                         assigned.AgreementId,
                         assigned.Agreement!.Name,
+                        assigned.Agreement!.DocumentId,
                         assigned.Agreement.Consents.Where(consent => consent.CompanyId == companyId).OrderByDescending(consent => consent.DateCreated).Select(consent => consent.ConsentStatusId).FirstOrDefault()
                     ))))
             .AsAsyncEnumerable();

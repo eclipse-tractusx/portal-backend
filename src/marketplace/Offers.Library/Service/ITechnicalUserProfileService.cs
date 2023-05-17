@@ -30,12 +30,12 @@ public interface ITechnicalUserProfileService
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
     /// <returns></returns>
-    IAsyncEnumerable<ServiceAccountCreationInfo> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId);
+    Task<IEnumerable<ServiceAccountCreationInfo>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId);
 
     /// <summary>
     ///  Gets the technical user profiles for the specific offer subscription
     /// </summary>
     /// <param name="subscriptionId">Id of the offer</param>
     /// <returns></returns>
-    IAsyncEnumerable<ServiceAccountCreationInfo> GetTechnicalUserProfilesForOfferSubscription(Guid subscriptionId);
+    Task<IEnumerable<ServiceAccountCreationInfo>> GetTechnicalUserProfilesForOfferSubscription(Guid subscriptionId);
 }

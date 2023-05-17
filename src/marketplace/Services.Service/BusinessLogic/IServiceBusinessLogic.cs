@@ -94,8 +94,9 @@ public interface IServiceBusinessLogic
     /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
     /// <param name="sorting"></param>
     /// <param name="statusId"></param>
+    /// <param name="offerId"></param>
     /// <returns>Pagination of user's company's provided service' statuses.</returns>
-    Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId);
+    Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId);
 
     /// <summary>
     /// Get the document content by given Id for Service
@@ -118,18 +119,20 @@ public interface IServiceBusinessLogic
     Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync(int page, int size, string userId, OfferSorting? sorting, string? offerName, ServiceStatusIdFilter? statusId);
 
     /// <summary>
-    /// Get technical user profiles for a specific offer
+    /// Gets the information for the subscription
     /// </summary>
-    /// <param name="offerId">Id of the offer</param>
+    /// <param name="serviceId">Id of the app</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
     /// <param name="iamUserId">Id of the iam user</param>
-    /// <returns>AsyncEnumerable with the technical user profile information</returns>
-    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId);
-    
+    /// <returns>Returns the details of the subscription</returns>
+    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid serviceId, Guid subscriptionId, string iamUserId);
+
     /// <summary>
-    /// Creates or updates the technical user profiles
+    /// Gets the information for the subscription
     /// </summary>
-    /// <param name="serviceId">Id of the service</param>
-    /// <param name="data">The technical user profiles</param>
+    /// <param name="serviceId">Id of the app</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
     /// <param name="iamUserId">Id of the iam user</param>
-    Task UpdateTechnicalUserProfiles(Guid serviceId, IEnumerable<TechnicalUserProfileData> data, string iamUserId);
+    /// <returns>Returns the details of the subscription</returns>
+    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid serviceId, Guid subscriptionId, string iamUserId);
 }

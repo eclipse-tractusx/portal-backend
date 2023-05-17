@@ -156,6 +156,7 @@ public class ServiceReleaseController : ControllerBase
     /// <param name="sorting">sort by</param>
     /// <param name="serviceName">search by service name</param>
     /// <param name="languageShortName">Filter by language shortname</param>
+    /// <param name="status">Filter by status</param>
     /// <returns>Collection of all in review status marketplace service.</returns>
     /// <remarks>Example: GET: /api/services/servicerelease/inReview</remarks>
     /// <response code="200">Returns the list of all in review status marketplace service.</response>
@@ -163,8 +164,8 @@ public class ServiceReleaseController : ControllerBase
     [Route("inReview")]
     [Authorize(Roles = "approve_service_release,decline_service_release")]
     [ProducesResponseType(typeof(Pagination.Response<InReviewServiceData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, [FromQuery] string? serviceName = null, [FromQuery] string? languageShortName = null) =>
-        _serviceReleaseBusinessLogic.GetAllInReviewStatusServiceAsync(page, size, sorting,serviceName, languageShortName);
+    public Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, [FromQuery] string? serviceName = null, [FromQuery] string? languageShortName = null, [FromQuery] ServiceReleaseStatusIdFilter? status = null) =>
+        _serviceReleaseBusinessLogic.GetAllInReviewStatusServiceAsync(page, size, sorting,serviceName, languageShortName, status);
 
     /// <summary>
     /// Delete Document Assigned to Offer
@@ -331,6 +332,42 @@ public class ServiceReleaseController : ControllerBase
     public async Task<NoContentResult> UpdateServiceDocumentAsync([FromRoute] Guid serviceId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {
         await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.CreateServiceDocumentAsync(serviceId, documentTypeId, document, iamUserId, cancellationToken));
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// Retrieve the technical user profile information
+    /// </summary>
+    /// <param name="serviceId">id of the service to receive the technical user profiles for</param>
+    /// <remarks>Example: GET: /api/services/servicerelease/{serviceId}/technical-user-profiles</remarks>
+    /// <response code="200">Returns a list of profiles</response>
+    /// <response code="403">Requesting user is not part of the providing company for the service.</response>
+    [HttpGet]
+    [Route("{serviceId}/technical-user-profiles")]
+    [Authorize(Roles = "add_service_offering")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfiles([FromRoute] Guid serviceId) =>
+        this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(serviceId, iamUserId));
+
+    /// <summary>
+    /// Creates and updates the technical user profiles
+    /// </summary>
+    /// <param name="serviceId">id of the service to receive the technical user profiles for</param>
+    /// <param name="data">The data for the update of the technical user profile</param>
+    /// <remarks>Example: PUT: /api/services/servicerelease/{serviceId}/technical-user-profiles</remarks>
+    /// <response code="200">Returns a list of profiles</response>
+    /// <response code="403">Requesting user is not part of the providing company for the service.</response>
+    [HttpPut]
+    [Route("{serviceId}/technical-user-profiles")]
+    [Authorize(Roles = "add_service_offering")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public async Task<NoContentResult> CreateAndUpdateTechnicalUserProfiles([FromRoute] Guid serviceId, [FromBody] IEnumerable<TechnicalUserProfileData> data)
+    {
+        await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.UpdateTechnicalUserProfiles(serviceId, data, iamUserId)).ConfigureAwait(false);
         return NoContent();
     }
 }

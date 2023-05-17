@@ -8,5 +8,10 @@
     "service_id": "ac1cf001-7fbc-1f2f-817f-bce0000c0001",
     "service_type_id": 2,
     "technical_user_needed": false
+  },
+  {
+    "service_id": "a16e73b9-5277-4b69-9f8d-3b227495dfea",
+    "service_type_id": 1,
+    "technical_user_needed": false
   }
 ]

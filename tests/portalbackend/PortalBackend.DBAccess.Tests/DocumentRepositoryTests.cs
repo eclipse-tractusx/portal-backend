@@ -25,6 +25,7 @@ using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text;
 using Xunit;
@@ -261,6 +262,36 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeFalse();
+    }
+
+    #endregion
+
+    #region AttachAndModifyDocuments
+
+    [Fact]
+    public async Task AttachAndModifyDocuments_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
+
+        var documentData = new (Guid DocumentId, Action<Document>?, Action<Document>)[] {
+            (Guid.NewGuid(), null, document => document.DocumentStatusId = DocumentStatusId.LOCKED),
+            (Guid.NewGuid(), document => document.DocumentStatusId = DocumentStatusId.PENDING, document => document.DocumentStatusId = DocumentStatusId.PENDING),
+            (Guid.NewGuid(), document => document.DocumentStatusId = DocumentStatusId.LOCKED, document => document.DocumentStatusId = DocumentStatusId.INACTIVE),
+        };
+
+        // Act
+        sut.AttachAndModifyDocuments(documentData);
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().HaveCount(3).And.AllSatisfy(x => x.Entity.Should().BeOfType<Document>()).And.Satisfy(
+            x => x.State == EntityState.Modified && ((Document)x.Entity).Id == documentData[0].DocumentId && ((Document)x.Entity).DocumentStatusId == DocumentStatusId.LOCKED,
+            x => x.State == EntityState.Unchanged && ((Document)x.Entity).Id == documentData[1].DocumentId && ((Document)x.Entity).DocumentStatusId == DocumentStatusId.PENDING,
+            x => x.State == EntityState.Modified && ((Document)x.Entity).Id == documentData[2].DocumentId && ((Document)x.Entity).DocumentStatusId == DocumentStatusId.INACTIVE
+        );
     }
 
     #endregion

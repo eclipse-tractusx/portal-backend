@@ -62,7 +62,7 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ServiceAccountDetails>> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo)
+    public async Task<CreatedAtRouteResult> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo)
     {
         var serviceAccountDetails = await this.WithIamUserId(createdByName => _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo, createdByName).ConfigureAwait(false));
         return CreatedAtRoute("GetServiceAccountDetails", new { serviceAccountId = serviceAccountDetails.ServiceAccountId }, serviceAccountDetails);
@@ -73,7 +73,7 @@ public class ServiceAccountController : ControllerBase
     /// </summary>
     /// <param name="serviceAccountId" example="7e85a0b8-0001-ab67-10d1-0ef508201000">Id of the service account that should be deleted.</param>
     /// <returns></returns>
-    /// <remarks>Example: DELETE: api/administration/owncompany/serviceaccounts/7e85a0b8-0001-ab67-10d1-0ef508201000</remarks>
+    /// <remarks>Example: DELETE: api/administration/serviceaccount/owncompany/serviceaccounts/7e85a0b8-0001-ab67-10d1-0ef508201000</remarks>
     /// <response code="200">Successful if the service account was deleted.</response>
     /// <response code="404">Record was not found. Service account is either not existing or not connected to the respective company.</response>
     [HttpDelete]
@@ -176,5 +176,5 @@ public class ServiceAccountController : ControllerBase
     [Route("user/roles")]
     [ProducesResponseType(typeof(List<UserRoleWithDescription>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName = null) =>
-        _logic.GetServiceAccountRolesAsync(languageShortName);        
+        this.WithIamUserId(iamUserId => _logic.GetServiceAccountRolesAsync(iamUserId, languageShortName));        
 }

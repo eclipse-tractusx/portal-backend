@@ -81,13 +81,13 @@ public interface IDocumentRepository
     /// <param name="documentTypeId">type of the document</param>
     /// <returns>Returns the document data</returns>
     Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId)> GetDocumentDataByIdAndTypeAsync(Guid documentId, DocumentTypeId documentTypeId);
-    
+
     /// <summary>
     ///Deleting document record and document file from the portal db/document storage location
     /// </summary>
     /// <param name="documentId">The documentId that should be removed</param>
     void RemoveDocument(Guid documentId);
-    
+
     /// <summary>
     /// Gets the documents and User by the document id
     /// </summary>
@@ -103,6 +103,12 @@ public interface IDocumentRepository
     /// <param name="initialize">Action to initialize the entity with values before the change</param>
     /// <param name="modify">Action to set the values that are subject to change</param>
     void AttachAndModifyDocument(Guid documentId, Action<Document>? initialize, Action<Document> modify);
+
+    /// <summary>
+    /// Attaches a range of documents optionally initializing them before and modifying them afer the attach
+    /// </summary>
+    /// <param name="documentData">IEnumerable of tuple of Id, (optional) Action to initialize the entity with values before the change and Action to set the values that are subject to change</param>
+    void AttachAndModifyDocuments(IEnumerable<(Guid DocumentId, Action<Document>? Initialize, Action<Document> Modify)> documentData);
 
     /// <summary>
     /// Gets the document seed data for the given id

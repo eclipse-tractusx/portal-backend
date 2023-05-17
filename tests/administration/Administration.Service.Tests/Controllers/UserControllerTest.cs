@@ -34,9 +34,11 @@ public class UserControllerTest
     private readonly IUserBusinessLogic _logic;
     private readonly IUserRolesBusinessLogic _rolesLogic;
     private readonly UserController _controller;
+    private readonly Fixture _fixture;
 
     public UserControllerTest()
     {
+        _fixture = new Fixture();
         _logic = A.Fake<IUserBusinessLogic>();
         _rolesLogic = A.Fake<IUserRolesBusinessLogic>();
         var logger = A.Fake<ILogger<UserController>>();
@@ -61,5 +63,21 @@ public class UserControllerTest
         A.CallTo(() => _rolesLogic.ModifyUserRoleAsync(A<Guid>.That.Matches(x => x == appId), A<UserRoleInfo>.That.Matches(x => x.CompanyUserId == CompanyUserId && x.Roles.Count() == 1), A<string>.That.Matches(x => x == IamUserId))).MustHaveHappenedOnceExactly();
         Assert.IsType<List<UserRoleWithId>>(result);
         result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetOwnUserDetails_ReturnsExpectedResult()
+    {
+        // Arrange
+        var data = _fixture.Create<CompanyOwnUserDetails>();
+        A.CallTo(() => _logic.GetOwnUserDetails(IamUserId))
+            .Returns(data);
+
+        // Act
+        var result = await this._controller.GetOwnUserDetails().ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _logic.GetOwnUserDetails(IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().Be(data);
     }
 }

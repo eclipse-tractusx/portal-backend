@@ -166,9 +166,9 @@ public class AppsController : ControllerBase
     [HttpGet]
     [Route("provided/subscription-status")]
     [Authorize(Roles = "view_app_subscription")]
-    [ProducesResponseType(typeof(Pagination.Response<OfferCompanySubscriptionStatusData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null) =>
-        this.WithIamUserId(userId => _appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(page, size, userId, sorting, statusId));
+    [ProducesResponseType(typeof(Pagination.Response<OfferCompanySubscriptionStatusResponse>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null, [FromQuery] Guid? offerId = null) =>
+        this.WithIamUserId(userId => _appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(page, size, userId, sorting, statusId, offerId));
 
     /// <summary>
     /// Adds an app to current user's company's subscriptions.
@@ -196,7 +196,7 @@ public class AppsController : ControllerBase
     }
 
     /// <summary>
-    /// Gets all agreements 
+    /// Retrieve all app marketplace agreements mandatory to be agreed before releasing an app on the CX marketplace 
     /// </summary>
     /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id for the app consent to retrieve.</param>
     /// <remarks>Example: GET: /api/apps/appAgreementData/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645</remarks>
@@ -284,30 +284,6 @@ public class AppsController : ControllerBase
         this.WithIamUserId(iamUserId => _appsBusinessLogic.AutoSetupAppAsync(data, iamUserId));
     
     /// <summary>
-    /// Deactivate the OfferStatus By appId
-    /// </summary>
-    /// <param name="appId" example="3c77a395-a7e7-40f2-a519-ac16498e0a79">Id of the app that should be deactive</param>
-    /// <remarks>Example: PUT: /api/apps/3c77a395-a7e7-40f2-a519-ac16498e0a79/deactivateApp</remarks>
-    /// <response code="204">The App Successfully Deactivated</response>
-    /// <response code="400">invalid or user does not exist.</response>
-    /// <response code="404">If app does not exists.</response>
-    /// <response code="403">Missing Permission</response>
-    /// <response code="409">Offer is in incorrect state</response>
-    [HttpPut]
-    [Route("{appId:guid}/deactivateApp")]
-    [Authorize(Roles = "edit_apps")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
-    {
-        await this.WithIamUserId(userId => _appsBusinessLogic.DeactivateOfferByAppIdAsync(appId,userId)).ConfigureAwait(false);
-        return NoContent();
-    }
-    
-    /// <summary>
     /// Retrieve Document Content for document type "App Lead Image" and "App Image" by ID
     /// </summary>
     /// <param name="appId"></param>
@@ -333,28 +309,38 @@ public class AppsController : ControllerBase
     }
 
     /// <summary>
-    /// Create offerassigned AppLeadImage document for active apps for given appId for same company as user
+    /// Retrieves the details of a subscription
     /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="document"></param>
-    /// <param name="cancellationToken"></param>
-    /// <remarks>Example: POST: /api/apps/{appId}/appLeadImage</remarks>
-    /// <response code="204">Successfully uploaded the document</response>
-    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
-    /// <response code="403">The user is not assigned with the app.</response>
-    /// <response code="415">Only PNG and JPEG files are supported.</response>
-    [HttpPost]
-    [Route("{appId}/appLeadImage")]
-    [Authorize(Roles = "edit_apps")]
-    [Consumes("multipart/form-data")]
-    [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
-    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    /// <param name="appId">id of the app to receive the details for</param>
+    /// <param name="subscriptionId">id of the subscription to receive the details for</param>
+    /// <remarks>Example: GET: /api/apps/{appId}/subscription/{subscriptionId}/provider</remarks>
+    /// <response code="200">Returns the subscription details for the provider</response>
+    /// <response code="403">User's company does not provide the app.</response>
+    /// <response code="404">No app or subscription found.</response>
+    [HttpGet]
+    [Authorize(Roles = "app_management")]
+    [Route("{appId}/subscription/{subscriptionId}/provider")]
+    [ProducesResponseType(typeof(ProviderSubscriptionDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
-    public async Task<NoContentResult> CreatOfferAssignedAppLeadImageDocumentByIdAsync([FromRoute] Guid appId,  [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
-    {
-        await this.WithIamUserId(iamUserId => _appsBusinessLogic.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, document, cancellationToken));
-        return NoContent();
-    }
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider([FromRoute] Guid appId, [FromRoute] Guid subscriptionId) =>
+        this.WithIamUserId(iamUserId => _appsBusinessLogic.GetSubscriptionDetailForProvider(appId, subscriptionId, iamUserId));
+        
+    /// <summary>
+    /// Retrieves the details of a subscription
+    /// </summary>
+    /// <param name="appId">id of the app to receive the details for</param>
+    /// <param name="subscriptionId">id of the subscription to receive the details for</param>
+    /// <remarks>Example: GET: /api/apps/{appId}/subscription/{subscriptionId}/subscriber</remarks>
+    /// <response code="200">Returns the subscription details for the subscriber</response>
+    /// <response code="403">User's company does not provide the app.</response>
+    /// <response code="404">No app or subscription found.</response>
+    [HttpGet]
+    [Authorize(Roles = "subscribe_apps")]
+    [Route("{appId}/subscription/{subscriptionId}/subscriber")]
+    [ProducesResponseType(typeof(SubscriberSubscriptionDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber([FromRoute] Guid appId, [FromRoute] Guid subscriptionId) =>
+        this.WithIamUserId(iamUserId => _appsBusinessLogic.GetSubscriptionDetailForSubscriber(appId, subscriptionId, iamUserId));
 }

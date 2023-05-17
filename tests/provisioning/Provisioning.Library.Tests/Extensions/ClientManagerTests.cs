@@ -2,6 +2,7 @@
 
 using Flurl.Http.Testing;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
@@ -83,28 +84,50 @@ public class ClientManagerTests
         // Arrange
         const string url = "https://newurl.com";
         const string clientId = "cl1";
+        var clientClientId = Guid.NewGuid().ToString();
+        var client = new Client { Id = clientClientId, ClientId = clientId };
         using var httpTest = new HttpTest();
-        A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).ReturnsLazily(() => 1);
+        A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).Returns(1);
         httpTest.WithAuthorization(CentralRealm)
-            .WithGetClientAsync("test", clientId, new Client { Id = Guid.NewGuid().ToString() ,ClientId = clientId })
+            .WithGetClientsAsync("test", Enumerable.Repeat(client, 1))
+            .WithGetClientAsync("test", clientClientId, client)
             .WithGetClientSecretAsync(clientId, new Credentials {Value = "super-secret"});
         
         // Act
         await _sut.UpdateClient(clientId, $"{url}/*", url).ConfigureAwait(false);
 
         // Assert
-        httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/clients/{clientId}")
+        httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/clients/{clientClientId}")
             .WithVerb(HttpMethod.Put)
             .Times(1);
     }
-    
+
+    [Fact]
+    public async Task UpdateClient_WithClientNull_ThrowsException()
+    {
+        // Arrange
+        const string url = "https://newurl.com";
+        const string clientId = "cl1";
+        using var httpTest = new HttpTest();
+        A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).Returns(1);
+        httpTest.WithAuthorization(CentralRealm)
+            .WithGetClientsAsync("test", Enumerable.Empty<Client>());
+        
+        // Act
+        async Task Act() => await _sut.UpdateClient(clientId, $"{url}/*", url).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<KeycloakEntityNotFoundException>(Act);
+        ex.Message.Should().Be($"clientId {clientId} not found in central keycloak");
+    }
+
     [Fact]
     public async Task EnableClient_CallsExpected()
     {
         // Arrange
         const string clientId = "cl1";
         using var httpTest = new HttpTest();
-        A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).ReturnsLazily(() => 1);
+        A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).Returns(1);
         httpTest.WithAuthorization(CentralRealm)
             .WithGetClientAsync("test", clientId, new Client { Id = Guid.NewGuid().ToString() ,ClientId = clientId })
             .WithGetClientSecretAsync(clientId, new Credentials {Value = "super-secret"});

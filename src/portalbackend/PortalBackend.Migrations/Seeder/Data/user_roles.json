@@ -78,20 +78,20 @@
     "last_editor_id": null
   },
   {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51155",
-    "user_role": "Connector User",
+    "id": "607818be-4978-41f4-bf63-fa8d2de51169",
+    "user_role": "App Tech User",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   },
   {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51157",
-    "user_role": "Identity Wallet Management",
+    "id": "9956fa8d-e454-49ca-a3b1-83e2c106fe59",
+    "user_role": "BPDM Management",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   },
   {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51165",
-    "user_role": "Dataspace Discovery",
+    "id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae538",
+    "user_role": "BPDM Partner Gate",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   },
@@ -102,14 +102,32 @@
     "last_editor_id": null
   },
   {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51168",
-    "user_role": "Service Management",
+    "id": "607818be-4978-41f4-bf63-fa8d2de51155",
+    "user_role": "Connector User",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   },
   {
-    "id": "607818be-4978-41f4-bf63-fa8d2de51169",
-    "user_role": "App Tech User",
+    "id": "607818be-4978-41f4-bf63-fa8d2de51165",
+    "user_role": "Dataspace Discovery",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51157",
+    "user_role": "Identity Wallet Management",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
+  },
+  {
+    "id": "34c42896-a003-4653-af8f-ba06ca595752",
+    "user_role": "Registration External",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51168",
+    "user_role": "Service Management",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   }

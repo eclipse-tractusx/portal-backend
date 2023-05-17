@@ -26,7 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditConnector20230405))]
+[AuditEntityV1(typeof(AuditConnector20230503))]
 public class Connector : IAuditableV1, IBaseEntity
 {
     public Connector(Guid id, string name, string locationId, string connectorUrl)
@@ -67,6 +67,8 @@ public class Connector : IAuditableV1, IBaseEntity
 
     public DateTimeOffset? DateLastChanged { get; set; }
 
+    public Guid? CompanyServiceAccountId { get; set; }
+
     [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
 
@@ -77,6 +79,7 @@ public class Connector : IAuditableV1, IBaseEntity
     public virtual Company? Host { get; set; }
     public virtual Country? Location { get; set; }
     public virtual ConnectorClientDetail? ClientDetails { get; set; }
+    public virtual CompanyServiceAccount? CompanyServiceAccount { get; set; }
     public virtual CompanyUser? LastEditor { get; set; }
 
     /// <summary>

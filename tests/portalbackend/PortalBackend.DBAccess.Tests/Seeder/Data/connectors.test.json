@@ -12,6 +12,42 @@
     "daps_registration_successful": null
   },
   {
+    "id": "595a5784-3f28-4ec3-a986-651342d1be81",
+    "name": "Test Connector 6",
+    "connector_url": "www.google.de",
+    "type_id": 1,
+    "status_id": 2,
+    "provider_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "host_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "location_id": "DE",
+    "self_description_document_id": null,
+    "daps_registration_successful": null
+  },
+  {
+    "id": "727365d6-5599-4598-a888-58733fa138e7",
+    "name": "Test Connector 5",
+    "connector_url": "www.google.de",
+    "type_id": 1,
+    "status_id": 2,
+    "provider_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "host_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
+    "location_id": "DE",
+    "self_description_document_id": null,
+    "daps_registration_successful": null
+  },
+  {
+    "id": "8e10b910-523c-435e-b700-4a0c7b31f044",
+    "name": "Test Connector 7",
+    "connector_url": "www.google.de",
+    "type_id": 1,
+    "status_id": 2,
+    "provider_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
+    "host_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
+    "location_id": "DE",
+    "self_description_document_id": null,
+    "daps_registration_successful": null
+  },
+  {
     "id": "7e86a0b8-6903-496b-96d1-0ef508206833",
     "name": "Test Connector 1",
     "connector_url": "www.google.de",

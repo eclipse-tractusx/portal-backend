@@ -275,7 +275,8 @@ public class OfferService : IOfferService
             data.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))),
             data.SalesManagerId,
             data.PrivacyPolicies,
-            data.ServiceTypeIds);
+            data.ServiceTypeIds,
+            data.TechnicalUserProfile.ToDictionary(g => g.TechnicalUserProfileId, g => g.UserRoles));
     }
     
     /// <inheritdoc />
@@ -334,10 +335,10 @@ public class OfferService : IOfferService
     {
         var offerDetails = await GetOfferReleaseData(offerId, offerTypeId).ConfigureAwait(false);
 
-        var isvalidDocumentType = submitAppDocumentTypeIds.All(x=> offerDetails.DocumentTypeIds.Contains(x));
-        if (!isvalidDocumentType)
+        var missingDocumentTypes = submitAppDocumentTypeIds.Except(offerDetails.DocumentDatas.Select(data => data.DocumentTypeId));
+        if (missingDocumentTypes.Any())
         {
-            throw new ConflictException($"{string.Join(",", submitAppDocumentTypeIds)} are mandatory document types");
+            throw new ConflictException($"{string.Join(", ", submitAppDocumentTypeIds)} are mandatory document types, ({string.Join(", ", missingDocumentTypes)} are missing)");
         }
         if (!offerDetails.HasUserRoles)
         {
@@ -368,15 +369,15 @@ public class OfferService : IOfferService
     private async Task SubmitAppServiceAsync(Guid offerId, string iamUserId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, OfferReleaseData offerDetails)
     {
         GetAndValidateOfferDetails(offerDetails);
-        if(offerDetails.DocumentStatusDatas.Any())
+        var pendingDocuments = offerDetails.DocumentDatas.Where(data => data.StatusId == DocumentStatusId.PENDING);
+        if(pendingDocuments.Any())
         {
-            var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-            foreach(var documentStatusData in offerDetails.DocumentStatusDatas)
-            {
-                documentRepository.AttachAndModifyDocument(documentStatusData!.DocumentId,
-                a => { a.DocumentStatusId = documentStatusData.StatusId; },
-                a => { a.DocumentStatusId = DocumentStatusId.LOCKED; });
-            }
+            _portalRepositories.GetInstance<IDocumentRepository>()
+                .AttachAndModifyDocuments(
+                    pendingDocuments.Select(x => new ValueTuple<Guid,Action<Document>?,Action<Document>>(
+                        x.DocumentId,
+                        document => document.DocumentStatusId = x.StatusId,
+                        document => document.DocumentStatusId = DocumentStatusId.LOCKED)));
         }
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         offerRepository.AttachAndModifyOffer(offerId, offer =>
@@ -395,7 +396,8 @@ public class OfferService : IOfferService
         var notificationContent = new
         {
             offerId,
-            RequestorCompanyName = offerDetails.CompanyName
+            RequestorCompanyName = offerDetails.CompanyName,
+            OfferName = offerDetails.Name
         };
         
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
@@ -828,5 +830,68 @@ public class OfferService : IOfferService
                 .Select(x => x.TechnicalUserProfileId));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles)
+    {
+        var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, iamUserId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider);
+        return new ProviderSubscriptionDetailData(
+            details.Id,
+            details.OfferSubscriptionStatus,
+            details.Name,
+            details.CompanyName,
+            details.Bpn,
+            details.Contact,
+            details.TechnicalUserData);
+    }
+
+    /// <inheritdoc />
+    public async Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles)
+    {
+        var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, iamUserId, offerTypeId, contactUserRoles, OfferCompanyRole.Subscriber);
+        return new SubscriberSubscriptionDetailData(
+            details.Id,
+            details.OfferSubscriptionStatus,
+            details.Name,
+            details.CompanyName,
+            details.Contact,
+            details.TechnicalUserData);
+    }
+
+    private async Task<OfferSubscriptionDetailData> GetOfferSubscriptionDetailsInternal(Guid offerId, Guid subscriptionId, string iamUserId,
+        OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles, OfferCompanyRole offerCompanyRole)
+    {
+        var userRoleIds = await ValidateRoleData(contactUserRoles).ConfigureAwait(false);
+
+        var (exists, isUserOfCompany, details) = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetSubscriptionDetailsAsync(offerId, subscriptionId, iamUserId, offerTypeId, userRoleIds, offerCompanyRole == OfferCompanyRole.Provider)
+            .ConfigureAwait(false);
+
+        if (!exists)
+        {
+            throw new NotFoundException($"subscription {subscriptionId} for offer {offerId} of type {offerTypeId} does not exist");
+        }
+
+        if (!isUserOfCompany)
+        {
+            throw new ForbiddenException($"User {iamUserId} is not part of the {offerCompanyRole} company");
+        }
+
+        return details;
+    }
+
+    private async Task<IEnumerable<Guid>> ValidateRoleData(IDictionary<string, IEnumerable<string>> userRoles)
+    {
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var roleData = await userRolesRepository
+            .GetUserRoleIdsUntrackedAsync(userRoles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        if (roleData.Count < userRoles.Sum(clientRoles => clientRoles.Value.Count()))
+        {
+            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", userRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+        }
+        return roleData;
     }
 }
