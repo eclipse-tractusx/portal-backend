@@ -34,7 +34,7 @@ public class DocumentsBusinessLogicTests
     private static readonly string IamUserId = Guid.NewGuid().ToString();
     private readonly IFixture _fixture;
     private readonly IDocumentRepository _documentRepository;
-    private IPortalRepositories _portalRepositories;
+    private readonly IPortalRepositories _portalRepositories;
     private readonly IOptions<DocumentSettings> _options;
     private readonly DocumentsBusinessLogic _sut;
 
@@ -43,7 +43,7 @@ public class DocumentsBusinessLogicTests
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());  
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _documentRepository = A.Fake<IDocumentRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
@@ -57,17 +57,17 @@ public class DocumentsBusinessLogicTests
     }
 
     #region GetSeedData
-    
+
     [Fact]
     public async Task GetSeedData_WithValidId_ReturnsValidData()
     {
         // Arrange
         SetupFakesForGetSeedData();
         var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
-        
+
         // Act
         var result = await sut.GetSeedData(ValidDocumentId).ConfigureAwait(false);
-        
+
         // Assert
         result.Should().NotBeNull();
     }
@@ -79,15 +79,15 @@ public class DocumentsBusinessLogicTests
         var invalidId = Guid.NewGuid();
         SetupFakesForGetSeedData();
         var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
-        
+
         // Act
         async Task Act() => await sut.GetSeedData(invalidId).ConfigureAwait(false);
-        
+
         // Assert
         var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
         exception.Message.Should().Be($"Document {invalidId} does not exists.");
     }
-    
+
     [Fact]
     public async Task CreateConnectorAsync_WithCallFromTest_ThrowsForbiddenException()
     {
@@ -95,44 +95,44 @@ public class DocumentsBusinessLogicTests
         SetupFakesForGetSeedData();
         _options.Value.EnableSeedEndpoint = false;
         var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
-        
+
         // Act
         async Task Act() => await sut.GetSeedData(ValidDocumentId).ConfigureAwait(false);
-        
+
         // Assert
         var exception = await Assert.ThrowsAsync<ForbiddenException>(Act);
         exception.Message.Should().Be("Endpoint can only be used on dev environment");
     }
 
     #endregion
-    
+
     #region GetDocumentAsync
-    
+
     [Fact]
     public async Task GetDocumentAsync_WithValidData_ReturnsExpected()
     {
         // Arrange
         SetupFakesForGetDocument();
-        
+
         // Act
         var result = await _sut.GetDocumentAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
-        
+
         // Assert
         result.Should().NotBeNull();
         result.FileName.Should().Be("test.pdf");
         result.MediaType.Should().Be("application/pdf");
     }
-    
+
     [Fact]
     public async Task GetDocumentAsync_WithNotExistingDocument_ThrowsNotFoundException()
     {
         // Arrange
         var documentId = Guid.NewGuid();
         SetupFakesForGetDocument();
-        
+
         // Act
         async Task Act() => await _sut.GetDocumentAsync(documentId, IamUserId).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"Document {documentId} does not exist");
@@ -143,19 +143,19 @@ public class DocumentsBusinessLogicTests
     {
         // Arrange
         SetupFakesForGetDocument();
-        
+
         // Act
         async Task Act() => await _sut.GetDocumentAsync(ValidDocumentId, Guid.NewGuid().ToString()).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Be("User is not allowed to access the document");
     }
 
     #endregion
-    
+
     #region GetDocumentAsync
-    
+
     [Fact]
     public async Task GetSelfDescriptionDocumentAsync_WithValidData_ReturnsExpected()
     {
@@ -164,16 +164,15 @@ public class DocumentsBusinessLogicTests
         A.CallTo(() => _documentRepository.GetDocumentDataByIdAndTypeAsync(ValidDocumentId, DocumentTypeId.SELF_DESCRIPTION))
             .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId>(content, "test.json", MediaTypeId.JSON));
 
-        
         // Act
         var result = await _sut.GetSelfDescriptionDocumentAsync(ValidDocumentId).ConfigureAwait(false);
-        
+
         // Assert
         result.Should().NotBeNull();
         result.FileName.Should().Be("test.json");
         result.MediaType.Should().Be("application/json");
     }
-    
+
     [Fact]
     public async Task GetSelfDescriptionDocumentAsync_WithNotExistingDocument_ThrowsNotFoundException()
     {
@@ -182,17 +181,17 @@ public class DocumentsBusinessLogicTests
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentDataByIdAndTypeAsync(documentId, DocumentTypeId.SELF_DESCRIPTION))
             .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId>());
-        
+
         // Act
         async Task Act() => await _sut.GetSelfDescriptionDocumentAsync(documentId).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"Self description document {documentId} does not exist");
     }
-    
+
     #endregion
-    
+
     [Fact]
     public async Task GetFrameDocumentAsync_ReturnsExpectedResult()
     {
@@ -204,7 +203,7 @@ public class DocumentsBusinessLogicTests
 
         //Act
         var result = await _sut.GetFrameDocumentAsync(documentId).ConfigureAwait(false);
-        
+
         // Assert
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._)).MustHaveHappenedOnceExactly();
         result.Should().NotBeNull();
@@ -222,7 +221,7 @@ public class DocumentsBusinessLogicTests
 
         //Act
         var Act = () => _sut.GetFrameDocumentAsync(documentId);
-        
+
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
         result.Message.Should().Be($"document {documentId} does not exist.");
@@ -238,7 +237,7 @@ public class DocumentsBusinessLogicTests
 
         //Act
         var Act = () => _sut.GetFrameDocumentAsync(documentId);
-        
+
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
         result.Message.Should().Be($"document {documentId} does not exist.");

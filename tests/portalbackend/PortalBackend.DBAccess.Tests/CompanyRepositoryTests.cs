@@ -23,8 +23,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -38,8 +38,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     private readonly TestDbFixture _dbTestDbFixture;
     private const string IamUserId = "3d8142f1-860b-48aa-8c2b-1ccb18699f65";
     private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
-    private readonly Guid _validDetailId = new("ee8b4b4a-056e-4f0b-bc2a-cc1adbedf122");
-    
+
     public CompanyRepositoryTests(TestDbFixture testDbFixture)
     {
         var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -74,7 +73,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region Create ServiceProviderCompanyDetail
 
     [Fact]
@@ -85,7 +84,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, "8be5ee49-4b9c-4008-b641-138305430cc4").ConfigureAwait(false);
-        
+
         // Assert
         result.Should().NotBe(default);
         result.ProviderDetailReturnData.Should().NotBeNull();
@@ -128,7 +127,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CheckCompanyIsServiceProviderAndExistsForIamUser_WithValidData_ReturnsTrue()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("8be5ee49-4b9c-4008-b641-138305430cc4", CompanyRoleId.SERVICE_PROVIDER);
@@ -138,12 +137,12 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.CompanyId.Should().NotBe(Guid.Empty);
         results.IsServiceProviderCompany.Should().BeTrue();
     }
-    
+
     [Fact]
     public async Task CheckCompanyIsServiceProviderAndExistsForIamUser_WithNonServiceProviderCompany_ReturnsFalse()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("ad56702b-5908-44eb-a668-9a11a0e100d6", CompanyRoleId.SERVICE_PROVIDER);
@@ -155,9 +154,9 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region GetCompanyIdAndSelfDescriptionDocumentByBpnAsync
-    
+
     [Fact]
     public async Task GetCompanyIdByBpn_WithValidData_ReturnsExpected()
     {
@@ -173,7 +172,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.CompanyId.Should().Be("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
         result.SelfDescriptionDocumentId.Should().BeNull();
     }
-     
+
     [Fact]
     public async Task GetCompanyIdByBpn_WithNotExistingBpn_ReturnsEmptyGuid()
     {
@@ -190,7 +189,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region GetCompanyBpnAndSelfDescriptionDocumentByIdAsync
-    
+
     [Fact]
     public async Task GetCompanyBpnByIdAsync_WithValidData_ReturnsExpected()
     {
@@ -205,7 +204,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.Bpn.Should().NotBeNullOrEmpty();
         results.Bpn.Should().Be("BPNL00000003CRHK");
     }
-     
+
     [Fact]
     public async Task GetCompanyBpnByIdAsync_WithNotExistingId_ReturnsEmpty()
     {
@@ -329,7 +328,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CheckServiceProviderDetailsExistsForUser_WithValidIamUser_ReturnsDetailId()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetProviderCompanyDetailsExistsForUser("8be5ee49-4b9c-4008-b641-138305430cc4").ConfigureAwait(false);
@@ -342,7 +341,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CheckServiceProviderDetailsExistsForUser_WithNotExistingIamUser_ReturnsEmpty()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetProviderCompanyDetailsExistsForUser(Guid.NewGuid().ToString()).ConfigureAwait(false);
@@ -357,26 +356,26 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     [Theory]
     [InlineData(
-        new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.VAT_ID }, // initialKeys
-        new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.VIES },   // updateKeys
-        new [] { "value-1", "value-2", "value-3", "value-4" },                                                                                // initialValues
-        new [] { "value-1", "changed-1", "changed-2", "added-1" },                                                                            // updateValues
-        new [] { UniqueIdentifierId.VIES },                                                                                                   // addedEntityKeys
-        new [] { "added-1" },                                                                                                                 // addedEntityValues
-        new [] { UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE },                                                                      // updatedEntityKeys
-        new [] { "changed-1", "changed-2" },                                                                                                  // updatedEntityValues
-        new [] { UniqueIdentifierId.VAT_ID }                                                                                                  // removedEntityKeys
+        new[] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.VAT_ID }, // initialKeys
+        new[] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.VIES },   // updateKeys
+        new[] { "value-1", "value-2", "value-3", "value-4" },                                                                                // initialValues
+        new[] { "value-1", "changed-1", "changed-2", "added-1" },                                                                            // updateValues
+        new[] { UniqueIdentifierId.VIES },                                                                                                   // addedEntityKeys
+        new[] { "added-1" },                                                                                                                 // addedEntityValues
+        new[] { UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE },                                                                      // updatedEntityKeys
+        new[] { "changed-1", "changed-2" },                                                                                                  // updatedEntityValues
+        new[] { UniqueIdentifierId.VAT_ID }                                                                                                  // removedEntityKeys
     )]
     [InlineData(
-        new [] { UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.VAT_ID },                                           // initialKeys
-        new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.EORI, UniqueIdentifierId.VIES },                                // updateKeys
-        new [] { "value-1", "value-2", "value-3" },                                                                                           // initialValues
-        new [] { "added-1", "changed-1", "added-2" },                                                                                         // updateValues
-        new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VIES },                                                         // addedEntityKeys
-        new [] { "added-1", "added-2"},                                                                                                       // addedEntityValues
-        new [] { UniqueIdentifierId.EORI },                                                                                                   // updatedEntityKeys
-        new [] { "changed-1" },                                                                                                               // updatedEntityValues
-        new [] { UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.VAT_ID }                                                                     // removedEntityKeys
+        new[] { UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.VAT_ID },                                           // initialKeys
+        new[] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.EORI, UniqueIdentifierId.VIES },                                // updateKeys
+        new[] { "value-1", "value-2", "value-3" },                                                                                           // initialValues
+        new[] { "added-1", "changed-1", "added-2" },                                                                                         // updateValues
+        new[] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VIES },                                                         // addedEntityKeys
+        new[] { "added-1", "added-2" },                                                                                                       // addedEntityValues
+        new[] { UniqueIdentifierId.EORI },                                                                                                   // updatedEntityKeys
+        new[] { "changed-1" },                                                                                                               // updatedEntityValues
+        new[] { UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.VAT_ID }                                                                     // removedEntityKeys
     )]
 
     public async Task CreateUpdateDeleteIdentifiers(
@@ -412,7 +411,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         modified.OrderBy(x => x.UniqueIdentifierId).Zip(updatedEntities).Should().AllSatisfy(x => (x.First.UniqueIdentifierId == x.Second.UniqueIdentifierId && x.First.Value == x.Second.Value).Should().BeTrue());
         deleted.Should().HaveSameCount(removedEntities);
         deleted.OrderBy(x => x.UniqueIdentifierId).Zip(removedEntities).Should().AllSatisfy(x => x.First.UniqueIdentifierId.Should().Be(x.Second.UniqueIdentifierId));
-   }
+    }
 
     #endregion
 
@@ -421,7 +420,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task GetOwnCompanyDetailsAsync_ReturnsExpected()
     {
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         var result = await sut.GetOwnCompanyDetailsAsync("502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
 
@@ -446,7 +445,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCompanyAssigendUseCaseDetailsAsync_ReturnsExpected()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = sut.GetCompanyAssigendUseCaseDetailsAsync("ad56702b-5908-44eb-a668-9a11a0e100d6");
@@ -464,7 +463,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         var useCaseId = new Guid("06b243a4-ba51-4bf3-bc40-5d79a2231b86");
         var iamUserId = "ad56702b-5908-44eb-a668-9a11a0e100d6";
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetCompanyStatusAndUseCaseIdAsync(iamUserId, useCaseId).ConfigureAwait(false);
@@ -555,11 +554,11 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCompanyRolesDataAsync_ReturnsExpected()
     {
         // Arrange
-        var companyRoleIds = new []{ CompanyRoleId.SERVICE_PROVIDER , CompanyRoleId.ACTIVE_PARTICIPANT};
+        var companyRoleIds = new[] { CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.ACTIVE_PARTICIPANT };
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCompanyRolesDataAsync("8be5ee49-4b9c-4008-b641-138305430cc4",companyRoleIds).ConfigureAwait(false);
+        var result = await sut.GetCompanyRolesDataAsync("8be5ee49-4b9c-4008-b641-138305430cc4", companyRoleIds).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -580,7 +579,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAgreementAssignedRolesDataAsync_ReturnsExpected()
     {
         // Arrange
-        var companyRoleIds = new []{ CompanyRoleId.APP_PROVIDER };
+        var companyRoleIds = new[] { CompanyRoleId.APP_PROVIDER };
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
@@ -598,7 +597,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAgreementAssignedRolesDataAsync_ReturnsExpectedOrder()
     {
         // Arrange
-        var companyRoleIds = new []{ CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.ACTIVE_PARTICIPANT };
+        var companyRoleIds = new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.ACTIVE_PARTICIPANT };
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
@@ -622,7 +621,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCompanyStatusDataAsync()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetCompanyStatusDataAsync("8be5ee49-4b9c-4008-b641-138305430cc4").ConfigureAwait(false);
@@ -664,11 +663,11 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         (result == default).Should().BeTrue();
     }
-    
+
     #endregion
-    
+
     #region Setup
-    
+
     private async Task<(CompanyRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

@@ -1,4 +1,3 @@
-﻿
 
 using Flurl.Http.Testing;
 using Microsoft.Extensions.Options;
@@ -88,11 +87,11 @@ public class ClientManagerTests
         var client = new Client { Id = clientClientId, ClientId = clientId };
         using var httpTest = new HttpTest();
         A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).Returns(1);
-        httpTest.WithAuthorization(CentralRealm)
+        httpTest.WithAuthorization()
             .WithGetClientsAsync("test", Enumerable.Repeat(client, 1))
             .WithGetClientAsync("test", clientClientId, client)
-            .WithGetClientSecretAsync(clientId, new Credentials {Value = "super-secret"});
-        
+            .WithGetClientSecretAsync(clientId, new Credentials { Value = "super-secret" });
+
         // Act
         await _sut.UpdateClient(clientId, $"{url}/*", url).ConfigureAwait(false);
 
@@ -110,9 +109,9 @@ public class ClientManagerTests
         const string clientId = "cl1";
         using var httpTest = new HttpTest();
         A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).Returns(1);
-        httpTest.WithAuthorization(CentralRealm)
+        httpTest.WithAuthorization()
             .WithGetClientsAsync("test", Enumerable.Empty<Client>());
-        
+
         // Act
         async Task Act() => await _sut.UpdateClient(clientId, $"{url}/*", url).ConfigureAwait(false);
 
@@ -128,10 +127,10 @@ public class ClientManagerTests
         const string clientId = "cl1";
         using var httpTest = new HttpTest();
         A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).Returns(1);
-        httpTest.WithAuthorization(CentralRealm)
-            .WithGetClientAsync("test", clientId, new Client { Id = Guid.NewGuid().ToString() ,ClientId = clientId })
-            .WithGetClientSecretAsync(clientId, new Credentials {Value = "super-secret"});
-        
+        httpTest.WithAuthorization()
+            .WithGetClientAsync("test", clientId, new Client { Id = Guid.NewGuid().ToString(), ClientId = clientId })
+            .WithGetClientSecretAsync(clientId, new Credentials { Value = "super-secret" });
+
         // Act
         await _sut.EnableClient(clientId).ConfigureAwait(false);
 

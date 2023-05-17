@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ConsentAssignedOffer
 {
-    private ConsentAssignedOffer() {}
+    private ConsentAssignedOffer() { }
 
     public ConsentAssignedOffer(Guid consentId, Guid offerId)
     {

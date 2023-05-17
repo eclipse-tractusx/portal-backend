@@ -50,7 +50,7 @@ public interface IProvisioningManager
     Task<ClientAuthData> ResetCentralClientAuthDataAsync(string internalClientId);
     Task AddBpnAttributetoUserAsync(string centralUserId, IEnumerable<string> bpns);
     Task AddProtocolMapperAsync(string clientId);
-    Task DeleteCentralUserBusinessPartnerNumberAsync(string centralUserId,string businessPartnerNumber);
+    Task DeleteCentralUserBusinessPartnerNumberAsync(string centralUserId, string businessPartnerNumber);
     Task ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
     ValueTask<bool> IsCentralIdentityProviderEnabled(string alias);
@@ -65,7 +65,7 @@ public interface IProvisioningManager
     Task DeleteCentralIdentityProviderAsync(string alias);
     IAsyncEnumerable<IdentityProviderMapperModel> GetIdentityProviderMappers(string alias);
     ValueTask DeleteSharedIdpRealmAsync(string alias);
-    IEnumerable<(string AttributeName,IEnumerable<string> AttributeValues)> GetStandardAttributes(string? organisationName = null, string? businessPartnerNumber = null);
+    IEnumerable<(string AttributeName, IEnumerable<string> AttributeValues)> GetStandardAttributes(string? organisationName = null, string? businessPartnerNumber = null);
     Task DeleteClientRolesFromCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames);
     ValueTask UpdateSharedRealmTheme(string alias, string loginTheme);
 }

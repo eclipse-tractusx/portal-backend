@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 public class ErrorResponse
 {
-    public ErrorResponse(string type, string title, int status, IDictionary<string,IEnumerable<string>> errors)
+    public ErrorResponse(string type, string title, int status, IDictionary<string, IEnumerable<string>> errors)
     {
         Type = type;
         Title = title;
@@ -42,5 +42,5 @@ public class ErrorResponse
     public int Status { get; set; }
 
     [JsonPropertyName("errors")]
-    public IDictionary<string,IEnumerable<string>> Errors { get; set; }
+    public IDictionary<string, IEnumerable<string>> Errors { get; set; }
 }

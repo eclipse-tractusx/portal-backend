@@ -31,7 +31,7 @@ public class OfferTag
         Name = null!;
     }
 
-    public OfferTag(Guid offerId, string name): this()
+    public OfferTag(Guid offerId, string name) : this()
     {
         OfferId = offerId;
         Name = name;

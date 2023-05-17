@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyUserAssignedAppFavourite
 {
-    private CompanyUserAssignedAppFavourite() {}
+    private CompanyUserAssignedAppFavourite() { }
 
     public CompanyUserAssignedAppFavourite(Guid appId, Guid companyUserId)
     {

@@ -1,4 +1,4 @@
-﻿namespace PortalBackend.DBAccess.Models;
+namespace PortalBackend.DBAccess.Models;
 
 public record AppInstanceSetupTransferData(
     Guid Id,

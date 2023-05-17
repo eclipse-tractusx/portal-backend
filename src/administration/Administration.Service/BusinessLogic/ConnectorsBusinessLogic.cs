@@ -27,9 +27,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
@@ -46,7 +46,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly IDapsService _dapsService;
     private readonly ConnectorsSettings _settings;
-    private static readonly Regex bpnRegex = new (@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
+    private static readonly Regex bpnRegex = new(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
 
     /// <summary>
     /// Constructor.
@@ -305,7 +305,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     {
         var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
         var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId).ConfigureAwait(false);
-        if(!result.IsConnectorIdExist)
+        if (!result.IsConnectorIdExist)
         {
             throw new NotFoundException($"Connector {connectorId} does not exist");
         }
@@ -320,7 +320,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ConflictException("DapsClientId must be set");
         }
 
-        if(result.SelfDescriptionDocumentId != null)
+        if (result.SelfDescriptionDocumentId != null)
         {
             _portalRepositories.GetInstance<IDocumentRepository>().AttachAndModifyDocument(
                 result.SelfDescriptionDocumentId.Value,
@@ -328,9 +328,9 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 a => { a.DocumentStatusId = DocumentStatusId.INACTIVE; });
         }
 
-        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false); 
-        
-        if(companyUserId == Guid.Empty)
+        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+
+        if (companyUserId == Guid.Empty)
         {
             throw new ConflictException($"user {iamUserId} is not mapped to a valid companyUser");
         }
@@ -362,7 +362,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                     group.Key,
                     group.Select(x => x.ConnectorEndpoint)));
     }
-        
 
     /// <inheritdoc />
     public async Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, string iamUserId, CancellationToken cancellationToken)
@@ -372,7 +371,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         var connector = await connectorsRepository
             .GetConnectorInformationByIdForIamUser(connectorId, iamUserId)
             .ConfigureAwait(false);
-        
+
         if (connector == default)
         {
             throw new NotFoundException($"Connector {connectorId} does not exists");
@@ -395,7 +394,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
 
-        if(companyUserId == Guid.Empty)
+        if (companyUserId == Guid.Empty)
         {
             throw new ConflictException($"user {iamUserId} is not mapped to a valid companyUser");
         }
@@ -433,8 +432,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId)
             .ConfigureAwait(false);
-        
-        if(companyUserId == Guid.Empty)
+
+        if (companyUserId == Guid.Empty)
         {
             throw new ConflictException($"user {iamUserId} is not mapped to a valid companyUser");
         }

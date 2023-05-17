@@ -21,13 +21,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
-using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
 
@@ -93,7 +93,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<ServiceTypeData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<ServiceTypeData> GetServiceTypeDataAsync() =>
         _serviceReleaseBusinessLogic.GetServiceTypeDataAsync();
-    
+
     /// <summary>
     /// Gets the agreement consent status for the given service id
     /// </summary>
@@ -145,9 +145,9 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid serviceId, [FromBody] OfferAgreementConsent offerAgreementConsents) => 
+    public async Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid serviceId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
         await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.SubmitOfferConsentAsync(serviceId, offerAgreementConsents, iamUserId));
-        
+
     /// <summary>
     /// Retrieves all in review status service in the marketplace .
     /// </summary>
@@ -165,7 +165,7 @@ public class ServiceReleaseController : ControllerBase
     [Authorize(Roles = "approve_service_release,decline_service_release")]
     [ProducesResponseType(typeof(Pagination.Response<InReviewServiceData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, [FromQuery] string? serviceName = null, [FromQuery] string? languageShortName = null, [FromQuery] ServiceReleaseStatusIdFilter? status = null) =>
-        _serviceReleaseBusinessLogic.GetAllInReviewStatusServiceAsync(page, size, sorting,serviceName, languageShortName, status);
+        _serviceReleaseBusinessLogic.GetAllInReviewStatusServiceAsync(page, size, sorting, serviceName, languageShortName, status);
 
     /// <summary>
     /// Delete Document Assigned to Offer
@@ -190,7 +190,7 @@ public class ServiceReleaseController : ControllerBase
         await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.DeleteServiceDocumentsAsync(documentId, iamUserId));
         return NoContent();
     }
-    
+
     /// <summary>
     /// Creates a new service offering.
     /// </summary>
@@ -233,7 +233,7 @@ public class ServiceReleaseController : ControllerBase
         await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.UpdateServiceAsync(serviceId, data, iamUserId));
         return NoContent();
     }
-    
+
     /// <summary>
     /// Submit an Service for release
     /// </summary>
@@ -334,7 +334,7 @@ public class ServiceReleaseController : ControllerBase
         await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.CreateServiceDocumentAsync(serviceId, documentTypeId, document, iamUserId, cancellationToken));
         return NoContent();
     }
-    
+
     /// <summary>
     /// Retrieve the technical user profile information
     /// </summary>

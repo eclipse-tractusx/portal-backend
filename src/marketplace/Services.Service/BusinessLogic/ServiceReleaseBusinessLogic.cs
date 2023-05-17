@@ -18,16 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
-using Microsoft.Extensions.Options;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
@@ -56,7 +56,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         _settings = settings.Value;
     }
 
-    public IAsyncEnumerable<AgreementDocumentData> GetServiceAgreementDataAsync()=>
+    public IAsyncEnumerable<AgreementDocumentData> GetServiceAgreementDataAsync() =>
         _offerService.GetOfferTypeAgreements(OfferTypeId.SERVICE);
 
     /// <inheritdoc />
@@ -86,12 +86,12 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<ServiceTypeData> GetServiceTypeDataAsync()=>
+    public IAsyncEnumerable<ServiceTypeData> GetServiceTypeDataAsync() =>
         _portalRepositories.GetInstance<IStaticDataRepository>().GetServiceTypeData();
 
     /// <inheritdoc/>
-    public Task<OfferAgreementConsent> GetServiceAgreementConsentAsync(Guid serviceId, string iamUserId) => 
-        _offerService.GetProviderOfferAgreementConsentById(serviceId,  iamUserId, OfferTypeId.SERVICE);
+    public Task<OfferAgreementConsent> GetServiceAgreementConsentAsync(Guid serviceId, string iamUserId) =>
+        _offerService.GetProviderOfferAgreementConsentById(serviceId, iamUserId, OfferTypeId.SERVICE);
 
     public async Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, string userId)
     {
@@ -116,7 +116,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             result.ServiceTypeIds,
             result.TechnicalUserProfile);
     }
-    
+
     /// <inheritdoc/>
     public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, string userId)
     {
@@ -131,31 +131,31 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     private Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentInternalAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, string userId) =>
         _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, offerAgreementConsents, userId, OfferTypeId.SERVICE);
 
-     /// <inheritdoc/>
+    /// <inheritdoc/>
     public Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync(int page, int size, OfferSorting? sorting, string? serviceName, string? languageShortName, ServiceReleaseStatusIdFilter? statusId) =>
         Pagination.CreateResponseAsync(page, size, 15,
             _portalRepositories.GetInstance<IOfferRepository>()
-                .GetAllInReviewStatusServiceAsync(GetOfferStatusIds(statusId), OfferTypeId.SERVICE, sorting ?? OfferSorting.DateDesc,serviceName, languageShortName ?? Constants.DefaultLanguage, Constants.DefaultLanguage));
-    
+                .GetAllInReviewStatusServiceAsync(GetOfferStatusIds(statusId), OfferTypeId.SERVICE, sorting ?? OfferSorting.DateDesc, serviceName, languageShortName ?? Constants.DefaultLanguage, Constants.DefaultLanguage));
+
     private IEnumerable<OfferStatusId> GetOfferStatusIds(ServiceReleaseStatusIdFilter? serviceStatusIdFilter)
     {
-        switch(serviceStatusIdFilter)
+        switch (serviceStatusIdFilter)
         {
             case ServiceReleaseStatusIdFilter.InReview:
-            {
-                return new []{ OfferStatusId.IN_REVIEW };
-            }
-            
-            default :
-            {
-                return _settings.OfferStatusIds;
-            }
-        }       
+                {
+                    return new[] { OfferStatusId.IN_REVIEW };
+                }
+
+            default:
+                {
+                    return _settings.OfferStatusIds;
+                }
+        }
     }
 
-     /// <inheritdoc />
-     public Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId) =>
-         _offerService.CreateServiceOfferingAsync(data, iamUserId, OfferTypeId.SERVICE);
+    /// <inheritdoc />
+    public Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId) =>
+        _offerService.CreateServiceOfferingAsync(data, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public async Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, string iamUserId)
@@ -208,7 +208,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             .Where(x => !x.IsMatch)
             .Select(sti => (serviceId, sti.ServiceTypeId));
         UpdateAssignedServiceTypes(
-            newServiceTypes, 
+            newServiceTypes,
             serviceTypeIdsToRemove,
             offerRepository);
         if (data.ServiceTypeIds.All(x => x == ServiceTypeId.CONSULTANCE_SERVICE))
@@ -219,7 +219,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
-    
+
     private static void UpdateAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> newServiceTypes, IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceTypeIdsToRemove, IOfferRepository appRepository)
     {
         appRepository.AddServiceAssignedServiceTypes(newServiceTypes);
@@ -227,7 +227,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task SubmitServiceAsync(Guid serviceId, string iamUserId) => 
+    public Task SubmitServiceAsync(Guid serviceId, string iamUserId) =>
         _offerService.SubmitServiceAsync(serviceId, iamUserId, OfferTypeId.SERVICE, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
 
     /// <inheritdoc/>
@@ -235,9 +235,9 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.SERVICE, _settings.ApproveServiceNotificationTypeIds, _settings.ApproveServiceUserRoles, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
 
     /// <inheritdoc />
-    public Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data) => 
+    public Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data) =>
         _offerService.DeclineOfferAsync(serviceId, iamUserId, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.ServiceMarketplaceAddress, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
-    
+
     /// <inheritdoc />
     public Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken) =>
         _offerService.UploadDocumentAsync(serviceId, documentTypeId, document, iamUserId, OfferTypeId.SERVICE, _settings.UploadServiceDocumentTypeIds, cancellationToken);
@@ -245,11 +245,11 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     /// <inheritdoc/>
     public Task DeleteServiceDocumentsAsync(Guid documentId, string iamUserId) =>
         _offerService.DeleteDocumentsAsync(documentId, iamUserId, _settings.DeleteDocumentTypeIds, OfferTypeId.SERVICE);
-    
+
     /// <inheritdoc />
     public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId) =>
         _offerService.GetTechnicalUserProfilesForOffer(offerId, iamUserId, OfferTypeId.SERVICE);
-    
+
     /// <inheritdoc />
     public Task UpdateTechnicalUserProfiles(Guid serviceId, IEnumerable<TechnicalUserProfileData> data, string iamUserId) =>
         _offerService.UpdateTechnicalUserProfiles(serviceId, OfferTypeId.SERVICE, data, iamUserId, _settings.TechnicalUserProfileClient);

@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -36,8 +36,8 @@ public class Document : IBaseEntity
         Offers = new HashSet<Offer>();
         Companies = new HashSet<Company>();
     }
-    
-    public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, MediaTypeId mediaTypeId, DateTimeOffset dateCreated, DocumentStatusId documentStatusId, DocumentTypeId documentTypeId) 
+
+    public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, MediaTypeId mediaTypeId, DateTimeOffset dateCreated, DocumentStatusId documentStatusId, DocumentTypeId documentTypeId)
         : this()
     {
         Id = id;

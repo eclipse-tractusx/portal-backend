@@ -36,7 +36,7 @@ public class DocumentType
         Id = documentTypeId;
         Label = documentTypeId.ToString();
     }
-    
+
     public DocumentTypeId Id { get; private set; }
 
     [MaxLength(255)]

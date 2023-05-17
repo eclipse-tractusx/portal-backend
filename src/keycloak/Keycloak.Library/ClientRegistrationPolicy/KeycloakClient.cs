@@ -24,8 +24,8 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Components;
 using Flurl.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Components;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 

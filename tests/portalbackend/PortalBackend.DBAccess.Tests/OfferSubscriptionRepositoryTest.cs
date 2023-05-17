@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -89,8 +89,8 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.GetOfferSubscriptionStateForCompanyAsync(
-            new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), 
-            new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), 
+            new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"),
+            new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
             OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
@@ -108,8 +108,8 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.GetOfferSubscriptionStateForCompanyAsync(
-            new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), 
-            new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), 
+            new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"),
+            new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
             OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
@@ -117,7 +117,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region GetAllBusinessAppDataForUserId
 
     [Fact]
@@ -139,7 +139,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region GetOwnCompanyProvidedOfferSubscriptionStatusesUntracked
-    
+
     [Theory]
     [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, 1)]
     [InlineData(SubscriptionStatusSorting.OfferIdDesc, null, 1)]
@@ -169,9 +169,9 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             results.Should().BeNull();
         }
     }
-    
+
     #endregion
-    
+
     #region GetOfferDetailsAndCheckUser
 
     [Fact]
@@ -194,8 +194,8 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.Bpn.Should().Be("BPNL00000003CRHK");
         result.OfferName.Should().Be("Trace-X");
     }
-    
-     [Fact]
+
+    [Fact]
     public async Task GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync_WithExistingData_ReturnsExpectedResult()
     {
         // Arrange
@@ -230,7 +230,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetSubscriptionDetailsAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), "8be5ee49-4b9c-4008-b641-138305430cc4", OfferTypeId.SERVICE, new []{new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632")}, true).ConfigureAwait(false);
+        var result = await sut.GetSubscriptionDetailsAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), "8be5ee49-4b9c-4008-b641-138305430cc4", OfferTypeId.SERVICE, new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") }, true).ConfigureAwait(false);
 
         // Assert
         result.Exists.Should().BeTrue();
@@ -248,7 +248,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetSubscriptionDetailsAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.SERVICE, new []{new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632")}, false).ConfigureAwait(false);
+        var result = await sut.GetSubscriptionDetailsAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), new Guid("3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.SERVICE, new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") }, false).ConfigureAwait(false);
 
         // Assert
         result.Exists.Should().BeTrue();
@@ -294,7 +294,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region GetUpdateUrlDataAsync
 
     [Fact]
@@ -404,13 +404,13 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region Setup
-    
+
     private async Task<(OfferSubscriptionsRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new OfferSubscriptionsRepository(context);
         return (sut, context);
     }
-    
+
     #endregion
 }

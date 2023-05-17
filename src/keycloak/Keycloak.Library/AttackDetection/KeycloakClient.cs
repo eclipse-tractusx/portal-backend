@@ -24,8 +24,8 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AttackDetection;
 using Flurl.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AttackDetection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 

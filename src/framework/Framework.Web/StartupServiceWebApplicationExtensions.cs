@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class StartupServiceWebApplicationExtensions
 {
-    
+
     public static WebApplication CreateApp<TProgram>(this WebApplication app, string apiPath, string version, IHostEnvironment environment)
     {
         if (environment.IsDevelopment())

@@ -69,7 +69,7 @@ public interface ICompanyRepository
     Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(string iamUserId, CompanyRoleId companyRoleId);
 
     Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(string iamUserId);
-    
+
     /// <summary>
     /// Creates service provider company details
     /// </summary>
@@ -85,7 +85,7 @@ public interface ICompanyRepository
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the details data</returns>
     Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, string iamUserId);
-    
+
     /// <summary>
     /// Updates the service provider company details
     /// </summary>
@@ -115,7 +115,7 @@ public interface ICompanyRepository
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="useCaseId">Id of the UseCase</param>
     /// <returns>Returns the CompanyActive Status, companyAssigendUeseCase Id and CompanyId</returns>
-    Task<(bool IsUseCaseIdExists, bool IsActiveCompanyStatus , Guid CompanyId)> GetCompanyStatusAndUseCaseIdAsync(string iamUserId, Guid useCaseId);
+    Task<(bool IsUseCaseIdExists, bool IsActiveCompanyStatus, Guid CompanyId)> GetCompanyStatusAndUseCaseIdAsync(string iamUserId, Guid useCaseId);
 
     /// <summary>
     /// creates the companyAssigendUeseCase record
@@ -148,7 +148,7 @@ public interface ICompanyRepository
     /// </summary>
     /// <param name="companyRoleIds">Id of the CompanyRole</param>
     /// <returns>Returns the AgreementAssignedCompanyRoles Data</returns>
-    IAsyncEnumerable<(Guid AgreementId, CompanyRoleId CompanyRoleId)> GetAgreementAssignedRolesDataAsync (IEnumerable<CompanyRoleId> companyRoleIds);
+    IAsyncEnumerable<(Guid AgreementId, CompanyRoleId CompanyRoleId)> GetAgreementAssignedRolesDataAsync(IEnumerable<CompanyRoleId> companyRoleIds);
 
     /// <summary>
     /// Gets the the CompanyStatus Data

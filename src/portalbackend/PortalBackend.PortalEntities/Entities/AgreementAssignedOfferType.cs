@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class AgreementAssignedOfferType
 {
-    private AgreementAssignedOfferType() {}
+    private AgreementAssignedOfferType() { }
 
     public AgreementAssignedOfferType(Guid agreementId, OfferTypeId offerTypeId)
     {

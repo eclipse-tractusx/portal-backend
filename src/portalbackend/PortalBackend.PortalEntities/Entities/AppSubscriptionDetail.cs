@@ -19,8 +19,8 @@
  ********************************************************************************/
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -42,13 +42,13 @@ public class AppSubscriptionDetail : IAuditableV1, IBaseEntity
     /// </summary>
     /// <param name="id">Id of the entity</param>
     /// <param name="offerSubscriptionId">Id of the offer subscription</param>
-    public AppSubscriptionDetail(Guid id, Guid offerSubscriptionId) 
+    public AppSubscriptionDetail(Guid id, Guid offerSubscriptionId)
         : this()
     {
         this.Id = id;
         this.OfferSubscriptionId = offerSubscriptionId;
     }
-    
+
     /// <summary>
     /// Id of the entity
     /// </summary>
@@ -63,13 +63,13 @@ public class AppSubscriptionDetail : IAuditableV1, IBaseEntity
     /// ID of the app instance.
     /// </summary>
     public Guid? AppInstanceId { get; set; }
-    
+
     [MaxLength(255)]
     public string? AppSubscriptionUrl { get; set; }
-    
+
     [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
-    
+
     /// <summary>
     /// Subscribing app instance.
     /// </summary>

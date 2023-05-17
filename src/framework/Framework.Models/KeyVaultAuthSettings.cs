@@ -27,10 +27,10 @@ public class KeyVaultAuthSettings
     [Required(AllowEmptyStrings = false)]
     public string Username { get; set; } = null!;
 
-    [Required(AllowEmptyStrings = false)] 
+    [Required(AllowEmptyStrings = false)]
     public string Password { get; set; } = null!;
 
-    [Required(AllowEmptyStrings = false)] 
+    [Required(AllowEmptyStrings = false)]
     public string ClientId { get; set; } = null!;
 
     [Required(AllowEmptyStrings = false)]

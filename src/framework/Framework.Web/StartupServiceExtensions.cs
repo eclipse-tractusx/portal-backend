@@ -37,7 +37,8 @@ public static class StartupServiceExtensions
         services.AddCors(options => options.SetupCors(configuration));
 
         services.AddControllers()
-            .AddJsonOptions(options => {
+            .AddJsonOptions(options =>
+            {
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
             });
 
@@ -47,13 +48,14 @@ public static class StartupServiceExtensions
         {
             x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(options => {
+        }).AddJwtBearer(options =>
+        {
             configuration.Bind("JwtBearerOptions", options);
             if (!options.RequireHttpsMetadata)
             {
                 options.BackchannelHttpHandler = new HttpClientHandler
                 {
-                    ServerCertificateCustomValidationCallback = (_,_,_,_) => true
+                    ServerCertificateCustomValidationCallback = (_, _, _, _) => true
                 };
             }
         });
@@ -66,7 +68,7 @@ public static class StartupServiceExtensions
             .ValidateOnStart();
 
         services.AddHealthChecks()
-            .AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: new [] { "keycloak" });
+            .AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: new[] { "keycloak" });
 
         return services;
     }

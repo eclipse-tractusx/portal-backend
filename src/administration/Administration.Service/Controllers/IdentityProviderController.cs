@@ -81,10 +81,10 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(IdentityProviderDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public async ValueTask<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery]IamIdentityProviderProtocol protocol, [FromQuery] string? displayName = null)
+    public async ValueTask<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery] IamIdentityProviderProtocol protocol, [FromQuery] string? displayName = null)
     {
         var details = await this.WithIamUserId(iamUserId => _businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, displayName, iamUserId)).ConfigureAwait(false);
-        return (ActionResult<IdentityProviderDetails>) CreatedAtRoute(nameof(GetOwnCompanyIdentityProvider), new { identityProviderId = details.identityProviderId }, details );
+        return (ActionResult<IdentityProviderDetails>)CreatedAtRoute(nameof(GetOwnCompanyIdentityProvider), new { identityProviderId = details.identityProviderId }, details);
     }
 
     /// <summary>
@@ -101,7 +101,7 @@ public class IdentityProviderController : ControllerBase
     /// <response code="502">Bad Gateway Service Error.</response>
     [HttpGet]
     [Authorize(Roles = "view_idp")]
-    [Route("owncompany/identityproviders/{identityProviderId}", Name=nameof(GetOwnCompanyIdentityProvider))]
+    [Route("owncompany/identityproviders/{identityProviderId}", Name = nameof(GetOwnCompanyIdentityProvider))]
     [ProducesResponseType(typeof(IdentityProviderDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
@@ -189,7 +189,7 @@ public class IdentityProviderController : ControllerBase
     public async Task<ActionResult> DeleteOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId)
     {
         await this.WithIamUserId(iamUserId => _businessLogic.DeleteOwnCompanyIdentityProviderAsync(identityProviderId, iamUserId)).ConfigureAwait(false);
-        return (ActionResult) NoContent();
+        return (ActionResult)NoContent();
     }
 
     /// <summary>
@@ -210,7 +210,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<UserIdentityProviderData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync([FromQuery] IEnumerable<Guid> identityProviderIds, [FromQuery]bool unlinkedUsersOnly = false) =>
+    public IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync([FromQuery] IEnumerable<Guid> identityProviderIds, [FromQuery] bool unlinkedUsersOnly = false) =>
         this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUsersIdentityProviderDataAsync(identityProviderIds, iamUserId, unlinkedUsersOnly));
 
     /// <summary>
@@ -231,7 +231,8 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public IActionResult GetOwnCompanyUsersIdentityProviderFileAsync([FromQuery] IEnumerable<Guid> identityProviderIds, [FromQuery]bool unlinkedUsersOnly = false) {
+    public IActionResult GetOwnCompanyUsersIdentityProviderFileAsync([FromQuery] IEnumerable<Guid> identityProviderIds, [FromQuery] bool unlinkedUsersOnly = false)
+    {
         var (stream, contentType, fileName, encoding) = this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUsersIdentityProviderLinkDataStream(identityProviderIds, iamUserId, unlinkedUsersOnly));
         return File(stream, string.Join("; ", contentType, encoding.WebName), fileName);
     }
@@ -258,9 +259,9 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-        public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
+    public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
             this.WithIamUserId(iamUserId => _businessLogic.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(document, iamUserId, cancellationToken));
-    
+
     /// <summary>
     /// Adds the user to the given identity provider
     /// </summary>
@@ -291,7 +292,7 @@ public class IdentityProviderController : ControllerBase
     public async ValueTask<ActionResult<UserIdentityProviderLinkData>> AddOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromBody] UserIdentityProviderLinkData identityProviderLinkData)
     {
         var linkData = await this.WithIamUserId(iamUserId => _businessLogic.CreateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderLinkData, iamUserId)).ConfigureAwait(false);
-        return (ActionResult<UserIdentityProviderLinkData>) CreatedAtRoute(
+        return (ActionResult<UserIdentityProviderLinkData>)CreatedAtRoute(
             nameof(GetOwnCompanyUserIdentityProviderDataAsync),
             new { companyUserId = companyUserId, identityProviderId = linkData.identityProviderId },
             linkData);
@@ -379,6 +380,6 @@ public class IdentityProviderController : ControllerBase
     public async ValueTask<ActionResult> DeleteOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId)
     {
         await this.WithIamUserId(iamUserId => _businessLogic.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId, iamUserId)).ConfigureAwait(false);
-        return (ActionResult) NoContent();
+        return (ActionResult)NoContent();
     }
 }

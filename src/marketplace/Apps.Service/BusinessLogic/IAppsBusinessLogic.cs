@@ -157,7 +157,7 @@ public interface IAppsBusinessLogic
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the details of the subscription</returns>
     Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid appId, Guid subscriptionId, string iamUserId);
-    
+
     /// <summary>
     /// Gets the information for the subscription
     /// </summary>

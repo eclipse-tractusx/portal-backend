@@ -78,7 +78,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 
     /// <inheritdoc />
     public async Task<ServiceDetailResponse> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId)
-    {        
+    {
         var result = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang, iamUserId).ConfigureAwait(false);
         if (result == default)
         {
@@ -113,7 +113,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<AgreementData> GetServiceAgreement(Guid serviceId) => 
+    public IAsyncEnumerable<AgreementData> GetServiceAgreement(Guid serviceId) =>
         _offerService.GetOfferAgreementsAsync(serviceId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
@@ -130,7 +130,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         async Task<Pagination.Source<OfferCompanySubscriptionStatusResponse>?> GetCompanyProvidedAppSubscriptionStatusData(int skip, int take)
         {
             var offerCompanySubscriptionResponse = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.SERVICE, sorting, statusId ?? OfferSubscriptionStatusId.ACTIVE, offerId)(skip,take).ConfigureAwait(false);
+                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.SERVICE, sorting, statusId ?? OfferSubscriptionStatusId.ACTIVE, offerId)(skip, take).ConfigureAwait(false);
 
             return offerCompanySubscriptionResponse == null
                 ? null
@@ -147,7 +147,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task SubmitServiceAsync(Guid serviceId, string iamUserId) => 
+    public Task SubmitServiceAsync(Guid serviceId, string iamUserId) =>
         _offerService.SubmitServiceAsync(serviceId, iamUserId, OfferTypeId.SERVICE, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
 
     /// <inheritdoc/>
@@ -155,51 +155,51 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.SERVICE, _settings.ApproveServiceNotificationTypeIds, _settings.ApproveServiceUserRoles, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
 
     /// <inheritdoc />
-    public Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data) => 
+    public Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data) =>
         _offerService.DeclineOfferAsync(serviceId, iamUserId, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.ServiceMarketplaceAddress, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
-    
+
     /// <inheritdoc />
     public Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken) =>
         UploadServiceDoc(serviceId, documentTypeId, document, iamUserId, OfferTypeId.SERVICE, cancellationToken);
 
     private Task UploadServiceDoc(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
         _offerService.UploadDocumentAsync(serviceId, documentTypeId, document, iamUserId, offerTypeId, _settings.UploadServiceDocumentTypeIds, cancellationToken);
-    
+
     /// <inheritdoc />
     public Task<(byte[] Content, string ContentType, string FileName)> GetServiceDocumentContentAsync(Guid serviceId, Guid documentId, CancellationToken cancellationToken) =>
         _offerService.GetOfferDocumentContentAsync(serviceId, documentId, _settings.ServiceImageDocumentTypeIds, OfferTypeId.SERVICE, cancellationToken);
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync(int page, int size, string userId, OfferSorting? sorting, string? offerName,  ServiceStatusIdFilter? statusId) =>
+    public Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync(int page, int size, string userId, OfferSorting? sorting, string? offerName, ServiceStatusIdFilter? statusId) =>
         Pagination.CreateResponseAsync(page, size, 15,
             _portalRepositories.GetInstance<IOfferRepository>()
                 .GetCompanyProvidedServiceStatusDataAsync(GetOfferStatusIds(statusId), OfferTypeId.SERVICE, userId, sorting ?? OfferSorting.DateDesc, offerName));
 
     private static IEnumerable<OfferStatusId> GetOfferStatusIds(ServiceStatusIdFilter? serviceStatusIdFilter)
     {
-        switch(serviceStatusIdFilter)
+        switch (serviceStatusIdFilter)
         {
-            case ServiceStatusIdFilter.Active :
-            {
-               return new []{ OfferStatusId.ACTIVE };
-            }
-            case ServiceStatusIdFilter.Inactive :
-            {
-               return new []{ OfferStatusId.INACTIVE };
-            }
+            case ServiceStatusIdFilter.Active:
+                {
+                    return new[] { OfferStatusId.ACTIVE };
+                }
+            case ServiceStatusIdFilter.Inactive:
+                {
+                    return new[] { OfferStatusId.INACTIVE };
+                }
             case ServiceStatusIdFilter.InReview:
-            {
-               return new []{ OfferStatusId.IN_REVIEW };
-            }
+                {
+                    return new[] { OfferStatusId.IN_REVIEW };
+                }
             case ServiceStatusIdFilter.WIP:
-            {
-               return new []{ OfferStatusId.CREATED };
-            }
-            default :
-            {
-                return Enum.GetValues<OfferStatusId>();
-            }
-        }       
+                {
+                    return new[] { OfferStatusId.CREATED };
+                }
+            default:
+                {
+                    return Enum.GetValues<OfferStatusId>();
+                }
+        }
     }
 
     /// <inheritdoc />

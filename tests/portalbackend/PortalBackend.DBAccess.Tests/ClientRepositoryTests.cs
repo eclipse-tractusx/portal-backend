@@ -51,7 +51,7 @@ public class ClientRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     [Fact]
     public async Task CreateClient_ReturnsExpectedResult()
-    
+
     {
         // Arrange
         var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
@@ -72,7 +72,7 @@ public class ClientRepositoryTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region RemoveClient
-    
+
     [Fact]
     public async Task RemoveClient_ReturnsExpectedResult()
     {

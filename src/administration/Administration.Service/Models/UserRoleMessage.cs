@@ -31,7 +31,7 @@ public class UserRoleMessage
         Success = success;
         Warning = warning;
     }
-    
+
     /// <summary>
     /// Success Message
     /// </summary>

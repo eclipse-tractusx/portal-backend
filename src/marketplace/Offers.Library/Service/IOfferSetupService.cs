@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 /// Business logic for handling offer-related operations. Includes persistence layer access.
 /// </summary>
 public interface IOfferSetupService
-{ 
+{
     /// <summary>
     /// Calls the external partner to autosetup the offer
     /// </summary>
@@ -48,7 +48,7 @@ public interface IOfferSetupService
     /// <param name="basePortalAddress">Address of the portal</param>
     /// <param name="serviceManagerRoles">Roles of the service Managers</param>
     /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> itAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress, IDictionary<string,IEnumerable<string>> serviceManagerRoles);
+    Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string, IEnumerable<string>> itAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress, IDictionary<string, IEnumerable<string>> serviceManagerRoles);
 
     /// <summary>
     /// Setup a single instance app

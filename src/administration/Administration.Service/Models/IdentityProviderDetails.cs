@@ -25,11 +25,11 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-public record IdentityProviderDetails(Guid identityProviderId, string alias, IdentityProviderCategoryId identityProviderCategoryId, string displayName, string redirectUrl, bool enabled, IEnumerable<IdentityProviderMapperModel>  mappers)
+public record IdentityProviderDetails(Guid identityProviderId, string alias, IdentityProviderCategoryId identityProviderCategoryId, string displayName, string redirectUrl, bool enabled, IEnumerable<IdentityProviderMapperModel> mappers)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IdentityProviderDetailsOidc? oidc { get; init; } = null;
-    
+
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IdentityProviderDetailsSaml? saml { get; init; } = null;
 }

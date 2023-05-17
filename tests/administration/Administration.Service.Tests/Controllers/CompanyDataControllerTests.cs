@@ -47,11 +47,11 @@ public class CompanyDataControllerTests
     {
         // Arrange
         var companyAddressDetailData = _fixture.Create<CompanyAddressDetailData>();
-        A.CallTo(()=> _logic.GetOwnCompanyDetailsAsync(IamUserId))
+        A.CallTo(() => _logic.GetOwnCompanyDetailsAsync(IamUserId))
             .Returns(companyAddressDetailData);
-        
+
         // Act
-         var result = await this._controller.GetOwnCompanyDetailsAsync().ConfigureAwait(false);
+        var result = await this._controller.GetOwnCompanyDetailsAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().BeOfType<CompanyAddressDetailData>();
@@ -64,7 +64,7 @@ public class CompanyDataControllerTests
         var companyRoleConsentDatas = _fixture.CreateMany<CompanyAssignedUseCaseData>(2).ToAsyncEnumerable();
         A.CallTo(() => _logic.GetCompanyAssigendUseCaseDetailsAsync(IamUserId))
             .Returns(companyRoleConsentDatas);
-        
+
         // Act
         await this._controller.GetCompanyAssigendUseCaseDetailsAsync().ToListAsync();
 
@@ -79,7 +79,7 @@ public class CompanyDataControllerTests
         var useCaseData = _fixture.Create<UseCaseIdDetails>();
         A.CallTo(() => _logic.CreateCompanyAssignedUseCaseDetailsAsync(IamUserId, useCaseData.useCaseId))
             .Returns(true);
-        
+
         // Act
         var result = await this._controller.CreateCompanyAssignedUseCaseDetailsAsync(useCaseData).ConfigureAwait(false);
 
@@ -96,7 +96,7 @@ public class CompanyDataControllerTests
         var useCaseData = _fixture.Create<UseCaseIdDetails>();
         A.CallTo(() => _logic.CreateCompanyAssignedUseCaseDetailsAsync(IamUserId, useCaseData.useCaseId))
             .Returns(false);
-        
+
         // Act
         var result = await this._controller.CreateCompanyAssignedUseCaseDetailsAsync(useCaseData).ConfigureAwait(false);
 
@@ -113,7 +113,7 @@ public class CompanyDataControllerTests
         var useCaseData = _fixture.Create<UseCaseIdDetails>();
         A.CallTo(() => _logic.RemoveCompanyAssignedUseCaseDetailsAsync(IamUserId, useCaseData.useCaseId))
             .Returns(Task.CompletedTask);
-        
+
         // Act
         var result = await this._controller.RemoveCompanyAssignedUseCaseDetailsAsync(useCaseData).ConfigureAwait(false);
 
@@ -130,7 +130,7 @@ public class CompanyDataControllerTests
         var companyRoleConsentDatas = _fixture.CreateMany<CompanyRoleConsentViewData>(2).ToAsyncEnumerable();
         A.CallTo(() => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(IamUserId, languageShortName))
             .Returns(companyRoleConsentDatas);
-        
+
         // Act
         await this._controller.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName).ToListAsync().ConfigureAwait(false);
 
@@ -145,12 +145,12 @@ public class CompanyDataControllerTests
         var companyRoleConsentDetails = _fixture.CreateMany<CompanyRoleConsentDetails>(2);
         A.CallTo(() => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(IamUserId, companyRoleConsentDetails))
             .Returns(Task.CompletedTask);
-        
+
         // Act
         var result = await this._controller.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(IamUserId, companyRoleConsentDetails)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
-    } 
+    }
 }

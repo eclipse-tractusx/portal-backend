@@ -21,11 +21,11 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
@@ -36,7 +36,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
-   
+
 public class OfferSetupService : IOfferSetupService
 {
     private readonly IPortalRepositories _portalRepositories;
@@ -73,7 +73,7 @@ public class OfferSetupService : IOfferSetupService
         _httpClientFactory = httpClientFactory;
         _technicalUserProfileService = technicalUserProfileService;
     }
-    
+
     /// <inheritdoc />
     public async Task AutoSetupOfferSubscription(OfferThirdPartyAutoSetupData autoSetupData, string accessToken, string autoSetupUrl)
     {
@@ -83,8 +83,8 @@ public class OfferSetupService : IOfferSetupService
             .CatchingIntoServiceExceptionFor("autosetup-offer-subscription")
             .ConfigureAwait(false);
     }
-    
-    public async Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string,IEnumerable<string>> itAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress, IDictionary<string,IEnumerable<string>> serviceManagerRoles)
+
+    public async Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string, IEnumerable<string>> itAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress, IDictionary<string, IEnumerable<string>> serviceManagerRoles)
     {
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerDetails = await GetAndValidateOfferDetails(data.RequestId, iamUserId, offerTypeId, offerSubscriptionsRepository).ConfigureAwait(false);
@@ -121,7 +121,7 @@ public class OfferSetupService : IOfferSetupService
         var technicalUserClientId = clientInfoData?.ClientId ?? $"{offerDetails.OfferName}-{offerDetails.CompanyName}";
         var createTechnicalUserData = new CreateTechnicalUserData(offerDetails.CompanyId, offerDetails.OfferName, offerDetails.Bpn, technicalUserClientId, offerTypeId == OfferTypeId.APP);
         var technicalUserInfoData = await CreateTechnicalUserForSubscription(data.RequestId, createTechnicalUserData).ConfigureAwait(false);
-        
+
         await CreateNotifications(itAdminRoles, offerTypeId, offerDetails).ConfigureAwait(false);
         await SetNotificationsToDone(serviceManagerRoles, offerTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -146,7 +146,7 @@ public class OfferSetupService : IOfferSetupService
         {
             serviceAccountCreationInfo = technicalUserInfoCreations.SingleOrDefault();
         }
-        catch(InvalidOperationException)
+        catch (InvalidOperationException)
         {
             throw new UnexpectedConditionException("There should only be one or none technical user profile configured for ");
         }
@@ -171,7 +171,7 @@ public class OfferSetupService : IOfferSetupService
     /// <inheritdoc />
     public async Task SetupSingleInstance(Guid offerId, string instanceUrl)
     {
-        if(!await _portalRepositories.GetInstance<IAppInstanceRepository>()
+        if (!await _portalRepositories.GetInstance<IAppInstanceRepository>()
                .CheckInstanceExistsForOffer(offerId)
                .ConfigureAwait(false))
         {
@@ -221,7 +221,7 @@ public class OfferSetupService : IOfferSetupService
         {
             (instanceId, internalClientId) = data.Instances.Single();
         }
-        catch(InvalidOperationException)
+        catch (InvalidOperationException)
         {
             throw new UnexpectedConditionException($"There should always be exactly one instance defined for a single instance offer {offerId}");
         }
@@ -236,7 +236,7 @@ public class OfferSetupService : IOfferSetupService
             .ConfigureAwait(false);
 
         _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstanceAssignedServiceAccounts(technicalUserData.Select(x => new ValueTuple<Guid, Guid>(instanceId, x.TechnicalUserId)));
-        
+
         return technicalUserData.Select(x => x.TechnicalClientId);
     }
 
@@ -308,7 +308,7 @@ public class OfferSetupService : IOfferSetupService
                 .CreateServiceAccountAsync(
                     creationInfo,
                     data.CompanyId,
-                    data.Bpn == null ? Enumerable.Empty<string>() : new [] { data.Bpn },
+                    data.Bpn == null ? Enumerable.Empty<string>() : new[] { data.Bpn },
                     CompanyServiceAccountTypeId.MANAGED,
                     data.EnhanceTechnicalUserName)
                 .ConfigureAwait(false);
@@ -369,7 +369,7 @@ public class OfferSetupService : IOfferSetupService
             serviceManagerRoles,
             Enumerable.Repeat(notificationType, 1),
             offerId,
-            salesManagerId == null ? Enumerable.Empty<Guid>(): Enumerable.Repeat(salesManagerId.Value, 1))
+            salesManagerId == null ? Enumerable.Empty<Guid>() : Enumerable.Repeat(salesManagerId.Value, 1))
             .ConfigureAwait(false);
     }
 
@@ -382,7 +382,7 @@ public class OfferSetupService : IOfferSetupService
             {"url", basePortalAddress},
         };
         await _mailingService
-            .SendMails(requesterEmail, mailParams, new List<string> {"subscription-activation"})
+            .SendMails(requesterEmail, mailParams, new List<string> { "subscription-activation" })
             .ConfigureAwait(false);
     }
 

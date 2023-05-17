@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -34,7 +34,7 @@ public static class DatabaseInitializerExtensions
         await scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>()
             .InitializeDatabasesAsync(cancellationToken);
     }
-    
+
     public static IServiceCollection AddDatabaseInitializer<TDbContext>(this IServiceCollection services, IConfigurationSection section) where TDbContext : DbContext
     {
         services.AddOptions<SeederSettings>()
@@ -47,7 +47,7 @@ public static class DatabaseInitializerExtensions
             .AddServices(typeof(ICustomSeeder), ServiceLifetime.Transient)
             .AddTransient<CustomSeederRunner>();
     }
-    
+
     private static IServiceCollection AddServices(this IServiceCollection services, Type interfaceType, ServiceLifetime lifetime)
     {
         var interfaceTypes =

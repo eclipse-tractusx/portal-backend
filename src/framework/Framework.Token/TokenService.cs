@@ -51,7 +51,7 @@ public class TokenService : ITokenService
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return httpClient;
     }
-    
+
     private async Task<string?> GetTokenAsync(GetTokenSettings settings, CancellationToken cancellationToken)
     {
         var formParameters = new Dictionary<string, string>

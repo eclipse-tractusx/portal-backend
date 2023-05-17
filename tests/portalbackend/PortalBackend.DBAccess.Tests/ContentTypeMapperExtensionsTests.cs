@@ -1,7 +1,7 @@
-﻿using System.Reflection.Metadata;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Reflection.Metadata;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
@@ -24,13 +24,13 @@ public class ContentTypeMapperExtensionsTests
         var mediaType = mediaTypeId.MapToMediaType();
         mediaType.Should().Be(result);
     }
-    
+
     [Fact]
     public void MapToMediaType_WithInvalid_ThrowsConflictException()
     {
         void Act() => ((MediaTypeId)666).MapToMediaType();
 
-        var ex = Assert.Throws<ConflictException>((Action) Act);
+        var ex = Assert.Throws<ConflictException>((Action)Act);
         ex.Message.Should().Be($"document mediatype 666 is not supported");
     }
 
@@ -57,7 +57,7 @@ public class ContentTypeMapperExtensionsTests
     {
         void Act() => "just a test".ParseMediaTypeId();
 
-        var ex = Assert.Throws<UnsupportedMediaTypeException>((Action) Act);
+        var ex = Assert.Throws<UnsupportedMediaTypeException>((Action)Act);
         ex.Message.Should().Be($"mediaType 'just a test' is not supported");
     }
 }

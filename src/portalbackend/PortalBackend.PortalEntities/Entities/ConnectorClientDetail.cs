@@ -1,4 +1,4 @@
-﻿namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 public class ConnectorClientDetail
 {
@@ -8,12 +8,12 @@ public class ConnectorClientDetail
     }
 
     public ConnectorClientDetail(Guid connectorId, string clientId)
-        :this()
+        : this()
     {
         this.ConnectorId = connectorId;
         this.ClientId = clientId;
     }
-    
+
     public Guid ConnectorId { get; set; }
 
     public string ClientId { get; set; }

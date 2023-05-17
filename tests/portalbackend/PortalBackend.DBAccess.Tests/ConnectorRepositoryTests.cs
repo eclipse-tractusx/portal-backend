@@ -191,7 +191,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region GetConnectorDataById
-    
+
     [Fact]
     public async Task GetConnectorDataById_ReturnsExpectedAppCount()
     {
@@ -221,7 +221,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region GetSelfDescriptionDocumentData
 
     [Fact]
@@ -256,7 +256,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
     }
 
-        [Fact]
+    [Fact]
     public async Task GetSelfDescriptionDocumentDataAsync_WithoutExistingConnectorId_ReturnsExpected()
     {
         // Arrange
@@ -275,7 +275,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region CreateConnectorClientDetails
-    
+
     [Fact]
     public async Task CreateConnectorClientDetails_ReturnsExpected()
     {
@@ -293,11 +293,11 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Should().HaveCount(1);
         changedEntries.Single().Entity.Should().BeOfType<ConnectorClientDetail>().Which.ClientId.Should().Be("12345");
     }
-    
+
     #endregion
-    
+
     #region DeleteConnectorClientDetails
-    
+
     [Fact]
     public async Task DeleteConnectorClientDetails_ReturnsExpectedResult()
     {
@@ -321,7 +321,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region GetManagedConnectorsForIamUser
-    
+
     [Fact]
     public async Task GetManagedConnectorsForIamUser_ReturnsExpectedAppCount()
     {
@@ -329,7 +329,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetManagedConnectorsForIamUser("502dabcf-01c7-47d9-a88e-0be4279097b5").Invoke(0,10).ConfigureAwait(false);
+        var result = await sut.GetManagedConnectorsForIamUser("502dabcf-01c7-47d9-a88e-0be4279097b5").Invoke(0, 10).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -344,17 +344,16 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetManagedConnectorsForIamUser(Guid.NewGuid().ToString()).Invoke(0,10).ConfigureAwait(false);
+        var result = await sut.GetManagedConnectorsForIamUser(Guid.NewGuid().ToString()).Invoke(0, 10).ConfigureAwait(false);
 
         // Assert
-        result.Should().BeNull();        
+        result.Should().BeNull();
     }
 
     #endregion
-    
+
     #region GetConnectorUpdateInformation
-    
-    
+
     [Fact]
     public async Task GetConnectorUpdateInformation_ReturnsExpectedAppCount()
     {
@@ -380,7 +379,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetConnectorUpdateInformation(Guid.NewGuid(), "502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
 
         // Assert
-        result.Should().BeNull();        
+        result.Should().BeNull();
     }
 
     #endregion
@@ -388,9 +387,9 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetConnectorEndPointDataAsync
 
     [Theory]
-    [InlineData(new [] { "BPNL00000003AYRE", "BPNL00000003CRHK" }, 3, 2)]
-    [InlineData(new string [] {}, 4, 3)]
-    [InlineData(new [] { "not a bpn" }, 0, 0)]
+    [InlineData(new[] { "BPNL00000003AYRE", "BPNL00000003CRHK" }, 3, 2)]
+    [InlineData(new string[] { }, 4, 3)]
+    [InlineData(new[] { "not a bpn" }, 0, 0)]
     public async Task GetConnectorEndPointDataAsync_WithExistingConnector_ReturnsExpectedResult(IEnumerable<string> bpns, int numResults, int numGroups)
     {
         // Arrange
@@ -407,7 +406,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
             var presorted = await result.ToAsyncEnumerable().PreSortedGroupBy(x => x.BusinessPartnerNumber, x => x.ConnectorEndpoint).ToListAsync();
             grouped.Should().HaveCount(numGroups);
             presorted.Should().HaveCount(numGroups);
-            grouped.Join(presorted, g => g.Key, p => p.Key, (g,p) => (g,p)).Should().AllSatisfy(
+            grouped.Join(presorted, g => g.Key, p => p.Key, (g, p) => (g, p)).Should().AllSatisfy(
                 j => j.g.OrderBy(x => x).Should().ContainInOrder(j.p.OrderBy(x => x))
             );
             if (bpns.Any())
@@ -416,9 +415,9 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
             }
         }
     }
-    
+
     #endregion
-    
+
     private async Task<(ConnectorsRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

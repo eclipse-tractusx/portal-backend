@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -27,12 +27,12 @@ public class AppInstanceAssignedCompanyServiceAccount
     }
 
     public AppInstanceAssignedCompanyServiceAccount(Guid appInstanceId, Guid companyServiceAccountId)
-        :this()
+        : this()
     {
         AppInstanceId = appInstanceId;
         CompanyServiceAccountId = companyServiceAccountId;
     }
-    
+
     public Guid AppInstanceId { get; private set; }
 
     public Guid CompanyServiceAccountId { get; private set; }

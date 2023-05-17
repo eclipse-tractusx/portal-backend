@@ -24,7 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace  Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 
 /// <summary>
 /// Seeder to seed the base entities (those with an id as primary key)
@@ -56,7 +56,7 @@ public class BatchUpdateSeeder : ICustomSeeder
     {
         _logger.LogInformation("Start BaseEntityBatch Seeder");
         await SeedTable<Language>(
-            "languages", 
+            "languages",
             x => x.ShortName,
             x => x.dbEntity.LongNameDe != x.dataEntity.LongNameDe || x.dbEntity.LongNameEn != x.dataEntity.LongNameEn,
             (dbEntity, entity) =>
@@ -64,7 +64,7 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntity.LongNameDe = entity.LongNameDe;
                 dbEntity.LongNameEn = entity.LongNameEn;
             }, cancellationToken).ConfigureAwait(false);
-        
+
         await SeedTable<CompanyRoleDescription>(
             "company_role_descriptions",
             x => new { x.CompanyRoleId, x.LanguageShortName },
@@ -72,17 +72,17 @@ public class BatchUpdateSeeder : ICustomSeeder
             (dbEntry, entry) =>
             {
                 dbEntry.Description = entry.Description;
-            },cancellationToken).ConfigureAwait(false);
-        
+            }, cancellationToken).ConfigureAwait(false);
+
         await SeedTable<UserRoleCollectionDescription>(
             "user_role_collection_descriptions",
-            x => new { x.UserRoleCollectionId, x.LanguageShortName }, 
+            x => new { x.UserRoleCollectionId, x.LanguageShortName },
             x => x.dbEntity.Description != x.dataEntity.Description,
             (dbEntry, entry) =>
             {
                 dbEntry.Description = entry.Description;
             }, cancellationToken).ConfigureAwait(false);
-        
+
         await SeedTable<Country>(
             "countries",
             x => x.Alpha2Code,
@@ -93,10 +93,10 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.CountryNameDe = entry.CountryNameDe;
                 dbEntry.CountryNameEn = entry.CountryNameEn;
             }, cancellationToken).ConfigureAwait(false);
-        
+
         await SeedTable<CompanyIdentifier>("company_identifiers",
-            x =>  new { x.CompanyId, x.UniqueIdentifierId }, 
-            x => x.dataEntity.Value != x.dbEntity.Value, 
+            x => new { x.CompanyId, x.UniqueIdentifierId },
+            x => x.dataEntity.Value != x.dbEntity.Value,
             (dbEntry, entry) =>
             {
                 dbEntry.Value = entry.Value;
@@ -106,7 +106,7 @@ public class BatchUpdateSeeder : ICustomSeeder
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
     }
 
-    private async Task SeedTable<T>(string fileName, Func<T,object> keySelector, Func<(T dataEntity, T dbEntity), bool> whereClause, Action<T, T> updateEntries, CancellationToken cancellationToken) where T : class
+    private async Task SeedTable<T>(string fileName, Func<T, object> keySelector, Func<(T dataEntity, T dbEntity), bool> whereClause, Action<T, T> updateEntries, CancellationToken cancellationToken) where T : class
     {
         _logger.LogInformation("Start seeding {Filename}", fileName);
         var data = await SeederHelper.GetSeedData<T>(_logger, fileName, cancellationToken, _settings.TestDataEnvironments.ToArray()).ConfigureAwait(false);
@@ -125,7 +125,7 @@ public class BatchUpdateSeeder : ICustomSeeder
                 {
                     updateEntries.Invoke(dbEntry.Item1, dbEntry.Item2);
                 }
-                _logger.LogInformation("Updated {TableName}", typeName);    
+                _logger.LogInformation("Updated {TableName}", typeName);
             }
         }
     }

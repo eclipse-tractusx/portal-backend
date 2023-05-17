@@ -43,10 +43,10 @@ public class ConnectorsControllerIntegrationTests : IClassFixture<IntegrationTes
         // Arrange
         var client = _factory.CreateClient();
         var endpoint = new ConnectorsEndpoints(client);
-        
+
         // Act
         var response = await endpoint.GetCompanyConnectorsForCurrentUserAsync().ConfigureAwait(false);
-        
+
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var pagination = await response.GetResultFromContent<Pagination.Response<ConnectorData>>();

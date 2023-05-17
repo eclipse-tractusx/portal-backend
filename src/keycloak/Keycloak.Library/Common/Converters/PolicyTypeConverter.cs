@@ -28,7 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
 
-public class PolicyTypeConverter: JsonEnumConverter<PolicyType>
+public class PolicyTypeConverter : JsonEnumConverter<PolicyType>
 {
     private static readonly Dictionary<PolicyType, string> SPairs = new Dictionary<PolicyType, string>
     {

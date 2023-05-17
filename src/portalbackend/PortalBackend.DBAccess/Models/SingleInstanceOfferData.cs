@@ -1,4 +1,4 @@
-﻿namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record SingleInstanceOfferData(
     Guid CompanyId,

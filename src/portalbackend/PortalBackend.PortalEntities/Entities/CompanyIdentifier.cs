@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyIdentifier
 {
-    private CompanyIdentifier() 
+    private CompanyIdentifier()
     {
         Value = null!;
     }

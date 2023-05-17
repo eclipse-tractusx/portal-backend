@@ -27,7 +27,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// </summary>
 public class ServiceAccountSettings
 {
-    public ServiceAccountSettings() 
+    public ServiceAccountSettings()
     {
         ClientId = null!;
     }

@@ -33,7 +33,7 @@ public class AppsSettings
     /// </summary>
     /// <value></value>
     [Required]
-    public IDictionary<string,IEnumerable<string>> CatenaAdminRoles { get; set; } = null!;
+    public IDictionary<string, IEnumerable<string>> CatenaAdminRoles { get; set; } = null!;
 
     /// <summary>
     /// Notification Type Id
@@ -47,7 +47,7 @@ public class AppsSettings
     /// </summary>
     [Required(AllowEmptyStrings = false)]
     public string BasePortalAddress { get; init; } = null!;
-    
+
     /// <summary>
     /// AppOverview url required for the decline request email 
     /// </summary>
@@ -58,8 +58,8 @@ public class AppsSettings
     /// Sales Manager roles
     /// </summary>
     [Required]
-    public IDictionary<string,IEnumerable<string>> SalesManagerRoles { get; set; } = null!;
-    
+    public IDictionary<string, IEnumerable<string>> SalesManagerRoles { get; set; } = null!;
+
     /// <summary>
     /// Roles to notify when a new subscription was created
     /// </summary>
@@ -72,12 +72,12 @@ public class AppsSettings
     /// <value></value>
     [Required]
     public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
-     /// <summary>
+    /// <summary>
     /// Active App Company Admin Roles
     /// </summary>
     /// <value></value>
     [Required]
-    public IDictionary<string,IEnumerable<string>> ActiveAppCompanyAdminRoles { get; set; } = null!;
+    public IDictionary<string, IEnumerable<string>> ActiveAppCompanyAdminRoles { get; set; } = null!;
 
     /// <summary>
     /// Active App Notification Type Id
@@ -85,13 +85,13 @@ public class AppsSettings
     /// <value></value>
     [Required]
     public IEnumerable<NotificationTypeId> ActiveAppNotificationTypeIds { get; set; } = null!;
-    
+
     /// <summary>
     /// Approve App Notification Type Id
     /// </summary>
     /// <value></value>
     public IEnumerable<NotificationTypeId> ApproveAppNotificationTypeIds { get; set; } = null!;
-    
+
     /// <summary>
     /// Roles to notify when a new subscription was created for sales and App Manager
     /// </summary>
@@ -102,7 +102,7 @@ public class AppsSettings
     /// Max page size for pagination
     /// </summary>
     public int ApplicationsMaxPageSize { get; set; }
-    
+
     /// <summary>
     /// Document Type Id for App Image
     /// </summary>
@@ -114,7 +114,7 @@ public class AppsSettings
     /// IT Admin Roles
     /// </summary>
     [Required]
-    public IDictionary<string,IEnumerable<string>> ITAdminRoles { get; set; } = null!;
+    public IDictionary<string, IEnumerable<string>> ITAdminRoles { get; set; } = null!;
 
     /// <summary>
     /// UserManagementAddress url required for subscription email 
@@ -127,7 +127,7 @@ public class AppsSettings
     /// </summary>
     [Required]
     public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds { get; set; } = null!;
-    
+
     /// <summary>
     /// Document Type Id to be deleted
     /// </summary>
@@ -138,7 +138,7 @@ public class AppsSettings
     /// Document Type Id and ContentType to be uploaded
     /// </summary>
     [Required]
-    public IDictionary<DocumentTypeId, IEnumerable<string>> UploadAppDocumentTypeIds {get; set;} = null!;
+    public IDictionary<DocumentTypeId, IEnumerable<string>> UploadAppDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Client to get the technical user profile client

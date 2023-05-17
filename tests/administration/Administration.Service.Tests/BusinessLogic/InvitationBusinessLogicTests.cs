@@ -51,7 +51,7 @@ public class InvitationBusinessLogicTests
     private readonly Guid _companyId;
     private readonly Guid _identityProviderId;
     private readonly Guid _applicationId;
-    private readonly Func<UserCreationRoleDataIdpInfo,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
+    private readonly Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
     private readonly Exception _error;
 
     public InvitationBusinessLogicTests()
@@ -78,7 +78,7 @@ public class InvitationBusinessLogicTests
         _identityProviderId = _fixture.Create<Guid>();
         _applicationId = _fixture.Create<Guid>();
 
-        _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
+        _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
 
         _error = _fixture.Create<TestException>();
     }
@@ -88,7 +88,7 @@ public class InvitationBusinessLogicTests
     [Fact]
     public async Task TestExecuteInvitationSuccess()
     {
-        SetupFakes(true);
+        SetupFakes();
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.organisationName, _companyName)
@@ -104,7 +104,7 @@ public class InvitationBusinessLogicTests
             _mailingService,
             _options);
 
-        await sut.ExecuteInvitation(invitationData,_iamUserId).ConfigureAwait(false);
+        await sut.ExecuteInvitation(invitationData, _iamUserId).ConfigureAwait(false);
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
         A.CallTo(() => _provisioningManager.SetupSharedIdpAsync(A<string>.That.IsEqualTo(_idpName), A<string>.That.IsEqualTo(invitationData.organisationName), A<string?>._)).MustHaveHappened();
@@ -112,26 +112,26 @@ public class InvitationBusinessLogicTests
         A.CallTo(() => _companyRepository.CreateCompany(A<string>.That.IsEqualTo(invitationData.organisationName))).MustHaveHappened();
         A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>.That.IsEqualTo(IdentityProviderCategoryId.KEYCLOAK_SHARED))).MustHaveHappened();
         A.CallTo(() => _identityProviderRepository.CreateIamIdentityProvider(A<IdentityProvider>.That.Matches(i => i.Companies.Single().Id == _companyId), A<string>.That.IsEqualTo(_idpName))).MustHaveHappened();
-        A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>.That.IsEqualTo(_companyId),A<CompanyApplicationStatusId>.That.IsEqualTo(CompanyApplicationStatusId.CREATED))).MustHaveHappened();
+        A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>.That.IsEqualTo(_companyId), A<CompanyApplicationStatusId>.That.IsEqualTo(CompanyApplicationStatusId.CREATED))).MustHaveHappened();
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
             A<CompanyNameIdpAliasData>.That.Matches(d => d.CompanyId == _companyId),
             A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._,
             A<CancellationToken>._)).MustHaveHappened();
-        
+
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == invitationData.firstName))).MustHaveHappened();
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Not.Matches(u => u.FirstName == invitationData.firstName))).MustNotHaveHappened();
 
-        A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_applicationId),A<Guid>._)).MustHaveHappened();
+        A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_applicationId), A<Guid>._)).MustHaveHappened();
 
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedTwiceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(invitationData.email),A<Dictionary<string,string>>._,A<List<string>>._)).MustHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(invitationData.email), A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappened();
     }
 
     [Fact]
     public async Task TestExecuteInvitationNoEmailThrows()
     {
-        SetupFakes(true);
+        SetupFakes();
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.firstName, _fixture.CreateName())
@@ -146,20 +146,20 @@ public class InvitationBusinessLogicTests
             _mailingService,
             _options);
 
-        Task Act() => sut.ExecuteInvitation(invitationData,_iamUserId);
+        Task Act() => sut.ExecuteInvitation(invitationData, _iamUserId);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().Be("email must not be empty (Parameter 'email')");
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._,A<Dictionary<string,string>>._,A<List<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
     }
 
     [Fact]
     public async Task TestExecuteInvitationNoOrganisationNameThrows()
     {
-        SetupFakes(true);
+        SetupFakes();
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.organisationName, "")
@@ -175,20 +175,20 @@ public class InvitationBusinessLogicTests
             _mailingService,
             _options);
 
-        Task Act() => sut.ExecuteInvitation(invitationData,_iamUserId);
+        Task Act() => sut.ExecuteInvitation(invitationData, _iamUserId);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().Be("organisationName must not be empty (Parameter 'organisationName')");
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._,A<Dictionary<string,string>>._,A<List<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
     }
 
     [Fact]
     public async Task TestExecuteInvitationIamUserNotFoundThrows()
     {
-        SetupFakes(true);
+        SetupFakes();
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.organisationName, _companyName)
@@ -213,13 +213,13 @@ public class InvitationBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._,A<Dictionary<string,string>>._,A<List<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
     }
 
     [Fact]
     public async Task TestExecuteInvitationCreateUserErrorThrows()
     {
-        SetupFakes(true);
+        SetupFakes();
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
             (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
@@ -248,13 +248,13 @@ public class InvitationBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._,A<Dictionary<string,string>>._,A<List<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
     }
 
     [Fact]
     public async Task TestExecuteInvitationCreateUserThrowsThrows()
     {
-        SetupFakes(true);
+        SetupFakes();
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).Throws(_error);
 
@@ -279,17 +279,17 @@ public class InvitationBusinessLogicTests
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._,A<Dictionary<string,string>>._,A<List<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
     }
 
     #endregion
 
     #region Setup
 
-    private void SetupFakes(bool IsBulkUserCreation)
+    private void SetupFakes()
     {
         A.CallTo(() => _options.Value).Returns(_fixture.Build<InvitationSettings>()
-            .With(x => x.InvitedUserInitialRoles, new Dictionary<string,IEnumerable<string>>
+            .With(x => x.InvitedUserInitialRoles, new Dictionary<string, IEnumerable<string>>
             {
                 { _fixture.Create<string>(), _fixture.CreateMany<string>() }
             })
@@ -307,14 +307,14 @@ public class InvitationBusinessLogicTests
             new Company(_companyId, organisationName, CompanyStatusId.PENDING, _fixture.Create<DateTimeOffset>()));
 
         A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._)).ReturnsLazily((IdentityProviderCategoryId categoryId) =>
-            new IdentityProvider(_identityProviderId,categoryId,_fixture.Create<DateTimeOffset>()));
+            new IdentityProvider(_identityProviderId, categoryId, _fixture.Create<DateTimeOffset>()));
 
         A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>._, A<CompanyApplicationStatusId>._)).ReturnsLazily((Guid companyId, CompanyApplicationStatusId applicationStatusId) =>
-            new CompanyApplication(_applicationId,companyId,applicationStatusId,_fixture.Create<DateTimeOffset>()));
+            new CompanyApplication(_applicationId, companyId, applicationStatusId, _fixture.Create<DateTimeOffset>()));
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).Returns(_idpName);
 
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._,A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._,A<CancellationToken>._))
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
             .ReturnsLazily((CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken cancellationToken) =>
                 userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
 
@@ -324,7 +324,6 @@ public class InvitationBusinessLogicTests
                 .With(x => x.Error, (Exception?)null)
                 .Create());
     }
-
 
     #endregion
 

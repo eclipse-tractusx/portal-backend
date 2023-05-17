@@ -25,7 +25,6 @@ public class CancelableStreamTest
     private readonly IFixture _fixture;
     private readonly Stream _stream;
     private readonly Memory<byte> _memory;
-    private readonly ReadOnlyMemory<byte> _readOnlyMemory;
     private readonly int _numBytesFirstRead;
     private readonly int _numBytesSecondRead;
     private readonly Func<int> _getNumBytes;
@@ -37,11 +36,10 @@ public class CancelableStreamTest
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());  
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _stream = A.Fake<Stream>();
         _memory = _fixture.Create<Memory<byte>>();
-        _readOnlyMemory = _fixture.Create<ReadOnlyMemory<byte>>();
         _numBytesFirstRead = _fixture.Create<int>();
         _numBytesSecondRead = _fixture.Create<int>();
         _getNumBytes = A.Fake<Func<int>>();
@@ -54,7 +52,7 @@ public class CancelableStreamTest
     [Fact]
     public async void TestReadAsyncNoOtherTokenSuccess()
     {
-        var (sut,source) = SetupForRead();
+        var (sut, _) = SetupForRead();
         var firstResult = await sut.ReadAsync(_memory).ConfigureAwait(false);
         var secondResult = await sut.ReadAsync(_memory).ConfigureAwait(false);
         firstResult.Should().Be(_numBytesFirstRead);
@@ -64,7 +62,7 @@ public class CancelableStreamTest
     [Fact]
     public async void TestReadAsyncWithUncancelledOtherTokenSuccess()
     {
-        var (sut,source) = SetupForRead();
+        var (sut, _) = SetupForRead();
         var firstResult = await sut.ReadAsync(_memory, new CancellationTokenSource().Token).ConfigureAwait(false);
         var secondResult = await sut.ReadAsync(_memory, new CancellationTokenSource().Token).ConfigureAwait(false);
         firstResult.Should().Be(_numBytesFirstRead);
@@ -74,7 +72,7 @@ public class CancelableStreamTest
     [Fact]
     public async void TestReadAsyncSourceCancelledWithUncancelledOtherTokenSuccess()
     {
-        var (sut,source) = SetupForRead();
+        var (sut, source) = SetupForRead();
         var firstResult = await sut.ReadAsync(_memory).ConfigureAwait(false);
         source.Cancel();
         var secondResult = await sut.ReadAsync(_memory, new CancellationTokenSource().Token).ConfigureAwait(false);
@@ -85,7 +83,7 @@ public class CancelableStreamTest
     [Fact]
     public async void TestReadAsyncWithCancelledOtherTokenThrows()
     {
-        var (sut,source) = SetupForRead();
+        var (sut, source) = SetupForRead();
 
         var firstResult = await sut.ReadAsync(_memory).ConfigureAwait(false);
         firstResult.Should().Be(_numBytesFirstRead);
@@ -99,7 +97,7 @@ public class CancelableStreamTest
     [Fact]
     public async void TestReadAsyncSourceCancelledThrows()
     {
-        var (sut,source) = SetupForRead();
+        var (sut, source) = SetupForRead();
 
         var firstResult = await sut.ReadAsync(_memory).ConfigureAwait(false);
         firstResult.Should().Be(_numBytesFirstRead);
@@ -114,26 +112,16 @@ public class CancelableStreamTest
     #endregion
 
     #region Setup
-    
-    private (Stream,CancellationTokenSource) SetupForRead()
+
+    private (Stream, CancellationTokenSource) SetupForRead()
     {
         var source = new CancellationTokenSource();
-        A.CallTo(() => _getNumBytes()).ReturnsNextFromSequence(_numBytesFirstRead,_numBytesSecondRead);
+        A.CallTo(() => _getNumBytes()).ReturnsNextFromSequence(_numBytesFirstRead, _numBytesSecondRead);
         A.CallTo(() => _stream.CanRead).Returns(true);
         A.CallTo(() => _stream.ReadAsync(A<Memory<byte>>.Ignored, A<CancellationToken>.That.IsNotCanceled())).ReturnsLazily(() => _getNumBytes());
         A.CallTo(() => _stream.ReadAsync(A<Memory<byte>>.Ignored, A<CancellationToken>.That.Matches(t => t == source.Token && t.CanBeCanceled && t.IsCancellationRequested))).Throws(_sourceTokenCanceledException);
         A.CallTo(() => _stream.ReadAsync(A<Memory<byte>>.Ignored, A<CancellationToken>.That.Matches(t => t != source.Token && t.CanBeCanceled && t.IsCancellationRequested))).Throws(_otherTokenCanceledException);
-        return (new CancellableStream(_stream,source.Token),source);
-    }
-
-    private (Stream,CancellationTokenSource) SetupForWrite()
-    {
-        var source = new CancellationTokenSource();
-        A.CallTo(() => _stream.CanWrite).Returns(true);
-        A.CallTo(() => _stream.WriteAsync(A<ReadOnlyMemory<byte>>.Ignored, A<CancellationToken>.That.IsNotCanceled())).Returns(ValueTask.CompletedTask);
-        A.CallTo(() => _stream.WriteAsync(A<ReadOnlyMemory<byte>>.Ignored, A<CancellationToken>.That.Matches(t => t == source.Token && t.CanBeCanceled && t.IsCancellationRequested))).Throws(_sourceTokenCanceledException);
-        A.CallTo(() => _stream.WriteAsync(A<ReadOnlyMemory<byte>>.Ignored, A<CancellationToken>.That.Matches(t => t != source.Token && t.CanBeCanceled && t.IsCancellationRequested))).Throws(_otherTokenCanceledException);
-        return (new CancellableStream(_stream,source.Token),source);
+        return (new CancellableStream(_stream, source.Token), source);
     }
 
     #endregion

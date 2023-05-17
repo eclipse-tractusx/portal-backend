@@ -44,7 +44,7 @@ public class ServiceProviderControllerTest
     public async Task SetServiceProviderCompanyDetail_WithValidData_ReturnsNoContent()
     {
         //Arrange
-        var data = new ServiceProviderDetailData("https://this-is-a-test.de");  
+        var data = new ServiceProviderDetailData("https://this-is-a-test.de");
         A.CallTo(() => _logic.SetServiceProviderCompanyDetailsAsync(data, IamUserId))
             .ReturnsLazily(() => Task.CompletedTask);
 
@@ -55,13 +55,13 @@ public class ServiceProviderControllerTest
         A.CallTo(() => _logic.SetServiceProviderCompanyDetailsAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
-    
+
     [Fact]
     public async Task GetServiceProviderCompanyDetail_WithValidData_ReturnsOk()
     {
         //Arrange
         var id = Guid.NewGuid();
-        var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de");  
+        var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de");
         A.CallTo(() => _logic.GetServiceProviderCompanyDetailsAsync(IamUserId))
             .ReturnsLazily(() => data);
 

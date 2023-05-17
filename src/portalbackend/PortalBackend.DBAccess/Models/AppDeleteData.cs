@@ -26,7 +26,7 @@ public record AppDeleteData(
     IEnumerable<Guid> OfferLicenseIds,
     IEnumerable<Guid> UseCaseIds,
     IEnumerable<PrivacyPolicyId> PolicyIds,
-    IEnumerable<(Guid DocumentId,DocumentStatusId DocumentStatusId)> DocumentIdStatus,
+    IEnumerable<(Guid DocumentId, DocumentStatusId DocumentStatusId)> DocumentIdStatus,
     IEnumerable<string> LanguageCodes,
     IEnumerable<string> TagNames,
     IEnumerable<string> DescriptionLanguageShortNames

@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -73,7 +73,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
             : Enumerable.Empty<ServiceAccountCreationInfo>();
     }
 
-    private static bool CheckTechnicalUserData((bool IsSingleInstance, IEnumerable<IEnumerable<UserRoleData>>ServiceAccountProfiles, string? OfferName) data)
+    private static bool CheckTechnicalUserData((bool IsSingleInstance, IEnumerable<IEnumerable<UserRoleData>> ServiceAccountProfiles, string? OfferName) data)
     {
         if (string.IsNullOrWhiteSpace(data.OfferName))
         {

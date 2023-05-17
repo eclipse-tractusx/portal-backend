@@ -42,7 +42,7 @@ public interface IConnectorsRepository
     /// </summary>
     /// <param name="iamUserId">ID of the iam user used to determine company's connectors for.</param>
     /// <returns>Pagination.Source of connectors that allows transformation.</returns>
-    Func<int,int,Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForIamUser(string iamUserId);
+    Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForIamUser(string iamUserId);
 
     Task<(ConnectorData ConnectorData, bool IsProviderUser)> GetConnectorByIdForIamUser(Guid connectorId, string iamUser);
 
@@ -57,7 +57,7 @@ public interface IConnectorsRepository
     /// <param name="setupOptionalFields">Action to setup optional fields.</param>
     /// <returns>Created and persisted connector.</returns>
     Connector CreateConnector(string name, string location, string connectorUrl, Action<Connector>? setupOptionalFields);
-    
+
     /// <summary>
     /// Get Connector End Point Grouped By Business Partner Number
     /// </summary>
@@ -100,7 +100,7 @@ public interface IConnectorsRepository
     /// </summary>
     /// <param name="connectorId">Id of the connector</param>
     void DeleteConnectorClientDetails(Guid connectorId);
-    
+
     /// <summary>
     /// Gets the data required for the connector update
     /// </summary>

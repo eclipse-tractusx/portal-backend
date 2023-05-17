@@ -58,7 +58,7 @@ public class UserRepositoryFakeDbTests
         {
             companyUser.Offers.Add(app);
         }
-        var iamUsersFakeDbSet = new IamUser[]{ iamUser }.AsFakeDbSet();
+        var iamUsersFakeDbSet = new IamUser[] { iamUser }.AsFakeDbSet();
 
         A.CallTo(() => _contextFake.IamUsers).Returns(iamUsersFakeDbSet);
         _fixture.Inject(_contextFake);
@@ -74,7 +74,7 @@ public class UserRepositoryFakeDbTests
         var favouriteAppIds = favouriteApps.Select(app => app.Id).ToList();
         results.Should().BeEquivalentTo(favouriteAppIds);
     }
-    
+
     #region Setup
 
     private (CompanyUser, IamUser) CreateTestUserPair()

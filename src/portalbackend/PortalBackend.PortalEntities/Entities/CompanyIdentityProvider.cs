@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyIdentityProvider
 {
-    private CompanyIdentityProvider() {}
+    private CompanyIdentityProvider() { }
 
     public CompanyIdentityProvider(Guid companyId, Guid identityProviderId)
     {

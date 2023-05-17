@@ -39,4 +39,4 @@ public enum AuditOperationId
     /// The entity has been deleted
     /// </summary>
     DELETE = 3,
-} 
+}

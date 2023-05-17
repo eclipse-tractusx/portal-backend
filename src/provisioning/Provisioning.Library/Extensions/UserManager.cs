@@ -19,8 +19,8 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
@@ -100,7 +100,7 @@ public partial class ProvisioningManager
         newUser.FirstName = profile.FirstName;
         newUser.LastName = profile.LastName;
         newUser.Email = profile.Email;
-        newUser.Credentials ??= profile.Password == null ? null : Enumerable.Repeat( new Credentials { Type = "Password", Value = profile.Password }, 1);
+        newUser.Credentials ??= profile.Password == null ? null : Enumerable.Repeat(new Credentials { Type = "Password", Value = profile.Password }, 1);
         var newUserId = await sharedKeycloak.CreateAndRetrieveUserIdAsync(realm, newUser).ConfigureAwait(false);
         if (newUserId == null)
         {
@@ -128,6 +128,6 @@ public partial class ProvisioningManager
         return newUserId;
     }
 
-    private User CloneUser(User user) =>
+    private static User CloneUser(User user) =>
         JsonSerializer.Deserialize<User>(JsonSerializer.Serialize(user))!;
 }

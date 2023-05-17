@@ -151,7 +151,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                     serviceAccount.OfferSubscriptionId))
             .SingleOrDefaultAsync();
 
-    public Func<int,int,Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(string adminUserId) =>
+    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(string adminUserId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,

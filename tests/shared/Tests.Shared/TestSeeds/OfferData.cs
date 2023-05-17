@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections.Immutable;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 
@@ -41,7 +41,7 @@ public static class OfferData
             ContactEmail = "service-test@mail.com",
             OfferStatusId = OfferStatusId.ACTIVE,
             ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
-            DateReleased = DateTimeOffset.UtcNow.Add(new TimeSpan(1,0,0)),
+            DateReleased = DateTimeOffset.UtcNow.Add(new TimeSpan(1, 0, 0)),
             LicenseTypeId = LicenseTypeId.COTS
         },
         new Offer(new Guid("c208a2ac-7577-4a62-9504-300a2007b198"), "Catena Y", DateTimeOffset.UtcNow, OfferTypeId.SERVICE)
@@ -50,7 +50,7 @@ public static class OfferData
             ContactEmail = "service-test2@mail.com",
             OfferStatusId = OfferStatusId.ACTIVE,
             ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"),
-            DateReleased = DateTimeOffset.UtcNow.Add(new TimeSpan(2,0,0)),
+            DateReleased = DateTimeOffset.UtcNow.Add(new TimeSpan(2, 0, 0)),
             LicenseTypeId = LicenseTypeId.COTS
         },
         new Offer(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA6"), "Catena X", DateTimeOffset.UtcNow, OfferTypeId.APP)

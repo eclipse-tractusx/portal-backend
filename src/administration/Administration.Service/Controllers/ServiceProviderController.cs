@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -14,7 +14,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 public class ServiceProviderController : ControllerBase
 {
     private readonly IServiceProviderBusinessLogic _logic;
-    
+
     /// <summary>
     /// Creates a new instance of <see cref="ServiceProviderController"/> 
     /// </summary>
@@ -42,7 +42,7 @@ public class ServiceProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<ProviderDetailReturnData> GetServiceProviderCompanyDetail() =>
         this.WithIamUserId(iamUserId => _logic.GetServiceProviderCompanyDetailsAsync(iamUserId));
-    
+
     /// <summary>
     /// Sets detail data to the calling users service provider
     /// </summary>
