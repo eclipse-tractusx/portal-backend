@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -33,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 /// <param name="Bpn">When called from /provider bpn of the company subscribing the offer, otherwise the provider company's bpn</param>
 /// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
 /// <param name="TechnicalUserData">Information about the technical user</param>
-public record ProviderSubscriptionDetailData (
+public record ProviderSubscriptionDetailData(
     Guid Id,
     OfferSubscriptionStatusId OfferSubscriptionStatus,
     string? Name,
@@ -52,7 +52,7 @@ public record ProviderSubscriptionDetailData (
 /// <param name="Provider">The provider company's name</param>
 /// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
 /// <param name="TechnicalUserData">Information about the technical user</param>
-public record SubscriberSubscriptionDetailData (
+public record SubscriberSubscriptionDetailData(
     Guid Id,
     OfferSubscriptionStatusId OfferSubscriptionStatus,
     string? Name,

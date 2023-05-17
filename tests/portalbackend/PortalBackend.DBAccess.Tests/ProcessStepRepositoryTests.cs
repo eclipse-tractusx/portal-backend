@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -145,8 +145,8 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetActiveProcess_LockExpired_ReturnsExpected()
     {
         // Arrange
-        var processTypeIds = new [] { ProcessTypeId.APPLICATION_CHECKLIST };
-        var processStepTypeIds = new [] {
+        var processTypeIds = new[] { ProcessTypeId.APPLICATION_CHECKLIST };
+        var processStepTypeIds = new[] {
             ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
             ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
             ProcessStepTypeId.CREATE_IDENTITY_WALLET,
@@ -170,8 +170,8 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetActiveProcess_Locked_ReturnsExpected()
     {
         // Arrange
-        var processTypeIds = new [] { ProcessTypeId.APPLICATION_CHECKLIST };
-        var processStepTypeIds = new [] {
+        var processTypeIds = new[] { ProcessTypeId.APPLICATION_CHECKLIST };
+        var processStepTypeIds = new[] {
             ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
             ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
             ProcessStepTypeId.CREATE_IDENTITY_WALLET,

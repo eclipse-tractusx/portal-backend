@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyServiceAccountAssignedRole
 {
-    private CompanyServiceAccountAssignedRole() {}
+    private CompanyServiceAccountAssignedRole() { }
 
     public CompanyServiceAccountAssignedRole(Guid companyServiceAccountId, Guid userRoleId)
     {

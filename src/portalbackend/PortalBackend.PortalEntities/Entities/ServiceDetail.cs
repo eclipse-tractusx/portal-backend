@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ServiceDetail
 {
-    private ServiceDetail() {}
+    private ServiceDetail() { }
 
     public ServiceDetail(Guid serviceId, ServiceTypeId serviceTypeId)
     {

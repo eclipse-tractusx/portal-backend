@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -58,7 +58,7 @@ public class AuditCompanyUser20221005 : IAuditEntityV1
 
     /// <inheritdoc />
     public AuditOperationId AuditV1OperationId { get; set; }
-    
+
     /// <inheritdoc />
     public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

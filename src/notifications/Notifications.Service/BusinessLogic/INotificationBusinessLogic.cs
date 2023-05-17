@@ -19,8 +19,8 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
 
@@ -44,14 +44,9 @@ public interface INotificationBusinessLogic
     /// <param name="page">the requested page</param>
     /// <param name="size">the requested size</param>
     /// <param name="iamUserId">The id of the current user</param>
-    /// <param name="isRead">OPTIONAL: filter for read or unread notifications</param>
-    /// <param name="typeId">OPTIONAL: The type of the notifications</param>
-    /// <param name="topicId">OPTIONAL: The topic of the notifications</param>
-    /// <param name="sorting">Kind of sorting for the notifications</param>
+    /// <param name="filters">additional filters to query notifications</param>
     /// <returns>Returns a collection of the users notification</returns>
-    Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId,
-        bool? isRead = null, NotificationTypeId? typeId = null, NotificationTopicId? topicId = null,
-        NotificationSorting? sorting = null);
+    Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId, NotificationFilters filters);
 
     /// <summary>
     ///     Gets a specific notification for the given user.
@@ -59,7 +54,7 @@ public interface INotificationBusinessLogic
     /// <param name="iamUserId">The id of the current user</param>
     /// <param name="notificationId">The id of the notification</param>
     /// <returns>Returns a notification</returns>
-    Task<NotificationDetailData> GetNotificationDetailDataAsync(string iamUserId, Guid notificationId);        
+    Task<NotificationDetailData> GetNotificationDetailDataAsync(string iamUserId, Guid notificationId);
 
     /// <summary>
     /// Gets the notification account for the given user

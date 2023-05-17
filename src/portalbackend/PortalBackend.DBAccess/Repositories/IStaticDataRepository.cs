@@ -33,13 +33,13 @@ public interface IStaticDataRepository
     /// </summary>
     /// <returns>Returns a async enumerable of <see cref="UseCaseData"/></returns>
     IAsyncEnumerable<UseCaseData> GetAllUseCase();
-    
+
     /// <summary>
     /// Retrieves all Language.
     /// </summary>
     /// <returns>Returns a async enumerable of <see cref="LanguageData"/></returns>
     IAsyncEnumerable<LanguageData> GetAllLanguage();
-    
+
     /// <summary>
     /// Retrieve Unique Identifier Data for Country Alpha2Code
     /// </summary>
@@ -48,13 +48,13 @@ public interface IStaticDataRepository
     Task<(IEnumerable<UniqueIdentifierId> IdentifierIds, bool IsValidCountryCode)> GetCompanyIdentifiers(string alpha2Code);
 
     Task<(bool IsValidCountry, IEnumerable<(BpdmIdentifierId BpdmIdentifierId, UniqueIdentifierId UniqueIdentifierId)> Identifiers)> GetCountryAssignedIdentifiers(IEnumerable<BpdmIdentifierId> bpdmIdentifierIds, string countryAlpha2Code);
-    
+
     /// <summary>
     /// Retrieve Service Type Data
     /// </summary>
     /// <returns></returns>
     IAsyncEnumerable<ServiceTypeData> GetServiceTypeData();
-    
+
     /// <summary>
     /// Return all License Type Data
     /// </summary>

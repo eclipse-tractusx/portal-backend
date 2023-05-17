@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -49,7 +49,7 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
     public async Task GetNextIdentityProviderSequenceAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result1 = await sut.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false);
@@ -67,7 +67,7 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
     public async Task GetNextClientSequenceAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result1 = await sut.GetNextClientSequenceAsync().ConfigureAwait(false);
@@ -114,7 +114,7 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
     public async Task GetUserPasswordResetInfo_ReturnsExpected(string userEntityId, int resetCount)
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetUserPasswordResetInfo(userEntityId).ConfigureAwait(false);
@@ -128,7 +128,7 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
     {
         var userEntityId = _fixture.Create<string>();
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
         var result = await sut.GetUserPasswordResetInfo(userEntityId).ConfigureAwait(false);
@@ -139,13 +139,13 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region Setup
-    
+
     private async Task<(IProvisioningDBAccess, ProvisioningDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new ProvisioningDBAccess(context);
         return (sut, context);
     }
-    
+
     #endregion
 }

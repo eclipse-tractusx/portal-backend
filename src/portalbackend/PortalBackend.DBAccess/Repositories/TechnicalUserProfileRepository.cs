@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -35,7 +35,7 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
     {
         _context = dbContext;
     }
-    
+
     /// <inheritdoc />
     public Task<OfferProfileData?> GetOfferProfileData(Guid offerId, OfferTypeId offerTypeId, string iamUserId) =>
         _context.Offers
@@ -47,9 +47,9 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public TechnicalUserProfile CreateTechnicalUserProfile(Guid id, Guid offerId) => 
+    public TechnicalUserProfile CreateTechnicalUserProfile(Guid id, Guid offerId) =>
         _context.TechnicalUserProfiles.Add(new TechnicalUserProfile(id, offerId)).Entity;
-    
+
     ///<inheritdoc/>
     public void CreateDeleteTechnicalUserProfileAssignedRoles(IEnumerable<(Guid TechnicalUserProfileId, Guid UserRoleId)> initialTechnicalUserProfileIdRoles, IEnumerable<(Guid TechnicalUserProfileId, Guid UserRoleId)> modifyTechnicalUserProfileIdRoles) =>
         _context.AddRemoveRange(
@@ -76,7 +76,7 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
                 .Select(x => new ValueTuple<bool, IEnumerable<TechnicalUserProfileInformation>>(
                     x.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
                     x.TechnicalUserProfiles.Select(tup => new TechnicalUserProfileInformation(
-                        tup.Id, 
+                        tup.Id,
                         tup.UserRoles.Select(ur => new UserRoleInformation(ur.Id, ur.UserRoleText))))))
                 .SingleOrDefaultAsync();
 }

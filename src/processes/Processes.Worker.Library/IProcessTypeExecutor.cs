@@ -26,7 +26,7 @@ public interface IProcessTypeExecutor
 {
     record InitializationResult(bool Modified, IEnumerable<ProcessStepTypeId>? ScheduleStepTypeIds);
     record StepExecutionResult(bool Modified, ProcessStepStatusId ProcessStepStatusId, IEnumerable<ProcessStepTypeId>? ScheduleStepTypeIds, IEnumerable<ProcessStepTypeId>? SkipStepTypeIds, string? ProcessMessage);
-    
+
     ValueTask<InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
     ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId);
     ValueTask<StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken);

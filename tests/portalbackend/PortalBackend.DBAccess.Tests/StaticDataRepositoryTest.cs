@@ -46,8 +46,8 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
     #region GetCompanyIdentifiers
 
     [Theory]
-    [InlineData("DE", new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VAT_ID, UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE }, true)]
-    [InlineData("PT", new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VAT_ID, UniqueIdentifierId.EORI }, true)]
+    [InlineData("DE", new[] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VAT_ID, UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE }, true)]
+    [InlineData("PT", new[] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VAT_ID, UniqueIdentifierId.EORI }, true)]
     [InlineData("XY", null, false)]
     public async Task GetCompanyIdentifiers_ReturnsExpectedResult(string countryCode, IEnumerable<UniqueIdentifierId>? expectedIds, bool validCountry)
     {
@@ -76,10 +76,10 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
     #region GetCountryAssignedIdentifiers
 
     [Theory]
-    [InlineData("DE", new [] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, new [] { BpdmIdentifierId.EU_VAT_ID_DE }, new [] { UniqueIdentifierId.VAT_ID }, true)]
-    [InlineData("DE", new BpdmIdentifierId [] {}, new BpdmIdentifierId [] {}, new UniqueIdentifierId [] {}, true)]
-    [InlineData("PT", new [] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, new BpdmIdentifierId [] {}, new UniqueIdentifierId[] {}, true)]
-    [InlineData("XY", new [] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, null, null, false)]
+    [InlineData("DE", new[] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, new[] { BpdmIdentifierId.EU_VAT_ID_DE }, new[] { UniqueIdentifierId.VAT_ID }, true)]
+    [InlineData("DE", new BpdmIdentifierId[] { }, new BpdmIdentifierId[] { }, new UniqueIdentifierId[] { }, true)]
+    [InlineData("PT", new[] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, new BpdmIdentifierId[] { }, new UniqueIdentifierId[] { }, true)]
+    [InlineData("XY", new[] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, null, null, false)]
     public async Task GetCountryAssignedIdentifiers_ReturnsExpectedResult(string countryCode, IEnumerable<BpdmIdentifierId> bpdmIdentifiers, IEnumerable<BpdmIdentifierId>? expectedBpdmIds, IEnumerable<UniqueIdentifierId>? expectedUniqueIds, bool validCountry)
     {
         // Arrange
@@ -104,7 +104,7 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     [Fact]
     public async Task GetServiceTypeData_ReturnsExpectedResult()
     {

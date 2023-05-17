@@ -74,7 +74,7 @@ public class ProcessStepRepository : IProcessStepRepository
                 step.ProcessStepStatusId == ProcessStepStatusId.TODO)
             .OrderBy(step => step.ProcessStepTypeId)
             .Select(step =>
-                new ValueTuple<Guid,ProcessStepTypeId>(
+                new ValueTuple<Guid, ProcessStepTypeId>(
                     step.Id,
                     step.ProcessStepTypeId))
             .AsAsyncEnumerable();

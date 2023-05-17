@@ -39,17 +39,17 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
     async Task<IApplicationChecklistService.ManualChecklistProcessStepData> IApplicationChecklistService.VerifyChecklistEntryAndProcessSteps(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, IEnumerable<ApplicationChecklistEntryStatusId> entryStatusIds, ProcessStepTypeId processStepTypeId, IEnumerable<ApplicationChecklistEntryTypeId>? entryTypeIds, IEnumerable<ProcessStepTypeId>? processStepTypeIds)
     {
         var allProcessStepTypeIds = processStepTypeIds == null
-            ? new [] { processStepTypeId }
+            ? new[] { processStepTypeId }
             : processStepTypeIds.Append(processStepTypeId);
 
         var allEntryTypeIds = entryTypeIds == null
-            ? new [] { entryTypeId }
+            ? new[] { entryTypeId }
             : entryTypeIds.Append(entryTypeId);
 
         var checklistData = await _portalRepositories.GetInstance<IApplicationChecklistRepository>()
             .GetChecklistProcessStepData(applicationId, allEntryTypeIds, allProcessStepTypeIds).ConfigureAwait(false);
 
-        checklistData.ValidateApplicationChecklistData(applicationId, entryTypeId, entryStatusIds, new [] { ProcessStepStatusId.TODO });
+        checklistData.ValidateApplicationChecklistData(applicationId, entryTypeId, entryStatusIds, new[] { ProcessStepStatusId.TODO });
         var processStep = checklistData!.ProcessSteps!.SingleOrDefault(step => step.ProcessStepTypeId == processStepTypeId);
         if (processStep is null)
         {
@@ -139,7 +139,7 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
                         item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
                         item.Comment = itemMessage;
                     },
-                    new [] { manualProcessTriggerStep },
+                    new[] { manualProcessTriggerStep },
                     null,
                     true,
                     stepMessage));

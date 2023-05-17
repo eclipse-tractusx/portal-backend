@@ -40,7 +40,7 @@ public interface IAppReleaseBusinessLogic
     /// <returns></returns>
     [Obsolete("This Method is not used anymore,  Planning to delete it with release 3.1")]
     Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, string userId);
-    
+
     /// <summary>
     /// Upload document for given company user for appId
     /// </summary>
@@ -51,7 +51,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
-    
+
     /// <summary>
     /// Add User Role for App
     /// </summary>
@@ -60,7 +60,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles, string iamUserId);
-    
+
     /// <summary>
     /// Return Agreements for App_Contract Category
     /// </summary>
@@ -74,7 +74,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId);
-    
+
     /// <summary>
     /// Update Agreement Consent
     /// </summary>
@@ -83,7 +83,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId);
-    
+
     /// <summary>
     /// Return Offer with Consent Status
     /// </summary>
@@ -91,7 +91,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId);
-    
+
     /// <summary>
     /// Delete User Role by appId and roleId
     /// </summary>
@@ -100,7 +100,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="iamUserId"></param>
     /// <returns></returns>
     Task DeleteAppRoleAsync(Guid appId, Guid roleId, string iamUserId);
-    
+
     /// <summary>
     /// Get Sales Manager Data
     /// </summary>
@@ -189,7 +189,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="data">the data for the app instance</param>
     /// <param name="iamUserId">the current user</param>
     Task SetInstanceType(Guid appId, AppInstanceSetupData data, string iamUserId);
-        
+
     /// <summary>
     /// Get technical user profiles for a specific offer
     /// </summary>

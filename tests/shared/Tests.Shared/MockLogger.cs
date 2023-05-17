@@ -40,12 +40,13 @@ public class MockLogger<T> : ILogger<T>
 
     public bool IsEnabled(LogLevel logLevel) => true;
 
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState,Exception?,string> formatter) =>
-        _logger.Log(logLevel,exception,formatter(state,exception));
-    
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+        _logger.Log(logLevel, exception, formatter(state, exception));
+
     public class TestDisposable : IDisposable
     {
-        public void Dispose() {
+        public void Dispose()
+        {
             GC.SuppressFinalize(this);
         }
     }

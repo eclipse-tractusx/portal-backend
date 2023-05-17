@@ -31,7 +31,7 @@ public class GeneralHttpErrorHandler
     private readonly RequestDelegate _next;
     private readonly ILogger _logger;
 
-    private static readonly IReadOnlyDictionary<HttpStatusCode,MetaData> _metadata = new Dictionary<HttpStatusCode,MetaData>()
+    private static readonly IReadOnlyDictionary<HttpStatusCode, MetaData> _metadata = new Dictionary<HttpStatusCode, MetaData>()
     {
         { HttpStatusCode.BadRequest, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.1", "One or more validation errors occurred.") },
         { HttpStatusCode.Conflict, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.8", "The resorce is in conflict with the current request.") },
@@ -57,9 +57,9 @@ public class GeneralHttpErrorHandler
         }
         catch (Exception error)
         {
-            LogLevel logLevel = LogLevel.Information;
+            var logLevel = LogLevel.Information;
             HttpStatusCode statusCode;
-            Func<Exception,  (string?, IEnumerable<string>)>? messageFunc = null;
+            Func<Exception, (string?, IEnumerable<string>)>? messageFunc = null;
 
             if (error is ArgumentException)
             {
@@ -87,11 +87,11 @@ public class GeneralHttpErrorHandler
             {
                 statusCode = HttpStatusCode.BadGateway;
                 var serviceStatus = (error as ServiceException)!.StatusCode;
-                messageFunc = error => (error.Source, new [] {
+                messageFunc = error => (error.Source, new[] {
                     serviceStatus == null
                         ? $"remote service call failed"
                         : $"remote service returned status code: {(int)serviceStatus} {serviceStatus}",
-                    error.Message } );
+                    error.Message });
             }
             else if (error is UnsupportedMediaTypeException)
             {
@@ -100,7 +100,7 @@ public class GeneralHttpErrorHandler
             else if (error is ConfigurationException)
             {
                 statusCode = HttpStatusCode.InternalServerError;
-                messageFunc = error => (error.Source, new [] { $"Invalid service configuration: {error.Message}" } );
+                messageFunc = error => (error.Source, new[] { $"Invalid service configuration: {error.Message}" });
             }
             else
             {
@@ -114,14 +114,14 @@ public class GeneralHttpErrorHandler
         }
     }
 
-    private static ErrorResponse CreateErrorResponse(HttpStatusCode statusCode, Exception error, Func<Exception,  (string?, IEnumerable<string>)>? getSourceAndMessages = null)
+    private static ErrorResponse CreateErrorResponse(HttpStatusCode statusCode, Exception error, Func<Exception, (string?, IEnumerable<string>)>? getSourceAndMessages = null)
     {
         var meta = _metadata.GetValueOrDefault(statusCode, _metadata[HttpStatusCode.InternalServerError]);
         var (source, messages) = getSourceAndMessages == null
-            ? (error.Source, Enumerable.Repeat(error.Message,1))
+            ? (error.Source, Enumerable.Repeat(error.Message, 1))
             : getSourceAndMessages(error);
 
-        var messageMap = new Dictionary<string,IEnumerable<string>>() { { source ?? "unknown", messages } };
+        var messageMap = new Dictionary<string, IEnumerable<string>>() { { source ?? "unknown", messages } };
         while (error.InnerException != null)
         {
             error = error.InnerException;
@@ -129,7 +129,7 @@ public class GeneralHttpErrorHandler
 
             messageMap[source] = messageMap.TryGetValue(source, out messages)
                 ? Enumerable.Append(messages, error.Message)
-                : Enumerable.Repeat(error.Message,1);
+                : Enumerable.Repeat(error.Message, 1);
         }
 
         return new ErrorResponse(

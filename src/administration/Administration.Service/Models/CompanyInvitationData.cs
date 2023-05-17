@@ -19,9 +19,9 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using System.ComponentModel;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models
 {
@@ -37,9 +37,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models
         }
 
         [JsonPropertyName("userName")]
-        public string? userName { get; set; }   
+        public string? userName { get; set; }
 
-        [DefaultValue("string")]   
+        [DefaultValue("string")]
         [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
         [JsonPropertyName("firstName")]
         public string firstName { get; set; }

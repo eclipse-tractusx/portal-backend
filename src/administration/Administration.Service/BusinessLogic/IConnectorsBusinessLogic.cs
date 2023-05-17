@@ -75,7 +75,7 @@ public interface IConnectorsBusinessLogic
     /// <param name="iamUserId">Id of the iam user</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     Task DeleteConnectorAsync(Guid connectorId, string iamUserId, CancellationToken cancellationToken);
-    
+
     /// <summary>
     /// Retrieve connector end point along with bpns
     /// </summary>

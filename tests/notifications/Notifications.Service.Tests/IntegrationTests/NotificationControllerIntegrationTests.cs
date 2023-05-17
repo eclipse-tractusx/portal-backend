@@ -43,10 +43,10 @@ public class NotificationControllerIntegrationTests : IClassFixture<IntegrationT
         // Arrange
         var client = _factory.CreateClient();
         var endpoint = new NotificationEndpoints(client);
-        
+
         // Act
         var response = await endpoint.NotificationCount(false);
-        
+
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var count = await response.GetResultFromContent<int>();

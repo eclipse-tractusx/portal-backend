@@ -20,11 +20,11 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using FluentAssertions;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -128,16 +128,16 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region Get OfferAgreementData for IamUser
-    
+
     [Fact]
     public async Task GetOfferAgreementDataForIamUser_WithExistingUser_ReturnsExpectedCount()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
-    
+
         // Act
         var results = await sut.GetOfferAgreementDataForOfferId(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
-    
+
         // Assert
         results.Should().NotBeNullOrEmpty();
         results.Should().ContainSingle();

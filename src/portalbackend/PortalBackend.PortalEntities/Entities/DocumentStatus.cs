@@ -36,7 +36,7 @@ public class DocumentStatus
         Id = documentStatusId;
         Label = documentStatusId.ToString();
     }
-    
+
     public DocumentStatusId Id { get; private set; }
 
     [MaxLength(255)]

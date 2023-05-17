@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
 
@@ -27,9 +27,9 @@ public class ApplicationActivationSettings
 {
     [Required]
     public IDictionary<string, IEnumerable<string>> ApplicationApprovalInitialRoles { get; set; } = null!;
-    
+
     [Required]
-    public IDictionary<string,IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
+    public IDictionary<string, IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
 
     /// <summary>
     /// IDs of the notification types that should be created as welcome notifications
@@ -43,14 +43,14 @@ public class ApplicationActivationSettings
     [Required]
     public IEnumerable<string> ClientToRemoveRolesOnActivation { get; set; } = null!;
 
-    [Required(AllowEmptyStrings = false)] 
+    [Required(AllowEmptyStrings = false)]
     public string BasePortalAddress { get; set; } = null!;
 
     /// <summary>
     /// Earliest time to start the activation process
     /// </summary>
     public TimeSpan? StartTime { get; set; }
-    
+
     /// <summary>
     /// Latest time to start the activation process
     /// </summary>
@@ -61,7 +61,6 @@ public class ApplicationActivationSettings
     /// </summary>
     [Required(AllowEmptyStrings = false)]
     public string LoginTheme { get; set; } = null!;
-
 
     public static bool Validate(ApplicationActivationSettings settings)
     {

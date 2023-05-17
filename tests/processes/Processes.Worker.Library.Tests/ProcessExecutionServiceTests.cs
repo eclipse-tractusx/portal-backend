@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -45,9 +45,9 @@ public class ProcessExecutionServiceTests
 
     public ProcessExecutionServiceTests()
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization {ConfigureMembers = true});
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b =>_fixture.Behaviors.Remove(b));
+            .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
@@ -87,7 +87,7 @@ public class ProcessExecutionServiceTests
         await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustNotHaveHappened();
     }
 
@@ -99,19 +99,19 @@ public class ProcessExecutionServiceTests
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
 
-        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .Returns(Enumerable.Repeat(IProcessExecutor.ProcessExecutionResult.SaveRequested, 2).ToAsyncEnumerable());
 
         // Act
         await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
-            .MustHaveHappened(processData.Length,Times.Exactly);
+        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
+            .MustHaveHappened(processData.Length, Times.Exactly);
         A.CallTo(() => _portalRepositories.SaveAsync())
-            .MustHaveHappened(processData.Length * 2,Times.Exactly);
+            .MustHaveHappened(processData.Length * 2, Times.Exactly);
         A.CallTo(() => _portalRepositories.Clear())
-            .MustHaveHappened(processData.Length * 2,Times.Exactly);
+            .MustHaveHappened(processData.Length * 2, Times.Exactly);
     }
 
     [Fact]
@@ -122,19 +122,19 @@ public class ProcessExecutionServiceTests
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
 
-        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .Returns(Enumerable.Repeat(IProcessExecutor.ProcessExecutionResult.Unmodified, 2).ToAsyncEnumerable());
 
         // Act
         await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
-            .MustHaveHappened(processData.Length,Times.Exactly);
+        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
+            .MustHaveHappened(processData.Length, Times.Exactly);
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.Clear())
-            .MustHaveHappened(processData.Length * 2,Times.Exactly);
+            .MustHaveHappened(processData.Length * 2, Times.Exactly);
     }
 
     [Fact]
@@ -144,12 +144,12 @@ public class ProcessExecutionServiceTests
         var processId = Guid.NewGuid();
         var processVersion = Guid.NewGuid();
         var process = new Process(processId, ProcessTypeId.APPLICATION_CHECKLIST, processVersion);
-        var processData = new [] { process };
+        var processData = new[] { process };
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
 
-        A.CallTo(() => _processExecutor.ExecuteProcess(processId,A<ProcessTypeId>._,A<CancellationToken>._))
-            .Returns(new [] { IProcessExecutor.ProcessExecutionResult.LockRequested, IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable());
+        A.CallTo(() => _processExecutor.ExecuteProcess(processId, A<ProcessTypeId>._, A<CancellationToken>._))
+            .Returns(new[] { IProcessExecutor.ProcessExecutionResult.LockRequested, IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable());
 
         var changeHistory = new List<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>();
 
@@ -170,7 +170,7 @@ public class ProcessExecutionServiceTests
         await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappened(3, Times.Exactly);
@@ -178,12 +178,12 @@ public class ProcessExecutionServiceTests
             .MustHaveHappened(3, Times.Exactly);
         changeHistory.Should().HaveCount(6)
             .And.SatisfyRespectively(
-                first  =>  first.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version != processVersion && x.LockExpiryTime != null && x.Save),
+                first => first.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version != processVersion && x.LockExpiryTime != null && x.Save),
                 second => second.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[0].Version && x.LockExpiryTime == changeHistory[0].LockExpiryTime && !x.Save),
-                third  =>  third.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[1].Version && x.LockExpiryTime == changeHistory[1].LockExpiryTime && x.Save),
-                forth  =>  forth.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[2].Version && x.LockExpiryTime == changeHistory[2].LockExpiryTime && !x.Save),
-                fifth  =>  fifth.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version != changeHistory[3].Version && x.LockExpiryTime == null && x.Save),
-                sixth  =>  sixth.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[4].Version && x.LockExpiryTime == null && !x.Save)
+                third => third.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[1].Version && x.LockExpiryTime == changeHistory[1].LockExpiryTime && x.Save),
+                forth => forth.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[2].Version && x.LockExpiryTime == changeHistory[2].LockExpiryTime && !x.Save),
+                fifth => fifth.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version != changeHistory[3].Version && x.LockExpiryTime == null && x.Save),
+                sixth => sixth.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[4].Version && x.LockExpiryTime == null && !x.Save)
             );
     }
 
@@ -194,12 +194,12 @@ public class ProcessExecutionServiceTests
         var processId = Guid.NewGuid();
         var processVersion = Guid.NewGuid();
         var process = new Process(processId, ProcessTypeId.APPLICATION_CHECKLIST, processVersion);
-        var processData = new [] { process };
+        var processData = new[] { process };
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
 
-        A.CallTo(() => _processExecutor.ExecuteProcess(processId,A<ProcessTypeId>._,A<CancellationToken>._))
-            .Returns(new [] { IProcessExecutor.ProcessExecutionResult.LockRequested, IProcessExecutor.ProcessExecutionResult.LockRequested, IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable());
+        A.CallTo(() => _processExecutor.ExecuteProcess(processId, A<ProcessTypeId>._, A<CancellationToken>._))
+            .Returns(new[] { IProcessExecutor.ProcessExecutionResult.LockRequested, IProcessExecutor.ProcessExecutionResult.LockRequested, IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable());
 
         var changeHistory = new List<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>();
 
@@ -220,7 +220,7 @@ public class ProcessExecutionServiceTests
         await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappened(3, Times.Exactly);
@@ -228,12 +228,12 @@ public class ProcessExecutionServiceTests
             .MustHaveHappened(4, Times.Exactly);
         changeHistory.Should().HaveCount(7)
             .And.SatisfyRespectively(
-                first   =>   first.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version != processVersion && x.LockExpiryTime != null && x.Save),
-                second  =>  second.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[0].Version && x.LockExpiryTime == changeHistory[0].LockExpiryTime && !x.Save),
-                third   =>   third.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[1].Version && x.LockExpiryTime == changeHistory[1].LockExpiryTime && !x.Save),
-                forth   =>   forth.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[2].Version && x.LockExpiryTime == changeHistory[2].LockExpiryTime && x.Save),
-                fifth   =>   fifth.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[3].Version && x.LockExpiryTime == changeHistory[3].LockExpiryTime && !x.Save),
-                sixth   =>   sixth.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version != changeHistory[4].Version && x.LockExpiryTime == null && x.Save),
+                first => first.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version != processVersion && x.LockExpiryTime != null && x.Save),
+                second => second.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[0].Version && x.LockExpiryTime == changeHistory[0].LockExpiryTime && !x.Save),
+                third => third.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[1].Version && x.LockExpiryTime == changeHistory[1].LockExpiryTime && !x.Save),
+                forth => forth.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[2].Version && x.LockExpiryTime == changeHistory[2].LockExpiryTime && x.Save),
+                fifth => fifth.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[3].Version && x.LockExpiryTime == changeHistory[3].LockExpiryTime && !x.Save),
+                sixth => sixth.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version != changeHistory[4].Version && x.LockExpiryTime == null && x.Save),
                 seventh => seventh.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[5].Version && x.LockExpiryTime == null && !x.Save)
             );
     }
@@ -246,32 +246,33 @@ public class ProcessExecutionServiceTests
         var secondId = Guid.NewGuid();
         var firstVersion = Guid.NewGuid();
         var secondVersion = Guid.NewGuid();
-        var firstProcess = new Process(firstId,ProcessTypeId.APPLICATION_CHECKLIST,firstVersion);
-        var secondProcess = new Process(secondId,ProcessTypeId.APPLICATION_CHECKLIST,secondVersion);
+        var firstProcess = new Process(firstId, ProcessTypeId.APPLICATION_CHECKLIST, firstVersion);
+        var secondProcess = new Process(secondId, ProcessTypeId.APPLICATION_CHECKLIST, secondVersion);
 
-        var processData = new [] { firstProcess, secondProcess };
+        var processData = new[] { firstProcess, secondProcess };
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
 
-        IEnumerable<IProcessExecutor.ProcessExecutionResult> ThrowingEnumerable() {
+        IEnumerable<IProcessExecutor.ProcessExecutionResult> ThrowingEnumerable()
+        {
             yield return IProcessExecutor.ProcessExecutionResult.LockRequested;
             throw new Exception("normal error");
         }
 
         Process? process = null;
 
-        A.CallTo(() => _processExecutor.ExecuteProcess(firstId,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(firstId, A<ProcessTypeId>._, A<CancellationToken>._))
             .ReturnsLazily((Guid Id, ProcessTypeId _, CancellationToken _) =>
             {
                 process = firstProcess;
                 return ThrowingEnumerable().ToAsyncEnumerable();
             });
 
-        A.CallTo(() => _processExecutor.ExecuteProcess(secondId,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(secondId, A<ProcessTypeId>._, A<CancellationToken>._))
             .ReturnsLazily((Guid Id, ProcessTypeId _, CancellationToken _) =>
             {
                 process = secondProcess;
-                return new [] { IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable();
+                return new[] { IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable();
             });
 
         var changeHistory = new List<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>();
@@ -297,22 +298,22 @@ public class ProcessExecutionServiceTests
         await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _processExecutor.ExecuteProcess(firstId,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(firstId, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _processExecutor.ExecuteProcess(secondId,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(secondId, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedTwiceExactly();
         A.CallTo(() => _portalRepositories.Clear())
-            .MustHaveHappened(3,Times.Exactly);
+            .MustHaveHappened(3, Times.Exactly);
         changeHistory.Should().SatisfyRespectively(
-                first  =>  first.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Id == firstId  && x.Version != firstVersion  && x.LockExpiryTime != null && x.Save),
-                second => second.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Id == firstId  && x.Version == changeHistory[0].Version && x.LockExpiryTime == changeHistory[0].LockExpiryTime && !x.Save),
-                second => second.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Id == firstId  && x.Version == changeHistory[1].Version && x.LockExpiryTime == changeHistory[0].LockExpiryTime && !x.Save),
-                third  =>  third.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Id == secondId && x.Version != secondVersion && x.LockExpiryTime == null && x.Save),
-                forth  =>  forth.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Id == secondId && x.Version == changeHistory[3].Version && x.LockExpiryTime == null && !x.Save)
+                first => first.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Id == firstId && x.Version != firstVersion && x.LockExpiryTime != null && x.Save),
+                second => second.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Id == firstId && x.Version == changeHistory[0].Version && x.LockExpiryTime == changeHistory[0].LockExpiryTime && !x.Save),
+                second => second.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Id == firstId && x.Version == changeHistory[1].Version && x.LockExpiryTime == changeHistory[0].LockExpiryTime && !x.Save),
+                third => third.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Id == secondId && x.Version != secondVersion && x.LockExpiryTime == null && x.Save),
+                forth => forth.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Id == secondId && x.Version == changeHistory[3].Version && x.LockExpiryTime == null && !x.Save)
             );
-        A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.Matches(e => e != null && e.Message == "normal error"), A<string>.That.StartsWith("error processing process"))).MustHaveHappenedOnceExactly();            
+        A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.Matches(e => e != null && e.Message == "normal error"), A<string>.That.StartsWith("error processing process"))).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -321,12 +322,12 @@ public class ProcessExecutionServiceTests
         // Arrange
         var firstVersion = Guid.NewGuid();
         var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, firstVersion);
-        var processData = new [] { process };
+        var processData = new[] { process };
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
 
-        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
-            .Returns(new [] { IProcessExecutor.ProcessExecutionResult.Unmodified, IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable());
+        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
+            .Returns(new[] { IProcessExecutor.ProcessExecutionResult.Unmodified, IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable());
 
         var changeHistory = new List<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>();
 
@@ -347,7 +348,7 @@ public class ProcessExecutionServiceTests
         await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
@@ -355,9 +356,9 @@ public class ProcessExecutionServiceTests
             .MustHaveHappenedTwiceExactly();
         changeHistory.Should().HaveCount(3)
             .And.SatisfyRespectively(
-                first  =>  first.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == firstVersion && x.LockExpiryTime == null && !x.Save),
+                first => first.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == firstVersion && x.LockExpiryTime == null && !x.Save),
                 second => second.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version != changeHistory[0].Version && x.LockExpiryTime == null && x.Save),
-                third  =>  third.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[1].Version && x.LockExpiryTime == null && !x.Save)
+                third => third.Should().Match<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Version == changeHistory[1].Version && x.LockExpiryTime == null && !x.Save)
             );
     }
 
@@ -374,32 +375,32 @@ public class ProcessExecutionServiceTests
         var thirdProcessId = Guid.NewGuid();
         var thirdVersion = Guid.NewGuid();
         var thirdProcess = new Process(thirdProcessId, ProcessTypeId.APPLICATION_CHECKLIST, thirdVersion);
-        var processData = new [] { firstProcess, secondProcess, thirdProcess };
+        var processData = new[] { firstProcess, secondProcess, thirdProcess };
         var error = new Exception("save conflict error");
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
 
         Process? process = null;
 
-        A.CallTo(() => _processExecutor.ExecuteProcess(firstProcessId,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(firstProcessId, A<ProcessTypeId>._, A<CancellationToken>._))
             .ReturnsLazily((Guid _, ProcessTypeId _, CancellationToken _) =>
             {
                 process = firstProcess;
-                return new [] { IProcessExecutor.ProcessExecutionResult.LockRequested, IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable();
+                return new[] { IProcessExecutor.ProcessExecutionResult.LockRequested, IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable();
             });
 
-        A.CallTo(() => _processExecutor.ExecuteProcess(secondProcessId,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(secondProcessId, A<ProcessTypeId>._, A<CancellationToken>._))
             .ReturnsLazily((Guid _, ProcessTypeId _, CancellationToken _) =>
             {
                 process = secondProcess;
-                return new [] { IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable();
+                return new[] { IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable();
             });
 
-        A.CallTo(() => _processExecutor.ExecuteProcess(thirdProcessId,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(thirdProcessId, A<ProcessTypeId>._, A<CancellationToken>._))
             .ReturnsLazily((Guid _, ProcessTypeId _, CancellationToken _) =>
             {
                 process = thirdProcess;
-                return new [] { IProcessExecutor.ProcessExecutionResult.Unmodified }.ToAsyncEnumerable();
+                return new[] { IProcessExecutor.ProcessExecutionResult.Unmodified }.ToAsyncEnumerable();
             });
 
         var changeHistory = new List<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime)>();
@@ -420,7 +421,7 @@ public class ProcessExecutionServiceTests
         await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedTwiceExactly();
@@ -428,9 +429,9 @@ public class ProcessExecutionServiceTests
             .MustHaveHappened(3, Times.Exactly);
         changeHistory.Should().HaveCount(3)
             .And.SatisfyRespectively(
-                first  =>  first.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime)>(x => x.Id == firstProcessId && x.Version != firstVersion && x.LockExpiryTime != null),
+                first => first.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime)>(x => x.Id == firstProcessId && x.Version != firstVersion && x.LockExpiryTime != null),
                 second => second.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime)>(x => x.Id == secondProcessId && x.Version != secondVersion && x.LockExpiryTime == null),
-                third  =>  third.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime)>(x => x.Id == thirdProcessId && x.Version == thirdVersion && x.LockExpiryTime == null)
+                third => third.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime)>(x => x.Id == thirdProcessId && x.Version == thirdVersion && x.LockExpiryTime == null)
             );
         A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.Matches(e => e != null && e.Message == error.Message), A<string>.That.StartsWith($"error processing process {firstProcessId}")))
             .MustHaveHappenedOnceExactly();
@@ -455,7 +456,7 @@ public class ProcessExecutionServiceTests
         // Assert
         A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.IsNull(), A<string>.That.StartsWith("skipping locked process")))
             .MustHaveHappened(processData.Length, Times.Exactly);
-        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustNotHaveHappened();
@@ -471,7 +472,7 @@ public class ProcessExecutionServiceTests
         var error = new Exception("Only a test");
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
-        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .Throws(error);
 
         Environment.ExitCode = 0;
@@ -496,7 +497,7 @@ public class ProcessExecutionServiceTests
         var error = new SystemException("unrecoverable failure");
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
-        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._,A<ProcessTypeId>._,A<CancellationToken>._))
+        A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .Throws(error);
 
         Environment.ExitCode = 0;

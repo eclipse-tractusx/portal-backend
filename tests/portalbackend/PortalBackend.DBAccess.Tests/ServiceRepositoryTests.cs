@@ -110,7 +110,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region GetOfferProviderDetailsAsync
-    
+
     [Fact]
     public async Task GetOfferProviderDetailsAsync_WithExistingOffer_ReturnsOfferProviderDetails()
     {
@@ -123,7 +123,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
     }
-    
+
     [Fact]
     public async Task GetOfferProviderDetailsAsync_WithNotExistingOffer_ReturnsNull()
     {
@@ -136,9 +136,9 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().BeNull();
     }
-    
+
     #endregion
-    
+
     private async Task<(OfferRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

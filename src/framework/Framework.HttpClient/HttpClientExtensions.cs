@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -31,7 +31,7 @@ public static class HttpClientExtensions
         {
             c.BaseAddress = new Uri(baseAddress);
         }).AddHttpMessageHandler<LoggingHandler<T>>();
-        
+
         services.AddHttpClient($"{typeof(T).Name}Auth", c =>
         {
             c.BaseAddress = new Uri(authAddress);

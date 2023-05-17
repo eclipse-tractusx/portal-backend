@@ -37,7 +37,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 public class ServiceAccountController : ControllerBase
 {
     private readonly IServiceAccountBusinessLogic _logic;
-    
+
     /// <summary>
     /// Creates a new instance of <see cref="ServiceAccountController"/> 
     /// </summary>
@@ -95,7 +95,7 @@ public class ServiceAccountController : ControllerBase
     /// <response code="409">Undefined client for service account.</response>
     [HttpGet]
     [Authorize(Roles = "view_tech_user_management")]
-    [Route("owncompany/serviceaccounts/{serviceAccountId}", Name="GetServiceAccountDetails")]
+    [Route("owncompany/serviceaccounts/{serviceAccountId}", Name = "GetServiceAccountDetails")]
     [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
@@ -176,5 +176,5 @@ public class ServiceAccountController : ControllerBase
     [Route("user/roles")]
     [ProducesResponseType(typeof(List<UserRoleWithDescription>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName = null) =>
-        this.WithIamUserId(iamUserId => _logic.GetServiceAccountRolesAsync(iamUserId, languageShortName));        
+        this.WithIamUserId(iamUserId => _logic.GetServiceAccountRolesAsync(iamUserId, languageShortName));
 }

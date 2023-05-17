@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Lib
 
 public static class ApplicationChecklistEntryTypeIdExtensions
 {
-    private static readonly ImmutableDictionary<ApplicationChecklistEntryTypeId,IEnumerable<ProcessStepTypeId>> _manualProcessStepIds = new (ApplicationChecklistEntryTypeId EntryTypeId, IEnumerable<ProcessStepTypeId> StepTypeId)[] {
+    private static readonly ImmutableDictionary<ApplicationChecklistEntryTypeId, IEnumerable<ProcessStepTypeId>> _manualProcessStepIds = new (ApplicationChecklistEntryTypeId EntryTypeId, IEnumerable<ProcessStepTypeId> StepTypeId)[] {
             (ApplicationChecklistEntryTypeId.CLEARING_HOUSE, new [] { ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE, ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE }),
             (ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new [] { ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET }),
             (ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, new [] { ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP }),

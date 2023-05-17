@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -95,7 +95,7 @@ public class OfferSetupServiceTests
         _mailingService = A.Fake<IMailingService>();
         _httpClientFactory = A.Fake<IHttpClientFactory>();
         _technicalUserProfileService = A.Fake<ITechnicalUserProfileService>();
-        
+
         A.CallTo(() => _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()).Returns(_appSubscriptionDetailRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IAppInstanceRepository>()).Returns(_appInstanceRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IClientRepository>()).Returns(_clientRepository);
@@ -128,7 +128,7 @@ public class OfferSetupServiceTests
     public async Task CallThirdPartyAutoSetupOfferAsync_WithDnsError_ReturnsServiceException()
     {
         // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException ("DNS Error"));
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException("DNS Error"));
         A.CallTo(() => _httpClientFactory.CreateClient(nameof(OfferSetupService)))
             .Returns(new HttpClient(httpMessageHandlerMock));
 
@@ -157,7 +157,7 @@ public class OfferSetupServiceTests
     }
 
     #endregion
-    
+
     #region AutoSetupServiceAsync
 
     [Theory]
@@ -170,7 +170,7 @@ public class OfferSetupServiceTests
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, Guid.Empty);
         var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), Guid.Empty, CompanyServiceAccountStatusId.ACTIVE, "test", "test", DateTimeOffset.UtcNow, CompanyServiceAccountTypeId.OWN);
-        var createNotificationsEnumerator = SetupAutoSetup(technicalUserRequired, offerSubscription, isSingleInstance, companyServiceAccount);
+        var createNotificationsEnumerator = SetupAutoSetup(offerSubscription, isSingleInstance, companyServiceAccount);
         var clientId = Guid.NewGuid();
         var appInstanceId = Guid.NewGuid();
         var appSubscriptionDetailId = Guid.NewGuid();
@@ -195,7 +195,7 @@ public class OfferSetupServiceTests
         {
             { "Cl2-CX-Portal", new [] { "Service Manager" } }
         };
-        
+
         A.CallTo(() => _appInstanceRepository.CreateAppInstance(A<Guid>._, A<Guid>._))
             .Invokes((Guid appId, Guid iamClientId) =>
             {
@@ -228,7 +228,7 @@ public class OfferSetupServiceTests
 
         // Act
         var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, IamUserId, offerTypeId, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
-        
+
         // Assert
         result.Should().NotBeNull();
         if (!technicalUserRequired || isSingleInstance)
@@ -303,7 +303,7 @@ public class OfferSetupServiceTests
 
         // Act
         var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, IamUserIdWithoutMail, OfferTypeId.SERVICE, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
-        
+
         // Assert
         result.Should().NotBeNull();
         result.TechnicalUserInfo.Should().BeNull();
@@ -330,7 +330,7 @@ public class OfferSetupServiceTests
 
         // Act
         async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, IamUserId, OfferTypeId.APP, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("There must only be one app instance for single instance apps");
@@ -347,7 +347,7 @@ public class OfferSetupServiceTests
 
         // Act
         async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), IamUserId, OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
         ex.Message.Should().Be($"OfferSubscription {data.RequestId} does not exist");
@@ -364,7 +364,7 @@ public class OfferSetupServiceTests
 
         // Act
         async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), IamUserId, OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -380,7 +380,7 @@ public class OfferSetupServiceTests
 
         // Act
         async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), Guid.NewGuid().ToString(), OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -388,9 +388,9 @@ public class OfferSetupServiceTests
     }
 
     #endregion
-    
+
     #region ActivateSingleInstanceAppAsync
-    
+
     [Fact]
     public async Task ActivateSingleInstanceAppAsync_WithValidData_ReturnsExpected()
     {
@@ -400,17 +400,17 @@ public class OfferSetupServiceTests
         SetupCreateSingleInstance(appInstance);
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOffer(_validOfferId, A<OfferTypeId>._))
             .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()) }.AsFakeIEnumerable(out var enumerator));
-        
+
         // Act
         var result = await _sut.ActivateSingleInstanceAppAsync(_validOfferId).ConfigureAwait(false);
-        
+
         // Assert
         result.Should().NotBeNull();
         appInstance.ServiceAccounts.Should().HaveCount(1);
         A.CallTo(() => _provisioningManager.EnableClient(A<string>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => enumerator.MoveNext())
-            .MustHaveHappened(2,Times.Exactly);
+            .MustHaveHappened(2, Times.Exactly);
     }
 
     [Fact]
@@ -418,7 +418,7 @@ public class OfferSetupServiceTests
     {
         var offerId = Guid.NewGuid();
         SetupCreateSingleInstance();
-        
+
         async Task Act() => await _sut.ActivateSingleInstanceAppAsync(offerId).ConfigureAwait(false);
 
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -446,9 +446,9 @@ public class OfferSetupServiceTests
     }
 
     #endregion
-    
+
     #region SetupSingleInstance
-    
+
     [Fact]
     public async Task SetupSingleInstance_WithValidData_ReturnsExpected()
     {
@@ -479,12 +479,12 @@ public class OfferSetupServiceTests
 
         // Act
         await _sut.SetupSingleInstance(offerId, "https://base-address.com").ConfigureAwait(false);
-        
+
         // Assert
         appInstances.Should().ContainSingle();
         clients.Should().ContainSingle();
     }
-    
+
     [Fact]
     public async Task SetupSingleInstance_WithExistingAppInstance_ThrowsConflictException()
     {
@@ -496,14 +496,14 @@ public class OfferSetupServiceTests
 
         // Act
         async Task Act() => await _sut.SetupSingleInstance(offerId, "https://base-address.com").ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"The app instance for offer {offerId} already exist");
     }
 
     #endregion
-    
+
     #region UpdateSingleInstance
 
     [Fact]
@@ -511,10 +511,10 @@ public class OfferSetupServiceTests
     {
         // Arrange
         const string url = "https://test.de";
-        
+
         // Act
         await _sut.UpdateSingleInstance("test", url).ConfigureAwait(false);
-        
+
         // Assert
         A.CallTo(() => _provisioningManager.UpdateClient("test", url, $"{url}/*"))
             .MustHaveHappenedOnceExactly();
@@ -523,7 +523,7 @@ public class OfferSetupServiceTests
     #endregion
 
     #region DeleteSingleInstance
-    
+
     [Fact]
     public async Task DeleteSingleInstance_WithExistingServiceAccountsAssigned_CallsExpected()
     {
@@ -535,11 +535,11 @@ public class OfferSetupServiceTests
         A.CallTo(() => _appInstanceRepository.CheckInstanceHasAssignedSubscriptions(appInstanceId))
             .Returns(false);
         A.CallTo(() => _appInstanceRepository.GetAssignedServiceAccounts(appInstanceId))
-            .Returns(new []{ serviceAccountId }.ToAsyncEnumerable());
+            .Returns(new[] { serviceAccountId }.ToAsyncEnumerable());
 
         // Act
         await _sut.DeleteSingleInstance(appInstanceId, clientId, clientClientId).ConfigureAwait(false);
-        
+
         // Assert
         A.CallTo(() => _appInstanceRepository.CheckInstanceHasAssignedSubscriptions(appInstanceId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteCentralClientAsync(clientClientId)).MustHaveHappenedOnceExactly();
@@ -563,7 +563,7 @@ public class OfferSetupServiceTests
 
         // Act
         await _sut.DeleteSingleInstance(appInstanceId, clientId, clientClientId).ConfigureAwait(false);
-        
+
         // Assert
         A.CallTo(() => _appInstanceRepository.CheckInstanceHasAssignedSubscriptions(appInstanceId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteCentralClientAsync(clientClientId)).MustHaveHappenedOnceExactly();
@@ -599,14 +599,14 @@ public class OfferSetupServiceTests
     }
 
     #endregion
-    
+
     #region Setup
 
     private IAsyncEnumerator<Guid> SetupServices(CompanyServiceAccount? companyServiceAccount = null)
     {
         A.CallTo(() => _provisioningManager.SetupClientAsync(A<string>._, A<string>._, A<IEnumerable<string>?>._, A<bool>._))
             .Returns("cl1");
-        
+
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Any(y => y == "CAXSDUMMYCATENAZZ")), CompanyServiceAccountTypeId.MANAGED, A<bool>._, A<Action<CompanyServiceAccount>?>._))
             .Invokes((ServiceAccountCreationInfo _, Guid _, IEnumerable<string> _, CompanyServiceAccountTypeId _, bool _, Action<CompanyServiceAccount>? setOptionalParameter) =>
             {
@@ -621,17 +621,17 @@ public class OfferSetupServiceTests
                 {
                     Secret = "katze!1234"
                 }),
-                _technicalUserId, 
+                _technicalUserId,
                 Enumerable.Empty<UserRoleData>()));
 
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._,
                 A<Guid>._, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<bool?>._))
-            .Returns(new [] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
+            .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
 
         return createNotificationsEnumerator;
     }
 
-    private IAsyncEnumerator<Guid> SetupAutoSetup(bool technicalUserRequired = false, OfferSubscription? offerSubscription = null, bool isSingleInstance = false, CompanyServiceAccount? companyServiceAccount = null)
+    private IAsyncEnumerator<Guid> SetupAutoSetup(OfferSubscription? offerSubscription = null, bool isSingleInstance = false, CompanyServiceAccount? companyServiceAccount = null)
     {
         var createNotificationsEnumerator = SetupServices(companyServiceAccount);
 
@@ -651,7 +651,7 @@ public class OfferSetupServiceTests
                 Guid.Empty,
                 _companyUser.Company!.Name, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),
-                new[] {Guid.NewGuid()},
+                new[] { Guid.NewGuid() },
                 _salesManagerId));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
@@ -661,7 +661,7 @@ public class OfferSetupServiceTests
                 Guid.Empty,
                 _companyUser.Company!.Name, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, null, null, null, (isSingleInstance, "https://test.de"),
-                new[] {Guid.NewGuid()},
+                new[] { Guid.NewGuid() },
                 _salesManagerId));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _pendingSubscriptionId),
@@ -671,7 +671,7 @@ public class OfferSetupServiceTests
                 Guid.Empty,
                 string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),
-                new[] {Guid.NewGuid()},
+                new[] { Guid.NewGuid() },
                 _salesManagerId));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Matches(x => x == _offerIdWithInstanceNotSet),
@@ -697,7 +697,7 @@ public class OfferSetupServiceTests
                 Guid.Empty,
                 string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, null, null, null, (isSingleInstance, "https://test.de"),
-                new[] {Guid.NewGuid()},
+                new[] { Guid.NewGuid() },
                 null));
 
         return createNotificationsEnumerator;
@@ -722,11 +722,11 @@ public class OfferSetupServiceTests
         }
 
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(_validOfferId, OfferTypeId.APP))
-            .Returns(new SingleInstanceOfferData(_companyUserCompanyId, "app1", Bpn, true, new [] { (_validInstanceSetupId, "cl1") }));
+            .Returns(new SingleInstanceOfferData(_companyUserCompanyId, "app1", Bpn, true, new[] { (_validInstanceSetupId, "cl1") }));
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(_offerIdWithoutClient, OfferTypeId.APP))
-            .Returns(new SingleInstanceOfferData(_companyUserCompanyId, "app1", Bpn, true, new [] { (_validInstanceSetupId, string.Empty) }));
+            .Returns(new SingleInstanceOfferData(_companyUserCompanyId, "app1", Bpn, true, new[] { (_validInstanceSetupId, string.Empty) }));
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(_offerIdWithInstanceNotSet, OfferTypeId.APP))
-            .Returns(new SingleInstanceOfferData(_companyUserCompanyId, "app1", Bpn, true, Enumerable.Empty<(Guid,string)>()));
+            .Returns(new SingleInstanceOfferData(_companyUserCompanyId, "app1", Bpn, true, Enumerable.Empty<(Guid, string)>()));
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(A<Guid>.That.Not.Matches(x => x == _offerIdWithoutClient || x == _validOfferId || x == _offerIdWithInstanceNotSet), OfferTypeId.APP))
             .Returns((SingleInstanceOfferData?)null);
     }

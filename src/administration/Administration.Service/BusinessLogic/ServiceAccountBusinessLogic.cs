@@ -61,7 +61,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         }
         if (string.IsNullOrWhiteSpace(serviceAccountCreationInfos.Name))
         {
-            throw new ControllerArgumentException("name must not be empty","name");
+            throw new ControllerArgumentException("name must not be empty", "name");
         }
 
         var result = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(iamAdminId, _settings.ClientId).ConfigureAwait(false);
@@ -81,7 +81,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         }
 
         var companyServiceAccountTypeId = CompanyServiceAccountTypeId.OWN;
-        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, result.CompanyId, new [] { result.Bpn }, companyServiceAccountTypeId, false).ConfigureAwait(false);
+        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, result.CompanyId, new[] { result.Bpn }, companyServiceAccountTypeId, false).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return new ServiceAccountDetails(
@@ -108,7 +108,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         {
             serviceAccount.CompanyServiceAccountStatusId = CompanyServiceAccountStatusId.INACTIVE;
         });
-        
+
         // serviceAccount
         if (!string.IsNullOrWhiteSpace(result.ClientId))
         {
@@ -130,7 +130,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
                     connector.CompanyServiceAccountId = null;
                 });
         }
-        
+
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -192,7 +192,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         }
         if (serviceAccountId != serviceAccountEditableDetails.ServiceAccountId)
         {
-            throw new ArgumentException($"serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountEditableDetails.ServiceAccountId}","serviceAccountId");
+            throw new ArgumentException($"serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountEditableDetails.ServiceAccountId}", "serviceAccountId");
         }
         var serviceAccountRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
         var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(serviceAccountId, iamAdminId).ConfigureAwait(false);
@@ -219,16 +219,18 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
                 serviceAccountEditableDetails.Name,
                 serviceAccountEditableDetails.Description,
                 serviceAccountEditableDetails.IamClientAuthMethod)).ConfigureAwait(false);
-        
+
         var authData = await _provisioningManager.GetCentralClientAuthDataAsync(result.ClientId).ConfigureAwait(false);
 
         serviceAccountRepository.AttachAndModifyCompanyServiceAccount(
             serviceAccountId,
-            sa => {
+            sa =>
+            {
                 sa.Name = result.Name;
                 sa.Description = result.Description;
             },
-            sa => {
+            sa =>
+            {
                 sa.Name = serviceAccountEditableDetails.Name;
                 sa.Description = serviceAccountEditableDetails.Description;
             });

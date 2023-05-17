@@ -1,4 +1,4 @@
-﻿namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
 public class SeederSettings
 {

@@ -20,10 +20,10 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -40,7 +40,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
     private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
     private readonly Guid _validSubscriptionId = new("eb98bdf5-14e1-4feb-a954-453eac0b93cd");
     private readonly Guid _validServiceAccountId = new("7e85a0b8-0001-ab67-10d1-0ef508201006");
-    
+
     public ServiceAccountRepositoryTests(TestDbFixture testDbFixture)
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -255,8 +255,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetOwnCompanyServiceAccountDetailedDataUntrackedAsync
 
     [Theory]
-    [InlineData(9,0,10,9)]
-    [InlineData(9,1,9,8)]
+    [InlineData(9, 0, 10, 9)]
+    [InlineData(9, 1, 9, 8)]
     public async Task GetOwnCompanyServiceAccountsUntracked_ReturnsExpectedResult(int count, int page, int size, int expected)
     {
         // Arrange
@@ -293,9 +293,9 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region Setup
-    
+
     private async Task<(ServiceAccountRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

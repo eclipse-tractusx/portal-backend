@@ -30,7 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 /// Business logic for handling service-related operations. Includes persistence layer access.
 /// </summary>
 public interface IServiceBusinessLogic
-{ 
+{
     /// <summary>
     /// Gets all active services from the database
     /// </summary>

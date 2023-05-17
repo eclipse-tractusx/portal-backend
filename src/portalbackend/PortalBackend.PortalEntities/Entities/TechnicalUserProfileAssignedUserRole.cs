@@ -27,12 +27,12 @@ public class TechnicalUserProfileAssignedUserRole
     }
 
     public TechnicalUserProfileAssignedUserRole(Guid technicalUserProfileId, Guid userRoleId)
-        :this()
+        : this()
     {
         TechnicalUserProfileId = technicalUserProfileId;
         UserRoleId = userRoleId;
     }
-    
+
     public Guid TechnicalUserProfileId { get; }
     public Guid UserRoleId { get; }
 

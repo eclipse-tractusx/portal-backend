@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Attributes;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Model;
-using Microsoft.Extensions.Options;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -42,14 +42,14 @@ public class TemplateManager : ITemplateManager
     {
         if (!_settings.Templates.TryGetValue(id, out var template))
         {
-            throw new NoSuchTemplateException(id);                    
+            throw new NoSuchTemplateException(id);
         }
         var body = template.EmailTemplateType.HasValue
             ? await GetTemplateStringFromType(template.EmailTemplateType.Value).ConfigureAwait(false)
             : template.Body;
         if (body == null)
         {
-            throw new NoSuchTemplateException(id);                    
+            throw new NoSuchTemplateException(id);
         }
         return new Mail(
             ReplaceValues(template.Subject, parameters),
@@ -73,13 +73,13 @@ public class TemplateManager : ITemplateManager
         {
             return await File.ReadAllTextAsync(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/EmailTemplates/" + path).ConfigureAwait(false);
         }
-        catch(IOException ioe)
+        catch (IOException ioe)
         {
             throw new NoSuchTemplateException(path, ioe);
         }
     }
 
-    private static string ReplaceValues(string template, IDictionary<string,string> parameters) => 
+    private static string ReplaceValues(string template, IDictionary<string, string> parameters) =>
         _templateMatcherExpression.Replace(
             template,
             m => parameters.TryGetValue(m.Groups[1].Value, out var value) ? value : "null");

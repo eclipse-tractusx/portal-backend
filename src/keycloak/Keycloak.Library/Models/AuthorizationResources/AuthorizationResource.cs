@@ -24,8 +24,8 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
 using Newtonsoft.Json;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationResources;
 
@@ -46,5 +46,5 @@ public class AuthorizationResource
     [JsonProperty("displayName")]
     public string DisplayName { get; set; }
     [JsonProperty("type")]
-    public string Type { get; set; } 
+    public string Type { get; set; }
 }

@@ -74,7 +74,7 @@ public class ApplicationChecklistCreationService : IApplicationChecklistCreation
     {
         foreach (var (entryTypeId, statusId) in checklistEntries)
         {
-            switch(entryTypeId)
+            switch (entryTypeId)
             {
                 case ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION:
                     yield return ProcessStepTypeId.VERIFY_REGISTRATION;

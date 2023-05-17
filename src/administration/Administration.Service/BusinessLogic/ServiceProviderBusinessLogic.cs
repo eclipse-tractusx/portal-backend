@@ -44,7 +44,7 @@ public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
     public async Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(string iamUserId)
     {
         var result = await _portalRepositories.GetInstance<ICompanyRepository>()
-            .GetProviderCompanyDetailAsync( CompanyRoleId.SERVICE_PROVIDER, iamUserId)
+            .GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, iamUserId)
             .ConfigureAwait(false);
         if (result == default)
         {

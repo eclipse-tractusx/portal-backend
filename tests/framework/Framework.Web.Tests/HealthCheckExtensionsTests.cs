@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -29,7 +29,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests;
 
 public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<HealthCheckExtensionsTests>>
 {
-    private static readonly JsonSerializerOptions _options = new (){ PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private static readonly JsonSerializerOptions _options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly IFixture _fixture;
     private readonly IHealthCheck _healthCheck;
 
@@ -46,7 +46,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
     [Fact]
     public void MapDefaultHealthChecks_AmbiguousPathes_Throws()
     {
-        var settings = new HealthCheckSettings [] {
+        var settings = new HealthCheckSettings[] {
             new () { Path = "/foo" },
             new () { Path = "/foo" }
         };
@@ -64,7 +64,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         var name = _fixture.Create<string>();
         var tag = _fixture.Create<string>();
 
-        var settings = new HealthCheckSettings [] {
+        var settings = new HealthCheckSettings[] {
             new () { Path = "/health", Tags = new [] { tag }}
         };
 
@@ -73,7 +73,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         A.CallTo(() => _healthCheck.CheckHealthAsync(A<HealthCheckContext>._, A<CancellationToken>._))
             .Returns(Task.FromResult(HealthCheckResult.Healthy(description)));
 
-        var sut = CreateSut(name, new [] { tag });
+        var sut = CreateSut(name, new[] { tag });
 
         // Act
         sut.MapDefaultHealthChecks(settings);
@@ -83,7 +83,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Healthy");
         response.Info.Should().ContainSingle().Which.Should().Match<HealthInfo>(x => x.Key == name && x.Description == description && x.Status == "Healthy" && x.Error == null);
-        
+
         A.CallTo(() => _healthCheck.CheckHealthAsync(A<HealthCheckContext>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
@@ -95,7 +95,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         var name = _fixture.Create<string>();
         var tag = _fixture.Create<string>();
 
-        var settings = new HealthCheckSettings [] {
+        var settings = new HealthCheckSettings[] {
             new () { Path = "/health", Tags = new [] { tag }}
         };
 
@@ -105,7 +105,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         A.CallTo(() => _healthCheck.CheckHealthAsync(A<HealthCheckContext>._, A<CancellationToken>._))
             .Returns(Task.FromResult(HealthCheckResult.Unhealthy(description, error)));
 
-        var sut = CreateSut(name, new [] { tag });
+        var sut = CreateSut(name, new[] { tag });
 
         // Act
         sut.MapDefaultHealthChecks(settings);
@@ -115,7 +115,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Unhealthy");
         response.Info.Should().ContainSingle().Which.Should().Match<HealthInfo>(x => x.Key == name && x.Description == description && x.Status == "Unhealthy" && x.Error == error.Message);
-        
+
         A.CallTo(() => _healthCheck.CheckHealthAsync(A<HealthCheckContext>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
@@ -124,7 +124,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
     public async Task MapDefaultHealthChecks_NoTags_ReturnsExpected()
     {
         // Arrange
-        var settings = new HealthCheckSettings [] {
+        var settings = new HealthCheckSettings[] {
             new () { Path = "/health", Tags = null }
         };
 
@@ -144,7 +144,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Healthy");
         response.Info.Should().BeEmpty();
-        
+
         A.CallTo(() => _healthCheck.CheckHealthAsync(A<HealthCheckContext>._, A<CancellationToken>._))
             .MustNotHaveHappened();
     }
@@ -153,7 +153,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
     public async Task MapDefaultHealthChecks_NoMatchingTag_ReturnsExpected()
     {
         // Arrange
-        var settings = new HealthCheckSettings [] {
+        var settings = new HealthCheckSettings[] {
             new () { Path = "/health", Tags = _fixture.CreateMany<string>() }
         };
 
@@ -173,7 +173,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Healthy");
         response.Info.Should().BeEmpty();
-        
+
         A.CallTo(() => _healthCheck.CheckHealthAsync(A<HealthCheckContext>._, A<CancellationToken>._))
             .MustNotHaveHappened();
     }
@@ -194,7 +194,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         {
             var result = await new HttpClient().GetAsync("http://localhost:5000/health").ConfigureAwait(false);
             await using var responseStream = await result.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            return await JsonSerializer.DeserializeAsync<HealthResponse>(responseStream,_options).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync<HealthResponse>(responseStream, _options).ConfigureAwait(false);
         }
         finally
         {
@@ -202,7 +202,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         }
     }
 
-    public record HealthInfo(string Key, string? Description, TimeSpan Duration, string? Status, string? Error, IDictionary<string,object> Data);
+    public record HealthInfo(string Key, string? Description, TimeSpan Duration, string? Status, string? Error, IDictionary<string, object> Data);
 
     public record HealthResponse(string Status, TimeSpan Duration, IEnumerable<HealthInfo> Info);
 

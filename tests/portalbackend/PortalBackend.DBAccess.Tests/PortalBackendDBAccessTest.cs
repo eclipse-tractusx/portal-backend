@@ -19,23 +19,23 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Xunit;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Xunit;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests
 {
     public class PortalBackendDBAccessTest
     {
-        private PortalDbContext mockContext;
+        private readonly PortalDbContext mockContext;
         public PortalBackendDBAccessTest()
         {
-            mockContext = new InMemoryDbContextFactory().GetPortalDbContext();
+            mockContext = InMemoryDbContextFactory.GetPortalDbContext();
         }
         [Fact]
         public void GetInvitedUser_Details_by_id()
         {
             //Arrange
-            Guid id = new Guid("7eab8e16-8298-4b41-953b-515745423658");
+            var id = new Guid("7eab8e16-8298-4b41-953b-515745423658");
             mockContext.Invitations.Add(
                 new Invitation
                 (

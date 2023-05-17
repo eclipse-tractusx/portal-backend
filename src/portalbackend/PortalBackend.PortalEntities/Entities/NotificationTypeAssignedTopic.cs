@@ -61,7 +61,7 @@ public class NotificationTypeAssignedTopic
     /// All AppSubscriptions currently with this status.
     /// </summary>
     public virtual NotificationType? NotificationType { get; private set; }
-    
+
     /// <summary>
     /// All AppSubscriptions currently with this status.
     /// </summary>

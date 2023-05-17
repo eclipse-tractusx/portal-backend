@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -50,7 +50,7 @@ public class ConsentRepository : IConsentRepository
     }
 
     /// <inheritdoc />
-    public void RemoveConsents(IEnumerable<Consent> consents) => 
+    public void RemoveConsents(IEnumerable<Consent> consents) =>
         _portalDbContext.RemoveRange(consents);
 
     ///<inheritdoc/>
@@ -92,12 +92,15 @@ public class ConsentRepository : IConsentRepository
             modify =>
             {
                 var consent = new Consent(Guid.NewGuid(), modify.AgreementId, companyId, companyUserId, modify.ConsentStatusId, utcNow);
-                CreateConsentAssignedOffer(consent.Id,offerId);
+                CreateConsentAssignedOffer(consent.Id, offerId);
                 return consent;
             },
-            (initial,modify) => initial.ConsentStatusId == modify.ConsentStatusId,
-            (consent,modify) => {consent.ConsentStatusId = modify.ConsentStatusId;
-                consent.LastEditorId = companyUserId;});
+            (initial, modify) => initial.ConsentStatusId == modify.ConsentStatusId,
+            (consent, modify) =>
+            {
+                consent.ConsentStatusId = modify.ConsentStatusId;
+                consent.LastEditorId = companyUserId;
+            });
 
     public IEnumerable<Consent> AddAttachAndModifyConsents(IEnumerable<ConsentStatusDetails> initialItems, IEnumerable<(Guid AgreementId, ConsentStatusId ConsentStatusId)> modifyItems, Guid companyId, Guid companyUserId, DateTimeOffset utcNow) =>
         _portalDbContext.AddAttachRange(
@@ -107,7 +110,10 @@ public class ConsentRepository : IConsentRepository
             modify => modify.AgreementId,
             initial => new Consent(initial.ConsentId, initial.AgreementId, Guid.Empty, Guid.Empty, initial.ConsentStatusId, default),
             modify => new Consent(Guid.NewGuid(), modify.AgreementId, companyId, companyUserId, modify.ConsentStatusId, utcNow),
-            (initial,modify) => initial.ConsentStatusId == modify.ConsentStatusId,
-            (consent,modify) => {consent.ConsentStatusId = modify.ConsentStatusId;
-                consent.LastEditorId = companyUserId;});
+            (initial, modify) => initial.ConsentStatusId == modify.ConsentStatusId,
+            (consent, modify) =>
+            {
+                consent.ConsentStatusId = modify.ConsentStatusId;
+                consent.LastEditorId = companyUserId;
+            });
 }

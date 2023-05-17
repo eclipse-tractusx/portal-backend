@@ -27,8 +27,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
             DocumentId = documentId;
             DocumentName = documentName;
         }
-        public Guid DocumentId { get;}
+        public Guid DocumentId { get; }
 
-        public string DocumentName { get;}
+        public string DocumentName { get; }
     }
 }

@@ -32,9 +32,9 @@ public partial class ProvisioningSettings
     public ProvisioningSettings ValidateIdentityProviderTemplates()
     {
         new ConfigurationValidation<ProvisioningSettings>()
-            .NotNull(CentralIdentityProvider, ()=>nameof(CentralIdentityProvider))
-            .NotNull(SamlIdentityProvider, ()=>nameof(SamlIdentityProvider))
-            .NotNull(OidcIdentityProvider, ()=>nameof(OidcIdentityProvider));
+            .NotNull(CentralIdentityProvider, () => nameof(CentralIdentityProvider))
+            .NotNull(SamlIdentityProvider, () => nameof(SamlIdentityProvider))
+            .NotNull(OidcIdentityProvider, () => nameof(OidcIdentityProvider));
         return this;
     }
 }

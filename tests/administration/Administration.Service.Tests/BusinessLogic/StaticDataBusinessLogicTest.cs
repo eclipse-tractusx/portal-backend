@@ -17,11 +17,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -35,7 +35,7 @@ public class StaticDataBusinessLogicTest
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());  
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _staticDataRepository = A.Fake<IStaticDataRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
@@ -48,11 +48,11 @@ public class StaticDataBusinessLogicTest
     {
         // Arrange
         var data = _fixture.Build<LicenseTypeData>()
-                            .With(x=>x.LicenseTypeId, 1)
-                            .With(x=>x.Name, LicenseTypeId.COTS.ToString())
+                            .With(x => x.LicenseTypeId, 1)
+                            .With(x => x.Name, LicenseTypeId.COTS.ToString())
                             .CreateMany()
                             .ToAsyncEnumerable();
-       
+
         A.CallTo(() => _staticDataRepository.GetLicenseTypeData())
             .Returns(data);
         var sut = new StaticDataBusinessLogic(_portalRepositories);

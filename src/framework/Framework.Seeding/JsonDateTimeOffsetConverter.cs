@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -23,20 +23,20 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
-public class JsonDateTimeOffsetConverter: JsonConverter<DateTimeOffset>
+public class JsonDateTimeOffsetConverter : JsonConverter<DateTimeOffset>
 {
-        public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (!reader.TryGetDateTimeOffset(out var value))
         {
-            if (!reader.TryGetDateTimeOffset(out DateTimeOffset value))
-            {
-                value = DateTimeOffset.Parse(reader.GetString()!);
-            }
-
-            return value;
+            value = DateTimeOffset.Parse(reader.GetString()!);
         }
 
-        public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options)
-        {
-            writer.WriteStringValue(value.ToString("O"));
-        }
+        return value;
+    }
+
+    public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToString("O"));
+    }
 }

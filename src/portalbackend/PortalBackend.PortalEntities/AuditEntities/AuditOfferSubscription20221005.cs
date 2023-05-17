@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -56,7 +56,7 @@ public class AuditOfferSubscription20221005 : IAuditEntityV1
     /// Display Name for the company app combination
     /// </summary>
     public string? DisplayName { get; set; }
-    
+
     /// <summary>
     /// Additional description for clarification
     /// </summary>
@@ -68,7 +68,7 @@ public class AuditOfferSubscription20221005 : IAuditEntityV1
     public Guid RequesterId { get; set; }
 
     public Guid? LastEditorId { get; set; }
-    
+
     /// <inheritdoc />
     public Guid? AuditV1LastEditorId { get; set; }
 

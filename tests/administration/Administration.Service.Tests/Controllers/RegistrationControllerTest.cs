@@ -18,8 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
@@ -29,6 +27,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Text;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
@@ -53,16 +53,16 @@ public class RegistrationControllerTest
     [Fact]
     public async Task GetCompanyApplicationDetailsAsync_ReturnsCompanyApplicationDetails()
     {
-         //Arrange
+        //Arrange
         var paginationResponse = new Pagination.Response<CompanyApplicationDetails>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyApplicationDetails>(5));
-        A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15,null,null))
+        A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15, null, null))
                   .Returns(paginationResponse);
 
         //Act
-        var result = await this._controller.GetApplicationDetailsAsync(0, 15,null,null).ConfigureAwait(false);
+        var result = await this._controller.GetApplicationDetailsAsync(0, 15, null, null).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15,null,null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15, null, null)).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
         result.Content.Should().HaveCount(5);
     }
@@ -72,7 +72,7 @@ public class RegistrationControllerTest
     {
         //Arrange
         var applicationId = _fixture.Create<Guid>();
-         var data = _fixture.Create<CompanyWithAddressData>();
+        var data = _fixture.Create<CompanyWithAddressData>();
         A.CallTo(() => _logic.GetCompanyWithAddressAsync(applicationId))
             .ReturnsLazily(() => data);
 
@@ -165,10 +165,10 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, A<ApplicationChecklistEntryTypeId>._, A<ProcessStepTypeId>._))
             .ReturnsLazily(() => Task.CompletedTask);
-        
+
         // Act
         var result = await this._controller.RetriggerClearinghouseChecklist(applicationId).ConfigureAwait(false);
-        
+
         // Assert
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
@@ -181,15 +181,15 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, A<ApplicationChecklistEntryTypeId>._, A<ProcessStepTypeId>._))
             .ReturnsLazily(() => Task.CompletedTask);
-        
+
         // Act
         var result = await this._controller.OverrideClearinghouseChecklist(applicationId).ConfigureAwait(false);
-        
+
         // Assert
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
-    
+
     [Fact]
     public async Task TriggerIdentityWallet_ReturnsExpectedResult()
     {
@@ -197,15 +197,15 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, A<ApplicationChecklistEntryTypeId>._, A<ProcessStepTypeId>._))
             .ReturnsLazily(() => Task.CompletedTask);
-        
+
         // Act
         var result = await this._controller.TriggerIdentityWallet(applicationId);
-        
+
         // Assert
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
-    
+
     [Fact]
     public async Task TriggerSelfDescription_ReturnsExpectedResult()
     {
@@ -213,15 +213,15 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, A<ApplicationChecklistEntryTypeId>._, A<ProcessStepTypeId>._))
             .ReturnsLazily(() => Task.CompletedTask);
-        
+
         // Act
         var result = await this._controller.TriggerSelfDescription(applicationId);
-        
+
         // Assert
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
-    
+
     [Theory]
     [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL)]
     [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH)]
@@ -231,15 +231,15 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, A<ApplicationChecklistEntryTypeId>._, A<ProcessStepTypeId>._))
             .ReturnsLazily(() => Task.CompletedTask);
-        
+
         // Act
         var result = await this._controller.TriggerBpn(applicationId, processStepTypeId);
-        
+
         // Assert
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, processStepTypeId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
-    
+
     [Fact]
     public async Task ProcessClearinghouseSelfDescription_ReturnsExpectedResult()
     {
@@ -247,10 +247,10 @@ public class RegistrationControllerTest
         var data = new SelfDescriptionResponseData(Guid.NewGuid(), SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         A.CallTo(() => _logic.ProcessClearinghouseSelfDescription(data, A<CancellationToken>._))
             .ReturnsLazily(() => Task.CompletedTask);
-        
+
         // Act
         var result = await this._controller.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
-        
+
         // Assert
         A.CallTo(() => _logic.ProcessClearinghouseSelfDescription(data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();

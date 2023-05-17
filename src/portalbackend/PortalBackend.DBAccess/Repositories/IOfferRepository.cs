@@ -134,7 +134,7 @@ public interface IOfferRepository
     /// <param name="iamUserId">IAM ID of the user to retrieve own company app.</param>
     /// <returns>Return Async Enumerable of App Data</returns>
     IAsyncEnumerable<AllOfferData> GetProvidedOffersData(OfferTypeId offerTypeId, string iamUserId);
-    
+
     /// <summary>
     /// Gets the client roles for a specific app
     /// </summary>
@@ -153,7 +153,7 @@ public interface IOfferRepository
     /// <returns>ValueTuple, first item is true if the app is in status CREATED,
     /// second item is true if the user is eligible to edit it</returns>
     Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<LocalizedDescription> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, string userId, OfferTypeId offerTypeId);
-    
+
     /// Get Offer Release data by Offer Id
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
@@ -165,7 +165,7 @@ public interface IOfferRepository
     /// Gets all service detail data from the persistence storage as pagination 
     /// </summary>
     /// <returns>Returns an Pagination</returns>
-    Func<int,int,Task<Pagination.Source<ServiceOverviewData>?>> GetActiveServicesPaginationSource(ServiceOverviewSorting? sorting, ServiceTypeId? serviceTypeId, string languageShortName);
+    Func<int, int, Task<Pagination.Source<ServiceOverviewData>?>> GetActiveServicesPaginationSource(ServiceOverviewSorting? sorting, ServiceTypeId? serviceTypeId, string languageShortName);
 
     /// <summary>
     /// Gets the service details for the given id
@@ -193,8 +193,8 @@ public interface IOfferRepository
     /// <param name="skip"></param>
     /// <param name="take"></param>
     /// <param name="sorting"></param>
-    Func<int,int,Task<Pagination.Source<InReviewAppData>?>> GetAllInReviewStatusAppsAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferSorting? sorting);
-    
+    Func<int, int, Task<Pagination.Source<InReviewAppData>?>> GetAllInReviewStatusAppsAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferSorting? sorting);
+
     /// <summary>
     /// Retrieve Offer Detail with Status
     /// </summary>
@@ -222,7 +222,7 @@ public interface IOfferRepository
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task<(bool OfferExists, bool IsStatusCreated, Guid CompanyUserId)> GetProviderCompanyUserIdForOfferUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, OfferTypeId offerTypeId);
-    
+
     /// <summary>
     /// Verify that user is linked to the appId ,offerstatus is in created state and roleId exist
     /// </summary>
@@ -231,7 +231,7 @@ public interface IOfferRepository
     /// <param name="offerStatusId"></param>
     /// <param name="roleId"></param>
     /// <returns></returns>
-    Task<(bool OfferStatus, bool IsProviderCompanyUser,bool IsRoleIdExist)> GetAppUserRoleUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, Guid roleId);
+    Task<(bool OfferStatus, bool IsProviderCompanyUser, bool IsRoleIdExist)> GetAppUserRoleUntrackedAsync(Guid offerId, string userId, OfferStatusId offerStatusId, Guid roleId);
 
     /// <summary>
     /// Gets all data needed for the app update
@@ -281,7 +281,7 @@ public interface IOfferRepository
     /// <param name="iamUserId">id of the current user</param>
     /// <returns>The found service update data</returns>
     Task<ServiceUpdateData?> GetServiceUpdateData(Guid serviceId, IEnumerable<ServiceTypeId> serviceTypeIds, string iamUserId);
-    
+
     /// <summary>
     /// Validate Company User and Retrieve CompanyUserid with App Name
     /// </summary>
@@ -307,7 +307,7 @@ public interface IOfferRepository
     /// <param name="offerType">Type of the offer</param>
     /// <returns>Returns the data needed to decline an offer</returns>
     Task<(string? OfferName, OfferStatusId OfferStatus, Guid? CompanyId)> GetOfferDeclineDataAsync(Guid offerId, string iamUserId, OfferTypeId offerType);
-    
+
     /// <summary>
     /// Retireve and Validate Offer Status for App
     /// </summary>
@@ -316,13 +316,13 @@ public interface IOfferRepository
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task<(bool IsStatusActive, bool IsUserCompanyProvider)> GetOfferActiveStatusDataByIdAsync(Guid appId, OfferTypeId offerTypeId, string iamUserId);
-    
+
     /// <summary>
     /// Adds <see cref="OfferAssignedPrivacyPolicy"/>s to the database
     /// </summary>
     /// <param name="privacyPolicies">The privacy policies that should be added to the database</param>
     void AddAppAssignedPrivacyPolicies(IEnumerable<(Guid appId, PrivacyPolicyId privacyPolicy)> privacyPolicies);
-    
+
     /// <summary>
     /// Add offer Id and privacy policy Id in Offer Assigned Privacy Policies table 
     /// </summary>
@@ -370,7 +370,7 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <param name="offerStatusId"></param>
     /// <returns></returns>
-    Task<(bool IsValidApp,bool IsOfferType,bool IsOfferStatus,bool IsProviderCompanyUser,AppDeleteData? DeleteData)> GetAppDeleteDataAsync(Guid offerId, OfferTypeId offerTypeId, string userId, OfferStatusId offerStatusId);
+    Task<(bool IsValidApp, bool IsOfferType, bool IsOfferStatus, bool IsProviderCompanyUser, AppDeleteData? DeleteData)> GetAppDeleteDataAsync(Guid offerId, OfferTypeId offerTypeId, string userId, OfferStatusId offerStatusId);
 
     /// <summary>
     /// Delete Offer Assigned Licenses
@@ -408,10 +408,10 @@ public interface IOfferRepository
     /// <param name="offerLanguageShortNames"></param>
     void RemoveOfferDescriptions(IEnumerable<(Guid OfferId, string LanguageShortName)> offerLanguageShortNames);
 
-     /// <summary>
-     /// Delete Offer
-     /// </summary>
-     /// <param name="offerIds"></param>
+    /// <summary>
+    /// Delete Offer
+    /// </summary>
+    /// <param name="offerIds"></param>
     void RemoveOffer(Guid offerId);
 
     /// <summary>
@@ -438,8 +438,8 @@ public interface IOfferRepository
     /// <param name="userId"></param>
     /// <param name="sorting"></param>
     /// <param name="offerName"></param>
-    Func<int,int,Task<Pagination.Source<AllOfferStatusData>?>> GetCompanyProvidedServiceStatusDataAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, string userId, OfferSorting? sorting, string? offerName);
-    
+    Func<int, int, Task<Pagination.Source<AllOfferStatusData>?>> GetCompanyProvidedServiceStatusDataAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, string userId, OfferSorting? sorting, string? offerName);
+
     /// <summary>
     /// Retrieves all in review status offer in the marketplace.
     /// </summary>
@@ -448,7 +448,7 @@ public interface IOfferRepository
     /// <param name="sorting"></param>
     /// <param name="offerName"></param>
     /// <param name="languageShortName"></param>
-    Func<int,int,Task<Pagination.Source<InReviewServiceData>?>> GetAllInReviewStatusServiceAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, OfferSorting? sorting, string? offerName, string languageShortName, string defaultLanguageShortName);
+    Func<int, int, Task<Pagination.Source<InReviewServiceData>?>> GetAllInReviewStatusServiceAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, OfferSorting? sorting, string? offerName, string languageShortName, string defaultLanguageShortName);
 
     /// Gets the data for the app including the instance type information
     /// </summary>

@@ -45,7 +45,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     /// <param name="mailingService">Mail service.</param>
     /// <param name="logger">Access to the logger</param>
     public OfferSubscriptionService(
-        IPortalRepositories portalRepositories, 
+        IPortalRepositories portalRepositories,
         IOfferSetupService offerSetupService,
         IMailingService mailingService,
         ILogger<OfferSubscriptionService> logger)
@@ -71,7 +71,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             : offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId).Id;
 
         CreateConsentsForSubscription(offerSubscriptionId, offerAgreementConsentData, companyInformation.CompanyId, companyUserId);
-        
+
         var autoSetupResult = await AutoSetupOfferSubscription(offerId, accessToken, offerProviderDetails, companyInformation, userEmail, offerSubscriptionId, offerProviderDetails.IsSingleInstance).ConfigureAwait(false);
         var notificationContent = JsonSerializer.Serialize(new
         {
@@ -85,9 +85,9 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         await SendNotifications(offerId, offerTypeId, offerProviderDetails, companyUserId, notificationContent, serviceManagerRoles).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        if (string.IsNullOrWhiteSpace(offerProviderDetails.ProviderContactEmail)) 
+        if (string.IsNullOrWhiteSpace(offerProviderDetails.ProviderContactEmail))
             return offerSubscriptionId;
-        
+
         var mailParams = new Dictionary<string, string>
         {
             { "offerProviderName", offerProviderDetails.ProviderName},
@@ -173,7 +173,8 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         }
 
         offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscriptionId,
-            os => {
+            os =>
+            {
                 os.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
                 os.LastEditorId = companyUserId;
             });
@@ -192,16 +193,17 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     }
 
     private async Task<string?> AutoSetupOfferSubscription(
-        Guid offerId, 
+        Guid offerId,
         string accessToken,
-        OfferProviderDetailsData offerProviderDetails, 
-        CompanyInformationData companyInformation, 
+        OfferProviderDetailsData offerProviderDetails,
+        CompanyInformationData companyInformation,
         string? userEmail,
         Guid offerSubscriptionId,
         bool isSingleInstance)
     {
-        if (string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl) || isSingleInstance) return null;
-        
+        if (string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl) || isSingleInstance)
+            return null;
+
         try
         {
             var autoSetupData = new OfferThirdPartyAutoSetupData(
@@ -236,7 +238,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         IDictionary<string, IEnumerable<string>> serviceManagerRoles)
     {
         var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
-        
+
         var notificationTypeId = GetOfferSubscriptionNotificationType(offerTypeId);
 
         if (offerProviderDetails.SalesManagerId.HasValue)
@@ -259,7 +261,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         {
             throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", serviceManagerRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
         }
-        
+
         await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetServiceProviderCompanyUserWithRoleIdAsync(offerId, roleData))
         {
             if (offerProviderDetails.SalesManagerId.HasValue && receiver == offerProviderDetails.SalesManagerId.Value)

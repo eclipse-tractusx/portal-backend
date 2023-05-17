@@ -51,7 +51,7 @@ try
                     .Where(config => config.ConnectionString.StartsWith("https://"))
                     .Select(config => config.ConnectionString)
                     .Distinct();
-                FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);    
+                FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
             }
         })
         .Build();

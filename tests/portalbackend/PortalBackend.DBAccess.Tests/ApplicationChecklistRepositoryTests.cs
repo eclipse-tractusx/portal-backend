@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -35,7 +35,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
 
     private static readonly Guid ApplicationId = new("4829b64c-de6a-426c-81fc-c0bcf95bcb76");
     private static readonly Guid ApplicationWithExistingChecklistId = new("4f0146c6-32aa-4bb1-b844-df7e8babdcb6");
-    
+
     public ApplicationChecklistRepositoryTests(TestDbFixture testDbFixture)
     {
         var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -45,7 +45,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
-    
+
     #region Create CreateChecklistForApplication
 
     [Fact]
@@ -83,7 +83,6 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
 
     #region AttachAndModifyApplicationChecklist
 
-    
     [Fact]
     public async Task AttachAndModifyApplicationChecklist_UpdatesEntry()
     {
@@ -113,7 +112,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
     }
 
     #endregion
-    
+
     #region GetChecklistData
 
     [Fact]
@@ -154,7 +153,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
                 ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
             },
-            new []
+            new[]
             {
                 ProcessStepTypeId.START_CLEARING_HOUSE,
             }
@@ -163,7 +162,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         // Assert
         result.Should().NotBeNull();
         result!.IsSubmitted.Should().BeTrue();
-        result.Checklist.Should().HaveCount(5).And.Contain(new [] {
+        result.Checklist.Should().HaveCount(5).And.Contain(new[] {
             ( ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE ),
             ( ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE ),
             ( ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE ),
@@ -178,7 +177,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
         result.Process.IsLockExpired(DateTimeOffset.Parse("2023-03-01 00:00:00.000000 +00:00")).Should().BeFalse();
         result.Process.IsLockExpired(DateTimeOffset.Parse("2023-03-02 00:00:00.000000 +00:00")).Should().BeTrue();
         result.ProcessSteps.Should().NotBeEmpty();
-        result.ProcessSteps!.Select(step => (step.ProcessStepTypeId, step.ProcessStepStatusId, step.ProcessId)).Should().Contain( new [] {
+        result.ProcessSteps!.Select(step => (step.ProcessStepTypeId, step.ProcessStepStatusId, step.ProcessId)).Should().Contain(new[] {
             (ProcessStepTypeId.START_CLEARING_HOUSE, ProcessStepStatusId.TODO, new Guid ("1f9a3232-9772-4ecb-8f50-c16e97772dfe")),
         });
     }
@@ -199,7 +198,7 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
                 ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
             },
-            new []
+            new[]
             {
                 ProcessStepTypeId.START_CLEARING_HOUSE,
             }
@@ -210,14 +209,14 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
     }
 
     #endregion
-    
+
     private async Task<(ApplicationChecklistRepository, PortalDbContext)> CreateSutWithContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new ApplicationChecklistRepository(context);
         return (sut, context);
     }
-    
+
     private async Task<ApplicationChecklistRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

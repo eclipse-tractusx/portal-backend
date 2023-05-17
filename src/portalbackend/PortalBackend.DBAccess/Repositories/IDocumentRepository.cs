@@ -47,7 +47,7 @@ public interface IDocumentRepository
     /// <param name="documentId">Id of the document</param>
     /// <returns>Returns the document</returns>
     Task<Document?> GetDocumentByIdAsync(Guid documentId);
-    
+
     Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> ConsentIds, bool IsSameUser)> GetDocumentDetailsForIdUntrackedAsync(Guid documentId, string iamUserId);
 
     /// <summary>
@@ -58,7 +58,7 @@ public interface IDocumentRepository
     /// <param name="iamUserId">Id of the user</param>
     /// <returns>A collection of documents</returns>
     Task<(bool IsApplicationAssignedUser, IEnumerable<UploadDocuments> Documents)> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId);
-    
+
     /// <summary>
     /// Gets the documents userid by the document id
     /// </summary>
@@ -137,13 +137,13 @@ public interface IDocumentRepository
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task<(IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)> OfferData, bool IsDocumentTypeMatch, DocumentStatusId DocumentStatusId, bool IsProviderCompanyUser)> GetOfferDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId);
-    
+
     /// <summary>
     /// Delete List Of Document
     /// </summary>
     /// <param name="documentIds"></param>
     void RemoveDocuments(IEnumerable<Guid> documentIds);
-    
+
     /// <summary>
     /// Gets the registration document with the given id
     /// </summary>

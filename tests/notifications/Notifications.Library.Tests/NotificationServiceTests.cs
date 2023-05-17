@@ -62,7 +62,7 @@ public class NotificationServiceTests
         _rolesRepository = A.Fake<IUserRolesRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _notificationRepository = A.Fake<INotificationRepository>();
-            
+
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_rolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
@@ -196,10 +196,10 @@ public class NotificationServiceTests
     }
 
     #endregion
-    
+
     #region overload method
-    
-     [Fact]
+
+    [Fact]
     public async Task CreateNotificationsoverloadedmethod_WithSingleUserRoleAndOneNotificationTypeId_CreatesOneNotification()
     {
         // Arrange
@@ -344,13 +344,13 @@ public class NotificationServiceTests
             });
 
         // Act
-        await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST,1), appId, userIds).ConfigureAwait(false);
+        await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST, 1), appId, userIds).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _notificationRepository.GetNotificationUpdateIds(
-                A<IEnumerable<Guid>>.That.IsSameSequenceAs(new [] { UserRoleId }),
+                A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { UserRoleId }),
                 A<IEnumerable<Guid>>.That.IsSameSequenceAs(userIds),
-                A<IEnumerable<NotificationTypeId>>.That.IsSameSequenceAs(new [] { NotificationTypeId.APP_RELEASE_REQUEST }),
+                A<IEnumerable<NotificationTypeId>>.That.IsSameSequenceAs(new[] { NotificationTypeId.APP_RELEASE_REQUEST }),
                 appId))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _notificationRepository.AttachAndModifyNotifications(A<IEnumerable<Guid>>._, A<Action<Notification>>._)).MustHaveHappenedOnceExactly();
@@ -362,7 +362,7 @@ public class NotificationServiceTests
                 x => x.Id == notifications[2] && x.Done != null && x.Done.Value
             );
     }
-    
+
     [Fact]
     public async Task SetNotificationsForOfferToDone_WithMultipleUserRoleAndOneNotificationTypeId_UpdatesAllNotification()
     {
@@ -389,13 +389,13 @@ public class NotificationServiceTests
             });
 
         // Act
-        await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST,1), appId).ConfigureAwait(false);
+        await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST, 1), appId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _notificationRepository.GetNotificationUpdateIds(
-                A<IEnumerable<Guid>>.That.IsSameSequenceAs(new [] { UserRoleId }),
-                (IEnumerable<Guid>?) null,
-                A<IEnumerable<NotificationTypeId>>.That.IsSameSequenceAs(new [] { NotificationTypeId.APP_RELEASE_REQUEST }),
+                A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { UserRoleId }),
+                (IEnumerable<Guid>?)null,
+                A<IEnumerable<NotificationTypeId>>.That.IsSameSequenceAs(new[] { NotificationTypeId.APP_RELEASE_REQUEST }),
                 appId))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _notificationRepository.AttachAndModifyNotifications(A<IEnumerable<Guid>>._, A<Action<Notification>>._)).MustHaveHappenedOnceExactly();
@@ -419,14 +419,14 @@ public class NotificationServiceTests
         var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
 
         // Act
-        async Task Action() => await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST,1), appId).ConfigureAwait(false);
+        async Task Action() => await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST, 1), appId).ConfigureAwait(false);
 
         // Assert
         await Assert.ThrowsAsync<ConfigurationException>(Action);
     }
-    
+
     #endregion
-    
+
     #region Setup
 
     private void SetupFakes()
@@ -460,7 +460,7 @@ public class NotificationServiceTests
                 setOptionalParameters?.Invoke(notification);
                 _notifications.Add(notification);
             });
-        
+
         A.CallTo(() => _portalRepositories.SaveAsync()).Returns(1);
     }
 

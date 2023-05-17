@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -84,7 +84,7 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     /// </summary>
     [MaxLength(255)]
     public string? DisplayName { get; set; }
-    
+
     /// <summary>
     /// Additional description for clarification
     /// </summary>
@@ -95,7 +95,7 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     /// Id of the app requester 
     /// </summary>
     public Guid RequesterId { get; set; }
-    
+
     [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
 
@@ -119,7 +119,7 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     /// Subscription status.
     /// </summary>
     public virtual OfferSubscriptionStatus? OfferSubscriptionStatus { get; private set; }
-    
+
     public virtual AppSubscriptionDetail? AppSubscriptionDetail { get; private set; }
 
     public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }

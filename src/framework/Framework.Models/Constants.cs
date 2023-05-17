@@ -29,7 +29,7 @@ public static class Constants
     /// Default value for an Error String
     /// </summary>
     public const string ErrorString = "ERROR";
-    
+
     /// <summary>
     /// The default language
     /// </summary>

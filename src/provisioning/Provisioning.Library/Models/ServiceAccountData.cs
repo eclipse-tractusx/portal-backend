@@ -28,7 +28,7 @@ public class ServiceAccountData
         UserEntityId = userEntityId;
         AuthData = authData;
     }
-    
+
     public string InternalClientId { get; set; }
     public string UserEntityId { get; set; }
     public ClientAuthData AuthData { get; set; }

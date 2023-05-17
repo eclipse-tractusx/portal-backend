@@ -62,7 +62,7 @@ public record InReviewOfferData(
     /// document assigned to offer
     /// </summary>
     IEnumerable<DocumentTypeData> Documents,
-    
+
     /// <summary>
     /// Roles of the Apps
     /// </summary>
@@ -97,7 +97,7 @@ public record InReviewOfferData(
     /// Tags assigned to offer.
     /// </summary>
     IEnumerable<string> Tags,
-    
+
     /// <summary>
     /// Privacy Policy Id assigned to offer.
     /// </summary>
@@ -112,9 +112,9 @@ public record InReviewOfferData(
     /// License TypeId for offer.
     /// </summary>
     OfferStatusId OfferStatusId,
-    
+
     /// <summary>
     /// Technical User Role Data
     /// </summary>
     IEnumerable<TechnicalUserRoleData> TechnicalUserProfile
-); 
+);

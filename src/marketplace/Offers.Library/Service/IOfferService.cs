@@ -68,14 +68,14 @@ public interface IOfferService
     /// <param name="offerTypeId"></param>
     /// <returns>Returns the details</returns>
     Task<ConsentDetailData> GetConsentDetailDataAsync(Guid consentId, OfferTypeId offerTypeId);
-    
+
     /// <summary>
     /// Return Agreements for App_Contract Category
     /// </summary>
     /// <param name="offerTypeId">OfferTypeId the agreement is associated with</param>
     /// <returns></returns>
     IAsyncEnumerable<AgreementDocumentData> GetOfferTypeAgreements(OfferTypeId offerTypeId);
-    
+
     /// <summary>
     /// Return Offer Agreement Consent
     /// </summary>
@@ -84,7 +84,7 @@ public interface IOfferService
     /// <param name="offerTypeId">OfferTypeId the agreements are associated with</param>
     /// <returns></returns>
     Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
-    
+
     /// <summary>
     /// Create or Update consent to agreements associated with an offer
     /// </summary>
@@ -103,7 +103,7 @@ public interface IOfferService
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>The id of the newly created service</returns>
     Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId, OfferTypeId offerTypeId);
-    
+
     /// <summary>
     /// 
     /// </summary>
@@ -121,7 +121,7 @@ public interface IOfferService
     /// <param name="salesManagerRoles">the sales manager roles</param>
     /// <returns>Returns the company id of the user</returns>
     Task<Guid> ValidateSalesManager(Guid salesManagerId, string iamUserId, IDictionary<string, IEnumerable<string>> salesManagerRoles);
-    
+
     void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<LocalizedDescription> updateDescriptions, IEnumerable<LocalizedDescription> existingDescriptions);
 
     void CreateOrUpdateOfferLicense(Guid offerId, string licenseText, (Guid OfferLicenseId, string LicenseText, bool AssignedToMultipleOffers) offerLicense);
@@ -149,7 +149,7 @@ public interface IOfferService
     /// <param name="catenaAdminRoles">Company Admin Roles</param>
     /// <param name="submitAppDocumentTypeIds">Document Type Id</param>
     /// <returns></returns>
-    Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds);
+    Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds);
 
     /// <summary>
     /// Declines the given offer
@@ -163,8 +163,8 @@ public interface IOfferService
     /// <param name="basePortalAddress">the base portal address</param>
     /// <param name="submitOfferNotificationTypeIds">the submit notification notification type ids</param>
     /// <param name="catenaAdminRoles">The catena x admin roles</param>
-    Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string,IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
- 
+    Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string, IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
+
     /// <summary>
     /// Deactivate the given offerStatus by appsId
     /// </summary>
@@ -184,7 +184,7 @@ public interface IOfferService
     /// <param name="offerTypeId"></param>
     /// <param name="documentTypeIdSettings"></param>
     /// <param name="contentTypeSettings"></param>
-    Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, IDictionary<DocumentTypeId,IEnumerable<string>> uploadDocumentTypeIdSettings, CancellationToken cancellationToken);
+    Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, IDictionary<DocumentTypeId, IEnumerable<string>> uploadDocumentTypeIdSettings, CancellationToken cancellationToken);
 
     /// <summary>
     /// Update offer status and create notification for Service
@@ -195,7 +195,7 @@ public interface IOfferService
     /// <param name="notificationTypeIds"></param>
     /// <param name="catenaAdminRoles"></param>
     /// <returns></returns>
-    Task SubmitServiceAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string,IEnumerable<string>> catenaAdminRoles);
+    Task SubmitServiceAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
 
     /// <summary>
     /// Get offer Document Content for given offertypeId by Id
@@ -208,7 +208,7 @@ public interface IOfferService
     /// <returns></returns>
     Task<(byte[] Content, string ContentType, string FileName)> GetOfferDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIdSettings, OfferTypeId offerTypeId, CancellationToken cancellationToken);
 
-     /// <summary>
+    /// <summary>
     /// Get offer Document Content for given offertypeId by Id
     /// </summary>
     /// <param name="documentId"></param>
@@ -226,7 +226,7 @@ public interface IOfferService
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>IEnumerable with the technical user profile information</returns>
     Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
-    
+
     /// <summary>
     /// Creates or updates the technical user profiles
     /// </summary>

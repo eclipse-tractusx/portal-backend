@@ -33,7 +33,7 @@ public class BpdmService : IBpdmService
 {
     private readonly ITokenService _tokenService;
     private readonly BpdmServiceSettings _settings;
-    private static readonly JsonSerializerOptions _options = new (){ PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private static readonly JsonSerializerOptions _options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     static BpdmService()
     {
@@ -121,7 +121,7 @@ public class BpdmService : IBpdmService
                     )
             )
         };
-    
+
         await httpClient.PutAsJsonAsync("/api/catena/input/legal-entities", requestData, _options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-put-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return true;
@@ -145,7 +145,7 @@ public class BpdmService : IBpdmService
             }
             return legalEntityResponse;
         }
-        catch(JsonException je)
+        catch (JsonException je)
         {
             throw new ServiceException($"Access to external system bpdm did not return a valid json response: {je.Message}");
         }

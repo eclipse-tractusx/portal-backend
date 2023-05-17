@@ -141,7 +141,7 @@ public class ConnectorsController : ControllerBase
     public async Task<CreatedAtRouteResult> CreateConnectorWithDapsAsync([FromForm] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
         var connectorId = await this.WithIamUserId(iamUserId => _businessLogic.CreateConnectorAsync(connectorInputModel, iamUserId, cancellationToken)).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new {connectorId }, connectorId);
+        return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId }, connectorId);
     }
 
     /// <summary>
@@ -183,7 +183,7 @@ public class ConnectorsController : ControllerBase
     public async Task<CreatedAtRouteResult> CreateManagedConnectorWithDapsAsync([FromForm] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
         var connectorId = await this.WithIamUserId(iamUserId => _businessLogic.CreateManagedConnectorAsync(connectorInputModel, iamUserId, cancellationToken)).ConfigureAwait(false);
-        return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new {connectorId }, connectorId);
+        return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId }, connectorId);
     }
 
     /// <summary>
@@ -241,7 +241,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync([FromBody] IEnumerable<string> bpns) =>
         _businessLogic.GetCompanyConnectorEndPointAsync(bpns);
-    
+
     /// <summary>
     /// Processes the clearinghouse self description push
     /// </summary>
