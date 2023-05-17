@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Xunit;
 using static RestAssured.Dsl;
@@ -11,9 +11,11 @@ public class RegistrationEndpointHelper
 {
     private readonly string _baseUrl;
     private readonly string _endPoint;
+    private readonly string _adminEndPoint = "/api/administration";
     private readonly string _userCompanyToken;
+    private readonly string _operatorToken;
     private static string? _applicationId;
-    
+
     public RegistrationEndpointHelper(string userCompanyToken, string baseUrl, string endPoint)
     {
         _userCompanyToken = userCompanyToken;
@@ -21,7 +23,8 @@ public class RegistrationEndpointHelper
         _endPoint = endPoint;
         //_applicationId = GetFirstApplicationId();
     }
-    public string? GetFirstApplicationId()
+
+    public string GetFirstApplicationId()
     {
         var applicationIDs = (List<CompanyApplicationData>)Given()
             .RelaxedHttpsValidation()
@@ -40,10 +43,10 @@ public class RegistrationEndpointHelper
         return _applicationId;
     }
 
-    public CompanyDetailData? GetCompanyDetailData()
+    public CompanyDetailData GetCompanyDetailData()
     {
         // Given
-        var companyDetailData = Given()
+        var response = Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
@@ -54,20 +57,41 @@ public class RegistrationEndpointHelper
             .And()
             .StatusCode(200)
             .Extract()
-            .Body("");
-            //.As(typeof(CompanyDetailData));
+            .Response();
+        var data = response.Content.ReadAsStringAsync().Result;
+        var companyDetailData = DeserializeData<CompanyDetailData>(data);
+        if (companyDetailData is null)
+        {
+            throw new Exception("Company detail data was not found.");
+        }
 
-            if (companyDetailData.Equals(null)) return null;
-            dynamic data = JObject.Parse(companyDetailData.ToString());
-            var result = JsonConvert.DeserializeObject<CompanyDetailData>(companyDetailData.ToString());
-        
-            var newCompanyUniqueIdData = new List<CompanyUniqueIdData>()
-            {
-                new CompanyUniqueIdData((UniqueIdentifierId)data.uniqueIds[0].type, data.uniqueIds[0].value.ToString())
-            };
+        return companyDetailData;
+    }
 
-            if (result == null) return null;
-            return result with { UniqueIds = newCompanyUniqueIdData };
+    public List<CompanyRoleConsentViewData> GetCompanyRolesAndConsents()
+    {
+        var response = Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_operatorToken}")
+            .ContentType("application/json")
+            .When()
+            .Get(
+                $"{_baseUrl}{_adminEndPoint}/companydata/companyRolesAndConsents")
+            .Then()
+            .StatusCode(200)
+            .And()
+            .Extract()
+            .Response();
+        var data = response.Content.ReadAsStringAsync().Result;
+        var companyRolesAndConsents = DeserializeData<List<CompanyRoleConsentViewData>>(data);
+        if (companyRolesAndConsents is null)
+        {
+            throw new Exception("Company roles and consents were not found.");
+        }
+
+        return companyRolesAndConsents;
     }
 
     public void SetApplicationStatus(string applicationStatus)
@@ -121,5 +145,16 @@ public class RegistrationEndpointHelper
             .As(typeof(List<InvitedUser>));
 
         return invitedUsers;
+    }
+
+    private T? DeserializeData<T>(string jsonString)
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter() }
+        };
+        var deserializedData = JsonSerializer.Deserialize<T>(jsonString, options);
+        return deserializedData;
     }
 }
