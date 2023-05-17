@@ -84,6 +84,14 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
         {
             _regEndpointHelper.SetApplicationStatus(CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString());
             CompanyDetailData companyDetailData = _regEndpointHelper.GetCompanyDetailData();
+            CompanyUniqueIdData newCompanyUniqueIdData =
+                new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, "DE123456789");
+            CompanyDetailData newCompanyDetailData = companyDetailData with
+            {
+                City = "Augsburg", CountryAlpha2Code = "DE", StreetName = "Hauptstrasse", ZipCode = "86199",
+                UniqueIds = new List<CompanyUniqueIdData> { newCompanyUniqueIdData }
+            };
+            var body = JsonSerializer.Serialize(newCompanyDetailData, _options);
             _userCompanyName = companyDetailData.Name;
             string companyId = companyDetailData.CompanyId.ToString();
             var response = Given()
@@ -93,15 +101,13 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
                     $"Bearer {_userCompanyToken}")
                 .ContentType("application/json")
                 .When()
-                .Body("{\"companyId\":" + "\"" + companyId + "\"" +
-                      ",\"name\":" + "\"" + _userCompanyName + "\"" +
-                      ",\"city\":\"München\",\"streetName\":\"Street\",\"countryAlpha2Code\":\"DE\",\"bpn\":null, \"shortName\":" +
-                      "\"" + _userCompanyName + "\"" +
-                      ",\"region\":null,\"streetAdditional\":null,\"streetNumber\":null,\"zipCode\":null,\"countryDe\":\"Deutschland\",\"uniqueIds\":[{\"type\":\"VAT_ID\",\"value\":\"DE123456788\"}]}")
-                //.Body(companyDetailData)
+                .Body(body)
                 .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
                 .Then()
                 .StatusCode(200);
+            CompanyDetailData storedCompanyDetailData = _regEndpointHelper.GetCompanyDetailData();
+            if (!VerifyCompanyDetailDataStorage(storedCompanyDetailData, newCompanyDetailData))
+                throw new Exception($"Company detail data was not stored correctly");
         }
         else throw new Exception($"Application status is not fitting to the pre-requisite");
     }
@@ -245,5 +251,18 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     }
 
     #endregion
-    
+
+    private bool VerifyCompanyDetailDataStorage(CompanyDetailData storedData, CompanyDetailData postedData)
+    {
+        bool isEqual = storedData.UniqueIds.SequenceEqual(postedData.UniqueIds);
+        if (storedData.CompanyId == postedData.CompanyId && isEqual && storedData.Name == postedData.Name &&
+            storedData.StreetName == postedData.StreetName &&
+            storedData.CountryAlpha2Code == postedData.CountryAlpha2Code &&
+            storedData.BusinessPartnerNumber == postedData.BusinessPartnerNumber &&
+            storedData.ShortName == postedData.ShortName &&
+            storedData.Region == postedData.Region && storedData.StreetAdditional == postedData.StreetAdditional &&
+            storedData.StreetNumber == postedData.StreetNumber &&
+            storedData.ZipCode == postedData.ZipCode && storedData.CountryDe == postedData.CountryDe) return true;
+        else return false;
+    }
 }
