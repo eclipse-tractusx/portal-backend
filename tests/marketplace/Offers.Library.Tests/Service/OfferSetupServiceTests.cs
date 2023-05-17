@@ -477,7 +477,7 @@ public class OfferSetupServiceTests
         var clients = new List<IamClient>();
         var appInstances = new List<AppInstance>();
         A.CallTo(() => _appInstanceRepository.CheckInstanceExistsForOffer(offerId))
-            .Returns(true);
+            .Returns(false);
         A.CallTo(() => _clientRepository.CreateClient(A<string>._))
             .Invokes((string clientName) =>
             {
@@ -509,7 +509,7 @@ public class OfferSetupServiceTests
         SetupServices();
         var offerId = Guid.NewGuid();
         A.CallTo(() => _appInstanceRepository.CheckInstanceExistsForOffer(offerId))
-            .Returns(false);
+            .Returns(true);
 
         // Act
         async Task Act() => await _sut.SetupSingleInstance(offerId, "https://base-address.com").ConfigureAwait(false);
