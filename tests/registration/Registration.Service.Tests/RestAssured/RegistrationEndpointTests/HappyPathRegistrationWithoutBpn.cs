@@ -1,4 +1,7 @@
-﻿using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using PasswordGenerator;
@@ -22,6 +25,11 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     private static string _userCompanyName = "Test-Catena-X-13";
     private static string[] _userEmailAddress;
     private readonly RegistrationEndpointHelper _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _baseUrl, _endPoint);
+    JsonSerializerOptions _options = new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     #region Happy Path - new registration without BPN
 
@@ -104,8 +112,29 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     public void Test3_SubmitCompanyRoleConsentToAgreements_ReturnsExpectedResult()
     {
         if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.INVITE_USER.ToString())
-            //if (GetApplicationStatus() == CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString())
         {
+            List<CompanyRoleConsentViewData> availableRolesAndConsents = _regEndpointHelper.GetCompanyRolesAndConsents();
+            List<CompanyRoleId> availableCompanyRoleIds = new List<CompanyRoleId>();
+            List<AgreementConsentStatus> agreementConsentStatusList = new List<AgreementConsentStatus>();
+            foreach (var role in availableRolesAndConsents)
+            {
+                if (role.CompanyRolesActive)
+                {
+                    availableCompanyRoleIds.Add(role.CompanyRoleId);
+                    foreach (var agreementId in role.Agreements)
+                    {
+                        AgreementConsentStatus agreementConsentStatus =
+                            new AgreementConsentStatus(agreementId.AgreementId, ConsentStatusId.ACTIVE);
+                        agreementConsentStatusList.Add(agreementConsentStatus);
+                    }
+                }
+            }
+            CompanyRoleAgreementConsents companyRoleAgreementConsents =
+                new CompanyRoleAgreementConsents(availableCompanyRoleIds, agreementConsentStatusList);
+            
+            var body = JsonSerializer.Serialize(companyRoleAgreementConsents, _options);
+            
+        
             _regEndpointHelper.SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString());
             Given()
                 .RelaxedHttpsValidation()
@@ -113,8 +142,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
                     "authorization",
                     $"Bearer {_userCompanyToken}")
                 .ContentType("application/json")
-                .Body(
-                    "{\"companyRoles\": [\"ACTIVE_PARTICIPANT\", \"APP_PROVIDER\", \"SERVICE_PROVIDER\"], \"agreements\": [{\"agreementId\":\"aa0a0000-7fbc-1f2f-817f-bce0502c1011\",\"consentStatus\":\"ACTIVE\"},{\"agreementId\":\"aa0a0000-7fbc-1f2f-817f-bce0502c1010\",\"consentStatus\":\"ACTIVE\"},{\"agreementId\":\"aa0a0000-7fbc-1f2f-817f-bce0502c1090\",\"consentStatus\":\"ACTIVE\"},{\"agreementId\":\"aa0a0000-7fbc-1f2f-817f-bce0502c1013\",\"consentStatus\":\"ACTIVE\"},{\"agreementId\":\"aa0a0000-7fbc-1f2f-817f-bce0502c1017\",\"consentStatus\":\"ACTIVE\"}]}")
+                .Body(body)                
                 .When()
                 .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyRoleAgreementConsents")
                 .Then()
@@ -122,6 +150,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
         }
         else throw new Exception($"Application status is not fitting to the pre-requisite");
     }
+    
     // POST /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents
 
     [Fact]
