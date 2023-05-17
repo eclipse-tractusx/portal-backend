@@ -24,28 +24,28 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ProviderCompanyDetail : IBaseEntity
 {
-	private ProviderCompanyDetail()
-	{
-		AutoSetupUrl = null!;
-	}
+    private ProviderCompanyDetail()
+    {
+        AutoSetupUrl = null!;
+    }
 
-	public ProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, DateTimeOffset dateCreated)
-		: this()
-	{
-		Id = id;
-		CompanyId = companyId;
-		AutoSetupUrl = autoSetupUrl;
-		DateCreated = dateCreated;
-	}
+    public ProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, DateTimeOffset dateCreated)
+        : this()
+    {
+        Id = id;
+        CompanyId = companyId;
+        AutoSetupUrl = autoSetupUrl;
+        DateCreated = dateCreated;
+    }
 
-	public Guid Id { get; private set; }
+    public Guid Id { get; private set; }
 
-	public DateTimeOffset DateCreated { get; private set; }
+    public DateTimeOffset DateCreated { get; private set; }
 
-	public string AutoSetupUrl { get; set; }
+    public string AutoSetupUrl { get; set; }
 
-	public Guid CompanyId { get; set; }
+    public Guid CompanyId { get; set; }
 
-	// Navigation properties
-	public virtual Company? Company { get; private set; }
+    // Navigation properties
+    public virtual Company? Company { get; private set; }
 }

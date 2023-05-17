@@ -34,13 +34,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 /// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
 /// <param name="TechnicalUserData">Information about the technical user</param>
 public record ProviderSubscriptionDetailData(
-	Guid Id,
-	OfferSubscriptionStatusId OfferSubscriptionStatus,
-	string? Name,
-	string Customer,
-	string? Bpn,
-	IEnumerable<string> Contact,
-	IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData
+    Guid Id,
+    OfferSubscriptionStatusId OfferSubscriptionStatus,
+    string? Name,
+    string Customer,
+    string? Bpn,
+    IEnumerable<string> Contact,
+    IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData
 );
 
 /// <summary>
@@ -53,10 +53,10 @@ public record ProviderSubscriptionDetailData(
 /// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
 /// <param name="TechnicalUserData">Information about the technical user</param>
 public record SubscriberSubscriptionDetailData(
-	Guid Id,
-	OfferSubscriptionStatusId OfferSubscriptionStatus,
-	string? Name,
-	string Provider,
-	IEnumerable<string> Contact,
-	IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData
+    Guid Id,
+    OfferSubscriptionStatusId OfferSubscriptionStatus,
+    string? Name,
+    string Provider,
+    IEnumerable<string> Contact,
+    IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData
 );

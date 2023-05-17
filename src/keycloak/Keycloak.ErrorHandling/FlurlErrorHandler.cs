@@ -27,42 +27,42 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 
 public class FlurlErrorHandler
 {
-	public static void ConfigureErrorHandler(ILogger logger, bool isDevelopment)
-	{
-		FlurlHttp.Configure(settings => settings.OnError = (call) =>
-		{
-			var message = $"{call.HttpResponseMessage?.ReasonPhrase ?? "ReasonPhrase is null"}: {call.HttpRequestMessage.RequestUri}";
+    public static void ConfigureErrorHandler(ILogger logger, bool isDevelopment)
+    {
+        FlurlHttp.Configure(settings => settings.OnError = (call) =>
+        {
+            var message = $"{call.HttpResponseMessage?.ReasonPhrase ?? "ReasonPhrase is null"}: {call.HttpRequestMessage.RequestUri}";
 
-			if (isDevelopment)
-			{
-				var request = call.HttpRequestMessage == null ? "" : $"{call.HttpRequestMessage.Method} {call.HttpRequestMessage.RequestUri} HTTP/{call.HttpRequestMessage.Version}\n{call.HttpRequestMessage.Headers}\n";
-				var requestBody = call.RequestBody == null ? "\n" : call.RequestBody.ToString() + "\n\n";
-				var response = call.HttpResponseMessage == null ? "" : call.HttpResponseMessage.ReasonPhrase + "\n";
-				var responseContent = call.HttpResponseMessage?.Content == null ? "" : call.HttpResponseMessage.Content.ReadAsStringAsync().Result + "\n";
-				logger.LogError(call.Exception, request + requestBody + response + responseContent);
-			}
-			else
-			{
-				logger.LogError(call.Exception, message);
-			}
+            if (isDevelopment)
+            {
+                var request = call.HttpRequestMessage == null ? "" : $"{call.HttpRequestMessage.Method} {call.HttpRequestMessage.RequestUri} HTTP/{call.HttpRequestMessage.Version}\n{call.HttpRequestMessage.Headers}\n";
+                var requestBody = call.RequestBody == null ? "\n" : call.RequestBody.ToString() + "\n\n";
+                var response = call.HttpResponseMessage == null ? "" : call.HttpResponseMessage.ReasonPhrase + "\n";
+                var responseContent = call.HttpResponseMessage?.Content == null ? "" : call.HttpResponseMessage.Content.ReadAsStringAsync().Result + "\n";
+                logger.LogError(call.Exception, request + requestBody + response + responseContent);
+            }
+            else
+            {
+                logger.LogError(call.Exception, message);
+            }
 
-			if (call.HttpResponseMessage != null)
-			{
-				switch (call.HttpResponseMessage.StatusCode)
-				{
-					case HttpStatusCode.NotFound:
-						throw new KeycloakEntityNotFoundException(message, call.Exception);
+            if (call.HttpResponseMessage != null)
+            {
+                switch (call.HttpResponseMessage.StatusCode)
+                {
+                    case HttpStatusCode.NotFound:
+                        throw new KeycloakEntityNotFoundException(message, call.Exception);
 
-					case HttpStatusCode.Conflict:
-						throw new KeycloakEntityConflictException(message, call.Exception);
+                    case HttpStatusCode.Conflict:
+                        throw new KeycloakEntityConflictException(message, call.Exception);
 
-					case HttpStatusCode.BadRequest:
-						throw new ArgumentException(message, call.Exception);
+                    case HttpStatusCode.BadRequest:
+                        throw new ArgumentException(message, call.Exception);
 
-					default:
-						throw new ServiceException(message, call.Exception, call.HttpResponseMessage.StatusCode);
-				}
-			}
-		});
-	}
+                    default:
+                        throw new ServiceException(message, call.Exception, call.HttpResponseMessage.StatusCode);
+                }
+            }
+        });
+    }
 }

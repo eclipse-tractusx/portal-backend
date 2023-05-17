@@ -21,8 +21,8 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
 public record CreateTechnicalUserData(
-	Guid CompanyId,
-	string? Bpn,
-	string TechnicalUserName,
-	bool EnhanceTechnicalUserName
+    Guid CompanyId,
+    string? Bpn,
+    string TechnicalUserName,
+    bool EnhanceTechnicalUserName
 );

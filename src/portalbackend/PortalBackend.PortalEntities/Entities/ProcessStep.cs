@@ -25,31 +25,31 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ProcessStep : IBaseEntity
 {
-	public ProcessStep(Guid id, ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId, DateTimeOffset dateCreated)
-	{
-		Id = id;
-		ProcessStepTypeId = processStepTypeId;
-		ProcessStepStatusId = processStepStatusId;
-		ProcessId = processId;
-		DateCreated = dateCreated;
-	}
+    public ProcessStep(Guid id, ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId, DateTimeOffset dateCreated)
+    {
+        Id = id;
+        ProcessStepTypeId = processStepTypeId;
+        ProcessStepStatusId = processStepStatusId;
+        ProcessId = processId;
+        DateCreated = dateCreated;
+    }
 
-	public Guid Id { get; private set; }
+    public Guid Id { get; private set; }
 
-	public ProcessStepTypeId ProcessStepTypeId { get; private set; }
+    public ProcessStepTypeId ProcessStepTypeId { get; private set; }
 
-	public ProcessStepStatusId ProcessStepStatusId { get; set; }
+    public ProcessStepStatusId ProcessStepStatusId { get; set; }
 
-	public Guid ProcessId { get; private set; }
+    public Guid ProcessId { get; private set; }
 
-	public DateTimeOffset DateCreated { get; private set; }
+    public DateTimeOffset DateCreated { get; private set; }
 
-	public DateTimeOffset? DateLastChanged { get; set; }
+    public DateTimeOffset? DateLastChanged { get; set; }
 
-	public string? Message { get; set; }
+    public string? Message { get; set; }
 
-	// Navigation properties
-	public virtual ProcessStepType? ProcessStepType { get; private set; }
-	public virtual ProcessStepStatus? ProcessStepStatus { get; set; }
-	public virtual Process? Process { get; private set; }
+    // Navigation properties
+    public virtual ProcessStepType? ProcessStepType { get; private set; }
+    public virtual ProcessStepStatus? ProcessStepStatus { get; set; }
+    public virtual Process? Process { get; private set; }
 }

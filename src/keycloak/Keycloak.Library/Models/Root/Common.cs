@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class Common
 {
-	[JsonProperty("name")]
-	public Name Name { get; set; }
+    [JsonProperty("name")]
+    public Name Name { get; set; }
 }

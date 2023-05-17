@@ -26,23 +26,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public interface IApplicationChecklistRepository
 {
-	/// <summary>
-	/// Creates the initial checklist for given application
-	/// </summary>
-	/// <param name="applicationId">Id of the application to create the checklist for</param>
-	/// <param name="checklistEntries">Combination of type and it's status</param>
-	/// <returns>Returns the created entries</returns>
-	void CreateChecklistForApplication(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> checklistEntries);
+    /// <summary>
+    /// Creates the initial checklist for given application
+    /// </summary>
+    /// <param name="applicationId">Id of the application to create the checklist for</param>
+    /// <param name="checklistEntries">Combination of type and it's status</param>
+    /// <returns>Returns the created entries</returns>
+    void CreateChecklistForApplication(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> checklistEntries);
 
-	/// <summary>
-	/// Attaches a checklist entry with the given id and modifies it with the action.
-	/// </summary>
-	/// <param name="applicationId">Id of the application to modify</param>
-	/// <param name="applicationChecklistTypeId">Id of the checklistType to modify</param>
-	/// <param name="setFields">Action to sets the fields</param>
-	ApplicationChecklistEntry AttachAndModifyApplicationChecklist(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistTypeId, Action<ApplicationChecklistEntry> setFields);
+    /// <summary>
+    /// Attaches a checklist entry with the given id and modifies it with the action.
+    /// </summary>
+    /// <param name="applicationId">Id of the application to modify</param>
+    /// <param name="applicationChecklistTypeId">Id of the checklistType to modify</param>
+    /// <param name="setFields">Action to sets the fields</param>
+    ApplicationChecklistEntry AttachAndModifyApplicationChecklist(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistTypeId, Action<ApplicationChecklistEntry> setFields);
 
-	Task<(bool IsValidProcessId, Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(ApplicationChecklistEntryTypeId EntryTypeId, ApplicationChecklistEntryStatusId EntryStatusId)> Checklist)> GetChecklistData(Guid processId);
+    Task<(bool IsValidProcessId, Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(ApplicationChecklistEntryTypeId EntryTypeId, ApplicationChecklistEntryStatusId EntryStatusId)> Checklist)> GetChecklistData(Guid processId);
 
-	Task<VerifyChecklistData?> GetChecklistProcessStepData(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> entryTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+    Task<VerifyChecklistData?> GetChecklistProcessStepData(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> entryTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds);
 }

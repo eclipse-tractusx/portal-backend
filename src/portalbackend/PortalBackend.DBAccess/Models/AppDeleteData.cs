@@ -23,11 +23,11 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record AppDeleteData(
-	IEnumerable<Guid> OfferLicenseIds,
-	IEnumerable<Guid> UseCaseIds,
-	IEnumerable<PrivacyPolicyId> PolicyIds,
-	IEnumerable<(Guid DocumentId, DocumentStatusId DocumentStatusId)> DocumentIdStatus,
-	IEnumerable<string> LanguageCodes,
-	IEnumerable<string> TagNames,
-	IEnumerable<string> DescriptionLanguageShortNames
+    IEnumerable<Guid> OfferLicenseIds,
+    IEnumerable<Guid> UseCaseIds,
+    IEnumerable<PrivacyPolicyId> PolicyIds,
+    IEnumerable<(Guid DocumentId, DocumentStatusId DocumentStatusId)> DocumentIdStatus,
+    IEnumerable<string> LanguageCodes,
+    IEnumerable<string> TagNames,
+    IEnumerable<string> DescriptionLanguageShortNames
 );

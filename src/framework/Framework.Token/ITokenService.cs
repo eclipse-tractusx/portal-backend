@@ -24,5 +24,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 
 public interface ITokenService
 {
-	Task<HttpClient> GetAuthorizedClient<T>(KeyVaultAuthSettings settings, CancellationToken cancellationToken);
+    Task<HttpClient> GetAuthorizedClient<T>(KeyVaultAuthSettings settings, CancellationToken cancellationToken);
 }

@@ -23,9 +23,9 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record OfferRoleInfo(
-	[property: JsonPropertyName("roleId")] Guid RoleId,
-	[property: JsonPropertyName("role")] string RoleText,
-	[property: JsonPropertyName("description")] string RoleDescription);
+    [property: JsonPropertyName("roleId")] Guid RoleId,
+    [property: JsonPropertyName("role")] string RoleText,
+    [property: JsonPropertyName("description")] string RoleDescription);
 public record OfferRoleInfos(
-	[property: JsonPropertyName("offerId")] Guid OfferId,
-	[property: JsonPropertyName("roles")] IEnumerable<OfferRoleInfo> RoleInfos);
+    [property: JsonPropertyName("offerId")] Guid OfferId,
+    [property: JsonPropertyName("roles")] IEnumerable<OfferRoleInfo> RoleInfos);

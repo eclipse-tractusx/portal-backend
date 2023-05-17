@@ -31,8 +31,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmi
 
 public class Roles
 {
-	[JsonProperty("client")]
-	public IDictionary<string, object> Client { get; set; }
-	[JsonProperty("realm")]
-	public IEnumerable<Role> Realm { get; set; }
+    [JsonProperty("client")]
+    public IDictionary<string, object> Client { get; set; }
+    [JsonProperty("realm")]
+    public IEnumerable<Role> Realm { get; set; }
 }

@@ -29,20 +29,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library;
 
 public static class SdServiceCollectionExtension
 {
-	public static IServiceCollection AddSdFactoryService(this IServiceCollection services, IConfigurationSection section)
-	{
-		services.AddOptions<SdFactorySettings>()
-			.Bind(section)
-			.ValidateOnStart();
-		services.AddTransient<LoggingHandler<SdFactoryService>>();
+    public static IServiceCollection AddSdFactoryService(this IServiceCollection services, IConfigurationSection section)
+    {
+        services.AddOptions<SdFactorySettings>()
+            .Bind(section)
+            .ValidateOnStart();
+        services.AddTransient<LoggingHandler<SdFactoryService>>();
 
-		var sp = services.BuildServiceProvider();
-		var settings = sp.GetRequiredService<IOptions<SdFactorySettings>>();
-		services
-			.AddCustomHttpClientWithAuthentication<SdFactoryService>(settings.Value.SdFactoryUrl, settings.Value.KeycloakTokenAddress)
-			.AddTransient<ISdFactoryService, SdFactoryService>()
-			.AddTransient<ISdFactoryBusinessLogic, SdFactoryBusinessLogic>();
+        var sp = services.BuildServiceProvider();
+        var settings = sp.GetRequiredService<IOptions<SdFactorySettings>>();
+        services
+            .AddCustomHttpClientWithAuthentication<SdFactoryService>(settings.Value.SdFactoryUrl, settings.Value.KeycloakTokenAddress)
+            .AddTransient<ISdFactoryService, SdFactoryService>()
+            .AddTransient<ISdFactoryBusinessLogic, SdFactoryBusinessLogic>();
 
-		return services;
-	}
+        return services;
+    }
 }

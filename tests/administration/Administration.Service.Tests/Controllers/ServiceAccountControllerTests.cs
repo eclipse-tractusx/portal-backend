@@ -30,59 +30,59 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 
 public class ServiceAccountControllerTests
 {
-	private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
-	private readonly IFixture _fixture;
-	private readonly IServiceAccountBusinessLogic _logic;
-	private readonly ServiceAccountController _controller;
+    private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
+    private readonly IFixture _fixture;
+    private readonly IServiceAccountBusinessLogic _logic;
+    private readonly ServiceAccountController _controller;
 
-	public ServiceAccountControllerTests()
-	{
-		_fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-		_fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-			.ForEach(b => _fixture.Behaviors.Remove(b));
-		_fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+    public ServiceAccountControllerTests()
+    {
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-		_logic = A.Fake<IServiceAccountBusinessLogic>();
-		this._controller = new ServiceAccountController(_logic);
-		_controller.AddControllerContextWithClaim(IamUserId);
-	}
+        _logic = A.Fake<IServiceAccountBusinessLogic>();
+        this._controller = new ServiceAccountController(_logic);
+        _controller.AddControllerContextWithClaim(IamUserId);
+    }
 
-	[Fact]
-	public async Task ExecuteCompanyUserCreation_CallsExpected()
-	{
-		// Arrange
-		var serviceAccountId = Guid.NewGuid();
-		var responseData = _fixture.Build<ServiceAccountDetails>()
-			.With(x => x.ServiceAccountId, serviceAccountId)
-			.Create();
-		var data = _fixture.Create<ServiceAccountCreationInfo>();
-		A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(data, IamUserId))
-			.ReturnsLazily(() => responseData);
+    [Fact]
+    public async Task ExecuteCompanyUserCreation_CallsExpected()
+    {
+        // Arrange
+        var serviceAccountId = Guid.NewGuid();
+        var responseData = _fixture.Build<ServiceAccountDetails>()
+            .With(x => x.ServiceAccountId, serviceAccountId)
+            .Create();
+        var data = _fixture.Create<ServiceAccountCreationInfo>();
+        A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(data, IamUserId))
+            .ReturnsLazily(() => responseData);
 
-		// Act
-		var result = await _controller.ExecuteCompanyUserCreation(data).ConfigureAwait(false);
+        // Act
+        var result = await _controller.ExecuteCompanyUserCreation(data).ConfigureAwait(false);
 
-		// Assert
-		result.Should().NotBeNull();
-		result.Should().BeOfType<CreatedAtRouteResult>();
-		result.Value.Should().NotBeNull();
-		result.Value.Should().BeOfType<ServiceAccountDetails>();
-		(result.Value as ServiceAccountDetails)?.ServiceAccountId.Should().Be(serviceAccountId);
-	}
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<CreatedAtRouteResult>();
+        result.Value.Should().NotBeNull();
+        result.Value.Should().BeOfType<ServiceAccountDetails>();
+        (result.Value as ServiceAccountDetails)?.ServiceAccountId.Should().Be(serviceAccountId);
+    }
 
-	[Fact]
-	public async Task GetServiceAccountRolesAsync_CallsExpected()
-	{
-		// Arrange
-		var data = _fixture.CreateMany<UserRoleWithDescription>(5);
-		A.CallTo(() => _logic.GetServiceAccountRolesAsync(IamUserId, null))
-			.Returns(data.ToAsyncEnumerable());
+    [Fact]
+    public async Task GetServiceAccountRolesAsync_CallsExpected()
+    {
+        // Arrange
+        var data = _fixture.CreateMany<UserRoleWithDescription>(5);
+        A.CallTo(() => _logic.GetServiceAccountRolesAsync(IamUserId, null))
+            .Returns(data.ToAsyncEnumerable());
 
-		// Act
-		var result = await _controller.GetServiceAccountRolesAsync().ToListAsync().ConfigureAwait(false);
+        // Act
+        var result = await _controller.GetServiceAccountRolesAsync().ToListAsync().ConfigureAwait(false);
 
-		// Assert
-		result.Should().NotBeNull();
-		result.Should().HaveCount(5);
-	}
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().HaveCount(5);
+    }
 }

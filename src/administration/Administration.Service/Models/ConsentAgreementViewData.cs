@@ -23,12 +23,12 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record CompanyRoleConsentViewData(
-	[property: JsonPropertyName("companyRoles")]
-	CompanyRoleId CompanyRoleId,
-	[property: JsonPropertyName("roleDescription")]
-	string? RoleDescription,
-	bool CompanyRolesActive,
-	IEnumerable<ConsentAgreementViewData> Agreements
+    [property: JsonPropertyName("companyRoles")]
+    CompanyRoleId CompanyRoleId,
+    [property: JsonPropertyName("roleDescription")]
+    string? RoleDescription,
+    bool CompanyRolesActive,
+    IEnumerable<ConsentAgreementViewData> Agreements
 );
 
 public record ConsentAgreementViewData(Guid AgreementId, string AgreementName, Guid? DocumentId, ConsentStatusId? ConsentStatus);

@@ -23,17 +23,17 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record AppUpdateData(
-	OfferStatusId OfferState,
-	bool IsUserOfProvider,
-	IEnumerable<LocalizedDescription> OfferDescriptions,
-	IEnumerable<(string Shortname, bool IsMatch)> Languages,
-	IEnumerable<Guid> MatchingUseCases,
-	ValueTuple<Guid, string, bool> OfferLicense,
-	IEnumerable<PrivacyPolicyId> MatchingPrivacyPolicies,
-	string? Name,
-	string Provider,
-	Guid? SalesManagerId,
-	string? ContactEmail,
-	string? ContactNumber,
-	string? MarketingUrl
+    OfferStatusId OfferState,
+    bool IsUserOfProvider,
+    IEnumerable<LocalizedDescription> OfferDescriptions,
+    IEnumerable<(string Shortname, bool IsMatch)> Languages,
+    IEnumerable<Guid> MatchingUseCases,
+    ValueTuple<Guid, string, bool> OfferLicense,
+    IEnumerable<PrivacyPolicyId> MatchingPrivacyPolicies,
+    string? Name,
+    string Provider,
+    Guid? SalesManagerId,
+    string? ContactEmail,
+    string? ContactNumber,
+    string? MarketingUrl
 );

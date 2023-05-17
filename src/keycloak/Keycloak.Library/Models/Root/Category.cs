@@ -32,9 +32,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 [JsonConverter(typeof(CategoryConverter))]
 public enum Category
 {
-	AttributeStatementMapper,
-	DockerAuthMapper,
-	GroupMapper,
-	RoleMapper,
-	TokenMapper
+    AttributeStatementMapper,
+    DockerAuthMapper,
+    GroupMapper,
+    RoleMapper,
+    TokenMapper
 }

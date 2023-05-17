@@ -22,11 +22,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 
 public interface IDateTimeProvider
 {
-	/// <summary>Gets the current timestamp.</summary>
-	DateTime Now { get; }
+    /// <summary>Gets the current timestamp.</summary>
+    DateTime Now { get; }
 
-	/// <summary>
-	/// Gets the current timestamp as <see cref="T:System.DateTimeOffset" />.
-	/// </summary>
-	DateTimeOffset OffsetNow { get; }
+    /// <summary>
+    /// Gets the current timestamp as <see cref="T:System.DateTimeOffset" />.
+    /// </summary>
+    DateTimeOffset OffsetNow { get; }
 }

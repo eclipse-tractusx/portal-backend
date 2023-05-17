@@ -30,9 +30,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ClientRegistrationPolicy
 {
-	[JsonProperty("internal")]
-	public bool? Internal { get; set; }
+    [JsonProperty("internal")]
+    public bool? Internal { get; set; }
 
-	[JsonProperty("providers")]
-	public ClientRegistrationPolicyProviders Providers { get; set; }
+    [JsonProperty("providers")]
+    public ClientRegistrationPolicyProviders Providers { get; set; }
 }

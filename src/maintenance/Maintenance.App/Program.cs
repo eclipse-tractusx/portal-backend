@@ -26,12 +26,12 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using System.Reflection;
 
 var host = Host.CreateDefaultBuilder(args)
-	.UseSystemd()
-	.ConfigureServices((hostContext, services) =>
-	{
-		services.AddDbContext<PortalDbContext>(o =>
-			o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb")));
-		services.AddHostedService<BatchDeleteService>();
-	}).Build();
+    .UseSystemd()
+    .ConfigureServices((hostContext, services) =>
+    {
+        services.AddDbContext<PortalDbContext>(o =>
+            o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb")));
+        services.AddHostedService<BatchDeleteService>();
+    }).Build();
 
 host.Run();

@@ -23,21 +23,21 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyUserRoleWithAddress(
-	Guid CompanyId,
-	string Name,
-	string? Shortname,
-	string? BusinessPartnerNumber,
-	string? City,
-	string? StreetName,
-	string? CountryAlpha2Code,
-	string? Region,
-	string? Streetadditional,
-	string? Streetnumber,
-	string? Zipcode,
-	string? CountryDe,
-	IEnumerable<AgreementsData> AgreementsData,
-	IEnumerable<InvitedCompanyUserData> InvitedCompanyUserData,
-	IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> CompanyIdentifiers
+    Guid CompanyId,
+    string Name,
+    string? Shortname,
+    string? BusinessPartnerNumber,
+    string? City,
+    string? StreetName,
+    string? CountryAlpha2Code,
+    string? Region,
+    string? Streetadditional,
+    string? Streetnumber,
+    string? Zipcode,
+    string? CountryDe,
+    IEnumerable<AgreementsData> AgreementsData,
+    IEnumerable<InvitedCompanyUserData> InvitedCompanyUserData,
+    IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> CompanyIdentifiers
 );
 
 public record AgreementsData(CompanyRoleId CompanyRoleId, Guid AgreementId, ConsentStatusId? ConsentStatusId);

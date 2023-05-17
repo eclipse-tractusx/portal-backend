@@ -21,10 +21,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyRoleConsentData(
-	CompanyRoleId CompanyRoleId,
-	string? RoleDescription,
-	bool CompanyRolesActive,
-	IEnumerable<ConsentAgreementData> Agreements
+    CompanyRoleId CompanyRoleId,
+    string? RoleDescription,
+    bool CompanyRolesActive,
+    IEnumerable<ConsentAgreementData> Agreements
 );
 
 public record ConsentAgreementData(Guid AgreementId, string AgreementName, Guid? DocumentId, ConsentStatusId ConsentStatus);

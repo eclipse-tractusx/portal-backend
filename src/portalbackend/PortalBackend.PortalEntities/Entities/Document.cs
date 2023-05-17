@@ -26,62 +26,62 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class Document : IBaseEntity
 {
-	private Document()
-	{
-		DocumentHash = null!;
-		DocumentName = null!;
-		DocumentContent = null!;
-		Agreements = new HashSet<Agreement>();
-		Consents = new HashSet<Consent>();
-		Offers = new HashSet<Offer>();
-		Companies = new HashSet<Company>();
-	}
+    private Document()
+    {
+        DocumentHash = null!;
+        DocumentName = null!;
+        DocumentContent = null!;
+        Agreements = new HashSet<Agreement>();
+        Consents = new HashSet<Consent>();
+        Offers = new HashSet<Offer>();
+        Companies = new HashSet<Company>();
+    }
 
-	public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, MediaTypeId mediaTypeId, DateTimeOffset dateCreated, DocumentStatusId documentStatusId, DocumentTypeId documentTypeId)
-		: this()
-	{
-		Id = id;
-		DocumentContent = documentContent;
-		DocumentHash = documentHash;
-		DocumentName = documentName;
-		DateCreated = dateCreated;
-		DocumentStatusId = documentStatusId;
-		DocumentTypeId = documentTypeId;
-		MediaTypeId = mediaTypeId;
-	}
+    public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, MediaTypeId mediaTypeId, DateTimeOffset dateCreated, DocumentStatusId documentStatusId, DocumentTypeId documentTypeId)
+        : this()
+    {
+        Id = id;
+        DocumentContent = documentContent;
+        DocumentHash = documentHash;
+        DocumentName = documentName;
+        DateCreated = dateCreated;
+        DocumentStatusId = documentStatusId;
+        DocumentTypeId = documentTypeId;
+        MediaTypeId = mediaTypeId;
+    }
 
-	public Guid Id { get; private set; }
+    public Guid Id { get; private set; }
 
-	public DateTimeOffset DateCreated { get; private set; }
+    public DateTimeOffset DateCreated { get; private set; }
 
-	public byte[] DocumentHash { get; set; }
+    public byte[] DocumentHash { get; set; }
 
-	public byte[] DocumentContent { get; set; }
+    public byte[] DocumentContent { get; set; }
 
-	[MaxLength(255)]
-	public string DocumentName { get; set; }
+    [MaxLength(255)]
+    public string DocumentName { get; set; }
 
-	public MediaTypeId MediaTypeId { get; set; }
+    public MediaTypeId MediaTypeId { get; set; }
 
-	public DocumentTypeId DocumentTypeId { get; set; }
+    public DocumentTypeId DocumentTypeId { get; set; }
 
-	public DocumentStatusId DocumentStatusId { get; set; }
+    public DocumentStatusId DocumentStatusId { get; set; }
 
-	public Guid? CompanyUserId { get; set; }
+    public Guid? CompanyUserId { get; set; }
 
-	// Navigation properties
-	public virtual CompanyUser? CompanyUser { get; set; }
-	public virtual DocumentType? DocumentType { get; set; }
-	public virtual MediaType? MediaType { get; set; }
-	public virtual DocumentStatus? DocumentStatus { get; set; }
+    // Navigation properties
+    public virtual CompanyUser? CompanyUser { get; set; }
+    public virtual DocumentType? DocumentType { get; set; }
+    public virtual MediaType? MediaType { get; set; }
+    public virtual DocumentStatus? DocumentStatus { get; set; }
 
-	/// <summary>
-	/// Mapping to an optional the connector
-	/// </summary>
-	public virtual Connector? Connector { get; set; }
+    /// <summary>
+    /// Mapping to an optional the connector
+    /// </summary>
+    public virtual Connector? Connector { get; set; }
 
-	public virtual ICollection<Agreement> Agreements { get; private set; }
-	public virtual ICollection<Consent> Consents { get; private set; }
-	public virtual ICollection<Offer> Offers { get; private set; }
-	public virtual ICollection<Company> Companies { get; private set; }
+    public virtual ICollection<Agreement> Agreements { get; private set; }
+    public virtual ICollection<Consent> Consents { get; private set; }
+    public virtual ICollection<Offer> Offers { get; private set; }
+    public virtual ICollection<Company> Companies { get; private set; }
 }

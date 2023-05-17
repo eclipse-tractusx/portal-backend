@@ -45,21 +45,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="PrivacyPolicies">the privacy policies</param>
 /// <param name="TechnicalUserProfile">the technicalUser Profile</param>
 public record AppProviderResponse(
-	string? Title,
-	string Provider,
-	Guid LeadPictureId,
-	string? ProviderName,
-	IEnumerable<AppUseCaseData> UseCase,
-	IEnumerable<LocalizedDescription> Descriptions,
-	IEnumerable<OfferAgreement> Agreements,
-	IEnumerable<string> SupportedLanguageCodes,
-	string? Price,
-	IEnumerable<Guid> Images,
-	string? ProviderUri,
-	string? ContactEmail,
-	string? ContactNumber,
-	IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
-	Guid? SalesManagerId,
-	IEnumerable<PrivacyPolicyId> PrivacyPolicies,
-	IDictionary<Guid, IEnumerable<string>> TechnicalUserProfile
+    string? Title,
+    string Provider,
+    Guid LeadPictureId,
+    string? ProviderName,
+    IEnumerable<AppUseCaseData> UseCase,
+    IEnumerable<LocalizedDescription> Descriptions,
+    IEnumerable<OfferAgreement> Agreements,
+    IEnumerable<string> SupportedLanguageCodes,
+    string? Price,
+    IEnumerable<Guid> Images,
+    string? ProviderUri,
+    string? ContactEmail,
+    string? ContactNumber,
+    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
+    Guid? SalesManagerId,
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies,
+    IDictionary<Guid, IEnumerable<string>> TechnicalUserProfile
 );

@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class HasDefault
 {
-	[JsonProperty("default")]
-	public HasOrder Default { get; set; }
+    [JsonProperty("default")]
+    public HasOrder Default { get; set; }
 }

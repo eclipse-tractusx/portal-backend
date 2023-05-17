@@ -27,23 +27,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Tests;
 /// </summary>
 public class DataInitializationTests : IClassFixture<ConsortiaDataDbFixture>
 {
-	private readonly ConsortiaDataDbFixture _dbTestDbFixture;
+    private readonly ConsortiaDataDbFixture _dbTestDbFixture;
 
-	public DataInitializationTests(ConsortiaDataDbFixture testDbFixture)
-	{
-		_dbTestDbFixture = testDbFixture;
-	}
+    public DataInitializationTests(ConsortiaDataDbFixture testDbFixture)
+    {
+        _dbTestDbFixture = testDbFixture;
+    }
 
-	[Fact]
-	public async Task TestDataInitialization_EnsureCreated()
-	{
-		// Arrange
-		var context = _dbTestDbFixture.GetPortalDbContext();
+    [Fact]
+    public async Task TestDataInitialization_EnsureCreated()
+    {
+        // Arrange
+        var context = _dbTestDbFixture.GetPortalDbContext();
 
-		// Act
-		var pendingMigrations = await context.Database.GetPendingMigrationsAsync().ConfigureAwait(false);
+        // Act
+        var pendingMigrations = await context.Database.GetPendingMigrationsAsync().ConfigureAwait(false);
 
-		// Assert
-		pendingMigrations.Should().BeEmpty();
-	}
+        // Assert
+        pendingMigrations.Should().BeEmpty();
+    }
 }

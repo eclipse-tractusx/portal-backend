@@ -32,23 +32,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 /// </remarks>
 public interface IAuditEntityV1
 {
-	/// <summary>
-	/// Id of the audited entity
-	/// </summary>
-	Guid AuditV1Id { get; set; }
+    /// <summary>
+    /// Id of the audited entity
+    /// </summary>
+    Guid AuditV1Id { get; set; }
 
-	/// <summary>
-	/// Date Time of the last change of the entity
-	/// </summary>
-	DateTimeOffset AuditV1DateLastChanged { get; set; }
+    /// <summary>
+    /// Date Time of the last change of the entity
+    /// </summary>
+    DateTimeOffset AuditV1DateLastChanged { get; set; }
 
-	/// <summary>
-	/// Reference to the <see cref="CompanyUser"/> that changed the entity
-	/// </summary>
-	Guid? AuditV1LastEditorId { get; set; }
+    /// <summary>
+    /// Reference to the <see cref="CompanyUser"/> that changed the entity
+    /// </summary>
+    Guid? AuditV1LastEditorId { get; set; }
 
-	/// <summary>
-	/// Id of the audit operation
-	/// </summary>
-	AuditOperationId AuditV1OperationId { get; set; }
+    /// <summary>
+    /// Id of the audit operation
+    /// </summary>
+    AuditOperationId AuditV1OperationId { get; set; }
 }

@@ -22,6 +22,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 
 public enum SelfDescriptionStatus
 {
-	Confirm = 1,
-	Failed = 2
+    Confirm = 1,
+    Failed = 2
 }

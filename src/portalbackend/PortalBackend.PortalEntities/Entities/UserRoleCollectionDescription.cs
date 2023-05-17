@@ -24,21 +24,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class UserRoleCollectionDescription
 {
-	public UserRoleCollectionDescription(Guid userRoleCollectionId, string languageShortName, string description)
-	{
-		UserRoleCollectionId = userRoleCollectionId;
-		LanguageShortName = languageShortName;
-		Description = description;
-	}
+    public UserRoleCollectionDescription(Guid userRoleCollectionId, string languageShortName, string description)
+    {
+        UserRoleCollectionId = userRoleCollectionId;
+        LanguageShortName = languageShortName;
+        Description = description;
+    }
 
-	public Guid UserRoleCollectionId { get; private set; }
+    public Guid UserRoleCollectionId { get; private set; }
 
-	[StringLength(2, MinimumLength = 2)]
-	public string LanguageShortName { get; private set; }
+    [StringLength(2, MinimumLength = 2)]
+    public string LanguageShortName { get; private set; }
 
-	[MaxLength(255)]
-	public string Description { get; set; }
+    [MaxLength(255)]
+    public string Description { get; set; }
 
-	public virtual UserRoleCollection? UserRoleCollection { get; private set; }
-	public virtual Language? Language { get; private set; }
+    public virtual UserRoleCollection? UserRoleCollection { get; private set; }
+    public virtual Language? Language { get; private set; }
 }

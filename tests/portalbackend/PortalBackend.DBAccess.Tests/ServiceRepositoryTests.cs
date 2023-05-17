@@ -36,113 +36,113 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 /// </summary>
 public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
-	private readonly TestDbFixture _dbTestDbFixture;
-	private readonly Guid _offerId = new("ac1cf001-7fbc-1f2f-817f-bce0000c0001");
+    private readonly TestDbFixture _dbTestDbFixture;
+    private readonly Guid _offerId = new("ac1cf001-7fbc-1f2f-817f-bce0000c0001");
 
-	public ServiceRepositoryTests(TestDbFixture testDbFixture)
-	{
-		var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-		fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-			.ForEach(b => fixture.Behaviors.Remove(b));
+    public ServiceRepositoryTests(TestDbFixture testDbFixture)
+    {
+        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => fixture.Behaviors.Remove(b));
 
-		fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-		_dbTestDbFixture = testDbFixture;
-	}
+        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _dbTestDbFixture = testDbFixture;
+    }
 
-	#region CreateService
+    #region CreateService
 
-	[Fact]
-	public async Task CreateService_ReturnsExpectedAppCount()
-	{
-		// Arrange
-		var (sut, context) = await CreateSut().ConfigureAwait(false);
+    [Fact]
+    public async Task CreateService_ReturnsExpectedAppCount()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
 
-		// Act
-		var results = sut.CreateOffer("Catena X", OfferTypeId.SERVICE, service =>
-		{
-			service.Name = "Test Service";
-			service.ContactEmail = "test@email.com";
-		});
+        // Act
+        var results = sut.CreateOffer("Catena X", OfferTypeId.SERVICE, service =>
+        {
+            service.Name = "Test Service";
+            service.ContactEmail = "test@email.com";
+        });
 
-		// Assert
-		var changeTracker = context.ChangeTracker;
-		var changedEntries = changeTracker.Entries().ToList();
-		results.Name.Should().Be("Test Service");
-		changeTracker.HasChanges().Should().BeTrue();
-		changedEntries.Should().NotBeEmpty();
-		changedEntries.Should().HaveCount(1);
-		changedEntries.Single().Entity.Should().BeOfType<Offer>().Which.Name.Should().Be("Test Service");
-	}
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        results.Name.Should().Be("Test Service");
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<Offer>().Which.Name.Should().Be("Test Service");
+    }
 
-	#endregion
+    #endregion
 
-	#region GetServiceDetailByIdUntrackedAsync
+    #region GetServiceDetailByIdUntrackedAsync
 
-	[Fact]
-	public async Task GetServiceDetailByIdUntrackedAsync_WithNotExistingService_ReturnsDefault()
-	{
-		// Arrange
-		var (sut, _) = await CreateSut().ConfigureAwait(false);
+    [Fact]
+    public async Task GetServiceDetailByIdUntrackedAsync_WithNotExistingService_ReturnsDefault()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-		// Act
-		var results = await sut.GetOfferDetailByIdUntrackedAsync(Guid.NewGuid(), "en", "3d8142f1-860b-48aa-8c2b-1ccb18699f65", OfferTypeId.SERVICE).ConfigureAwait(false);
+        // Act
+        var results = await sut.GetOfferDetailByIdUntrackedAsync(Guid.NewGuid(), "en", "3d8142f1-860b-48aa-8c2b-1ccb18699f65", OfferTypeId.SERVICE).ConfigureAwait(false);
 
-		// Assert
-		(results == default).Should().BeTrue();
-	}
+        // Assert
+        (results == default).Should().BeTrue();
+    }
 
-	[Fact]
-	public async Task GetServiceDetailByIdUntrackedAsync_ReturnsServiceDetailData()
-	{
-		// Arrange
-		var (sut, _) = await CreateSut().ConfigureAwait(false);
+    [Fact]
+    public async Task GetServiceDetailByIdUntrackedAsync_ReturnsServiceDetailData()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-		// Act
-		var result = await sut.GetOfferDetailByIdUntrackedAsync(_offerId, "en", "3d8142f1-860b-48aa-8c2b-1ccb18699f65", OfferTypeId.SERVICE).ConfigureAwait(false);
+        // Act
+        var result = await sut.GetOfferDetailByIdUntrackedAsync(_offerId, "en", "3d8142f1-860b-48aa-8c2b-1ccb18699f65", OfferTypeId.SERVICE).ConfigureAwait(false);
 
-		// Assert
-		result.Should().NotBeNull();
-		result!.Title.Should().Be("Consulting Service - Data Readiness");
-		result.ContactEmail.Should().BeNull();
-		result.Provider.Should<string>().Be("Catena-X");
-	}
+        // Assert
+        result.Should().NotBeNull();
+        result!.Title.Should().Be("Consulting Service - Data Readiness");
+        result.ContactEmail.Should().BeNull();
+        result.Provider.Should<string>().Be("Catena-X");
+    }
 
-	#endregion
+    #endregion
 
-	#region GetOfferProviderDetailsAsync
+    #region GetOfferProviderDetailsAsync
 
-	[Fact]
-	public async Task GetOfferProviderDetailsAsync_WithExistingOffer_ReturnsOfferProviderDetails()
-	{
-		// Arrange
-		var (sut, _) = await CreateSut().ConfigureAwait(false);
+    [Fact]
+    public async Task GetOfferProviderDetailsAsync_WithExistingOffer_ReturnsOfferProviderDetails()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-		// Act
-		var result = await sut.GetOfferProviderDetailsAsync(_offerId, OfferTypeId.SERVICE).ConfigureAwait(false);
+        // Act
+        var result = await sut.GetOfferProviderDetailsAsync(_offerId, OfferTypeId.SERVICE).ConfigureAwait(false);
 
-		// Assert
-		result.Should().NotBeNull();
-	}
+        // Assert
+        result.Should().NotBeNull();
+    }
 
-	[Fact]
-	public async Task GetOfferProviderDetailsAsync_WithNotExistingOffer_ReturnsNull()
-	{
-		// Arrange
-		var (sut, _) = await CreateSut().ConfigureAwait(false);
+    [Fact]
+    public async Task GetOfferProviderDetailsAsync_WithNotExistingOffer_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-		// Act
-		var result = await sut.GetOfferProviderDetailsAsync(Guid.NewGuid(), OfferTypeId.SERVICE).ConfigureAwait(false);
+        // Act
+        var result = await sut.GetOfferProviderDetailsAsync(Guid.NewGuid(), OfferTypeId.SERVICE).ConfigureAwait(false);
 
-		// Assert
-		result.Should().BeNull();
-	}
+        // Assert
+        result.Should().BeNull();
+    }
 
-	#endregion
+    #endregion
 
-	private async Task<(OfferRepository, PortalDbContext)> CreateSut()
-	{
-		var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
-		var sut = new OfferRepository(context);
-		return (sut, context);
-	}
+    private async Task<(OfferRepository, PortalDbContext)> CreateSut()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var sut = new OfferRepository(context);
+        return (sut, context);
+    }
 }

@@ -23,46 +23,46 @@ using System.Text;
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 public sealed class AsyncEnumerableStringStream : Stream
 {
-	public AsyncEnumerableStringStream(IAsyncEnumerable<string> data, Encoding encoding) : base()
-	{
-		_enumerator = data.GetAsyncEnumerator();
-		_stream = new MemoryStream();
-		_writer = new StreamWriter(_stream, encoding);
-	}
+    public AsyncEnumerableStringStream(IAsyncEnumerable<string> data, Encoding encoding) : base()
+    {
+        _enumerator = data.GetAsyncEnumerator();
+        _stream = new MemoryStream();
+        _writer = new StreamWriter(_stream, encoding);
+    }
 
-	private readonly IAsyncEnumerator<string> _enumerator;
-	private readonly MemoryStream _stream;
-	private readonly TextWriter _writer;
+    private readonly IAsyncEnumerator<string> _enumerator;
+    private readonly MemoryStream _stream;
+    private readonly TextWriter _writer;
 
-	public override bool CanRead => true;
-	public override bool CanSeek => false;
-	public override bool CanTimeout => false;
-	public override bool CanWrite => false;
-	public override long Length => throw new NotSupportedException();
-	public override long Position
-	{
-		get { throw new NotSupportedException(); }
-		set { throw new NotSupportedException(); }
-	}
-	public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotSupportedException();
-	public override void Flush() => throw new NotSupportedException();
-	public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-	public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-	public override void SetLength(long value) => throw new NotSupportedException();
+    public override bool CanRead => true;
+    public override bool CanSeek => false;
+    public override bool CanTimeout => false;
+    public override bool CanWrite => false;
+    public override long Length => throw new NotSupportedException();
+    public override long Position
+    {
+        get { throw new NotSupportedException(); }
+        set { throw new NotSupportedException(); }
+    }
+    public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotSupportedException();
+    public override void Flush() => throw new NotSupportedException();
+    public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    public override void SetLength(long value) => throw new NotSupportedException();
 
-	public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
-	{
-		var written = _stream.Read(buffer.Span);
-		while (buffer.Length - written > 0 && await _enumerator.MoveNextAsync(cancellationToken).ConfigureAwait(false))
-		{
-			_stream.Position = 0;
-			_stream.SetLength(0);
-			_writer.WriteLine(_enumerator.Current);
-			_writer.Flush();
-			_stream.Position = 0;
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+    {
+        var written = _stream.Read(buffer.Span);
+        while (buffer.Length - written > 0 && await _enumerator.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        {
+            _stream.Position = 0;
+            _stream.SetLength(0);
+            _writer.WriteLine(_enumerator.Current);
+            _writer.Flush();
+            _stream.Position = 0;
 
-			written += _stream.Read(buffer.Span.Slice(written));
-		}
-		return written;
-	}
+            written += _stream.Read(buffer.Span.Slice(written));
+        }
+        return written;
+    }
 }

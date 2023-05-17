@@ -24,7 +24,7 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyUserWithIdpBusinessPartnerData(
-	[property: JsonPropertyName("companyUser")] CompanyUser CompanyUser,
-	[property: JsonPropertyName("iamIdpAlias")] string IamIdpAlias,
-	[property: JsonPropertyName("businessPartnerNumbers")] IEnumerable<string> BusinessPartnerNumbers,
-	[property: JsonPropertyName("assignedRoles")] IEnumerable<CompanyUserAssignedRoleDetails> AssignedRoles);
+    [property: JsonPropertyName("companyUser")] CompanyUser CompanyUser,
+    [property: JsonPropertyName("iamIdpAlias")] string IamIdpAlias,
+    [property: JsonPropertyName("businessPartnerNumbers")] IEnumerable<string> BusinessPartnerNumbers,
+    [property: JsonPropertyName("assignedRoles")] IEnumerable<CompanyUserAssignedRoleDetails> AssignedRoles);

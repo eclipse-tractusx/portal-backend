@@ -22,17 +22,17 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model
 {
-	public class InvitedUser
-	{
-		public InvitedUser(InvitationStatusId invitationStatus, string? emailId, IEnumerable<string> invitedUserRoles)
-		{
-			InvitationStatus = invitationStatus;
-			EmailId = emailId;
-			InvitedUserRoles = invitedUserRoles;
-		}
+    public class InvitedUser
+    {
+        public InvitedUser(InvitationStatusId invitationStatus, string? emailId, IEnumerable<string> invitedUserRoles)
+        {
+            InvitationStatus = invitationStatus;
+            EmailId = emailId;
+            InvitedUserRoles = invitedUserRoles;
+        }
 
-		public InvitationStatusId InvitationStatus { get; set; }
-		public string? EmailId { get; set; }
-		public IEnumerable<string> InvitedUserRoles { get; set; }
-	}
+        public InvitationStatusId InvitationStatus { get; set; }
+        public string? EmailId { get; set; }
+        public IEnumerable<string> InvitedUserRoles { get; set; }
+    }
 }

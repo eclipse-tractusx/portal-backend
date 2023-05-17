@@ -27,44 +27,44 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 
 public class StaticDataBusinessLogicTest
 {
-	private readonly IFixture _fixture;
-	private readonly IPortalRepositories _portalRepositories;
-	private readonly IStaticDataRepository _staticDataRepository;
-	public StaticDataBusinessLogicTest()
-	{
-		_fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-		_fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-			.ForEach(b => _fixture.Behaviors.Remove(b));
-		_fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+    private readonly IFixture _fixture;
+    private readonly IPortalRepositories _portalRepositories;
+    private readonly IStaticDataRepository _staticDataRepository;
+    public StaticDataBusinessLogicTest()
+    {
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-		_staticDataRepository = A.Fake<IStaticDataRepository>();
-		_portalRepositories = A.Fake<IPortalRepositories>();
+        _staticDataRepository = A.Fake<IStaticDataRepository>();
+        _portalRepositories = A.Fake<IPortalRepositories>();
 
-		A.CallTo(() => _portalRepositories.GetInstance<IStaticDataRepository>()).Returns(_staticDataRepository);
-	}
+        A.CallTo(() => _portalRepositories.GetInstance<IStaticDataRepository>()).Returns(_staticDataRepository);
+    }
 
-	[Fact]
-	public async Task GetAllLicenseType_ReturnExpectedResult()
-	{
-		// Arrange
-		var data = _fixture.Build<LicenseTypeData>()
-							.With(x => x.LicenseTypeId, 1)
-							.With(x => x.Name, LicenseTypeId.COTS.ToString())
-							.CreateMany()
-							.ToAsyncEnumerable();
+    [Fact]
+    public async Task GetAllLicenseType_ReturnExpectedResult()
+    {
+        // Arrange
+        var data = _fixture.Build<LicenseTypeData>()
+                            .With(x => x.LicenseTypeId, 1)
+                            .With(x => x.Name, LicenseTypeId.COTS.ToString())
+                            .CreateMany()
+                            .ToAsyncEnumerable();
 
-		A.CallTo(() => _staticDataRepository.GetLicenseTypeData())
-			.Returns(data);
-		var sut = new StaticDataBusinessLogic(_portalRepositories);
+        A.CallTo(() => _staticDataRepository.GetLicenseTypeData())
+            .Returns(data);
+        var sut = new StaticDataBusinessLogic(_portalRepositories);
 
-		// Act
-		var result = await sut.GetAllLicenseType().ToListAsync().ConfigureAwait(false);
+        // Act
+        var result = await sut.GetAllLicenseType().ToListAsync().ConfigureAwait(false);
 
-		// Assert
-		A.CallTo(() => _staticDataRepository.GetLicenseTypeData())
-			.MustHaveHappenedOnceExactly();
-		result.Should().BeOfType<List<LicenseTypeData>>();
-		result.FirstOrDefault()!.LicenseTypeId.Should().Be(1);
-		result.FirstOrDefault()!.Name.Should().Be(LicenseTypeId.COTS.ToString());
-	}
+        // Assert
+        A.CallTo(() => _staticDataRepository.GetLicenseTypeData())
+            .MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<List<LicenseTypeData>>();
+        result.FirstOrDefault()!.LicenseTypeId.Should().Be(1);
+        result.FirstOrDefault()!.Name.Should().Be(LicenseTypeId.COTS.ToString());
+    }
 }

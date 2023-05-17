@@ -30,10 +30,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 
 public class FederatedIdentity
 {
-	[JsonProperty("identityProvider")]
-	public string IdentityProvider { get; set; } = default!;
-	[JsonProperty("userId")]
-	public string UserId { get; set; } = default!;
-	[JsonProperty("userName")]
-	public string UserName { get; set; } = default!;
+    [JsonProperty("identityProvider")]
+    public string IdentityProvider { get; set; } = default!;
+    [JsonProperty("userId")]
+    public string UserId { get; set; } = default!;
+    [JsonProperty("userName")]
+    public string UserName { get; set; } = default!;
 }

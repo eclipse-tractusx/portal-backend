@@ -30,15 +30,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class KeycloakStorageLdapMappersLdapStorageMapperMetadata
 {
-	[JsonProperty("fedToKeycloakSyncSupported")]
-	public bool? FedToKeycloakSyncSupported { get; set; }
+    [JsonProperty("fedToKeycloakSyncSupported")]
+    public bool? FedToKeycloakSyncSupported { get; set; }
 
-	[JsonProperty("keycloakToFedSyncSupported")]
-	public bool? KeycloakToFedSyncSupported { get; set; }
+    [JsonProperty("keycloakToFedSyncSupported")]
+    public bool? KeycloakToFedSyncSupported { get; set; }
 
-	[JsonProperty("fedToKeycloakSyncMessage")]
-	public string FedToKeycloakSyncMessage { get; set; }
+    [JsonProperty("fedToKeycloakSyncMessage")]
+    public string FedToKeycloakSyncMessage { get; set; }
 
-	[JsonProperty("keycloakToFedSyncMessage")]
-	public string KeycloakToFedSyncMessage { get; set; }
+    [JsonProperty("keycloakToFedSyncMessage")]
+    public string KeycloakToFedSyncMessage { get; set; }
 }

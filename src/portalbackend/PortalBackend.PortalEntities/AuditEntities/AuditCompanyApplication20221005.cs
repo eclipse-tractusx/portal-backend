@@ -30,28 +30,28 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 /// </summary>
 public class AuditCompanyApplication20221005 : IAuditEntityV1
 {
-	/// <inheritdoc />
-	[Key]
-	public Guid AuditV1Id { get; set; }
+    /// <inheritdoc />
+    [Key]
+    public Guid AuditV1Id { get; set; }
 
-	public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-	public DateTimeOffset DateCreated { get; set; }
+    public DateTimeOffset DateCreated { get; set; }
 
-	public CompanyApplicationStatusId ApplicationStatusId { get; set; }
+    public CompanyApplicationStatusId ApplicationStatusId { get; set; }
 
-	public Guid CompanyId { get; set; }
+    public Guid CompanyId { get; set; }
 
-	public DateTimeOffset? DateLastChanged { get; set; }
+    public DateTimeOffset? DateLastChanged { get; set; }
 
-	public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; set; }
 
-	/// <inheritdoc />
-	public Guid? AuditV1LastEditorId { get; set; }
+    /// <inheritdoc />
+    public Guid? AuditV1LastEditorId { get; set; }
 
-	/// <inheritdoc />
-	public AuditOperationId AuditV1OperationId { get; set; }
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
 
-	/// <inheritdoc />
-	public DateTimeOffset AuditV1DateLastChanged { get; set; }
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

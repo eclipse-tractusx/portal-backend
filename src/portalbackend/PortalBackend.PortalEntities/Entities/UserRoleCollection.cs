@@ -24,25 +24,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class UserRoleCollection : IBaseEntity
 {
-	private UserRoleCollection()
-	{
-		Name = null!;
-		UserRoles = new HashSet<UserRole>();
-		UserRoleCollectionDescriptions = new HashSet<UserRoleCollectionDescription>();
-	}
+    private UserRoleCollection()
+    {
+        Name = null!;
+        UserRoles = new HashSet<UserRole>();
+        UserRoleCollectionDescriptions = new HashSet<UserRoleCollectionDescription>();
+    }
 
-	public UserRoleCollection(Guid id, string name) : this()
-	{
-		Id = id;
-		Name = name;
-	}
+    public UserRoleCollection(Guid id, string name) : this()
+    {
+        Id = id;
+        Name = name;
+    }
 
-	public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-	public string Name { get; set; }
+    public string Name { get; set; }
 
-	// Navigation properties
-	public virtual CompanyRoleAssignedRoleCollection? CompanyRoleAssignedRoleCollection { get; set; }
-	public virtual ICollection<UserRole> UserRoles { get; private set; }
-	public virtual ICollection<UserRoleCollectionDescription> UserRoleCollectionDescriptions { get; private set; }
+    // Navigation properties
+    public virtual CompanyRoleAssignedRoleCollection? CompanyRoleAssignedRoleCollection { get; set; }
+    public virtual ICollection<UserRole> UserRoles { get; private set; }
+    public virtual ICollection<UserRoleCollectionDescription> UserRoleCollectionDescriptions { get; private set; }
 }

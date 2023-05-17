@@ -26,52 +26,52 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public class AppInstanceRepository : IAppInstanceRepository
 {
-	private readonly PortalDbContext _portalDbContext;
+    private readonly PortalDbContext _portalDbContext;
 
-	/// <summary>
-	/// Creates a new instance of <see cref="AppInstanceRepository"/>
-	/// </summary>
-	/// <param name="portalDbContext">The portal db context</param>
-	public AppInstanceRepository(PortalDbContext portalDbContext)
-	{
-		_portalDbContext = portalDbContext;
-	}
+    /// <summary>
+    /// Creates a new instance of <see cref="AppInstanceRepository"/>
+    /// </summary>
+    /// <param name="portalDbContext">The portal db context</param>
+    public AppInstanceRepository(PortalDbContext portalDbContext)
+    {
+        _portalDbContext = portalDbContext;
+    }
 
-	/// <inheritdoc />
-	public AppInstance CreateAppInstance(Guid appId, Guid iamClientId) =>
-		_portalDbContext.AppInstances.Add(new AppInstance(Guid.NewGuid(), appId, iamClientId)).Entity;
+    /// <inheritdoc />
+    public AppInstance CreateAppInstance(Guid appId, Guid iamClientId) =>
+        _portalDbContext.AppInstances.Add(new AppInstance(Guid.NewGuid(), appId, iamClientId)).Entity;
 
-	/// <inheritdoc />
-	public void RemoveAppInstance(Guid appInstanceId) =>
-		_portalDbContext.AppInstances.Remove(new AppInstance(appInstanceId, Guid.Empty, Guid.Empty));
+    /// <inheritdoc />
+    public void RemoveAppInstance(Guid appInstanceId) =>
+        _portalDbContext.AppInstances.Remove(new AppInstance(appInstanceId, Guid.Empty, Guid.Empty));
 
-	/// <inheritdoc />
-	public void CreateAppInstanceAssignedServiceAccounts(
-		IEnumerable<(Guid AppInstanceId, Guid CompanyServiceAccountId)> instanceAccounts) =>
-		_portalDbContext.AppInstanceAssignedServiceAccounts.AddRange(instanceAccounts
-			.Select(x => new AppInstanceAssignedCompanyServiceAccount(
-				x.AppInstanceId,
-				x.CompanyServiceAccountId)));
+    /// <inheritdoc />
+    public void CreateAppInstanceAssignedServiceAccounts(
+        IEnumerable<(Guid AppInstanceId, Guid CompanyServiceAccountId)> instanceAccounts) =>
+        _portalDbContext.AppInstanceAssignedServiceAccounts.AddRange(instanceAccounts
+            .Select(x => new AppInstanceAssignedCompanyServiceAccount(
+                x.AppInstanceId,
+                x.CompanyServiceAccountId)));
 
-	/// <inheritdoc />
-	public Task<bool> CheckInstanceExistsForOffer(Guid offerId) =>
-		_portalDbContext.AppInstances.AnyAsync(ai => ai.AppId == offerId);
+    /// <inheritdoc />
+    public Task<bool> CheckInstanceExistsForOffer(Guid offerId) =>
+        _portalDbContext.AppInstances.AnyAsync(ai => ai.AppId == offerId);
 
-	/// <inheritdoc />
-	public IAsyncEnumerable<Guid> GetAssignedServiceAccounts(Guid appInstanceId) =>
-		_portalDbContext.AppInstanceAssignedServiceAccounts
-			.Where(x => x.AppInstanceId == appInstanceId)
-			.Select(x => x.CompanyServiceAccountId)
-			.ToAsyncEnumerable();
+    /// <inheritdoc />
+    public IAsyncEnumerable<Guid> GetAssignedServiceAccounts(Guid appInstanceId) =>
+        _portalDbContext.AppInstanceAssignedServiceAccounts
+            .Where(x => x.AppInstanceId == appInstanceId)
+            .Select(x => x.CompanyServiceAccountId)
+            .ToAsyncEnumerable();
 
-	/// <inheritdoc />
-	public Task<bool> CheckInstanceHasAssignedSubscriptions(Guid appInstanceId) =>
-		_portalDbContext.AppSubscriptionDetails
-			.Where(detail => detail.AppInstanceId == appInstanceId)
-			.AnyAsync();
+    /// <inheritdoc />
+    public Task<bool> CheckInstanceHasAssignedSubscriptions(Guid appInstanceId) =>
+        _portalDbContext.AppSubscriptionDetails
+            .Where(detail => detail.AppInstanceId == appInstanceId)
+            .AnyAsync();
 
-	/// <inheritdoc />
-	public void RemoveAppInstanceAssignedServiceAccounts(Guid appInstanceId, IEnumerable<Guid> serviceAccountIds) =>
-		_portalDbContext.AppInstanceAssignedServiceAccounts
-			.RemoveRange(serviceAccountIds.Select(x => new AppInstanceAssignedCompanyServiceAccount(appInstanceId, x)));
+    /// <inheritdoc />
+    public void RemoveAppInstanceAssignedServiceAccounts(Guid appInstanceId, IEnumerable<Guid> serviceAccountIds) =>
+        _portalDbContext.AppInstanceAssignedServiceAccounts
+            .RemoveRange(serviceAccountIds.Select(x => new AppInstanceAssignedCompanyServiceAccount(appInstanceId, x)));
 }

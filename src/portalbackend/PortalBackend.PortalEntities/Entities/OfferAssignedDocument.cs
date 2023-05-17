@@ -22,19 +22,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class OfferAssignedDocument
 {
-	private OfferAssignedDocument() { }
+    private OfferAssignedDocument() { }
 
-	public OfferAssignedDocument(Guid offerId, Guid documentId)
-	{
-		OfferId = offerId;
-		DocumentId = documentId;
-	}
+    public OfferAssignedDocument(Guid offerId, Guid documentId)
+    {
+        OfferId = offerId;
+        DocumentId = documentId;
+    }
 
-	public Guid OfferId { get; private set; }
-	public Guid DocumentId { get; private set; }
+    public Guid OfferId { get; private set; }
+    public Guid DocumentId { get; private set; }
 
-	// Navigation properties
-	public virtual Offer? Offer { get; private set; }
-	public virtual Document? Document { get; private set; }
+    // Navigation properties
+    public virtual Offer? Offer { get; private set; }
+    public virtual Document? Document { get; private set; }
 }
 

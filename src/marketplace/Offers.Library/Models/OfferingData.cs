@@ -33,13 +33,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 /// <param name="Descriptions">Descriptions of the app in different languages.s</param>
 /// <param name="ServiceTypeIds">service type ids</param>
 public record ServiceOfferingData(
-	string Title,
-	string Price,
-	string? ContactEmail,
-	Guid? SalesManager,
-	IEnumerable<LocalizedDescription> Descriptions,
-	IEnumerable<ServiceTypeId> ServiceTypeIds,
-	string? ProviderUri);
+    string Title,
+    string Price,
+    string? ContactEmail,
+    Guid? SalesManager,
+    IEnumerable<LocalizedDescription> Descriptions,
+    IEnumerable<ServiceTypeId> ServiceTypeIds,
+    string? ProviderUri);
 
 /// <summary>
 /// Description of a service

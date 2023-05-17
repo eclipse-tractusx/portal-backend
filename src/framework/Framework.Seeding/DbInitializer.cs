@@ -24,20 +24,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
 internal class DbInitializer<TDbContext> where TDbContext : DbContext
 {
-	private readonly TDbContext _dbContext;
-	private readonly DbSeeder _dbSeeder;
+    private readonly TDbContext _dbContext;
+    private readonly DbSeeder _dbSeeder;
 
-	public DbInitializer(TDbContext dbContext, DbSeeder dbSeeder)
-	{
-		_dbContext = dbContext;
-		_dbSeeder = dbSeeder;
-	}
+    public DbInitializer(TDbContext dbContext, DbSeeder dbSeeder)
+    {
+        _dbContext = dbContext;
+        _dbSeeder = dbSeeder;
+    }
 
-	public async Task InitializeAsync(CancellationToken cancellationToken)
-	{
-		if (await _dbContext.Database.CanConnectAsync(cancellationToken))
-		{
-			await _dbSeeder.SeedDatabaseAsync(cancellationToken);
-		}
-	}
+    public async Task InitializeAsync(CancellationToken cancellationToken)
+    {
+        if (await _dbContext.Database.CanConnectAsync(cancellationToken))
+        {
+            await _dbSeeder.SeedDatabaseAsync(cancellationToken);
+        }
+    }
 }

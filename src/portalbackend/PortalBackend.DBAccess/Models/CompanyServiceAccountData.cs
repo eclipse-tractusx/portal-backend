@@ -24,8 +24,8 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyServiceAccountData(
-	[property: JsonPropertyName("serviceAccountId")] Guid ServiceAccountId,
-	[property: JsonPropertyName("clientId")] string? ClientId,
-	[property: JsonPropertyName("name")] string Name,
-	[property: JsonPropertyName("serviceAccountType")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
-	[property: JsonPropertyName("offerSubscriptionId")] Guid? OfferSubscriptionId);
+    [property: JsonPropertyName("serviceAccountId")] Guid ServiceAccountId,
+    [property: JsonPropertyName("clientId")] string? ClientId,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("serviceAccountType")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
+    [property: JsonPropertyName("offerSubscriptionId")] Guid? OfferSubscriptionId);

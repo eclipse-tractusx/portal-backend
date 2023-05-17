@@ -28,43 +28,43 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 /// </summary>
 public class Notification : IBaseEntity
 {
-	/// <summary>
-	/// Creates a new instance of <see cref="Notification"/> and sets the required values.
-	/// </summary>
-	/// <param name="id">Id of the notification</param>
-	/// <param name="receiverUserId">Mapping to the company user who should receive the message</param>
-	/// <param name="dateCreated">The creation date</param>
-	/// <param name="notificationTypeId">id of the notification type</param>
-	/// <param name="isRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
-	public Notification(Guid id, Guid receiverUserId, DateTimeOffset dateCreated, NotificationTypeId notificationTypeId, bool isRead)
-	{
-		Id = id;
-		ReceiverUserId = receiverUserId;
-		DateCreated = dateCreated;
-		NotificationTypeId = notificationTypeId;
-		IsRead = isRead;
-	}
+    /// <summary>
+    /// Creates a new instance of <see cref="Notification"/> and sets the required values.
+    /// </summary>
+    /// <param name="id">Id of the notification</param>
+    /// <param name="receiverUserId">Mapping to the company user who should receive the message</param>
+    /// <param name="dateCreated">The creation date</param>
+    /// <param name="notificationTypeId">id of the notification type</param>
+    /// <param name="isRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
+    public Notification(Guid id, Guid receiverUserId, DateTimeOffset dateCreated, NotificationTypeId notificationTypeId, bool isRead)
+    {
+        Id = id;
+        ReceiverUserId = receiverUserId;
+        DateCreated = dateCreated;
+        NotificationTypeId = notificationTypeId;
+        IsRead = isRead;
+    }
 
-	public Guid Id { get; private set; }
+    public Guid Id { get; private set; }
 
-	public Guid ReceiverUserId { get; private set; }
+    public Guid ReceiverUserId { get; private set; }
 
-	public DateTimeOffset DateCreated { get; private set; }
+    public DateTimeOffset DateCreated { get; private set; }
 
-	public string? Content { get; set; }
+    public string? Content { get; set; }
 
-	public NotificationTypeId NotificationTypeId { get; private set; }
+    public NotificationTypeId NotificationTypeId { get; private set; }
 
-	public bool IsRead { get; set; }
+    public bool IsRead { get; set; }
 
-	public DateTimeOffset? DueDate { get; set; }
+    public DateTimeOffset? DueDate { get; set; }
 
-	public Guid? CreatorUserId { get; set; }
+    public Guid? CreatorUserId { get; set; }
 
-	public bool? Done { get; set; }
+    public bool? Done { get; set; }
 
-	// Navigation properties
-	public virtual CompanyUser? Receiver { get; set; }
-	public virtual NotificationType? NotificationType { get; set; }
-	public virtual CompanyUser? Creator { get; set; }
+    // Navigation properties
+    public virtual CompanyUser? Receiver { get; set; }
+    public virtual NotificationType? NotificationType { get; set; }
+    public virtual CompanyUser? Creator { get; set; }
 }

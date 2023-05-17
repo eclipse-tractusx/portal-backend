@@ -26,40 +26,40 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 
 public static class OfferData
 {
-	public static readonly ImmutableList<Offer> Offers = ImmutableList.Create(
-		new Offer(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "Catena X", DateTimeOffset.UtcNow, OfferTypeId.APP)
-		{
-			DateReleased = DateTimeOffset.UtcNow.AddDays(-1),
-			Name = "Top App",
-			OfferStatusId = OfferStatusId.ACTIVE,
-			ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
-			LicenseTypeId = LicenseTypeId.COTS
-		},
-		new Offer(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), "Catena X", DateTimeOffset.UtcNow, OfferTypeId.SERVICE)
-		{
-			Name = "Newest Service",
-			ContactEmail = "service-test@mail.com",
-			OfferStatusId = OfferStatusId.ACTIVE,
-			ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
-			DateReleased = DateTimeOffset.UtcNow.Add(new TimeSpan(1, 0, 0)),
-			LicenseTypeId = LicenseTypeId.COTS
-		},
-		new Offer(new Guid("c208a2ac-7577-4a62-9504-300a2007b198"), "Catena Y", DateTimeOffset.UtcNow, OfferTypeId.SERVICE)
-		{
-			Name = "Newest Service 2",
-			ContactEmail = "service-test2@mail.com",
-			OfferStatusId = OfferStatusId.ACTIVE,
-			ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"),
-			DateReleased = DateTimeOffset.UtcNow.Add(new TimeSpan(2, 0, 0)),
-			LicenseTypeId = LicenseTypeId.COTS
-		},
-		new Offer(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA6"), "Catena X", DateTimeOffset.UtcNow, OfferTypeId.APP)
-		{
-			Name = "Latest Service",
-			ContactEmail = "service-test@mail.com",
-			OfferStatusId = OfferStatusId.IN_REVIEW,
-			ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
-			LicenseTypeId = LicenseTypeId.COTS
-		}
-	);
+    public static readonly ImmutableList<Offer> Offers = ImmutableList.Create(
+        new Offer(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "Catena X", DateTimeOffset.UtcNow, OfferTypeId.APP)
+        {
+            DateReleased = DateTimeOffset.UtcNow.AddDays(-1),
+            Name = "Top App",
+            OfferStatusId = OfferStatusId.ACTIVE,
+            ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+            LicenseTypeId = LicenseTypeId.COTS
+        },
+        new Offer(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), "Catena X", DateTimeOffset.UtcNow, OfferTypeId.SERVICE)
+        {
+            Name = "Newest Service",
+            ContactEmail = "service-test@mail.com",
+            OfferStatusId = OfferStatusId.ACTIVE,
+            ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+            DateReleased = DateTimeOffset.UtcNow.Add(new TimeSpan(1, 0, 0)),
+            LicenseTypeId = LicenseTypeId.COTS
+        },
+        new Offer(new Guid("c208a2ac-7577-4a62-9504-300a2007b198"), "Catena Y", DateTimeOffset.UtcNow, OfferTypeId.SERVICE)
+        {
+            Name = "Newest Service 2",
+            ContactEmail = "service-test2@mail.com",
+            OfferStatusId = OfferStatusId.ACTIVE,
+            ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f99"),
+            DateReleased = DateTimeOffset.UtcNow.Add(new TimeSpan(2, 0, 0)),
+            LicenseTypeId = LicenseTypeId.COTS
+        },
+        new Offer(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA6"), "Catena X", DateTimeOffset.UtcNow, OfferTypeId.APP)
+        {
+            Name = "Latest Service",
+            ContactEmail = "service-test@mail.com",
+            OfferStatusId = OfferStatusId.IN_REVIEW,
+            ProviderCompanyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+            LicenseTypeId = LicenseTypeId.COTS
+        }
+    );
 }

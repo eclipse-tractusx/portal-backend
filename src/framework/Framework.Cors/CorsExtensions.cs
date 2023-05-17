@@ -28,24 +28,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
 /// </summary>
 public static class CorsExtensions
 {
-	public const string AllowSpecificOrigins = "_catenaXAllowSpecificOrigins";
+    public const string AllowSpecificOrigins = "_catenaXAllowSpecificOrigins";
 
-	/// <summary>
-	/// Setup for the cors configuration
-	/// </summary>
-	/// <param name="corsOption">Cors options</param>
-	/// <param name="configuration">configuration to access the allowed domains</param>
-	public static void SetupCors(this CorsOptions corsOption, IConfigurationRoot configuration)
-	{
-		var corsConfig = configuration.Get<CorsConfiguration>();
-		if (corsConfig.Cors?.AllowedOrigins?.Any() ?? false)
-		{
-			corsOption.AddPolicy(AllowSpecificOrigins, policy =>
-			{
-				policy.WithOrigins(corsConfig.Cors.AllowedOrigins)
-								.AllowAnyHeader()
-								.AllowAnyMethod();
-			});
-		}
-	}
+    /// <summary>
+    /// Setup for the cors configuration
+    /// </summary>
+    /// <param name="corsOption">Cors options</param>
+    /// <param name="configuration">configuration to access the allowed domains</param>
+    public static void SetupCors(this CorsOptions corsOption, IConfigurationRoot configuration)
+    {
+        var corsConfig = configuration.Get<CorsConfiguration>();
+        if (corsConfig.Cors?.AllowedOrigins?.Any() ?? false)
+        {
+            corsOption.AddPolicy(AllowSpecificOrigins, policy =>
+            {
+                policy.WithOrigins(corsConfig.Cors.AllowedOrigins)
+                                .AllowAnyHeader()
+                                .AllowAnyMethod();
+            });
+        }
+    }
 }

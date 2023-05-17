@@ -26,5 +26,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="IsSingleInstance"><c>true</c> if the service is an single instance service, otherwise <c>false</c></param>
 /// <param name="InstanceUrl">Only required if <seealso cref="IsSingleInstance"/> is true</param>
 public record AppInstanceSetupData(
-	bool IsSingleInstance,
-	string? InstanceUrl);
+    bool IsSingleInstance,
+    string? InstanceUrl);

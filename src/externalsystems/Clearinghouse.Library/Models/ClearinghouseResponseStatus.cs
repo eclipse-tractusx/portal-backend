@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 
 public enum ClearinghouseResponseStatus
 {
-	CONFIRM = 1,
+    CONFIRM = 1,
 
-	DECLINE = 2
+    DECLINE = 2
 }

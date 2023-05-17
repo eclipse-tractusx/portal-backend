@@ -25,18 +25,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 /// </summary>
 public enum DocumentStatusId
 {
-	/// <summary>
-	/// The document is pending
-	/// </summary>
-	PENDING = 1,
+    /// <summary>
+    /// The document is pending
+    /// </summary>
+    PENDING = 1,
 
-	/// <summary>
-	/// The document is locked for changes
-	/// </summary>
-	LOCKED = 2,
+    /// <summary>
+    /// The document is locked for changes
+    /// </summary>
+    LOCKED = 2,
 
-	/// <summary>
-	/// The document was deleted by the user
-	/// </summary>
-	INACTIVE = 3,
+    /// <summary>
+    /// The document was deleted by the user
+    /// </summary>
+    INACTIVE = 3,
 }

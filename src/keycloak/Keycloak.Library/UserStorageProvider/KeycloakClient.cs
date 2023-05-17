@@ -31,53 +31,53 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {
-	[Obsolete("Not working yet")]
-	public async Task RemoveImportedUsersAsync(string realm, string storageProviderId) =>
-		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/user-storage/")
-			.AppendPathSegment(storageProviderId, true)
-			.AppendPathSegment("/remove-imported-users")
-			.PostAsync(new StringContent(""))
-			.ConfigureAwait(false);
+    [Obsolete("Not working yet")]
+    public async Task RemoveImportedUsersAsync(string realm, string storageProviderId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/user-storage/")
+            .AppendPathSegment(storageProviderId, true)
+            .AppendPathSegment("/remove-imported-users")
+            .PostAsync(new StringContent(""))
+            .ConfigureAwait(false);
 
-	[Obsolete("Not working yet")]
-	public async Task<SynchronizationResult> TriggerUserSynchronizationAsync(string realm, string storageProviderId, UserSyncActions action) =>
-		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/user-storage/")
-			.AppendPathSegment(storageProviderId, true)
-			.AppendPathSegment("/sync")
-			.SetQueryParam(nameof(action), action == UserSyncActions.Full ? "triggerFullSync" : "triggerChangedUsersSync")
-			.PostAsync(new StringContent(""))
-			.ReceiveJson<SynchronizationResult>()
-			.ConfigureAwait(false);
+    [Obsolete("Not working yet")]
+    public async Task<SynchronizationResult> TriggerUserSynchronizationAsync(string realm, string storageProviderId, UserSyncActions action) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/user-storage/")
+            .AppendPathSegment(storageProviderId, true)
+            .AppendPathSegment("/sync")
+            .SetQueryParam(nameof(action), action == UserSyncActions.Full ? "triggerFullSync" : "triggerChangedUsersSync")
+            .PostAsync(new StringContent(""))
+            .ReceiveJson<SynchronizationResult>()
+            .ConfigureAwait(false);
 
-	[Obsolete("Not working yet")]
-	public async Task UnlinkImportedUsersAsync(string realm, string storageProviderId) =>
-		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/user-storage/")
-			.AppendPathSegment(storageProviderId, true)
-			.AppendPathSegment("/unlink-users")
-			.PostAsync(new StringContent(""))
-			.ConfigureAwait(false);
+    [Obsolete("Not working yet")]
+    public async Task UnlinkImportedUsersAsync(string realm, string storageProviderId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/user-storage/")
+            .AppendPathSegment(storageProviderId, true)
+            .AppendPathSegment("/unlink-users")
+            .PostAsync(new StringContent(""))
+            .ConfigureAwait(false);
 
-	[Obsolete("Not working yet")]
-	public async Task<SynchronizationResult> TriggerLdapMapperSynchronizationAsync(string realm, string storageProviderId, string mapperId, LdapMapperSyncActions direction) =>
-		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/user-storage/")
-			.AppendPathSegment(storageProviderId, true)
-			.AppendPathSegment("/mappers/")
-			.AppendPathSegment(mapperId, true)
-			.AppendPathSegment("/sync")
-			.SetQueryParam(nameof(direction), direction == LdapMapperSyncActions.FedToKeycloak ? "fedToKeycloak" : "keycloakToFed")
-			.PostAsync(new StringContent(""))
-			.ReceiveJson<SynchronizationResult>()
-			.ConfigureAwait(false);
+    [Obsolete("Not working yet")]
+    public async Task<SynchronizationResult> TriggerLdapMapperSynchronizationAsync(string realm, string storageProviderId, string mapperId, LdapMapperSyncActions direction) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/user-storage/")
+            .AppendPathSegment(storageProviderId, true)
+            .AppendPathSegment("/mappers/")
+            .AppendPathSegment(mapperId, true)
+            .AppendPathSegment("/sync")
+            .SetQueryParam(nameof(direction), direction == LdapMapperSyncActions.FedToKeycloak ? "fedToKeycloak" : "keycloakToFed")
+            .PostAsync(new StringContent(""))
+            .ReceiveJson<SynchronizationResult>()
+            .ConfigureAwait(false);
 }

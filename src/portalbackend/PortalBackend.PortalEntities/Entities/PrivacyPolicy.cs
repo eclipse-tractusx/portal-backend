@@ -25,21 +25,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class PrivacyPolicy
 {
-	private PrivacyPolicy()
-	{
-		Label = null!;
-		OfferAssignedPrivacyPolicies = new HashSet<OfferAssignedPrivacyPolicy>();
-	}
+    private PrivacyPolicy()
+    {
+        Label = null!;
+        OfferAssignedPrivacyPolicies = new HashSet<OfferAssignedPrivacyPolicy>();
+    }
 
-	public PrivacyPolicy(PrivacyPolicyId privacyPolicyId) : this()
-	{
-		Id = privacyPolicyId;
-		Label = privacyPolicyId.ToString();
-	}
+    public PrivacyPolicy(PrivacyPolicyId privacyPolicyId) : this()
+    {
+        Id = privacyPolicyId;
+        Label = privacyPolicyId.ToString();
+    }
 
-	public PrivacyPolicyId Id { get; private set; }
+    public PrivacyPolicyId Id { get; private set; }
 
-	[MaxLength(255)]
-	public string Label { get; private set; }
-	public virtual ICollection<OfferAssignedPrivacyPolicy> OfferAssignedPrivacyPolicies { get; private set; }
+    [MaxLength(255)]
+    public string Label { get; private set; }
+    public virtual ICollection<OfferAssignedPrivacyPolicy> OfferAssignedPrivacyPolicies { get; private set; }
 }

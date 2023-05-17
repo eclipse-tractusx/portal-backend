@@ -34,116 +34,116 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public class InvitationBusinessLogic : IInvitationBusinessLogic
 {
-	private readonly IProvisioningManager _provisioningManager;
-	private readonly IUserProvisioningService _userProvisioningService;
-	private readonly IPortalRepositories _portalRepositories;
-	private readonly IMailingService _mailingService;
-	private readonly InvitationSettings _settings;
+    private readonly IProvisioningManager _provisioningManager;
+    private readonly IUserProvisioningService _userProvisioningService;
+    private readonly IPortalRepositories _portalRepositories;
+    private readonly IMailingService _mailingService;
+    private readonly InvitationSettings _settings;
 
-	/// <summary>
-	/// Constructor.
-	/// </summary>
-	/// <param name="provisioningManager">Provisioning Manager</param>
-	/// <param name="userProvisioningService">User Provisioning Service</param>
-	/// <param name="portalRepositories">Portal Repositories</param>
-	/// <param name="mailingService">Mailing Service</param>
-	/// <param name="settings">Settings</param>
-	public InvitationBusinessLogic(
-		IProvisioningManager provisioningManager,
-		IUserProvisioningService userProvisioningService,
-		IPortalRepositories portalRepositories,
-		IMailingService mailingService,
-		IOptions<InvitationSettings> settings)
-	{
-		_provisioningManager = provisioningManager;
-		_userProvisioningService = userProvisioningService;
-		_portalRepositories = portalRepositories;
-		_mailingService = mailingService;
-		_settings = settings.Value;
-	}
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="provisioningManager">Provisioning Manager</param>
+    /// <param name="userProvisioningService">User Provisioning Service</param>
+    /// <param name="portalRepositories">Portal Repositories</param>
+    /// <param name="mailingService">Mailing Service</param>
+    /// <param name="settings">Settings</param>
+    public InvitationBusinessLogic(
+        IProvisioningManager provisioningManager,
+        IUserProvisioningService userProvisioningService,
+        IPortalRepositories portalRepositories,
+        IMailingService mailingService,
+        IOptions<InvitationSettings> settings)
+    {
+        _provisioningManager = provisioningManager;
+        _userProvisioningService = userProvisioningService;
+        _portalRepositories = portalRepositories;
+        _mailingService = mailingService;
+        _settings = settings.Value;
+    }
 
-	public Task ExecuteInvitation(CompanyInvitationData invitationData, string iamUserId)
-	{
-		if (string.IsNullOrWhiteSpace(invitationData.email))
-		{
-			throw new ControllerArgumentException("email must not be empty", "email");
-		}
-		if (string.IsNullOrWhiteSpace(invitationData.organisationName))
-		{
-			throw new ControllerArgumentException("organisationName must not be empty", "organisationName");
-		}
-		return ExecuteInvitationInternalAsync(invitationData, iamUserId);
-	}
+    public Task ExecuteInvitation(CompanyInvitationData invitationData, string iamUserId)
+    {
+        if (string.IsNullOrWhiteSpace(invitationData.email))
+        {
+            throw new ControllerArgumentException("email must not be empty", "email");
+        }
+        if (string.IsNullOrWhiteSpace(invitationData.organisationName))
+        {
+            throw new ControllerArgumentException("organisationName must not be empty", "organisationName");
+        }
+        return ExecuteInvitationInternalAsync(invitationData, iamUserId);
+    }
 
-	private async Task ExecuteInvitationInternalAsync(CompanyInvitationData invitationData, string iamUserId)
-	{
-		var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-		if (creatorId == Guid.Empty)
-		{
-			throw new ConflictException($"iamUserId {iamUserId} is not associated with a companyUser");
-		}
+    private async Task ExecuteInvitationInternalAsync(CompanyInvitationData invitationData, string iamUserId)
+    {
+        var creatorId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+        if (creatorId == Guid.Empty)
+        {
+            throw new ConflictException($"iamUserId {iamUserId} is not associated with a companyUser");
+        }
 
-		var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
-		await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName, _settings.InitialLoginTheme).ConfigureAwait(false);
+        var idpName = await _provisioningManager.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
+        await _provisioningManager.SetupSharedIdpAsync(idpName, invitationData.organisationName, _settings.InitialLoginTheme).ConfigureAwait(false);
 
-		var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(invitationData.organisationName);
+        var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(invitationData.organisationName);
 
-		var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
-		var identityProvider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_SHARED);
-		identityProvider.Companies.Add(company);
-		identityProviderRepository.CreateIamIdentityProvider(identityProvider, idpName);
+        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
+        var identityProvider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_SHARED);
+        identityProvider.Companies.Add(company);
+        identityProviderRepository.CreateIamIdentityProvider(identityProvider, idpName);
 
-		var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-		var application = applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED);
+        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+        var application = applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED);
 
-		await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-		var companyNameIdpAliasData = new CompanyNameIdpAliasData(
-			company.Id,
-			company.Name,
-			null,
-			creatorId,
-			idpName,
-			true
-		);
+        var companyNameIdpAliasData = new CompanyNameIdpAliasData(
+            company.Id,
+            company.Name,
+            null,
+            creatorId,
+            idpName,
+            true
+        );
 
-		IEnumerable<UserRoleData> roleDatas;
-		try
-		{
-			roleDatas = await _userProvisioningService.GetRoleDatas(_settings.InvitedUserInitialRoles).ToListAsync().ConfigureAwait(false);
-		}
-		catch (Exception e)
-		{
-			throw new ConfigurationException($"{nameof(_settings.InvitedUserInitialRoles)}: {e.Message}");
-		}
+        IEnumerable<UserRoleData> roleDatas;
+        try
+        {
+            roleDatas = await _userProvisioningService.GetRoleDatas(_settings.InvitedUserInitialRoles).ToListAsync().ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            throw new ConfigurationException($"{nameof(_settings.InvitedUserInitialRoles)}: {e.Message}");
+        }
 
-		var userCreationInfoIdps = new[] { new UserCreationRoleDataIdpInfo(
-			invitationData.firstName,
-			invitationData.lastName,
-			invitationData.email,
-			roleDatas,
-			string.IsNullOrWhiteSpace(invitationData.userName) ? invitationData.email : invitationData.userName,
-			""
-		)}.ToAsyncEnumerable();
+        var userCreationInfoIdps = new[] { new UserCreationRoleDataIdpInfo(
+            invitationData.firstName,
+            invitationData.lastName,
+            invitationData.email,
+            roleDatas,
+            string.IsNullOrWhiteSpace(invitationData.userName) ? invitationData.email : invitationData.userName,
+            ""
+        )}.ToAsyncEnumerable();
 
-		var (companyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
+        var (companyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
 
-		if (error != null)
-		{
-			throw error;
-		}
+        if (error != null)
+        {
+            throw error;
+        }
 
-		applicationRepository.CreateInvitation(application.Id, companyUserId);
+        applicationRepository.CreateInvitation(application.Id, companyUserId);
 
-		await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-		var mailParameters = new Dictionary<string, string>
-		{
-			{ "password", password ?? "" },
-			{ "companyName", invitationData.organisationName },
-			{ "url", $"{_settings.RegistrationAppAddress}"},
-		};
+        var mailParameters = new Dictionary<string, string>
+        {
+            { "password", password ?? "" },
+            { "companyName", invitationData.organisationName },
+            { "url", $"{_settings.RegistrationAppAddress}"},
+        };
 
-		await _mailingService.SendMails(invitationData.email, mailParameters, new List<string> { "RegistrationTemplate", "PasswordForRegistrationTemplate" }).ConfigureAwait(false);
-	}
+        await _mailingService.SendMails(invitationData.email, mailParameters, new List<string> { "RegistrationTemplate", "PasswordForRegistrationTemplate" }).ConfigureAwait(false);
+    }
 }

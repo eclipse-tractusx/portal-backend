@@ -26,24 +26,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class OfferTag
 {
-	private OfferTag()
-	{
-		Name = null!;
-	}
+    private OfferTag()
+    {
+        Name = null!;
+    }
 
-	public OfferTag(Guid offerId, string name) : this()
-	{
-		OfferId = offerId;
-		Name = name;
-	}
+    public OfferTag(Guid offerId, string name) : this()
+    {
+        OfferId = offerId;
+        Name = name;
+    }
 
-	public Guid OfferId { get; set; }
+    public Guid OfferId { get; set; }
 
-	[MaxLength(255)]
-	[Column("tag_name")]
-	[JsonPropertyName("tag_name")]
-	public string Name { get; set; }
+    [MaxLength(255)]
+    [Column("tag_name")]
+    [JsonPropertyName("tag_name")]
+    public string Name { get; set; }
 
-	// Navigation properties
-	public virtual Offer? Offer { get; set; }
+    // Navigation properties
+    public virtual Offer? Offer { get; set; }
 }

@@ -30,239 +30,239 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 
 public class DocumentsBusinessLogicTests
 {
-	private static readonly Guid ValidDocumentId = Guid.NewGuid();
-	private static readonly string IamUserId = Guid.NewGuid().ToString();
-	private readonly IFixture _fixture;
-	private readonly IDocumentRepository _documentRepository;
-	private readonly IPortalRepositories _portalRepositories;
-	private readonly IOptions<DocumentSettings> _options;
-	private readonly DocumentsBusinessLogic _sut;
+    private static readonly Guid ValidDocumentId = Guid.NewGuid();
+    private static readonly string IamUserId = Guid.NewGuid().ToString();
+    private readonly IFixture _fixture;
+    private readonly IDocumentRepository _documentRepository;
+    private readonly IPortalRepositories _portalRepositories;
+    private readonly IOptions<DocumentSettings> _options;
+    private readonly DocumentsBusinessLogic _sut;
 
-	public DocumentsBusinessLogicTests()
-	{
-		_fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-		_fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-			.ForEach(b => _fixture.Behaviors.Remove(b));
-		_fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+    public DocumentsBusinessLogicTests()
+    {
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-		_documentRepository = A.Fake<IDocumentRepository>();
-		_portalRepositories = A.Fake<IPortalRepositories>();
-		_options = Options.Create(new DocumentSettings
-		{
-			EnableSeedEndpoint = true
-		});
+        _documentRepository = A.Fake<IDocumentRepository>();
+        _portalRepositories = A.Fake<IPortalRepositories>();
+        _options = Options.Create(new DocumentSettings
+        {
+            EnableSeedEndpoint = true
+        });
 
-		A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
-		_sut = new DocumentsBusinessLogic(_portalRepositories, _options);
-	}
+        A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
+        _sut = new DocumentsBusinessLogic(_portalRepositories, _options);
+    }
 
-	#region GetSeedData
+    #region GetSeedData
 
-	[Fact]
-	public async Task GetSeedData_WithValidId_ReturnsValidData()
-	{
-		// Arrange
-		SetupFakesForGetSeedData();
-		var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
+    [Fact]
+    public async Task GetSeedData_WithValidId_ReturnsValidData()
+    {
+        // Arrange
+        SetupFakesForGetSeedData();
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
 
-		// Act
-		var result = await sut.GetSeedData(ValidDocumentId).ConfigureAwait(false);
+        // Act
+        var result = await sut.GetSeedData(ValidDocumentId).ConfigureAwait(false);
 
-		// Assert
-		result.Should().NotBeNull();
-	}
+        // Assert
+        result.Should().NotBeNull();
+    }
 
-	[Fact]
-	public async Task CreateConnectorAsync_WithInvalidId_ThrowsNotFoundException()
-	{
-		// Arrange
-		var invalidId = Guid.NewGuid();
-		SetupFakesForGetSeedData();
-		var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
+    [Fact]
+    public async Task CreateConnectorAsync_WithInvalidId_ThrowsNotFoundException()
+    {
+        // Arrange
+        var invalidId = Guid.NewGuid();
+        SetupFakesForGetSeedData();
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
 
-		// Act
-		async Task Act() => await sut.GetSeedData(invalidId).ConfigureAwait(false);
+        // Act
+        async Task Act() => await sut.GetSeedData(invalidId).ConfigureAwait(false);
 
-		// Assert
-		var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
-		exception.Message.Should().Be($"Document {invalidId} does not exists.");
-	}
+        // Assert
+        var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
+        exception.Message.Should().Be($"Document {invalidId} does not exists.");
+    }
 
-	[Fact]
-	public async Task CreateConnectorAsync_WithCallFromTest_ThrowsForbiddenException()
-	{
-		// Arrange
-		SetupFakesForGetSeedData();
-		_options.Value.EnableSeedEndpoint = false;
-		var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
+    [Fact]
+    public async Task CreateConnectorAsync_WithCallFromTest_ThrowsForbiddenException()
+    {
+        // Arrange
+        SetupFakesForGetSeedData();
+        _options.Value.EnableSeedEndpoint = false;
+        var sut = new DocumentsBusinessLogic(_portalRepositories, _options);
 
-		// Act
-		async Task Act() => await sut.GetSeedData(ValidDocumentId).ConfigureAwait(false);
+        // Act
+        async Task Act() => await sut.GetSeedData(ValidDocumentId).ConfigureAwait(false);
 
-		// Assert
-		var exception = await Assert.ThrowsAsync<ForbiddenException>(Act);
-		exception.Message.Should().Be("Endpoint can only be used on dev environment");
-	}
+        // Assert
+        var exception = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        exception.Message.Should().Be("Endpoint can only be used on dev environment");
+    }
 
-	#endregion
+    #endregion
 
-	#region GetDocumentAsync
+    #region GetDocumentAsync
 
-	[Fact]
-	public async Task GetDocumentAsync_WithValidData_ReturnsExpected()
-	{
-		// Arrange
-		SetupFakesForGetDocument();
+    [Fact]
+    public async Task GetDocumentAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        SetupFakesForGetDocument();
 
-		// Act
-		var result = await _sut.GetDocumentAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
+        // Act
+        var result = await _sut.GetDocumentAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
 
-		// Assert
-		result.Should().NotBeNull();
-		result.FileName.Should().Be("test.pdf");
-		result.MediaType.Should().Be("application/pdf");
-	}
+        // Assert
+        result.Should().NotBeNull();
+        result.FileName.Should().Be("test.pdf");
+        result.MediaType.Should().Be("application/pdf");
+    }
 
-	[Fact]
-	public async Task GetDocumentAsync_WithNotExistingDocument_ThrowsNotFoundException()
-	{
-		// Arrange
-		var documentId = Guid.NewGuid();
-		SetupFakesForGetDocument();
+    [Fact]
+    public async Task GetDocumentAsync_WithNotExistingDocument_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        SetupFakesForGetDocument();
 
-		// Act
-		async Task Act() => await _sut.GetDocumentAsync(documentId, IamUserId).ConfigureAwait(false);
+        // Act
+        async Task Act() => await _sut.GetDocumentAsync(documentId, IamUserId).ConfigureAwait(false);
 
-		// Assert
-		var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-		ex.Message.Should().Be($"Document {documentId} does not exist");
-	}
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Document {documentId} does not exist");
+    }
 
-	[Fact]
-	public async Task GetDocumentAsync_WithWrongUser_ThrowsForbiddenException()
-	{
-		// Arrange
-		SetupFakesForGetDocument();
+    [Fact]
+    public async Task GetDocumentAsync_WithWrongUser_ThrowsForbiddenException()
+    {
+        // Arrange
+        SetupFakesForGetDocument();
 
-		// Act
-		async Task Act() => await _sut.GetDocumentAsync(ValidDocumentId, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        // Act
+        async Task Act() => await _sut.GetDocumentAsync(ValidDocumentId, Guid.NewGuid().ToString()).ConfigureAwait(false);
 
-		// Assert
-		var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-		ex.Message.Should().Be("User is not allowed to access the document");
-	}
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be("User is not allowed to access the document");
+    }
 
-	#endregion
+    #endregion
 
-	#region GetDocumentAsync
+    #region GetDocumentAsync
 
-	[Fact]
-	public async Task GetSelfDescriptionDocumentAsync_WithValidData_ReturnsExpected()
-	{
-		// Arrange
-		var content = new byte[7];
-		A.CallTo(() => _documentRepository.GetDocumentDataByIdAndTypeAsync(ValidDocumentId, DocumentTypeId.SELF_DESCRIPTION))
-			.ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId>(content, "test.json", MediaTypeId.JSON));
+    [Fact]
+    public async Task GetSelfDescriptionDocumentAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentDataByIdAndTypeAsync(ValidDocumentId, DocumentTypeId.SELF_DESCRIPTION))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId>(content, "test.json", MediaTypeId.JSON));
 
-		// Act
-		var result = await _sut.GetSelfDescriptionDocumentAsync(ValidDocumentId).ConfigureAwait(false);
+        // Act
+        var result = await _sut.GetSelfDescriptionDocumentAsync(ValidDocumentId).ConfigureAwait(false);
 
-		// Assert
-		result.Should().NotBeNull();
-		result.FileName.Should().Be("test.json");
-		result.MediaType.Should().Be("application/json");
-	}
+        // Assert
+        result.Should().NotBeNull();
+        result.FileName.Should().Be("test.json");
+        result.MediaType.Should().Be("application/json");
+    }
 
-	[Fact]
-	public async Task GetSelfDescriptionDocumentAsync_WithNotExistingDocument_ThrowsNotFoundException()
-	{
-		// Arrange
-		var documentId = Guid.NewGuid();
-		var content = new byte[7];
-		A.CallTo(() => _documentRepository.GetDocumentDataByIdAndTypeAsync(documentId, DocumentTypeId.SELF_DESCRIPTION))
-			.ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId>());
+    [Fact]
+    public async Task GetSelfDescriptionDocumentAsync_WithNotExistingDocument_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentDataByIdAndTypeAsync(documentId, DocumentTypeId.SELF_DESCRIPTION))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId>());
 
-		// Act
-		async Task Act() => await _sut.GetSelfDescriptionDocumentAsync(documentId).ConfigureAwait(false);
+        // Act
+        async Task Act() => await _sut.GetSelfDescriptionDocumentAsync(documentId).ConfigureAwait(false);
 
-		// Assert
-		var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-		ex.Message.Should().Be($"Self description document {documentId} does not exist");
-	}
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Self description document {documentId} does not exist");
+    }
 
-	#endregion
+    #endregion
 
-	[Fact]
-	public async Task GetFrameDocumentAsync_ReturnsExpectedResult()
-	{
-		// Arrange
-		var documentId = Guid.NewGuid();
-		var content = new byte[7];
-		A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
-			.ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>(content, "test.json", true, MediaTypeId.JSON));
+    [Fact]
+    public async Task GetFrameDocumentAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>(content, "test.json", true, MediaTypeId.JSON));
 
-		//Act
-		var result = await _sut.GetFrameDocumentAsync(documentId).ConfigureAwait(false);
+        //Act
+        var result = await _sut.GetFrameDocumentAsync(documentId).ConfigureAwait(false);
 
-		// Assert
-		A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._)).MustHaveHappenedOnceExactly();
-		result.Should().NotBeNull();
-		result.fileName.Should().Be("test.json");
-	}
+        // Assert
+        A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._)).MustHaveHappenedOnceExactly();
+        result.Should().NotBeNull();
+        result.fileName.Should().Be("test.json");
+    }
 
-	[Fact]
-	public async Task GetFrameDocumentAsync_WithInvalidDocumentTypeId_ThrowsNotFoundException()
-	{
-		// Arrange
-		var documentId = Guid.NewGuid();
-		var content = new byte[7];
-		A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
-			.ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>(content, "test.json", false, MediaTypeId.JSON));
+    [Fact]
+    public async Task GetFrameDocumentAsync_WithInvalidDocumentTypeId_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>(content, "test.json", false, MediaTypeId.JSON));
 
-		//Act
-		var Act = () => _sut.GetFrameDocumentAsync(documentId);
+        //Act
+        var Act = () => _sut.GetFrameDocumentAsync(documentId);
 
-		// Assert
-		var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
-		result.Message.Should().Be($"document {documentId} does not exist.");
-	}
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"document {documentId} does not exist.");
+    }
 
-	[Fact]
-	public async Task GetFrameDocumentAsync_WithInvalidDocumentId_ThrowsNotFoundException()
-	{
-		// Arrange
-		var documentId = Guid.NewGuid();
-		A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
-			.ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>());
+    [Fact]
+    public async Task GetFrameDocumentAsync_WithInvalidDocumentId_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, bool, MediaTypeId>());
 
-		//Act
-		var Act = () => _sut.GetFrameDocumentAsync(documentId);
+        //Act
+        var Act = () => _sut.GetFrameDocumentAsync(documentId);
 
-		// Assert
-		var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
-		result.Message.Should().Be($"document {documentId} does not exist.");
-	}
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        result.Message.Should().Be($"document {documentId} does not exist.");
+    }
 
-	#region Setup
+    #region Setup
 
-	private void SetupFakesForGetSeedData()
-	{
-		A.CallTo(() => _documentRepository.GetDocumentSeedDataByIdAsync(A<Guid>.That.Matches(x => x == ValidDocumentId)))
-			.Returns(_fixture.Create<DocumentSeedData>());
-		A.CallTo(() => _documentRepository.GetDocumentSeedDataByIdAsync(A<Guid>.That.Not.Matches(x => x == ValidDocumentId)))
-			.Returns((DocumentSeedData?)null);
-	}
+    private void SetupFakesForGetSeedData()
+    {
+        A.CallTo(() => _documentRepository.GetDocumentSeedDataByIdAsync(A<Guid>.That.Matches(x => x == ValidDocumentId)))
+            .Returns(_fixture.Create<DocumentSeedData>());
+        A.CallTo(() => _documentRepository.GetDocumentSeedDataByIdAsync(A<Guid>.That.Not.Matches(x => x == ValidDocumentId)))
+            .Returns((DocumentSeedData?)null);
+    }
 
-	private void SetupFakesForGetDocument()
-	{
-		var content = new byte[7];
-		A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(ValidDocumentId, IamUserId))
-			.ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, true));
-		A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(A<Guid>.That.Not.Matches(x => x == ValidDocumentId), IamUserId))
-			.ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>());
-		A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(ValidDocumentId, A<string>.That.Not.Matches(x => x == IamUserId)))
-			.ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, false));
-	}
+    private void SetupFakesForGetDocument()
+    {
+        var content = new byte[7];
+        A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(ValidDocumentId, IamUserId))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, true));
+        A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(A<Guid>.That.Not.Matches(x => x == ValidDocumentId), IamUserId))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>());
+        A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(ValidDocumentId, A<string>.That.Not.Matches(x => x == IamUserId)))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, false));
+    }
 
-	#endregion
+    #endregion
 }

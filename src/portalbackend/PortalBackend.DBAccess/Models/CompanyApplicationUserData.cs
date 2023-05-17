@@ -24,11 +24,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public class CompanyApplicationUserData
 {
-	public CompanyApplicationUserData(CompanyApplication companyApplication)
-	{
-		CompanyApplication = companyApplication;
-	}
+    public CompanyApplicationUserData(CompanyApplication companyApplication)
+    {
+        CompanyApplication = companyApplication;
+    }
 
-	public CompanyApplication CompanyApplication { get; }
-	public Guid CompanyUserId { get; set; }
+    public CompanyApplication CompanyApplication { get; }
+    public Guid CompanyUserId { get; set; }
 }

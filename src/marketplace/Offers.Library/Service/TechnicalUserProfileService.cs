@@ -30,63 +30,63 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
 public class TechnicalUserProfileService : ITechnicalUserProfileService
 {
-	private readonly IPortalRepositories _portalRepositories;
+    private readonly IPortalRepositories _portalRepositories;
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <param name="portalRepositories">Factory to access the repositories</param>
-	public TechnicalUserProfileService(IPortalRepositories portalRepositories)
-	{
-		_portalRepositories = portalRepositories;
-	}
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <param name="portalRepositories">Factory to access the repositories</param>
+    public TechnicalUserProfileService(IPortalRepositories portalRepositories)
+    {
+        _portalRepositories = portalRepositories;
+    }
 
-	/// <inheritdoc />
-	public async Task<IEnumerable<ServiceAccountCreationInfo>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId)
-	{
-		var data = await _portalRepositories.GetInstance<IOfferRepository>()
-			.GetServiceAccountProfileData(offerId, offerTypeId)
-			.ConfigureAwait(false);
-		if (data == default)
-		{
-			throw new NotFoundException($"Offer {offerTypeId} {offerId} does not exists");
-		}
+    /// <inheritdoc />
+    public async Task<IEnumerable<ServiceAccountCreationInfo>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId)
+    {
+        var data = await _portalRepositories.GetInstance<IOfferRepository>()
+            .GetServiceAccountProfileData(offerId, offerTypeId)
+            .ConfigureAwait(false);
+        if (data == default)
+        {
+            throw new NotFoundException($"Offer {offerTypeId} {offerId} does not exists");
+        }
 
-		return CheckTechnicalUserData(data)
-			? data.ServiceAccountProfiles.Select(x => GetServiceAccountData(data.OfferName!, x))
-			: Enumerable.Empty<ServiceAccountCreationInfo>();
-	}
+        return CheckTechnicalUserData(data)
+            ? data.ServiceAccountProfiles.Select(x => GetServiceAccountData(data.OfferName!, x))
+            : Enumerable.Empty<ServiceAccountCreationInfo>();
+    }
 
-	/// <inheritdoc />
-	public async Task<IEnumerable<ServiceAccountCreationInfo>> GetTechnicalUserProfilesForOfferSubscription(Guid subscriptionId)
-	{
-		var data = await _portalRepositories.GetInstance<IOfferRepository>()
-			.GetServiceAccountProfileDataForSubscription(subscriptionId)
-			.ConfigureAwait(false);
-		if (data == default)
-		{
-			throw new NotFoundException($"Offer Subscription {subscriptionId} does not exists");
-		}
+    /// <inheritdoc />
+    public async Task<IEnumerable<ServiceAccountCreationInfo>> GetTechnicalUserProfilesForOfferSubscription(Guid subscriptionId)
+    {
+        var data = await _portalRepositories.GetInstance<IOfferRepository>()
+            .GetServiceAccountProfileDataForSubscription(subscriptionId)
+            .ConfigureAwait(false);
+        if (data == default)
+        {
+            throw new NotFoundException($"Offer Subscription {subscriptionId} does not exists");
+        }
 
-		return CheckTechnicalUserData(data)
-			? data.ServiceAccountProfiles.Select(x => GetServiceAccountData(data.OfferName!, x))
-			: Enumerable.Empty<ServiceAccountCreationInfo>();
-	}
+        return CheckTechnicalUserData(data)
+            ? data.ServiceAccountProfiles.Select(x => GetServiceAccountData(data.OfferName!, x))
+            : Enumerable.Empty<ServiceAccountCreationInfo>();
+    }
 
-	private static bool CheckTechnicalUserData((bool IsSingleInstance, IEnumerable<IEnumerable<UserRoleData>> ServiceAccountProfiles, string? OfferName) data)
-	{
-		if (string.IsNullOrWhiteSpace(data.OfferName))
-		{
-			throw new ConflictException("Offer name needs to be set here");
-		}
+    private static bool CheckTechnicalUserData((bool IsSingleInstance, IEnumerable<IEnumerable<UserRoleData>> ServiceAccountProfiles, string? OfferName) data)
+    {
+        if (string.IsNullOrWhiteSpace(data.OfferName))
+        {
+            throw new ConflictException("Offer name needs to be set here");
+        }
 
-		return !data.IsSingleInstance && data.ServiceAccountProfiles.Any();
-	}
+        return !data.IsSingleInstance && data.ServiceAccountProfiles.Any();
+    }
 
-	private static ServiceAccountCreationInfo GetServiceAccountData(string offerName, IEnumerable<UserRoleData> serviceAccountUserRoles) =>
-		new ServiceAccountCreationInfo(
-			offerName,
-			$"Technical User for app {offerName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}",
-			IamClientAuthMethod.SECRET,
-			serviceAccountUserRoles.Select(x => x.UserRoleId));
+    private static ServiceAccountCreationInfo GetServiceAccountData(string offerName, IEnumerable<UserRoleData> serviceAccountUserRoles) =>
+        new ServiceAccountCreationInfo(
+            offerName,
+            $"Technical User for app {offerName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}",
+            IamClientAuthMethod.SECRET,
+            serviceAccountUserRoles.Select(x => x.UserRoleId));
 }

@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 
 public enum OfferTypeId
 {
-	APP = 1,
-	CORE_COMPONENT = 2,
-	SERVICE = 3,
+    APP = 1,
+    CORE_COMPONENT = 2,
+    SERVICE = 3,
 }

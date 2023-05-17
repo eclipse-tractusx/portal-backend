@@ -27,12 +27,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 /// </summary>
 public interface IBpdmService
 {
-	/// <summary>
-	/// Triggers the bpn data push
-	/// </summary>
-	/// <param name="data">The bpdm data</param>
-	/// <param name="cancellationToken">Cancellation Token</param>
-	/// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
-	Task<bool> PutInputLegalEntity(BpdmTransferData data, CancellationToken cancellationToken);
-	Task<BpdmLegalEntityData> FetchInputLegalEntity(string externalId, CancellationToken cancellationToken);
+    /// <summary>
+    /// Triggers the bpn data push
+    /// </summary>
+    /// <param name="data">The bpdm data</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
+    Task<bool> PutInputLegalEntity(BpdmTransferData data, CancellationToken cancellationToken);
+    Task<BpdmLegalEntityData> FetchInputLegalEntity(string externalId, CancellationToken cancellationToken);
 }

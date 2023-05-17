@@ -29,20 +29,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 
 public static class CustodianServiceCollectionExtension
 {
-	public static IServiceCollection AddCustodianService(this IServiceCollection services, IConfigurationSection section)
-	{
-		services.AddOptions<CustodianSettings>()
-			.Bind(section)
-			.ValidateOnStart();
-		services.AddTransient<LoggingHandler<CustodianService>>();
+    public static IServiceCollection AddCustodianService(this IServiceCollection services, IConfigurationSection section)
+    {
+        services.AddOptions<CustodianSettings>()
+            .Bind(section)
+            .ValidateOnStart();
+        services.AddTransient<LoggingHandler<CustodianService>>();
 
-		var sp = services.BuildServiceProvider();
-		var settings = sp.GetRequiredService<IOptions<CustodianSettings>>();
-		services.AddCustomHttpClientWithAuthentication<CustodianService>(settings.Value.BaseAddress, settings.Value.KeycloakTokenAddress);
-		services
-			.AddTransient<ICustodianService, CustodianService>()
-			.AddTransient<ICustodianBusinessLogic, CustodianBusinessLogic>();
+        var sp = services.BuildServiceProvider();
+        var settings = sp.GetRequiredService<IOptions<CustodianSettings>>();
+        services.AddCustomHttpClientWithAuthentication<CustodianService>(settings.Value.BaseAddress, settings.Value.KeycloakTokenAddress);
+        services
+            .AddTransient<ICustodianService, CustodianService>()
+            .AddTransient<ICustodianBusinessLogic, CustodianBusinessLogic>();
 
-		return services;
-	}
+        return services;
+    }
 }

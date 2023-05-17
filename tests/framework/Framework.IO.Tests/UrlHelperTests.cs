@@ -24,59 +24,59 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO.Tests;
 
 public class UrlHelperTests
 {
-	[Theory]
-	[InlineData("http://www.test.de")]
-	[InlineData("http://www.test.de/")]
-	[InlineData("https://www.test.de")]
-	[InlineData("https://www.test.de/")]
-	public void EnsureValidHttpUrl_WithValidUrl_NoErrorThrown(string url)
-	{
-		// Act
-		url.EnsureValidHttpUrl(() => nameof(url));
+    [Theory]
+    [InlineData("http://www.test.de")]
+    [InlineData("http://www.test.de/")]
+    [InlineData("https://www.test.de")]
+    [InlineData("https://www.test.de/")]
+    public void EnsureValidHttpUrl_WithValidUrl_NoErrorThrown(string url)
+    {
+        // Act
+        url.EnsureValidHttpUrl(() => nameof(url));
 
-		// Assert
-		url.Should().Be(url); // One assert is needed
-	}
+        // Assert
+        url.Should().Be(url); // One assert is needed
+    }
 
-	[Fact]
-	public void EnsureValidHttpUrl_WithNotValidUri_ThrowsControllerArgumentException()
-	{
-		// Arrange
-		const string url = "123";
+    [Fact]
+    public void EnsureValidHttpUrl_WithNotValidUri_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        const string url = "123";
 
-		// Act
-		void Act() => url.EnsureValidHttpUrl(() => "test");
+        // Act
+        void Act() => url.EnsureValidHttpUrl(() => "test");
 
-		// Assert
-		var ex = Assert.Throws<ControllerArgumentException>(Act);
-		ex.Message.Should().Contain($"url {url} cannot be parsed: Invalid URI: The format of the URI could not be determined. (Parameter 'test')");
-	}
+        // Assert
+        var ex = Assert.Throws<ControllerArgumentException>(Act);
+        ex.Message.Should().Contain($"url {url} cannot be parsed: Invalid URI: The format of the URI could not be determined. (Parameter 'test')");
+    }
 
-	[Theory]
-	[InlineData("ftp://www.test.de")]
-	[InlineData("c:/path/to/glory")]
-	[InlineData("//test.com")]
-	public void EnsureValidHttpUrl_WithInvalidScheme_ThrowsControllerArgumentException(string url)
-	{
-		// Act
-		void Act() => url.EnsureValidHttpUrl(() => nameof(url));
+    [Theory]
+    [InlineData("ftp://www.test.de")]
+    [InlineData("c:/path/to/glory")]
+    [InlineData("//test.com")]
+    public void EnsureValidHttpUrl_WithInvalidScheme_ThrowsControllerArgumentException(string url)
+    {
+        // Act
+        void Act() => url.EnsureValidHttpUrl(() => nameof(url));
 
-		// Assert
-		var ex = Assert.Throws<ControllerArgumentException>(Act);
-		ex.Message.Should().Contain($"url {url} must either start with http:// or https://");
-	}
+        // Assert
+        var ex = Assert.Throws<ControllerArgumentException>(Act);
+        ex.Message.Should().Contain($"url {url} must either start with http:// or https://");
+    }
 
-	[Fact]
-	public void EnsureValidHttpUrl_WithNotWellFormattedUri_ThrowsControllerArgumentException()
-	{
-		// Arrange
-		const string url = "http://www.test.com/path???/file name";
+    [Fact]
+    public void EnsureValidHttpUrl_WithNotWellFormattedUri_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        const string url = "http://www.test.com/path???/file name";
 
-		// Act
-		void Act() => url.EnsureValidHttpUrl(() => "test");
+        // Act
+        void Act() => url.EnsureValidHttpUrl(() => "test");
 
-		// Assert
-		var ex = Assert.Throws<ControllerArgumentException>(Act);
-		ex.Message.Should().Contain($"url {url} is not wellformed (Parameter 'test')");
-	}
+        // Assert
+        var ex = Assert.Throws<ControllerArgumentException>(Act);
+        ex.Message.Should().Contain($"url {url} is not wellformed (Parameter 'test')");
+    }
 }

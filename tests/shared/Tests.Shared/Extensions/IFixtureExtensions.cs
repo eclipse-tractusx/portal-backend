@@ -25,6 +25,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 public static class IFixtureExtensions
 {
-	public static string CreateEmail(this IFixture fixture) => (string)new SpecimenContext(fixture).Resolve(new RegularExpressionRequest(@"^[a-z]{20}@[a-z]{10}\.[a-z]{2}$"));
-	public static string CreateName(this IFixture fixture) => (string)new SpecimenContext(fixture).Resolve(new RegularExpressionRequest(@"^[a-z]{20}$"));
+    public static string CreateEmail(this IFixture fixture) => (string)new SpecimenContext(fixture).Resolve(new RegularExpressionRequest(@"^[a-z]{20}@[a-z]{10}\.[a-z]{2}$"));
+    public static string CreateName(this IFixture fixture) => (string)new SpecimenContext(fixture).Resolve(new RegularExpressionRequest(@"^[a-z]{20}$"));
 }

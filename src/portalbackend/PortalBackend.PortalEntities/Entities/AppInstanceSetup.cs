@@ -24,22 +24,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class AppInstanceSetup : IBaseEntity
 {
-	private AppInstanceSetup()
-	{
-	}
+    private AppInstanceSetup()
+    {
+    }
 
-	public AppInstanceSetup(Guid id, Guid appId) : this()
-	{
-		Id = id;
-		AppId = appId;
-	}
+    public AppInstanceSetup(Guid id, Guid appId) : this()
+    {
+        Id = id;
+        AppId = appId;
+    }
 
-	public Guid Id { get; private set; }
-	public Guid AppId { get; private set; }
-	public bool IsSingleInstance { get; set; }
+    public Guid Id { get; private set; }
+    public Guid AppId { get; private set; }
+    public bool IsSingleInstance { get; set; }
 
-	public string? InstanceUrl { get; set; }
+    public string? InstanceUrl { get; set; }
 
-	// Navigation properties
-	public virtual Offer? App { get; private set; }
+    // Navigation properties
+    public virtual Offer? App { get; private set; }
 }

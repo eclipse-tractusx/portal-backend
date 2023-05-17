@@ -21,85 +21,85 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 
 public record BpdmLegalEntityDto(
-	string Bpn,
-	IEnumerable<BpdmIdentifierDto> Identifiers,
-	IEnumerable<BpdmNameDto> Names,
-	BpdmLegalFormDto LegalForm,
-	BpdmStatusDto Status,
-	IEnumerable<BpdmProfileClassificationDto> ProfileClassifications,
-	IEnumerable<BpdmUrlDataDto> Types,
-	IEnumerable<BpdmBankAccountDto> BankAccounts,
-	IEnumerable<BpdmDataDto> Roles,
-	IEnumerable<BpdmRelationDto> Relations,
-	DateTimeOffset Currentness
+    string Bpn,
+    IEnumerable<BpdmIdentifierDto> Identifiers,
+    IEnumerable<BpdmNameDto> Names,
+    BpdmLegalFormDto LegalForm,
+    BpdmStatusDto Status,
+    IEnumerable<BpdmProfileClassificationDto> ProfileClassifications,
+    IEnumerable<BpdmUrlDataDto> Types,
+    IEnumerable<BpdmBankAccountDto> BankAccounts,
+    IEnumerable<BpdmDataDto> Roles,
+    IEnumerable<BpdmRelationDto> Relations,
+    DateTimeOffset Currentness
 );
 
 public record BpdmIdentifierDto(
-	string Value,
-	BpdmUrlDataDto Type,
-	BpdmUrlDataDto IssuingBody,
-	BpdmDataDto Status
+    string Value,
+    BpdmUrlDataDto Type,
+    BpdmUrlDataDto IssuingBody,
+    BpdmDataDto Status
 );
 
 public record BpdmNameDto(
-	string Value,
-	string ShortName,
-	BpdmUrlDataDto Type,
-	BpdmDataDto Language
+    string Value,
+    string ShortName,
+    BpdmUrlDataDto Type,
+    BpdmDataDto Language
 );
 
 public record BpdmLegalFormDto(
-	string TechnicalKey,
-	string Name,
-	string Url,
-	string MainAbbreviation,
-	BpdmDataDto Language,
-	IEnumerable<BpdmNameUrlDto> Categories
+    string TechnicalKey,
+    string Name,
+    string Url,
+    string MainAbbreviation,
+    BpdmDataDto Language,
+    IEnumerable<BpdmNameUrlDto> Categories
 );
 
 public record BpdmStatusDto(
-	string OfficialDenotation,
-	DateTimeOffset ValidFrom,
-	DateTimeOffset ValidUntil,
-	BpdmUrlDataDto Type
+    string OfficialDenotation,
+    DateTimeOffset ValidFrom,
+    DateTimeOffset ValidUntil,
+    BpdmUrlDataDto Type
 );
 
 public record BpdmProfileClassificationDto(
-	string Value,
-	string Code,
-	BpdmNameUrlDto Type
+    string Value,
+    string Code,
+    BpdmNameUrlDto Type
 );
 
 public record BpdmDataDto(
-	string TechnicalKey,
-	string Name
+    string TechnicalKey,
+    string Name
 );
 
 public record BpdmUrlDataDto(
-	string TechnicalKey,
-	string Name,
-	string Url
+    string TechnicalKey,
+    string Name,
+    string Url
 );
 
 public record BpdmNameUrlDto(
-	string Name,
-	string Url
+    string Name,
+    string Url
 );
 
 public record BpdmBankAccountDto(
-	IEnumerable<int> TrustScores,
-	BpdmDataDto Currency,
-	string InternationalBankAccountIdentifier,
-	string InternationalBankIdentifier,
-	string NationalBankAccountIdentifier,
-	string NationalBankIdentifier
+    IEnumerable<int> TrustScores,
+    BpdmDataDto Currency,
+    string InternationalBankAccountIdentifier,
+    string InternationalBankIdentifier,
+    string NationalBankAccountIdentifier,
+    string NationalBankIdentifier
 );
 
 public record BpdmRelationDto(
-	BpdmDataDto RelationClass,
-	BpdmDataDto Type,
-	string StartNode,
-	string EndNode,
-	DateTimeOffset StartedAt,
-	DateTimeOffset EndedAt
+    BpdmDataDto RelationClass,
+    BpdmDataDto Type,
+    string StartNode,
+    string EndNode,
+    DateTimeOffset StartedAt,
+    DateTimeOffset EndedAt
 );

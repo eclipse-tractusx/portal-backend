@@ -39,15 +39,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="ContactEmail">Price</param>
 /// <param name="ContactNumber">Price</param>
 public record AppRequestModel(
-	string? Title,
-	string Provider,
-	Guid? SalesManagerId,
-	IEnumerable<Guid> UseCaseIds,
-	IEnumerable<LocalizedDescription> Descriptions,
-	IEnumerable<string> SupportedLanguageCodes,
-	string Price,
-	[ValidateEnumValues] IEnumerable<PrivacyPolicyId> PrivacyPolicies,
-	string? ProviderUri,
-	string? ContactEmail,
-	string? ContactNumber
+    string? Title,
+    string Provider,
+    Guid? SalesManagerId,
+    IEnumerable<Guid> UseCaseIds,
+    IEnumerable<LocalizedDescription> Descriptions,
+    IEnumerable<string> SupportedLanguageCodes,
+    string Price,
+    [ValidateEnumValues] IEnumerable<PrivacyPolicyId> PrivacyPolicies,
+    string? ProviderUri,
+    string? ContactEmail,
+    string? ContactNumber
 );

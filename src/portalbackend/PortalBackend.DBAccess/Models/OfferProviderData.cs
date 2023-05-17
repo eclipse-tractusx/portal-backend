@@ -42,24 +42,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="ServiceTypeIds"></param>
 /// <returns></returns>
 public record OfferProviderData(
-	string? Title,
-	string Provider,
-	Guid LeadPictureId,
-	string? ProviderName,
-	IEnumerable<AppUseCaseData>? UseCase,
-	IEnumerable<LocalizedDescription> Descriptions,
-	IEnumerable<AgreementAssignedOfferData> Agreements,
-	IEnumerable<string> SupportedLanguageCodes,
-	string? Price,
-	IEnumerable<Guid> Images,
-	string? ProviderUri,
-	string? ContactEmail,
-	string? ContactNumber,
-	IEnumerable<DocumentTypeData> Documents,
-	Guid? SalesManagerId,
-	IEnumerable<PrivacyPolicyId> PrivacyPolicies,
-	IEnumerable<ServiceTypeId>? ServiceTypeIds,
-	IEnumerable<TechnicalUserRoleData> TechnicalUserProfile
+    string? Title,
+    string Provider,
+    Guid LeadPictureId,
+    string? ProviderName,
+    IEnumerable<AppUseCaseData>? UseCase,
+    IEnumerable<LocalizedDescription> Descriptions,
+    IEnumerable<AgreementAssignedOfferData> Agreements,
+    IEnumerable<string> SupportedLanguageCodes,
+    string? Price,
+    IEnumerable<Guid> Images,
+    string? ProviderUri,
+    string? ContactEmail,
+    string? ContactNumber,
+    IEnumerable<DocumentTypeData> Documents,
+    Guid? SalesManagerId,
+    IEnumerable<PrivacyPolicyId> PrivacyPolicies,
+    IEnumerable<ServiceTypeId>? ServiceTypeIds,
+    IEnumerable<TechnicalUserRoleData> TechnicalUserProfile
 );
 
 /// <summary>
@@ -69,7 +69,7 @@ public record OfferProviderData(
 /// <param name="AgreementName"></param>
 /// <returns></returns>
 public record AgreementAssignedOfferData(
-	Guid AgreementId,
-	string? AgreementName,
-	ConsentStatusId? ConsentStatusId
+    Guid AgreementId,
+    string? AgreementName,
+    ConsentStatusId? ConsentStatusId
 );

@@ -22,6 +22,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 
 public enum CompanyServiceAccountTypeId
 {
-	MANAGED = 1,
-	OWN = 2
+    MANAGED = 1,
+    OWN = 2
 }

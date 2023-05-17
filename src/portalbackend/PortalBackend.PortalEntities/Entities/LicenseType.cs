@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class LicenseType
 {
-	private LicenseType()
-	{
-		Label = null!;
-		Offers = new HashSet<Offer>();
-	}
+    private LicenseType()
+    {
+        Label = null!;
+        Offers = new HashSet<Offer>();
+    }
 
-	public LicenseType(LicenseTypeId licenseTypeId) : this()
-	{
-		Id = licenseTypeId;
-		Label = licenseTypeId.ToString();
-	}
+    public LicenseType(LicenseTypeId licenseTypeId) : this()
+    {
+        Id = licenseTypeId;
+        Label = licenseTypeId.ToString();
+    }
 
-	public LicenseTypeId Id { get; private set; }
+    public LicenseTypeId Id { get; private set; }
 
-	[MaxLength(255)]
-	public string Label { get; private set; }
+    [MaxLength(255)]
+    public string Label { get; private set; }
 
-	// Navigation properties
-	public virtual ICollection<Offer> Offers { get; private set; }
+    // Navigation properties
+    public virtual ICollection<Offer> Offers { get; private set; }
 }

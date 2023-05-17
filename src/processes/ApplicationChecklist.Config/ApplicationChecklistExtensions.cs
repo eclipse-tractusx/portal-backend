@@ -31,20 +31,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Con
 
 public static class ApplicationChecklistExtensions
 {
-	public static IServiceCollection AddApplicationChecklist(this IServiceCollection services, IConfigurationSection section)
-	{
-		return services
-			.AddTransient<ITokenService, TokenService>()
-			.AddTransient<IApplicationChecklistService, ApplicationChecklistService>()
-			.AddBpdmService(section.GetSection("Bpdm"))
-			.AddCustodianService(section.GetSection("Custodian"))
-			.AddClearinghouseService(section.GetSection("Clearinghouse"))
-			.AddSdFactoryService(section.GetSection("SdFactory"));
-	}
+    public static IServiceCollection AddApplicationChecklist(this IServiceCollection services, IConfigurationSection section)
+    {
+        return services
+            .AddTransient<ITokenService, TokenService>()
+            .AddTransient<IApplicationChecklistService, ApplicationChecklistService>()
+            .AddBpdmService(section.GetSection("Bpdm"))
+            .AddCustodianService(section.GetSection("Custodian"))
+            .AddClearinghouseService(section.GetSection("Clearinghouse"))
+            .AddSdFactoryService(section.GetSection("SdFactory"));
+    }
 
-	public static IServiceCollection AddApplicationChecklistCreation(this IServiceCollection services)
-	{
-		return services
-			.AddTransient<IApplicationChecklistCreationService, ApplicationChecklistCreationService>();
-	}
+    public static IServiceCollection AddApplicationChecklistCreation(this IServiceCollection services)
+    {
+        return services
+            .AddTransient<IApplicationChecklistCreationService, ApplicationChecklistCreationService>();
+    }
 }

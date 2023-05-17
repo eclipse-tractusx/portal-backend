@@ -24,6 +24,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
 public class ProcessExecutionServiceSettings
 {
-	[Required]
-	public int LockExpirySeconds { get; set; }
+    [Required]
+    public int LockExpirySeconds { get; set; }
 }

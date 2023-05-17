@@ -23,11 +23,11 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
 {
-	public record CompanyRoleAgreementConsents(
-		[property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleId> CompanyRoleIds,
-		[property: JsonPropertyName("agreements")] IEnumerable<AgreementConsentStatus> AgreementConsentStatuses);
+    public record CompanyRoleAgreementConsents(
+        [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleId> CompanyRoleIds,
+        [property: JsonPropertyName("agreements")] IEnumerable<AgreementConsentStatus> AgreementConsentStatuses);
 
-	public record AgreementConsentStatus(
-		[property: JsonPropertyName("agreementId")] Guid AgreementId,
-		[property: JsonPropertyName("consentStatus")] ConsentStatusId ConsentStatusId);
+    public record AgreementConsentStatus(
+        [property: JsonPropertyName("agreementId")] Guid AgreementId,
+        [property: JsonPropertyName("consentStatus")] ConsentStatusId ConsentStatusId);
 }

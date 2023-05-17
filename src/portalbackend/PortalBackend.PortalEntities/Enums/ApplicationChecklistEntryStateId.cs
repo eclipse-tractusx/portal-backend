@@ -22,8 +22,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 
 public enum ApplicationChecklistEntryStatusId
 {
-	TO_DO = 1,
-	IN_PROGRESS = 2,
-	DONE = 3,
-	FAILED = 4
+    TO_DO = 1,
+    IN_PROGRESS = 2,
+    DONE = 3,
+    FAILED = 4
 }

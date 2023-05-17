@@ -31,63 +31,63 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests;
 
 public class JwtBearerConfigurationHealthCheckTests
 {
-	private readonly IFixture _fixture;
-	public JwtBearerConfigurationHealthCheckTests()
-	{
-		_fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-		_fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-			.ForEach(b => _fixture.Behaviors.Remove(b));
-		_fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-	}
+    private readonly IFixture _fixture;
+    public JwtBearerConfigurationHealthCheckTests()
+    {
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+    }
 
-	[Fact]
-	public async Task CheckHealthAsync_Success_ReturnsExpected()
-	{
-		// Arrange
-		var config = _fixture.Create<OpenIdConnectConfiguration>();
+    [Fact]
+    public async Task CheckHealthAsync_Success_ReturnsExpected()
+    {
+        // Arrange
+        var config = _fixture.Create<OpenIdConnectConfiguration>();
 
-		var jsonOptions = new JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+        var jsonOptions = new JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
 
-		var jwtOptions = new JwtBearerOptions()
-		{
-			MetadataAddress = "https://foo.bar",
-			BackchannelHttpHandler = new HttpMessageHandlerMock(
-			HttpStatusCode.OK,
-			config.ToJsonContent(
-				jsonOptions,
-				"application/json")
-			)
-		};
+        var jwtOptions = new JwtBearerOptions()
+        {
+            MetadataAddress = "https://foo.bar",
+            BackchannelHttpHandler = new HttpMessageHandlerMock(
+            HttpStatusCode.OK,
+            config.ToJsonContent(
+                jsonOptions,
+                "application/json")
+            )
+        };
 
-		var context = _fixture.Create<HealthCheckContext>();
+        var context = _fixture.Create<HealthCheckContext>();
 
-		var sut = new JwtBearerConfigurationHealthCheck(Options.Create(jwtOptions));
+        var sut = new JwtBearerConfigurationHealthCheck(Options.Create(jwtOptions));
 
-		// Act
-		var result = await sut.CheckHealthAsync(context).ConfigureAwait(false);
+        // Act
+        var result = await sut.CheckHealthAsync(context).ConfigureAwait(false);
 
-		// Assert
-		result.Status.Should().Be(HealthStatus.Healthy);
-	}
+        // Assert
+        result.Status.Should().Be(HealthStatus.Healthy);
+    }
 
-	[Fact]
-	public async Task CheckHealthAsync_Failure_ReturnsExpected()
-	{
-		// Arrange
-		var jwtOptions = new JwtBearerOptions()
-		{
-			MetadataAddress = "https://foo.bar",
-			BackchannelHttpHandler = new HttpMessageHandlerMock(HttpStatusCode.BadRequest)
-		};
+    [Fact]
+    public async Task CheckHealthAsync_Failure_ReturnsExpected()
+    {
+        // Arrange
+        var jwtOptions = new JwtBearerOptions()
+        {
+            MetadataAddress = "https://foo.bar",
+            BackchannelHttpHandler = new HttpMessageHandlerMock(HttpStatusCode.BadRequest)
+        };
 
-		var context = _fixture.Create<HealthCheckContext>();
+        var context = _fixture.Create<HealthCheckContext>();
 
-		var sut = new JwtBearerConfigurationHealthCheck(Options.Create(jwtOptions));
+        var sut = new JwtBearerConfigurationHealthCheck(Options.Create(jwtOptions));
 
-		// Act
-		var result = await sut.CheckHealthAsync(context).ConfigureAwait(false);
+        // Act
+        var result = await sut.CheckHealthAsync(context).ConfigureAwait(false);
 
-		// Assert
-		result.Status.Should().Be(HealthStatus.Unhealthy);
-	}
+        // Assert
+        result.Status.Should().Be(HealthStatus.Unhealthy);
+    }
 }

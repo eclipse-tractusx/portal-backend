@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class UniqueIdentifier
 {
-	private UniqueIdentifier()
-	{
-		Label = null!;
-		CountryAssignedIdentifiers = new HashSet<CountryAssignedIdentifier>();
-		CompanyIdentifiers = new HashSet<CompanyIdentifier>();
-	}
+    private UniqueIdentifier()
+    {
+        Label = null!;
+        CountryAssignedIdentifiers = new HashSet<CountryAssignedIdentifier>();
+        CompanyIdentifiers = new HashSet<CompanyIdentifier>();
+    }
 
-	public UniqueIdentifier(UniqueIdentifierId uniqueIdentifierId) : this()
-	{
-		Id = uniqueIdentifierId;
-		Label = uniqueIdentifierId.ToString();
-	}
+    public UniqueIdentifier(UniqueIdentifierId uniqueIdentifierId) : this()
+    {
+        Id = uniqueIdentifierId;
+        Label = uniqueIdentifierId.ToString();
+    }
 
-	public UniqueIdentifierId Id { get; private set; }
+    public UniqueIdentifierId Id { get; private set; }
 
-	[MaxLength(255)]
-	public string Label { get; private set; }
-	public virtual ICollection<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; private set; }
-	public virtual ICollection<CompanyIdentifier> CompanyIdentifiers { get; private set; }
+    [MaxLength(255)]
+    public string Label { get; private set; }
+    public virtual ICollection<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; private set; }
+    public virtual ICollection<CompanyIdentifier> CompanyIdentifiers { get; private set; }
 }

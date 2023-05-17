@@ -21,7 +21,7 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyInformationData(
-	Guid CompanyId,
-	string OrganizationName,
-	string Country,
-	string? BusinessPartnerNumber);
+    Guid CompanyId,
+    string OrganizationName,
+    string Country,
+    string? BusinessPartnerNumber);

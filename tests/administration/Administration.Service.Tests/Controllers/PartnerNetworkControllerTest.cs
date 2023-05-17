@@ -26,32 +26,32 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 public class PartnerNetworkControllerTest
 {
 
-	private readonly IPartnerNetworkBusinessLogic _logic;
-	private readonly PartnerNetworkController _controller;
+    private readonly IPartnerNetworkBusinessLogic _logic;
+    private readonly PartnerNetworkController _controller;
 
-	// private readonly IAsyncEnumerable<string> companyBpns;
+    // private readonly IAsyncEnumerable<string> companyBpns;
 
-	public PartnerNetworkControllerTest()
-	{
-		_logic = A.Fake<IPartnerNetworkBusinessLogic>();
-		this._controller = new PartnerNetworkController(_logic);
-	}
+    public PartnerNetworkControllerTest()
+    {
+        _logic = A.Fake<IPartnerNetworkBusinessLogic>();
+        this._controller = new PartnerNetworkController(_logic);
+    }
 
-	[Fact]
-	public async Task GetAllMemberCompaniesBPN_Test()
-	{
-		//Arrange
+    [Fact]
+    public async Task GetAllMemberCompaniesBPN_Test()
+    {
+        //Arrange
 
-		A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync());
+        A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync());
 
-		//Act
-		var result = this._controller.GetAllMemberCompaniesBPNAsync();
+        //Act
+        var result = this._controller.GetAllMemberCompaniesBPNAsync();
 
-		//Assert
-		await foreach (var item in result)
-		{
-			A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync()).MustHaveHappenedOnceExactly();
-			Assert.IsType<string>(result);
-		}
-	}
+        //Assert
+        await foreach (var item in result)
+        {
+            A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync()).MustHaveHappenedOnceExactly();
+            Assert.IsType<string>(result);
+        }
+    }
 }

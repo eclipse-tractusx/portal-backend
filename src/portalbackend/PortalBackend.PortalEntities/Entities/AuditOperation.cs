@@ -23,18 +23,18 @@ using System.ComponentModel.DataAnnotations;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 public class AuditOperation
 {
-	private AuditOperation()
-	{
-		Label = null!;
-	}
-	public AuditOperation(AuditOperationId auditOperationId) : this()
-	{
-		Id = auditOperationId;
-		Label = auditOperationId.ToString();
-	}
-	public AuditOperationId Id { get; private set; }
+    private AuditOperation()
+    {
+        Label = null!;
+    }
+    public AuditOperation(AuditOperationId auditOperationId) : this()
+    {
+        Id = auditOperationId;
+        Label = auditOperationId.ToString();
+    }
+    public AuditOperationId Id { get; private set; }
 
-	[MaxLength(255)]
-	public string Label { get; private set; }
+    [MaxLength(255)]
+    public string Label { get; private set; }
 }
 

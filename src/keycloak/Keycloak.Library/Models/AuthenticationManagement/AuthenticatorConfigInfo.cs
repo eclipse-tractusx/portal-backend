@@ -31,12 +31,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Authentica
 
 public class AuthenticatorConfigInfo
 {
-	[JsonProperty("helpText")]
-	public string HelpText { get; set; }
-	[JsonProperty("name")]
-	public string Name { get; set; }
-	[JsonProperty("properties")]
-	public IEnumerable<ConfigProperty> Properties { get; set; }
-	[JsonProperty("providerId")]
-	public string ProviderId { get; set; }
+    [JsonProperty("helpText")]
+    public string HelpText { get; set; }
+    [JsonProperty("name")]
+    public string Name { get; set; }
+    [JsonProperty("properties")]
+    public IEnumerable<ConfigProperty> Properties { get; set; }
+    [JsonProperty("providerId")]
+    public string ProviderId { get; set; }
 }

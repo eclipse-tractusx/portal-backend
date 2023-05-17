@@ -38,114 +38,114 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 [Consumes("application/json")]
 public class CompanyDataController : ControllerBase
 {
-	private readonly ICompanyDataBusinessLogic _logic;
+    private readonly ICompanyDataBusinessLogic _logic;
 
-	/// <summary>
-	/// Creates a new instance of <see cref="CompanyDataController"/>
-	/// </summary>
-	/// <param name="logic">The company data business logic</param>
-	public CompanyDataController(ICompanyDataBusinessLogic logic)
-	{
-		_logic = logic;
-	}
+    /// <summary>
+    /// Creates a new instance of <see cref="CompanyDataController"/>
+    /// </summary>
+    /// <param name="logic">The company data business logic</param>
+    public CompanyDataController(ICompanyDataBusinessLogic logic)
+    {
+        _logic = logic;
+    }
 
-	/// <summary>
-	/// Gets the company with its address
-	/// </summary>
-	/// <returns>the company with its address</returns>
-	/// <remarks>Example: GET: api/administration/companydata/ownCompanyDetails</remarks>
-	/// <response code="200">Returns the company with its address.</response>
-	/// <response code="409">user is not associated with  company.</response>
-	[HttpGet]
-	[Authorize(Roles = "view_company_data")]
-	[Route("ownCompanyDetails")]
-	[ProducesResponseType(typeof(CompanyAddressDetailData), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-	public Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync() =>
-		this.WithIamUserId(iamUserId => _logic.GetOwnCompanyDetailsAsync(iamUserId));
+    /// <summary>
+    /// Gets the company with its address
+    /// </summary>
+    /// <returns>the company with its address</returns>
+    /// <remarks>Example: GET: api/administration/companydata/ownCompanyDetails</remarks>
+    /// <response code="200">Returns the company with its address.</response>
+    /// <response code="409">user is not associated with  company.</response>
+    [HttpGet]
+    [Authorize(Roles = "view_company_data")]
+    [Route("ownCompanyDetails")]
+    [ProducesResponseType(typeof(CompanyAddressDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync() =>
+        this.WithIamUserId(iamUserId => _logic.GetOwnCompanyDetailsAsync(iamUserId));
 
-	/// <summary>
-	/// Gets the CompanyAssigned UseCase details
-	/// </summary>
-	/// <returns>the CompanyAssigned UseCase details</returns>
-	/// <remarks>Example: GET: api/administration/companydata/preferredUseCases</remarks>
-	/// <response code="200">Returns the CompanyAssigned UseCase details.</response>
-	[HttpGet]
-	[Authorize(Roles = "view_use_cases")]
-	[Route("preferredUseCases")]
-	[ProducesResponseType(typeof(CompanyAssignedUseCaseData), StatusCodes.Status200OK)]
-	public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync() =>
-	   this.WithIamUserId(iamUserId => _logic.GetCompanyAssigendUseCaseDetailsAsync(iamUserId));
+    /// <summary>
+    /// Gets the CompanyAssigned UseCase details
+    /// </summary>
+    /// <returns>the CompanyAssigned UseCase details</returns>
+    /// <remarks>Example: GET: api/administration/companydata/preferredUseCases</remarks>
+    /// <response code="200">Returns the CompanyAssigned UseCase details.</response>
+    [HttpGet]
+    [Authorize(Roles = "view_use_cases")]
+    [Route("preferredUseCases")]
+    [ProducesResponseType(typeof(CompanyAssignedUseCaseData), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync() =>
+       this.WithIamUserId(iamUserId => _logic.GetCompanyAssigendUseCaseDetailsAsync(iamUserId));
 
-	/// <summary>
-	/// Create the CompanyAssigned UseCase details
-	/// </summary>
-	/// <remarks>Example: POST: api/administration/companydata/preferredUseCases</remarks>
-	/// <response code="204">NoContentResult</response>
-	/// <response code="208">UseCaseId already existis</response>
-	/// <response code="409">Company Status is Incorrect</response>
-	[HttpPost]
-	[Authorize(Roles = "set_company_use_cases")]
-	[Route("preferredUseCases")]
-	[ProducesResponseType(StatusCodes.Status201Created)]
-	[ProducesResponseType(StatusCodes.Status204NoContent)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-	public async Task<StatusCodeResult> CreateCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data) =>
-		await this.WithIamUserId(iamUserId => _logic.CreateCompanyAssignedUseCaseDetailsAsync(iamUserId, data.useCaseId)).ConfigureAwait(false)
-			? StatusCode((int)HttpStatusCode.Created)
-			: NoContent();
+    /// <summary>
+    /// Create the CompanyAssigned UseCase details
+    /// </summary>
+    /// <remarks>Example: POST: api/administration/companydata/preferredUseCases</remarks>
+    /// <response code="204">NoContentResult</response>
+    /// <response code="208">UseCaseId already existis</response>
+    /// <response code="409">Company Status is Incorrect</response>
+    [HttpPost]
+    [Authorize(Roles = "set_company_use_cases")]
+    [Route("preferredUseCases")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<StatusCodeResult> CreateCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data) =>
+        await this.WithIamUserId(iamUserId => _logic.CreateCompanyAssignedUseCaseDetailsAsync(iamUserId, data.useCaseId)).ConfigureAwait(false)
+            ? StatusCode((int)HttpStatusCode.Created)
+            : NoContent();
 
-	/// <summary>
-	/// Remove the CompanyAssigned UseCase details by UseCaseId
-	/// </summary>
-	/// <remarks>Example: DELETE: api/administration/companydata/preferredUseCases</remarks>
-	/// <response code="204">NoContentResult</response>
-	/// <response code="409">Company Status is Incorrect</response>
-	/// <response code="409">UseCaseId is not available</response>
-	[HttpDelete]
-	[Authorize(Roles = "set_company_use_cases")]
-	[Route("preferredUseCases")]
-	[ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-	public async Task<NoContentResult> RemoveCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data)
-	{
-		await this.WithIamUserId(iamUserId => _logic.RemoveCompanyAssignedUseCaseDetailsAsync(iamUserId, data.useCaseId)).ConfigureAwait(false);
-		return NoContent();
-	}
+    /// <summary>
+    /// Remove the CompanyAssigned UseCase details by UseCaseId
+    /// </summary>
+    /// <remarks>Example: DELETE: api/administration/companydata/preferredUseCases</remarks>
+    /// <response code="204">NoContentResult</response>
+    /// <response code="409">Company Status is Incorrect</response>
+    /// <response code="409">UseCaseId is not available</response>
+    [HttpDelete]
+    [Authorize(Roles = "set_company_use_cases")]
+    [Route("preferredUseCases")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<NoContentResult> RemoveCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data)
+    {
+        await this.WithIamUserId(iamUserId => _logic.RemoveCompanyAssignedUseCaseDetailsAsync(iamUserId, data.useCaseId)).ConfigureAwait(false);
+        return NoContent();
+    }
 
-	/// <summary>
-	/// Gets the companyrole and ConsentAgreement Details
-	/// </summary>
-	/// <returns>the Companyrole and ConsentAgreement details</returns>
-	/// <remarks>Example: GET: api/administration/companydata/companyRolesAndConsents</remarks>
-	/// <response code="200">Returns the Companyrole and Consent details.</response>
-	/// <response code="409">No Companyrole or Incorrect Status</response>
-	[HttpGet]
-	[Authorize(Roles = "view_company_data")]
-	[Route("companyRolesAndConsents")]
-	[ProducesResponseType(typeof(CompanyRoleConsentViewData), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-	public IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync([FromQuery] string? languageShortName = null) =>
-		this.WithIamUserId(iamUserId => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(iamUserId, languageShortName));
+    /// <summary>
+    /// Gets the companyrole and ConsentAgreement Details
+    /// </summary>
+    /// <returns>the Companyrole and ConsentAgreement details</returns>
+    /// <remarks>Example: GET: api/administration/companydata/companyRolesAndConsents</remarks>
+    /// <response code="200">Returns the Companyrole and Consent details.</response>
+    /// <response code="409">No Companyrole or Incorrect Status</response>
+    [HttpGet]
+    [Authorize(Roles = "view_company_data")]
+    [Route("companyRolesAndConsents")]
+    [ProducesResponseType(typeof(CompanyRoleConsentViewData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync([FromQuery] string? languageShortName = null) =>
+        this.WithIamUserId(iamUserId => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(iamUserId, languageShortName));
 
-	/// <summary>
-	/// Post the companyrole and Consent Details
-	/// </summary>
-	/// <returns>Create Companyrole and Consent details</returns>
-	/// <remarks>Example: POST: api/administration/companydata/companyRolesAndConsents</remarks>
-	/// <response code="204">Created the Companyrole and Consent details.</response>
-	/// <response code="409">companyRole already exists</response>
-	/// <response code="409">All agreement need to get signed</response>
-	[HttpPost]
-	[Authorize(Roles = "view_company_data")]
-	[Route("companyRolesAndConsents")]
-	[ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-	public async Task<NoContentResult> CreateCompanyRoleAndConsentAgreementDetailsAsync([FromBody] IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails)
-	{
-		await this.WithIamUserId(iamUserId => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(iamUserId, companyRoleConsentDetails));
-		return NoContent();
-	}
+    /// <summary>
+    /// Post the companyrole and Consent Details
+    /// </summary>
+    /// <returns>Create Companyrole and Consent details</returns>
+    /// <remarks>Example: POST: api/administration/companydata/companyRolesAndConsents</remarks>
+    /// <response code="204">Created the Companyrole and Consent details.</response>
+    /// <response code="409">companyRole already exists</response>
+    /// <response code="409">All agreement need to get signed</response>
+    [HttpPost]
+    [Authorize(Roles = "view_company_data")]
+    [Route("companyRolesAndConsents")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<NoContentResult> CreateCompanyRoleAndConsentAgreementDetailsAsync([FromBody] IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails)
+    {
+        await this.WithIamUserId(iamUserId => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(iamUserId, companyRoleConsentDetails));
+        return NoContent();
+    }
 }

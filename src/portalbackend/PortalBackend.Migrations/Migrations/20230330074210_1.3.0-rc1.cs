@@ -24,34 +24,34 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
-	public partial class _130rc1 : Migration
-	{
-		protected override void Up(MigrationBuilder migrationBuilder)
-		{
-			migrationBuilder.InsertData(
-				schema: "portal",
-				table: "document_types",
-				columns: new[] { "id", "label" },
-				values: new object[,]
-				{
-					{ 12, "CONFORMITY_APPROVAL_SERVICES" },
-					{ 13, "SERVICE_LEADIMAGE" }
-				});
-		}
+    public partial class _130rc1 : Migration
+    {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "document_types",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 12, "CONFORMITY_APPROVAL_SERVICES" },
+                    { 13, "SERVICE_LEADIMAGE" }
+                });
+        }
 
-		protected override void Down(MigrationBuilder migrationBuilder)
-		{
-			migrationBuilder.DeleteData(
-				schema: "portal",
-				table: "document_types",
-				keyColumn: "id",
-				keyValue: 12);
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "document_types",
+                keyColumn: "id",
+                keyValue: 12);
 
-			migrationBuilder.DeleteData(
-				schema: "portal",
-				table: "document_types",
-				keyColumn: "id",
-				keyValue: 13);
-		}
-	}
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "document_types",
+                keyColumn: "id",
+                keyValue: 13);
+        }
+    }
 }

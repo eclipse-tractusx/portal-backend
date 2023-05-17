@@ -26,42 +26,42 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 public record UserCreationInfo(
 
-	[property:JsonPropertyName("userName")]
-	string? userName,
+    [property:JsonPropertyName("userName")]
+    string? userName,
 
-	[RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
-	[property:JsonPropertyName("email")]
-	string eMail,
+    [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
+    [property:JsonPropertyName("email")]
+    string eMail,
 
-	[RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
-	[property:JsonPropertyName("firstName")]
-	string? firstName,
+    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
+    [property:JsonPropertyName("firstName")]
+    string? firstName,
 
-	[RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
-	[property:JsonPropertyName("lastName")]
-	string? lastName,
+    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
+    [property:JsonPropertyName("lastName")]
+    string? lastName,
 
-	[property:JsonPropertyName("roles")]
-	IEnumerable<string> Roles
+    [property:JsonPropertyName("roles")]
+    IEnumerable<string> Roles
 );
 
 public record UserCreationInfoWithMessage(
 
-	[property:JsonPropertyName("userName")]
-	string? userName,
+    [property:JsonPropertyName("userName")]
+    string? userName,
 
-	[property:JsonPropertyName("email")]
-	string eMail,
+    [property:JsonPropertyName("email")]
+    string eMail,
 
-	[property:JsonPropertyName("firstName")]
-	string? firstName,
+    [property:JsonPropertyName("firstName")]
+    string? firstName,
 
-	[property:JsonPropertyName("lastName")]
-	string? lastName,
+    [property:JsonPropertyName("lastName")]
+    string? lastName,
 
-	[property:JsonPropertyName("roles")]
-	IEnumerable<string> Roles,
+    [property:JsonPropertyName("roles")]
+    IEnumerable<string> Roles,
 
-	[property:JsonPropertyName("message")]
-	string? Message
+    [property:JsonPropertyName("message")]
+    string? Message
 );

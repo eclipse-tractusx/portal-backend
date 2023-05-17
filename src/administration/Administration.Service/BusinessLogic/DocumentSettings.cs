@@ -25,27 +25,27 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public class DocumentSettings
 {
-	[Required(AllowEmptyStrings = false)]
-	public bool EnableSeedEndpoint { get; set; }
+    [Required(AllowEmptyStrings = false)]
+    public bool EnableSeedEndpoint { get; set; }
 
-	/// <summary>
-	/// Frame Document Type Id
-	/// </summary>
-	/// <value></value>
-	[Required]
-	public IEnumerable<DocumentTypeId> FrameDocumentTypeIds { get; set; } = null!;
+    /// <summary>
+    /// Frame Document Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<DocumentTypeId> FrameDocumentTypeIds { get; set; } = null!;
 }
 
 public static class DocumentSettingsExtension
 {
-	public static IServiceCollection ConfigureDocumentSettings(
-		this IServiceCollection services,
-		IConfigurationSection section)
-	{
-		services.AddOptions<DocumentSettings>()
-			.Bind(section)
-			.ValidateDataAnnotations()
-			.ValidateOnStart();
-		return services;
-	}
+    public static IServiceCollection ConfigureDocumentSettings(
+        this IServiceCollection services,
+        IConfigurationSection section)
+    {
+        services.AddOptions<DocumentSettings>()
+            .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        return services;
+    }
 }

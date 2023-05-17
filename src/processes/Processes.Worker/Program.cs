@@ -31,46 +31,46 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
 try
 {
-	Console.WriteLine("Building worker");
-	var host = Host
-		.CreateDefaultBuilder(args)
-		.ConfigureServices((hostContext, services) =>
-		{
-			services
-				.AddProcessExecutionService(hostContext.Configuration.GetSection("Processes"))
-				.AddTransient<IProcessTypeExecutor, ApplicationChecklistProcessTypeExecutor>()
-				.AddTransient<IApplicationChecklistHandlerService, ApplicationChecklistHandlerService>()
-				.AddPortalRepositories(hostContext.Configuration)
-				.AddApplicationChecklist(hostContext.Configuration.GetSection("ApplicationChecklist"))
-				.AddApplicationChecklistCreation()
-				.AddApplicationActivation(hostContext.Configuration);
+    Console.WriteLine("Building worker");
+    var host = Host
+        .CreateDefaultBuilder(args)
+        .ConfigureServices((hostContext, services) =>
+        {
+            services
+                .AddProcessExecutionService(hostContext.Configuration.GetSection("Processes"))
+                .AddTransient<IProcessTypeExecutor, ApplicationChecklistProcessTypeExecutor>()
+                .AddTransient<IApplicationChecklistHandlerService, ApplicationChecklistHandlerService>()
+                .AddPortalRepositories(hostContext.Configuration)
+                .AddApplicationChecklist(hostContext.Configuration.GetSection("ApplicationChecklist"))
+                .AddApplicationChecklistCreation()
+                .AddApplicationActivation(hostContext.Configuration);
 
-			if (hostContext.HostingEnvironment.IsDevelopment())
-			{
-				var urlsToTrust = hostContext.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
-					.Where(config => config.ConnectionString.StartsWith("https://"))
-					.Select(config => config.ConnectionString)
-					.Distinct();
-				FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
-			}
-		})
-		.Build();
-	Console.WriteLine("Building worker completed");
+            if (hostContext.HostingEnvironment.IsDevelopment())
+            {
+                var urlsToTrust = hostContext.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
+                    .Where(config => config.ConnectionString.StartsWith("https://"))
+                    .Select(config => config.ConnectionString)
+                    .Distinct();
+                FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
+            }
+        })
+        .Build();
+    Console.WriteLine("Building worker completed");
 
-	var cts = new CancellationTokenSource();
-	Console.CancelKeyPress += (s, e) =>
-	{
-		Console.WriteLine("Canceling...");
-		cts.Cancel();
-		e.Cancel = true;
-	};
+    var cts = new CancellationTokenSource();
+    Console.CancelKeyPress += (s, e) =>
+    {
+        Console.WriteLine("Canceling...");
+        cts.Cancel();
+        e.Cancel = true;
+    };
 
-	Console.WriteLine("Start processing");
-	var workerInstance = host.Services.GetRequiredService<ProcessExecutionService>();
-	await workerInstance.ExecuteAsync(cts.Token).ConfigureAwait(false);
-	Console.WriteLine("Execution finished shutting down");
+    Console.WriteLine("Start processing");
+    var workerInstance = host.Services.GetRequiredService<ProcessExecutionService>();
+    await workerInstance.ExecuteAsync(cts.Token).ConfigureAwait(false);
+    Console.WriteLine("Execution finished shutting down");
 }
 catch (Exception ex)
 {
-	Console.WriteLine(ex.ToString());
+    Console.WriteLine(ex.ToString());
 }

@@ -29,49 +29,49 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 [AuditEntityV1(typeof(AuditConsent20230412))]
 public class Consent : IAuditableV1, IBaseEntity
 {
-	private Consent()
-	{
-		ConsentAssignedOffers = new HashSet<ConsentAssignedOffer>();
-		ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
-	}
+    private Consent()
+    {
+        ConsentAssignedOffers = new HashSet<ConsentAssignedOffer>();
+        ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
+    }
 
-	public Consent(Guid id, Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, DateTimeOffset dateCreated)
-		: this()
-	{
-		Id = id;
-		AgreementId = agreementId;
-		CompanyId = companyId;
-		CompanyUserId = companyUserId;
-		ConsentStatusId = consentStatusId;
-		DateCreated = dateCreated;
-	}
+    public Consent(Guid id, Guid agreementId, Guid companyId, Guid companyUserId, ConsentStatusId consentStatusId, DateTimeOffset dateCreated)
+        : this()
+    {
+        Id = id;
+        AgreementId = agreementId;
+        CompanyId = companyId;
+        CompanyUserId = companyUserId;
+        ConsentStatusId = consentStatusId;
+        DateCreated = dateCreated;
+    }
 
-	public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-	public DateTimeOffset DateCreated { get; set; }
+    public DateTimeOffset DateCreated { get; set; }
 
-	[MaxLength(255)]
-	public string? Comment { get; set; }
+    [MaxLength(255)]
+    public string? Comment { get; set; }
 
-	public ConsentStatusId ConsentStatusId { get; set; }
+    public ConsentStatusId ConsentStatusId { get; set; }
 
-	[MaxLength(255)]
-	public string? Target { get; set; }
+    [MaxLength(255)]
+    public string? Target { get; set; }
 
-	public Guid AgreementId { get; set; }
-	public Guid CompanyId { get; set; }
-	public Guid? DocumentId { get; set; }
-	public Guid CompanyUserId { get; set; }
+    public Guid AgreementId { get; set; }
+    public Guid CompanyId { get; set; }
+    public Guid? DocumentId { get; set; }
+    public Guid CompanyUserId { get; set; }
 
-	[AuditLastEditorV1]
-	public Guid? LastEditorId { get; set; }
+    [AuditLastEditorV1]
+    public Guid? LastEditorId { get; set; }
 
-	// Navigation properties
-	public virtual Agreement? Agreement { get; private set; }
-	public virtual Company? Company { get; private set; }
-	public virtual CompanyUser? CompanyUser { get; private set; }
-	public virtual ConsentStatus? ConsentStatus { get; private set; }
-	public virtual Document? Document { get; private set; }
-	public virtual ICollection<ConsentAssignedOffer> ConsentAssignedOffers { get; private set; }
-	public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
+    // Navigation properties
+    public virtual Agreement? Agreement { get; private set; }
+    public virtual Company? Company { get; private set; }
+    public virtual CompanyUser? CompanyUser { get; private set; }
+    public virtual ConsentStatus? ConsentStatus { get; private set; }
+    public virtual Document? Document { get; private set; }
+    public virtual ICollection<ConsentAssignedOffer> ConsentAssignedOffers { get; private set; }
+    public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
 }

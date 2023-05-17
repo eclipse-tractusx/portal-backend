@@ -34,46 +34,46 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 public static class StartupServiceWebApplicationExtensions
 {
 
-	public static WebApplication CreateApp<TProgram>(this WebApplication app, string apiPath, string version, IHostEnvironment environment)
-	{
-		if (environment.IsDevelopment())
-		{
-			app.UseDeveloperExceptionPage();
-			var urlsToTrust = app.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
-				.Where(config => config.ConnectionString.StartsWith("https://"))
-				.Select(config => config.ConnectionString)
-				.Distinct();
-			FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
-		}
+    public static WebApplication CreateApp<TProgram>(this WebApplication app, string apiPath, string version, IHostEnvironment environment)
+    {
+        if (environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+            var urlsToTrust = app.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
+                .Where(config => config.ConnectionString.StartsWith("https://"))
+                .Select(config => config.ConnectionString)
+                .Distinct();
+            FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
+        }
 
-		var assemblyName = typeof(TProgram).Assembly.FullName?.Split(',')[0];
+        var assemblyName = typeof(TProgram).Assembly.FullName?.Split(',')[0];
 
-		FlurlErrorHandler.ConfigureErrorHandler(app.Services.GetRequiredService<ILogger<TProgram>>(), environment.IsDevelopment());
+        FlurlErrorHandler.ConfigureErrorHandler(app.Services.GetRequiredService<ILogger<TProgram>>(), environment.IsDevelopment());
 
-		if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null &&
-			app.Configuration.GetValue<bool>("SwaggerEnabled"))
-		{
-			app.UseSwagger(c =>
-				c.RouteTemplate = $"/api/{apiPath}/swagger/{{documentName}}/swagger.{{json|yaml}}");
-			app.UseSwaggerUI(c =>
-			{
-				c.SwaggerEndpoint($"/api/{apiPath}/swagger/{version}/swagger.json",
-					$"{assemblyName} {version}");
-				c.RoutePrefix = $"api/{apiPath}/swagger";
-			});
-		}
+        if (app.Configuration.GetValue<bool?>("SwaggerEnabled") != null &&
+            app.Configuration.GetValue<bool>("SwaggerEnabled"))
+        {
+            app.UseSwagger(c =>
+                c.RouteTemplate = $"/api/{apiPath}/swagger/{{documentName}}/swagger.{{json|yaml}}");
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint($"/api/{apiPath}/swagger/{version}/swagger.json",
+                    $"{assemblyName} {version}");
+                c.RoutePrefix = $"api/{apiPath}/swagger";
+            });
+        }
 
-		app.UseRouting();
+        app.UseRouting();
 
-		app.UseCors(CorsExtensions.AllowSpecificOrigins);
+        app.UseCors(CorsExtensions.AllowSpecificOrigins);
 
-		app.UseMiddleware<GeneralHttpErrorHandler>();
-		app.UseAuthentication();
-		app.UseAuthorization();
+        app.UseMiddleware<GeneralHttpErrorHandler>();
+        app.UseAuthentication();
+        app.UseAuthorization();
 
-		app.MapControllers();
-		app.MapDefaultHealthChecks(app.Configuration.GetSection("HealthChecks").Get<IEnumerable<HealthCheckSettings>>());
+        app.MapControllers();
+        app.MapDefaultHealthChecks(app.Configuration.GetSection("HealthChecks").Get<IEnumerable<HealthCheckSettings>>());
 
-		return app;
-	}
+        return app;
+    }
 }

@@ -23,10 +23,10 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 
 public record WalletData(
-	[property: JsonPropertyName("name")] string? Name,
-	[property: JsonPropertyName("bpn")] string? Bpn,
-	[property: JsonPropertyName("did")] string? Did,
-	[property: JsonPropertyName("createdAt")] DateTime CreatedAt,
-	[property: JsonPropertyName("pendingMembershipIssuance")] bool PendingMembershipIssuance,
-	[property: JsonPropertyName("vcs")] object[]? Vcs
+    [property: JsonPropertyName("name")] string? Name,
+    [property: JsonPropertyName("bpn")] string? Bpn,
+    [property: JsonPropertyName("did")] string? Did,
+    [property: JsonPropertyName("createdAt")] DateTime CreatedAt,
+    [property: JsonPropertyName("pendingMembershipIssuance")] bool PendingMembershipIssuance,
+    [property: JsonPropertyName("vcs")] object[]? Vcs
 );

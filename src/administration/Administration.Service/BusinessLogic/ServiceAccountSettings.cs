@@ -27,28 +27,28 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// </summary>
 public class ServiceAccountSettings
 {
-	public ServiceAccountSettings()
-	{
-		ClientId = null!;
-	}
+    public ServiceAccountSettings()
+    {
+        ClientId = null!;
+    }
 
-	/// <summary>
-	/// Service account clientId.
-	/// </summary>
-	[Required(AllowEmptyStrings = false)]
-	public string ClientId { get; set; }
+    /// <summary>
+    /// Service account clientId.
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string ClientId { get; set; }
 }
 
 public static class ServiceAccountSettingsExtensions
 {
-	public static IServiceCollection ConfigureServiceAccountSettings(
-		this IServiceCollection services,
-		IConfigurationSection section)
-	{
-		services.AddOptions<ServiceAccountSettings>()
-			.Bind(section)
-			.ValidateDataAnnotations()
-			.ValidateOnStart();
-		return services;
-	}
+    public static IServiceCollection ConfigureServiceAccountSettings(
+        this IServiceCollection services,
+        IConfigurationSection section)
+    {
+        services.AddOptions<ServiceAccountSettings>()
+            .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        return services;
+    }
 }

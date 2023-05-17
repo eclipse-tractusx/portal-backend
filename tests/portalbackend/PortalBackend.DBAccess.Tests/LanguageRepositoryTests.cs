@@ -33,80 +33,80 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 /// </summary>
 public class LanguageRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
-	private readonly TestDbFixture _dbTestDbFixture;
+    private readonly TestDbFixture _dbTestDbFixture;
 
-	public LanguageRepositoryTests(TestDbFixture testDbFixture)
-	{
-		var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-		fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-			.ForEach(b => fixture.Behaviors.Remove(b));
+    public LanguageRepositoryTests(TestDbFixture testDbFixture)
+    {
+        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => fixture.Behaviors.Remove(b));
 
-		fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-		_dbTestDbFixture = testDbFixture;
-	}
+        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _dbTestDbFixture = testDbFixture;
+    }
 
-	#region Get Language
+    #region Get Language
 
-	[Fact]
-	public async Task GetLanguageAsync_ReturnsExpectedResult()
-	{
-		// Arrange
-		var sut = await CreateSut().ConfigureAwait(false);
+    [Fact]
+    public async Task GetLanguageAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
 
-		// Act
-		var result = await sut.IsValidLanguageCode("de").ConfigureAwait(false);
+        // Act
+        var result = await sut.IsValidLanguageCode("de").ConfigureAwait(false);
 
-		// Assert
-		result.Should().BeTrue();
-	}
+        // Assert
+        result.Should().BeTrue();
+    }
 
-	[Fact]
-	public async Task GetLanguageAsync_WithNotExistingLanguage_ReturnsNull()
-	{
-		// Arrange
-		var sut = await CreateSut().ConfigureAwait(false);
+    [Fact]
+    public async Task GetLanguageAsync_WithNotExistingLanguage_ReturnsNull()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
 
-		// Act
-		var result = await sut.IsValidLanguageCode("notExisting").ConfigureAwait(false);
+        // Act
+        var result = await sut.IsValidLanguageCode("notExisting").ConfigureAwait(false);
 
-		// Assert
-		result.Should().BeFalse();
-	}
+        // Assert
+        result.Should().BeFalse();
+    }
 
-	#endregion
+    #endregion
 
-	#region GetLanguageCodes
+    #region GetLanguageCodes
 
-	[Fact]
-	public async Task GetLanguageCodesUntrackedAsync_ReturnsExpectedResult()
-	{
-		// Arrange
-		var sut = await CreateSut().ConfigureAwait(false);
+    [Fact]
+    public async Task GetLanguageCodesUntrackedAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
 
-		// Act
-		var languageCodes = await sut.GetLanguageCodesUntrackedAsync(new[]
-		{
-			"de",
-			"en",
-			"notExisting"
-		}).ToListAsync().ConfigureAwait(false);
+        // Act
+        var languageCodes = await sut.GetLanguageCodesUntrackedAsync(new[]
+        {
+            "de",
+            "en",
+            "notExisting"
+        }).ToListAsync().ConfigureAwait(false);
 
-		// Assert
-		languageCodes.Should().HaveCount(2);
-		languageCodes.Should().Contain("de");
-		languageCodes.Should().Contain("en");
-	}
+        // Assert
+        languageCodes.Should().HaveCount(2);
+        languageCodes.Should().Contain("de");
+        languageCodes.Should().Contain("en");
+    }
 
-	#endregion
+    #endregion
 
-	#region Setup
+    #region Setup
 
-	private async Task<LanguageRepository> CreateSut()
-	{
-		var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
-		var sut = new LanguageRepository(context);
-		return sut;
-	}
+    private async Task<LanguageRepository> CreateSut()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var sut = new LanguageRepository(context);
+        return sut;
+    }
 
-	#endregion
+    #endregion
 }

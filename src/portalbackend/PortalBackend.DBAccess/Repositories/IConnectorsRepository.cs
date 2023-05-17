@@ -30,82 +30,82 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// </summary>
 public interface IConnectorsRepository
 {
-	/// <summary>
-	/// Get all connectors of a user's company by iam user ID.
-	/// </summary>
-	/// <param name="iamUserId">ID of the iam user used to determine company's connectors for.</param>
-	/// <returns>Queryable of connectors that allows transformation.</returns>
-	IQueryable<Connector> GetAllCompanyConnectorsForIamUser(string iamUserId);
+    /// <summary>
+    /// Get all connectors of a user's company by iam user ID.
+    /// </summary>
+    /// <param name="iamUserId">ID of the iam user used to determine company's connectors for.</param>
+    /// <returns>Queryable of connectors that allows transformation.</returns>
+    IQueryable<Connector> GetAllCompanyConnectorsForIamUser(string iamUserId);
 
-	/// <summary>
-	/// Get all managed connectors of a user's company by iam user ID.
-	/// </summary>
-	/// <param name="iamUserId">ID of the iam user used to determine company's connectors for.</param>
-	/// <returns>Pagination.Source of connectors that allows transformation.</returns>
-	Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForIamUser(string iamUserId);
+    /// <summary>
+    /// Get all managed connectors of a user's company by iam user ID.
+    /// </summary>
+    /// <param name="iamUserId">ID of the iam user used to determine company's connectors for.</param>
+    /// <returns>Pagination.Source of connectors that allows transformation.</returns>
+    Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForIamUser(string iamUserId);
 
-	Task<(ConnectorData ConnectorData, bool IsProviderUser)> GetConnectorByIdForIamUser(Guid connectorId, string iamUser);
+    Task<(ConnectorData ConnectorData, bool IsProviderUser)> GetConnectorByIdForIamUser(Guid connectorId, string iamUser);
 
-	Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, string iamUser);
+    Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, string iamUser);
 
-	/// <summary>
-	/// Creates a given connector in persistence layer. 
-	/// </summary>
-	/// <param name="name">Name of the connector to create.</param>
-	/// <param name="location">Location of the connector.</param>
-	/// <param name="connectorUrl">Url of the connector to create.</param>
-	/// <param name="setupOptionalFields">Action to setup optional fields.</param>
-	/// <returns>Created and persisted connector.</returns>
-	Connector CreateConnector(string name, string location, string connectorUrl, Action<Connector>? setupOptionalFields);
+    /// <summary>
+    /// Creates a given connector in persistence layer. 
+    /// </summary>
+    /// <param name="name">Name of the connector to create.</param>
+    /// <param name="location">Location of the connector.</param>
+    /// <param name="connectorUrl">Url of the connector to create.</param>
+    /// <param name="setupOptionalFields">Action to setup optional fields.</param>
+    /// <returns>Created and persisted connector.</returns>
+    Connector CreateConnector(string name, string location, string connectorUrl, Action<Connector>? setupOptionalFields);
 
-	/// <summary>
-	/// Get Connector End Point Grouped By Business Partner Number
-	/// </summary>
-	/// <param name="bpns"></param>
-	/// <returns></returns>
-	IAsyncEnumerable<(string BusinessPartnerNumber, string ConnectorEndpoint)> GetConnectorEndPointDataAsync(IEnumerable<string> bpns);
+    /// <summary>
+    /// Get Connector End Point Grouped By Business Partner Number
+    /// </summary>
+    /// <param name="bpns"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<(string BusinessPartnerNumber, string ConnectorEndpoint)> GetConnectorEndPointDataAsync(IEnumerable<string> bpns);
 
-	/// <summary>
-	/// Attaches the entity with the given id to the db context and modifies the given values.
-	/// </summary>
-	/// <param name="connectorId">Id of the connector</param>
-	/// <param name="initialize">Optional: Action to initialize the connector</param>
-	/// <param name="setOptionalParameters">Action to set the parameters</param>
-	/// <returns>The updated connector</returns>
-	Connector AttachAndModifyConnector(Guid connectorId, Action<Connector>? initialize, Action<Connector> setOptionalParameters);
+    /// <summary>
+    /// Attaches the entity with the given id to the db context and modifies the given values.
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    /// <param name="initialize">Optional: Action to initialize the connector</param>
+    /// <param name="setOptionalParameters">Action to set the parameters</param>
+    /// <returns>The updated connector</returns>
+    Connector AttachAndModifyConnector(Guid connectorId, Action<Connector>? initialize, Action<Connector> setOptionalParameters);
 
-	/// <summary>
-	/// Checks whether the connector exists
-	/// </summary>
-	/// <param name="connectorId">Id of the connector</param>
-	/// <returns><c>true</c> if the connector exists, otherwise <c>false</c></returns>
-	Task<(Guid ConnectorId, Guid? SelfDescriptionDocumentId)> GetConnectorDataById(Guid connectorId);
+    /// <summary>
+    /// Checks whether the connector exists
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    /// <returns><c>true</c> if the connector exists, otherwise <c>false</c></returns>
+    Task<(Guid ConnectorId, Guid? SelfDescriptionDocumentId)> GetConnectorDataById(Guid connectorId);
 
-	/// <summary>
-	/// Gets SelfDescriptionDocument Data
-	/// </summary>
-	/// <param name="connectorId">Id of the connector</param>
-	/// <returns>returns SelfDescriptionDocument Data/c></returns>
-	Task<(bool IsConnectorIdExist, string? DapsClientId, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus)> GetConnectorDeleteDataAsync(Guid connectorId);
+    /// <summary>
+    /// Gets SelfDescriptionDocument Data
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    /// <returns>returns SelfDescriptionDocument Data/c></returns>
+    Task<(bool IsConnectorIdExist, string? DapsClientId, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus)> GetConnectorDeleteDataAsync(Guid connectorId);
 
-	/// <summary>
-	/// Creates the connector details
-	/// </summary>
-	/// <param name="connectorId">Id of the connector</param>
-	/// <param name="dapsClientId">client id of daps</param>
-	void CreateConnectorClientDetails(Guid connectorId, string dapsClientId);
+    /// <summary>
+    /// Creates the connector details
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    /// <param name="dapsClientId">client id of daps</param>
+    void CreateConnectorClientDetails(Guid connectorId, string dapsClientId);
 
-	/// <summary>
-	/// Deletes the connector client details
-	/// </summary>
-	/// <param name="connectorId">Id of the connector</param>
-	void DeleteConnectorClientDetails(Guid connectorId);
+    /// <summary>
+    /// Deletes the connector client details
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    void DeleteConnectorClientDetails(Guid connectorId);
 
-	/// <summary>
-	/// Gets the data required for the connector update
-	/// </summary>
-	/// <param name="connectorId">Id of the connector</param>
-	/// <param name="iamUser">Id of the IamUser</param>
-	/// <returns>Returns the update information</returns>
-	Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, string iamUser);
+    /// <summary>
+    /// Gets the data required for the connector update
+    /// </summary>
+    /// <param name="connectorId">Id of the connector</param>
+    /// <param name="iamUser">Id of the IamUser</param>
+    /// <returns>Returns the update information</returns>
+    Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, string iamUser);
 }

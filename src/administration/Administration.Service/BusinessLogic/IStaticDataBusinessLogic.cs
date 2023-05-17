@@ -27,21 +27,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// </summary>
 public interface IStaticDataBusinessLogic
 {
-	/// <summary>
-	/// Get all Use Case.
-	/// </summary>
-	/// <returns>AsyncEnumerable of the result Use Case</returns>
-	IAsyncEnumerable<UseCaseData> GetAllUseCase();
+    /// <summary>
+    /// Get all Use Case.
+    /// </summary>
+    /// <returns>AsyncEnumerable of the result Use Case</returns>
+    IAsyncEnumerable<UseCaseData> GetAllUseCase();
 
-	/// <summary>
-	/// Get all Language.
-	/// </summary>
-	/// <returns>AsyncEnumerable of the result Language</returns>
-	IAsyncEnumerable<LanguageData> GetAllLanguage();
+    /// <summary>
+    /// Get all Language.
+    /// </summary>
+    /// <returns>AsyncEnumerable of the result Language</returns>
+    IAsyncEnumerable<LanguageData> GetAllLanguage();
 
-	/// <summary>
-	/// Get all License Type.
-	/// </summary>
-	/// <returns>AsyncEnumerable of the License Type</returns>
-	IAsyncEnumerable<LicenseTypeData> GetAllLicenseType();
+    /// <summary>
+    /// Get all License Type.
+    /// </summary>
+    /// <returns>AsyncEnumerable of the License Type</returns>
+    IAsyncEnumerable<LicenseTypeData> GetAllLicenseType();
 }

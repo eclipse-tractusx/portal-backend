@@ -37,230 +37,230 @@ namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library;
 
 public class ApplicationActivationService : IApplicationActivationService
 {
-	private readonly IPortalRepositories _portalRepositories;
-	private readonly INotificationService _notificationService;
-	private readonly IProvisioningManager _provisioningManager;
-	private readonly IMailingService _mailingService;
-	private readonly IDateTimeProvider _dateTime;
-	private readonly ApplicationActivationSettings _settings;
+    private readonly IPortalRepositories _portalRepositories;
+    private readonly INotificationService _notificationService;
+    private readonly IProvisioningManager _provisioningManager;
+    private readonly IMailingService _mailingService;
+    private readonly IDateTimeProvider _dateTime;
+    private readonly ApplicationActivationSettings _settings;
 
-	public ApplicationActivationService(
-		IPortalRepositories portalRepositories,
-		INotificationService notificationService,
-		IProvisioningManager provisioningManager,
-		IMailingService mailingService,
-		IDateTimeProvider dateTime,
-		IOptions<ApplicationActivationSettings> options)
-	{
-		_portalRepositories = portalRepositories;
-		_notificationService = notificationService;
-		_provisioningManager = provisioningManager;
-		_mailingService = mailingService;
-		_dateTime = dateTime;
-		_settings = options.Value;
-	}
+    public ApplicationActivationService(
+        IPortalRepositories portalRepositories,
+        INotificationService notificationService,
+        IProvisioningManager provisioningManager,
+        IMailingService mailingService,
+        IDateTimeProvider dateTime,
+        IOptions<ApplicationActivationSettings> options)
+    {
+        _portalRepositories = portalRepositories;
+        _notificationService = notificationService;
+        _provisioningManager = provisioningManager;
+        _mailingService = mailingService;
+        _dateTime = dateTime;
+        _settings = options.Value;
+    }
 
-	public Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivation(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
-	{
-		if (!InProcessingTime())
-		{
-			return Task.FromResult(new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO, null, null, null, false, null));
-		}
-		var prerequisiteEntries = context.Checklist.Where(entry => entry.Key != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION);
-		if (prerequisiteEntries.Any(entry => entry.Value != ApplicationChecklistEntryStatusId.DONE))
-		{
-			throw new ConflictException($"cannot activate application {context.ApplicationId}. Checklist entries that are not in status DONE: {string.Join(",", prerequisiteEntries)}");
-		}
-		return HandleApplicationActivationInternal(context);
-	}
+    public Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivation(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    {
+        if (!InProcessingTime())
+        {
+            return Task.FromResult(new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO, null, null, null, false, null));
+        }
+        var prerequisiteEntries = context.Checklist.Where(entry => entry.Key != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION);
+        if (prerequisiteEntries.Any(entry => entry.Value != ApplicationChecklistEntryStatusId.DONE))
+        {
+            throw new ConflictException($"cannot activate application {context.ApplicationId}. Checklist entries that are not in status DONE: {string.Join(",", prerequisiteEntries)}");
+        }
+        return HandleApplicationActivationInternal(context);
+    }
 
-	private async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivationInternal(IApplicationChecklistService.WorkerChecklistProcessStepData context)
-	{
-		var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-		var result = await applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(context.ApplicationId).ConfigureAwait(false);
-		if (result == default)
-		{
-			throw new ConflictException($"CompanyApplication {context.ApplicationId} is not in status SUBMITTED");
-		}
-		var (companyId, companyName, businessPartnerNumber, iamIdpAliasse) = result;
+    private async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivationInternal(IApplicationChecklistService.WorkerChecklistProcessStepData context)
+    {
+        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+        var result = await applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(context.ApplicationId).ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new ConflictException($"CompanyApplication {context.ApplicationId} is not in status SUBMITTED");
+        }
+        var (companyId, companyName, businessPartnerNumber, iamIdpAliasse) = result;
 
-		if (string.IsNullOrWhiteSpace(businessPartnerNumber))
-		{
-			throw new ConflictException($"BusinessPartnerNumber (bpn) for CompanyApplications {context.ApplicationId} company {companyId} is empty");
-		}
+        if (string.IsNullOrWhiteSpace(businessPartnerNumber))
+        {
+            throw new ConflictException($"BusinessPartnerNumber (bpn) for CompanyApplications {context.ApplicationId} company {companyId} is empty");
+        }
 
-		var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-		var assignedRoles = await AssignRolesAndBpn(context.ApplicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(false);
-		await RemoveRegistrationRoles(context.ApplicationId, userRolesRepository).ConfigureAwait(false);
-		await SetTheme(iamIdpAliasse).ConfigureAwait(false);
+        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var assignedRoles = await AssignRolesAndBpn(context.ApplicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(false);
+        await RemoveRegistrationRoles(context.ApplicationId, userRolesRepository).ConfigureAwait(false);
+        await SetTheme(iamIdpAliasse).ConfigureAwait(false);
 
-		applicationRepository.AttachAndModifyCompanyApplication(context.ApplicationId, ca =>
-		{
-			ca.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
-			ca.DateLastChanged = DateTimeOffset.UtcNow;
-		});
+        applicationRepository.AttachAndModifyCompanyApplication(context.ApplicationId, ca =>
+        {
+            ca.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
+            ca.DateLastChanged = DateTimeOffset.UtcNow;
+        });
 
-		_portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null, c =>
-		{
-			c.CompanyStatusId = CompanyStatusId.ACTIVE;
-		});
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null, c =>
+        {
+            c.CompanyStatusId = CompanyStatusId.ACTIVE;
+        });
 
-		var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
-		await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).AwaitAll().ConfigureAwait(false);
+        var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
+        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).AwaitAll().ConfigureAwait(false);
 
-		await PostRegistrationWelcomeEmailAsync(applicationRepository, context.ApplicationId, companyName, businessPartnerNumber).ConfigureAwait(false);
+        await PostRegistrationWelcomeEmailAsync(applicationRepository, context.ApplicationId, companyName, businessPartnerNumber).ConfigureAwait(false);
 
-		if (assignedRoles != null)
-		{
-			var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
-				.Select(initialClientRoles => (
-					client: initialClientRoles.Key,
-					roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
-				.Where(clientRoles => clientRoles.roles.Any())
-				.ToList();
+        if (assignedRoles != null)
+        {
+            var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
+                .Select(initialClientRoles => (
+                    client: initialClientRoles.Key,
+                    roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
+                .Where(clientRoles => clientRoles.roles.Any())
+                .ToList();
 
-			if (unassignedClientRoles.Any())
-			{
-				throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ", clientRoles.roles)}]"))}");
-			}
-		}
-		return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
-			ProcessStepStatusId.DONE,
-			entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
-			null,
-			Enum.GetValues<ProcessStepTypeId>().Except(new[] { ProcessStepTypeId.ACTIVATE_APPLICATION }),
-			true,
-			null);
-	}
+            if (unassignedClientRoles.Any())
+            {
+                throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ", clientRoles.roles)}]"))}");
+            }
+        }
+        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+            ProcessStepStatusId.DONE,
+            entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
+            null,
+            Enum.GetValues<ProcessStepTypeId>().Except(new[] { ProcessStepTypeId.ACTIVATE_APPLICATION }),
+            true,
+            null);
+    }
 
-	private bool InProcessingTime()
-	{
-		var startTime = _settings.StartTime;
-		var endTime = _settings.EndTime;
-		if (!startTime.HasValue || !endTime.HasValue)
-		{
-			return true;
-		}
+    private bool InProcessingTime()
+    {
+        var startTime = _settings.StartTime;
+        var endTime = _settings.EndTime;
+        if (!startTime.HasValue || !endTime.HasValue)
+        {
+            return true;
+        }
 
-		var now = _dateTime.Now.TimeOfDay;
-		return startTime > endTime ?
-			now >= startTime || now <= endTime :
-			now >= startTime && now <= endTime;
-	}
+        var now = _dateTime.Now.TimeOfDay;
+        return startTime > endTime ?
+            now >= startTime || now <= endTime :
+            now >= startTime && now <= endTime;
+    }
 
-	private async Task<IDictionary<string, IEnumerable<string>>?> AssignRolesAndBpn(Guid applicationId, IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, string businessPartnerNumber)
-	{
-		var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
+    private async Task<IDictionary<string, IEnumerable<string>>?> AssignRolesAndBpn(Guid applicationId, IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, string businessPartnerNumber)
+    {
+        var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
-		var applicationApprovalInitialRoles = _settings.ApplicationApprovalInitialRoles;
-		var initialRolesData = await GetRoleData(userRolesRepository, applicationApprovalInitialRoles).ConfigureAwait(false);
+        var applicationApprovalInitialRoles = _settings.ApplicationApprovalInitialRoles;
+        var initialRolesData = await GetRoleData(userRolesRepository, applicationApprovalInitialRoles).ConfigureAwait(false);
 
-		IDictionary<string, IEnumerable<string>>? assignedRoles = null;
-		var invitedUsersData = applicationRepository
-			.GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId);
-		await foreach (var userData in invitedUsersData.ConfigureAwait(false))
-		{
-			assignedRoles = await _provisioningManager
-				.AssignClientRolesToCentralUserAsync(userData.UserEntityId, applicationApprovalInitialRoles)
-				.ToDictionaryAsync(assigned => assigned.Client, assigned => assigned.Roles)
-				.ConfigureAwait(false);
+        IDictionary<string, IEnumerable<string>>? assignedRoles = null;
+        var invitedUsersData = applicationRepository
+            .GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId);
+        await foreach (var userData in invitedUsersData.ConfigureAwait(false))
+        {
+            assignedRoles = await _provisioningManager
+                .AssignClientRolesToCentralUserAsync(userData.UserEntityId, applicationApprovalInitialRoles)
+                .ToDictionaryAsync(assigned => assigned.Client, assigned => assigned.Roles)
+                .ConfigureAwait(false);
 
-			foreach (var roleData in initialRolesData.Where(roleData => !userData.RoleIds.Contains(roleData.UserRoleId) &&
-																		assignedRoles[roleData.ClientClientId].Contains(roleData.UserRoleText)))
-			{
-				userRolesRepository.CreateCompanyUserAssignedRole(userData.CompanyUserId, roleData.UserRoleId);
-			}
+            foreach (var roleData in initialRolesData.Where(roleData => !userData.RoleIds.Contains(roleData.UserRoleId) &&
+                                                                        assignedRoles[roleData.ClientClientId].Contains(roleData.UserRoleText)))
+            {
+                userRolesRepository.CreateCompanyUserAssignedRole(userData.CompanyUserId, roleData.UserRoleId);
+            }
 
-			if (userData.BusinessPartnerNumbers.Contains(businessPartnerNumber))
-				continue;
+            if (userData.BusinessPartnerNumbers.Contains(businessPartnerNumber))
+                continue;
 
-			userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(userData.CompanyUserId, businessPartnerNumber);
-			await _provisioningManager
-				.AddBpnAttributetoUserAsync(userData.UserEntityId, Enumerable.Repeat(businessPartnerNumber, 1))
-				.ConfigureAwait(false);
-		}
+            userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(userData.CompanyUserId, businessPartnerNumber);
+            await _provisioningManager
+                .AddBpnAttributetoUserAsync(userData.UserEntityId, Enumerable.Repeat(businessPartnerNumber, 1))
+                .ConfigureAwait(false);
+        }
 
-		return assignedRoles;
-	}
+        return assignedRoles;
+    }
 
-	private async Task RemoveRegistrationRoles(Guid applicationId, IUserRolesRepository userRolesRepository)
-	{
-		var iamClientIds = _settings.ClientToRemoveRolesOnActivation;
-		var clientRoleData = await userRolesRepository
-			.GetUserRolesByClientId(iamClientIds)
-			.ToListAsync()
-			.ConfigureAwait(false);
-		var invitedUsersData = userRolesRepository
-			.GetUserWithUserRolesForApplicationId(applicationId, clientRoleData.SelectMany(data => data.UserRoles).Select(role => role.UserRoleId));
+    private async Task RemoveRegistrationRoles(Guid applicationId, IUserRolesRepository userRolesRepository)
+    {
+        var iamClientIds = _settings.ClientToRemoveRolesOnActivation;
+        var clientRoleData = await userRolesRepository
+            .GetUserRolesByClientId(iamClientIds)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        var invitedUsersData = userRolesRepository
+            .GetUserWithUserRolesForApplicationId(applicationId, clientRoleData.SelectMany(data => data.UserRoles).Select(role => role.UserRoleId));
 
-		var userRoles = clientRoleData.SelectMany(data => data.UserRoles.Select(role => (role.UserRoleId, data.ClientClientId, role.UserRoleText))).ToImmutableDictionary(x => x.UserRoleId, x => (x.ClientClientId, x.UserRoleText));
+        var userRoles = clientRoleData.SelectMany(data => data.UserRoles.Select(role => (role.UserRoleId, data.ClientClientId, role.UserRoleText))).ToImmutableDictionary(x => x.UserRoleId, x => (x.ClientClientId, x.UserRoleText));
 
-		await foreach (var userData in invitedUsersData.ConfigureAwait(false))
-		{
-			if (!userData.UserRoleIds.Any())
-			{
-				throw new UnexpectedConditionException("userRoleIds should never be empty here");
-			}
+        await foreach (var userData in invitedUsersData.ConfigureAwait(false))
+        {
+            if (!userData.UserRoleIds.Any())
+            {
+                throw new UnexpectedConditionException("userRoleIds should never be empty here");
+            }
 
-			var roleNamesToDelete = userData.UserRoleIds
-				.Select(roleId => userRoles[roleId])
-				.GroupBy(clientRoleData => clientRoleData.ClientClientId)
-				.ToImmutableDictionary(
-					clientRoleDataGroup => clientRoleDataGroup.Key,
-					clientRoleData => clientRoleData.Select(y => y.UserRoleText));
+            var roleNamesToDelete = userData.UserRoleIds
+                .Select(roleId => userRoles[roleId])
+                .GroupBy(clientRoleData => clientRoleData.ClientClientId)
+                .ToImmutableDictionary(
+                    clientRoleDataGroup => clientRoleDataGroup.Key,
+                    clientRoleData => clientRoleData.Select(y => y.UserRoleText));
 
-			await _provisioningManager.DeleteClientRolesFromCentralUserAsync(userData.UserEntityId, roleNamesToDelete)
-				.ConfigureAwait(false);
-			userRolesRepository.DeleteCompanyUserAssignedRoles(userData.UserRoleIds.Select(roleId => (userData.CompanyUserId, roleId)));
-		}
-	}
+            await _provisioningManager.DeleteClientRolesFromCentralUserAsync(userData.UserEntityId, roleNamesToDelete)
+                .ConfigureAwait(false);
+            userRolesRepository.DeleteCompanyUserAssignedRoles(userData.UserRoleIds.Select(roleId => (userData.CompanyUserId, roleId)));
+        }
+    }
 
-	private async Task SetTheme(IEnumerable<string> iamIdpAliasse)
-	{
-		foreach (var alias in iamIdpAliasse)
-		{
-			await _provisioningManager.UpdateSharedRealmTheme(alias, _settings.LoginTheme).ConfigureAwait(false);
-		}
-	}
+    private async Task SetTheme(IEnumerable<string> iamIdpAliasse)
+    {
+        foreach (var alias in iamIdpAliasse)
+        {
+            await _provisioningManager.UpdateSharedRealmTheme(alias, _settings.LoginTheme).ConfigureAwait(false);
+        }
+    }
 
-	private async Task PostRegistrationWelcomeEmailAsync(IApplicationRepository applicationRepository, Guid applicationId, string companyName, string businessPartnerNumber)
-	{
-		var failedUserNames = new List<string>();
-		await foreach (var user in applicationRepository.GetEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
-		{
-			var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
-			if (string.IsNullOrWhiteSpace(user.Email))
-			{
-				failedUserNames.Add(userName);
-				continue;
-			}
+    private async Task PostRegistrationWelcomeEmailAsync(IApplicationRepository applicationRepository, Guid applicationId, string companyName, string businessPartnerNumber)
+    {
+        var failedUserNames = new List<string>();
+        await foreach (var user in applicationRepository.GetEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
+        {
+            var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
+            if (string.IsNullOrWhiteSpace(user.Email))
+            {
+                failedUserNames.Add(userName);
+                continue;
+            }
 
-			var mailParameters = new Dictionary<string, string>
-			{
-				{ "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
-				{ "companyName", companyName },
-				{ "url", _settings.BasePortalAddress },
-				{ "bpn", businessPartnerNumber }
-			};
+            var mailParameters = new Dictionary<string, string>
+            {
+                { "userName", !string.IsNullOrWhiteSpace(userName) ?  userName : user.Email },
+                { "companyName", companyName },
+                { "url", _settings.BasePortalAddress },
+                { "bpn", businessPartnerNumber }
+            };
 
-			await _mailingService.SendMails(user.Email, mailParameters, new[] { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
-		}
+            await _mailingService.SendMails(user.Email, mailParameters, new[] { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
+        }
 
-		if (failedUserNames.Any())
-			throw new ConflictException($"user(s) {string.Join(",", failedUserNames)} has no assigned email");
-	}
+        if (failedUserNames.Any())
+            throw new ConflictException($"user(s) {string.Join(",", failedUserNames)} has no assigned email");
+    }
 
-	private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IDictionary<string, IEnumerable<string>> roles)
-	{
-		var roleData = await userRolesRepository
-			.GetUserRoleDataUntrackedAsync(roles)
-			.ToListAsync()
-			.ConfigureAwait(false);
-		if (roleData.Count < roles.Sum(clientRoles => clientRoles.Value.Count()))
-		{
-			throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", roles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
-		}
+    private static async Task<List<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IDictionary<string, IEnumerable<string>> roles)
+    {
+        var roleData = await userRolesRepository
+            .GetUserRoleDataUntrackedAsync(roles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        if (roleData.Count < roles.Sum(clientRoles => clientRoles.Value.Count()))
+        {
+            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", roles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+        }
 
-		return roleData;
-	}
+        return roleData;
+    }
 }

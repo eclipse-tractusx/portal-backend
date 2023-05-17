@@ -28,27 +28,27 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// </summary>
 public class LanguageRepository : ILanguageRepository
 {
-	private readonly PortalDbContext _portalDbContext;
+    private readonly PortalDbContext _portalDbContext;
 
-	/// <summary>
-	/// Initializes a new instance of <see cref="LanguageRepository"/>
-	/// </summary>
-	/// <param name="portalDbContext">Access to the database</param>
-	public LanguageRepository(PortalDbContext portalDbContext)
-	{
-		_portalDbContext = portalDbContext;
-	}
+    /// <summary>
+    /// Initializes a new instance of <see cref="LanguageRepository"/>
+    /// </summary>
+    /// <param name="portalDbContext">Access to the database</param>
+    public LanguageRepository(PortalDbContext portalDbContext)
+    {
+        _portalDbContext = portalDbContext;
+    }
 
-	/// <inheritdoc />
-	public Task<bool> IsValidLanguageCode(string languageShortName) =>
-		_portalDbContext.Languages
-			.AsNoTracking()
-			.AnyAsync(language => language.ShortName == languageShortName);
+    /// <inheritdoc />
+    public Task<bool> IsValidLanguageCode(string languageShortName) =>
+        _portalDbContext.Languages
+            .AsNoTracking()
+            .AnyAsync(language => language.ShortName == languageShortName);
 
-	/// <inheritdoc />
-	public IAsyncEnumerable<string> GetLanguageCodesUntrackedAsync(IEnumerable<string> languageCodes) =>
-		_portalDbContext.Languages.AsNoTracking()
-			.Where(x => languageCodes.Contains(x.ShortName))
-			.Select(x => x.ShortName)
-			.AsAsyncEnumerable();
+    /// <inheritdoc />
+    public IAsyncEnumerable<string> GetLanguageCodesUntrackedAsync(IEnumerable<string> languageCodes) =>
+        _portalDbContext.Languages.AsNoTracking()
+            .Where(x => languageCodes.Contains(x.ShortName))
+            .Select(x => x.ShortName)
+            .AsAsyncEnumerable();
 }

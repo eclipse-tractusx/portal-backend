@@ -29,55 +29,55 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 
 public class UserControllerTest
 {
-	private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
-	private static readonly Guid CompanyUserId = new("05455d3a-fc86-4f5a-a89a-ba964ead163d");
-	private readonly IUserBusinessLogic _logic;
-	private readonly IUserRolesBusinessLogic _rolesLogic;
-	private readonly UserController _controller;
-	private readonly Fixture _fixture;
+    private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
+    private static readonly Guid CompanyUserId = new("05455d3a-fc86-4f5a-a89a-ba964ead163d");
+    private readonly IUserBusinessLogic _logic;
+    private readonly IUserRolesBusinessLogic _rolesLogic;
+    private readonly UserController _controller;
+    private readonly Fixture _fixture;
 
-	public UserControllerTest()
-	{
-		_fixture = new Fixture();
-		_logic = A.Fake<IUserBusinessLogic>();
-		_rolesLogic = A.Fake<IUserRolesBusinessLogic>();
-		var logger = A.Fake<ILogger<UserController>>();
-		var uploadBusinessLogic = A.Fake<IUserUploadBusinessLogic>();
-		this._controller = new UserController(logger, _logic, uploadBusinessLogic, _rolesLogic);
-		_controller.AddControllerContextWithClaim(IamUserId);
-	}
+    public UserControllerTest()
+    {
+        _fixture = new Fixture();
+        _logic = A.Fake<IUserBusinessLogic>();
+        _rolesLogic = A.Fake<IUserRolesBusinessLogic>();
+        var logger = A.Fake<ILogger<UserController>>();
+        var uploadBusinessLogic = A.Fake<IUserUploadBusinessLogic>();
+        this._controller = new UserController(logger, _logic, uploadBusinessLogic, _rolesLogic);
+        _controller.AddControllerContextWithClaim(IamUserId);
+    }
 
-	[Fact]
-	public async Task ModifyUserRolesAsync_WithValidData_ReturnsExpectedResult()
-	{
-		//Arrange
-		var appId = new Guid("8d4bfde6-978f-4d82-86ce-8d90d52fbf3f");
-		var userRoleInfo = new UserRoleInfo(CompanyUserId, new[] { "Company Admin" });
-		A.CallTo(() => _rolesLogic.ModifyUserRoleAsync(A<Guid>._, A<UserRoleInfo>._, A<string>._))
-				  .ReturnsLazily(() => new List<UserRoleWithId>());
+    [Fact]
+    public async Task ModifyUserRolesAsync_WithValidData_ReturnsExpectedResult()
+    {
+        //Arrange
+        var appId = new Guid("8d4bfde6-978f-4d82-86ce-8d90d52fbf3f");
+        var userRoleInfo = new UserRoleInfo(CompanyUserId, new[] { "Company Admin" });
+        A.CallTo(() => _rolesLogic.ModifyUserRoleAsync(A<Guid>._, A<UserRoleInfo>._, A<string>._))
+                  .ReturnsLazily(() => new List<UserRoleWithId>());
 
-		//Act
-		var result = await this._controller.ModifyUserRolesAsync(appId, userRoleInfo).ConfigureAwait(false);
+        //Act
+        var result = await this._controller.ModifyUserRolesAsync(appId, userRoleInfo).ConfigureAwait(false);
 
-		//Assert
-		A.CallTo(() => _rolesLogic.ModifyUserRoleAsync(A<Guid>.That.Matches(x => x == appId), A<UserRoleInfo>.That.Matches(x => x.CompanyUserId == CompanyUserId && x.Roles.Count() == 1), A<string>.That.Matches(x => x == IamUserId))).MustHaveHappenedOnceExactly();
-		Assert.IsType<List<UserRoleWithId>>(result);
-		result.Should().BeEmpty();
-	}
+        //Assert
+        A.CallTo(() => _rolesLogic.ModifyUserRoleAsync(A<Guid>.That.Matches(x => x == appId), A<UserRoleInfo>.That.Matches(x => x.CompanyUserId == CompanyUserId && x.Roles.Count() == 1), A<string>.That.Matches(x => x == IamUserId))).MustHaveHappenedOnceExactly();
+        Assert.IsType<List<UserRoleWithId>>(result);
+        result.Should().BeEmpty();
+    }
 
-	[Fact]
-	public async Task GetOwnUserDetails_ReturnsExpectedResult()
-	{
-		// Arrange
-		var data = _fixture.Create<CompanyOwnUserDetails>();
-		A.CallTo(() => _logic.GetOwnUserDetails(IamUserId))
-			.Returns(data);
+    [Fact]
+    public async Task GetOwnUserDetails_ReturnsExpectedResult()
+    {
+        // Arrange
+        var data = _fixture.Create<CompanyOwnUserDetails>();
+        A.CallTo(() => _logic.GetOwnUserDetails(IamUserId))
+            .Returns(data);
 
-		// Act
-		var result = await this._controller.GetOwnUserDetails().ConfigureAwait(false);
+        // Act
+        var result = await this._controller.GetOwnUserDetails().ConfigureAwait(false);
 
-		// Assert
-		A.CallTo(() => _logic.GetOwnUserDetails(IamUserId)).MustHaveHappenedOnceExactly();
-		result.Should().Be(data);
-	}
+        // Assert
+        A.CallTo(() => _logic.GetOwnUserDetails(IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().Be(data);
+    }
 }

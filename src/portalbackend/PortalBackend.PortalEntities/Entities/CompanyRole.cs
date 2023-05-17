@@ -25,29 +25,29 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyRole
 {
-	private CompanyRole()
-	{
-		Label = null!;
-		AgreementAssignedCompanyRoles = new HashSet<AgreementAssignedCompanyRole>();
-		CompanyRoleDescriptions = new HashSet<CompanyRoleDescription>();
-		CompanyAssignedRoles = new HashSet<CompanyAssignedRole>();
-	}
+    private CompanyRole()
+    {
+        Label = null!;
+        AgreementAssignedCompanyRoles = new HashSet<AgreementAssignedCompanyRole>();
+        CompanyRoleDescriptions = new HashSet<CompanyRoleDescription>();
+        CompanyAssignedRoles = new HashSet<CompanyAssignedRole>();
+    }
 
-	public CompanyRole(CompanyRoleId companyRoleId) : this()
-	{
-		Id = companyRoleId;
-		Label = companyRoleId.ToString();
-	}
+    public CompanyRole(CompanyRoleId companyRoleId) : this()
+    {
+        Id = companyRoleId;
+        Label = companyRoleId.ToString();
+    }
 
-	public CompanyRoleId Id { get; private set; }
+    public CompanyRoleId Id { get; private set; }
 
-	[MaxLength(255)]
-	public string Label { get; set; }
+    [MaxLength(255)]
+    public string Label { get; set; }
 
-	// Navigation properties
-	public virtual CompanyRoleAssignedRoleCollection? CompanyRoleAssignedRoleCollection { get; set; }
-	public virtual CompanyRoleRegistrationData? CompanyRoleRegistrationData { get; set; }
-	public virtual ICollection<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; private set; }
-	public virtual ICollection<CompanyRoleDescription> CompanyRoleDescriptions { get; private set; }
-	public virtual ICollection<CompanyAssignedRole> CompanyAssignedRoles { get; private set; }
+    // Navigation properties
+    public virtual CompanyRoleAssignedRoleCollection? CompanyRoleAssignedRoleCollection { get; set; }
+    public virtual CompanyRoleRegistrationData? CompanyRoleRegistrationData { get; set; }
+    public virtual ICollection<AgreementAssignedCompanyRole> AgreementAssignedCompanyRoles { get; private set; }
+    public virtual ICollection<CompanyRoleDescription> CompanyRoleDescriptions { get; private set; }
+    public virtual ICollection<CompanyAssignedRole> CompanyAssignedRoles { get; private set; }
 }

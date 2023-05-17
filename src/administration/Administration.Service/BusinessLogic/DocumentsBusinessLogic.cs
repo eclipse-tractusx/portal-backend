@@ -35,120 +35,120 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// </summary>
 public class DocumentsBusinessLogic : IDocumentsBusinessLogic
 {
-	private readonly IPortalRepositories _portalRepositories;
-	private readonly DocumentSettings _settings;
+    private readonly IPortalRepositories _portalRepositories;
+    private readonly DocumentSettings _settings;
 
-	/// <summary>
-	/// Creates a new instance <see cref="DocumentsBusinessLogic"/>
-	/// </summary>
-	public DocumentsBusinessLogic(IPortalRepositories portalRepositories, IOptions<DocumentSettings> options)
-	{
-		_portalRepositories = portalRepositories;
-		_settings = options.Value;
-	}
+    /// <summary>
+    /// Creates a new instance <see cref="DocumentsBusinessLogic"/>
+    /// </summary>
+    public DocumentsBusinessLogic(IPortalRepositories portalRepositories, IOptions<DocumentSettings> options)
+    {
+        _portalRepositories = portalRepositories;
+        _settings = options.Value;
+    }
 
-	/// <inheritdoc />
-	public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId, string iamUserId)
-	{
-		var documentDetails = await _portalRepositories.GetInstance<IDocumentRepository>()
-			.GetDocumentDataAndIsCompanyUserAsync(documentId, iamUserId)
-			.ConfigureAwait(false);
-		if (documentDetails == default)
-		{
-			throw new NotFoundException($"Document {documentId} does not exist");
-		}
+    /// <inheritdoc />
+    public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId, string iamUserId)
+    {
+        var documentDetails = await _portalRepositories.GetInstance<IDocumentRepository>()
+            .GetDocumentDataAndIsCompanyUserAsync(documentId, iamUserId)
+            .ConfigureAwait(false);
+        if (documentDetails == default)
+        {
+            throw new NotFoundException($"Document {documentId} does not exist");
+        }
 
-		if (!documentDetails.IsUserInCompany)
-		{
-			throw new ForbiddenException("User is not allowed to access the document");
-		}
+        if (!documentDetails.IsUserInCompany)
+        {
+            throw new ForbiddenException("User is not allowed to access the document");
+        }
 
-		if (documentDetails.Content == null)
-		{
-			throw new UnexpectedConditionException("documentContent should never be null here");
-		}
+        if (documentDetails.Content == null)
+        {
+            throw new UnexpectedConditionException("documentContent should never be null here");
+        }
 
-		return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
-	}
+        return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
+    }
 
-	/// <inheritdoc />
-	public async Task<(string FileName, byte[] Content, string MediaType)> GetSelfDescriptionDocumentAsync(Guid documentId)
-	{
-		var documentDetails = await _portalRepositories.GetInstance<IDocumentRepository>()
-			.GetDocumentDataByIdAndTypeAsync(documentId, DocumentTypeId.SELF_DESCRIPTION)
-			.ConfigureAwait(false);
-		if (documentDetails == default)
-		{
-			throw new NotFoundException($"Self description document {documentId} does not exist");
-		}
-		return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
-	}
+    /// <inheritdoc />
+    public async Task<(string FileName, byte[] Content, string MediaType)> GetSelfDescriptionDocumentAsync(Guid documentId)
+    {
+        var documentDetails = await _portalRepositories.GetInstance<IDocumentRepository>()
+            .GetDocumentDataByIdAndTypeAsync(documentId, DocumentTypeId.SELF_DESCRIPTION)
+            .ConfigureAwait(false);
+        if (documentDetails == default)
+        {
+            throw new NotFoundException($"Self description document {documentId} does not exist");
+        }
+        return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
+    }
 
-	/// <inheritdoc />
-	public async Task<bool> DeleteDocumentAsync(Guid documentId, string iamUserId)
-	{
-		var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-		var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, iamUserId).ConfigureAwait(false);
+    /// <inheritdoc />
+    public async Task<bool> DeleteDocumentAsync(Guid documentId, string iamUserId)
+    {
+        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+        var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, iamUserId).ConfigureAwait(false);
 
-		if (details.DocumentId == Guid.Empty)
-		{
-			throw new NotFoundException("Document is not existing");
-		}
+        if (details.DocumentId == Guid.Empty)
+        {
+            throw new NotFoundException("Document is not existing");
+        }
 
-		if (!details.IsSameUser)
-		{
-			throw new ForbiddenException("User is not allowed to delete this document");
-		}
+        if (!details.IsSameUser)
+        {
+            throw new ForbiddenException("User is not allowed to delete this document");
+        }
 
-		if (details.DocumentStatusId == DocumentStatusId.LOCKED)
-		{
-			throw new ArgumentException("Incorrect document status");
-		}
+        if (details.DocumentStatusId == DocumentStatusId.LOCKED)
+        {
+            throw new ArgumentException("Incorrect document status");
+        }
 
-		documentRepository.RemoveDocument(details.DocumentId);
-		if (details.ConsentIds.Any())
-		{
-			_portalRepositories.GetInstance<IConsentRepository>().RemoveConsents(details.ConsentIds.Select(x => new Consent(x, Guid.Empty, Guid.Empty, Guid.Empty, default, default)));
-		}
+        documentRepository.RemoveDocument(details.DocumentId);
+        if (details.ConsentIds.Any())
+        {
+            _portalRepositories.GetInstance<IConsentRepository>().RemoveConsents(details.ConsentIds.Select(x => new Consent(x, Guid.Empty, Guid.Empty, Guid.Empty, default, default)));
+        }
 
-		await this._portalRepositories.SaveAsync().ConfigureAwait(false);
-		return true;
-	}
+        await this._portalRepositories.SaveAsync().ConfigureAwait(false);
+        return true;
+    }
 
-	/// <inheritdoc />
-	public async Task<DocumentSeedData> GetSeedData(Guid documentId)
-	{
-		if (!_settings.EnableSeedEndpoint)
-		{
-			throw new ForbiddenException("Endpoint can only be used on dev environment");
-		}
+    /// <inheritdoc />
+    public async Task<DocumentSeedData> GetSeedData(Guid documentId)
+    {
+        if (!_settings.EnableSeedEndpoint)
+        {
+            throw new ForbiddenException("Endpoint can only be used on dev environment");
+        }
 
-		var document = await _portalRepositories.GetInstance<IDocumentRepository>()
-			.GetDocumentSeedDataByIdAsync(documentId)
-			.ConfigureAwait(false);
-		if (document == null)
-		{
-			throw new NotFoundException($"Document {documentId} does not exists.");
-		}
+        var document = await _portalRepositories.GetInstance<IDocumentRepository>()
+            .GetDocumentSeedDataByIdAsync(documentId)
+            .ConfigureAwait(false);
+        if (document == null)
+        {
+            throw new NotFoundException($"Document {documentId} does not exists.");
+        }
 
-		return document;
-	}
+        return document;
+    }
 
-	/// <inheritdoc />
-	public async Task<(string fileName, byte[] content)> GetFrameDocumentAsync(Guid documentId)
-	{
-		var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+    /// <inheritdoc />
+    public async Task<(string fileName, byte[] content)> GetFrameDocumentAsync(Guid documentId)
+    {
+        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
 
-		var documentDetails = await documentRepository.GetDocumentAsync(documentId, _settings.FrameDocumentTypeIds).ConfigureAwait(false);
-		if (documentDetails == default)
-		{
-			throw new NotFoundException($"document {documentId} does not exist.");
-		}
-		if (!documentDetails.IsDocumentTypeMatch)
-		{
-			throw new NotFoundException($"document {documentId} does not exist.");
-		}
+        var documentDetails = await documentRepository.GetDocumentAsync(documentId, _settings.FrameDocumentTypeIds).ConfigureAwait(false);
+        if (documentDetails == default)
+        {
+            throw new NotFoundException($"document {documentId} does not exist.");
+        }
+        if (!documentDetails.IsDocumentTypeMatch)
+        {
+            throw new NotFoundException($"document {documentId} does not exist.");
+        }
 
-		return (documentDetails.FileName, documentDetails.Content);
-	}
+        return (documentDetails.FileName, documentDetails.Content);
+    }
 }

@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
 public enum OfferCompanyRole
 {
-	Subscriber = 1,
+    Subscriber = 1,
 
-	Provider = 2
+    Provider = 2
 }

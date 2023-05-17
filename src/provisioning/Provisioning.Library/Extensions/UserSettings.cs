@@ -22,10 +22,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library
 {
-	public partial class ProvisioningSettings
-	{
-		public User SharedUser { get; set; }
+    public partial class ProvisioningSettings
+    {
+        public User SharedUser { get; set; }
 
-		public User CentralUser { get; set; }
-	}
+        public User CentralUser { get; set; }
+    }
 }

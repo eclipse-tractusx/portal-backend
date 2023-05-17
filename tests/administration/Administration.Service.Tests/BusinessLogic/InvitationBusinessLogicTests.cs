@@ -35,306 +35,306 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public class InvitationBusinessLogicTests
 {
-	private readonly IFixture _fixture;
-	private readonly IProvisioningManager _provisioningManager;
-	private readonly IUserProvisioningService _userProvisioningService;
-	private readonly IPortalRepositories _portalRepositories;
-	private readonly IIdentityProviderRepository _identityProviderRepository;
-	private readonly IUserRepository _userRepository;
-	private readonly ICompanyRepository _companyRepository;
-	private readonly IApplicationRepository _applicationRepository;
-	private readonly IMailingService _mailingService;
-	private readonly IOptions<InvitationSettings> _options;
-	private readonly string _iamUserId;
-	private readonly string _companyName;
-	private readonly string _idpName;
-	private readonly Guid _companyId;
-	private readonly Guid _identityProviderId;
-	private readonly Guid _applicationId;
-	private readonly Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
-	private readonly Exception _error;
+    private readonly IFixture _fixture;
+    private readonly IProvisioningManager _provisioningManager;
+    private readonly IUserProvisioningService _userProvisioningService;
+    private readonly IPortalRepositories _portalRepositories;
+    private readonly IIdentityProviderRepository _identityProviderRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly ICompanyRepository _companyRepository;
+    private readonly IApplicationRepository _applicationRepository;
+    private readonly IMailingService _mailingService;
+    private readonly IOptions<InvitationSettings> _options;
+    private readonly string _iamUserId;
+    private readonly string _companyName;
+    private readonly string _idpName;
+    private readonly Guid _companyId;
+    private readonly Guid _identityProviderId;
+    private readonly Guid _applicationId;
+    private readonly Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
+    private readonly Exception _error;
 
-	public InvitationBusinessLogicTests()
-	{
-		_fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-		_fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-			.ForEach(b => _fixture.Behaviors.Remove(b));
-		_fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+    public InvitationBusinessLogicTests()
+    {
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-		_provisioningManager = A.Fake<IProvisioningManager>();
-		_userProvisioningService = A.Fake<IUserProvisioningService>();
-		_portalRepositories = A.Fake<IPortalRepositories>();
-		_identityProviderRepository = A.Fake<IIdentityProviderRepository>();
-		_userRepository = A.Fake<IUserRepository>();
-		_companyRepository = A.Fake<ICompanyRepository>();
-		_applicationRepository = A.Fake<IApplicationRepository>();
-		_mailingService = A.Fake<IMailingService>();
-		_options = A.Fake<IOptions<InvitationSettings>>();
+        _provisioningManager = A.Fake<IProvisioningManager>();
+        _userProvisioningService = A.Fake<IUserProvisioningService>();
+        _portalRepositories = A.Fake<IPortalRepositories>();
+        _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
+        _userRepository = A.Fake<IUserRepository>();
+        _companyRepository = A.Fake<ICompanyRepository>();
+        _applicationRepository = A.Fake<IApplicationRepository>();
+        _mailingService = A.Fake<IMailingService>();
+        _options = A.Fake<IOptions<InvitationSettings>>();
 
-		_iamUserId = _fixture.Create<string>();
-		_companyName = _fixture.Create<string>();
-		_idpName = _fixture.Create<string>();
-		_companyId = _fixture.Create<Guid>();
-		_identityProviderId = _fixture.Create<Guid>();
-		_applicationId = _fixture.Create<Guid>();
+        _iamUserId = _fixture.Create<string>();
+        _companyName = _fixture.Create<string>();
+        _idpName = _fixture.Create<string>();
+        _companyId = _fixture.Create<Guid>();
+        _identityProviderId = _fixture.Create<Guid>();
+        _applicationId = _fixture.Create<Guid>();
 
-		_processLine = A.Fake<Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
+        _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
 
-		_error = _fixture.Create<TestException>();
-	}
+        _error = _fixture.Create<TestException>();
+    }
 
-	#region ExecuteInvitation
+    #region ExecuteInvitation
 
-	[Fact]
-	public async Task TestExecuteInvitationSuccess()
-	{
-		SetupFakes();
+    [Fact]
+    public async Task TestExecuteInvitationSuccess()
+    {
+        SetupFakes();
 
-		var invitationData = _fixture.Build<CompanyInvitationData>()
-			.With(x => x.organisationName, _companyName)
-			.With(x => x.firstName, _fixture.CreateName())
-			.With(x => x.lastName, _fixture.CreateName())
-			.With(x => x.email, _fixture.CreateEmail())
-			.Create();
+        var invitationData = _fixture.Build<CompanyInvitationData>()
+            .With(x => x.organisationName, _companyName)
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
+            .With(x => x.email, _fixture.CreateEmail())
+            .Create();
 
-		var sut = new InvitationBusinessLogic(
-			_provisioningManager,
-			_userProvisioningService,
-			_portalRepositories,
-			_mailingService,
-			_options);
+        var sut = new InvitationBusinessLogic(
+            _provisioningManager,
+            _userProvisioningService,
+            _portalRepositories,
+            _mailingService,
+            _options);
 
-		await sut.ExecuteInvitation(invitationData, _iamUserId).ConfigureAwait(false);
+        await sut.ExecuteInvitation(invitationData, _iamUserId).ConfigureAwait(false);
 
-		A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
-		A.CallTo(() => _provisioningManager.SetupSharedIdpAsync(A<string>.That.IsEqualTo(_idpName), A<string>.That.IsEqualTo(invitationData.organisationName), A<string?>._)).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.SetupSharedIdpAsync(A<string>.That.IsEqualTo(_idpName), A<string>.That.IsEqualTo(invitationData.organisationName), A<string?>._)).MustHaveHappened();
 
-		A.CallTo(() => _companyRepository.CreateCompany(A<string>.That.IsEqualTo(invitationData.organisationName))).MustHaveHappened();
-		A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>.That.IsEqualTo(IdentityProviderCategoryId.KEYCLOAK_SHARED))).MustHaveHappened();
-		A.CallTo(() => _identityProviderRepository.CreateIamIdentityProvider(A<IdentityProvider>.That.Matches(i => i.Companies.Single().Id == _companyId), A<string>.That.IsEqualTo(_idpName))).MustHaveHappened();
-		A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>.That.IsEqualTo(_companyId), A<CompanyApplicationStatusId>.That.IsEqualTo(CompanyApplicationStatusId.CREATED))).MustHaveHappened();
+        A.CallTo(() => _companyRepository.CreateCompany(A<string>.That.IsEqualTo(invitationData.organisationName))).MustHaveHappened();
+        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>.That.IsEqualTo(IdentityProviderCategoryId.KEYCLOAK_SHARED))).MustHaveHappened();
+        A.CallTo(() => _identityProviderRepository.CreateIamIdentityProvider(A<IdentityProvider>.That.Matches(i => i.Companies.Single().Id == _companyId), A<string>.That.IsEqualTo(_idpName))).MustHaveHappened();
+        A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>.That.IsEqualTo(_companyId), A<CompanyApplicationStatusId>.That.IsEqualTo(CompanyApplicationStatusId.CREATED))).MustHaveHappened();
 
-		A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
-			A<CompanyNameIdpAliasData>.That.Matches(d => d.CompanyId == _companyId),
-			A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._,
-			A<CancellationToken>._)).MustHaveHappened();
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
+            A<CompanyNameIdpAliasData>.That.Matches(d => d.CompanyId == _companyId),
+            A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._,
+            A<CancellationToken>._)).MustHaveHappened();
 
-		A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == invitationData.firstName))).MustHaveHappened();
-		A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Not.Matches(u => u.FirstName == invitationData.firstName))).MustNotHaveHappened();
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == invitationData.firstName))).MustHaveHappened();
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Not.Matches(u => u.FirstName == invitationData.firstName))).MustNotHaveHappened();
 
-		A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_applicationId), A<Guid>._)).MustHaveHappened();
+        A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_applicationId), A<Guid>._)).MustHaveHappened();
 
-		A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedTwiceExactly();
-		A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(invitationData.email), A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappened();
-	}
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedTwiceExactly();
+        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(invitationData.email), A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappened();
+    }
 
-	[Fact]
-	public async Task TestExecuteInvitationNoEmailThrows()
-	{
-		SetupFakes();
+    [Fact]
+    public async Task TestExecuteInvitationNoEmailThrows()
+    {
+        SetupFakes();
 
-		var invitationData = _fixture.Build<CompanyInvitationData>()
-			.With(x => x.firstName, _fixture.CreateName())
-			.With(x => x.lastName, _fixture.CreateName())
-			.With(x => x.email, "")
-			.Create();
+        var invitationData = _fixture.Build<CompanyInvitationData>()
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
+            .With(x => x.email, "")
+            .Create();
 
-		var sut = new InvitationBusinessLogic(
-			_provisioningManager,
-			_userProvisioningService,
-			_portalRepositories,
-			_mailingService,
-			_options);
+        var sut = new InvitationBusinessLogic(
+            _provisioningManager,
+            _userProvisioningService,
+            _portalRepositories,
+            _mailingService,
+            _options);
 
-		Task Act() => sut.ExecuteInvitation(invitationData, _iamUserId);
+        Task Act() => sut.ExecuteInvitation(invitationData, _iamUserId);
 
-		var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-		error.Message.Should().Be("email must not be empty (Parameter 'email')");
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be("email must not be empty (Parameter 'email')");
 
-		A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
-		A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-		A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
-	}
+        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+    }
 
-	[Fact]
-	public async Task TestExecuteInvitationNoOrganisationNameThrows()
-	{
-		SetupFakes();
+    [Fact]
+    public async Task TestExecuteInvitationNoOrganisationNameThrows()
+    {
+        SetupFakes();
 
-		var invitationData = _fixture.Build<CompanyInvitationData>()
-			.With(x => x.organisationName, "")
-			.With(x => x.firstName, _fixture.CreateName())
-			.With(x => x.lastName, _fixture.CreateName())
-			.With(x => x.email, _fixture.CreateEmail())
-			.Create();
+        var invitationData = _fixture.Build<CompanyInvitationData>()
+            .With(x => x.organisationName, "")
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
+            .With(x => x.email, _fixture.CreateEmail())
+            .Create();
 
-		var sut = new InvitationBusinessLogic(
-			_provisioningManager,
-			_userProvisioningService,
-			_portalRepositories,
-			_mailingService,
-			_options);
+        var sut = new InvitationBusinessLogic(
+            _provisioningManager,
+            _userProvisioningService,
+            _portalRepositories,
+            _mailingService,
+            _options);
 
-		Task Act() => sut.ExecuteInvitation(invitationData, _iamUserId);
+        Task Act() => sut.ExecuteInvitation(invitationData, _iamUserId);
 
-		var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-		error.Message.Should().Be("organisationName must not be empty (Parameter 'organisationName')");
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be("organisationName must not be empty (Parameter 'organisationName')");
 
-		A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
-		A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-		A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
-	}
+        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+    }
 
-	[Fact]
-	public async Task TestExecuteInvitationIamUserNotFoundThrows()
-	{
-		SetupFakes();
+    [Fact]
+    public async Task TestExecuteInvitationIamUserNotFoundThrows()
+    {
+        SetupFakes();
 
-		var invitationData = _fixture.Build<CompanyInvitationData>()
-			.With(x => x.organisationName, _companyName)
-			.With(x => x.firstName, _fixture.CreateName())
-			.With(x => x.lastName, _fixture.CreateName())
-			.With(x => x.email, _fixture.CreateEmail())
-			.Create();
+        var invitationData = _fixture.Build<CompanyInvitationData>()
+            .With(x => x.organisationName, _companyName)
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
+            .With(x => x.email, _fixture.CreateEmail())
+            .Create();
 
-		var invalidUserId = _fixture.Create<string>();
+        var invalidUserId = _fixture.Create<string>();
 
-		var sut = new InvitationBusinessLogic(
-			_provisioningManager,
-			_userProvisioningService,
-			_portalRepositories,
-			_mailingService,
-			_options);
+        var sut = new InvitationBusinessLogic(
+            _provisioningManager,
+            _userProvisioningService,
+            _portalRepositories,
+            _mailingService,
+            _options);
 
-		Task Act() => sut.ExecuteInvitation(invitationData, invalidUserId);
+        Task Act() => sut.ExecuteInvitation(invitationData, invalidUserId);
 
-		var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-		error.Message.Should().Be($"iamUserId {invalidUserId} is not associated with a companyUser");
+        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be($"iamUserId {invalidUserId} is not associated with a companyUser");
 
-		A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
-		A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-		A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
-	}
+        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+    }
 
-	[Fact]
-	public async Task TestExecuteInvitationCreateUserErrorThrows()
-	{
-		SetupFakes();
+    [Fact]
+    public async Task TestExecuteInvitationCreateUserErrorThrows()
+    {
+        SetupFakes();
 
-		A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
-			(UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
-				.With(x => x.UserName, creationInfo.UserName)
-				.With(x => x.Error, _error)
-				.Create());
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
+            (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+                .With(x => x.UserName, creationInfo.UserName)
+                .With(x => x.Error, _error)
+                .Create());
 
-		var invitationData = _fixture.Build<CompanyInvitationData>()
-			.With(x => x.organisationName, _companyName)
-			.With(x => x.firstName, _fixture.CreateName())
-			.With(x => x.lastName, _fixture.CreateName())
-			.With(x => x.email, _fixture.CreateEmail())
-			.Create();
+        var invitationData = _fixture.Build<CompanyInvitationData>()
+            .With(x => x.organisationName, _companyName)
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
+            .With(x => x.email, _fixture.CreateEmail())
+            .Create();
 
-		var sut = new InvitationBusinessLogic(
-			_provisioningManager,
-			_userProvisioningService,
-			_portalRepositories,
-			_mailingService,
-			_options);
+        var sut = new InvitationBusinessLogic(
+            _provisioningManager,
+            _userProvisioningService,
+            _portalRepositories,
+            _mailingService,
+            _options);
 
-		Task Act() => sut.ExecuteInvitation(invitationData, _iamUserId);
+        Task Act() => sut.ExecuteInvitation(invitationData, _iamUserId);
 
-		var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
-		error.Message.Should().Be(_error.Message);
+        var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be(_error.Message);
 
-		A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
-		A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
-		A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
-	}
+        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+    }
 
-	[Fact]
-	public async Task TestExecuteInvitationCreateUserThrowsThrows()
-	{
-		SetupFakes();
+    [Fact]
+    public async Task TestExecuteInvitationCreateUserThrowsThrows()
+    {
+        SetupFakes();
 
-		A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).Throws(_error);
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).Throws(_error);
 
-		var invitationData = _fixture.Build<CompanyInvitationData>()
-			.With(x => x.organisationName, _companyName)
-			.With(x => x.firstName, _fixture.CreateName())
-			.With(x => x.lastName, _fixture.CreateName())
-			.With(x => x.email, _fixture.CreateEmail())
-			.Create();
+        var invitationData = _fixture.Build<CompanyInvitationData>()
+            .With(x => x.organisationName, _companyName)
+            .With(x => x.firstName, _fixture.CreateName())
+            .With(x => x.lastName, _fixture.CreateName())
+            .With(x => x.email, _fixture.CreateEmail())
+            .Create();
 
-		var sut = new InvitationBusinessLogic(
-			_provisioningManager,
-			_userProvisioningService,
-			_portalRepositories,
-			_mailingService,
-			_options);
+        var sut = new InvitationBusinessLogic(
+            _provisioningManager,
+            _userProvisioningService,
+            _portalRepositories,
+            _mailingService,
+            _options);
 
-		Task Act() => sut.ExecuteInvitation(invitationData, _iamUserId);
+        Task Act() => sut.ExecuteInvitation(invitationData, _iamUserId);
 
-		var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
-		error.Message.Should().Be(_error.Message);
+        var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
+        error.Message.Should().Be(_error.Message);
 
-		A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
-		A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
-		A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
-	}
+        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+    }
 
-	#endregion
+    #endregion
 
-	#region Setup
+    #region Setup
 
-	private void SetupFakes()
-	{
-		A.CallTo(() => _options.Value).Returns(_fixture.Build<InvitationSettings>()
-			.With(x => x.InvitedUserInitialRoles, new Dictionary<string, IEnumerable<string>>
-			{
-				{ _fixture.Create<string>(), _fixture.CreateMany<string>() }
-			})
-			.Create());
+    private void SetupFakes()
+    {
+        A.CallTo(() => _options.Value).Returns(_fixture.Build<InvitationSettings>()
+            .With(x => x.InvitedUserInitialRoles, new Dictionary<string, IEnumerable<string>>
+            {
+                { _fixture.Create<string>(), _fixture.CreateMany<string>() }
+            })
+            .Create());
 
-		A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-		A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
-		A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
-		A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
 
-		A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>._)).Returns(Guid.Empty);
-		A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>.That.IsEqualTo(_iamUserId))).Returns(_fixture.Create<Guid>());
+        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>._)).Returns(Guid.Empty);
+        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(A<string>.That.IsEqualTo(_iamUserId))).Returns(_fixture.Create<Guid>());
 
-		A.CallTo(() => _companyRepository.CreateCompany(A<string>._)).ReturnsLazily((string organisationName) =>
-			new Company(_companyId, organisationName, CompanyStatusId.PENDING, _fixture.Create<DateTimeOffset>()));
+        A.CallTo(() => _companyRepository.CreateCompany(A<string>._)).ReturnsLazily((string organisationName) =>
+            new Company(_companyId, organisationName, CompanyStatusId.PENDING, _fixture.Create<DateTimeOffset>()));
 
-		A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._)).ReturnsLazily((IdentityProviderCategoryId categoryId) =>
-			new IdentityProvider(_identityProviderId, categoryId, _fixture.Create<DateTimeOffset>()));
+        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._)).ReturnsLazily((IdentityProviderCategoryId categoryId) =>
+            new IdentityProvider(_identityProviderId, categoryId, _fixture.Create<DateTimeOffset>()));
 
-		A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>._, A<CompanyApplicationStatusId>._)).ReturnsLazily((Guid companyId, CompanyApplicationStatusId applicationStatusId) =>
-			new CompanyApplication(_applicationId, companyId, applicationStatusId, _fixture.Create<DateTimeOffset>()));
+        A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>._, A<CompanyApplicationStatusId>._)).ReturnsLazily((Guid companyId, CompanyApplicationStatusId applicationStatusId) =>
+            new CompanyApplication(_applicationId, companyId, applicationStatusId, _fixture.Create<DateTimeOffset>()));
 
-		A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).Returns(_idpName);
+        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).Returns(_idpName);
 
-		A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
-			.ReturnsLazily((CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken cancellationToken) =>
-				userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
+            .ReturnsLazily((CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken cancellationToken) =>
+                userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
 
-		A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
-			(UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
-				.With(x => x.UserName, creationInfo.UserName)
-				.With(x => x.Error, (Exception?)null)
-				.Create());
-	}
+        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
+            (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+                .With(x => x.UserName, creationInfo.UserName)
+                .With(x => x.Error, (Exception?)null)
+                .Create());
+    }
 
-	#endregion
+    #endregion
 
-	[Serializable]
-	public class TestException : Exception
-	{
-		public TestException() { }
-		public TestException(string message) : base(message) { }
-		public TestException(string message, Exception inner) : base(message, inner) { }
-		protected TestException(
-			System.Runtime.Serialization.SerializationInfo info,
-			System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-	}
+    [Serializable]
+    public class TestException : Exception
+    {
+        public TestException() { }
+        public TestException(string message) : base(message) { }
+        public TestException(string message, Exception inner) : base(message, inner) { }
+        protected TestException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
 }

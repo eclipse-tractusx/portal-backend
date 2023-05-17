@@ -28,128 +28,128 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 /// </summary>
 public class AppsSettings
 {
-	/// <summary>
-	/// Company Admin Roles
-	/// </summary>
-	/// <value></value>
-	[Required]
-	public IDictionary<string, IEnumerable<string>> CatenaAdminRoles { get; set; } = null!;
+    /// <summary>
+    /// Company Admin Roles
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> CatenaAdminRoles { get; set; } = null!;
 
-	/// <summary>
-	/// Notification Type Id
-	/// </summary>
-	/// <value></value>
-	[Required]
-	public IEnumerable<NotificationTypeId> SubmitAppNotificationTypeIds { get; set; } = null!;
+    /// <summary>
+    /// Notification Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<NotificationTypeId> SubmitAppNotificationTypeIds { get; set; } = null!;
 
-	/// <summary>
-	/// BasePortalAddress url required for subscription email 
-	/// </summary>
-	[Required(AllowEmptyStrings = false)]
-	public string BasePortalAddress { get; init; } = null!;
+    /// <summary>
+    /// BasePortalAddress url required for subscription email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string BasePortalAddress { get; init; } = null!;
 
-	/// <summary>
-	/// AppOverview url required for the decline request email 
-	/// </summary>
-	[Required(AllowEmptyStrings = false)]
-	public string AppOverviewAddress { get; init; } = null!;
+    /// <summary>
+    /// AppOverview url required for the decline request email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string AppOverviewAddress { get; init; } = null!;
 
-	/// <summary>
-	/// Sales Manager roles
-	/// </summary>
-	[Required]
-	public IDictionary<string, IEnumerable<string>> SalesManagerRoles { get; set; } = null!;
+    /// <summary>
+    /// Sales Manager roles
+    /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> SalesManagerRoles { get; set; } = null!;
 
-	/// <summary>
-	/// Roles to notify when a new subscription was created
-	/// </summary>
-	[Required]
-	public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; set; } = null!;
+    /// <summary>
+    /// Roles to notify when a new subscription was created
+    /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; set; } = null!;
 
-	/// <summary>
-	/// Offer Status Id
-	/// </summary>
-	/// <value></value>
-	[Required]
-	public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
-	/// <summary>
-	/// Active App Company Admin Roles
-	/// </summary>
-	/// <value></value>
-	[Required]
-	public IDictionary<string, IEnumerable<string>> ActiveAppCompanyAdminRoles { get; set; } = null!;
+    /// <summary>
+    /// Offer Status Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
+    /// <summary>
+    /// Active App Company Admin Roles
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> ActiveAppCompanyAdminRoles { get; set; } = null!;
 
-	/// <summary>
-	/// Active App Notification Type Id
-	/// </summary>
-	/// <value></value>
-	[Required]
-	public IEnumerable<NotificationTypeId> ActiveAppNotificationTypeIds { get; set; } = null!;
+    /// <summary>
+    /// Active App Notification Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<NotificationTypeId> ActiveAppNotificationTypeIds { get; set; } = null!;
 
-	/// <summary>
-	/// Approve App Notification Type Id
-	/// </summary>
-	/// <value></value>
-	public IEnumerable<NotificationTypeId> ApproveAppNotificationTypeIds { get; set; } = null!;
+    /// <summary>
+    /// Approve App Notification Type Id
+    /// </summary>
+    /// <value></value>
+    public IEnumerable<NotificationTypeId> ApproveAppNotificationTypeIds { get; set; } = null!;
 
-	/// <summary>
-	/// Roles to notify when a new subscription was created for sales and App Manager
-	/// </summary>
-	[Required]
-	public IDictionary<string, IEnumerable<string>> ApproveAppUserRoles { get; set; } = null!;
+    /// <summary>
+    /// Roles to notify when a new subscription was created for sales and App Manager
+    /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> ApproveAppUserRoles { get; set; } = null!;
 
-	/// <summary>
-	/// Max page size for pagination
-	/// </summary>
-	public int ApplicationsMaxPageSize { get; set; }
+    /// <summary>
+    /// Max page size for pagination
+    /// </summary>
+    public int ApplicationsMaxPageSize { get; set; }
 
-	/// <summary>
-	/// Document Type Id for App Image
-	/// </summary>
-	/// <value></value>
-	[Required]
-	public IEnumerable<DocumentTypeId> AppImageDocumentTypeIds { get; set; } = null!;
+    /// <summary>
+    /// Document Type Id for App Image
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<DocumentTypeId> AppImageDocumentTypeIds { get; set; } = null!;
 
-	/// <summary>
-	/// IT Admin Roles
-	/// </summary>
-	[Required]
-	public IDictionary<string, IEnumerable<string>> ITAdminRoles { get; set; } = null!;
+    /// <summary>
+    /// IT Admin Roles
+    /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> ITAdminRoles { get; set; } = null!;
 
-	/// <summary>
-	/// UserManagementAddress url required for subscription email 
-	/// </summary>
-	[Required(AllowEmptyStrings = false)]
-	public string UserManagementAddress { get; init; } = null!;
+    /// <summary>
+    /// UserManagementAddress url required for subscription email 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string UserManagementAddress { get; init; } = null!;
 
-	/// <summary>
-	/// Document Type Id to be deleted
-	/// </summary>
-	[Required]
-	public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds { get; set; } = null!;
+    /// <summary>
+    /// Document Type Id to be deleted
+    /// </summary>
+    [Required]
+    public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds { get; set; } = null!;
 
-	/// <summary>
-	/// Document Type Id to be deleted
-	/// </summary>
-	[Required]
-	public IEnumerable<DocumentTypeId> SubmitAppDocumentTypeIds { get; set; } = null!;
+    /// <summary>
+    /// Document Type Id to be deleted
+    /// </summary>
+    [Required]
+    public IEnumerable<DocumentTypeId> SubmitAppDocumentTypeIds { get; set; } = null!;
 
-	/// <summary>
-	/// Document Type Id and ContentType to be uploaded
-	/// </summary>
-	[Required]
-	public IDictionary<DocumentTypeId, IEnumerable<string>> UploadAppDocumentTypeIds { get; set; } = null!;
+    /// <summary>
+    /// Document Type Id and ContentType to be uploaded
+    /// </summary>
+    [Required]
+    public IDictionary<DocumentTypeId, IEnumerable<string>> UploadAppDocumentTypeIds { get; set; } = null!;
 
-	/// <summary>
-	/// Client to get the technical user profile client
-	/// </summary>
-	public string TechnicalUserProfileClient { get; set; } = null!;
+    /// <summary>
+    /// Client to get the technical user profile client
+    /// </summary>
+    public string TechnicalUserProfileClient { get; set; } = null!;
 
-	/// <summary>
-	/// Company Admin Roles
-	/// </summary>
-	[Required]
-	public IDictionary<string, IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
+    /// <summary>
+    /// Company Admin Roles
+    /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
 }
 
 /// <summary>
@@ -157,17 +157,17 @@ public class AppsSettings
 /// </summary>
 public static class AppsSettingsExtension
 {
-	/// <summary>
-	/// configure apps settings using service collection interface
-	/// </summary>
-	public static IServiceCollection ConfigureAppsSettings(
-		this IServiceCollection services,
-		IConfigurationSection section)
-	{
-		services.AddOptions<AppsSettings>()
-			.Bind(section)
-			.ValidateDataAnnotations()
-			.ValidateOnStart();
-		return services;
-	}
+    /// <summary>
+    /// configure apps settings using service collection interface
+    /// </summary>
+    public static IServiceCollection ConfigureAppsSettings(
+        this IServiceCollection services,
+        IConfigurationSection section)
+    {
+        services.AddOptions<AppsSettings>()
+            .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        return services;
+    }
 }

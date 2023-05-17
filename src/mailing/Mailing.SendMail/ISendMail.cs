@@ -22,5 +22,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 
 public interface ISendMail
 {
-	Task Send(string sender, string recipient, string subject, string body, bool useHtml = false);
+    Task Send(string sender, string recipient, string subject, string body, bool useHtml = false);
 }

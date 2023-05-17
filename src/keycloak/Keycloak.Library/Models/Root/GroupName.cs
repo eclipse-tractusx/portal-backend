@@ -32,6 +32,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 [JsonConverter(typeof(GroupNameConverter))]
 public enum GroupName
 {
-	Social,
-	UserDefined
+    Social,
+    UserDefined
 }

@@ -31,145 +31,145 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Exe
 
 public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
 {
-	private readonly IApplicationChecklistHandlerService _checklistHandlerService;
-	private readonly IApplicationChecklistCreationService _checklistCreationService;
-	private readonly IApplicationChecklistRepository _checklistRepository;
+    private readonly IApplicationChecklistHandlerService _checklistHandlerService;
+    private readonly IApplicationChecklistCreationService _checklistCreationService;
+    private readonly IApplicationChecklistRepository _checklistRepository;
 
-	private Guid applicationId;
-	private IDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>? checklist = null;
+    private Guid applicationId;
+    private IDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>? checklist = null;
 
-	public ApplicationChecklistProcessTypeExecutor(
-		IApplicationChecklistHandlerService checklistHandlerService,
-		IApplicationChecklistCreationService checklistCreationService,
-		IPortalRepositories portalRepositories)
-	{
-		_checklistHandlerService = checklistHandlerService;
-		_checklistCreationService = checklistCreationService;
-		_checklistRepository = portalRepositories.GetInstance<IApplicationChecklistRepository>();
-	}
+    public ApplicationChecklistProcessTypeExecutor(
+        IApplicationChecklistHandlerService checklistHandlerService,
+        IApplicationChecklistCreationService checklistCreationService,
+        IPortalRepositories portalRepositories)
+    {
+        _checklistHandlerService = checklistHandlerService;
+        _checklistCreationService = checklistCreationService;
+        _checklistRepository = portalRepositories.GetInstance<IApplicationChecklistRepository>();
+    }
 
-	public ProcessTypeId GetProcessTypeId() => ProcessTypeId.APPLICATION_CHECKLIST;
-	public bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId) => _checklistHandlerService.IsExecutableProcessStep(processStepTypeId);
-	public IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds() => _checklistHandlerService.GetExecutableStepTypeIds();
-	public ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId) =>
-		ValueTask.FromResult(_checklistHandlerService.GetProcessStepExecution(processStepTypeId).RequiresLock);
+    public ProcessTypeId GetProcessTypeId() => ProcessTypeId.APPLICATION_CHECKLIST;
+    public bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId) => _checklistHandlerService.IsExecutableProcessStep(processStepTypeId);
+    public IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds() => _checklistHandlerService.GetExecutableStepTypeIds();
+    public ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId) =>
+        ValueTask.FromResult(_checklistHandlerService.GetProcessStepExecution(processStepTypeId).RequiresLock);
 
-	public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
-	{
-		applicationId = Guid.Empty;
-		checklist = null;
+    public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
+    {
+        applicationId = Guid.Empty;
+        checklist = null;
 
-		var result = await _checklistRepository.GetChecklistData(processId).ConfigureAwait(false);
-		if (!result.IsValidProcessId)
-		{
-			throw new NotFoundException($"process {processId} does not exist");
-		}
-		if (result.ApplicationId == Guid.Empty)
-		{
-			throw new ConflictException($"process {processId} is not associated with an application");
-		}
-		if (result.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
-		{
-			throw new ConflictException($"application {result.ApplicationId} is not in status SUBMITTED");
-		}
+        var result = await _checklistRepository.GetChecklistData(processId).ConfigureAwait(false);
+        if (!result.IsValidProcessId)
+        {
+            throw new NotFoundException($"process {processId} does not exist");
+        }
+        if (result.ApplicationId == Guid.Empty)
+        {
+            throw new ConflictException($"process {processId} is not associated with an application");
+        }
+        if (result.ApplicationStatusId != CompanyApplicationStatusId.SUBMITTED)
+        {
+            throw new ConflictException($"application {result.ApplicationId} is not in status SUBMITTED");
+        }
 
-		applicationId = result.ApplicationId;
-		checklist = result.Checklist.ToDictionary(x => x.EntryTypeId, x => x.EntryStatusId);
+        applicationId = result.ApplicationId;
+        checklist = result.Checklist.ToDictionary(x => x.EntryTypeId, x => x.EntryStatusId);
 
-		if (Enum.GetValues<ApplicationChecklistEntryTypeId>().Except(checklist.Keys).Any())
-		{
-			var createdEntries = (await _checklistCreationService
-				.CreateMissingChecklistItems(applicationId, checklist.Keys).ConfigureAwait(false)).ToList();
+        if (Enum.GetValues<ApplicationChecklistEntryTypeId>().Except(checklist.Keys).Any())
+        {
+            var createdEntries = (await _checklistCreationService
+                .CreateMissingChecklistItems(applicationId, checklist.Keys).ConfigureAwait(false)).ToList();
 
-			if (createdEntries.Any())
-			{
-				createdEntries.ForEach(entry => checklist[entry.TypeId] = entry.StatusId);
-				return new IProcessTypeExecutor.InitializationResult(true, _checklistCreationService.GetInitialProcessStepTypeIds(createdEntries));
-			}
-		}
-		return new IProcessTypeExecutor.InitializationResult(false, null);
-	}
+            if (createdEntries.Any())
+            {
+                createdEntries.ForEach(entry => checklist[entry.TypeId] = entry.StatusId);
+                return new IProcessTypeExecutor.InitializationResult(true, _checklistCreationService.GetInitialProcessStepTypeIds(createdEntries));
+            }
+        }
+        return new IProcessTypeExecutor.InitializationResult(false, null);
+    }
 
-	public async ValueTask<IProcessTypeExecutor.StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken)
-	{
-		if (applicationId == Guid.Empty || checklist == null)
-		{
-			throw new UnexpectedConditionException("applicationId or checklist should never be null or empty here");
-		}
-		var execution = _checklistHandlerService.GetProcessStepExecution(processStepTypeId);
-		if (!checklist!.ContainsKey(execution.EntryTypeId))
-		{
-			throw new UnexpectedConditionException($"checklist should always contain an entry for {execution.EntryTypeId} here");
-		}
-		var stepData = new IApplicationChecklistService.WorkerChecklistProcessStepData(
-			applicationId,
-			processStepTypeId,
-			checklist.ToImmutableDictionary(),
-			processStepTypeIds);
+    public async ValueTask<IProcessTypeExecutor.StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken)
+    {
+        if (applicationId == Guid.Empty || checklist == null)
+        {
+            throw new UnexpectedConditionException("applicationId or checklist should never be null or empty here");
+        }
+        var execution = _checklistHandlerService.GetProcessStepExecution(processStepTypeId);
+        if (!checklist!.ContainsKey(execution.EntryTypeId))
+        {
+            throw new UnexpectedConditionException($"checklist should always contain an entry for {execution.EntryTypeId} here");
+        }
+        var stepData = new IApplicationChecklistService.WorkerChecklistProcessStepData(
+            applicationId,
+            processStepTypeId,
+            checklist.ToImmutableDictionary(),
+            processStepTypeIds);
 
-		Action<ApplicationChecklistEntry>? modifyChecklistEntry;
-		IEnumerable<ProcessStepTypeId>? nextStepTypeIds;
-		IEnumerable<ProcessStepTypeId>? stepsToSkip;
-		ProcessStepStatusId stepStatusId;
-		bool modified;
-		string? processMessage;
-		try
-		{
-			(stepStatusId, modifyChecklistEntry, nextStepTypeIds, stepsToSkip, modified, processMessage) = await execution.ProcessFunc(stepData, cancellationToken).ConfigureAwait(false);
-		}
-		catch (Exception ex) when (ex is not SystemException)
-		{
-			if (execution.ErrorFunc == null)
-			{
-				(stepStatusId, modifyChecklistEntry, processMessage) = ProcessError(ex);
-				nextStepTypeIds = null;
-				stepsToSkip = null;
-				modified = true;
-			}
-			else
-			{
-				(stepStatusId, modifyChecklistEntry, nextStepTypeIds, stepsToSkip, modified, processMessage) = await execution.ErrorFunc(ex, stepData, cancellationToken).ConfigureAwait(false);
-			}
-		}
+        Action<ApplicationChecklistEntry>? modifyChecklistEntry;
+        IEnumerable<ProcessStepTypeId>? nextStepTypeIds;
+        IEnumerable<ProcessStepTypeId>? stepsToSkip;
+        ProcessStepStatusId stepStatusId;
+        bool modified;
+        string? processMessage;
+        try
+        {
+            (stepStatusId, modifyChecklistEntry, nextStepTypeIds, stepsToSkip, modified, processMessage) = await execution.ProcessFunc(stepData, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not SystemException)
+        {
+            if (execution.ErrorFunc == null)
+            {
+                (stepStatusId, modifyChecklistEntry, processMessage) = ProcessError(ex);
+                nextStepTypeIds = null;
+                stepsToSkip = null;
+                modified = true;
+            }
+            else
+            {
+                (stepStatusId, modifyChecklistEntry, nextStepTypeIds, stepsToSkip, modified, processMessage) = await execution.ErrorFunc(ex, stepData, cancellationToken).ConfigureAwait(false);
+            }
+        }
 
-		modified |= ProcessChecklistEntry(
-			execution.EntryTypeId,
-			modifyChecklistEntry);
+        modified |= ProcessChecklistEntry(
+            execution.EntryTypeId,
+            modifyChecklistEntry);
 
-		return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, stepsToSkip, processMessage);
-	}
+        return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, stepsToSkip, processMessage);
+    }
 
-	private bool ProcessChecklistEntry(
-		ApplicationChecklistEntryTypeId entryTypeId,
-		Action<ApplicationChecklistEntry>? modifyApplicationChecklistEntry)
-	{
-		if (modifyApplicationChecklistEntry == null)
-		{
-			return false;
-		}
-		var entry = _checklistRepository
-			.AttachAndModifyApplicationChecklist(
-				applicationId,
-				entryTypeId,
-				modifyApplicationChecklistEntry);
-		checklist![entryTypeId] = entry.ApplicationChecklistEntryStatusId;
-		return true;
-	}
+    private bool ProcessChecklistEntry(
+        ApplicationChecklistEntryTypeId entryTypeId,
+        Action<ApplicationChecklistEntry>? modifyApplicationChecklistEntry)
+    {
+        if (modifyApplicationChecklistEntry == null)
+        {
+            return false;
+        }
+        var entry = _checklistRepository
+            .AttachAndModifyApplicationChecklist(
+                applicationId,
+                entryTypeId,
+                modifyApplicationChecklistEntry);
+        checklist![entryTypeId] = entry.ApplicationChecklistEntryStatusId;
+        return true;
+    }
 
-	private static (ProcessStepStatusId, Action<ApplicationChecklistEntry>?, string? processMessage) ProcessError(Exception ex)
-	{
-		var itemMessage = string.IsNullOrWhiteSpace(ex.Message) ? ex.GetType().ToString() : ex.Message;
-		var stepMessage = $"{ex.GetType()}: {ex.Message}";
-		return ex is ServiceException { IsRecoverable: true }
-			? (ProcessStepStatusId.TODO,
-				item => { item.Comment = itemMessage; },
-				stepMessage)
-			: (ProcessStepStatusId.FAILED,
-				item =>
-				{
-					item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
-					item.Comment = itemMessage;
-				},
-				stepMessage);
-	}
+    private static (ProcessStepStatusId, Action<ApplicationChecklistEntry>?, string? processMessage) ProcessError(Exception ex)
+    {
+        var itemMessage = string.IsNullOrWhiteSpace(ex.Message) ? ex.GetType().ToString() : ex.Message;
+        var stepMessage = $"{ex.GetType()}: {ex.Message}";
+        return ex is ServiceException { IsRecoverable: true }
+            ? (ProcessStepStatusId.TODO,
+                item => { item.Comment = itemMessage; },
+                stepMessage)
+            : (ProcessStepStatusId.FAILED,
+                item =>
+                {
+                    item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
+                    item.Comment = itemMessage;
+                },
+                stepMessage);
+    }
 }

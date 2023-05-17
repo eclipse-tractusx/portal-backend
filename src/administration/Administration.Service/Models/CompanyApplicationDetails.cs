@@ -24,23 +24,23 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record CompanyApplicationDetails(
-	[property: JsonPropertyName("applicationId")] Guid ApplicationId,
-	[property: JsonPropertyName("applicationStatus")] CompanyApplicationStatusId CompanyApplicationStatusId,
-	[property: JsonPropertyName("dateCreated")] DateTimeOffset DateCreated,
-	[property: JsonPropertyName("companyName")] string CompanyName,
-	[property: JsonPropertyName("documents")] IEnumerable<DocumentDetails> Documents,
-	[property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleId> CompanyRoles,
-	[property: JsonPropertyName("applicationChecklist")] IEnumerable<ApplicationChecklistEntryDetails> ApplicationChecklist,
-	[property: JsonPropertyName("email")] string? Email,
-	[property: JsonPropertyName("bpn")] string? BusinessPartnerNumber
+    [property: JsonPropertyName("applicationId")] Guid ApplicationId,
+    [property: JsonPropertyName("applicationStatus")] CompanyApplicationStatusId CompanyApplicationStatusId,
+    [property: JsonPropertyName("dateCreated")] DateTimeOffset DateCreated,
+    [property: JsonPropertyName("companyName")] string CompanyName,
+    [property: JsonPropertyName("documents")] IEnumerable<DocumentDetails> Documents,
+    [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleId> CompanyRoles,
+    [property: JsonPropertyName("applicationChecklist")] IEnumerable<ApplicationChecklistEntryDetails> ApplicationChecklist,
+    [property: JsonPropertyName("email")] string? Email,
+    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber
 );
 
 public record DocumentDetails(
-	[property: JsonPropertyName("documentId")] Guid DocumentId,
-	[property: JsonPropertyName("documentType")] DocumentTypeId? DocumentTypeId
+    [property: JsonPropertyName("documentId")] Guid DocumentId,
+    [property: JsonPropertyName("documentType")] DocumentTypeId? DocumentTypeId
 );
 
 public record ApplicationChecklistEntryDetails(
-	ApplicationChecklistEntryTypeId TypeId,
-	ApplicationChecklistEntryStatusId StatusId
+    ApplicationChecklistEntryTypeId TypeId,
+    ApplicationChecklistEntryStatusId StatusId
 );

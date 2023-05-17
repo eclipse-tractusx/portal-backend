@@ -23,10 +23,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyRoleAgreementConsentData(
-	Guid CompanyUserId,
-	Guid CompanyId,
-	CompanyApplicationStatusId CompanyApplicationStatusId,
-	IEnumerable<CompanyRoleId> CompanyAssignedRoleIds,
-	IEnumerable<ConsentData> Consents);
+    Guid CompanyUserId,
+    Guid CompanyId,
+    CompanyApplicationStatusId CompanyApplicationStatusId,
+    IEnumerable<CompanyRoleId> CompanyAssignedRoleIds,
+    IEnumerable<ConsentData> Consents);
 
 public record ConsentData(Guid ConsentId, ConsentStatusId ConsentStatusId, Guid AgreementId);

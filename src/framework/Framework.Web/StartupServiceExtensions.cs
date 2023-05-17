@@ -32,44 +32,44 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class StartupServiceExtensions
 {
-	public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version)
-	{
-		services.AddCors(options => options.SetupCors(configuration));
+    public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version)
+    {
+        services.AddCors(options => options.SetupCors(configuration));
 
-		services.AddControllers()
-			.AddJsonOptions(options =>
-			{
-				options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
-			});
+        services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
+            });
 
-		services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen<TProgram>(c, version));
+        services.AddSwaggerGen(c => SwaggerGenConfiguration.SetupSwaggerGen<TProgram>(c, version));
 
-		services.AddAuthentication(x =>
-		{
-			x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-			x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-		}).AddJwtBearer(options =>
-		{
-			configuration.Bind("JwtBearerOptions", options);
-			if (!options.RequireHttpsMetadata)
-			{
-				options.BackchannelHttpHandler = new HttpClientHandler
-				{
-					ServerCertificateCustomValidationCallback = (_, _, _, _) => true
-				};
-			}
-		});
+        services.AddAuthentication(x =>
+        {
+            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(options =>
+        {
+            configuration.Bind("JwtBearerOptions", options);
+            if (!options.RequireHttpsMetadata)
+            {
+                options.BackchannelHttpHandler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+                };
+            }
+        });
 
-		JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-		services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
-			.AddOptions<JwtBearerOptions>()
-			.Bind(configuration.GetSection("JwtBearerOptions"))
-			.ValidateOnStart();
+        services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>()
+            .AddOptions<JwtBearerOptions>()
+            .Bind(configuration.GetSection("JwtBearerOptions"))
+            .ValidateOnStart();
 
-		services.AddHealthChecks()
-			.AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: new[] { "keycloak" });
+        services.AddHealthChecks()
+            .AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: new[] { "keycloak" });
 
-		return services;
-	}
+        return services;
+    }
 }

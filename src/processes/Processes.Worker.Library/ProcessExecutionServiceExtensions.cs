@@ -26,13 +26,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
 public static class ProcessExecutionServiceExtensions
 {
-	public static IServiceCollection AddProcessExecutionService(this IServiceCollection services, IConfigurationSection section)
-	{
-		services.AddOptions<ProcessExecutionServiceSettings>().Bind(section);
-		services
-			.AddTransient<ProcessExecutionService>()
-			.AddTransient<IProcessExecutor, ProcessExecutor>()
-			.AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
-		return services;
-	}
+    public static IServiceCollection AddProcessExecutionService(this IServiceCollection services, IConfigurationSection section)
+    {
+        services.AddOptions<ProcessExecutionServiceSettings>().Bind(section);
+        services
+            .AddTransient<ProcessExecutionService>()
+            .AddTransient<IProcessExecutor, ProcessExecutor>()
+            .AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
+        return services;
+    }
 }

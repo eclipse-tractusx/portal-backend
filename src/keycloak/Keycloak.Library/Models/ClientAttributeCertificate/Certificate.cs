@@ -30,13 +30,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ClientAttr
 
 public class Certificate
 {
-	[JsonProperty("certificate")]
-	// ReSharper disable once InconsistentNaming
-	public string _Certificate { get; set; }
-	[JsonProperty("kid")]
-	public string Kid { get; set; }
-	[JsonProperty("privateKey")]
-	public string PrivateKey { get; set; }
-	[JsonProperty("publicKey")]
-	public string PublicKey { get; set; }
+    [JsonProperty("certificate")]
+    // ReSharper disable once InconsistentNaming
+    public string _Certificate { get; set; }
+    [JsonProperty("kid")]
+    public string Kid { get; set; }
+    [JsonProperty("privateKey")]
+    public string PrivateKey { get; set; }
+    [JsonProperty("publicKey")]
+    public string PublicKey { get; set; }
 }

@@ -30,15 +30,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ClientRegistrationProviders
 {
-	[JsonProperty("default")]
-	public HasOrder Default { get; set; }
+    [JsonProperty("default")]
+    public HasOrder Default { get; set; }
 
-	[JsonProperty("install")]
-	public HasOrder Install { get; set; }
+    [JsonProperty("install")]
+    public HasOrder Install { get; set; }
 
-	[JsonProperty("saml2-entity-descriptor")]
-	public HasOrder Saml2EntityDescriptor { get; set; }
+    [JsonProperty("saml2-entity-descriptor")]
+    public HasOrder Saml2EntityDescriptor { get; set; }
 
-	[JsonProperty("openid-connect")]
-	public HasOrder OpenIdConnect { get; set; }
+    [JsonProperty("openid-connect")]
+    public HasOrder OpenIdConnect { get; set; }
 }

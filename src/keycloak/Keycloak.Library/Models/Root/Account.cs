@@ -30,9 +30,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class Account
 {
-	[JsonProperty("name")]
-	public Name Name { get; set; }
+    [JsonProperty("name")]
+    public Name Name { get; set; }
 
-	[JsonProperty("locales")]
-	public List<Locale> Locales { get; set; }
+    [JsonProperty("locales")]
+    public List<Locale> Locales { get; set; }
 }

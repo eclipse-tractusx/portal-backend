@@ -29,102 +29,102 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Tests;
 
 public class ClearinghouseServiceTests
 {
-	#region Initialization
+    #region Initialization
 
-	private readonly ITokenService _tokenService;
-	private readonly IOptions<ClearinghouseSettings> _options;
-	private readonly ClearinghouseService _sut;
-	private readonly IFixture _fixture;
+    private readonly ITokenService _tokenService;
+    private readonly IOptions<ClearinghouseSettings> _options;
+    private readonly ClearinghouseService _sut;
+    private readonly IFixture _fixture;
 
-	public ClearinghouseServiceTests()
-	{
-		_fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-		_fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-			.ForEach(b => _fixture.Behaviors.Remove(b));
-		_fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+    public ClearinghouseServiceTests()
+    {
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-		_options = Options.Create(new ClearinghouseSettings
-		{
-			Password = "passWord",
-			Scope = "test",
-			Username = "user@name",
-			BaseAddress = "https://base.address.com",
-			ClientId = "CatenaX",
-			ClientSecret = "pass@Secret",
-			GrantType = "cred",
-			KeycloakTokenAddress = "https://key.cloak.com"
-		});
-		_tokenService = A.Fake<ITokenService>();
-		_sut = new ClearinghouseService(_tokenService, _options);
-	}
+        _options = Options.Create(new ClearinghouseSettings
+        {
+            Password = "passWord",
+            Scope = "test",
+            Username = "user@name",
+            BaseAddress = "https://base.address.com",
+            ClientId = "CatenaX",
+            ClientSecret = "pass@Secret",
+            GrantType = "cred",
+            KeycloakTokenAddress = "https://key.cloak.com"
+        });
+        _tokenService = A.Fake<ITokenService>();
+        _sut = new ClearinghouseService(_tokenService, _options);
+    }
 
-	#endregion
+    #endregion
 
-	#region TriggerCompanyDataPost
+    #region TriggerCompanyDataPost
 
-	[Fact]
-	public async Task TriggerCompanyDataPost_WithValidData_DoesNotThrowException()
-	{
-		// Arrange
-		var data = _fixture.Create<ClearinghouseTransferData>();
-		var httpMessageHandlerMock =
-			new HttpMessageHandlerMock(HttpStatusCode.OK);
-		var httpClient = new HttpClient(httpMessageHandlerMock)
-		{
-			BaseAddress = new Uri("https://base.address.com")
-		};
-		A.CallTo(() => _tokenService.GetAuthorizedClient<ClearinghouseService>(_options.Value, A<CancellationToken>._))
-			.Returns(httpClient);
+    [Fact]
+    public async Task TriggerCompanyDataPost_WithValidData_DoesNotThrowException()
+    {
+        // Arrange
+        var data = _fixture.Create<ClearinghouseTransferData>();
+        var httpMessageHandlerMock =
+            new HttpMessageHandlerMock(HttpStatusCode.OK);
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<ClearinghouseService>(_options.Value, A<CancellationToken>._))
+            .Returns(httpClient);
 
-		// Act
-		await _sut.TriggerCompanyDataPost(data, CancellationToken.None).ConfigureAwait(false);
+        // Act
+        await _sut.TriggerCompanyDataPost(data, CancellationToken.None).ConfigureAwait(false);
 
-		// Assert
-		true.Should().BeTrue(); // One Assert is needed - just checking for no exception
-	}
+        // Assert
+        true.Should().BeTrue(); // One Assert is needed - just checking for no exception
+    }
 
-	[Fact]
-	public async Task TriggerCompanyDataPost_WithInvalidData_ThrowsServiceException()
-	{
-		// Arrange
-		var data = _fixture.Create<ClearinghouseTransferData>();
-		var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-		var httpClient = new HttpClient(httpMessageHandlerMock)
-		{
-			BaseAddress = new Uri("https://base.address.com")
-		};
-		A.CallTo(() => _tokenService.GetAuthorizedClient<ClearinghouseService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+    [Fact]
+    public async Task TriggerCompanyDataPost_WithInvalidData_ThrowsServiceException()
+    {
+        // Arrange
+        var data = _fixture.Create<ClearinghouseTransferData>();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<ClearinghouseService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
 
-		// Act
-		async Task Act() => await _sut.TriggerCompanyDataPost(data, CancellationToken.None).ConfigureAwait(false);
+        // Act
+        async Task Act() => await _sut.TriggerCompanyDataPost(data, CancellationToken.None).ConfigureAwait(false);
 
-		// Assert
-		var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-		ex.Message.Should().Contain("call to external system clearinghouse-post failed with statuscode");
-		ex.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-	}
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+        ex.Message.Should().Contain("call to external system clearinghouse-post failed with statuscode");
+        ex.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 
-	[Fact]
-	public async Task TriggerCompanyDataPost_WitException_ThrowsServiceException()
-	{
-		// Arrange
-		var data = _fixture.Create<ClearinghouseTransferData>();
-		var error = new Exception("random exception");
-		var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, null, error);
-		var httpClient = new HttpClient(httpMessageHandlerMock)
-		{
-			BaseAddress = new Uri("https://base.address.com")
-		};
-		A.CallTo(() => _tokenService.GetAuthorizedClient<ClearinghouseService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+    [Fact]
+    public async Task TriggerCompanyDataPost_WitException_ThrowsServiceException()
+    {
+        // Arrange
+        var data = _fixture.Create<ClearinghouseTransferData>();
+        var error = new Exception("random exception");
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, null, error);
+        var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<ClearinghouseService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
 
-		// Act
-		async Task Act() => await _sut.TriggerCompanyDataPost(data, CancellationToken.None).ConfigureAwait(false);
+        // Act
+        async Task Act() => await _sut.TriggerCompanyDataPost(data, CancellationToken.None).ConfigureAwait(false);
 
-		// Assert
-		var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-		ex.Message.Should().Contain("call to external system clearinghouse-post failed");
-		ex.InnerException.Should().Be(error);
-	}
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+        ex.Message.Should().Contain("call to external system clearinghouse-post failed");
+        ex.InnerException.Should().Be(error);
+    }
 
-	#endregion
+    #endregion
 }

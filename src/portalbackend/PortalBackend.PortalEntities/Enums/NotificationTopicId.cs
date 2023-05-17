@@ -25,18 +25,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 /// </summary>
 public enum NotificationTopicId
 {
-	/// <summary>
-	/// Notification is just an information for the user
-	/// </summary>
-	INFO = 1,
+    /// <summary>
+    /// Notification is just an information for the user
+    /// </summary>
+    INFO = 1,
 
-	/// <summary>
-	/// Notification that requires an action
-	/// </summary>
-	ACTION = 2,
+    /// <summary>
+    /// Notification that requires an action
+    /// </summary>
+    ACTION = 2,
 
-	/// <summary>
-	/// Offer related notification
-	/// </summary>
-	OFFER = 3,
+    /// <summary>
+    /// Offer related notification
+    /// </summary>
+    OFFER = 3,
 }

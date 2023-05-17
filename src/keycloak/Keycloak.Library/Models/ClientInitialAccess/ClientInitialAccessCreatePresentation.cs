@@ -30,8 +30,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ClientInit
 
 public class ClientInitialAccessCreatePresentation
 {
-	[JsonProperty("count")]
-	public int? Count { get; set; }
-	[JsonProperty("expiration")]
-	public int? Expiration { get; set; }
+    [JsonProperty("count")]
+    public int? Count { get; set; }
+    [JsonProperty("expiration")]
+    public int? Expiration { get; set; }
 }

@@ -24,30 +24,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ApplicationChecklistEntry
 {
-	public ApplicationChecklistEntry(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId applicationChecklistEntryStatusId, DateTimeOffset dateCreated)
-	{
-		ApplicationId = applicationId;
-		ApplicationChecklistEntryTypeId = applicationChecklistEntryTypeId;
-		ApplicationChecklistEntryStatusId = applicationChecklistEntryStatusId;
-		DateCreated = dateCreated;
-	}
+    public ApplicationChecklistEntry(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId applicationChecklistEntryStatusId, DateTimeOffset dateCreated)
+    {
+        ApplicationId = applicationId;
+        ApplicationChecklistEntryTypeId = applicationChecklistEntryTypeId;
+        ApplicationChecklistEntryStatusId = applicationChecklistEntryStatusId;
+        DateCreated = dateCreated;
+    }
 
-	public Guid ApplicationId { get; private set; }
+    public Guid ApplicationId { get; private set; }
 
-	public DateTimeOffset DateCreated { get; private set; }
+    public DateTimeOffset DateCreated { get; private set; }
 
-	public DateTimeOffset? DateLastChanged { get; set; }
+    public DateTimeOffset? DateLastChanged { get; set; }
 
-	public ApplicationChecklistEntryTypeId ApplicationChecklistEntryTypeId { get; private set; }
+    public ApplicationChecklistEntryTypeId ApplicationChecklistEntryTypeId { get; private set; }
 
-	public ApplicationChecklistEntryStatusId ApplicationChecklistEntryStatusId { get; set; }
+    public ApplicationChecklistEntryStatusId ApplicationChecklistEntryStatusId { get; set; }
 
-	public string? Comment { get; set; }
+    public string? Comment { get; set; }
 
-	// Navigation properties
-	public virtual ApplicationChecklistEntryStatus? ApplicationChecklistEntryStatus { get; private set; }
+    // Navigation properties
+    public virtual ApplicationChecklistEntryStatus? ApplicationChecklistEntryStatus { get; private set; }
 
-	public virtual ApplicationChecklistEntryType? ApplicationChecklistEntryType { get; private set; }
+    public virtual ApplicationChecklistEntryType? ApplicationChecklistEntryType { get; private set; }
 
-	public virtual CompanyApplication? Application { get; private set; }
+    public virtual CompanyApplication? Application { get; private set; }
 }

@@ -29,48 +29,48 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Lib
 
 public static class VerifyApplicationChecklistDataExtensions
 {
-	public static void ValidateApplicationChecklistData(
-		this VerifyChecklistData? checklistData,
-		Guid applicationId,
-		ApplicationChecklistEntryTypeId entryTypeId, IEnumerable<ApplicationChecklistEntryStatusId> entryStatusIds,
-		IEnumerable<ProcessStepStatusId> processStepStatusIds)
-	{
-		if (checklistData is null)
-		{
-			throw new NotFoundException($"application {applicationId} does not exist");
-		}
+    public static void ValidateApplicationChecklistData(
+        this VerifyChecklistData? checklistData,
+        Guid applicationId,
+        ApplicationChecklistEntryTypeId entryTypeId, IEnumerable<ApplicationChecklistEntryStatusId> entryStatusIds,
+        IEnumerable<ProcessStepStatusId> processStepStatusIds)
+    {
+        if (checklistData is null)
+        {
+            throw new NotFoundException($"application {applicationId} does not exist");
+        }
 
-		if (!checklistData.IsSubmitted)
-		{
-			throw new ConflictException($"application {applicationId} is not in status SUBMITTED");
-		}
+        if (!checklistData.IsSubmitted)
+        {
+            throw new ConflictException($"application {applicationId} is not in status SUBMITTED");
+        }
 
-		if (checklistData.Process == null)
-		{
-			throw new ConflictException($"application {applicationId} is not associated with a checklist-process");
-		}
+        if (checklistData.Process == null)
+        {
+            throw new ConflictException($"application {applicationId} is not associated with a checklist-process");
+        }
 
-		if (checklistData.Process.IsLocked())
-		{
-			throw new ConflictException($"checklist-process {checklistData.Process.Id} of {applicationId} is locked, lock expiry is set to {checklistData.Process.LockExpiryDate}");
-		}
+        if (checklistData.Process.IsLocked())
+        {
+            throw new ConflictException($"checklist-process {checklistData.Process.Id} of {applicationId} is locked, lock expiry is set to {checklistData.Process.LockExpiryDate}");
+        }
 
-		if (checklistData.Checklist == null || checklistData.ProcessSteps == null)
-		{
-			throw new UnexpectedConditionException("checklist or processSteps should never be null here");
-		}
+        if (checklistData.Checklist == null || checklistData.ProcessSteps == null)
+        {
+            throw new UnexpectedConditionException("checklist or processSteps should never be null here");
+        }
 
-		if (checklistData.ProcessSteps == null || checklistData.ProcessSteps.Any(step => !processStepStatusIds.Contains(step.ProcessStepStatusId)))
-		{
-			throw new UnexpectedConditionException($"processSteps should never have other status then {string.Join(",", processStepStatusIds)} here");
-		}
+        if (checklistData.ProcessSteps == null || checklistData.ProcessSteps.Any(step => !processStepStatusIds.Contains(step.ProcessStepStatusId)))
+        {
+            throw new UnexpectedConditionException($"processSteps should never have other status then {string.Join(",", processStepStatusIds)} here");
+        }
 
-		if (!checklistData.Checklist.Any(entry => entry.TypeId == entryTypeId && entryStatusIds.Contains(entry.StatusId)))
-		{
-			throw new ConflictException($"application {applicationId} does not have a checklist entry for {entryTypeId} in status {string.Join(", ", entryStatusIds)}");
-		}
-	}
+        if (!checklistData.Checklist.Any(entry => entry.TypeId == entryTypeId && entryStatusIds.Contains(entry.StatusId)))
+        {
+            throw new ConflictException($"application {applicationId} does not have a checklist entry for {entryTypeId} in status {string.Join(", ", entryStatusIds)}");
+        }
+    }
 
-	public static IApplicationChecklistService.ManualChecklistProcessStepData CreateManualChecklistProcessStepData(this VerifyChecklistData checklistData, Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStep processStep) =>
-		new IApplicationChecklistService.ManualChecklistProcessStepData(applicationId, checklistData.Process!, processStep.Id, entryTypeId, checklistData.Checklist!.ToImmutableDictionary(entry => entry.TypeId, entry => entry.StatusId), checklistData.ProcessSteps!);
+    public static IApplicationChecklistService.ManualChecklistProcessStepData CreateManualChecklistProcessStepData(this VerifyChecklistData checklistData, Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStep processStep) =>
+        new IApplicationChecklistService.ManualChecklistProcessStepData(applicationId, checklistData.Process!, processStep.Id, entryTypeId, checklistData.Checklist!.ToImmutableDictionary(entry => entry.TypeId, entry => entry.StatusId), checklistData.ProcessSteps!);
 }

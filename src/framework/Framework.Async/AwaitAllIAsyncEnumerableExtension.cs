@@ -22,13 +22,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 
 public static class AwaitAllIAsyncEnumerableExtension
 {
-	public static async ValueTask AwaitAll<T>(this IAsyncEnumerable<T> asyncItems, CancellationToken cancellationToken = default)
-	{
-		await using var enumerator = asyncItems.GetAsyncEnumerator(cancellationToken);
-		while (true)
-		{
-			if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
-				break;
-		}
-	}
+    public static async ValueTask AwaitAll<T>(this IAsyncEnumerable<T> asyncItems, CancellationToken cancellationToken = default)
+    {
+        await using var enumerator = asyncItems.GetAsyncEnumerator(cancellationToken);
+        while (true)
+        {
+            if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                break;
+        }
+    }
 }

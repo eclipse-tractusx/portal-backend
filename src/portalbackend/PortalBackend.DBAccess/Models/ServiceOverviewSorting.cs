@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// </summary>
 public enum ServiceOverviewSorting
 {
-	/// <summary>
-	/// Ascending by provider
-	/// </summary>
-	ProviderAsc = 1,
+    /// <summary>
+    /// Ascending by provider
+    /// </summary>
+    ProviderAsc = 1,
 
-	/// <summary>
-	/// Descending by provider
-	/// </summary>
-	ProviderDesc = 2,
+    /// <summary>
+    /// Descending by provider
+    /// </summary>
+    ProviderDesc = 2,
 
-	/// <summary>
-	/// Ascending by the release date
-	/// </summary>
-	ReleaseDateAsc = 3,
+    /// <summary>
+    /// Ascending by the release date
+    /// </summary>
+    ReleaseDateAsc = 3,
 
-	/// <summary>
-	/// Descending by release date
-	/// </summary>
-	ReleaseDateDesc = 4,
+    /// <summary>
+    /// Descending by release date
+    /// </summary>
+    ReleaseDateDesc = 4,
 }

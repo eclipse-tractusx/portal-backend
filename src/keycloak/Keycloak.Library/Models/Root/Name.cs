@@ -32,7 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 [JsonConverter(typeof(NameConverter))]
 public enum Name
 {
-	Base,
-	Keycloak,
-	RhSso
+    Base,
+    Keycloak,
+    RhSso
 }

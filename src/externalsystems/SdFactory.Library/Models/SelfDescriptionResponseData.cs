@@ -24,7 +24,7 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 
 public record SelfDescriptionResponseData(
-	[property: JsonPropertyName("externalId")] Guid ExternalId,
-	[property: JsonPropertyName("status")] SelfDescriptionStatus Status,
-	[property: JsonPropertyName("message")] string? Message,
-	[property: JsonPropertyName("selfDescriptionDocument")] string? Content);
+    [property: JsonPropertyName("externalId")] Guid ExternalId,
+    [property: JsonPropertyName("status")] SelfDescriptionStatus Status,
+    [property: JsonPropertyName("message")] string? Message,
+    [property: JsonPropertyName("selfDescriptionDocument")] string? Content);

@@ -22,8 +22,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 
 public enum AuditPropertyV1Names
 {
-	AuditV1Id,
-	AuditV1OperationId,
-	AuditV1DateLastChanged,
-	AuditV1LastEditorId
+    AuditV1Id,
+    AuditV1OperationId,
+    AuditV1DateLastChanged,
+    AuditV1LastEditorId
 }

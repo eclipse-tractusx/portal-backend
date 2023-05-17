@@ -30,68 +30,68 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Maintenance.App;
 /// </summary>
 public class BatchDeleteService : BackgroundService
 {
-	private readonly IHostApplicationLifetime _applicationLifetime;
-	private readonly IServiceScopeFactory _serviceScopeFactory;
-	private readonly ILogger<BatchDeleteService> _logger;
-	private readonly int _days;
+    private readonly IHostApplicationLifetime _applicationLifetime;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly ILogger<BatchDeleteService> _logger;
+    private readonly int _days;
 
-	/// <summary>
-	/// Creates a new instance of <see cref="BatchDeleteService"/>
-	/// </summary>
-	/// <param name="applicationLifetime">Application lifetime</param>
-	/// <param name="serviceScopeFactory">access to the services</param>
-	/// <param name="logger">the logger</param>
-	/// <param name="config">the apps configuration</param>
-	public BatchDeleteService(
-		IHostApplicationLifetime applicationLifetime,
-		IServiceScopeFactory serviceScopeFactory,
-		ILogger<BatchDeleteService> logger,
-		IConfiguration config)
-	{
-		_applicationLifetime = applicationLifetime;
-		_serviceScopeFactory = serviceScopeFactory;
-		_logger = logger;
-		_days = config.GetValue<int>("DeleteIntervalInDays");
-	}
+    /// <summary>
+    /// Creates a new instance of <see cref="BatchDeleteService"/>
+    /// </summary>
+    /// <param name="applicationLifetime">Application lifetime</param>
+    /// <param name="serviceScopeFactory">access to the services</param>
+    /// <param name="logger">the logger</param>
+    /// <param name="config">the apps configuration</param>
+    public BatchDeleteService(
+        IHostApplicationLifetime applicationLifetime,
+        IServiceScopeFactory serviceScopeFactory,
+        ILogger<BatchDeleteService> logger,
+        IConfiguration config)
+    {
+        _applicationLifetime = applicationLifetime;
+        _serviceScopeFactory = serviceScopeFactory;
+        _logger = logger;
+        _days = config.GetValue<int>("DeleteIntervalInDays");
+    }
 
-	/// <inheritdoc />
-	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-	{
-		using var scope = _serviceScopeFactory.CreateScope();
-		var dbContext = scope.ServiceProvider.GetRequiredService<PortalDbContext>();
+    /// <inheritdoc />
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        using var scope = _serviceScopeFactory.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<PortalDbContext>();
 
-		if (!stoppingToken.IsCancellationRequested)
-		{
-			try
-			{
-				_logger.LogInformation("Getting documents and assignments older {Days} days", _days);
-				List<(Guid DocumentId, IEnumerable<Guid> AgreementIds, IEnumerable<Guid> OfferIds)> documentData = await dbContext.Documents.Where(x =>
-					x.DateCreated < DateTimeOffset.UtcNow.AddDays(-_days) &&
-					x.DocumentStatusId == DocumentStatusId.INACTIVE)
-					.Select(doc => new ValueTuple<Guid, IEnumerable<Guid>, IEnumerable<Guid>>(
-						doc.Id,
-						doc.Agreements.Select(x => x.Id),
-						doc.Offers.Select(x => x.Id)
-						))
-					.ToListAsync(stoppingToken)
-					.ConfigureAwait(false);
-				_logger.LogInformation("Cleaning up {DocumentCount} Documents and {OfferIdCount} OfferAssignedDocuments", documentData.Count, documentData.SelectMany(x => x.OfferIds).Count());
+        if (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                _logger.LogInformation("Getting documents and assignments older {Days} days", _days);
+                List<(Guid DocumentId, IEnumerable<Guid> AgreementIds, IEnumerable<Guid> OfferIds)> documentData = await dbContext.Documents.Where(x =>
+                    x.DateCreated < DateTimeOffset.UtcNow.AddDays(-_days) &&
+                    x.DocumentStatusId == DocumentStatusId.INACTIVE)
+                    .Select(doc => new ValueTuple<Guid, IEnumerable<Guid>, IEnumerable<Guid>>(
+                        doc.Id,
+                        doc.Agreements.Select(x => x.Id),
+                        doc.Offers.Select(x => x.Id)
+                        ))
+                    .ToListAsync(stoppingToken)
+                    .ConfigureAwait(false);
+                _logger.LogInformation("Cleaning up {DocumentCount} Documents and {OfferIdCount} OfferAssignedDocuments", documentData.Count, documentData.SelectMany(x => x.OfferIds).Count());
 
-				var agreementsToDeleteDocumentId = documentData.SelectMany(data => data.AgreementIds.Select(agreementId => new Agreement(agreementId, default, null!, default) { DocumentId = data.DocumentId })).ToList();
-				dbContext.Agreements.AttachRange(agreementsToDeleteDocumentId);
-				agreementsToDeleteDocumentId.ForEach(agreement => agreement.DocumentId = null);
-				dbContext.OfferAssignedDocuments.RemoveRange(documentData.SelectMany(data => data.OfferIds.Select(offerId => new OfferAssignedDocument(offerId, data.DocumentId))));
-				dbContext.Documents.RemoveRange(documentData.Select(x => new Document(x.DocumentId, null!, null!, null!, default, default, default, default)));
-				await dbContext.SaveChangesAsync(stoppingToken).ConfigureAwait(false);
-				_logger.LogInformation("Documents older than {Days} days and depending consents successfully cleaned up", _days);
-			}
-			catch (Exception ex)
-			{
-				Environment.ExitCode = 1;
-				_logger.LogError("Database clean up failed with error: {Errors}", ex.Message);
-			}
-		}
+                var agreementsToDeleteDocumentId = documentData.SelectMany(data => data.AgreementIds.Select(agreementId => new Agreement(agreementId, default, null!, default) { DocumentId = data.DocumentId })).ToList();
+                dbContext.Agreements.AttachRange(agreementsToDeleteDocumentId);
+                agreementsToDeleteDocumentId.ForEach(agreement => agreement.DocumentId = null);
+                dbContext.OfferAssignedDocuments.RemoveRange(documentData.SelectMany(data => data.OfferIds.Select(offerId => new OfferAssignedDocument(offerId, data.DocumentId))));
+                dbContext.Documents.RemoveRange(documentData.Select(x => new Document(x.DocumentId, null!, null!, null!, default, default, default, default)));
+                await dbContext.SaveChangesAsync(stoppingToken).ConfigureAwait(false);
+                _logger.LogInformation("Documents older than {Days} days and depending consents successfully cleaned up", _days);
+            }
+            catch (Exception ex)
+            {
+                Environment.ExitCode = 1;
+                _logger.LogError("Database clean up failed with error: {Errors}", ex.Message);
+            }
+        }
 
-		_applicationLifetime.StopApplication();
-	}
+        _applicationLifetime.StopApplication();
+    }
 }

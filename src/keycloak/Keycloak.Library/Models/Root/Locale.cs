@@ -32,5 +32,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 [JsonConverter(typeof(LocaleConverter))]
 public enum Locale
 {
-	En
+    En
 }

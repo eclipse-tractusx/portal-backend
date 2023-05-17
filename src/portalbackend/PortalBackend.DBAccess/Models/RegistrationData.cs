@@ -23,20 +23,20 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record RegistrationData(
-	Guid CompanyId,
-	string Name,
-	string? BusinessPartnerNumber,
-	string? ShortName,
-	string? City,
-	string? Region,
-	string? StreetAdditional,
-	string? StreetName,
-	string? StreetNumber,
-	string? ZipCode,
-	string? CountryAlpha2Code,
-	string? CountryDe,
-	IEnumerable<CompanyRoleId> CompanyRoleIds,
-	IEnumerable<(Guid AgreementId, ConsentStatusId ConsentStatusId)> AgreementConsentStatuses,
-	IEnumerable<string> DocumentNames,
-	IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> Identifiers
+    Guid CompanyId,
+    string Name,
+    string? BusinessPartnerNumber,
+    string? ShortName,
+    string? City,
+    string? Region,
+    string? StreetAdditional,
+    string? StreetName,
+    string? StreetNumber,
+    string? ZipCode,
+    string? CountryAlpha2Code,
+    string? CountryDe,
+    IEnumerable<CompanyRoleId> CompanyRoleIds,
+    IEnumerable<(Guid AgreementId, ConsentStatusId ConsentStatusId)> AgreementConsentStatuses,
+    IEnumerable<string> DocumentNames,
+    IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> Identifiers
 );

@@ -31,8 +31,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 /// <param name="Image"></param>
 /// <returns></returns>
 public record OfferCompanySubscriptionStatusResponse(
-	Guid OfferId,
-	string? ServiceName,
-	IEnumerable<CompanySubscriptionStatusData> CompanySubscriptionStatuses,
-	Guid? Image
+    Guid OfferId,
+    string? ServiceName,
+    IEnumerable<CompanySubscriptionStatusData> CompanySubscriptionStatuses,
+    Guid? Image
 );

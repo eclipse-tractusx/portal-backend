@@ -25,50 +25,50 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 
 public class RegistrationSettings
 {
-	public RegistrationSettings()
-	{
-		KeycloakClientID = null!;
-		BasePortalAddress = null!;
-	}
+    public RegistrationSettings()
+    {
+        KeycloakClientID = null!;
+        BasePortalAddress = null!;
+    }
 
-	[Required(AllowEmptyStrings = false)]
-	public string KeycloakClientID { get; set; }
+    [Required(AllowEmptyStrings = false)]
+    public string KeycloakClientID { get; set; }
 
-	[Required(AllowEmptyStrings = false)]
-	public string BasePortalAddress { get; set; }
+    [Required(AllowEmptyStrings = false)]
+    public string BasePortalAddress { get; set; }
 
-	/// <summary>
-	/// Document Type Id
-	/// </summary>
-	/// <value></value>
-	[Required]
-	public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; } = null!;
+    /// <summary>
+    /// Document Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; } = null!;
 
-	/// <summary>
-	/// Document Type Id
-	/// </summary>
-	/// <value></value>
-	[Required]
-	public IEnumerable<CompanyApplicationStatusId> ApplicationStatusIds { get; set; } = null!;
+    /// <summary>
+    /// Document Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<CompanyApplicationStatusId> ApplicationStatusIds { get; set; } = null!;
 
-	/// <summary>
-	/// RegistrationDocument Type Id
-	/// </summary>
-	/// <value></value>
-	[Required]
-	public IEnumerable<DocumentTypeId> RegistrationDocumentTypeIds { get; set; } = null!;
+    /// <summary>
+    /// RegistrationDocument Type Id
+    /// </summary>
+    /// <value></value>
+    [Required]
+    public IEnumerable<DocumentTypeId> RegistrationDocumentTypeIds { get; set; } = null!;
 }
 
 public static class RegistrationSettingsExtension
 {
-	public static IServiceCollection ConfigureRegistrationSettings(
-		this IServiceCollection services,
-		IConfigurationSection section)
-	{
-		services.AddOptions<RegistrationSettings>()
-			.Bind(section)
-			.ValidateDataAnnotations()
-			.ValidateOnStart();
-		return services;
-	}
+    public static IServiceCollection ConfigureRegistrationSettings(
+        this IServiceCollection services,
+        IConfigurationSection section)
+    {
+        services.AddOptions<RegistrationSettings>()
+            .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        return services;
+    }
 }

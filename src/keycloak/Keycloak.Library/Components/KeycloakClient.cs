@@ -31,75 +31,75 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {
-	public async Task CreateComponentAsync(string realm, Component componentRepresentation) =>
-		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/components")
-			.PostJsonAsync(componentRepresentation)
-			.ConfigureAwait(false);
+    public async Task CreateComponentAsync(string realm, Component componentRepresentation) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/components")
+            .PostJsonAsync(componentRepresentation)
+            .ConfigureAwait(false);
 
-	public async Task<IEnumerable<Component>> GetComponentsAsync(string realm, string? name = null, string? parent = null, string? type = null)
-	{
-		var queryParams = new Dictionary<string, object?>
-		{
-			[nameof(name)] = name,
-			[nameof(parent)] = parent,
-			[nameof(type)] = type
-		};
+    public async Task<IEnumerable<Component>> GetComponentsAsync(string realm, string? name = null, string? parent = null, string? type = null)
+    {
+        var queryParams = new Dictionary<string, object?>
+        {
+            [nameof(name)] = name,
+            [nameof(parent)] = parent,
+            [nameof(type)] = type
+        };
 
-		return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/components")
-			.SetQueryParams(queryParams)
-			.GetJsonAsync<IEnumerable<Component>>()
-			.ConfigureAwait(false);
-	}
+        return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/components")
+            .SetQueryParams(queryParams)
+            .GetJsonAsync<IEnumerable<Component>>()
+            .ConfigureAwait(false);
+    }
 
-	public async Task<Component> GetComponentAsync(string realm, string componentId) =>
-		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/components/")
-			.AppendPathSegment(componentId, true)
-			.GetJsonAsync<Component>()
-			.ConfigureAwait(false);
+    public async Task<Component> GetComponentAsync(string realm, string componentId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/components/")
+            .AppendPathSegment(componentId, true)
+            .GetJsonAsync<Component>()
+            .ConfigureAwait(false);
 
-	public async Task UpdateComponentAsync(string realm, string componentId, Component componentRepresentation) =>
-		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/components/")
-			.AppendPathSegment(componentId, true)
-			.PutJsonAsync(componentRepresentation)
-			.ConfigureAwait(false);
+    public async Task UpdateComponentAsync(string realm, string componentId, Component componentRepresentation) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/components/")
+            .AppendPathSegment(componentId, true)
+            .PutJsonAsync(componentRepresentation)
+            .ConfigureAwait(false);
 
-	public async Task DeleteComponentAsync(string realm, string componentId) =>
-		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/components/")
-			.AppendPathSegment(componentId, true)
-			.DeleteAsync()
-			.ConfigureAwait(false);
+    public async Task DeleteComponentAsync(string realm, string componentId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/components/")
+            .AppendPathSegment(componentId, true)
+            .DeleteAsync()
+            .ConfigureAwait(false);
 
-	public async Task<IEnumerable<ComponentType>> GetSubcomponentTypesAsync(string realm, string componentId, string? type = null)
-	{
-		var queryParams = new Dictionary<string, object?>
-		{
-			[nameof(type)] = type
-		};
+    public async Task<IEnumerable<ComponentType>> GetSubcomponentTypesAsync(string realm, string componentId, string? type = null)
+    {
+        var queryParams = new Dictionary<string, object?>
+        {
+            [nameof(type)] = type
+        };
 
-		var result = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/components/")
-			.AppendPathSegment(componentId, true)
-			.AppendPathSegment("/sub-component-types")
-			.SetQueryParams(queryParams)
-			.GetJsonAsync<IEnumerable<ComponentType>>()
-			.ConfigureAwait(false);
-		return result;
-	}
+        var result = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/components/")
+            .AppendPathSegment(componentId, true)
+            .AppendPathSegment("/sub-component-types")
+            .SetQueryParams(queryParams)
+            .GetJsonAsync<IEnumerable<ComponentType>>()
+            .ConfigureAwait(false);
+        return result;
+    }
 }

@@ -32,139 +32,139 @@ namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Tests;
 
 public class SdFactoryServiceTests
 {
-	#region Initialization
+    #region Initialization
 
-	private static readonly IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers = new List<(UniqueIdentifierId Id, string Value)>
-	{
-		new (UniqueIdentifierId.VAT_ID, "JUSTATEST")
-	};
+    private static readonly IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers = new List<(UniqueIdentifierId Id, string Value)>
+    {
+        new (UniqueIdentifierId.VAT_ID, "JUSTATEST")
+    };
 
-	private readonly IPortalRepositories _portalRepositories;
-	private readonly IDocumentRepository _documentRepository;
-	private readonly ICollection<Document> _documents;
-	private readonly IOptions<SdFactorySettings> _options;
-	private readonly ITokenService _tokenService;
-	private readonly SdFactoryService _service;
+    private readonly IPortalRepositories _portalRepositories;
+    private readonly IDocumentRepository _documentRepository;
+    private readonly ICollection<Document> _documents;
+    private readonly IOptions<SdFactorySettings> _options;
+    private readonly ITokenService _tokenService;
+    private readonly SdFactoryService _service;
 
-	public SdFactoryServiceTests()
-	{
-		var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-		fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-			.ForEach(b => fixture.Behaviors.Remove(b));
-		fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+    public SdFactoryServiceTests()
+    {
+        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => fixture.Behaviors.Remove(b));
+        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-		_documents = new HashSet<Document>();
-		_documentRepository = A.Fake<IDocumentRepository>();
-		_portalRepositories = A.Fake<IPortalRepositories>();
-		_options = Options.Create(new SdFactorySettings
-		{
-			SdFactoryUrl = "https://www.api.sdfactory.com",
-			SdFactoryIssuerBpn = "BPNL00000003CRHK"
-		});
-		_tokenService = A.Fake<ITokenService>();
-		SetupRepositoryMethods();
-		_service = new SdFactoryService(_tokenService, _options);
-	}
+        _documents = new HashSet<Document>();
+        _documentRepository = A.Fake<IDocumentRepository>();
+        _portalRepositories = A.Fake<IPortalRepositories>();
+        _options = Options.Create(new SdFactorySettings
+        {
+            SdFactoryUrl = "https://www.api.sdfactory.com",
+            SdFactoryIssuerBpn = "BPNL00000003CRHK"
+        });
+        _tokenService = A.Fake<ITokenService>();
+        SetupRepositoryMethods();
+        _service = new SdFactoryService(_tokenService, _options);
+    }
 
-	#endregion
+    #endregion
 
-	#region Register Connector
+    #region Register Connector
 
-	[Fact]
-	public async Task RegisterConnectorAsync_WithValidData_CreatesDocumentInDatabase()
-	{
-		// Arrange
-		const string bpn = "BPNL000000000009";
-		var id = Guid.NewGuid();
-		var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
-		CreateHttpClient(httpMessageHandlerMock);
+    [Fact]
+    public async Task RegisterConnectorAsync_WithValidData_CreatesDocumentInDatabase()
+    {
+        // Arrange
+        const string bpn = "BPNL000000000009";
+        var id = Guid.NewGuid();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
+        CreateHttpClient(httpMessageHandlerMock);
 
-		// Act
-		await _service.RegisterConnectorAsync(id, "https://connect-tor.com", bpn, CancellationToken.None).ConfigureAwait(false);
+        // Act
+        await _service.RegisterConnectorAsync(id, "https://connect-tor.com", bpn, CancellationToken.None).ConfigureAwait(false);
 
-		// Assert
-		_documents.Should().BeEmpty();
-	}
+        // Assert
+        _documents.Should().BeEmpty();
+    }
 
-	[Fact]
-	public async Task RegisterConnectorAsync_WithInvalidData_ThrowsException()
-	{
-		// Arrange
-		var id = Guid.NewGuid();
-		const string bpn = "BPNL000000000009";
-		var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-		CreateHttpClient(httpMessageHandlerMock);
+    [Fact]
+    public async Task RegisterConnectorAsync_WithInvalidData_ThrowsException()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        const string bpn = "BPNL000000000009";
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+        CreateHttpClient(httpMessageHandlerMock);
 
-		// Act
-		async Task Action() => await _service.RegisterConnectorAsync(id, "https://connect-tor.com", bpn, CancellationToken.None).ConfigureAwait(false);
+        // Act
+        async Task Action() => await _service.RegisterConnectorAsync(id, "https://connect-tor.com", bpn, CancellationToken.None).ConfigureAwait(false);
 
-		// Assert
-		var exception = await Assert.ThrowsAsync<ServiceException>(Action);
-		exception.Message.Should().Be("call to external system sd-factory-connector-post failed with statuscode 400");
-		exception.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-	}
+        // Assert
+        var exception = await Assert.ThrowsAsync<ServiceException>(Action);
+        exception.Message.Should().Be("call to external system sd-factory-connector-post failed with statuscode 400");
+        exception.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 
-	#endregion
+    #endregion
 
-	#region RegisterSelfDescription
+    #region RegisterSelfDescription
 
-	[Fact]
-	public async Task RegisterSelfDescriptionAsync_WithValidData_CreatesDocumentInDatabase()
-	{
-		// Arrange
-		const string bpn = "BPNL000000000009";
-		var applicationId = Guid.NewGuid();
-		var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
-		CreateHttpClient(httpMessageHandlerMock);
+    [Fact]
+    public async Task RegisterSelfDescriptionAsync_WithValidData_CreatesDocumentInDatabase()
+    {
+        // Arrange
+        const string bpn = "BPNL000000000009";
+        var applicationId = Guid.NewGuid();
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
+        CreateHttpClient(httpMessageHandlerMock);
 
-		// Act
-		await _service.RegisterSelfDescriptionAsync(applicationId, UniqueIdentifiers, "de", bpn, CancellationToken.None).ConfigureAwait(false);
+        // Act
+        await _service.RegisterSelfDescriptionAsync(applicationId, UniqueIdentifiers, "de", bpn, CancellationToken.None).ConfigureAwait(false);
 
-		// Assert
-		_documents.Should().BeEmpty();
-	}
+        // Assert
+        _documents.Should().BeEmpty();
+    }
 
-	[Fact]
-	public async Task RegisterSelfDescriptionAsync_WithInvalidData_ThrowsException()
-	{
-		// Arrange
-		var applicationId = Guid.NewGuid();
-		const string bpn = "BPNL000000000009";
-		var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-		CreateHttpClient(httpMessageHandlerMock);
+    [Fact]
+    public async Task RegisterSelfDescriptionAsync_WithInvalidData_ThrowsException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        const string bpn = "BPNL000000000009";
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+        CreateHttpClient(httpMessageHandlerMock);
 
-		// Act
-		async Task Action() => await _service.RegisterSelfDescriptionAsync(applicationId, UniqueIdentifiers, "de", bpn, CancellationToken.None).ConfigureAwait(false);
+        // Act
+        async Task Action() => await _service.RegisterSelfDescriptionAsync(applicationId, UniqueIdentifiers, "de", bpn, CancellationToken.None).ConfigureAwait(false);
 
-		// Assert
-		var exception = await Assert.ThrowsAsync<ServiceException>(Action);
-		exception.Message.Should().Be($"call to external system sd-factory-selfdescription-post failed with statuscode 400");
-		exception.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-	}
+        // Assert
+        var exception = await Assert.ThrowsAsync<ServiceException>(Action);
+        exception.Message.Should().Be($"call to external system sd-factory-selfdescription-post failed with statuscode 400");
+        exception.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 
-	#endregion
+    #endregion
 
-	#region Setup
+    #region Setup
 
-	private void CreateHttpClient(HttpMessageHandler httpMessageHandlerMock)
-	{
-		var httpClient = new HttpClient(httpMessageHandlerMock) { BaseAddress = new Uri(_options.Value.SdFactoryUrl) };
-		A.CallTo(() => _tokenService.GetAuthorizedClient<SdFactoryService>(_options.Value, CancellationToken.None))
-			.ReturnsLazily(() => httpClient);
-	}
+    private void CreateHttpClient(HttpMessageHandler httpMessageHandlerMock)
+    {
+        var httpClient = new HttpClient(httpMessageHandlerMock) { BaseAddress = new Uri(_options.Value.SdFactoryUrl) };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<SdFactoryService>(_options.Value, CancellationToken.None))
+            .ReturnsLazily(() => httpClient);
+    }
 
-	private void SetupRepositoryMethods()
-	{
-		A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._, A<Action<Document>?>._))
-			.Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? action) =>
-			{
-				var document = new Document(Guid.NewGuid(), documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
-				action?.Invoke(document);
-				_documents.Add(document);
-			});
+    private void SetupRepositoryMethods()
+    {
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._, A<Action<Document>?>._))
+            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? action) =>
+            {
+                var document = new Document(Guid.NewGuid(), documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
+                action?.Invoke(document);
+                _documents.Add(document);
+            });
 
-		A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
-	}
+        A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
+    }
 
-	#endregion
+    #endregion
 }

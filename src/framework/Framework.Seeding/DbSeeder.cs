@@ -24,19 +24,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
 internal class DbSeeder
 {
-	private readonly CustomSeederRunner _seederRunner;
-	private readonly ILogger<DbSeeder> _logger;
+    private readonly CustomSeederRunner _seederRunner;
+    private readonly ILogger<DbSeeder> _logger;
 
-	public DbSeeder(CustomSeederRunner seederRunner, ILogger<DbSeeder> logger)
-	{
-		_seederRunner = seederRunner;
-		_logger = logger;
-	}
+    public DbSeeder(CustomSeederRunner seederRunner, ILogger<DbSeeder> logger)
+    {
+        _seederRunner = seederRunner;
+        _logger = logger;
+    }
 
-	public async Task SeedDatabaseAsync(CancellationToken cancellationToken)
-	{
-		_logger.LogInformation("Run custom seeder");
-		await _seederRunner.RunSeedersAsync(cancellationToken);
-		_logger.LogInformation("Custom seeding finished");
-	}
+    public async Task SeedDatabaseAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Run custom seeder");
+        await _seederRunner.RunSeedersAsync(cancellationToken);
+        _logger.LogInformation("Custom seeding finished");
+    }
 }

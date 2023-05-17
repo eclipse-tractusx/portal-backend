@@ -37,14 +37,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="Region">Region of the company's address.</param>
 /// <param name="Identifiers">Unique-identifiers of the company mapped to Bpdm identifier keys</param>
 public record BpdmData(
-	string CompanyName,
-	string? ShortName,
-	string? BusinessPartnerNumber,
-	string? Alpha2Code,
-	string? ZipCode,
-	string? City,
-	string? StreetName,
-	string? StreetNumber,
-	string? Region,
-	IEnumerable<(BpdmIdentifierId UniqueIdentifierId, string Value)> Identifiers
+    string CompanyName,
+    string? ShortName,
+    string? BusinessPartnerNumber,
+    string? Alpha2Code,
+    string? ZipCode,
+    string? City,
+    string? StreetName,
+    string? StreetNumber,
+    string? Region,
+    IEnumerable<(BpdmIdentifierId UniqueIdentifierId, string Value)> Identifiers
 );

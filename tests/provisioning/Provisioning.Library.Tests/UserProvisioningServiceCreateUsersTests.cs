@@ -31,439 +31,439 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests;
 
 public class UserProvisioningServiceCreateUsersTests
 {
-	private readonly IFixture _fixture;
-	private readonly Random _random;
-	private readonly int _numUsers;
-	private readonly int _numRoles;
-	private readonly int _indexSpecialUser;
-	private readonly string _firstNameSpecialUser;
-	private readonly Guid _companyUserIdSpecialUser;
-	private readonly IProvisioningManager _provisioningManager;
-	private readonly IPortalRepositories _portalRepositories;
-	private readonly IUserRepository _userRepository;
-	private readonly IUserBusinessPartnerRepository _businessPartnerRepository;
-	private readonly IUserRolesRepository _userRolesRepository;
-	private readonly CompanyNameIdpAliasData _companyNameIdpAliasData;
-	private readonly CompanyNameIdpAliasData _companyNameIdpAliasDataSharedIdp;
-	private readonly string _clientId;
-	private readonly IEnumerable<(string Role, Guid Id)> _userRolesWithId;
-	private readonly CancellationTokenSource _cancellationTokenSource;
-
-	public UserProvisioningServiceCreateUsersTests()
-	{
-		_fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-		_fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-			.ForEach(b => _fixture.Behaviors.Remove(b));
-		_fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-
-		_random = new Random();
-		_numUsers = 10;
-		_indexSpecialUser = 5;
-		_firstNameSpecialUser = _fixture.Create<string>();
-		_companyUserIdSpecialUser = Guid.NewGuid();
-		_numRoles = 5;
-
-		_companyNameIdpAliasData = _fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, false).Create();
-		_companyNameIdpAliasDataSharedIdp = _fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, true).Create();
-
-		_clientId = _fixture.Create<string>();
-		_cancellationTokenSource = new CancellationTokenSource();
-		_userRolesWithId = _fixture.CreateMany<(string, Guid)>(_numRoles).ToList();
-
-		_portalRepositories = A.Fake<IPortalRepositories>();
-		_provisioningManager = A.Fake<IProvisioningManager>();
-		_userRepository = A.Fake<IUserRepository>();
-		_businessPartnerRepository = A.Fake<IUserBusinessPartnerRepository>();
-		_userRolesRepository = A.Fake<IUserRolesRepository>();
-
-		SetupRepositories();
-		SetupProvisioningManager();
-	}
-
-	#region CreateOwnCompanyIdpUsersAsync
-
-	[Fact]
-	public async void TestFixtureSetup()
-	{
-		var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
-
-		var userCreationInfoIdp = CreateUserCreationInfoIdp().ToAsyncEnumerable();
-
-		var result = await sut.CreateOwnCompanyIdpUsersAsync(
-			_companyNameIdpAliasData,
-			userCreationInfoIdp,
-			_cancellationTokenSource.Token
-		).ToListAsync().ConfigureAwait(false);
-
-		A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).MustHaveHappened();
-		A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).MustHaveHappened();
-		A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappened();
-		A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappened();
-		A.CallTo(() => _provisioningManager.CreateSharedRealmUserAsync(A<string>._, A<UserProfile>._)).MustNotHaveHappened();
-		A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappened();
-	}
-
-	[Fact]
-	public async void TestSharedIdpFixtureSetup()
-	{
-		var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
-
-		var userCreationInfoIdp = CreateUserCreationInfoIdp().ToAsyncEnumerable();
-
-		var result = await sut.CreateOwnCompanyIdpUsersAsync(
-			_companyNameIdpAliasDataSharedIdp,
-			userCreationInfoIdp,
-			_cancellationTokenSource.Token
-		).ToListAsync().ConfigureAwait(false);
-
-		A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).MustHaveHappened();
-		A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).MustHaveHappened();
-		A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappened();
-		A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappened();
-		A.CallTo(() => _provisioningManager.CreateSharedRealmUserAsync(A<string>._, A<UserProfile>._)).MustHaveHappened();
-		A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappened();
-	}
-
-	[Fact]
-	public async void TestCreateUsersAllSuccess()
-	{
-		var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
-
-		var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
-
-		var result = await sut.CreateOwnCompanyIdpUsersAsync(
-			_companyNameIdpAliasData,
-			userCreationInfoIdp.ToAsyncEnumerable(),
-			_cancellationTokenSource.Token
-		).ToListAsync().ConfigureAwait(false);
+    private readonly IFixture _fixture;
+    private readonly Random _random;
+    private readonly int _numUsers;
+    private readonly int _numRoles;
+    private readonly int _indexSpecialUser;
+    private readonly string _firstNameSpecialUser;
+    private readonly Guid _companyUserIdSpecialUser;
+    private readonly IProvisioningManager _provisioningManager;
+    private readonly IPortalRepositories _portalRepositories;
+    private readonly IUserRepository _userRepository;
+    private readonly IUserBusinessPartnerRepository _businessPartnerRepository;
+    private readonly IUserRolesRepository _userRolesRepository;
+    private readonly CompanyNameIdpAliasData _companyNameIdpAliasData;
+    private readonly CompanyNameIdpAliasData _companyNameIdpAliasDataSharedIdp;
+    private readonly string _clientId;
+    private readonly IEnumerable<(string Role, Guid Id)> _userRolesWithId;
+    private readonly CancellationTokenSource _cancellationTokenSource;
+
+    public UserProvisioningServiceCreateUsersTests()
+    {
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+        _random = new Random();
+        _numUsers = 10;
+        _indexSpecialUser = 5;
+        _firstNameSpecialUser = _fixture.Create<string>();
+        _companyUserIdSpecialUser = Guid.NewGuid();
+        _numRoles = 5;
+
+        _companyNameIdpAliasData = _fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, false).Create();
+        _companyNameIdpAliasDataSharedIdp = _fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, true).Create();
+
+        _clientId = _fixture.Create<string>();
+        _cancellationTokenSource = new CancellationTokenSource();
+        _userRolesWithId = _fixture.CreateMany<(string, Guid)>(_numRoles).ToList();
+
+        _portalRepositories = A.Fake<IPortalRepositories>();
+        _provisioningManager = A.Fake<IProvisioningManager>();
+        _userRepository = A.Fake<IUserRepository>();
+        _businessPartnerRepository = A.Fake<IUserBusinessPartnerRepository>();
+        _userRolesRepository = A.Fake<IUserRolesRepository>();
+
+        SetupRepositories();
+        SetupProvisioningManager();
+    }
+
+    #region CreateOwnCompanyIdpUsersAsync
+
+    [Fact]
+    public async void TestFixtureSetup()
+    {
+        var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
+
+        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToAsyncEnumerable();
+
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            userCreationInfoIdp,
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
+
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).MustHaveHappened();
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.CreateSharedRealmUserAsync(A<string>._, A<UserProfile>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappened();
+    }
+
+    [Fact]
+    public async void TestSharedIdpFixtureSetup()
+    {
+        var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
+
+        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToAsyncEnumerable();
+
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasDataSharedIdp,
+            userCreationInfoIdp,
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
+
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).MustHaveHappened();
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.CreateSharedRealmUserAsync(A<string>._, A<UserProfile>._)).MustHaveHappened();
+        A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappened();
+    }
+
+    [Fact]
+    public async void TestCreateUsersAllSuccess()
+    {
+        var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
+
+        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
+
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            userCreationInfoIdp.ToAsyncEnumerable(),
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
 
-		result.Should().HaveCount(_numUsers);
-		result.Select(r => r.UserName).Should().ContainInOrder(userCreationInfoIdp.Select(u => u.UserName));
-		result.Should().AllSatisfy(r => r.Error.Should().BeNull());
-	}
-
-	[Fact]
-	public async void TestCreateUsersRolesAssignmentError()
-	{
-		var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
-
-		var specialUser = _fixture.Build<UserCreationRoleDataIdpInfo>()
-			.With(x => x.FirstName, _firstNameSpecialUser)
-			.With(x => x.RoleDatas, PickValidRoles().DistinctBy(role => role.UserRoleText).ToList())
-			.Create();
+        result.Should().HaveCount(_numUsers);
+        result.Select(r => r.UserName).Should().ContainInOrder(userCreationInfoIdp.Select(u => u.UserName));
+        result.Should().AllSatisfy(r => r.Error.Should().BeNull());
+    }
+
+    [Fact]
+    public async void TestCreateUsersRolesAssignmentError()
+    {
+        var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
+
+        var specialUser = _fixture.Build<UserCreationRoleDataIdpInfo>()
+            .With(x => x.FirstName, _firstNameSpecialUser)
+            .With(x => x.RoleDatas, PickValidRoles().DistinctBy(role => role.UserRoleText).ToList())
+            .Create();
 
-		var userCreationInfoIdp = CreateUserCreationInfoIdp(() => specialUser).ToList();
-
-		var centralUserName = _companyUserIdSpecialUser.ToString();
-		var iamUserId = _fixture.Create<string>();
-
-		A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(p => p.UserName == centralUserName), A<IEnumerable<(string, IEnumerable<string>)>>._))
-			.Returns(iamUserId);
+        var userCreationInfoIdp = CreateUserCreationInfoIdp(() => specialUser).ToList();
+
+        var centralUserName = _companyUserIdSpecialUser.ToString();
+        var iamUserId = _fixture.Create<string>();
+
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(p => p.UserName == centralUserName), A<IEnumerable<(string, IEnumerable<string>)>>._))
+            .Returns(iamUserId);
 
-		A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.IsEqualTo(iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
-			.ReturnsLazily((string _, IDictionary<string, IEnumerable<string>> clientRoles) => new[] { (Client: _clientId, Roles: Enumerable.Empty<string>()) }.ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.IsEqualTo(iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
+            .ReturnsLazily((string _, IDictionary<string, IEnumerable<string>> clientRoles) => new[] { (Client: _clientId, Roles: Enumerable.Empty<string>()) }.ToAsyncEnumerable());
 
-		var result = await sut.CreateOwnCompanyIdpUsersAsync(
-			_companyNameIdpAliasData,
-			userCreationInfoIdp.ToAsyncEnumerable(),
-			_cancellationTokenSource.Token
-		).ToListAsync().ConfigureAwait(false);
-
-		result.Should().HaveCount(_numUsers);
-		result.Where((r, index) => index != _indexSpecialUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            userCreationInfoIdp.ToAsyncEnumerable(),
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
+
+        result.Should().HaveCount(_numUsers);
+        result.Where((r, index) => index != _indexSpecialUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
 
-		var error = result.ElementAt(_indexSpecialUser).Error;
-		error.Should().NotBeNull();
-		error.Should().BeOfType(typeof(ConflictException));
-		error!.Message.Should().Be($"invalid role data [{String.Join(", ", specialUser.RoleDatas.Select(roleData => $"clientId: {roleData.ClientClientId}, role: {roleData.UserRoleText}"))}] has not been assigned in keycloak");
-	}
-
-	[Fact]
-	public async void TestCreateUsersRolesAssignmentNoRolesAssignedSuccess()
-	{
-		var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
-
-		var specialUser = _fixture.Build<UserCreationRoleDataIdpInfo>()
-			.With(x => x.FirstName, _firstNameSpecialUser)
-			.With(x => x.RoleDatas, Enumerable.Empty<UserRoleData>().ToList())
-			.Create();
-
-		var userCreationInfoIdp = CreateUserCreationInfoIdp(() => specialUser).ToList();
-
-		var centralUserName = _companyUserIdSpecialUser.ToString();
-		var iamUserId = _fixture.Create<string>();
-
-		A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(p => p.UserName == centralUserName), A<IEnumerable<(string, IEnumerable<string>)>>._))
-			.Returns(iamUserId);
-
-		var result = await sut.CreateOwnCompanyIdpUsersAsync(
-			_companyNameIdpAliasData,
-			userCreationInfoIdp.ToAsyncEnumerable(),
-			_cancellationTokenSource.Token
-		).ToListAsync().ConfigureAwait(false);
-
-		A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappened();
-		A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.IsEqualTo(iamUserId), A<IDictionary<string, IEnumerable<string>>>._)).MustNotHaveHappened();
-
-		result.Should().HaveCount(_numUsers);
-		result.Should().AllSatisfy(r => r.Error.Should().BeNull());
-	}
-
-	[Fact]
-	public async void TestCreateUsersDuplicateKeycloakUserError()
-	{
-		var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
-
-		var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
-
-		var userInfo = userCreationInfoIdp.ElementAt(_indexSpecialUser);
-		var iamUserId = _fixture.Create<string>();
-
-		A.CallTo(() => _userRepository.GetMatchingCompanyIamUsersByNameEmail(A<string>.That.IsEqualTo(userInfo.FirstName), A<string>._, A<string>._, A<Guid>._, A<IEnumerable<CompanyUserStatusId>>._))
-			.Returns(new[] { (UserEntityId: (string?)iamUserId, CompanyUserId: Guid.Empty) }.ToAsyncEnumerable());
-
-		A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>.That.IsEqualTo(iamUserId)))
-			.Returns(new[] { new IdentityProviderLink(_companyNameIdpAliasData.IdpAlias, userInfo.UserId, userInfo.UserName) }.ToAsyncEnumerable());
-
-		var result = await sut.CreateOwnCompanyIdpUsersAsync(
-			_companyNameIdpAliasData,
-			userCreationInfoIdp.ToAsyncEnumerable(),
-			_cancellationTokenSource.Token
-		).ToListAsync().ConfigureAwait(false);
-
-		A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustHaveHappened();
-
-		result.Should().HaveCount(_numUsers);
-		result.Where((r, index) => index != _indexSpecialUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
-
-		var error = result.ElementAt(_indexSpecialUser).Error;
-		error.Should().NotBeNull();
-		error.Should().BeOfType(typeof(ConflictException));
-		error!.Message.Should().Be($"existing user {iamUserId} in keycloak for provider userid {userInfo.UserId}, {userInfo.UserName}");
-	}
-
-	[Fact]
-	public async void TestCreateUsersNotExistingCompanyUserWithoutKeycloakUserSuccess()
-	{
-		var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
-
-		var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
-
-		var userInfo = userCreationInfoIdp.ElementAt(_indexSpecialUser);
-		var companyUserId = _fixture.Create<Guid>();
-		var centralUserId = _fixture.Create<string>();
-		var utcNow = DateTimeOffset.UtcNow;
-
-		A.CallTo(() => _userRepository.GetMatchingCompanyIamUsersByNameEmail(A<string>.That.IsEqualTo(userInfo.FirstName), A<string>._, A<string>._, A<Guid>._, A<IEnumerable<CompanyUserStatusId>>._))
-			.Returns(new[] { (UserEntityId: (string?)null, CompanyUserId: Guid.Empty) }.ToAsyncEnumerable());
-
-		A.CallTo(() => _userRepository.CreateCompanyUser(userInfo.FirstName, A<string?>._, A<string>._, A<Guid>._, A<CompanyUserStatusId>._, A<Guid>._))
-			.ReturnsLazily((string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId statusId, Guid creatorId) => new CompanyUser(companyUserId, companyId, statusId, utcNow, creatorId) { Firstname = firstName, Lastname = lastName });
+        var error = result.ElementAt(_indexSpecialUser).Error;
+        error.Should().NotBeNull();
+        error.Should().BeOfType(typeof(ConflictException));
+        error!.Message.Should().Be($"invalid role data [{String.Join(", ", specialUser.RoleDatas.Select(roleData => $"clientId: {roleData.ClientClientId}, role: {roleData.UserRoleText}"))}] has not been assigned in keycloak");
+    }
+
+    [Fact]
+    public async void TestCreateUsersRolesAssignmentNoRolesAssignedSuccess()
+    {
+        var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
+
+        var specialUser = _fixture.Build<UserCreationRoleDataIdpInfo>()
+            .With(x => x.FirstName, _firstNameSpecialUser)
+            .With(x => x.RoleDatas, Enumerable.Empty<UserRoleData>().ToList())
+            .Create();
+
+        var userCreationInfoIdp = CreateUserCreationInfoIdp(() => specialUser).ToList();
+
+        var centralUserName = _companyUserIdSpecialUser.ToString();
+        var iamUserId = _fixture.Create<string>();
+
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(p => p.UserName == centralUserName), A<IEnumerable<(string, IEnumerable<string>)>>._))
+            .Returns(iamUserId);
+
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            userCreationInfoIdp.ToAsyncEnumerable(),
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
+
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.IsEqualTo(iamUserId), A<IDictionary<string, IEnumerable<string>>>._)).MustNotHaveHappened();
+
+        result.Should().HaveCount(_numUsers);
+        result.Should().AllSatisfy(r => r.Error.Should().BeNull());
+    }
+
+    [Fact]
+    public async void TestCreateUsersDuplicateKeycloakUserError()
+    {
+        var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
+
+        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
+
+        var userInfo = userCreationInfoIdp.ElementAt(_indexSpecialUser);
+        var iamUserId = _fixture.Create<string>();
+
+        A.CallTo(() => _userRepository.GetMatchingCompanyIamUsersByNameEmail(A<string>.That.IsEqualTo(userInfo.FirstName), A<string>._, A<string>._, A<Guid>._, A<IEnumerable<CompanyUserStatusId>>._))
+            .Returns(new[] { (UserEntityId: (string?)iamUserId, CompanyUserId: Guid.Empty) }.ToAsyncEnumerable());
+
+        A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>.That.IsEqualTo(iamUserId)))
+            .Returns(new[] { new IdentityProviderLink(_companyNameIdpAliasData.IdpAlias, userInfo.UserId, userInfo.UserName) }.ToAsyncEnumerable());
+
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            userCreationInfoIdp.ToAsyncEnumerable(),
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
+
+        A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustHaveHappened();
+
+        result.Should().HaveCount(_numUsers);
+        result.Where((r, index) => index != _indexSpecialUser).Should().AllSatisfy(r => r.Error.Should().BeNull());
+
+        var error = result.ElementAt(_indexSpecialUser).Error;
+        error.Should().NotBeNull();
+        error.Should().BeOfType(typeof(ConflictException));
+        error!.Message.Should().Be($"existing user {iamUserId} in keycloak for provider userid {userInfo.UserId}, {userInfo.UserName}");
+    }
+
+    [Fact]
+    public async void TestCreateUsersNotExistingCompanyUserWithoutKeycloakUserSuccess()
+    {
+        var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
+
+        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
+
+        var userInfo = userCreationInfoIdp.ElementAt(_indexSpecialUser);
+        var companyUserId = _fixture.Create<Guid>();
+        var centralUserId = _fixture.Create<string>();
+        var utcNow = DateTimeOffset.UtcNow;
+
+        A.CallTo(() => _userRepository.GetMatchingCompanyIamUsersByNameEmail(A<string>.That.IsEqualTo(userInfo.FirstName), A<string>._, A<string>._, A<Guid>._, A<IEnumerable<CompanyUserStatusId>>._))
+            .Returns(new[] { (UserEntityId: (string?)null, CompanyUserId: Guid.Empty) }.ToAsyncEnumerable());
+
+        A.CallTo(() => _userRepository.CreateCompanyUser(userInfo.FirstName, A<string?>._, A<string>._, A<Guid>._, A<CompanyUserStatusId>._, A<Guid>._))
+            .ReturnsLazily((string? firstName, string? lastName, string email, Guid companyId, CompanyUserStatusId statusId, Guid creatorId) => new CompanyUser(companyUserId, companyId, statusId, utcNow, creatorId) { Firstname = firstName, Lastname = lastName });
 
-		A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string, IEnumerable<string>)>>._))
-			.Returns(centralUserId);
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string, IEnumerable<string>)>>._))
+            .Returns(centralUserId);
 
-		var result = await sut.CreateOwnCompanyIdpUsersAsync(
-			_companyNameIdpAliasData,
-			userCreationInfoIdp.ToAsyncEnumerable(),
-			_cancellationTokenSource.Token
-		).ToListAsync().ConfigureAwait(false);
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            userCreationInfoIdp.ToAsyncEnumerable(),
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
 
-		A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustNotHaveHappened();
-		A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
-		A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappenedOnceExactly();
-		A.CallTo(() => _userRepository.CreateCompanyUser(A<string?>._, A<string?>._, A<string>._, _companyNameIdpAliasData.CompanyId, CompanyUserStatusId.ACTIVE, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
-		A.CallTo(() => _userRepository.CreateCompanyUser(userInfo.FirstName, userInfo.LastName, userInfo.Email, _companyNameIdpAliasData.CompanyId, CompanyUserStatusId.ACTIVE, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappenedOnceExactly();
-		A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, _companyNameIdpAliasData.BusinessPartnerNumber!)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
-		A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, _companyNameIdpAliasData.BusinessPartnerNumber!)).MustHaveHappenedOnceExactly();
-		A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
-		A.CallTo(() => _userRepository.CreateIamUser(companyUserId, centralUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.CreateCompanyUser(A<string?>._, A<string?>._, A<string>._, _companyNameIdpAliasData.CompanyId, CompanyUserStatusId.ACTIVE, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _userRepository.CreateCompanyUser(userInfo.FirstName, userInfo.LastName, userInfo.Email, _companyNameIdpAliasData.CompanyId, CompanyUserStatusId.ACTIVE, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, _companyNameIdpAliasData.BusinessPartnerNumber!)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, _companyNameIdpAliasData.BusinessPartnerNumber!)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _userRepository.CreateIamUser(companyUserId, centralUserId)).MustHaveHappenedOnceExactly();
 
-		result.Should().HaveCount(_numUsers);
-		result.Should().AllSatisfy(r => r.Error.Should().BeNull());
-	}
+        result.Should().HaveCount(_numUsers);
+        result.Should().AllSatisfy(r => r.Error.Should().BeNull());
+    }
 
-	[Fact]
-	public async void TestCreateUsersExistingCompanyUserWithoutKeycloakUserSuccess()
-	{
-		var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
+    [Fact]
+    public async void TestCreateUsersExistingCompanyUserWithoutKeycloakUserSuccess()
+    {
+        var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
 
-		var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
+        var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
 
-		var userInfo = userCreationInfoIdp.ElementAt(_indexSpecialUser);
-		var companyUserId = _fixture.Create<Guid>();
-		var centralUserId = _fixture.Create<string>();
+        var userInfo = userCreationInfoIdp.ElementAt(_indexSpecialUser);
+        var companyUserId = _fixture.Create<Guid>();
+        var centralUserId = _fixture.Create<string>();
 
-		A.CallTo(() => _userRepository.GetMatchingCompanyIamUsersByNameEmail(A<string>.That.IsEqualTo(userInfo.FirstName), A<string>._, A<string>._, A<Guid>._, A<IEnumerable<CompanyUserStatusId>>._))
-			.Returns(new[] { (UserEntityId: (string?)null, CompanyUserId: companyUserId) }.ToAsyncEnumerable());
+        A.CallTo(() => _userRepository.GetMatchingCompanyIamUsersByNameEmail(A<string>.That.IsEqualTo(userInfo.FirstName), A<string>._, A<string>._, A<Guid>._, A<IEnumerable<CompanyUserStatusId>>._))
+            .Returns(new[] { (UserEntityId: (string?)null, CompanyUserId: companyUserId) }.ToAsyncEnumerable());
 
-		A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string, IEnumerable<string>)>>._))
-			.Returns(centralUserId);
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string, IEnumerable<string>)>>._))
+            .Returns(centralUserId);
 
-		var result = await sut.CreateOwnCompanyIdpUsersAsync(
-			_companyNameIdpAliasData,
-			userCreationInfoIdp.ToAsyncEnumerable(),
-			_cancellationTokenSource.Token
-		).ToListAsync().ConfigureAwait(false);
+        var result = await sut.CreateOwnCompanyIdpUsersAsync(
+            _companyNameIdpAliasData,
+            userCreationInfoIdp.ToAsyncEnumerable(),
+            _cancellationTokenSource.Token
+        ).ToListAsync().ConfigureAwait(false);
 
-		A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustNotHaveHappened();
-		A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
-		A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappenedOnceExactly();
-		A.CallTo(() => _userRepository.CreateCompanyUser(A<string?>._, A<string?>._, A<string>._, _companyNameIdpAliasData.CompanyId, CompanyUserStatusId.ACTIVE, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappened(userCreationInfoIdp.Count - 1, Times.Exactly);
-		A.CallTo(() => _userRepository.CreateCompanyUser(userInfo.FirstName, A<string?>._, A<string>._, A<Guid>._, A<CompanyUserStatusId>._, A<Guid>._)).MustNotHaveHappened();
-		A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, _companyNameIdpAliasData.BusinessPartnerNumber!)).MustHaveHappened(userCreationInfoIdp.Count - 1, Times.Exactly);
-		A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, A<string?>._)).MustNotHaveHappened();
-		A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
-		A.CallTo(() => _userRepository.CreateIamUser(companyUserId, centralUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.CreateCompanyUser(A<string?>._, A<string?>._, A<string>._, _companyNameIdpAliasData.CompanyId, CompanyUserStatusId.ACTIVE, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappened(userCreationInfoIdp.Count - 1, Times.Exactly);
+        A.CallTo(() => _userRepository.CreateCompanyUser(userInfo.FirstName, A<string?>._, A<string>._, A<Guid>._, A<CompanyUserStatusId>._, A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, _companyNameIdpAliasData.BusinessPartnerNumber!)).MustHaveHappened(userCreationInfoIdp.Count - 1, Times.Exactly);
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, A<string?>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _userRepository.CreateIamUser(companyUserId, centralUserId)).MustHaveHappenedOnceExactly();
 
-		result.Should().HaveCount(_numUsers);
-		result.Should().AllSatisfy(r => r.Error.Should().BeNull());
-	}
+        result.Should().HaveCount(_numUsers);
+        result.Should().AllSatisfy(r => r.Error.Should().BeNull());
+    }
 
-	#endregion
+    #endregion
 
-	#region GetRoleDatas
+    #region GetRoleDatas
 
-	[Fact]
-	public async void TestGetRoleDatasSuccess()
-	{
-		var clientRoles = _fixture.Create<IDictionary<string, IEnumerable<string>>>();
-
-		var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
-
-		var result = await sut.GetRoleDatas(clientRoles).ToListAsync().ConfigureAwait(false);
-
-		result.Should().HaveSameCount(clientRoles.SelectMany(r => r.Value));
-	}
-
-	[Fact]
-	public async void TestGetRoleDatasThrows()
-	{
-		var clientRoles = _fixture.Create<IDictionary<string, IEnumerable<string>>>();
-
-		A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
-			.ReturnsLazily((IDictionary<string, IEnumerable<string>> clientRoles) =>
-				clientRoles.SelectMany(r => r.Value.Take(r.Value.Count() - 1).Select(role => _fixture.Build<UserRoleData>()
-					.With(x => x.ClientClientId, r.Key)
-					.With(x => x.UserRoleText, role).Create())).ToAsyncEnumerable());
-
-		var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
-
-		async Task Act() => await sut.GetRoleDatas(clientRoles).ToListAsync().ConfigureAwait(false);
-
-		var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-		error.Message.Should().StartWith("invalid roles: clientId:");
-	}
-
-	#endregion
-
-	#region GetOwnCompanyPortalRoleDatas
-
-	[Fact]
-	public async void TestGetOwnCompanyPortalRoleDatasSuccess()
-	{
-		var client = _fixture.Create<string>();
-		var roles = _fixture.CreateMany<string>();
-		var iamUserId = _fixture.Create<string>();
-
-		var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
-
-		var result = await sut.GetOwnCompanyPortalRoleDatas(client, roles, iamUserId).ConfigureAwait(false);
-
-		result.Should().HaveSameCount(roles);
-	}
-
-	[Fact]
-	public async void TestGetOwnCompanyPortalRoleDatasThrows()
-	{
-		var client = _fixture.Create<string>();
-		var roles = _fixture.CreateMany<string>();
-		var iamUserId = _fixture.Create<string>();
-
-		A.CallTo(() => _userRolesRepository.GetOwnCompanyPortalUserRoleDataUntrackedAsync(A<string>._, A<IEnumerable<string>>._, A<string>._))
-			.ReturnsLazily((string clientId, IEnumerable<string> roles, string _) =>
-				roles.Take(roles.Count() - 1).Select(role => _fixture.Build<UserRoleData>()
-					.With(x => x.ClientClientId, clientId)
-					.With(x => x.UserRoleText, role).Create()).ToAsyncEnumerable());
-
-		var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
-
-		async Task Act() => await sut.GetOwnCompanyPortalRoleDatas(client, roles, iamUserId).ConfigureAwait(false);
-
-		var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-		error.Message.Should().StartWith("invalid roles: clientId:");
-	}
-
-	#endregion
-
-	#region Setup
-
-	private void SetupRepositories()
-	{
-		A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-		A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
-		A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
-
-		A.CallTo(() => _userRepository.CreateCompanyUser(A<string>._, A<string>._, A<string>._, A<Guid>._, A<CompanyUserStatusId>._, A<Guid>._))
-			.ReturnsLazily((string firstName, string lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId, Guid lastEditorId) =>
-				new CompanyUser(
-					firstName == _firstNameSpecialUser ? _companyUserIdSpecialUser : Guid.NewGuid(),
-					companyId,
-					companyUserStatusId,
-					DateTimeOffset.UtcNow,
-					lastEditorId));
-
-		A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, A<string>._))
-			.ReturnsLazily((Guid companyUserId, string businessPartnerNumber) => new CompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber));
-
-		A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._))
-			.ReturnsLazily((Guid companyUserId, string iamUserId) => new IamUser(iamUserId, companyUserId));
-
-		A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
-			.ReturnsLazily((IDictionary<string, IEnumerable<string>> clientRoles) =>
-				clientRoles.SelectMany(r => r.Value.Select(role => _fixture.Build<UserRoleData>()
-					.With(x => x.ClientClientId, r.Key)
-					.With(x => x.UserRoleText, role).Create())).ToAsyncEnumerable());
-
-		A.CallTo(() => _userRolesRepository.GetOwnCompanyPortalUserRoleDataUntrackedAsync(A<string>._, A<IEnumerable<string>>._, A<string>._))
-			.ReturnsLazily((string client, IEnumerable<string> roles, string _) =>
-				roles.Select(role => _fixture.Build<UserRoleData>()
-					.With(x => x.ClientClientId, client)
-					.With(x => x.UserRoleText, role).Create()).ToAsyncEnumerable());
-	}
-
-	private void SetupProvisioningManager()
-	{
-		A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._))
-			.ReturnsLazily(() => _fixture.Create<string>());
-
-		A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
-			.ReturnsLazily((string _, IDictionary<string, IEnumerable<string>> clientRoles) => clientRoles.Select(x => (Client: x.Key, Roles: x.Value)).ToAsyncEnumerable());
-	}
-
-	private IEnumerable<UserCreationRoleDataIdpInfo> CreateUserCreationInfoIdp(Func<UserCreationRoleDataIdpInfo>? createInvalidUser = null)
-	{
-		var indexUser = 0;
-		while (indexUser < _numUsers)
-		{
-			yield return (indexUser == _indexSpecialUser && createInvalidUser != null)
-				? createInvalidUser()
-				: _fixture.Build<UserCreationRoleDataIdpInfo>().With(x => x.RoleDatas, PickValidRoles().DistinctBy(role => role.UserRoleText).ToList()).Create();
-			indexUser++;
-		}
-	}
-
-	private IEnumerable<UserRoleData> PickValidRoles()
-	{
-		var maxRoles = _userRolesWithId.Count();
-		var numRoles = _random.Next(1, maxRoles);
-		while (numRoles > 0)
-		{
-			var roleWithId = _userRolesWithId.ElementAt(_random.Next(maxRoles));
-			yield return new UserRoleData(roleWithId.Id, _clientId, roleWithId.Role);
-			numRoles--;
-		}
-	}
-
-	#endregion
+    [Fact]
+    public async void TestGetRoleDatasSuccess()
+    {
+        var clientRoles = _fixture.Create<IDictionary<string, IEnumerable<string>>>();
+
+        var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
+
+        var result = await sut.GetRoleDatas(clientRoles).ToListAsync().ConfigureAwait(false);
+
+        result.Should().HaveSameCount(clientRoles.SelectMany(r => r.Value));
+    }
+
+    [Fact]
+    public async void TestGetRoleDatasThrows()
+    {
+        var clientRoles = _fixture.Create<IDictionary<string, IEnumerable<string>>>();
+
+        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
+            .ReturnsLazily((IDictionary<string, IEnumerable<string>> clientRoles) =>
+                clientRoles.SelectMany(r => r.Value.Take(r.Value.Count() - 1).Select(role => _fixture.Build<UserRoleData>()
+                    .With(x => x.ClientClientId, r.Key)
+                    .With(x => x.UserRoleText, role).Create())).ToAsyncEnumerable());
+
+        var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
+
+        async Task Act() => await sut.GetRoleDatas(clientRoles).ToListAsync().ConfigureAwait(false);
+
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().StartWith("invalid roles: clientId:");
+    }
+
+    #endregion
+
+    #region GetOwnCompanyPortalRoleDatas
+
+    [Fact]
+    public async void TestGetOwnCompanyPortalRoleDatasSuccess()
+    {
+        var client = _fixture.Create<string>();
+        var roles = _fixture.CreateMany<string>();
+        var iamUserId = _fixture.Create<string>();
+
+        var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
+
+        var result = await sut.GetOwnCompanyPortalRoleDatas(client, roles, iamUserId).ConfigureAwait(false);
+
+        result.Should().HaveSameCount(roles);
+    }
+
+    [Fact]
+    public async void TestGetOwnCompanyPortalRoleDatasThrows()
+    {
+        var client = _fixture.Create<string>();
+        var roles = _fixture.CreateMany<string>();
+        var iamUserId = _fixture.Create<string>();
+
+        A.CallTo(() => _userRolesRepository.GetOwnCompanyPortalUserRoleDataUntrackedAsync(A<string>._, A<IEnumerable<string>>._, A<string>._))
+            .ReturnsLazily((string clientId, IEnumerable<string> roles, string _) =>
+                roles.Take(roles.Count() - 1).Select(role => _fixture.Build<UserRoleData>()
+                    .With(x => x.ClientClientId, clientId)
+                    .With(x => x.UserRoleText, role).Create()).ToAsyncEnumerable());
+
+        var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
+
+        async Task Act() => await sut.GetOwnCompanyPortalRoleDatas(client, roles, iamUserId).ConfigureAwait(false);
+
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        error.Message.Should().StartWith("invalid roles: clientId:");
+    }
+
+    #endregion
+
+    #region Setup
+
+    private void SetupRepositories()
+    {
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
+
+        A.CallTo(() => _userRepository.CreateCompanyUser(A<string>._, A<string>._, A<string>._, A<Guid>._, A<CompanyUserStatusId>._, A<Guid>._))
+            .ReturnsLazily((string firstName, string lastName, string email, Guid companyId, CompanyUserStatusId companyUserStatusId, Guid lastEditorId) =>
+                new CompanyUser(
+                    firstName == _firstNameSpecialUser ? _companyUserIdSpecialUser : Guid.NewGuid(),
+                    companyId,
+                    companyUserStatusId,
+                    DateTimeOffset.UtcNow,
+                    lastEditorId));
+
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, A<string>._))
+            .ReturnsLazily((Guid companyUserId, string businessPartnerNumber) => new CompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber));
+
+        A.CallTo(() => _userRepository.CreateIamUser(A<Guid>._, A<string>._))
+            .ReturnsLazily((Guid companyUserId, string iamUserId) => new IamUser(iamUserId, companyUserId));
+
+        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
+            .ReturnsLazily((IDictionary<string, IEnumerable<string>> clientRoles) =>
+                clientRoles.SelectMany(r => r.Value.Select(role => _fixture.Build<UserRoleData>()
+                    .With(x => x.ClientClientId, r.Key)
+                    .With(x => x.UserRoleText, role).Create())).ToAsyncEnumerable());
+
+        A.CallTo(() => _userRolesRepository.GetOwnCompanyPortalUserRoleDataUntrackedAsync(A<string>._, A<IEnumerable<string>>._, A<string>._))
+            .ReturnsLazily((string client, IEnumerable<string> roles, string _) =>
+                roles.Select(role => _fixture.Build<UserRoleData>()
+                    .With(x => x.ClientClientId, client)
+                    .With(x => x.UserRoleText, role).Create()).ToAsyncEnumerable());
+    }
+
+    private void SetupProvisioningManager()
+    {
+        A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._))
+            .ReturnsLazily(() => _fixture.Create<string>());
+
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
+            .ReturnsLazily((string _, IDictionary<string, IEnumerable<string>> clientRoles) => clientRoles.Select(x => (Client: x.Key, Roles: x.Value)).ToAsyncEnumerable());
+    }
+
+    private IEnumerable<UserCreationRoleDataIdpInfo> CreateUserCreationInfoIdp(Func<UserCreationRoleDataIdpInfo>? createInvalidUser = null)
+    {
+        var indexUser = 0;
+        while (indexUser < _numUsers)
+        {
+            yield return (indexUser == _indexSpecialUser && createInvalidUser != null)
+                ? createInvalidUser()
+                : _fixture.Build<UserCreationRoleDataIdpInfo>().With(x => x.RoleDatas, PickValidRoles().DistinctBy(role => role.UserRoleText).ToList()).Create();
+            indexUser++;
+        }
+    }
+
+    private IEnumerable<UserRoleData> PickValidRoles()
+    {
+        var maxRoles = _userRolesWithId.Count();
+        var numRoles = _random.Next(1, maxRoles);
+        while (numRoles > 0)
+        {
+            var roleWithId = _userRolesWithId.ElementAt(_random.Next(maxRoles));
+            yield return new UserRoleData(roleWithId.Id, _clientId, roleWithId.Role);
+            numRoles--;
+        }
+    }
+
+    #endregion
 }

@@ -23,15 +23,15 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record OfferThirdPartyAutoSetupData(
-	[property: JsonPropertyName("customer")] OfferThirdPartyAutoSetupCustomerData OfferThirdPartyAutoSetupCustomer,
-	[property: JsonPropertyName("properties")] OfferThirdPartyAutoSetupPropertyData OfferThirdPartyAutoSetupProperties);
+    [property: JsonPropertyName("customer")] OfferThirdPartyAutoSetupCustomerData OfferThirdPartyAutoSetupCustomer,
+    [property: JsonPropertyName("properties")] OfferThirdPartyAutoSetupPropertyData OfferThirdPartyAutoSetupProperties);
 
 public record OfferThirdPartyAutoSetupCustomerData(
-	[property: JsonPropertyName("organizationName")] string OrganizationName,
-	[property: JsonPropertyName("country")] string Country,
-	[property: JsonPropertyName("email")] string? Email);
+    [property: JsonPropertyName("organizationName")] string OrganizationName,
+    [property: JsonPropertyName("country")] string Country,
+    [property: JsonPropertyName("email")] string? Email);
 
 public record OfferThirdPartyAutoSetupPropertyData(
-	[property: JsonPropertyName("bpnNumber")] string? BpnNumber,
-	[property: JsonPropertyName("subscriptionId")] Guid SubscriptionId,
-	[property: JsonPropertyName("serviceId")] Guid ServiceId);
+    [property: JsonPropertyName("bpnNumber")] string? BpnNumber,
+    [property: JsonPropertyName("subscriptionId")] Guid SubscriptionId,
+    [property: JsonPropertyName("serviceId")] Guid ServiceId);

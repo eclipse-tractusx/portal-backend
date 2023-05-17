@@ -23,10 +23,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 public record UserCreationRoleDataIdpInfo(
-	string FirstName,
-	string LastName,
-	string Email,
-	IEnumerable<UserRoleData> RoleDatas,
-	string UserName,
-	string UserId
+    string FirstName,
+    string LastName,
+    string Email,
+    IEnumerable<UserRoleData> RoleDatas,
+    string UserName,
+    string UserId
 );

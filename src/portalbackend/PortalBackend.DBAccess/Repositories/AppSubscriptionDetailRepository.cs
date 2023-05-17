@@ -25,18 +25,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public class AppSubscriptionDetailRepository : IAppSubscriptionDetailRepository
 {
-	private readonly PortalDbContext _portalDbContext;
+    private readonly PortalDbContext _portalDbContext;
 
-	public AppSubscriptionDetailRepository(PortalDbContext portalDbContext)
-	{
-		_portalDbContext = portalDbContext;
-	}
+    public AppSubscriptionDetailRepository(PortalDbContext portalDbContext)
+    {
+        _portalDbContext = portalDbContext;
+    }
 
-	/// <inheritdoc />
-	public AppSubscriptionDetail CreateAppSubscriptionDetail(Guid offerSubscriptionId, Action<AppSubscriptionDetail>? updateOptionalFields = null)
-	{
-		var appSubscriptionDetails = _portalDbContext.AppSubscriptionDetails.Add(new AppSubscriptionDetail(Guid.NewGuid(), offerSubscriptionId)).Entity;
-		updateOptionalFields?.Invoke(appSubscriptionDetails);
-		return appSubscriptionDetails;
-	}
+    /// <inheritdoc />
+    public AppSubscriptionDetail CreateAppSubscriptionDetail(Guid offerSubscriptionId, Action<AppSubscriptionDetail>? updateOptionalFields = null)
+    {
+        var appSubscriptionDetails = _portalDbContext.AppSubscriptionDetails.Add(new AppSubscriptionDetail(Guid.NewGuid(), offerSubscriptionId)).Entity;
+        updateOptionalFields?.Invoke(appSubscriptionDetails);
+        return appSubscriptionDetails;
+    }
 }

@@ -27,11 +27,11 @@ var VERSION = "v2";
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-				.AddPortalRepositories(builder.Configuration);
+                .AddPortalRepositories(builder.Configuration);
 
 builder.Services.AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>()
-	.ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
+    .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
 
 builder.Build()
-	.CreateApp<Program>("notification", VERSION, builder.Environment)
-	.Run();
+    .CreateApp<Program>("notification", VERSION, builder.Environment)
+    .Run();

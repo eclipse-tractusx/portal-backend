@@ -37,143 +37,143 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers;
 [Consumes("application/json")]
 public class AppChangeController : ControllerBase
 {
-	private readonly IAppChangeBusinessLogic _businessLogic;
+    private readonly IAppChangeBusinessLogic _businessLogic;
 
-	/// <summary>
-	/// Constructor
-	/// </summary>
-	/// <param name="businessLogic"></param>
-	public AppChangeController(IAppChangeBusinessLogic businessLogic)
-	{
-		_businessLogic = businessLogic;
-	}
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="businessLogic"></param>
+    public AppChangeController(IAppChangeBusinessLogic businessLogic)
+    {
+        _businessLogic = businessLogic;
+    }
 
-	/// <summary>
-	/// update app roles and related description for "active" owned app offers
-	/// </summary>
-	/// <param name="appId"></param>
-	/// <param name="userRoles"></param>
-	/// <remarks>Example: POST: /api/apps/appchange/{appId}/role/activeapp</remarks>
-	/// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
-	/// <response code="404">App does not exist.</response>
-	/// <response code="200">created role and role description successfully.</response>
-	/// <response code="403">User not associated with provider company.</response>
-	/// <response code="409">App provider company not set.</response>
-	[HttpPost]
-	[Route("{appId}/role/activeapp")]
-	[Authorize(Roles = "edit_apps")]
-	[ProducesResponseType(typeof(IEnumerable<AppRoleData>), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-	public async Task<IEnumerable<AppRoleData>> AddActiveAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> userRoles) =>
-		await this.WithIamUserId(iamUserId => _businessLogic.AddActiveAppUserRoleAsync(appId, userRoles, iamUserId)).ConfigureAwait(false);
+    /// <summary>
+    /// update app roles and related description for "active" owned app offers
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="userRoles"></param>
+    /// <remarks>Example: POST: /api/apps/appchange/{appId}/role/activeapp</remarks>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="404">App does not exist.</response>
+    /// <response code="200">created role and role description successfully.</response>
+    /// <response code="403">User not associated with provider company.</response>
+    /// <response code="409">App provider company not set.</response>
+    [HttpPost]
+    [Route("{appId}/role/activeapp")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(IEnumerable<AppRoleData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<IEnumerable<AppRoleData>> AddActiveAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> userRoles) =>
+        await this.WithIamUserId(iamUserId => _businessLogic.AddActiveAppUserRoleAsync(appId, userRoles, iamUserId)).ConfigureAwait(false);
 
-	/// <summary>
-	/// Get description of the app by Id.
-	/// </summary>
-	/// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id for the app description to retrieve.</param>
-	/// <returns>collection of descriptions of app by Id that are provided by the calling users company</returns>
-	/// <remarks>Example: Get: /api/apps/appchange/092bdae3-a044-4314-94f4-85c65a09e31b/appupdate/description</remarks>
-	/// <response code="200">returns list of app descriptions</response>
-	[HttpGet]
-	[Route("{appId}/appupdate/description")]
-	[Authorize(Roles = "edit_apps")]
-	[ProducesResponseType(typeof(IEnumerable<LocalizedDescription>), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-	public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionsAsync([FromRoute] Guid appId) =>
-		await this.WithIamUserId(userId => _businessLogic.GetAppUpdateDescriptionByIdAsync(appId, userId)).ConfigureAwait(false);
+    /// <summary>
+    /// Get description of the app by Id.
+    /// </summary>
+    /// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id for the app description to retrieve.</param>
+    /// <returns>collection of descriptions of app by Id that are provided by the calling users company</returns>
+    /// <remarks>Example: Get: /api/apps/appchange/092bdae3-a044-4314-94f4-85c65a09e31b/appupdate/description</remarks>
+    /// <response code="200">returns list of app descriptions</response>
+    [HttpGet]
+    [Route("{appId}/appupdate/description")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(IEnumerable<LocalizedDescription>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionsAsync([FromRoute] Guid appId) =>
+        await this.WithIamUserId(userId => _businessLogic.GetAppUpdateDescriptionByIdAsync(appId, userId)).ConfigureAwait(false);
 
-	/// <summary>
-	/// Create or Update description of the app by Id.
-	/// </summary>
-	/// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id for the app description to create or update.</param>
-	/// <param name="offerDescriptionDatas">app description data to create or update.</param>
-	/// <remarks>Example: Put: /api/apps/appchange/092bdae3-a044-4314-94f4-85c65a09e31b/appupdate/description</remarks>
-	/// <response code="204">The app description succesFully created or updated</response>
-	[HttpPut]
-	[Route("{appId}/appupdate/description")]
-	[Authorize(Roles = "edit_apps")]
-	[ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-	public async Task<NoContentResult> CreateOrUpdateAppDescriptionsByIdAsync([FromRoute] Guid appId, [FromBody] IEnumerable<LocalizedDescription> offerDescriptionDatas)
-	{
-		await this.WithIamUserId(userId => _businessLogic.CreateOrUpdateAppDescriptionByIdAsync(appId, userId, offerDescriptionDatas)).ConfigureAwait(false);
-		return NoContent();
-	}
-	/// <summary>
-	/// Upload offerassigned AppLeadImage document for active apps for given appId for same company as user
-	/// </summary>
-	/// <param name="appId"></param>
-	/// <param name="document"></param>
-	/// <param name="cancellationToken"></param>
-	/// <remarks>Example: POST: /api/apps/appchange/{appId}/appLeadImage</remarks>
-	/// <response code="204">Successfully uploaded the document</response>
-	/// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
-	/// <response code="403">The user is not assigned with the app.</response>
-	/// <response code="415">Only PNG and JPEG files are supported.</response>
-	[HttpPost]
-	[Route("{appId}/appLeadImage")]
-	[Authorize(Roles = "edit_apps")]
-	[Consumes("multipart/form-data")]
-	[RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
-	[ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
-	public async Task<NoContentResult> UploadOfferAssignedAppLeadImageDocumentByIdAsync([FromRoute] Guid appId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
-	{
-		await this.WithIamUserId(iamUserId => _businessLogic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, document, cancellationToken));
-		return NoContent();
-	}
+    /// <summary>
+    /// Create or Update description of the app by Id.
+    /// </summary>
+    /// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id for the app description to create or update.</param>
+    /// <param name="offerDescriptionDatas">app description data to create or update.</param>
+    /// <remarks>Example: Put: /api/apps/appchange/092bdae3-a044-4314-94f4-85c65a09e31b/appupdate/description</remarks>
+    /// <response code="204">The app description succesFully created or updated</response>
+    [HttpPut]
+    [Route("{appId}/appupdate/description")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<NoContentResult> CreateOrUpdateAppDescriptionsByIdAsync([FromRoute] Guid appId, [FromBody] IEnumerable<LocalizedDescription> offerDescriptionDatas)
+    {
+        await this.WithIamUserId(userId => _businessLogic.CreateOrUpdateAppDescriptionByIdAsync(appId, userId, offerDescriptionDatas)).ConfigureAwait(false);
+        return NoContent();
+    }
+    /// <summary>
+    /// Upload offerassigned AppLeadImage document for active apps for given appId for same company as user
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="document"></param>
+    /// <param name="cancellationToken"></param>
+    /// <remarks>Example: POST: /api/apps/appchange/{appId}/appLeadImage</remarks>
+    /// <response code="204">Successfully uploaded the document</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="403">The user is not assigned with the app.</response>
+    /// <response code="415">Only PNG and JPEG files are supported.</response>
+    [HttpPost]
+    [Route("{appId}/appLeadImage")]
+    [Authorize(Roles = "edit_apps")]
+    [Consumes("multipart/form-data")]
+    [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
+    public async Task<NoContentResult> UploadOfferAssignedAppLeadImageDocumentByIdAsync([FromRoute] Guid appId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
+    {
+        await this.WithIamUserId(iamUserId => _businessLogic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, document, cancellationToken));
+        return NoContent();
+    }
 
-	/// <summary>
-	/// Deactivate the OfferStatus By appId
-	/// </summary>
-	/// <param name="appId" example="3c77a395-a7e7-40f2-a519-ac16498e0a79">Id of the app that should be deactive</param>
-	/// <remarks>Example: PUT: /api/apps/3c77a395-a7e7-40f2-a519-ac16498e0a79/deactivateApp</remarks>
-	/// <response code="204">The App Successfully Deactivated</response>
-	/// <response code="400">invalid or user does not exist.</response>
-	/// <response code="404">If app does not exists.</response>
-	/// <response code="403">Missing Permission</response>
-	/// <response code="409">Offer is in incorrect state</response>
-	[HttpPut]
-	[Route("{appId:guid}/deactivateApp")]
-	[Authorize(Roles = "edit_apps")]
-	[ProducesResponseType(StatusCodes.Status204NoContent)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-	public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
-	{
-		await this.WithIamUserId(userId => _businessLogic.DeactivateOfferByAppIdAsync(appId, userId)).ConfigureAwait(false);
-		return NoContent();
-	}
+    /// <summary>
+    /// Deactivate the OfferStatus By appId
+    /// </summary>
+    /// <param name="appId" example="3c77a395-a7e7-40f2-a519-ac16498e0a79">Id of the app that should be deactive</param>
+    /// <remarks>Example: PUT: /api/apps/3c77a395-a7e7-40f2-a519-ac16498e0a79/deactivateApp</remarks>
+    /// <response code="204">The App Successfully Deactivated</response>
+    /// <response code="400">invalid or user does not exist.</response>
+    /// <response code="404">If app does not exists.</response>
+    /// <response code="403">Missing Permission</response>
+    /// <response code="409">Offer is in incorrect state</response>
+    [HttpPut]
+    [Route("{appId:guid}/deactivateApp")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
+    {
+        await this.WithIamUserId(userId => _businessLogic.DeactivateOfferByAppIdAsync(appId, userId)).ConfigureAwait(false);
+        return NoContent();
+    }
 
-	/// <summary>
-	/// Updates the url for a specific subscription
-	/// </summary>
-	/// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id of the app.</param>
-	/// <param name="subscriptionId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id of the subscription.</param>
-	/// <param name="data">new url for the subscription.</param>
-	/// <remarks>Example: Put: /api/apps/appchange/{appId}/subscription/{subscriptionId}/tenantUrl</remarks>
-	/// <response code="204">The app description succesFully created or updated</response>
-	[HttpPut]
-	[Route("{appId}/subscription/{subscriptionId}/tenantUrl")]
-	[Authorize(Roles = "edit_apps")]
-	[ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-	[ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-	public async Task<NoContentResult> UpdateTenantUrl([FromRoute] Guid appId, [FromRoute] Guid subscriptionId, [FromBody] UpdateTenantData data)
-	{
-		await this.WithIamUserId(iamUserId => _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data, iamUserId)).ConfigureAwait(false);
-		return NoContent();
-	}
+    /// <summary>
+    /// Updates the url for a specific subscription
+    /// </summary>
+    /// <param name="appId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id of the app.</param>
+    /// <param name="subscriptionId" example="092bdae3-a044-4314-94f4-85c65a09e31b">Id of the subscription.</param>
+    /// <param name="data">new url for the subscription.</param>
+    /// <remarks>Example: Put: /api/apps/appchange/{appId}/subscription/{subscriptionId}/tenantUrl</remarks>
+    /// <response code="204">The app description succesFully created or updated</response>
+    [HttpPut]
+    [Route("{appId}/subscription/{subscriptionId}/tenantUrl")]
+    [Authorize(Roles = "edit_apps")]
+    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public async Task<NoContentResult> UpdateTenantUrl([FromRoute] Guid appId, [FromRoute] Guid subscriptionId, [FromBody] UpdateTenantData data)
+    {
+        await this.WithIamUserId(iamUserId => _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data, iamUserId)).ConfigureAwait(false);
+        return NoContent();
+    }
 }

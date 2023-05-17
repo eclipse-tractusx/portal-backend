@@ -24,60 +24,60 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 
 public static class HttpAsyncResponseMessageExtension
 {
-	public static async Task<HttpResponseMessage> CatchingIntoServiceExceptionFor(this Task<HttpResponseMessage> response, string systemName, RecoverOptions recoverOptions = RecoverOptions.None, Func<HttpContent, ValueTask<string?>>? createErrorMessage = null)
-	{
-		try
-		{
-			var message = await response.ConfigureAwait(false);
-			if (message.IsSuccessStatusCode)
-			{
-				return message;
-			}
+    public static async Task<HttpResponseMessage> CatchingIntoServiceExceptionFor(this Task<HttpResponseMessage> response, string systemName, RecoverOptions recoverOptions = RecoverOptions.None, Func<HttpContent, ValueTask<string?>>? createErrorMessage = null)
+    {
+        try
+        {
+            var message = await response.ConfigureAwait(false);
+            if (message.IsSuccessStatusCode)
+            {
+                return message;
+            }
 
-			string? errorMessage;
-			try
-			{
-				errorMessage = (int)message.StatusCode < 500 && createErrorMessage != null
-					? await createErrorMessage(message.Content).ConfigureAwait(false)
-					: null;
-			}
-			catch (Exception)
-			{
-				errorMessage = null;
-			}
+            string? errorMessage;
+            try
+            {
+                errorMessage = (int)message.StatusCode < 500 && createErrorMessage != null
+                    ? await createErrorMessage(message.Content).ConfigureAwait(false)
+                    : null;
+            }
+            catch (Exception)
+            {
+                errorMessage = null;
+            }
 
-			throw new ServiceException(
-				string.IsNullOrWhiteSpace(errorMessage)
-					? $"call to external system {systemName} failed with statuscode {(int)message.StatusCode}"
-					: $"call to external system {systemName} failed with statuscode {(int)message.StatusCode} - Message: {errorMessage}",
-				message.StatusCode,
-				(recoverOptions & RecoverOptions.RESPONSE_RECEIVED) == RecoverOptions.RESPONSE_RECEIVED);
-		}
-		catch (HttpRequestException e)
-		{
-			throw e.StatusCode == null
-				? new ServiceException($"call to external system {systemName} failed", e, (recoverOptions & RecoverOptions.REQUEST_EXCEPTION) == RecoverOptions.REQUEST_EXCEPTION)
-				: new ServiceException($"call to external system {systemName} failed with statuscode {(int)e.StatusCode.Value}", e, e.StatusCode.Value, (recoverOptions & RecoverOptions.REQUEST_EXCEPTION) == RecoverOptions.REQUEST_EXCEPTION);
-		}
-		catch (TaskCanceledException e)
-		{
-			throw new ServiceException($"call to external system {systemName} failed due to timeout", e, (recoverOptions & RecoverOptions.TIMEOUT) == RecoverOptions.TIMEOUT);
-		}
-		catch (Exception e) when (e is not ServiceException and not SystemException)
-		{
-			throw new ServiceException($"call to external system {systemName} failed", e, (recoverOptions & RecoverOptions.OTHER_EXCEPTION) == RecoverOptions.OTHER_EXCEPTION);
-		}
-	}
+            throw new ServiceException(
+                string.IsNullOrWhiteSpace(errorMessage)
+                    ? $"call to external system {systemName} failed with statuscode {(int)message.StatusCode}"
+                    : $"call to external system {systemName} failed with statuscode {(int)message.StatusCode} - Message: {errorMessage}",
+                message.StatusCode,
+                (recoverOptions & RecoverOptions.RESPONSE_RECEIVED) == RecoverOptions.RESPONSE_RECEIVED);
+        }
+        catch (HttpRequestException e)
+        {
+            throw e.StatusCode == null
+                ? new ServiceException($"call to external system {systemName} failed", e, (recoverOptions & RecoverOptions.REQUEST_EXCEPTION) == RecoverOptions.REQUEST_EXCEPTION)
+                : new ServiceException($"call to external system {systemName} failed with statuscode {(int)e.StatusCode.Value}", e, e.StatusCode.Value, (recoverOptions & RecoverOptions.REQUEST_EXCEPTION) == RecoverOptions.REQUEST_EXCEPTION);
+        }
+        catch (TaskCanceledException e)
+        {
+            throw new ServiceException($"call to external system {systemName} failed due to timeout", e, (recoverOptions & RecoverOptions.TIMEOUT) == RecoverOptions.TIMEOUT);
+        }
+        catch (Exception e) when (e is not ServiceException and not SystemException)
+        {
+            throw new ServiceException($"call to external system {systemName} failed", e, (recoverOptions & RecoverOptions.OTHER_EXCEPTION) == RecoverOptions.OTHER_EXCEPTION);
+        }
+    }
 
-	[Flags]
-	public enum RecoverOptions
-	{
-		None = 0b_0000_0000,
-		RESPONSE_RECEIVED = 0b_0000_0001,
-		REQUEST_EXCEPTION = 0b_0000_0010,
-		TIMEOUT = 0b_0000_0100,
-		OTHER_EXCEPTION = 0b_0000_1000,
-		INFRASTRUCTURE = REQUEST_EXCEPTION | TIMEOUT,
-		ALLWAYS = RESPONSE_RECEIVED | REQUEST_EXCEPTION | TIMEOUT | OTHER_EXCEPTION
-	}
+    [Flags]
+    public enum RecoverOptions
+    {
+        None = 0b_0000_0000,
+        RESPONSE_RECEIVED = 0b_0000_0001,
+        REQUEST_EXCEPTION = 0b_0000_0010,
+        TIMEOUT = 0b_0000_0100,
+        OTHER_EXCEPTION = 0b_0000_1000,
+        INFRASTRUCTURE = REQUEST_EXCEPTION | TIMEOUT,
+        ALLWAYS = RESPONSE_RECEIVED | REQUEST_EXCEPTION | TIMEOUT | OTHER_EXCEPTION
+    }
 }

@@ -31,72 +31,72 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {
-	public async Task CreateResourceAsync(string realm, string resourceServerId, AuthorizationResource resource) =>
-		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/clients/")
-			.AppendPathSegment(resourceServerId, true)
-			.AppendPathSegment("/authz/resource-server/resource")
-			.PostJsonAsync(resource)
-			.ConfigureAwait(false);
+    public async Task CreateResourceAsync(string realm, string resourceServerId, AuthorizationResource resource) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/clients/")
+            .AppendPathSegment(resourceServerId, true)
+            .AppendPathSegment("/authz/resource-server/resource")
+            .PostJsonAsync(resource)
+            .ConfigureAwait(false);
 
-	public async Task<IEnumerable<AuthorizationResource>> GetResourcesAsync(string realm, string? resourceServerId = null,
-		bool deep = false, int? first = null, int? max = null, string? name = null, string? owner = null,
-		string? type = null, string? uri = null)
-	{
-		var queryParams = new Dictionary<string, object?>
-		{
-			[nameof(deep)] = deep,
-			[nameof(first)] = first,
-			[nameof(max)] = max,
-			[nameof(name)] = name,
-			[nameof(owner)] = owner,
-			[nameof(type)] = type,
-			[nameof(uri)] = uri
-		};
+    public async Task<IEnumerable<AuthorizationResource>> GetResourcesAsync(string realm, string? resourceServerId = null,
+        bool deep = false, int? first = null, int? max = null, string? name = null, string? owner = null,
+        string? type = null, string? uri = null)
+    {
+        var queryParams = new Dictionary<string, object?>
+        {
+            [nameof(deep)] = deep,
+            [nameof(first)] = first,
+            [nameof(max)] = max,
+            [nameof(name)] = name,
+            [nameof(owner)] = owner,
+            [nameof(type)] = type,
+            [nameof(uri)] = uri
+        };
 
-		return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/clients/")
-			.AppendPathSegment(resourceServerId, true)
-			.AppendPathSegment("/authz/resource-server/resource")
-			.SetQueryParams(queryParams)
-			.GetJsonAsync<IEnumerable<AuthorizationResource>>()
-			.ConfigureAwait(false);
-	}
+        return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/clients/")
+            .AppendPathSegment(resourceServerId, true)
+            .AppendPathSegment("/authz/resource-server/resource")
+            .SetQueryParams(queryParams)
+            .GetJsonAsync<IEnumerable<AuthorizationResource>>()
+            .ConfigureAwait(false);
+    }
 
-	public async Task<AuthorizationResource> GetResourceAsync(string realm, string resourceServerId, string resourceId) =>
-		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/clients/")
-			.AppendPathSegment(resourceServerId, true)
-			.AppendPathSegment("/authz/resource-server/resource/")
-			.AppendPathSegment(resourceId, true)
-			.GetJsonAsync<AuthorizationResource>()
-			.ConfigureAwait(false);
+    public async Task<AuthorizationResource> GetResourceAsync(string realm, string resourceServerId, string resourceId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/clients/")
+            .AppendPathSegment(resourceServerId, true)
+            .AppendPathSegment("/authz/resource-server/resource/")
+            .AppendPathSegment(resourceId, true)
+            .GetJsonAsync<AuthorizationResource>()
+            .ConfigureAwait(false);
 
-	public async Task UpdateResourceAsync(string realm, string resourceServerId, string resourceId, AuthorizationResource resource) =>
-		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/clients/")
-			.AppendPathSegment(resourceServerId, true)
-			.AppendPathSegment("/authz/resource-server/resource/")
-			.AppendPathSegment(resourceId, true)
-			.PutJsonAsync(resource)
-			.ConfigureAwait(false);
+    public async Task UpdateResourceAsync(string realm, string resourceServerId, string resourceId, AuthorizationResource resource) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/clients/")
+            .AppendPathSegment(resourceServerId, true)
+            .AppendPathSegment("/authz/resource-server/resource/")
+            .AppendPathSegment(resourceId, true)
+            .PutJsonAsync(resource)
+            .ConfigureAwait(false);
 
-	public async Task DeleteResourceAsync(string realm, string resourceServerId, string resourceId) =>
-		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-			.AppendPathSegment("/admin/realms/")
-			.AppendPathSegment(realm, true)
-			.AppendPathSegment("/clients/")
-			.AppendPathSegment(resourceServerId, true)
-			.AppendPathSegment("/authz/resource-server/resource/")
-			.AppendPathSegment(resourceId, true)
-			.DeleteAsync()
-			.ConfigureAwait(false);
+    public async Task DeleteResourceAsync(string realm, string resourceServerId, string resourceId) =>
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/clients/")
+            .AppendPathSegment(resourceServerId, true)
+            .AppendPathSegment("/authz/resource-server/resource/")
+            .AppendPathSegment(resourceId, true)
+            .DeleteAsync()
+            .ConfigureAwait(false);
 }

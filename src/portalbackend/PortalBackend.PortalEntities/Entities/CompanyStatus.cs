@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyStatus
 {
-	private CompanyStatus()
-	{
-		Label = null!;
-		Companies = new HashSet<Company>();
-	}
+    private CompanyStatus()
+    {
+        Label = null!;
+        Companies = new HashSet<Company>();
+    }
 
-	public CompanyStatus(CompanyStatusId companyStatusId) : this()
-	{
-		Id = companyStatusId;
-		Label = companyStatusId.ToString();
-	}
+    public CompanyStatus(CompanyStatusId companyStatusId) : this()
+    {
+        Id = companyStatusId;
+        Label = companyStatusId.ToString();
+    }
 
-	public CompanyStatusId Id { get; private set; }
+    public CompanyStatusId Id { get; private set; }
 
-	[MaxLength(255)]
-	public string Label { get; private set; }
+    [MaxLength(255)]
+    public string Label { get; private set; }
 
-	// Navigation properties
-	public virtual ICollection<Company> Companies { get; private set; }
+    // Navigation properties
+    public virtual ICollection<Company> Companies { get; private set; }
 }

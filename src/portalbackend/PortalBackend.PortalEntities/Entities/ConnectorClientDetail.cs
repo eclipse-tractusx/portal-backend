@@ -2,21 +2,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ConnectorClientDetail
 {
-	private ConnectorClientDetail()
-	{
-		ClientId = null!;
-	}
+    private ConnectorClientDetail()
+    {
+        ClientId = null!;
+    }
 
-	public ConnectorClientDetail(Guid connectorId, string clientId)
-		: this()
-	{
-		this.ConnectorId = connectorId;
-		this.ClientId = clientId;
-	}
+    public ConnectorClientDetail(Guid connectorId, string clientId)
+        : this()
+    {
+        this.ConnectorId = connectorId;
+        this.ClientId = clientId;
+    }
 
-	public Guid ConnectorId { get; set; }
+    public Guid ConnectorId { get; set; }
 
-	public string ClientId { get; set; }
+    public string ClientId { get; set; }
 
-	public virtual Connector? Connector { get; set; }
+    public virtual Connector? Connector { get; set; }
 }

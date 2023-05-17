@@ -26,12 +26,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;
 
 public class BaseStatusCodeFilter : IOperationFilter
 {
-	public void Apply(OpenApiOperation operation, OperationFilterContext context)
-	{
-		var statusCode500 = StatusCodes.Status500InternalServerError.ToString();
-		if (!operation.Responses.ContainsKey(statusCode500))
-		{
-			operation.Responses.Add(statusCode500, new OpenApiResponse { Description = "Internal Server Error" });
-		}
-	}
+    public void Apply(OpenApiOperation operation, OperationFilterContext context)
+    {
+        var statusCode500 = StatusCodes.Status500InternalServerError.ToString();
+        if (!operation.Responses.ContainsKey(statusCode500))
+        {
+            operation.Responses.Add(statusCode500, new OpenApiResponse { Description = "Internal Server Error" });
+        }
+    }
 }

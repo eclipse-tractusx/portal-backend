@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class FormAuthenticatorProviders
 {
-	[JsonProperty("registration-page-form")]
-	public HasOrder RegistrationPageForm { get; set; }
+    [JsonProperty("registration-page-form")]
+    public HasOrder RegistrationPageForm { get; set; }
 }

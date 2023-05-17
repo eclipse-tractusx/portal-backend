@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class AccountProviders
 {
-	[JsonProperty("freemarker")]
-	public HasOrder Freemarker { get; set; }
+    [JsonProperty("freemarker")]
+    public HasOrder Freemarker { get; set; }
 }

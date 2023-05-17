@@ -32,78 +32,78 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Tests;
 
 public class ConsortiaDataDbFixture : IAsyncLifetime
 {
-	private readonly PostgreSqlTestcontainer _container;
+    private readonly PostgreSqlTestcontainer _container;
 
-	public ConsortiaDataDbFixture()
-	{
-		_container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
-			.WithDatabase(new PostgreSqlTestcontainerConfiguration
-			{
-				Database = "test_db",
-				Username = "postgres",
-				Password = "postgres",
-				Environments = { { "Include Error Detail", "true" } }
-			})
-			.WithImage("postgres")
-			.WithCleanUp(true)
-			.WithName(Guid.NewGuid().ToString())
-			.Build();
-	}
+    public ConsortiaDataDbFixture()
+    {
+        _container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
+            .WithDatabase(new PostgreSqlTestcontainerConfiguration
+            {
+                Database = "test_db",
+                Username = "postgres",
+                Password = "postgres",
+                Environments = { { "Include Error Detail", "true" } }
+            })
+            .WithImage("postgres")
+            .WithCleanUp(true)
+            .WithName(Guid.NewGuid().ToString())
+            .Build();
+    }
 
-	/// <summary>
-	/// Foreach test a new portalDbContext will be created and filled with the custom seeding data. 
-	/// </summary>
-	/// <remarks>
-	/// In this method the migrations don't need to get executed since they are already on the testcontainer.
-	/// Because of that the EnsureCreatedAsync is enough.
-	/// </remarks>
-	/// <returns>Returns the created PortalDbContext</returns>
-	public PortalDbContext GetPortalDbContext()
-	{
-		var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
+    /// <summary>
+    /// Foreach test a new portalDbContext will be created and filled with the custom seeding data. 
+    /// </summary>
+    /// <remarks>
+    /// In this method the migrations don't need to get executed since they are already on the testcontainer.
+    /// Because of that the EnsureCreatedAsync is enough.
+    /// </remarks>
+    /// <returns>Returns the created PortalDbContext</returns>
+    public PortalDbContext GetPortalDbContext()
+    {
+        var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
 
-		optionsBuilder.UseNpgsql(
-			_container.ConnectionString,
-			x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
-				.MigrationsHistoryTable("__efmigrations_history_portal")
-		);
-		var context = new PortalDbContext(optionsBuilder.Options);
-		return context;
-	}
+        optionsBuilder.UseNpgsql(
+            _container.ConnectionString,
+            x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
+                .MigrationsHistoryTable("__efmigrations_history_portal")
+        );
+        var context = new PortalDbContext(optionsBuilder.Options);
+        return context;
+    }
 
-	/// <summary>
-	/// This method is used to initially setup the database and run all migrations
-	/// </summary>
-	public async Task InitializeAsync()
-	{
-		await _container.StartAsync()
-			.ConfigureAwait(false);
+    /// <summary>
+    /// This method is used to initially setup the database and run all migrations
+    /// </summary>
+    public async Task InitializeAsync()
+    {
+        await _container.StartAsync()
+            .ConfigureAwait(false);
 
-		var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
 
-		optionsBuilder.UseNpgsql(
-			_container.ConnectionString,
-			x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
-				.MigrationsHistoryTable("__efmigrations_history_portal")
-		);
-		var context = new PortalDbContext(optionsBuilder.Options);
-		await context.Database.MigrateAsync();
+        optionsBuilder.UseNpgsql(
+            _container.ConnectionString,
+            x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
+                .MigrationsHistoryTable("__efmigrations_history_portal")
+        );
+        var context = new PortalDbContext(optionsBuilder.Options);
+        await context.Database.MigrateAsync();
 
-		var seederOptions = Options.Create(new SeederSettings { TestDataEnvironments = new List<string> { "consortia" } });
-		var insertSeeder = new BatchInsertSeeder(context,
-			LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<BatchInsertSeeder>(),
-			seederOptions);
-		await insertSeeder.ExecuteAsync(CancellationToken.None);
-		var updateSeeder = new BatchUpdateSeeder(context,
-			LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<BatchUpdateSeeder>(),
-			seederOptions);
-		await updateSeeder.ExecuteAsync(CancellationToken.None);
-	}
+        var seederOptions = Options.Create(new SeederSettings { TestDataEnvironments = new List<string> { "consortia" } });
+        var insertSeeder = new BatchInsertSeeder(context,
+            LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<BatchInsertSeeder>(),
+            seederOptions);
+        await insertSeeder.ExecuteAsync(CancellationToken.None);
+        var updateSeeder = new BatchUpdateSeeder(context,
+            LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<BatchUpdateSeeder>(),
+            seederOptions);
+        await updateSeeder.ExecuteAsync(CancellationToken.None);
+    }
 
-	/// <inheritdoc />
-	public async Task DisposeAsync()
-	{
-		await _container.DisposeAsync()
-			.ConfigureAwait(false);
-	}
+    /// <inheritdoc />
+    public async Task DisposeAsync()
+    {
+        await _container.DisposeAsync()
+            .ConfigureAwait(false);
+    }
 }

@@ -27,12 +27,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// </summary>
 public interface ICountryRepository
 {
-	/// <summary>
-	/// Checks if a country exists in the database depending on the alpha2code
-	/// </summary>
-	/// <param name="alpha2Code">The alpha2code to check the countries for</param>
-	/// <returns><c>true</c> if the country exists for the given alpha 2 code, otherwise <c>false</c></returns>
-	Task<bool> CheckCountryExistsByAlpha2CodeAsync(string alpha2Code);
+    /// <summary>
+    /// Checks if a country exists in the database depending on the alpha2code
+    /// </summary>
+    /// <param name="alpha2Code">The alpha2code to check the countries for</param>
+    /// <returns><c>true</c> if the country exists for the given alpha 2 code, otherwise <c>false</c></returns>
+    Task<bool> CheckCountryExistsByAlpha2CodeAsync(string alpha2Code);
 
-	Task<(bool IsValidCountry, IEnumerable<UniqueIdentifierId> UniqueIdentifierIds)> GetCountryAssignedIdentifiers(string alpha2Code, IEnumerable<UniqueIdentifierId> uniqueIdentifierIds);
+    Task<(bool IsValidCountry, IEnumerable<UniqueIdentifierId> UniqueIdentifierIds)> GetCountryAssignedIdentifiers(string alpha2Code, IEnumerable<UniqueIdentifierId> uniqueIdentifierIds);
 }

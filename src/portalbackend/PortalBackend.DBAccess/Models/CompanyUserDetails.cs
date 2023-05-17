@@ -24,46 +24,46 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyUserDetails(
-	[property: JsonPropertyName("companyUserId")] Guid Company2UserId,
-	[property: JsonPropertyName("created")] DateTimeOffset CreatedAt,
-	[property: JsonPropertyName("bpn")] IEnumerable<string> BusinessPartnerNumbers,
-	[property: JsonPropertyName("company")] string CompanyName,
-	[property: JsonPropertyName("status")] CompanyUserStatusId CompanyUserStatusId,
-	[property: JsonPropertyName("assignedRoles")] IEnumerable<CompanyUserAssignedRoleDetails> AssignedRoles)
+    [property: JsonPropertyName("companyUserId")] Guid Company2UserId,
+    [property: JsonPropertyName("created")] DateTimeOffset CreatedAt,
+    [property: JsonPropertyName("bpn")] IEnumerable<string> BusinessPartnerNumbers,
+    [property: JsonPropertyName("company")] string CompanyName,
+    [property: JsonPropertyName("status")] CompanyUserStatusId CompanyUserStatusId,
+    [property: JsonPropertyName("assignedRoles")] IEnumerable<CompanyUserAssignedRoleDetails> AssignedRoles)
 {
-	[JsonPropertyName("firstName")]
-	public string? FirstName { get; set; }
+    [JsonPropertyName("firstName")]
+    public string? FirstName { get; set; }
 
-	[JsonPropertyName("lastName")]
-	public string? LastName { get; set; }
+    [JsonPropertyName("lastName")]
+    public string? LastName { get; set; }
 
-	[JsonPropertyName("email")]
-	public string? Email { get; set; }
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
 }
 
 public record CompanyOwnUserDetails(
-	[property: JsonPropertyName("companyUserId")] Guid CompanyUserId,
-	[property: JsonPropertyName("created")] DateTimeOffset CreatedAt,
-	[property: JsonPropertyName("bpn")] IEnumerable<string> BusinessPartnerNumbers,
-	[property: JsonPropertyName("company")] string CompanyName,
-	[property: JsonPropertyName("status")] CompanyUserStatusId CompanyUserStatusId,
-	[property: JsonPropertyName("assignedRoles")] IEnumerable<CompanyUserAssignedRoleDetails> AssignedRoles,
-	[property: JsonPropertyName("admin")] IEnumerable<CompanyUserAdminDetails> AdminDetails)
+    [property: JsonPropertyName("companyUserId")] Guid CompanyUserId,
+    [property: JsonPropertyName("created")] DateTimeOffset CreatedAt,
+    [property: JsonPropertyName("bpn")] IEnumerable<string> BusinessPartnerNumbers,
+    [property: JsonPropertyName("company")] string CompanyName,
+    [property: JsonPropertyName("status")] CompanyUserStatusId CompanyUserStatusId,
+    [property: JsonPropertyName("assignedRoles")] IEnumerable<CompanyUserAssignedRoleDetails> AssignedRoles,
+    [property: JsonPropertyName("admin")] IEnumerable<CompanyUserAdminDetails> AdminDetails)
 {
-	[JsonPropertyName("firstName")]
-	public string? FirstName { get; set; }
+    [JsonPropertyName("firstName")]
+    public string? FirstName { get; set; }
 
-	[JsonPropertyName("lastName")]
-	public string? LastName { get; set; }
+    [JsonPropertyName("lastName")]
+    public string? LastName { get; set; }
 
-	[JsonPropertyName("email")]
-	public string? Email { get; set; }
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
 }
 
 public record CompanyUserAdminDetails(
-	[property: JsonPropertyName("id")] Guid CompanyUserId,
-	[property: JsonPropertyName("email")] string? Email);
+    [property: JsonPropertyName("id")] Guid CompanyUserId,
+    [property: JsonPropertyName("email")] string? Email);
 
 public record CompanyUserAssignedRoleDetails(
-	[property: JsonPropertyName("appId")] Guid OfferId,
-	[property: JsonPropertyName("roles")] IEnumerable<string> UserRoles);
+    [property: JsonPropertyName("appId")] Guid OfferId,
+    [property: JsonPropertyName("roles")] IEnumerable<string> UserRoles);

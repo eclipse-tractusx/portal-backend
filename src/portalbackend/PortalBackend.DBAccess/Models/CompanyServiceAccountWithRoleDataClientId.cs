@@ -23,12 +23,12 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyServiceAccountWithRoleDataClientId(
-	Guid ServiceAccountId,
-	CompanyServiceAccountStatusId CompanyServiceAccountStatusId,
-	string Name,
-	string Description,
-	CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
-	Guid? OfferSubscriptionId,
-	string? ClientId,
-	string? ClientClientId,
-	IEnumerable<UserRoleData> UserRoleDatas);
+    Guid ServiceAccountId,
+    CompanyServiceAccountStatusId CompanyServiceAccountStatusId,
+    string Name,
+    string Description,
+    CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
+    Guid? OfferSubscriptionId,
+    string? ClientId,
+    string? ClientClientId,
+    IEnumerable<UserRoleData> UserRoleDatas);

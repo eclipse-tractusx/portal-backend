@@ -25,16 +25,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningSettings
 {
-	public IdentityProvider CentralIdentityProvider { get; init; } = null!;
-	public IdentityProvider SamlIdentityProvider { get; init; } = null!;
-	public IdentityProvider OidcIdentityProvider { get; init; } = null!;
+    public IdentityProvider CentralIdentityProvider { get; init; } = null!;
+    public IdentityProvider SamlIdentityProvider { get; init; } = null!;
+    public IdentityProvider OidcIdentityProvider { get; init; } = null!;
 
-	public ProvisioningSettings ValidateIdentityProviderTemplates()
-	{
-		new ConfigurationValidation<ProvisioningSettings>()
-			.NotNull(CentralIdentityProvider, () => nameof(CentralIdentityProvider))
-			.NotNull(SamlIdentityProvider, () => nameof(SamlIdentityProvider))
-			.NotNull(OidcIdentityProvider, () => nameof(OidcIdentityProvider));
-		return this;
-	}
+    public ProvisioningSettings ValidateIdentityProviderTemplates()
+    {
+        new ConfigurationValidation<ProvisioningSettings>()
+            .NotNull(CentralIdentityProvider, () => nameof(CentralIdentityProvider))
+            .NotNull(SamlIdentityProvider, () => nameof(SamlIdentityProvider))
+            .NotNull(OidcIdentityProvider, () => nameof(OidcIdentityProvider));
+        return this;
+    }
 }

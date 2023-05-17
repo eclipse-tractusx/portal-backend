@@ -24,13 +24,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.BusinessLogic;
 
 public interface IBpdmBusinessLogic
 {
-	/// <summary>
-	/// Triggers the bpn data push
-	/// </summary>
-	/// <param name="context">The context</param>
-	/// <param name="cancellationToken">Cancellation Token</param>
-	/// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
-	Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> PushLegalEntity(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
+    /// <summary>
+    /// Triggers the bpn data push
+    /// </summary>
+    /// <param name="context">The context</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
+    Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> PushLegalEntity(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
 
-	Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandlePullLegalEntity(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
+    Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandlePullLegalEntity(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
 }

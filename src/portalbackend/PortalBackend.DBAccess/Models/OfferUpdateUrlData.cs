@@ -23,16 +23,16 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record OfferUpdateUrlData(
-	string? OfferName,
-	bool IsSingleInstance,
-	bool IsUserOfCompany,
-	Guid RequesterId,
-	Guid SubscribingCompanyId,
-	OfferSubscriptionStatusId OfferSubscriptionStatusId,
-	OfferUpdateUrlSubscriptionDetailData? SubscriptionDetailData);
+    string? OfferName,
+    bool IsSingleInstance,
+    bool IsUserOfCompany,
+    Guid RequesterId,
+    Guid SubscribingCompanyId,
+    OfferSubscriptionStatusId OfferSubscriptionStatusId,
+    OfferUpdateUrlSubscriptionDetailData? SubscriptionDetailData);
 
 public record OfferUpdateUrlSubscriptionDetailData(
-	Guid DetailId,
-	string? ClientClientId,
-	string? SubscriptionUrl
+    Guid DetailId,
+    string? ClientClientId,
+    string? SubscriptionUrl
 );

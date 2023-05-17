@@ -23,8 +23,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record ChecklistDetails(
-	ApplicationChecklistEntryTypeId Type,
-	ApplicationChecklistEntryStatusId Status,
-	string? Details,
-	IEnumerable<ProcessStepTypeId> RetriggerableProcessSteps
+    ApplicationChecklistEntryTypeId Type,
+    ApplicationChecklistEntryStatusId Status,
+    string? Details,
+    IEnumerable<ProcessStepTypeId> RetriggerableProcessSteps
 );

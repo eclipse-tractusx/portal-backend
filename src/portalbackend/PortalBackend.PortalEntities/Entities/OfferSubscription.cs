@@ -32,96 +32,96 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 [AuditEntityV1(typeof(AuditOfferSubscription20221005))]
 public class OfferSubscription : IAuditableV1, IBaseEntity
 {
-	/// <summary>
-	/// Only used for the audit table
-	/// </summary>
-	public OfferSubscription()
-	{
-		this.ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
-		this.CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
-	}
+    /// <summary>
+    /// Only used for the audit table
+    /// </summary>
+    public OfferSubscription()
+    {
+        this.ConsentAssignedOfferSubscriptions = new HashSet<ConsentAssignedOfferSubscription>();
+        this.CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
+    }
 
-	/// <summary>
-	/// Constructor.
-	/// </summary>
-	/// <param name="id">Id of the entity..</param>
-	/// <param name="offerId">Offer id.</param>
-	/// <param name="companyId">Company id.</param>
-	/// <param name="offerSubscriptionStatusId">app subscription status.</param>
-	/// <param name="requesterId">Id of the requester</param>
-	/// <param name="lastEditorId">Id of the editor</param>
-	public OfferSubscription(Guid id, Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid lastEditorId)
-		: this()
-	{
-		Id = id;
-		OfferId = offerId;
-		CompanyId = companyId;
-		OfferSubscriptionStatusId = offerSubscriptionStatusId;
-		RequesterId = requesterId;
-		LastEditorId = lastEditorId;
-	}
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="id">Id of the entity..</param>
+    /// <param name="offerId">Offer id.</param>
+    /// <param name="companyId">Company id.</param>
+    /// <param name="offerSubscriptionStatusId">app subscription status.</param>
+    /// <param name="requesterId">Id of the requester</param>
+    /// <param name="lastEditorId">Id of the editor</param>
+    public OfferSubscription(Guid id, Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid lastEditorId)
+        : this()
+    {
+        Id = id;
+        OfferId = offerId;
+        CompanyId = companyId;
+        OfferSubscriptionStatusId = offerSubscriptionStatusId;
+        RequesterId = requesterId;
+        LastEditorId = lastEditorId;
+    }
 
-	/// <inheritdoc />
-	public Guid Id { get; set; }
+    /// <inheritdoc />
+    public Guid Id { get; set; }
 
-	/// <summary>
-	/// ID of the company subscribing an app.
-	/// </summary>
-	public Guid CompanyId { get; set; }
+    /// <summary>
+    /// ID of the company subscribing an app.
+    /// </summary>
+    public Guid CompanyId { get; set; }
 
-	/// <summary>
-	/// ID of the apps subscribed by a company.
-	/// </summary>
-	public Guid OfferId { get; set; }
+    /// <summary>
+    /// ID of the apps subscribed by a company.
+    /// </summary>
+    public Guid OfferId { get; set; }
 
-	/// <summary>
-	/// ID of the app subscription status.
-	/// </summary>
-	public OfferSubscriptionStatusId OfferSubscriptionStatusId { get; set; }
+    /// <summary>
+    /// ID of the app subscription status.
+    /// </summary>
+    public OfferSubscriptionStatusId OfferSubscriptionStatusId { get; set; }
 
-	/// <summary>
-	/// Display Name for the company app combination
-	/// </summary>
-	[MaxLength(255)]
-	public string? DisplayName { get; set; }
+    /// <summary>
+    /// Display Name for the company app combination
+    /// </summary>
+    [MaxLength(255)]
+    public string? DisplayName { get; set; }
 
-	/// <summary>
-	/// Additional description for clarification
-	/// </summary>
-	[MaxLength(4096)]
-	public string? Description { get; set; }
+    /// <summary>
+    /// Additional description for clarification
+    /// </summary>
+    [MaxLength(4096)]
+    public string? Description { get; set; }
 
-	/// <summary>
-	/// Id of the app requester 
-	/// </summary>
-	public Guid RequesterId { get; set; }
+    /// <summary>
+    /// Id of the app requester 
+    /// </summary>
+    public Guid RequesterId { get; set; }
 
-	[AuditLastEditorV1]
-	public Guid? LastEditorId { get; set; }
+    [AuditLastEditorV1]
+    public Guid? LastEditorId { get; set; }
 
-	// Navigation properties
-	/// <summary>
-	/// Subscribed app.
-	/// </summary>
-	public virtual Offer? Offer { get; private set; }
+    // Navigation properties
+    /// <summary>
+    /// Subscribed app.
+    /// </summary>
+    public virtual Offer? Offer { get; private set; }
 
-	/// <summary>
-	/// Subscribing company.
-	/// </summary>
-	public virtual Company? Company { get; private set; }
+    /// <summary>
+    /// Subscribing company.
+    /// </summary>
+    public virtual Company? Company { get; private set; }
 
-	/// <summary>
-	/// Requester
-	/// </summary>
-	public virtual CompanyUser? Requester { get; private set; }
+    /// <summary>
+    /// Requester
+    /// </summary>
+    public virtual CompanyUser? Requester { get; private set; }
 
-	/// <summary>
-	/// Subscription status.
-	/// </summary>
-	public virtual OfferSubscriptionStatus? OfferSubscriptionStatus { get; private set; }
+    /// <summary>
+    /// Subscription status.
+    /// </summary>
+    public virtual OfferSubscriptionStatus? OfferSubscriptionStatus { get; private set; }
 
-	public virtual AppSubscriptionDetail? AppSubscriptionDetail { get; private set; }
+    public virtual AppSubscriptionDetail? AppSubscriptionDetail { get; private set; }
 
-	public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
-	public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
+    public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
+    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
 }

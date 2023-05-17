@@ -30,12 +30,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class Enums
 {
-	[JsonProperty("operationType")]
-	public List<string> OperationType { get; set; }
+    [JsonProperty("operationType")]
+    public List<string> OperationType { get; set; }
 
-	[JsonProperty("eventType")]
-	public List<string> EventType { get; set; }
+    [JsonProperty("eventType")]
+    public List<string> EventType { get; set; }
 
-	[JsonProperty("resourceType")]
-	public List<string> ResourceType { get; set; }
+    [JsonProperty("resourceType")]
+    public List<string> ResourceType { get; set; }
 }

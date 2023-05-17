@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class OfferLicense : IBaseEntity
 {
-	private OfferLicense()
-	{
-		Licensetext = null!;
-		Offers = new HashSet<Offer>();
-	}
+    private OfferLicense()
+    {
+        Licensetext = null!;
+        Offers = new HashSet<Offer>();
+    }
 
-	public OfferLicense(Guid id, string licensetext) : this()
-	{
-		Id = id;
-		Licensetext = licensetext;
-	}
+    public OfferLicense(Guid id, string licensetext) : this()
+    {
+        Id = id;
+        Licensetext = licensetext;
+    }
 
-	public Guid Id { get; private set; }
+    public Guid Id { get; private set; }
 
-	[MaxLength(255)]
-	public string Licensetext { get; set; }
+    [MaxLength(255)]
+    public string Licensetext { get; set; }
 
-	// Navigation properties
-	public virtual ICollection<Offer> Offers { get; private set; }
+    // Navigation properties
+    public virtual ICollection<Offer> Offers { get; private set; }
 }

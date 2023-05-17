@@ -29,75 +29,75 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// <inheritdoc />
 public class ServiceProviderBusinessLogic : IServiceProviderBusinessLogic
 {
-	private readonly IPortalRepositories _portalRepositories;
+    private readonly IPortalRepositories _portalRepositories;
 
-	/// <summary>
-	/// Creates a new instance of <see cref="ServiceProviderBusinessLogic"/>
-	/// </summary>
-	/// <param name="portalRepositories">Access to the portal repositories</param>
-	public ServiceProviderBusinessLogic(IPortalRepositories portalRepositories)
-	{
-		_portalRepositories = portalRepositories;
-	}
+    /// <summary>
+    /// Creates a new instance of <see cref="ServiceProviderBusinessLogic"/>
+    /// </summary>
+    /// <param name="portalRepositories">Access to the portal repositories</param>
+    public ServiceProviderBusinessLogic(IPortalRepositories portalRepositories)
+    {
+        _portalRepositories = portalRepositories;
+    }
 
-	/// <inheritdoc />
-	public async Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(string iamUserId)
-	{
-		var result = await _portalRepositories.GetInstance<ICompanyRepository>()
-			.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, iamUserId)
-			.ConfigureAwait(false);
-		if (result == default)
-		{
-			throw new ConflictException($"IAmUser {iamUserId} is not assigned to company");
-		}
-		if (!result.IsProviderCompany)
-		{
-			throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
-		}
+    /// <inheritdoc />
+    public async Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(string iamUserId)
+    {
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>()
+            .GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, iamUserId)
+            .ConfigureAwait(false);
+        if (result == default)
+        {
+            throw new ConflictException($"IAmUser {iamUserId} is not assigned to company");
+        }
+        if (!result.IsProviderCompany)
+        {
+            throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
+        }
 
-		return result.ProviderDetailReturnData;
-	}
+        return result.ProviderDetailReturnData;
+    }
 
-	/// <inheritdoc />
-	public Task SetServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
-	{
-		if (string.IsNullOrWhiteSpace(data.Url) || !data.Url.StartsWith("https://") || data.Url.Length > 100)
-		{
-			throw new ControllerArgumentException(
-				"Url must start with https and the maximum allowed length is 100 characters", nameof(data.Url));
-		}
+    /// <inheritdoc />
+    public Task SetServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId)
+    {
+        if (string.IsNullOrWhiteSpace(data.Url) || !data.Url.StartsWith("https://") || data.Url.Length > 100)
+        {
+            throw new ControllerArgumentException(
+                "Url must start with https and the maximum allowed length is 100 characters", nameof(data.Url));
+        }
 
-		return SetServiceProviderCompanyDetailsInternalAsync(data, iamUserId);
-	}
+        return SetServiceProviderCompanyDetailsInternalAsync(data, iamUserId);
+    }
 
-	private async Task SetServiceProviderCompanyDetailsInternalAsync(ServiceProviderDetailData data, string iamUserId)
-	{
-		var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
-		var serviceProviderDetailData = await companyRepository
-			.GetProviderCompanyDetailsExistsForUser(iamUserId)
-			.ConfigureAwait(false);
-		if (serviceProviderDetailData == default)
-		{
-			var result = await companyRepository
-				.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(iamUserId, CompanyRoleId.SERVICE_PROVIDER)
-				.ConfigureAwait(false);
-			if (result == default)
-			{
-				throw new ConflictException($"IAmUser {iamUserId} is not assigned to company");
-			}
-			if (!result.IsServiceProviderCompany)
-			{
-				throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
-			}
-			companyRepository.CreateProviderCompanyDetail(result.CompanyId, data.Url);
-		}
-		else
-		{
-			companyRepository.AttachAndModifyProviderCompanyDetails(
-				serviceProviderDetailData.ProviderCompanyDetailId,
-				details => { details.AutoSetupUrl = serviceProviderDetailData.Url; },
-				details => { details.AutoSetupUrl = data.Url; });
-		}
-		await _portalRepositories.SaveAsync().ConfigureAwait(false);
-	}
+    private async Task SetServiceProviderCompanyDetailsInternalAsync(ServiceProviderDetailData data, string iamUserId)
+    {
+        var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+        var serviceProviderDetailData = await companyRepository
+            .GetProviderCompanyDetailsExistsForUser(iamUserId)
+            .ConfigureAwait(false);
+        if (serviceProviderDetailData == default)
+        {
+            var result = await companyRepository
+                .GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(iamUserId, CompanyRoleId.SERVICE_PROVIDER)
+                .ConfigureAwait(false);
+            if (result == default)
+            {
+                throw new ConflictException($"IAmUser {iamUserId} is not assigned to company");
+            }
+            if (!result.IsServiceProviderCompany)
+            {
+                throw new ForbiddenException($"users {iamUserId} company is not a service-provider");
+            }
+            companyRepository.CreateProviderCompanyDetail(result.CompanyId, data.Url);
+        }
+        else
+        {
+            companyRepository.AttachAndModifyProviderCompanyDetails(
+                serviceProviderDetailData.ProviderCompanyDetailId,
+                details => { details.AutoSetupUrl = serviceProviderDetailData.Url; },
+                details => { details.AutoSetupUrl = data.Url; });
+        }
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 }

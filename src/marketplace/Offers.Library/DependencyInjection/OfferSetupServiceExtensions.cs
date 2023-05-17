@@ -26,11 +26,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection
 
 public static class OfferSetupServiceCollectionExtension
 {
-	public static IServiceCollection AddOfferSetupService(this IServiceCollection services)
-	{
-		services
-			.AddTransient<LoggingHandler<OfferSetupService>>()
-			.AddHttpClient(nameof(OfferSetupService)).AddHttpMessageHandler<LoggingHandler<OfferSetupService>>();
-		return services.AddTransient<IOfferSetupService, OfferSetupService>();
-	}
+    public static IServiceCollection AddOfferSetupService(this IServiceCollection services)
+    {
+        services
+            .AddTransient<LoggingHandler<OfferSetupService>>()
+            .AddHttpClient(nameof(OfferSetupService)).AddHttpMessageHandler<LoggingHandler<OfferSetupService>>();
+        return services.AddTransient<IOfferSetupService, OfferSetupService>();
+    }
 }

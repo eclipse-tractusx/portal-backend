@@ -25,32 +25,32 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class UseCase : IBaseEntity
 {
-	private UseCase()
-	{
-		Name = null!;
-		Shortname = null!;
-		Agreements = new HashSet<Agreement>();
-		CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
-		Apps = new HashSet<Offer>();
-	}
+    private UseCase()
+    {
+        Name = null!;
+        Shortname = null!;
+        Agreements = new HashSet<Agreement>();
+        CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
+        Apps = new HashSet<Offer>();
+    }
 
-	public UseCase(Guid id, string name, string shortname) : this()
-	{
-		Id = id;
-		Name = name;
-		Shortname = shortname;
-	}
+    public UseCase(Guid id, string name, string shortname) : this()
+    {
+        Id = id;
+        Name = name;
+        Shortname = shortname;
+    }
 
-	public Guid Id { get; private set; }
+    public Guid Id { get; private set; }
 
-	[MaxLength(255)]
-	public string Name { get; set; }
+    [MaxLength(255)]
+    public string Name { get; set; }
 
-	[MaxLength(255)]
-	public string Shortname { get; set; }
+    [MaxLength(255)]
+    public string Shortname { get; set; }
 
-	// Navigation properties
-	public virtual ICollection<Agreement> Agreements { get; private set; }
-	public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
-	public virtual ICollection<Offer> Apps { get; private set; }
+    // Navigation properties
+    public virtual ICollection<Agreement> Agreements { get; private set; }
+    public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
+    public virtual ICollection<Offer> Apps { get; private set; }
 }

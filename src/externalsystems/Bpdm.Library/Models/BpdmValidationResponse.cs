@@ -21,6 +21,6 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
 public record BpdmValidationResponse(
-	string Status,
-	IEnumerable<string> Errors
+    string Status,
+    IEnumerable<string> Errors
 );

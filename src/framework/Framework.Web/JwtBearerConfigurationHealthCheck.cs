@@ -28,39 +28,39 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public class JwtBearerConfigurationHealthCheck : IHealthCheck
 {
-	private readonly IConfigurationManager<OpenIdConnectConfiguration> _configurationManager;
+    private readonly IConfigurationManager<OpenIdConnectConfiguration> _configurationManager;
 
-	public JwtBearerConfigurationHealthCheck(IOptions<JwtBearerOptions> jwtOptions)
-	{
-		var options = jwtOptions.Value;
-		if (!options.RequireHttpsMetadata)
-		{
-			options.BackchannelHttpHandler = new HttpClientHandler
-			{
-				ServerCertificateCustomValidationCallback = (_, _, _, _) => true
-			};
-		}
-		_configurationManager = options.BackchannelHttpHandler == null
-			? new ConfigurationManager<OpenIdConnectConfiguration>(
-				options.MetadataAddress,
-				new OpenIdConnectConfigurationRetriever())
-			: new ConfigurationManager<OpenIdConnectConfiguration>(
-				options.MetadataAddress,
-				new OpenIdConnectConfigurationRetriever(),
-				new HttpClient(options.BackchannelHttpHandler));
-	}
+    public JwtBearerConfigurationHealthCheck(IOptions<JwtBearerOptions> jwtOptions)
+    {
+        var options = jwtOptions.Value;
+        if (!options.RequireHttpsMetadata)
+        {
+            options.BackchannelHttpHandler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+            };
+        }
+        _configurationManager = options.BackchannelHttpHandler == null
+            ? new ConfigurationManager<OpenIdConnectConfiguration>(
+                options.MetadataAddress,
+                new OpenIdConnectConfigurationRetriever())
+            : new ConfigurationManager<OpenIdConnectConfiguration>(
+                options.MetadataAddress,
+                new OpenIdConnectConfigurationRetriever(),
+                new HttpClient(options.BackchannelHttpHandler));
+    }
 
-	public async Task<HealthCheckResult> CheckHealthAsync(
-		HealthCheckContext context, CancellationToken cancellationToken = default)
-	{
-		try
-		{
-			await _configurationManager.GetConfigurationAsync(cancellationToken).ConfigureAwait(false);
-			return HealthCheckResult.Healthy();
-		}
-		catch (Exception e)
-		{
-			return HealthCheckResult.Unhealthy(exception: e);
-		}
-	}
+    public async Task<HealthCheckResult> CheckHealthAsync(
+        HealthCheckContext context, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _configurationManager.GetConfigurationAsync(cancellationToken).ConfigureAwait(false);
+            return HealthCheckResult.Healthy();
+        }
+        catch (Exception e)
+        {
+            return HealthCheckResult.Unhealthy(exception: e);
+        }
+    }
 }

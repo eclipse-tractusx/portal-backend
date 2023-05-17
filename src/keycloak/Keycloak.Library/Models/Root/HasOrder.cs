@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class HasOrder
 {
-	[JsonProperty("order")]
-	public long Order { get; set; }
+    [JsonProperty("order")]
+    public long Order { get; set; }
 }

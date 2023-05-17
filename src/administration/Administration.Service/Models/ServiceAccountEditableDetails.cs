@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public class ServiceAccountEditableDetails
 {
-	public ServiceAccountEditableDetails(Guid serviceAccountId, string name, string description, IamClientAuthMethod iamClientAuthMethod)
-	{
-		ServiceAccountId = serviceAccountId;
-		Name = name;
-		Description = description;
-		IamClientAuthMethod = iamClientAuthMethod;
-	}
+    public ServiceAccountEditableDetails(Guid serviceAccountId, string name, string description, IamClientAuthMethod iamClientAuthMethod)
+    {
+        ServiceAccountId = serviceAccountId;
+        Name = name;
+        Description = description;
+        IamClientAuthMethod = iamClientAuthMethod;
+    }
 
-	[JsonPropertyName("serviceAccountId")]
-	public Guid ServiceAccountId { get; set; }
+    [JsonPropertyName("serviceAccountId")]
+    public Guid ServiceAccountId { get; set; }
 
-	[JsonPropertyName("name")]
-	public string Name { get; set; }
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
 
-	[JsonPropertyName("description")]
-	public string Description { get; set; }
+    [JsonPropertyName("description")]
+    public string Description { get; set; }
 
-	[JsonPropertyName("authenticationType")]
-	public IamClientAuthMethod IamClientAuthMethod { get; set; }
+    [JsonPropertyName("authenticationType")]
+    public IamClientAuthMethod IamClientAuthMethod { get; set; }
 }

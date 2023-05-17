@@ -22,11 +22,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
 
 public class NoSuchTemplateException : Exception
 {
-	public NoSuchTemplateException(string message) : base(message)
-	{
-	}
+    public NoSuchTemplateException(string message) : base(message)
+    {
+    }
 
-	public NoSuchTemplateException(string message, Exception inner) : base(message, inner)
-	{
-	}
+    public NoSuchTemplateException(string message, Exception inner) : base(message, inner)
+    {
+    }
 }

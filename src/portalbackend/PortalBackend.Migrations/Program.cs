@@ -31,33 +31,33 @@ using System.Reflection;
 Console.WriteLine("Starting process");
 try
 {
-	var builder = Host.CreateDefaultBuilder(args)
-		.ConfigureServices((hostContext, services) =>
-		{
-			services.AddDbContext<PortalDbContext>(o =>
-					o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"),
-						x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)
-							.MigrationsHistoryTable("__efmigrations_history_portal"))
-						.UsePostgreSqlTriggers())
-				.AddDatabaseInitializer<PortalDbContext>(hostContext.Configuration.GetSection("Seeding"));
-		});
+    var builder = Host.CreateDefaultBuilder(args)
+        .ConfigureServices((hostContext, services) =>
+        {
+            services.AddDbContext<PortalDbContext>(o =>
+                    o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"),
+                        x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)
+                            .MigrationsHistoryTable("__efmigrations_history_portal"))
+                        .UsePostgreSqlTriggers())
+                .AddDatabaseInitializer<PortalDbContext>(hostContext.Configuration.GetSection("Seeding"));
+        });
 
-	var host = builder.Build();
+    var host = builder.Build();
 
-	await host.Services.InitializeDatabasesAsync();
+    await host.Services.InitializeDatabasesAsync();
 
-	// We don't actually run anything here. The magic happens in InitializeDatabasesAsync
+    // We don't actually run anything here. The magic happens in InitializeDatabasesAsync
 }
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
 {
-	// Should be replaced with Serilog as soon as we have it.
-	Console.ForegroundColor = ConsoleColor.Red;
-	Console.WriteLine("Unhandled exception: {0}", ex);
-	Console.ResetColor();
-	throw;
+    // Should be replaced with Serilog as soon as we have it.
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine("Unhandled exception: {0}", ex);
+    Console.ResetColor();
+    throw;
 }
 finally
 {
-	// Should be replaced with Serilog as soon as we have it.
-	Console.WriteLine("Process Shutting down...");
+    // Should be replaced with Serilog as soon as we have it.
+    Console.WriteLine("Process Shutting down...");
 }

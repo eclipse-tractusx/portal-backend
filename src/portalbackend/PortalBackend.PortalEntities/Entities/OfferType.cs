@@ -25,25 +25,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class OfferType
 {
-	private OfferType()
-	{
-		Label = null!;
-		Offers = new HashSet<Offer>();
-		AgreementAssignedOfferTypes = new HashSet<AgreementAssignedOfferType>();
-	}
+    private OfferType()
+    {
+        Label = null!;
+        Offers = new HashSet<Offer>();
+        AgreementAssignedOfferTypes = new HashSet<AgreementAssignedOfferType>();
+    }
 
-	public OfferType(OfferTypeId offerTypeId) : this()
-	{
-		Id = offerTypeId;
-		Label = offerTypeId.ToString();
-	}
+    public OfferType(OfferTypeId offerTypeId) : this()
+    {
+        Id = offerTypeId;
+        Label = offerTypeId.ToString();
+    }
 
-	public OfferTypeId Id { get; private set; }
+    public OfferTypeId Id { get; private set; }
 
-	[MaxLength(255)]
-	public string Label { get; private set; }
+    [MaxLength(255)]
+    public string Label { get; private set; }
 
-	// Navigation properties
-	public virtual ICollection<Offer> Offers { get; private set; }
-	public virtual ICollection<AgreementAssignedOfferType> AgreementAssignedOfferTypes { get; private set; }
+    // Navigation properties
+    public virtual ICollection<Offer> Offers { get; private set; }
+    public virtual ICollection<AgreementAssignedOfferType> AgreementAssignedOfferTypes { get; private set; }
 }

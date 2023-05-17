@@ -41,18 +41,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="AppInstanceIds">Ids of the app instances</param>
 /// <param name="SalesManagerId">Id of the sales manager</param>
 public record OfferSubscriptionTransferData(OfferSubscriptionStatusId Status,
-	Guid CompanyUserId,
-	Guid TechnicalUserId,
-	string CompanyName,
-	Guid CompanyId,
-	Guid RequesterId,
-	Guid OfferId,
-	string? OfferName,
-	string? Bpn,
-	string? RequesterEmail,
-	string? RequesterFirstname,
-	string? RequesterLastname,
-	(bool IsSingleInstance, string? InstanceUrl) InstanceData,
-	IEnumerable<Guid> AppInstanceIds,
-	Guid? SalesManagerId
+    Guid CompanyUserId,
+    Guid TechnicalUserId,
+    string CompanyName,
+    Guid CompanyId,
+    Guid RequesterId,
+    Guid OfferId,
+    string? OfferName,
+    string? Bpn,
+    string? RequesterEmail,
+    string? RequesterFirstname,
+    string? RequesterLastname,
+    (bool IsSingleInstance, string? InstanceUrl) InstanceData,
+    IEnumerable<Guid> AppInstanceIds,
+    Guid? SalesManagerId
 );

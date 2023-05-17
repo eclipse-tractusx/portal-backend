@@ -22,22 +22,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class AppInstanceAssignedCompanyServiceAccount
 {
-	private AppInstanceAssignedCompanyServiceAccount()
-	{
-	}
+    private AppInstanceAssignedCompanyServiceAccount()
+    {
+    }
 
-	public AppInstanceAssignedCompanyServiceAccount(Guid appInstanceId, Guid companyServiceAccountId)
-		: this()
-	{
-		AppInstanceId = appInstanceId;
-		CompanyServiceAccountId = companyServiceAccountId;
-	}
+    public AppInstanceAssignedCompanyServiceAccount(Guid appInstanceId, Guid companyServiceAccountId)
+        : this()
+    {
+        AppInstanceId = appInstanceId;
+        CompanyServiceAccountId = companyServiceAccountId;
+    }
 
-	public Guid AppInstanceId { get; private set; }
+    public Guid AppInstanceId { get; private set; }
 
-	public Guid CompanyServiceAccountId { get; private set; }
+    public Guid CompanyServiceAccountId { get; private set; }
 
-	public virtual AppInstance? AppInstance { get; set; }
+    public virtual AppInstance? AppInstance { get; set; }
 
-	public virtual CompanyServiceAccount? CompanyServiceAccount { get; set; }
+    public virtual CompanyServiceAccount? CompanyServiceAccount { get; set; }
 }

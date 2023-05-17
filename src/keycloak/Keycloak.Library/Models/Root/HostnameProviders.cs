@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class HostnameProviders
 {
-	[JsonProperty("request")]
-	public HasOrder Request { get; set; }
+    [JsonProperty("request")]
+    public HasOrder Request { get; set; }
 }

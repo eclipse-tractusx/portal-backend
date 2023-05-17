@@ -23,19 +23,19 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Mail
 {
-	public class UserEmailSettings
-	{
-		public string SenderEmail { get; set; }
-		public string Template { get; set; }
-	}
-	public static class UserEmailSettingsExtention
-	{
-		public static IServiceCollection ConfigureUserEmailSettings(
-			this IServiceCollection services,
-			IConfigurationSection section
-			)
-		{
-			return services.Configure<UserEmailSettings>(x => section.Bind(x));
-		}
-	}
+    public class UserEmailSettings
+    {
+        public string SenderEmail { get; set; }
+        public string Template { get; set; }
+    }
+    public static class UserEmailSettingsExtention
+    {
+        public static IServiceCollection ConfigureUserEmailSettings(
+            this IServiceCollection services,
+            IConfigurationSection section
+            )
+        {
+            return services.Configure<UserEmailSettings>(x => section.Bind(x));
+        }
+    }
 }

@@ -22,8 +22,8 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities
 {
-	public class IdentityProviderSequence
-	{
-		public int SequenceId { get; set; }
-	}
+    public class IdentityProviderSequence
+    {
+        public int SequenceId { get; set; }
+    }
 }

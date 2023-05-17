@@ -25,5 +25,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 /// </summary>
 public interface ILockableEntity : IVersionedEntity
 {
-	DateTimeOffset? LockExpiryDate { get; set; }
+    DateTimeOffset? LockExpiryDate { get; set; }
 }

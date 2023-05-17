@@ -26,29 +26,29 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 
 public static class FlurlUntrustedCertExceptionHandler
 {
-	public static void ConfigureExceptions(IEnumerable<string> urlsToTrust)
-	{
-		foreach (var urlToTrust in urlsToTrust)
-		{
-			FlurlHttp.ConfigureClient(urlToTrust, cli => cli.Settings.HttpClientFactory = new UntrustedCertHttpClientFactory());
-		}
-	}
+    public static void ConfigureExceptions(IEnumerable<string> urlsToTrust)
+    {
+        foreach (var urlToTrust in urlsToTrust)
+        {
+            FlurlHttp.ConfigureClient(urlToTrust, cli => cli.Settings.HttpClientFactory = new UntrustedCertHttpClientFactory());
+        }
+    }
 }
 
 public class UntrustedCertHttpClientFactory : DefaultHttpClientFactory
 {
-	public override HttpMessageHandler CreateMessageHandler()
-	{
-		var handler = base.CreateMessageHandler();
-		var httpClientHander = handler as HttpClientHandler;
-		if (httpClientHander != null)
-		{
-			httpClientHander.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
-		}
-		else
-		{
-			throw new ConfigurationException($"flurl HttpMessageHandler's type is not HttpClientHandler but {handler.GetType()}");
-		}
-		return handler;
-	}
+    public override HttpMessageHandler CreateMessageHandler()
+    {
+        var handler = base.CreateMessageHandler();
+        var httpClientHander = handler as HttpClientHandler;
+        if (httpClientHander != null)
+        {
+            httpClientHander.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+        }
+        else
+        {
+            throw new ConfigurationException($"flurl HttpMessageHandler's type is not HttpClientHandler but {handler.GetType()}");
+        }
+        return handler;
+    }
 }

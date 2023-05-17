@@ -33,26 +33,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 [Consumes("application/json")]
 public class PartnerNetworkController : ControllerBase
 {
-	private readonly IPartnerNetworkBusinessLogic _logic;
+    private readonly IPartnerNetworkBusinessLogic _logic;
 
-	/// <summary>
-	/// Creates a new instance of <see cref="PartnerNetworkController"/>
-	/// </summary>
-	/// <param name="logic">The partner network business logic</param>
-	public PartnerNetworkController(IPartnerNetworkBusinessLogic logic)
-	{
-		_logic = logic;
-	}
+    /// <summary>
+    /// Creates a new instance of <see cref="PartnerNetworkController"/>
+    /// </summary>
+    /// <param name="logic">The partner network business logic</param>
+    public PartnerNetworkController(IPartnerNetworkBusinessLogic logic)
+    {
+        _logic = logic;
+    }
 
-	/// <summary> Get all member companies</summary>
-	/// <returns>Returns all the active member companies bpn.</returns>
-	/// <remarks>Example: GET: api/administration/partnernetwork/memberCompanies</remarks>
-	/// <response code="200">Returns all the active member companies bpn.</response>
+    /// <summary> Get all member companies</summary>
+    /// <returns>Returns all the active member companies bpn.</returns>
+    /// <remarks>Example: GET: api/administration/partnernetwork/memberCompanies</remarks>
+    /// <response code="200">Returns all the active member companies bpn.</response>
 
-	[HttpGet]
-	[Authorize(Roles = "view_membership")]
-	[Route("memberCompanies")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
-		_logic.GetAllMemberCompaniesBPNAsync();
+    [HttpGet]
+    [Authorize(Roles = "view_membership")]
+    [Route("memberCompanies")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
+        _logic.GetAllMemberCompaniesBPNAsync();
 }

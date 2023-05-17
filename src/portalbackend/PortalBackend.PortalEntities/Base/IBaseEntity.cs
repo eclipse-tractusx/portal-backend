@@ -25,5 +25,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 /// </summary>
 public interface IBaseEntity
 {
-	Guid Id { get; }
+    Guid Id { get; }
 }

@@ -35,11 +35,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="Price">Pricing information of the service.</param>
 /// <param name="ServiceTypeIds">Collection of the assigned serviceTypeIds.</param>
 public record ServiceOverviewData(
-	Guid Id,
-	string Title,
-	string Provider,
-	string? ContactEmail,
-	string? Description,
-	LicenseTypeId LicenseType,
-	string Price,
-	IEnumerable<ServiceTypeId> ServiceTypeIds);
+    Guid Id,
+    string Title,
+    string Provider,
+    string? ContactEmail,
+    string? Description,
+    LicenseTypeId LicenseType,
+    string Price,
+    IEnumerable<ServiceTypeId> ServiceTypeIds);

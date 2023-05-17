@@ -30,26 +30,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Integ
 
 public class ConnectorsControllerIntegrationTests : IClassFixture<IntegrationTestFactory<ConnectorsController>>
 {
-	private readonly IntegrationTestFactory<ConnectorsController> _factory;
+    private readonly IntegrationTestFactory<ConnectorsController> _factory;
 
-	public ConnectorsControllerIntegrationTests(IntegrationTestFactory<ConnectorsController> factory)
-	{
-		_factory = factory;
-	}
+    public ConnectorsControllerIntegrationTests(IntegrationTestFactory<ConnectorsController> factory)
+    {
+        _factory = factory;
+    }
 
-	[Fact]
-	public async Task GetCompanyConnectorsForCurrentUserAsync_WithTwoConnectors_ReturnsCorrectAmount()
-	{
-		// Arrange
-		var client = _factory.CreateClient();
-		var endpoint = new ConnectorsEndpoints(client);
+    [Fact]
+    public async Task GetCompanyConnectorsForCurrentUserAsync_WithTwoConnectors_ReturnsCorrectAmount()
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+        var endpoint = new ConnectorsEndpoints(client);
 
-		// Act
-		var response = await endpoint.GetCompanyConnectorsForCurrentUserAsync().ConfigureAwait(false);
+        // Act
+        var response = await endpoint.GetCompanyConnectorsForCurrentUserAsync().ConfigureAwait(false);
 
-		// Assert
-		response.StatusCode.Should().Be(HttpStatusCode.OK);
-		var pagination = await response.GetResultFromContent<Pagination.Response<ConnectorData>>();
-		pagination.Content.Should().HaveCount(2);
-	}
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var pagination = await response.GetResultFromContent<Pagination.Response<ConnectorData>>();
+        pagination.Content.Should().HaveCount(2);
+    }
 }

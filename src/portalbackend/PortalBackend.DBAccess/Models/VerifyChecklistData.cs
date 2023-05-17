@@ -24,7 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record VerifyChecklistData(
-	bool IsSubmitted,
-	Process? Process,
-	IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>? Checklist,
-	IEnumerable<ProcessStep>? ProcessSteps);
+    bool IsSubmitted,
+    Process? Process,
+    IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>? Checklist,
+    IEnumerable<ProcessStep>? ProcessSteps);

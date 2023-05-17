@@ -32,21 +32,21 @@ var VERSION = "v2";
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-	.AddMailingAndTemplateManager(builder.Configuration)
-	.AddPortalRepositories(builder.Configuration)
-	.AddProvisioningManager(builder.Configuration);
+    .AddMailingAndTemplateManager(builder.Configuration)
+    .AddPortalRepositories(builder.Configuration)
+    .AddProvisioningManager(builder.Configuration);
 
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
-				.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>()
-				.AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()
-				.AddTransient<IOfferService, OfferService>()
-				.AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
-				.AddTechnicalUserProfile()
-				.ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
+                .AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>()
+                .AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()
+                .AddTransient<IOfferService, OfferService>()
+                .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
+                .AddTechnicalUserProfile()
+                .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
 
 builder.Services.AddOfferSetupService();
 
 builder.Build()
-	.CreateApp<Program>("apps", VERSION, builder.Environment)
-	.Run();
+    .CreateApp<Program>("apps", VERSION, builder.Environment)
+    .Run();

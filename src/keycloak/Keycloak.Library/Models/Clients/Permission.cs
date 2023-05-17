@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public class Permission : Resource
 {
-	[JsonProperty("claims")]
-	public IDictionary<string, object> Claims { get; set; }
+    [JsonProperty("claims")]
+    public IDictionary<string, object> Claims { get; set; }
 }

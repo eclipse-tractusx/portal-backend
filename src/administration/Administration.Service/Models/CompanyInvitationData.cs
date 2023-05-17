@@ -25,36 +25,36 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models
 {
-	public class CompanyInvitationData
-	{
-		public CompanyInvitationData(string? userName, string firstName, string lastName, string email, string organisationName)
-		{
-			this.userName = userName;
-			this.firstName = firstName;
-			this.lastName = lastName;
-			this.email = email;
-			this.organisationName = organisationName;
-		}
+    public class CompanyInvitationData
+    {
+        public CompanyInvitationData(string? userName, string firstName, string lastName, string email, string organisationName)
+        {
+            this.userName = userName;
+            this.firstName = firstName;
+            this.lastName = lastName;
+            this.email = email;
+            this.organisationName = organisationName;
+        }
 
-		[JsonPropertyName("userName")]
-		public string? userName { get; set; }
+        [JsonPropertyName("userName")]
+        public string? userName { get; set; }
 
-		[DefaultValue("string")]
-		[RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
-		[JsonPropertyName("firstName")]
-		public string firstName { get; set; }
+        [DefaultValue("string")]
+        [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
+        [JsonPropertyName("firstName")]
+        public string firstName { get; set; }
 
-		[DefaultValue("string")]
-		[RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
-		[JsonPropertyName("lastName")]
-		public string lastName { get; set; }
+        [DefaultValue("string")]
+        [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
+        [JsonPropertyName("lastName")]
+        public string lastName { get; set; }
 
-		[DefaultValue("string")]
-		[RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
-		[JsonPropertyName("email")]
-		public string email { get; set; }
+        [DefaultValue("string")]
+        [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
+        [JsonPropertyName("email")]
+        public string email { get; set; }
 
-		[JsonPropertyName("organisationName")]
-		public string organisationName { get; set; }
-	}
+        [JsonPropertyName("organisationName")]
+        public string organisationName { get; set; }
+    }
 }

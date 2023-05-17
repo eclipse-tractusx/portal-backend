@@ -28,52 +28,52 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 /// </summary>
 public interface IAppChangeBusinessLogic
 {
-	/// <summary>
-	/// Add User Role for Active App and creates a notification
-	/// </summary>
-	/// <param name="appId"></param>
-	/// <param name="appUserRolesDescription"></param>
-	/// <param name="iamUserId"></param>
-	/// <returns>List of the created AppRoles</returns>
-	Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, string iamUserId);
+    /// <summary>
+    /// Add User Role for Active App and creates a notification
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="appUserRolesDescription"></param>
+    /// <param name="iamUserId"></param>
+    /// <returns>List of the created AppRoles</returns>
+    Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, string iamUserId);
 
-	/// <summary>
-	/// Get OfferDescription by appId
-	/// </summary>
-	/// <param name="appId">Id of the app</param>
-	/// <param name="iamUserId">Id of the iamUser</param>
-	Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, string iamUserId);
+    /// <summary>
+    /// Get OfferDescription by appId
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, string iamUserId);
 
-	/// <summary>
-	/// Create or Update OfferDescription by appId
-	/// </summary>
-	/// <param name="appId">Id of the app</param>
-	/// <param name="iamUserId">Id of the iamUser</param>
-	/// <param name="offerDescriptionDatas">OfferDescription Data</param>
-	Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas);
+    /// <summary>
+    /// Create or Update OfferDescription by appId
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="offerDescriptionDatas">OfferDescription Data</param>
+    Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas);
 
-	/// <summary>
-	/// Upload OfferAssigned AppLeadImage Document by appId
-	/// </summary>
-	/// <param name="appId">Id of the app</param>
-	/// <param name="iamUserId">Id of the iamUser</param>
-	/// <param name="document">Document Data</param>
-	/// <param name="cancellationToken">cancellationToken</param>
-	Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken);
+    /// <summary>
+    /// Upload OfferAssigned AppLeadImage Document by appId
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="document">Document Data</param>
+    /// <param name="cancellationToken">cancellationToken</param>
+    Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken);
 
-	/// <summary>
-	/// Deactivate Offer Status by appId
-	/// </summary>
-	/// <param name="appId">Id of the app</param>
-	/// <param name="iamUserId">Id of the iamUser</param>
-	public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId);
+    /// <summary>
+    /// Deactivate Offer Status by appId
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="iamUserId">Id of the iamUser</param>
+    public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId);
 
-	/// <summary>
-	/// Updates the url of the subscription
-	/// </summary>
-	/// <param name="offerId">Id of the offer</param>
-	/// <param name="subscriptionId">If of the subscription</param>
-	/// <param name="data">the data to update the url</param>
-	/// <param name="iamUserId">id of the iamuser</param>
-	Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, string iamUserId);
+    /// <summary>
+    /// Updates the url of the subscription
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="subscriptionId">If of the subscription</param>
+    /// <param name="data">the data to update the url</param>
+    /// <param name="iamUserId">id of the iamuser</param>
+    Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, string iamUserId);
 }

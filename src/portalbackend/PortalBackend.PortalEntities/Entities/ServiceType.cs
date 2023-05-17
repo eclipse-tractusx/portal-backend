@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ServiceType
 {
-	private ServiceType()
-	{
-		Label = null!;
-		ServiceDetails = new HashSet<ServiceDetail>();
-	}
+    private ServiceType()
+    {
+        Label = null!;
+        ServiceDetails = new HashSet<ServiceDetail>();
+    }
 
-	public ServiceType(ServiceTypeId offerTypeId) : this()
-	{
-		Id = offerTypeId;
-		Label = offerTypeId.ToString();
-	}
+    public ServiceType(ServiceTypeId offerTypeId) : this()
+    {
+        Id = offerTypeId;
+        Label = offerTypeId.ToString();
+    }
 
-	public ServiceTypeId Id { get; private set; }
+    public ServiceTypeId Id { get; private set; }
 
-	[MaxLength(255)]
-	public string Label { get; private set; }
+    [MaxLength(255)]
+    public string Label { get; private set; }
 
-	// Navigation properties
-	public virtual ICollection<ServiceDetail> ServiceDetails { get; private set; }
+    // Navigation properties
+    public virtual ICollection<ServiceDetail> ServiceDetails { get; private set; }
 }

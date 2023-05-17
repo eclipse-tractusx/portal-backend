@@ -28,38 +28,38 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 /// </summary>
 public class NotificationType
 {
-	/// <summary>
-	/// Internal constructor, only for EF
-	/// </summary>
-	private NotificationType()
-	{
-		Label = null!;
-		Notifications = new HashSet<Notification>();
-	}
+    /// <summary>
+    /// Internal constructor, only for EF
+    /// </summary>
+    private NotificationType()
+    {
+        Label = null!;
+        Notifications = new HashSet<Notification>();
+    }
 
-	/// <summary>
-	/// Creates a new instance of <see cref="NotificationType"/> and initializes the id and label 
-	/// </summary>
-	/// <param name="notificationTypeId">The NotificationTypesId</param>
-	public NotificationType(NotificationTypeId notificationTypeId) : this()
-	{
-		Id = notificationTypeId;
-		Label = notificationTypeId.ToString();
-	}
+    /// <summary>
+    /// Creates a new instance of <see cref="NotificationType"/> and initializes the id and label 
+    /// </summary>
+    /// <param name="notificationTypeId">The NotificationTypesId</param>
+    public NotificationType(NotificationTypeId notificationTypeId) : this()
+    {
+        Id = notificationTypeId;
+        Label = notificationTypeId.ToString();
+    }
 
-	/// <summary>
-	/// Id of the type
-	/// </summary>
-	public NotificationTypeId Id { get; private set; }
+    /// <summary>
+    /// Id of the type
+    /// </summary>
+    public NotificationTypeId Id { get; private set; }
 
-	/// <summary>
-	/// The type as string 
-	/// </summary>
-	[MaxLength(255)]
-	public string Label { get; private set; }
+    /// <summary>
+    /// The type as string 
+    /// </summary>
+    [MaxLength(255)]
+    public string Label { get; private set; }
 
-	// Navigation properties
-	public virtual NotificationTypeAssignedTopic? NotificationTypeAssignedTopic { get; set; }
+    // Navigation properties
+    public virtual NotificationTypeAssignedTopic? NotificationTypeAssignedTopic { get; set; }
 
-	public virtual ICollection<Notification> Notifications { get; private set; }
+    public virtual ICollection<Notification> Notifications { get; private set; }
 }

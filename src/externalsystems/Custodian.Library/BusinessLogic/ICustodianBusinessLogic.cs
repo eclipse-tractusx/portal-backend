@@ -25,19 +25,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 
 public interface ICustodianBusinessLogic
 {
-	/// <summary>
-	/// Gets the wallet data for the given application
-	/// </summary>
-	/// <param name="applicationId">Application to get the wallet data for</param>
-	/// <param name="cancellationToken">CancellationToken</param>
-	/// <returns>Returns the wallet data if existing or null</returns>
-	Task<WalletData?> GetWalletByBpnAsync(Guid applicationId, CancellationToken cancellationToken);
+    /// <summary>
+    /// Gets the wallet data for the given application
+    /// </summary>
+    /// <param name="applicationId">Application to get the wallet data for</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns>Returns the wallet data if existing or null</returns>
+    Task<WalletData?> GetWalletByBpnAsync(Guid applicationId, CancellationToken cancellationToken);
 
-	/// <summary>
-	/// Creates the wallet for the company of the application
-	/// </summary>
-	/// <param name="context">Context for the identity wallet creation.</param>
-	/// <param name="cancellationToken">CancellationToken</param>
-	/// <returns>Returns the checklist data</returns>
-	Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> CreateIdentityWalletAsync(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
+    /// <summary>
+    /// Creates the wallet for the company of the application
+    /// </summary>
+    /// <param name="context">Context for the identity wallet creation.</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns>Returns the checklist data</returns>
+    Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> CreateIdentityWalletAsync(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
 }

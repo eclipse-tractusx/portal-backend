@@ -27,18 +27,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 
 public class ProvisioningDbContextFactory : IDesignTimeDbContextFactory<ProvisioningDbContext>
 {
-	public ProvisioningDbContext CreateDbContext(string[] args)
-	{
-		var config = new ConfigurationBuilder()
-			.AddJsonFile("secrets/appsettings.json", true)
-			.AddUserSecrets(Assembly.GetExecutingAssembly())
-			.Build();
-		var optionsBuilder = new DbContextOptionsBuilder<ProvisioningDbContext>();
-		optionsBuilder.UseNpgsql(
-			config.GetConnectionString("ProvisioningDb"),
-			x => x.MigrationsAssembly(typeof(ProvisioningDbContextFactory).Assembly.GetName().Name)
-				  .MigrationsHistoryTable("__efmigrations_history_provisioning", "public"));
+    public ProvisioningDbContext CreateDbContext(string[] args)
+    {
+        var config = new ConfigurationBuilder()
+            .AddJsonFile("secrets/appsettings.json", true)
+            .AddUserSecrets(Assembly.GetExecutingAssembly())
+            .Build();
+        var optionsBuilder = new DbContextOptionsBuilder<ProvisioningDbContext>();
+        optionsBuilder.UseNpgsql(
+            config.GetConnectionString("ProvisioningDb"),
+            x => x.MigrationsAssembly(typeof(ProvisioningDbContextFactory).Assembly.GetName().Name)
+                  .MigrationsHistoryTable("__efmigrations_history_provisioning", "public"));
 
-		return new ProvisioningDbContext(optionsBuilder.Options);
-	}
+        return new ProvisioningDbContext(optionsBuilder.Options);
+    }
 }

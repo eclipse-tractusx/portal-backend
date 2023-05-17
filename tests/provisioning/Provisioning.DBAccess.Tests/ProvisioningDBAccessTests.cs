@@ -30,122 +30,122 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess.Tests;
 
 public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
 {
-	private readonly IFixture _fixture;
-	private readonly TestDbFixture _dbTestDbFixture;
+    private readonly IFixture _fixture;
+    private readonly TestDbFixture _dbTestDbFixture;
 
-	public ProvisioningDBAccessTests(TestDbFixture testDbFixture)
-	{
-		_fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-		_fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-			.ForEach(b => _fixture.Behaviors.Remove(b));
+    public ProvisioningDBAccessTests(TestDbFixture testDbFixture)
+    {
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
 
-		_fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-		_dbTestDbFixture = testDbFixture;
-	}
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _dbTestDbFixture = testDbFixture;
+    }
 
-	#region GetNextIdentityProviderSequence
+    #region GetNextIdentityProviderSequence
 
-	[Fact]
-	public async Task GetNextIdentityProviderSequenceAsync_ReturnsExpectedResult()
-	{
-		// Arrange
-		var (sut, _) = await CreateSut().ConfigureAwait(false);
+    [Fact]
+    public async Task GetNextIdentityProviderSequenceAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-		// Act
-		var result1 = await sut.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false);
-		var result2 = await sut.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false);
+        // Act
+        var result1 = await sut.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false);
+        var result2 = await sut.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false);
 
-		result1.Should().Be(1);
-		result2.Should().Be(2);
-	}
+        result1.Should().Be(1);
+        result2.Should().Be(2);
+    }
 
-	#endregion
+    #endregion
 
-	#region GetNextClientSequence
+    #region GetNextClientSequence
 
-	[Fact]
-	public async Task GetNextClientSequenceAsync_ReturnsExpectedResult()
-	{
-		// Arrange
-		var (sut, _) = await CreateSut().ConfigureAwait(false);
+    [Fact]
+    public async Task GetNextClientSequenceAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-		// Act
-		var result1 = await sut.GetNextClientSequenceAsync().ConfigureAwait(false);
-		var result2 = await sut.GetNextClientSequenceAsync().ConfigureAwait(false);
+        // Act
+        var result1 = await sut.GetNextClientSequenceAsync().ConfigureAwait(false);
+        var result2 = await sut.GetNextClientSequenceAsync().ConfigureAwait(false);
 
-		result1.Should().Be(1);
-		result2.Should().Be(2);
-	}
+        result1.Should().Be(1);
+        result2.Should().Be(2);
+    }
 
-	#endregion
+    #endregion
 
-	#region CreateUserPasswordResetInfo
+    #region CreateUserPasswordResetInfo
 
-	[Fact]
-	public async Task CreateUserPasswordResetInfo_Success()
-	{
-		var iamUserId = _fixture.Create<string>();
-		var modifiedAt = DateTimeOffset.UtcNow;
-		var resetCount = _fixture.Create<int>();
+    [Fact]
+    public async Task CreateUserPasswordResetInfo_Success()
+    {
+        var iamUserId = _fixture.Create<string>();
+        var modifiedAt = DateTimeOffset.UtcNow;
+        var resetCount = _fixture.Create<int>();
 
-		// Arrange
-		var (sut, context) = await CreateSut().ConfigureAwait(false);
+        // Arrange
+        var (sut, context) = await CreateSut().ConfigureAwait(false);
 
-		// Act
-		var result = sut.CreateUserPasswordResetInfo(iamUserId, modifiedAt, resetCount);
+        // Act
+        var result = sut.CreateUserPasswordResetInfo(iamUserId, modifiedAt, resetCount);
 
-		result.Should().NotBeNull();
-		result.UserEntityId.Should().Be(iamUserId);
-		result.PasswordModifiedAt.Should().Be(modifiedAt);
-		result.ResetCount.Should().Be(resetCount);
+        result.Should().NotBeNull();
+        result.UserEntityId.Should().Be(iamUserId);
+        result.PasswordModifiedAt.Should().Be(modifiedAt);
+        result.ResetCount.Should().Be(resetCount);
 
-		context.ChangeTracker.Entries<UserPasswordReset>().Should().HaveCount(1);
-		context.ChangeTracker.Entries<UserPasswordReset>().First().Entity.Should().BeEquivalentTo(result);
-	}
+        context.ChangeTracker.Entries<UserPasswordReset>().Should().HaveCount(1);
+        context.ChangeTracker.Entries<UserPasswordReset>().First().Entity.Should().BeEquivalentTo(result);
+    }
 
-	#endregion
+    #endregion
 
-	#region GetUserPasswordResetInfo
+    #region GetUserPasswordResetInfo
 
-	[Theory]
-	[InlineData("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", 1)]
-	[InlineData("3d8142f1-860b-48aa-8c2b-1ccb18699f65", 2)]
+    [Theory]
+    [InlineData("623770c5-cf38-4b9f-9a35-f8b9ae972e2d", 1)]
+    [InlineData("3d8142f1-860b-48aa-8c2b-1ccb18699f65", 2)]
 
-	public async Task GetUserPasswordResetInfo_ReturnsExpected(string userEntityId, int resetCount)
-	{
-		// Arrange
-		var (sut, _) = await CreateSut().ConfigureAwait(false);
+    public async Task GetUserPasswordResetInfo_ReturnsExpected(string userEntityId, int resetCount)
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-		// Act
-		var result = await sut.GetUserPasswordResetInfo(userEntityId).ConfigureAwait(false);
+        // Act
+        var result = await sut.GetUserPasswordResetInfo(userEntityId).ConfigureAwait(false);
 
-		result.Should().NotBe(default);
-		result!.ResetCount.Should().Be(resetCount);
-	}
+        result.Should().NotBe(default);
+        result!.ResetCount.Should().Be(resetCount);
+    }
 
-	[Fact]
-	public async Task GetUserPasswordResetInfo_UnknownUser_ReturnsDefault()
-	{
-		var userEntityId = _fixture.Create<string>();
-		// Arrange
-		var (sut, _) = await CreateSut().ConfigureAwait(false);
+    [Fact]
+    public async Task GetUserPasswordResetInfo_UnknownUser_ReturnsDefault()
+    {
+        var userEntityId = _fixture.Create<string>();
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-		// Act
-		var result = await sut.GetUserPasswordResetInfo(userEntityId).ConfigureAwait(false);
+        // Act
+        var result = await sut.GetUserPasswordResetInfo(userEntityId).ConfigureAwait(false);
 
-		result.Should().Be(default);
-	}
+        result.Should().Be(default);
+    }
 
-	#endregion
+    #endregion
 
-	#region Setup
+    #region Setup
 
-	private async Task<(IProvisioningDBAccess, ProvisioningDbContext)> CreateSut()
-	{
-		var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
-		var sut = new ProvisioningDBAccess(context);
-		return (sut, context);
-	}
+    private async Task<(IProvisioningDBAccess, ProvisioningDbContext)> CreateSut()
+    {
+        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var sut = new ProvisioningDBAccess(context);
+        return (sut, context);
+    }
 
-	#endregion
+    #endregion
 }

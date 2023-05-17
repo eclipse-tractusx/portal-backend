@@ -27,37 +27,37 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// </summary>
 public class UseCaseData
 {
-	/// <summary>
-	/// Constructor.
-	/// </summary>
-	/// <param name="id">Id</param>
-	/// <param name="name">Name</param>
-	/// <param name="shortName">ShortName</param>
-	public UseCaseData(Guid id, string name, string shortName)
-	{
-		Id = id;
-		Name = name;
-		ShortName = shortName;
-	}
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="id">Id</param>
+    /// <param name="name">Name</param>
+    /// <param name="shortName">ShortName</param>
+    public UseCaseData(Guid id, string name, string shortName)
+    {
+        Id = id;
+        Name = name;
+        ShortName = shortName;
+    }
 
-	/// <summary>
-	/// Id of Use Case
-	/// </summary>
-	/// <value></value>
-	[JsonPropertyName("useCaseId")]
-	public Guid Id { get; private set; }
+    /// <summary>
+    /// Id of Use Case
+    /// </summary>
+    /// <value></value>
+    [JsonPropertyName("useCaseId")]
+    public Guid Id { get; private set; }
 
-	/// <summary>
-	/// Name of Use Case
-	/// </summary>
-	/// <value></value>
-	[JsonPropertyName("name")]
-	public string Name { get; set; }
+    /// <summary>
+    /// Name of Use Case
+    /// </summary>
+    /// <value></value>
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
 
-	/// <summary>
-	/// ShortName of Use Case
-	/// </summary>
-	/// <value></value>
-	[JsonPropertyName("shortname")]
-	public string ShortName { get; set; }
+    /// <summary>
+    /// ShortName of Use Case
+    /// </summary>
+    /// <value></value>
+    [JsonPropertyName("shortname")]
+    public string ShortName { get; set; }
 }

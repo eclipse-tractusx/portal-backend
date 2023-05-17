@@ -32,15 +32,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 [JsonConverter(typeof(JsonTypeLabelConverter))]
 public enum JsonTypeLabel
 {
-	Boolean,
-	ClientList,
-	File,
-	List,
-	MultivaluedList,
-	MultivaluedString,
-	Password,
-	Role,
-	Script,
-	String,
-	Text
+    Boolean,
+    ClientList,
+    File,
+    List,
+    MultivaluedList,
+    MultivaluedString,
+    Password,
+    Role,
+    Script,
+    String,
+    Text
 }

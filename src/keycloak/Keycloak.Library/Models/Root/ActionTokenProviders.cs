@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ActionTokenProviders
 {
-	[JsonProperty("infinispan")]
-	public HasOrder Infinispan { get; set; }
+    [JsonProperty("infinispan")]
+    public HasOrder Infinispan { get; set; }
 }

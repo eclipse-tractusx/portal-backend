@@ -30,8 +30,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Authorizat
 
 public class AuthorizationScope
 {
-	[JsonProperty("id")]
-	public string Id { get; set; }
-	[JsonProperty("name")]
-	public string Name { get; set; }
+    [JsonProperty("id")]
+    public string Id { get; set; }
+    [JsonProperty("name")]
+    public string Name { get; set; }
 }

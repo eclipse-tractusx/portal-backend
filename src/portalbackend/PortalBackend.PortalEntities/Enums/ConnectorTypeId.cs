@@ -22,6 +22,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 
 public enum ConnectorTypeId : int
 {
-	COMPANY_CONNECTOR = 1,
-	CONNECTOR_AS_A_SERVICE = 2
+    COMPANY_CONNECTOR = 1,
+    CONNECTOR_AS_A_SERVICE = 2
 }

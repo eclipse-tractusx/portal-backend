@@ -29,57 +29,57 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public interface IRegistrationBusinessLogic
 {
-	Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId);
-	Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null);
-	Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null);
-	Task UpdateCompanyBpn(Guid applicationId, string bpn);
+    Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId);
+    Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null);
+    Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null);
+    Task UpdateCompanyBpn(Guid applicationId, string bpn);
 
-	/// <summary>
-	/// Approves the given application.
-	/// </summary>
-	/// <param name="applicationId">Id of the application</param>
-	Task ApproveRegistrationVerification(Guid applicationId);
+    /// <summary>
+    /// Approves the given application.
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    Task ApproveRegistrationVerification(Guid applicationId);
 
-	/// <summary>
-	/// Declines the given application.
-	/// </summary>
-	/// <param name="applicationId">Id of the application</param>
-	/// <param name="comment">Reason of decline</param>
-	Task DeclineRegistrationVerification(Guid applicationId, string comment);
+    /// <summary>
+    /// Declines the given application.
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    /// <param name="comment">Reason of decline</param>
+    Task DeclineRegistrationVerification(Guid applicationId, string comment);
 
-	/// <summary>
-	/// Processes the clearinghouse response
-	/// </summary>
-	/// <param name="data">the response data</param>
-	/// <param name="cancellationToken">cancellation token</param>
-	Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, CancellationToken cancellationToken);
+    /// <summary>
+    /// Processes the clearinghouse response
+    /// </summary>
+    /// <param name="data">the response data</param>
+    /// <param name="cancellationToken">cancellation token</param>
+    Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, CancellationToken cancellationToken);
 
-	/// <summary>
-	/// Gets the checklist details for the given application
-	/// </summary>
-	/// <param name="applicationId">Id of the application</param>
-	/// <returns>Returns the checklist details</returns>
-	Task<IEnumerable<ChecklistDetails>> GetChecklistForApplicationAsync(Guid applicationId);
+    /// <summary>
+    /// Gets the checklist details for the given application
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    /// <returns>Returns the checklist details</returns>
+    Task<IEnumerable<ChecklistDetails>> GetChecklistForApplicationAsync(Guid applicationId);
 
-	/// <summary>
-	/// Regtrigger the failed checklist entry or the specific given checklist entry
-	/// </summary>
-	/// <param name="applicationId">Id of the application</param>
-	/// <param name="entryTypeId">The checklist entry type that should be retriggered</param>
-	/// <param name="processStepTypeId">The processTypeId that should be retriggered</param>
-	Task TriggerChecklistAsync(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStepTypeId processStepTypeId);
+    /// <summary>
+    /// Regtrigger the failed checklist entry or the specific given checklist entry
+    /// </summary>
+    /// <param name="applicationId">Id of the application</param>
+    /// <param name="entryTypeId">The checklist entry type that should be retriggered</param>
+    /// <param name="processStepTypeId">The processTypeId that should be retriggered</param>
+    Task TriggerChecklistAsync(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStepTypeId processStepTypeId);
 
-	/// <summary>
-	/// Processes the clearinghouse self description
-	/// </summary>
-	/// <param name="data">The response data</param>
-	/// <param name="cancellationToken">CancellationToken</param>
-	Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken);
+    /// <summary>
+    /// Processes the clearinghouse self description
+    /// </summary>
+    /// <param name="data">The response data</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken);
 
-	/// <summary>
-	/// Gets the document with the given id
-	/// </summary>
-	/// <param name="documentId">Id of the document to get</param>
-	/// <returns>Returns the filename and content of the file</returns>
-	Task<(string fileName, byte[] content, string contentType)> GetDocumentAsync(Guid documentId);
+    /// <summary>
+    /// Gets the document with the given id
+    /// </summary>
+    /// <param name="documentId">Id of the document to get</param>
+    /// <returns>Returns the filename and content of the file</returns>
+    Task<(string fileName, byte[] content, string contentType)> GetDocumentAsync(Guid documentId);
 }

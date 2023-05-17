@@ -28,9 +28,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
 /// </summary>
 public class DapsSettings : KeyVaultAuthSettings
 {
-	/// <summary>
-	/// Daps endpoint.
-	/// </summary>
-	[Required]
-	public string DapsUrl { get; set; } = null!;
+    /// <summary>
+    /// Daps endpoint.
+    /// </summary>
+    [Required]
+    public string DapsUrl { get; set; } = null!;
 }

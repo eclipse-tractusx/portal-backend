@@ -25,20 +25,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record IdentityProviderEditableDetails(string displayName)
 {
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public IdentityProviderEditableDetailsOidc? oidc { get; init; } = null;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IdentityProviderEditableDetailsOidc? oidc { get; init; } = null;
 
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public IdentityProviderEditableDetailsSaml? saml { get; init; } = null;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IdentityProviderEditableDetailsSaml? saml { get; init; } = null;
 }
 
 public record IdentityProviderEditableDetailsOidc(string metadataUrl, IamIdentityProviderClientAuthMethod clientAuthMethod, string clientId)
 {
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public string? secret { get; init; } = null;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? secret { get; init; } = null;
 
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public IamIdentityProviderSignatureAlgorithm? signatureAlgorithm { get; init; } = null;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IamIdentityProviderSignatureAlgorithm? signatureAlgorithm { get; init; } = null;
 }
 
 public record IdentityProviderEditableDetailsSaml(string serviceProviderEntityId, string singleSignOnServiceUrl);

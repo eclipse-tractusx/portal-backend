@@ -30,16 +30,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 /// </remarks>
 public interface ICustomSeeder
 {
-	/// <summary>
-	/// Defines the order of the seeders execution.
-	/// Should be a positive integer, where 1 is the first Seeder that runs.
-	/// </summary>
-	int Order { get; }
+    /// <summary>
+    /// Defines the order of the seeders execution.
+    /// Should be a positive integer, where 1 is the first Seeder that runs.
+    /// </summary>
+    int Order { get; }
 
-	/// <summary>
-	/// Executes the logic for the seeder. This method is called by <seealso cref="CustomSeederRunner.RunSeedersAsync"/>
-	/// </summary>
-	/// <remarks>This method also executes a SaveChanges on the database</remarks>
-	/// <param name="cancellationToken">CancellationToken</param>
-	Task ExecuteAsync(CancellationToken cancellationToken);
+    /// <summary>
+    /// Executes the logic for the seeder. This method is called by <seealso cref="CustomSeederRunner.RunSeedersAsync"/>
+    /// </summary>
+    /// <remarks>This method also executes a SaveChanges on the database</remarks>
+    /// <param name="cancellationToken">CancellationToken</param>
+    Task ExecuteAsync(CancellationToken cancellationToken);
 }

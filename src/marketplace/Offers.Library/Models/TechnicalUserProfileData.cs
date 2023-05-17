@@ -21,6 +21,6 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
 public record TechnicalUserProfileData(
-	Guid? TechnicalUserProfileId,
-	IEnumerable<Guid> UserRoleIds
+    Guid? TechnicalUserProfileId,
+    IEnumerable<Guid> UserRoleIds
 );

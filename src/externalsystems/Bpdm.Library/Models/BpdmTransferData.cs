@@ -30,14 +30,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 /// <param name="City">City of the company's address.</param>
 /// <param name="Street">Street of the company's address.</param>
 public record BpdmTransferData(
-	string ExternalId,
-	string CompanyName,
-	string? ShortName,
-	string AlphaCode2,
-	string? ZipCode,
-	string City,
-	string StreetName,
-	string? StreetNumber,
-	string? Region,
-	IEnumerable<(BpdmIdentifierId BpdmIdentifierId, string Value)> Identifiers
+    string ExternalId,
+    string CompanyName,
+    string? ShortName,
+    string AlphaCode2,
+    string? ZipCode,
+    string City,
+    string StreetName,
+    string? StreetNumber,
+    string? Region,
+    IEnumerable<(BpdmIdentifierId BpdmIdentifierId, string Value)> Identifiers
 );

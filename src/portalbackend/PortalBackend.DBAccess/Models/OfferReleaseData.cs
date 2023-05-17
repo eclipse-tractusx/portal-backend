@@ -34,11 +34,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="DocumentTypeIds"></param>
 /// <returns></returns>
 public record OfferReleaseData(
-	string? Name,
-	Guid? ProviderCompanyId,
-	string CompanyName,
-	bool IsDescriptionLongNotSet,
-	bool IsDescriptionShortNotSet,
-	bool HasUserRoles,
-	IEnumerable<(Guid DocumentId, DocumentStatusId StatusId, DocumentTypeId DocumentTypeId)> DocumentDatas
+    string? Name,
+    Guid? ProviderCompanyId,
+    string CompanyName,
+    bool IsDescriptionLongNotSet,
+    bool IsDescriptionShortNotSet,
+    bool HasUserRoles,
+    IEnumerable<(Guid DocumentId, DocumentStatusId StatusId, DocumentTypeId DocumentTypeId)> DocumentDatas
 );

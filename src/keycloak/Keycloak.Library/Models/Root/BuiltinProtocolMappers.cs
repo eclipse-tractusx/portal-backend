@@ -30,9 +30,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class BuiltinProtocolMappers
 {
-	[JsonProperty("saml")]
-	public List<Saml> Saml { get; set; }
+    [JsonProperty("saml")]
+    public List<Saml> Saml { get; set; }
 
-	[JsonProperty("openid-connect")]
-	public List<OpenIdConnect> OpenIdConnect { get; set; }
+    [JsonProperty("openid-connect")]
+    public List<OpenIdConnect> OpenIdConnect { get; set; }
 }

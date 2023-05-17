@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ConsentStatus
 {
-	private ConsentStatus()
-	{
-		Label = null!;
-		Consents = new HashSet<Consent>();
-	}
+    private ConsentStatus()
+    {
+        Label = null!;
+        Consents = new HashSet<Consent>();
+    }
 
-	public ConsentStatus(ConsentStatusId consentStatusId) : this()
-	{
-		Id = consentStatusId;
-		Label = consentStatusId.ToString();
-	}
+    public ConsentStatus(ConsentStatusId consentStatusId) : this()
+    {
+        Id = consentStatusId;
+        Label = consentStatusId.ToString();
+    }
 
-	public ConsentStatusId Id { get; private set; }
+    public ConsentStatusId Id { get; private set; }
 
-	[MaxLength(255)]
-	public string Label { get; private set; }
+    [MaxLength(255)]
+    public string Label { get; private set; }
 
-	// Navigation properties
-	public virtual ICollection<Consent> Consents { get; private set; }
+    // Navigation properties
+    public virtual ICollection<Consent> Consents { get; private set; }
 }

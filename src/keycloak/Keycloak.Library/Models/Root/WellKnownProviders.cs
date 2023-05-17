@@ -30,9 +30,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class WellKnownProviders
 {
-	[JsonProperty("openid-configuration")]
-	public HasOrder OpenIdConfiguration { get; set; }
+    [JsonProperty("openid-configuration")]
+    public HasOrder OpenIdConfiguration { get; set; }
 
-	[JsonProperty("uma2-configuration")]
-	public HasOrder Uma2Configuration { get; set; }
+    [JsonProperty("uma2-configuration")]
+    public HasOrder Uma2Configuration { get; set; }
 }

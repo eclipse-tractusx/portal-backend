@@ -23,14 +23,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library
 {
-	public class CustodianSettings : KeyVaultAuthSettings
-	{
-		public CustodianSettings()
-		{
-			BaseAddress = null!;
-		}
+    public class CustodianSettings : KeyVaultAuthSettings
+    {
+        public CustodianSettings()
+        {
+            BaseAddress = null!;
+        }
 
-		[Required(AllowEmptyStrings = false)]
-		public string BaseAddress { get; set; }
-	}
+        [Required(AllowEmptyStrings = false)]
+        public string BaseAddress { get; set; }
+    }
 }

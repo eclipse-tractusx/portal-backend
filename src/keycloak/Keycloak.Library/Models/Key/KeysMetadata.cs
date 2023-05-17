@@ -30,8 +30,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Key;
 
 public class KeysMetadata
 {
-	[JsonProperty("active")]
-	public Active Active { get; set; }
-	[JsonProperty("keys")]
-	public IEnumerable<Key> Keys { get; set; }
+    [JsonProperty("active")]
+    public Active Active { get; set; }
+    [JsonProperty("keys")]
+    public IEnumerable<Key> Keys { get; set; }
 }

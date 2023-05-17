@@ -23,117 +23,117 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
 public record BpdmLegalEntityData(
-	string ExternalId,
-	string? Bpn,
-	IEnumerable<BpdmIdentifier> Identifiers,
-	IEnumerable<BpdmName> Names,
-	string? LegalForm,
-	BpdmStatus? Status,
-	IEnumerable<BpdmProfileClassification> ProfileClassifications,
-	IEnumerable<string> Types,
-	IEnumerable<BpdmBankAccount>? BankAccounts,
-	BpdmLegalAddress LegalAddress
+    string ExternalId,
+    string? Bpn,
+    IEnumerable<BpdmIdentifier> Identifiers,
+    IEnumerable<BpdmName> Names,
+    string? LegalForm,
+    BpdmStatus? Status,
+    IEnumerable<BpdmProfileClassification> ProfileClassifications,
+    IEnumerable<string> Types,
+    IEnumerable<BpdmBankAccount>? BankAccounts,
+    BpdmLegalAddress LegalAddress
 );
 
 public record BpdmIdentifier(
-	string Value,
-	BpdmIdentifierId Type,
-	string? IssuingBody,
-	string? Status
+    string Value,
+    BpdmIdentifierId Type,
+    string? IssuingBody,
+    string? Status
 );
 
 public record BpdmName(
-	string Value,
-	string? ShortName,
-	string Type,
-	string Language
+    string Value,
+    string? ShortName,
+    string Type,
+    string Language
 );
 
 public record BpdmStatus(
-	string OfficialDenotation,
-	DateTimeOffset ValidFrom,
-	DateTimeOffset ValidUntil,
-	string Type
+    string OfficialDenotation,
+    DateTimeOffset ValidFrom,
+    DateTimeOffset ValidUntil,
+    string Type
 );
 
 public record BpdmProfileClassification(
-	string Value,
-	string Code,
-	string Type
+    string Value,
+    string Code,
+    string Type
 );
 
 public record BpdmBankAccount(
-	IEnumerable<int> TrustScores,
-	string Currency,
-	string InternationalBankAccountIdentifier,
-	string InternationalBankIdentifier,
-	string NationalBankAccountIdentifier,
-	string NationalBankIdentifier
+    IEnumerable<int> TrustScores,
+    string Currency,
+    string InternationalBankAccountIdentifier,
+    string InternationalBankIdentifier,
+    string NationalBankAccountIdentifier,
+    string NationalBankIdentifier
 );
 
 public record BpdmLegalAddress(
-	BpdmAddressVersion Version,
-	string? CareOf,
-	IEnumerable<string> Contexts,
-	string Country,
-	IEnumerable<BpdmAdministrativeArea> AdministrativeAreas,
-	IEnumerable<BpdmPostcode> PostCodes,
-	IEnumerable<BpdmLocality> Localities,
-	IEnumerable<BpdmThoroughfare> Thoroughfares,
-	IEnumerable<BpdmPremise> Premises,
-	IEnumerable<BpdmPostalDeliveryPoint> PostalDeliveryPoints,
-	BpdmGeographicCoordinates? GeographicCoordinates,
-	IEnumerable<string> Types
+    BpdmAddressVersion Version,
+    string? CareOf,
+    IEnumerable<string> Contexts,
+    string Country,
+    IEnumerable<BpdmAdministrativeArea> AdministrativeAreas,
+    IEnumerable<BpdmPostcode> PostCodes,
+    IEnumerable<BpdmLocality> Localities,
+    IEnumerable<BpdmThoroughfare> Thoroughfares,
+    IEnumerable<BpdmPremise> Premises,
+    IEnumerable<BpdmPostalDeliveryPoint> PostalDeliveryPoints,
+    BpdmGeographicCoordinates? GeographicCoordinates,
+    IEnumerable<string> Types
 );
 
 public record BpdmAddressVersion(
-	string CharacterSet,
-	string Language
+    string CharacterSet,
+    string Language
 );
 
 public record BpdmAdministrativeArea(
-	string Value,
-	string? ShortName,
-	string? FipsCode,
-	string Type
+    string Value,
+    string? ShortName,
+    string? FipsCode,
+    string Type
 );
 
 public record BpdmPostcode(
-	string Value,
-	string Type
+    string Value,
+    string Type
 );
 
 public record BpdmLocality(
-	string Value,
-	string? ShortName,
-	string Type
+    string Value,
+    string? ShortName,
+    string Type
 );
 
 public record BpdmThoroughfare(
-	string Value,
-	string? Name,
-	string? ShortName,
-	string? Number,
-	string? Direction,
-	string Type
+    string Value,
+    string? Name,
+    string? ShortName,
+    string? Number,
+    string? Direction,
+    string Type
 );
 
 public record BpdmPremise(
-	string Value,
-	string? ShortName,
-	string? Number,
-	string Type
+    string Value,
+    string? ShortName,
+    string? Number,
+    string Type
 );
 
 public record BpdmPostalDeliveryPoint(
-	string Value,
-	string? ShortName,
-	string? Number,
-	string Type
+    string Value,
+    string? ShortName,
+    string? Number,
+    string Type
 );
 
 public record BpdmGeographicCoordinates(
-	int Longitude,
-	int Latitude,
-	int Altitude
+    int Longitude,
+    int Latitude,
+    int Altitude
 );

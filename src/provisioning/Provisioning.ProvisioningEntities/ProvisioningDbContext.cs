@@ -24,49 +24,49 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities
 {
-	public partial class ProvisioningDbContext : DbContext
-	{
-		protected ProvisioningDbContext()
-		{
-		}
+    public partial class ProvisioningDbContext : DbContext
+    {
+        protected ProvisioningDbContext()
+        {
+        }
 
-		public ProvisioningDbContext(DbContextOptions<ProvisioningDbContext> options)
-			: base(options)
-		{
-		}
+        public ProvisioningDbContext(DbContextOptions<ProvisioningDbContext> options)
+            : base(options)
+        {
+        }
 
-		public virtual DbSet<ClientSequence> ClientSequences { get; set; }
-		public virtual DbSet<IdentityProviderSequence> IdentityProviderSequences { get; set; }
-		public virtual DbSet<UserPasswordReset> UserPasswordResets { get; set; }
+        public virtual DbSet<ClientSequence> ClientSequences { get; set; }
+        public virtual DbSet<IdentityProviderSequence> IdentityProviderSequences { get; set; }
+        public virtual DbSet<UserPasswordReset> UserPasswordResets { get; set; }
 
-		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-		{
-			optionsBuilder.UseSnakeCaseNamingConvention();
-		}
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSnakeCaseNamingConvention();
+        }
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
-		{
-			modelBuilder.HasAnnotation("Relational:Collation", "en_US.utf8");
-			modelBuilder.HasDefaultSchema("provisioning");
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.HasAnnotation("Relational:Collation", "en_US.utf8");
+            modelBuilder.HasDefaultSchema("provisioning");
 
-			modelBuilder.HasSequence<int>("client_sequence_sequence_id_seq", "provisioning");
-			modelBuilder.HasSequence<int>("identity_provider_sequence_sequence_id_seq", "provisioning");
+            modelBuilder.HasSequence<int>("client_sequence_sequence_id_seq", "provisioning");
+            modelBuilder.HasSequence<int>("identity_provider_sequence_sequence_id_seq", "provisioning");
 
-			modelBuilder.Entity<ClientSequence>(entity =>
-			{
-				entity.HasKey(e => e.SequenceId);
+            modelBuilder.Entity<ClientSequence>(entity =>
+            {
+                entity.HasKey(e => e.SequenceId);
 
-				entity.Property(e => e.SequenceId)
-					.HasDefaultValueSql("nextval('provisioning.client_sequence_sequence_id_seq'::regclass)");
-			});
+                entity.Property(e => e.SequenceId)
+                    .HasDefaultValueSql("nextval('provisioning.client_sequence_sequence_id_seq'::regclass)");
+            });
 
-			modelBuilder.Entity<IdentityProviderSequence>(entity =>
-			{
-				entity.HasKey(e => e.SequenceId);
+            modelBuilder.Entity<IdentityProviderSequence>(entity =>
+            {
+                entity.HasKey(e => e.SequenceId);
 
-				entity.Property(e => e.SequenceId)
-					.HasDefaultValueSql("nextval('provisioning.identity_provider_sequence_sequence_id_seq'::regclass)");
-			});
-		}
-	}
+                entity.Property(e => e.SequenceId)
+                    .HasDefaultValueSql("nextval('provisioning.identity_provider_sequence_sequence_id_seq'::regclass)");
+            });
+        }
+    }
 }

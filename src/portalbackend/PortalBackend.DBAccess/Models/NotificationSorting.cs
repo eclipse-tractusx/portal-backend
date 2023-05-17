@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// </summary>
 public enum NotificationSorting
 {
-	/// <summary>
-	/// Ascending by date
-	/// </summary>
-	DateAsc = 1,
+    /// <summary>
+    /// Ascending by date
+    /// </summary>
+    DateAsc = 1,
 
-	/// <summary>
-	/// Descending by date
-	/// </summary>
-	DateDesc = 2,
+    /// <summary>
+    /// Descending by date
+    /// </summary>
+    DateDesc = 2,
 
-	/// <summary>
-	/// Ascending by the read status
-	/// </summary>
-	ReadStatusAsc = 3,
+    /// <summary>
+    /// Ascending by the read status
+    /// </summary>
+    ReadStatusAsc = 3,
 
-	/// <summary>
-	/// Descending by read status
-	/// </summary>
-	ReadStatusDesc = 4,
+    /// <summary>
+    /// Descending by read status
+    /// </summary>
+    ReadStatusDesc = 4,
 }

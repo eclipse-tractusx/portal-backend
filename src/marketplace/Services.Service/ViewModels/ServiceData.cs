@@ -40,16 +40,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 /// <param name="OfferStatus">Status of the offer </param>
 /// <param name="TechnicalUserProfile">Status of the offer </param>
 public record ServiceData(
-	Guid Id,
-	string Title,
-	IEnumerable<ServiceTypeId> ServiceTypes,
-	string Provider,
-	IEnumerable<LocalizedDescription> Descriptions,
-	IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
-	string ProviderUri,
-	string? ContactEmail,
-	string? ContactNumber,
-	LicenseTypeId LicenseType,
-	OfferStatusId OfferStatus,
-	IDictionary<Guid, IEnumerable<string>> TechnicalUserProfile
+    Guid Id,
+    string Title,
+    IEnumerable<ServiceTypeId> ServiceTypes,
+    string Provider,
+    IEnumerable<LocalizedDescription> Descriptions,
+    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
+    string ProviderUri,
+    string? ContactEmail,
+    string? ContactNumber,
+    LicenseTypeId LicenseType,
+    OfferStatusId OfferStatus,
+    IDictionary<Guid, IEnumerable<string>> TechnicalUserProfile
 );

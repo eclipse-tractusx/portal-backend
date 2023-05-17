@@ -25,61 +25,61 @@ namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.Depe
 
 public class ApplicationActivationSettings
 {
-	[Required]
-	public IDictionary<string, IEnumerable<string>> ApplicationApprovalInitialRoles { get; set; } = null!;
+    [Required]
+    public IDictionary<string, IEnumerable<string>> ApplicationApprovalInitialRoles { get; set; } = null!;
 
-	[Required]
-	public IDictionary<string, IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
+    [Required]
+    public IDictionary<string, IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
 
-	/// <summary>
-	/// IDs of the notification types that should be created as welcome notifications
-	/// </summary>
-	[Required]
-	public IEnumerable<NotificationTypeId> WelcomeNotificationTypeIds { get; set; } = null!;
+    /// <summary>
+    /// IDs of the notification types that should be created as welcome notifications
+    /// </summary>
+    [Required]
+    public IEnumerable<NotificationTypeId> WelcomeNotificationTypeIds { get; set; } = null!;
 
-	/// <summary>
-	/// ClientIds to remove the roles on company activation
-	/// </summary>
-	[Required]
-	public IEnumerable<string> ClientToRemoveRolesOnActivation { get; set; } = null!;
+    /// <summary>
+    /// ClientIds to remove the roles on company activation
+    /// </summary>
+    [Required]
+    public IEnumerable<string> ClientToRemoveRolesOnActivation { get; set; } = null!;
 
-	[Required(AllowEmptyStrings = false)]
-	public string BasePortalAddress { get; set; } = null!;
+    [Required(AllowEmptyStrings = false)]
+    public string BasePortalAddress { get; set; } = null!;
 
-	/// <summary>
-	/// Earliest time to start the activation process
-	/// </summary>
-	public TimeSpan? StartTime { get; set; }
+    /// <summary>
+    /// Earliest time to start the activation process
+    /// </summary>
+    public TimeSpan? StartTime { get; set; }
 
-	/// <summary>
-	/// Latest time to start the activation process
-	/// </summary>
-	public TimeSpan? EndTime { get; set; }
+    /// <summary>
+    /// Latest time to start the activation process
+    /// </summary>
+    public TimeSpan? EndTime { get; set; }
 
-	/// <summary>
-	/// The login theme for the shared idp 
-	/// </summary>
-	[Required(AllowEmptyStrings = false)]
-	public string LoginTheme { get; set; } = null!;
+    /// <summary>
+    /// The login theme for the shared idp 
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string LoginTheme { get; set; } = null!;
 
-	public static bool Validate(ApplicationActivationSettings settings)
-	{
-		var startSet = settings.StartTime.HasValue;
-		var endSet = settings.EndTime.HasValue;
-		switch (startSet)
-		{
-			case false when !endSet:
-				return true;
-			case true when !endSet:
-			case false when endSet:
-				return false;
-			case true when endSet:
-				return settings.StartTime!.Value.TotalDays < 1 &&
-					   settings.EndTime!.Value.TotalDays < 1 &&
-					   settings.StartTime.Value >= TimeSpan.Zero &&
-					   settings.EndTime.Value >= TimeSpan.Zero;
-		}
+    public static bool Validate(ApplicationActivationSettings settings)
+    {
+        var startSet = settings.StartTime.HasValue;
+        var endSet = settings.EndTime.HasValue;
+        switch (startSet)
+        {
+            case false when !endSet:
+                return true;
+            case true when !endSet:
+            case false when endSet:
+                return false;
+            case true when endSet:
+                return settings.StartTime!.Value.TotalDays < 1 &&
+                       settings.EndTime!.Value.TotalDays < 1 &&
+                       settings.StartTime.Value >= TimeSpan.Zero &&
+                       settings.EndTime.Value >= TimeSpan.Zero;
+        }
 
-		return false;
-	}
+        return false;
+    }
 }

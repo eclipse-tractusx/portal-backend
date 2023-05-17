@@ -30,9 +30,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class StorageProviders
 {
-	[JsonProperty("ldap")]
-	public HasOrder Ldap { get; set; }
+    [JsonProperty("ldap")]
+    public HasOrder Ldap { get; set; }
 
-	[JsonProperty("kerberos")]
-	public HasOrder Kerberos { get; set; }
+    [JsonProperty("kerberos")]
+    public HasOrder Kerberos { get; set; }
 }

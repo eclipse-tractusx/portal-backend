@@ -24,18 +24,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Enpoi
 
 public class ConnectorsEndpoints
 {
-	private readonly HttpClient _client;
+    private readonly HttpClient _client;
 
-	public static string Path => Paths.Connectors;
+    public static string Path => Paths.Connectors;
 
-	public ConnectorsEndpoints(HttpClient client)
-	{
-		this._client = client;
-	}
+    public ConnectorsEndpoints(HttpClient client)
+    {
+        this._client = client;
+    }
 
-	public async Task<HttpResponseMessage> GetCompanyConnectorsForCurrentUserAsync()
-	{
-		var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}");
-		return await this._client.SendAsync(request);
-	}
+    public async Task<HttpResponseMessage> GetCompanyConnectorsForCurrentUserAsync()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}");
+        return await this._client.SendAsync(request);
+    }
 }

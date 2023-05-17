@@ -29,20 +29,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 
 public static class ClearinghouseServiceCollectionExtension
 {
-	public static IServiceCollection AddClearinghouseService(this IServiceCollection services, IConfigurationSection section)
-	{
-		services.AddOptions<ClearinghouseSettings>()
-			.Bind(section)
-			.ValidateOnStart();
-		services.AddTransient<LoggingHandler<ClearinghouseService>>();
+    public static IServiceCollection AddClearinghouseService(this IServiceCollection services, IConfigurationSection section)
+    {
+        services.AddOptions<ClearinghouseSettings>()
+            .Bind(section)
+            .ValidateOnStart();
+        services.AddTransient<LoggingHandler<ClearinghouseService>>();
 
-		var sp = services.BuildServiceProvider();
-		var settings = sp.GetRequiredService<IOptions<ClearinghouseSettings>>();
-		services
-			.AddCustomHttpClientWithAuthentication<ClearinghouseService>(settings.Value.BaseAddress, settings.Value.KeycloakTokenAddress)
-			.AddTransient<IClearinghouseService, ClearinghouseService>()
-			.AddTransient<IClearinghouseBusinessLogic, ClearinghouseBusinessLogic>();
+        var sp = services.BuildServiceProvider();
+        var settings = sp.GetRequiredService<IOptions<ClearinghouseSettings>>();
+        services
+            .AddCustomHttpClientWithAuthentication<ClearinghouseService>(settings.Value.BaseAddress, settings.Value.KeycloakTokenAddress)
+            .AddTransient<IClearinghouseService, ClearinghouseService>()
+            .AddTransient<IClearinghouseBusinessLogic, ClearinghouseBusinessLogic>();
 
-		return services;
-	}
+        return services;
+    }
 }

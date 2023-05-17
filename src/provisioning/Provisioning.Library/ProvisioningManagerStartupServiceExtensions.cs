@@ -30,22 +30,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public static class ProvisioningManagerStartupServiceExtensions
 {
-	public static IServiceCollection AddProvisioningManager(this IServiceCollection services, IConfiguration configuration)
-	{
-		services.AddTransient<IKeycloakFactory, KeycloakFactory>()
-			.ConfigureKeycloakSettingsMap(configuration.GetSection("Keycloak"))
-			.AddTransient<IProvisioningManager, ProvisioningManager>()
-			.ConfigureProvisioningSettings(configuration.GetSection("Provisioning"));
+    public static IServiceCollection AddProvisioningManager(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddTransient<IKeycloakFactory, KeycloakFactory>()
+            .ConfigureKeycloakSettingsMap(configuration.GetSection("Keycloak"))
+            .AddTransient<IProvisioningManager, ProvisioningManager>()
+            .ConfigureProvisioningSettings(configuration.GetSection("Provisioning"));
 
-		var connectionString = configuration.GetConnectionString("ProvisioningDB");
-		if (!string.IsNullOrWhiteSpace(connectionString))
-		{
-			services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>()
-				.AddDbContext<ProvisioningDbContext>(options =>
-					options.UseNpgsql(connectionString));
-		}
+        var connectionString = configuration.GetConnectionString("ProvisioningDB");
+        if (!string.IsNullOrWhiteSpace(connectionString))
+        {
+            services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>()
+                .AddDbContext<ProvisioningDbContext>(options =>
+                    options.UseNpgsql(connectionString));
+        }
 
-		return services
-			.AddServiceAccountCreation(configuration.GetSection("Provisioning"));
-	}
+        return services
+            .AddServiceAccountCreation(configuration.GetSection("Provisioning"));
+    }
 }

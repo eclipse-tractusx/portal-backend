@@ -28,50 +28,50 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 
 public class ServiceProviderControllerTest
 {
-	private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
-	private static readonly Guid CompanyId = new("4C1A6851-D4E7-4E10-A011-3732CD049999");
-	private readonly IServiceProviderBusinessLogic _logic;
-	private readonly ServiceProviderController _controller;
+    private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
+    private static readonly Guid CompanyId = new("4C1A6851-D4E7-4E10-A011-3732CD049999");
+    private readonly IServiceProviderBusinessLogic _logic;
+    private readonly ServiceProviderController _controller;
 
-	public ServiceProviderControllerTest()
-	{
-		_logic = A.Fake<IServiceProviderBusinessLogic>();
-		this._controller = new ServiceProviderController(_logic);
-		_controller.AddControllerContextWithClaim(IamUserId);
-	}
+    public ServiceProviderControllerTest()
+    {
+        _logic = A.Fake<IServiceProviderBusinessLogic>();
+        this._controller = new ServiceProviderController(_logic);
+        _controller.AddControllerContextWithClaim(IamUserId);
+    }
 
-	[Fact]
-	public async Task SetServiceProviderCompanyDetail_WithValidData_ReturnsNoContent()
-	{
-		//Arrange
-		var data = new ServiceProviderDetailData("https://this-is-a-test.de");
-		A.CallTo(() => _logic.SetServiceProviderCompanyDetailsAsync(data, IamUserId))
-			.ReturnsLazily(() => Task.CompletedTask);
+    [Fact]
+    public async Task SetServiceProviderCompanyDetail_WithValidData_ReturnsNoContent()
+    {
+        //Arrange
+        var data = new ServiceProviderDetailData("https://this-is-a-test.de");
+        A.CallTo(() => _logic.SetServiceProviderCompanyDetailsAsync(data, IamUserId))
+            .ReturnsLazily(() => Task.CompletedTask);
 
-		//Act
-		var result = await this._controller.SetServiceProviderCompanyDetail(data).ConfigureAwait(false);
+        //Act
+        var result = await this._controller.SetServiceProviderCompanyDetail(data).ConfigureAwait(false);
 
-		//Assert
-		A.CallTo(() => _logic.SetServiceProviderCompanyDetailsAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
-		Assert.IsType<NoContentResult>(result);
-	}
+        //Assert
+        A.CallTo(() => _logic.SetServiceProviderCompanyDetailsAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
 
-	[Fact]
-	public async Task GetServiceProviderCompanyDetail_WithValidData_ReturnsOk()
-	{
-		//Arrange
-		var id = Guid.NewGuid();
-		var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de");
-		A.CallTo(() => _logic.GetServiceProviderCompanyDetailsAsync(IamUserId))
-			.ReturnsLazily(() => data);
+    [Fact]
+    public async Task GetServiceProviderCompanyDetail_WithValidData_ReturnsOk()
+    {
+        //Arrange
+        var id = Guid.NewGuid();
+        var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de");
+        A.CallTo(() => _logic.GetServiceProviderCompanyDetailsAsync(IamUserId))
+            .ReturnsLazily(() => data);
 
-		//Act
-		var result = await this._controller.GetServiceProviderCompanyDetail().ConfigureAwait(false);
+        //Act
+        var result = await this._controller.GetServiceProviderCompanyDetail().ConfigureAwait(false);
 
-		//Assert
-		A.CallTo(() => _logic.GetServiceProviderCompanyDetailsAsync(IamUserId)).MustHaveHappenedOnceExactly();
-		Assert.IsType<ProviderDetailReturnData>(result);
-		result.Id.Should().Be(id);
-		result.CompanyId.Should().Be(CompanyId);
-	}
+        //Assert
+        A.CallTo(() => _logic.GetServiceProviderCompanyDetailsAsync(IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<ProviderDetailReturnData>(result);
+        result.Id.Should().Be(id);
+        result.CompanyId.Should().Be(CompanyId);
+    }
 }

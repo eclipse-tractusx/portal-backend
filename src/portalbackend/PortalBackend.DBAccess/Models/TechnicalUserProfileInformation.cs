@@ -21,6 +21,6 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record TechnicalUserProfileInformation(
-	Guid TechnicalUserProfileId,
-	IEnumerable<UserRoleInformation> UserRoles
+    Guid TechnicalUserProfileId,
+    IEnumerable<UserRoleInformation> UserRoles
 );

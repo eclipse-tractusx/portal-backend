@@ -25,18 +25,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public class PartnerNetworkBusinessLogic : IPartnerNetworkBusinessLogic
 {
-	private readonly IPortalRepositories _portalRepositories;
+    private readonly IPortalRepositories _portalRepositories;
 
-	/// <summary>
-	/// Constructor
-	/// </summary>
-	/// <param name="portalRepositories"></param>
-	public PartnerNetworkBusinessLogic(IPortalRepositories portalRepositories)
-	{
-		_portalRepositories = portalRepositories;
-	}
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="portalRepositories"></param>
+    public PartnerNetworkBusinessLogic(IPortalRepositories portalRepositories)
+    {
+        _portalRepositories = portalRepositories;
+    }
 
-	/// <inheritdoc/>
-	public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
-		_portalRepositories.GetInstance<ICompanyRepository>().GetAllMemberCompaniesBPNAsync();
+    /// <inheritdoc/>
+    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync() =>
+        _portalRepositories.GetInstance<ICompanyRepository>().GetAllMemberCompaniesBPNAsync();
 }

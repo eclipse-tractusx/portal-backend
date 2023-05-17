@@ -26,38 +26,38 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 
 public class AuditConsent20230412 : IAuditEntityV1
 {
-	/// <inheritdoc />
-	[Key]
-	public Guid AuditV1Id { get; set; }
+    /// <inheritdoc />
+    [Key]
+    public Guid AuditV1Id { get; set; }
 
-	public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-	public DateTimeOffset DateCreated { get; set; }
+    public DateTimeOffset DateCreated { get; set; }
 
-	[MaxLength(255)]
-	public string? Comment { get; set; }
+    [MaxLength(255)]
+    public string? Comment { get; set; }
 
-	public ConsentStatusId ConsentStatusId { get; set; }
+    public ConsentStatusId ConsentStatusId { get; set; }
 
-	[MaxLength(255)]
-	public string? Target { get; set; }
+    [MaxLength(255)]
+    public string? Target { get; set; }
 
-	public Guid AgreementId { get; set; }
+    public Guid AgreementId { get; set; }
 
-	public Guid CompanyId { get; set; }
+    public Guid CompanyId { get; set; }
 
-	public Guid? DocumentId { get; set; }
+    public Guid? DocumentId { get; set; }
 
-	public Guid CompanyUserId { get; set; }
+    public Guid CompanyUserId { get; set; }
 
-	public Guid? LastEditorId { get; set; }
+    public Guid? LastEditorId { get; set; }
 
-	/// <inheritdoc />
-	public Guid? AuditV1LastEditorId { get; set; }
+    /// <inheritdoc />
+    public Guid? AuditV1LastEditorId { get; set; }
 
-	/// <inheritdoc />
-	public AuditOperationId AuditV1OperationId { get; set; }
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
 
-	/// <inheritdoc />
-	public DateTimeOffset AuditV1DateLastChanged { get; set; }
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

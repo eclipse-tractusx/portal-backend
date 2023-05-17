@@ -35,50 +35,50 @@ using Xunit;
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
 
 public class IntegrationTestFactory<TTestClass> : WebApplicationFactory<TTestClass>, IAsyncLifetime
-	where TTestClass : class
+    where TTestClass : class
 {
-	private readonly TestcontainerDatabase _container;
-	public IList<Action<PortalDbContext>>? SetupDbActions { get; set; }
+    private readonly TestcontainerDatabase _container;
+    public IList<Action<PortalDbContext>>? SetupDbActions { get; set; }
 
-	public IntegrationTestFactory()
-	{
-		_container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
-			.WithDatabase(new PostgreSqlTestcontainerConfiguration
-			{
-				Database = "test_db",
-				Username = "postgres",
-				Password = "postgres",
-			})
-			.WithImage("postgres")
-			.WithCleanUp(true)
-			.WithName(Guid.NewGuid().ToString())
-			.Build();
-	}
+    public IntegrationTestFactory()
+    {
+        _container = new TestcontainersBuilder<PostgreSqlTestcontainer>()
+            .WithDatabase(new PostgreSqlTestcontainerConfiguration
+            {
+                Database = "test_db",
+                Username = "postgres",
+                Password = "postgres",
+            })
+            .WithImage("postgres")
+            .WithCleanUp(true)
+            .WithName(Guid.NewGuid().ToString())
+            .Build();
+    }
 
-	protected override void ConfigureWebHost(IWebHostBuilder builder)
-	{
-		var projectDir = Directory.GetCurrentDirectory();
-		var configPath = Path.Combine(projectDir, "appsettings.IntegrationTests.json");
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        var projectDir = Directory.GetCurrentDirectory();
+        var configPath = Path.Combine(projectDir, "appsettings.IntegrationTests.json");
 
-		builder.ConfigureAppConfiguration((context, conf) =>
-		{
-			conf.AddJsonFile(configPath, true);
-		});
-		builder.ConfigureTestServices(services =>
-		{
-			services.RemoveProdDbContext<PortalDbContext>();
-			services.AddDbContext<PortalDbContext>(options =>
-			{
-				options.UseNpgsql(_container.ConnectionString,
-					x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
-						.MigrationsHistoryTable("__efmigrations_history_portal"));
-			});
-			services.EnsureDbCreated(SetupDbActions);
-			services.AddSingleton<IPolicyEvaluator, FakePolicyEvaluator>();
-		});
-	}
+        builder.ConfigureAppConfiguration((context, conf) =>
+        {
+            conf.AddJsonFile(configPath, true);
+        });
+        builder.ConfigureTestServices(services =>
+        {
+            services.RemoveProdDbContext<PortalDbContext>();
+            services.AddDbContext<PortalDbContext>(options =>
+            {
+                options.UseNpgsql(_container.ConnectionString,
+                    x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
+                        .MigrationsHistoryTable("__efmigrations_history_portal"));
+            });
+            services.EnsureDbCreated(SetupDbActions);
+            services.AddSingleton<IPolicyEvaluator, FakePolicyEvaluator>();
+        });
+    }
 
-	public async Task InitializeAsync() => await _container.StartAsync();
+    public async Task InitializeAsync() => await _container.StartAsync();
 
-	public new async Task DisposeAsync() => await _container.DisposeAsync();
+    public new async Task DisposeAsync() => await _container.DisposeAsync();
 }

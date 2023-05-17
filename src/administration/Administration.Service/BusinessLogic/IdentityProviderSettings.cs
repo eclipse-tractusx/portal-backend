@@ -25,67 +25,67 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public class IdentityProviderSettings
 {
-	public IdentityProviderCsvSettings CsvSettings { get; init; } = null!;
+    public IdentityProviderCsvSettings CsvSettings { get; init; } = null!;
 
-	public bool Validate()
-	{
-		new ConfigurationValidation<IdentityProviderSettings>().NotNull(CsvSettings, () => nameof(CsvSettings));
-		return CsvSettings.Validate();
-	}
+    public bool Validate()
+    {
+        new ConfigurationValidation<IdentityProviderSettings>().NotNull(CsvSettings, () => nameof(CsvSettings));
+        return CsvSettings.Validate();
+    }
 }
 
 public class IdentityProviderCsvSettings
 {
-	public string Charset { get; init; } = null!;
-	public Encoding Encoding { get; set; } = default!;
-	public string FileName { get; init; } = null!;
-	public string ContentType { get; init; } = null!;
-	public string Separator { get; init; } = null!;
-	public string HeaderUserId { get; init; } = null!;
-	public string HeaderFirstName { get; init; } = null!;
-	public string HeaderLastName { get; init; } = null!;
-	public string HeaderEmail { get; init; } = null!;
-	public string HeaderProviderAlias { get; init; } = null!;
-	public string HeaderProviderUserId { get; init; } = null!;
-	public string HeaderProviderUserName { get; init; } = null!;
+    public string Charset { get; init; } = null!;
+    public Encoding Encoding { get; set; } = default!;
+    public string FileName { get; init; } = null!;
+    public string ContentType { get; init; } = null!;
+    public string Separator { get; init; } = null!;
+    public string HeaderUserId { get; init; } = null!;
+    public string HeaderFirstName { get; init; } = null!;
+    public string HeaderLastName { get; init; } = null!;
+    public string HeaderEmail { get; init; } = null!;
+    public string HeaderProviderAlias { get; init; } = null!;
+    public string HeaderProviderUserId { get; init; } = null!;
+    public string HeaderProviderUserName { get; init; } = null!;
 
-	public bool Validate()
-	{
-		new ConfigurationValidation<IdentityProviderCsvSettings>()
-			.NotNull(Charset, () => nameof(Charset))
-			.NotNullOrWhiteSpace(FileName, () => nameof(FileName))
-			.NotNullOrWhiteSpace(ContentType, () => nameof(ContentType))
-			.NotNullOrWhiteSpace(Separator, () => nameof(Separator))
-			.NotNullOrWhiteSpace(HeaderUserId, () => nameof(HeaderUserId))
-			.NotNullOrWhiteSpace(HeaderFirstName, () => nameof(HeaderFirstName))
-			.NotNullOrWhiteSpace(HeaderLastName, () => nameof(HeaderLastName))
-			.NotNullOrWhiteSpace(HeaderEmail, () => nameof(HeaderEmail))
-			.NotNullOrWhiteSpace(HeaderProviderAlias, () => nameof(HeaderProviderAlias))
-			.NotNullOrWhiteSpace(HeaderProviderUserId, () => nameof(HeaderProviderUserId))
-			.NotNullOrWhiteSpace(HeaderProviderUserName, () => nameof(HeaderProviderUserName));
-		try
-		{
-			Encoding = Encoding.GetEncoding(Charset);
-		}
-		catch (ArgumentException ae)
-		{
-			throw new ConfigurationException($"'{nameof(IdentityProviderCsvSettings)}': {nameof(Charset)} '{Charset}' is not a valid Encoding", ae);
-		}
+    public bool Validate()
+    {
+        new ConfigurationValidation<IdentityProviderCsvSettings>()
+            .NotNull(Charset, () => nameof(Charset))
+            .NotNullOrWhiteSpace(FileName, () => nameof(FileName))
+            .NotNullOrWhiteSpace(ContentType, () => nameof(ContentType))
+            .NotNullOrWhiteSpace(Separator, () => nameof(Separator))
+            .NotNullOrWhiteSpace(HeaderUserId, () => nameof(HeaderUserId))
+            .NotNullOrWhiteSpace(HeaderFirstName, () => nameof(HeaderFirstName))
+            .NotNullOrWhiteSpace(HeaderLastName, () => nameof(HeaderLastName))
+            .NotNullOrWhiteSpace(HeaderEmail, () => nameof(HeaderEmail))
+            .NotNullOrWhiteSpace(HeaderProviderAlias, () => nameof(HeaderProviderAlias))
+            .NotNullOrWhiteSpace(HeaderProviderUserId, () => nameof(HeaderProviderUserId))
+            .NotNullOrWhiteSpace(HeaderProviderUserName, () => nameof(HeaderProviderUserName));
+        try
+        {
+            Encoding = Encoding.GetEncoding(Charset);
+        }
+        catch (ArgumentException ae)
+        {
+            throw new ConfigurationException($"'{nameof(IdentityProviderCsvSettings)}': {nameof(Charset)} '{Charset}' is not a valid Encoding", ae);
+        }
 
-		return true;
-	}
+        return true;
+    }
 }
 
 public static class IdentityProviderSettingsExtension
 {
-	public static IServiceCollection ConfigureIdentityProviderSettings(
-		this IServiceCollection services,
-		IConfigurationSection section)
-	{
-		services.AddOptions<IdentityProviderSettings>()
-			.Bind(section)
-			.Validate(x => x.Validate())
-			.ValidateOnStart();
-		return services;
-	}
+    public static IServiceCollection ConfigureIdentityProviderSettings(
+        this IServiceCollection services,
+        IConfigurationSection section)
+    {
+        services.AddOptions<IdentityProviderSettings>()
+            .Bind(section)
+            .Validate(x => x.Validate())
+            .ValidateOnStart();
+        return services;
+    }
 }

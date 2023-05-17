@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class TruststoreProviders
 {
-	[JsonProperty("file")]
-	public HasOrder File { get; set; }
+    [JsonProperty("file")]
+    public HasOrder File { get; set; }
 }

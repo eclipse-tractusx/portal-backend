@@ -25,24 +25,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyServiceAccountType
 {
-	private CompanyServiceAccountType()
-	{
-		Label = null!;
-		CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
-	}
+    private CompanyServiceAccountType()
+    {
+        Label = null!;
+        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
+    }
 
-	public CompanyServiceAccountType(CompanyServiceAccountTypeId companyServiceAccountTypeId) : this()
-	{
-		Id = companyServiceAccountTypeId;
-		Label = companyServiceAccountTypeId.ToString();
-	}
+    public CompanyServiceAccountType(CompanyServiceAccountTypeId companyServiceAccountTypeId) : this()
+    {
+        Id = companyServiceAccountTypeId;
+        Label = companyServiceAccountTypeId.ToString();
+    }
 
-	[Key]
-	public CompanyServiceAccountTypeId Id { get; private set; }
+    [Key]
+    public CompanyServiceAccountTypeId Id { get; private set; }
 
-	[MaxLength(255)]
-	public string Label { get; private set; }
+    [MaxLength(255)]
+    public string Label { get; private set; }
 
-	// Navigation properties
-	public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
+    // Navigation properties
+    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
 }

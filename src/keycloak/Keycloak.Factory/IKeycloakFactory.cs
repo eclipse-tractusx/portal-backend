@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 
 public interface IKeycloakFactory
 {
-	KeycloakClient CreateKeycloakClient(string instance);
+    KeycloakClient CreateKeycloakClient(string instance);
 
-	KeycloakClient CreateKeycloakClient(string instance, string clientId, string secret);
+    KeycloakClient CreateKeycloakClient(string instance, string clientId, string secret);
 }

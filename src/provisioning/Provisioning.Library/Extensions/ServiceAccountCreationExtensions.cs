@@ -27,15 +27,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public static class ServiceAccountCreationExtensions
 {
-	public static IServiceCollection AddServiceAccountCreation(this IServiceCollection services, IConfigurationSection section)
-	{
-		services.AddOptions<ServiceAccountCreationSettings>()
-			.Bind(section)
-			.ValidateOnStart();
+    public static IServiceCollection AddServiceAccountCreation(this IServiceCollection services, IConfigurationSection section)
+    {
+        services.AddOptions<ServiceAccountCreationSettings>()
+            .Bind(section)
+            .ValidateOnStart();
 
-		services
-			.AddTransient<IServiceAccountCreation, ServiceAccountCreation>();
+        services
+            .AddTransient<IServiceAccountCreation, ServiceAccountCreation>();
 
-		return services;
-	}
+        return services;
+    }
 }

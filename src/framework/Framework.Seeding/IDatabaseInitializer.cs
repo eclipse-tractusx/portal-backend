@@ -22,5 +22,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
 public interface IDatabaseInitializer
 {
-	Task InitializeDatabasesAsync(CancellationToken cancellationToken);
+    Task InitializeDatabasesAsync(CancellationToken cancellationToken);
 }

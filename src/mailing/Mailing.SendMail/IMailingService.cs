@@ -22,5 +22,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 
 public interface IMailingService
 {
-	Task SendMails(string recipient, IDictionary<string, string> parameters, IEnumerable<string> templates);
+    Task SendMails(string recipient, IDictionary<string, string> parameters, IEnumerable<string> templates);
 }

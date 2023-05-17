@@ -27,29 +27,29 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 
 public class AuditUserRole20221017 : IAuditEntityV1
 {
-	public AuditUserRole20221017()
-	{
-		UserRoleText = null!;
-	}
+    public AuditUserRole20221017()
+    {
+        UserRoleText = null!;
+    }
 
-	/// <inheritdoc />
-	[Key]
-	public Guid AuditV1Id { get; set; }
+    /// <inheritdoc />
+    [Key]
+    public Guid AuditV1Id { get; set; }
 
-	public Guid Id { get; private set; }
+    public Guid Id { get; private set; }
 
-	[Column("user_role")]
-	public string UserRoleText { get; set; }
+    [Column("user_role")]
+    public string UserRoleText { get; set; }
 
-	public Guid OfferId { get; set; }
+    public Guid OfferId { get; set; }
 
-	[AuditLastEditorV1]
-	public Guid? LastEditorId { get; set; }
-	/// <inheritdoc />
-	public Guid? AuditV1LastEditorId { get; set; }
-	/// <inheritdoc />
-	public AuditOperationId AuditV1OperationId { get; set; }
-	/// <inheritdoc />
-	public DateTimeOffset AuditV1DateLastChanged { get; set; }
+    [AuditLastEditorV1]
+    public Guid? LastEditorId { get; set; }
+    /// <inheritdoc />
+    public Guid? AuditV1LastEditorId { get; set; }
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }
 

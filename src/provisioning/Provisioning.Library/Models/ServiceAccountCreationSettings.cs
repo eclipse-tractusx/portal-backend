@@ -24,6 +24,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 public class ServiceAccountCreationSettings
 {
-	[Required(AllowEmptyStrings = false)]
-	public string ServiceAccountClientPrefix { get; set; } = null!;
+    [Required(AllowEmptyStrings = false)]
+    public string ServiceAccountClientPrefix { get; set; } = null!;
 }

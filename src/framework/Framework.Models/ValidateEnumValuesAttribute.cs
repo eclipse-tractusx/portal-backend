@@ -25,43 +25,43 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 public class ValidateEnumValuesAttribute : ValidationAttribute
 {
-	protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-	{
-		var type = value?
-			.GetType()
-			.GetInterfaces()
-			.Where(t => t.IsGenericType
-				&& t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-			.Select(t => t.GetGenericArguments()[0])
-			.FirstOrDefault();
-		if (type is null || !type.IsEnum)
-		{
-			throw new UnexpectedConditionException($"invalid use of attribute ValidateEnumValues: {validationContext.MemberName}, value {validationContext.ObjectInstance} is of type {validationContext.ObjectType} which is not an IEnumerable of Enum-type");
-		}
-		var values = type.GetEnumValues();
-		var enumerator = value?.GetType().GetMethod("GetEnumerator")?.Invoke(value, null);
-		var moveNext = enumerator?.GetType().GetMethod("MoveNext");
-		var current = enumerator?.GetType().GetProperty("Current")?.GetMethod;
-		if (enumerator is null || moveNext is null || current is null)
-		{
-			throw new UnexpectedConditionException($"attribute ValidateEnumValues failed to enumerate {validationContext.MemberName}: enumerator, moveNext or current should never be null here");
-		}
-		while (true)
-		{
-			var hasNext = moveNext.Invoke(enumerator, null);
-			if (hasNext is null)
-			{
-				throw new UnexpectedConditionException($"attribute ValidateEnumValues failed to enumerate {validationContext.MemberName}: hasNext should never be null here");
-			}
-			if (hasNext is not true)
-			{
-				return null;
-			}
-			var item = current.Invoke(enumerator, null);
-			if (item is null || Array.BinarySearch(values, item) < 0)
-			{
-				return new ValidationResult($"{item} is not a valid value for {type}. Valid values are: {string.Join(", ", type.GetEnumNames())}");
-			}
-		}
-	}
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    {
+        var type = value?
+            .GetType()
+            .GetInterfaces()
+            .Where(t => t.IsGenericType
+                && t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            .Select(t => t.GetGenericArguments()[0])
+            .FirstOrDefault();
+        if (type is null || !type.IsEnum)
+        {
+            throw new UnexpectedConditionException($"invalid use of attribute ValidateEnumValues: {validationContext.MemberName}, value {validationContext.ObjectInstance} is of type {validationContext.ObjectType} which is not an IEnumerable of Enum-type");
+        }
+        var values = type.GetEnumValues();
+        var enumerator = value?.GetType().GetMethod("GetEnumerator")?.Invoke(value, null);
+        var moveNext = enumerator?.GetType().GetMethod("MoveNext");
+        var current = enumerator?.GetType().GetProperty("Current")?.GetMethod;
+        if (enumerator is null || moveNext is null || current is null)
+        {
+            throw new UnexpectedConditionException($"attribute ValidateEnumValues failed to enumerate {validationContext.MemberName}: enumerator, moveNext or current should never be null here");
+        }
+        while (true)
+        {
+            var hasNext = moveNext.Invoke(enumerator, null);
+            if (hasNext is null)
+            {
+                throw new UnexpectedConditionException($"attribute ValidateEnumValues failed to enumerate {validationContext.MemberName}: hasNext should never be null here");
+            }
+            if (hasNext is not true)
+            {
+                return null;
+            }
+            var item = current.Invoke(enumerator, null);
+            if (item is null || Array.BinarySearch(values, item) < 0)
+            {
+                return new ValidationResult($"{item} is not a valid value for {type}. Valid values are: {string.Join(", ", type.GetEnumNames())}");
+            }
+        }
+    }
 }

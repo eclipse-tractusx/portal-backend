@@ -24,5 +24,5 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 
 public record CompanyRoleAgreementData(
-	[property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleData> CompanyRoleData,
-	[property: JsonPropertyName("agreements")] IEnumerable<AgreementDocumentData> AgreementData);
+    [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleData> CompanyRoleData,
+    [property: JsonPropertyName("agreements")] IEnumerable<AgreementDocumentData> AgreementData);

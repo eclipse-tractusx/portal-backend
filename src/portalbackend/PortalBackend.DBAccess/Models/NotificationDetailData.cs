@@ -33,11 +33,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="DueDate">Optional: The notifications dueDate</param>
 /// <param name="Done"><c>true</c> if the notification is an action notification and done, otherwise <c>false</c></param>
 public record NotificationDetailData(
-	Guid Id,
-	DateTimeOffset Created,
-	NotificationTypeId TypeId,
-	NotificationTopicId NotificationTopic,
-	bool IsRead,
-	string? Content,
-	DateTimeOffset? DueDate,
-	bool? Done);
+    Guid Id,
+    DateTimeOffset Created,
+    NotificationTypeId TypeId,
+    NotificationTopicId NotificationTopic,
+    bool IsRead,
+    string? Content,
+    DateTimeOffset? DueDate,
+    bool? Done);

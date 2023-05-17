@@ -28,6 +28,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public enum LdapMapperSyncActions
 {
-	FedToKeycloak,
-	KeycloakToFed
+    FedToKeycloak,
+    KeycloakToFed
 }
