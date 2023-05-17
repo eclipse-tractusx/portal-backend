@@ -1,10 +1,8 @@
 using System.Text.RegularExpressions;
 using System.Web;
 using HtmlAgilityPack;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using Xunit;
 using static RestAssured.Dsl;
 
 namespace Registration.Service.Tests.RestAssured;
@@ -22,18 +20,12 @@ public class AuthFlow
     private readonly HttpClientHandler _httpClientHandler = new () { AllowAutoRedirect = false };
 
     private readonly HttpClient _client;
-    private readonly string _operatorUserName;
-    private readonly string _operatorUserPassword;
     private static string _companyName;
+    private readonly Secrets _secrets = new ();
 
     public AuthFlow(string companyName)
     {
         _client = new HttpClient(_httpClientHandler);
-        var configuration = new ConfigurationBuilder()
-            .AddUserSecrets<Secrets>()
-            .Build();
-        _operatorUserName = configuration.GetValue<string>("Secrets:OperatorUserName");
-        _operatorUserPassword = configuration.GetValue<string>("Secrets:OperatorUserPassword");
         _companyName = companyName;
     }
 
@@ -265,7 +257,7 @@ public class AuthFlow
         var sharedIdpCompanyUrl = await GetCompanySharedIdpUrl(companies);
         var authUrlFromSharedIdp = await GetAuthUrlFromSharedIdp(sharedIdpCompanyUrl);
         var authenticateInCentralIdpUrl =
-            await AuthenticateInSharedIdp(authUrlFromSharedIdp, _operatorUserName, _operatorUserPassword);
+            await AuthenticateInSharedIdp(authUrlFromSharedIdp, _secrets.OperatorUserName, _secrets.OperatorUserPassword);
         var authCode = await GetAuthCodeFromCentralIdp(authenticateInCentralIdpUrl);
         return await GetTokenWithAuthCode(authCode);
     }

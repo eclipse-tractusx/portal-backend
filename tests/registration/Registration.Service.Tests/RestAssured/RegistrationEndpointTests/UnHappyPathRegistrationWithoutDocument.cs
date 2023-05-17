@@ -1,9 +1,5 @@
-﻿using AutoFixture;
-using Microsoft.Extensions.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+﻿using NHamcrest;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using RestAssured.Request.Logging;
 using Xunit;
 using static RestAssured.Dsl;
@@ -19,25 +15,9 @@ public class UnHappyPathRegistrationWithoutDocument
     private static readonly string _userCompanyToken;
     private static string _applicationId;
 
-    private readonly IFixture _fixture;
-    
     private readonly string _adminEndPoint = "/api/administration";
-    private readonly string _operatorToken;
-    private readonly string _userToken;
     private static string _companyName = "Test-Catena-X";
     private readonly RegistrationEndpointHelper _registrationEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _baseUrl, _endPoint);
-    
-    public UnHappyPathRegistrationWithoutDocument()
-    {
-        var configuration = new ConfigurationBuilder()
-            .AddUserSecrets<Secrets>()
-            .Build();
-        //_userCompanyToken = configuration.GetValue<string>("Secrets:CompanyToken");
-        //_companyToken = "TestUserToken";
-        _operatorToken = configuration.GetValue<string>("Secrets:OperatorToken");
-        _userToken = configuration.GetValue<string>("Secrets:UserToken");
-        _fixture = new Fixture();
-    }
 
     #region UnHappy Path - new registration without document
     
@@ -164,7 +144,7 @@ public class UnHappyPathRegistrationWithoutDocument
                 $"{_baseUrl}{_endPoint}/application/{_applicationId}/submitRegistration")
             .Then()
             .StatusCode(403)
-            .Body(NHamcrest.Contains.String("Application status is not fitting to the pre-requisite"));
+            .Body(Contains.String("Application status is not fitting to the pre-requisite"));
             //.Body("$.errors.[Org.Eclipse.TractusX.Portal.Backend.Registration.Service][0]");
             // Assert.Equal("Application status is not fitting to the pre-requisite", status.ToString());
     }

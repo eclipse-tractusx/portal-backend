@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+﻿using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using RestAssured.Request.Logging;
 using Xunit;
 using static RestAssured.Dsl;
@@ -15,15 +13,6 @@ public class AdditionalEndpoints
     private readonly string _endPoint = "/api/registration";
     private readonly string _companyToken;
     private static string _applicationId;
-    
-    public AdditionalEndpoints()
-    {
-        var configuration = new ConfigurationBuilder()
-            .AddUserSecrets<Secrets>()
-            .Build();
-        _companyToken = configuration.GetValue<string>("Secrets:CompanyToken");
-        _applicationId = new (configuration.GetValue<string>("Secrets:ApplicationId"));
-    }
 
     [Fact]
     public void GetCompanyDetailData_ReturnsExpectedResult()

@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using static RestAssured.Dsl;
+﻿using static RestAssured.Dsl;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestAssured;
 
@@ -11,16 +9,7 @@ public class AdministrationEndpointTests
     private readonly string _operatorToken;
     private static string _applicationId;
     private static string _companyName = "Catena-X";
-    
-    public AdministrationEndpointTests()
-    {
-        var configuration = new ConfigurationBuilder()
-            .AddUserSecrets<Secrets>()
-            .Build();
-        _operatorToken = configuration.GetValue<string>("Secrets:OperatorToken");
-        _applicationId = new (configuration.GetValue<string>("Secrets:ApplicationId"));
-    }
-    
+
     [Fact]
     public void GetApplicationDetails_ReturnsExpectedResult()
     {

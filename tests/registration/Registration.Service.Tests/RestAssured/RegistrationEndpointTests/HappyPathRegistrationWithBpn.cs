@@ -1,9 +1,5 @@
-﻿using AutoFixture;
-using Microsoft.Extensions.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+﻿using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit;
 using static RestAssured.Dsl;
 
@@ -18,25 +14,11 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     private static readonly string _userCompanyToken;
     private static string _applicationId;
 
-    private readonly IFixture _fixture;
-
     private readonly string _adminEndPoint = "/api/administration";
     private readonly string _operatorToken;
     private static string _companyName = "Test-Catena-X";
     private static string _bpn = "1234";
     private readonly RegistrationEndpointHelper _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _baseUrl, _endPoint);
-
-    public RegistrationEndpointTestsHappyPathRegistrationWithBpn()
-    {
-        var configuration = new ConfigurationBuilder()
-            .AddUserSecrets<Secrets>()
-            .Build();
-        //_userCompanyToken = configuration.GetValue<string>("Secrets:CompanyToken");
-        _applicationId = new (configuration.GetValue<string>("Secrets:ApplicationId"));
-        _operatorToken = configuration.GetValue<string>("Secrets:OperatorToken");
-        _fixture = new Fixture();
-        // CreateFilesToUpload();
-    }
 
 
     #region Happy Path - new registration with BPN

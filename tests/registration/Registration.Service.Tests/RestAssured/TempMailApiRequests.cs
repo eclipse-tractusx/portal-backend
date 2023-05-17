@@ -1,7 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit;
 using static RestAssured.Dsl;
@@ -13,14 +12,7 @@ public class TempMailApiRequests
     private readonly string _endPoint = "/temp_mail";
     private readonly string _tempMailApiKey;
     private readonly string _apiTestUsername = "apitestuser";
-    
-    public TempMailApiRequests()
-    {
-        var configuration = new ConfigurationBuilder()
-            .AddUserSecrets<Secrets>()
-            .Build();
-        _tempMailApiKey = configuration.GetValue<string>("Secrets:TempMailApiKey");
-    }
+    private readonly Secrets _secrets = new ();
 
     [Fact]
     public string? FetchPassword()
@@ -45,7 +37,7 @@ public class TempMailApiRequests
             .RelaxedHttpsValidation()
             .Header(
                 "apikey",
-                $"{_tempMailApiKey}")
+                $"{_secrets.TempMailApiKey}")
             .When()
             .Get($"{_baseUrl}{_endPoint}/mail/id/{hashedEmailAddress}")
             .Then()
@@ -61,7 +53,7 @@ public class TempMailApiRequests
             .RelaxedHttpsValidation()
             .Header(
                 "apikey",
-                $"{_tempMailApiKey}")
+                $"{_secrets.TempMailApiKey}")
             .When()
             .Get($"{_baseUrl}{_endPoint}/domains")
             .Then() 
@@ -94,7 +86,7 @@ public class TempMailApiRequests
                 .RelaxedHttpsValidation()
                 .Header(
                     "apikey",
-                    $"{_tempMailApiKey}")
+                    $"{_secrets.TempMailApiKey}")
                 .When()
                 .Get($"{_baseUrl}{_endPoint}/delete/id/{mailId}")
                 .Then()

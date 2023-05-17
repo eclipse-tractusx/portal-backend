@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using Xunit;
+﻿using Xunit;
 using static RestAssured.Dsl;
 
 namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
@@ -12,15 +10,6 @@ public class DbApiTest
     private readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
     private readonly string _endPoint = "/api/registration";
     private readonly string _companyToken;
-
-    public DbApiTest()
-    {
-        var configuration = new ConfigurationBuilder()
-            .AddUserSecrets<Secrets>()
-            .Build();
-        _companyToken = configuration.GetValue<string>("Secrets:CompanyToken");
-        // CreateFilesToUpload();
-    }
 
     #region DB / API Test
 

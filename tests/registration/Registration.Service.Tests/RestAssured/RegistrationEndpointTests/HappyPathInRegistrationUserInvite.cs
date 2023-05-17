@@ -1,7 +1,6 @@
 ﻿using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using PasswordGenerator;
 using Xunit;
 using static RestAssured.Dsl;
@@ -34,7 +33,7 @@ public class HappyPathInRegistrationUserInvite
         var emailAddress = devUser.Result.Name + "@developermail.com";
         CompanyInvitationData invitationData = new CompanyInvitationData("testuser", "myFirstName", "myLastName",
             emailAddress, _userCompanyName);
-
+        
         Thread.Sleep(20000);
 
         _operatorToken = await new AuthFlow(_operatorCompanyName).GetAccessToken();
