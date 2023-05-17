@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Xunit;
 using static RestAssured.Dsl;
@@ -23,7 +24,8 @@ public class TempMailApiRequests
         {
             //search for password in the first span of the body
             Regex r = new Regex(@"<span[^>].*?>([^<]*)<\/span>", RegexOptions.IgnoreCase);
-            string password = r.Matches(passwordMessage.mail_html).First().Groups[1].Value.Trim('\n').Trim();
+            string password = HttpUtility.HtmlDecode(r.Matches(passwordMessage.mail_html).First().Groups[1].Value.Trim('\n').Trim());
+            DeletePasswordMessage(passwordMessage.mail_id);
             return password;
         }
         
@@ -47,7 +49,7 @@ public class TempMailApiRequests
         return passwordMessage;
     }
     
-    private string GetDomain()
+    public string GetDomain()
     {
         var data = (string[])Given()
             .RelaxedHttpsValidation()
@@ -62,6 +64,7 @@ public class TempMailApiRequests
             .As(typeof(string[]));
         return data[1];
     }
+    
 
     //https://stackoverflow.com/questions/11454004/calculate-a-md5-hash-from-a-string
     private string CreateMd5()
@@ -76,22 +79,16 @@ public class TempMailApiRequests
         }
     }
 
-    //TODO: Delete all messages in mailbox after getting password
-    /*
-    private void DeleteMessages()
+    private void DeletePasswordMessage(string mailId)
     {
-        foreach (var mailId in mailIds)
-        {
-            var data = Given()
-                .RelaxedHttpsValidation()
-                .Header(
-                    "apikey",
-                    $"{_secrets.TempMailApiKey}")
-                .When()
-                .Get($"{_baseUrl}{_endPoint}/delete/id/{mailId}")
-                .Then()
-                .StatusCode(200)
-                .Extract().Body();
-        }
-    }*/
+        Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "apikey",
+                $"{_secrets.TempMailApiKey}")
+            .When()
+            .Get($"{_baseUrl}{_endPoint}/delete/id/{mailId}")
+            .Then()
+            .StatusCode(200);
+    }
 }
