@@ -65,8 +65,8 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * Service clean-up ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
   * endpoints /api/apps/{appId}/appupdate/description moved from app controller to appChange controller
   * endpoints ../addservice, ../{serviceId}, ../{serviceId}/submit, ../{serviceId}/approveService, ../{serviceId}/declineService, ../updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents moved from services controller to serviceRelease controller
-  * moved GET /api/services/{serviceId}/technical-user-profiless to serviceRelease controller
-  * moved PUT /api/services/{serviceId}/technical-user-profiless to serviceRelease controller
+  * moved GET /api/services/{serviceId}/technical-user-profiles to serviceRelease controller
+  * moved PUT /api/services/{serviceId}/technical-user-profiles to serviceRelease controller
 * App clean-up ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
   * moved POST /api/apps/{appId}/appLeadImage endpoint to appChange controller
   * moved PUT /api/apps/{appId}/deactivateApp endpoint to appChange controller
@@ -79,7 +79,10 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * audit table added for portal.connector
 * Checklist Worker
   * renamed to Processes Worker
-* Provisioning Service has been discontinued 
+* Provisioning Service has been discontinued
+* changed container registry to Docker Hub
+* restricted CI-based sonarcloud job to only run at pull request event if raised within same base repo
+* added pull request template
 
 ### Bugfix
 * updated busness logic to assign new user accounts the company bpn as user attribute (fix implemented for user accounts created for ownIdp customers)
