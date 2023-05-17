@@ -26,6 +26,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -146,7 +147,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, status, null, null, false, null).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, new NotificationFilters(status, null, null, false, null)).ConfigureAwait(false);
 
         // Assert
         var expectedCount = status ?
@@ -169,7 +170,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, null, null, null, false, sorting).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, new NotificationFilters(null, null, null, false, sorting)).ConfigureAwait(false);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(_notificationDetails.Count());
@@ -189,7 +190,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var results = await sut.GetNotificationsAsync(1, 3, _iamUser.UserEntityId, null, null, null, false, null).ConfigureAwait(false);
+        var results = await sut.GetNotificationsAsync(1, 3, _iamUser.UserEntityId, new NotificationFilters(null, null, null, false, null)).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -209,7 +210,7 @@ public class NotificationBusinessLogicTests
             MaxPageSize = 15
         }));
 
-        var Act = () => sut.GetNotificationsAsync(0, 20, _iamUser.UserEntityId, null, null, null, false, null);
+        var Act = () => sut.GetNotificationsAsync(0, 20, _iamUser.UserEntityId, new NotificationFilters(null, null, null, false, null));
 
         // Act & Assert
         await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -224,7 +225,7 @@ public class NotificationBusinessLogicTests
             MaxPageSize = 15
         }));
 
-        var Act = () => sut.GetNotificationsAsync(-1, 15, _iamUser.UserEntityId, null, null, null, false, null);
+        var Act = () => sut.GetNotificationsAsync(-1, 15, _iamUser.UserEntityId, new NotificationFilters(null, null, null, false, null));
 
         // Act & Assert
         await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);

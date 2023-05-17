@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
@@ -75,7 +76,7 @@ public class NotificationController : ControllerBase
         [FromQuery] NotificationTopicId? notificationTopicId = null,
         [FromQuery] bool onlyDueDate = false,
         [FromQuery] NotificationSorting? sorting = null) =>
-        this.WithIamUserId(userId => _logic.GetNotificationsAsync(page, size, userId, isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting));
+        this.WithIamUserId(userId => _logic.GetNotificationsAsync(page, size, userId, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting)));
 
     /// <summary>
     ///     Gets a notification for the logged in user
