@@ -22,18 +22,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ConsentAssignedOfferSubscription
 {
-    private ConsentAssignedOfferSubscription() {}
+	private ConsentAssignedOfferSubscription() { }
 
-    public ConsentAssignedOfferSubscription(Guid offerSubscriptionId, Guid consentId)
-    {
-        OfferSubscriptionId = offerSubscriptionId;
-        ConsentId = consentId;
-    }
+	public ConsentAssignedOfferSubscription(Guid offerSubscriptionId, Guid consentId)
+	{
+		OfferSubscriptionId = offerSubscriptionId;
+		ConsentId = consentId;
+	}
 
-    public Guid OfferSubscriptionId { get; private set; }
-    public Guid ConsentId { get; private set; }
+	public Guid OfferSubscriptionId { get; private set; }
+	public Guid ConsentId { get; private set; }
 
-    // Navigation properties
-    public virtual OfferSubscription? OfferSubscription { get; private set; }
-    public virtual Consent? Consent { get; private set; }
+	// Navigation properties
+	public virtual OfferSubscription? OfferSubscription { get; private set; }
+	public virtual Consent? Consent { get; private set; }
 }

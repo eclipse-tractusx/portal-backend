@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
@@ -47,25 +47,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="OfferStatusId">OfferStatusId of the app.</param>
 /// <param name="TechnicalUserProfile">TechnicalUserProfile of the User.</param>
 
-
 public record InReviewAppDetails(
-    Guid Id,
-    string Title,
-    Guid LeadPictureId,
-    IEnumerable<Guid> Images,
-    string Provider,
-    IEnumerable<string> UseCases,
-    IEnumerable<LocalizedDescription> Description,
-    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
-    IEnumerable<string> Roles,
-    IEnumerable<string> Languages,
-    string ProviderUri,
-    string? ContactEmail,
-    string? ContactNumber,
-    LicenseTypeId  LicenseType,
-    string Price,
-    IEnumerable<string> Tags,
-    IEnumerable<PrivacyPolicyId> PrivacyPolicies,
-    OfferStatusId OfferStatusId,
-    IDictionary<Guid, IEnumerable<string>> TechnicalUserProfile
+	Guid Id,
+	string Title,
+	Guid LeadPictureId,
+	IEnumerable<Guid> Images,
+	string Provider,
+	IEnumerable<string> UseCases,
+	IEnumerable<LocalizedDescription> Description,
+	IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
+	IEnumerable<string> Roles,
+	IEnumerable<string> Languages,
+	string ProviderUri,
+	string? ContactEmail,
+	string? ContactNumber,
+	LicenseTypeId LicenseType,
+	string Price,
+	IEnumerable<string> Tags,
+	IEnumerable<PrivacyPolicyId> PrivacyPolicies,
+	OfferStatusId OfferStatusId,
+	IDictionary<Guid, IEnumerable<string>> TechnicalUserProfile
 );

@@ -23,15 +23,15 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyAddressDetailData(
-    Guid CompanyId,
-    string Name,
-    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
-    string? ShortName,
-    string City,
-    string StreetName,
-    string CountryAlpha2Code,
-    string? Region,
-    string? StreetAdditional,
-    string? StreetNumber,
-    string? ZipCode
+	Guid CompanyId,
+	string Name,
+	[property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
+	string? ShortName,
+	string City,
+	string StreetName,
+	string CountryAlpha2Code,
+	string? Region,
+	string? StreetAdditional,
+	string? StreetNumber,
+	string? ZipCode
 );

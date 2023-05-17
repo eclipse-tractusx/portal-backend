@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -22,9 +22,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 
 public class UtcDateTimeProvider : IDateTimeProvider
 {
-    /// <inheritdoc />
-    public DateTime Now => DateTime.UtcNow;
+	/// <inheritdoc />
+	public DateTime Now => DateTime.UtcNow;
 
-    /// <inheritdoc />
-    public DateTimeOffset OffsetNow => DateTimeOffset.UtcNow;
+	/// <inheritdoc />
+	public DateTimeOffset OffsetNow => DateTimeOffset.UtcNow;
 }

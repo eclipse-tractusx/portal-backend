@@ -20,8 +20,8 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic
 {
-    public interface IPartnerNetworkBusinessLogic
-    {
-        IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync();
-    }
+	public interface IPartnerNetworkBusinessLogic
+	{
+		IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync();
+	}
 }

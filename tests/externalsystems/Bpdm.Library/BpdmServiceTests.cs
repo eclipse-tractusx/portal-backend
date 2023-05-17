@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -31,197 +31,197 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
 
 public class BpdmServiceTests
 {
-    #region Initialization
+	#region Initialization
 
-    private readonly ITokenService _tokenService;
-    private readonly IOptions<BpdmServiceSettings> _options;
-    private readonly IFixture _fixture;
+	private readonly ITokenService _tokenService;
+	private readonly IOptions<BpdmServiceSettings> _options;
+	private readonly IFixture _fixture;
 
-    public BpdmServiceTests()
-    {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization {ConfigureMembers = true});
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-        
-        _options = Options.Create(new BpdmServiceSettings
-        {
-            Password = "passWord",
-            Scope = "test",
-            Username = "user@name",
-            BaseAddress = "https://base.address.com",
-            ClientId = "CatenaX",
-            ClientSecret = "pass@Secret",
-            GrantType = "cred",
-            KeycloakTokenAddress = "https://key.cloak.com",
-        });
-        _tokenService = A.Fake<ITokenService>();
-    }
+	public BpdmServiceTests()
+	{
+		_fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+		_fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+			.ForEach(b => _fixture.Behaviors.Remove(b));
+		_fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-    #endregion
+		_options = Options.Create(new BpdmServiceSettings
+		{
+			Password = "passWord",
+			Scope = "test",
+			Username = "user@name",
+			BaseAddress = "https://base.address.com",
+			ClientId = "CatenaX",
+			ClientSecret = "pass@Secret",
+			GrantType = "cred",
+			KeycloakTokenAddress = "https://key.cloak.com",
+		});
+		_tokenService = A.Fake<ITokenService>();
+	}
 
-    #region Trigger PutInputLegalEntity
+	#endregion
 
-    [Fact]
-    public async Task PutInputLegalEntity_WithValidData_DoesNotThrowException()
-    {
-        // Arrange
-        var data = _fixture.Create<BpdmTransferData>();
-        var httpMessageHandlerMock =
-            new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._))
-            .Returns(httpClient);
-        var sut = new BpdmService(_tokenService, _options);
-        
-        // Act
-        var result = await sut.PutInputLegalEntity(data, CancellationToken.None).ConfigureAwait(false);
+	#region Trigger PutInputLegalEntity
 
-        // Assert
-        result.Should().BeTrue();
-    }
+	[Fact]
+	public async Task PutInputLegalEntity_WithValidData_DoesNotThrowException()
+	{
+		// Arrange
+		var data = _fixture.Create<BpdmTransferData>();
+		var httpMessageHandlerMock =
+			new HttpMessageHandlerMock(HttpStatusCode.OK);
+		var httpClient = new HttpClient(httpMessageHandlerMock)
+		{
+			BaseAddress = new Uri("https://base.address.com")
+		};
+		A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._))
+			.Returns(httpClient);
+		var sut = new BpdmService(_tokenService, _options);
 
-    [Fact]
-    public async Task PutInputLegalEntity_WithInvalidData_ThrowsServiceException()
-    {
-        // Arrange
-        var data = _fixture.Create<BpdmTransferData>();
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new BpdmService(_tokenService, _options);
+		// Act
+		var result = await sut.PutInputLegalEntity(data, CancellationToken.None).ConfigureAwait(false);
 
-        // Act
-        async Task Act() => await sut.PutInputLegalEntity(data, CancellationToken.None).ConfigureAwait(false);
+		// Assert
+		result.Should().BeTrue();
+	}
 
-        // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().Contain("call to external system bpdm-put-legal-entities failed with statuscode");
-    }
+	[Fact]
+	public async Task PutInputLegalEntity_WithInvalidData_ThrowsServiceException()
+	{
+		// Arrange
+		var data = _fixture.Create<BpdmTransferData>();
+		var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+		var httpClient = new HttpClient(httpMessageHandlerMock)
+		{
+			BaseAddress = new Uri("https://base.address.com")
+		};
+		A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+		var sut = new BpdmService(_tokenService, _options);
 
-    #endregion
+		// Act
+		async Task Act() => await sut.PutInputLegalEntity(data, CancellationToken.None).ConfigureAwait(false);
 
-    #region FetchInputLegalEntity
+		// Assert
+		var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+		ex.Message.Should().Contain("call to external system bpdm-put-legal-entities failed with statuscode");
+	}
 
-    [Fact]
-    public async Task FetchInputLegalEntity_WithValidResult_ReturnsExpected()
-    {
-        var data = _fixture.Create<BpdmLegalEntityData>();
-        var options = new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
-        options.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
-        // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(
-            HttpStatusCode.OK,
-            data.ToJsonContent(
-                options,
-                "application/json")
-            );
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new BpdmService(_tokenService, _options);
+	#endregion
 
-        // Act
-        var result = await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
+	#region FetchInputLegalEntity
 
-        // Assert
-        result.Should().NotBeNull();
-        result!.ExternalId.Should().Be(data.ExternalId);
-    }
+	[Fact]
+	public async Task FetchInputLegalEntity_WithValidResult_ReturnsExpected()
+	{
+		var data = _fixture.Create<BpdmLegalEntityData>();
+		var options = new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+		options.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
+		// Arrange
+		var httpMessageHandlerMock = new HttpMessageHandlerMock(
+			HttpStatusCode.OK,
+			data.ToJsonContent(
+				options,
+				"application/json")
+			);
+		var httpClient = new HttpClient(httpMessageHandlerMock)
+		{
+			BaseAddress = new Uri("https://base.address.com")
+		};
+		A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+		var sut = new BpdmService(_tokenService, _options);
 
-    [Fact]
-    public async Task FetchInputLegalEntity_WithEmtpyObjectResult_ThrowsServiceException()
-    {
-        // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(
-            HttpStatusCode.OK,
-            new StringContent("{}"));
+		// Act
+		var result = await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
 
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com"),
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new BpdmService(_tokenService, _options);
+		// Assert
+		result.Should().NotBeNull();
+		result!.ExternalId.Should().Be(data.ExternalId);
+	}
 
-        // Act
-        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
+	[Fact]
+	public async Task FetchInputLegalEntity_WithEmtpyObjectResult_ThrowsServiceException()
+	{
+		// Arrange
+		var httpMessageHandlerMock = new HttpMessageHandlerMock(
+			HttpStatusCode.OK,
+			new StringContent("{}"));
 
-        // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be("Access to external system bpdm did not return a valid legal entity response");
-    }
+		var httpClient = new HttpClient(httpMessageHandlerMock)
+		{
+			BaseAddress = new Uri("https://base.address.com"),
+		};
+		A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+		var sut = new BpdmService(_tokenService, _options);
 
-    [Fact]
-    public async Task FetchInputLegalEntity_WithEmtpyResult_ThrowsServiceException()
-    {
-        // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(
-            HttpStatusCode.OK,
-            new StringContent(""));
+		// Act
+		async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
 
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com"),
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new BpdmService(_tokenService, _options);
+		// Assert
+		var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+		ex.Message.Should().Be("Access to external system bpdm did not return a valid legal entity response");
+	}
 
-        // Act
-        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
+	[Fact]
+	public async Task FetchInputLegalEntity_WithEmtpyResult_ThrowsServiceException()
+	{
+		// Arrange
+		var httpMessageHandlerMock = new HttpMessageHandlerMock(
+			HttpStatusCode.OK,
+			new StringContent(""));
 
-        // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
-        ex.Message.Should().StartWith("Access to external system bpdm did not return a valid json response");
-    }
+		var httpClient = new HttpClient(httpMessageHandlerMock)
+		{
+			BaseAddress = new Uri("https://base.address.com"),
+		};
+		A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+		var sut = new BpdmService(_tokenService, _options);
 
-    [Fact]
-    public async Task FetchInputLegalEntity_WithNotFoundResult_ReturnsNull()
-    {
-        // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.NotFound);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new BpdmService(_tokenService, _options);
+		// Act
+		async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
 
-        // Act
-        var Act = () => sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None);
+		// Assert
+		var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+		ex.Message.Should().StartWith("Access to external system bpdm did not return a valid json response");
+	}
 
-        // Assert
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
-        result.StatusCode.Should().Be(HttpStatusCode.NotFound);
-    }
+	[Fact]
+	public async Task FetchInputLegalEntity_WithNotFoundResult_ReturnsNull()
+	{
+		// Arrange
+		var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.NotFound);
+		var httpClient = new HttpClient(httpMessageHandlerMock)
+		{
+			BaseAddress = new Uri("https://base.address.com")
+		};
+		A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+		var sut = new BpdmService(_tokenService, _options);
 
-    [Fact]
-    public async Task FetchInputLegalEntity_WithInvalidData_ThrowsServiceException()
-    {
-        // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new BpdmService(_tokenService, _options);
+		// Act
+		var Act = () => sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None);
 
-        // Act
-        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
+		// Assert
+		var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+		result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+	}
 
-        // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().StartWith("call to external system bpdm-get-legal-entities failed with statuscode");
-    }
+	[Fact]
+	public async Task FetchInputLegalEntity_WithInvalidData_ThrowsServiceException()
+	{
+		// Arrange
+		var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+		var httpClient = new HttpClient(httpMessageHandlerMock)
+		{
+			BaseAddress = new Uri("https://base.address.com")
+		};
+		A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+		var sut = new BpdmService(_tokenService, _options);
 
-    #endregion
+		// Act
+		async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
+
+		// Assert
+		var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+		ex.Message.Should().StartWith("call to external system bpdm-get-legal-entities failed with statuscode");
+	}
+
+	#endregion
 }

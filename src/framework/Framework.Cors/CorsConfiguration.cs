@@ -25,8 +25,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
 /// </summary>
 public class CorsConfiguration
 {
-    /// <summary>The Cors configuration</summary>
-    public CorsModel Cors { get; init; } = null!;
+	/// <summary>The Cors configuration</summary>
+	public CorsModel Cors { get; init; } = null!;
 }
 
 /// <summary>
@@ -34,6 +34,6 @@ public class CorsConfiguration
 /// </summary>
 public class CorsModel
 {
-    /// <summary>The allowed origins</summary>
-    public string[] AllowedOrigins { get; init; } = null!;
+	/// <summary>The allowed origins</summary>
+	public string[] AllowedOrigins { get; init; } = null!;
 }

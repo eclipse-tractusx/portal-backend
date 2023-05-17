@@ -22,10 +22,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 
 public enum UniqueIdentifierId
 {
-    COMMERCIAL_REG_NUMBER = 1,
-    VAT_ID = 2,
-    LEI_CODE = 3,
-    VIES = 4,
-    EORI = 5
+	COMMERCIAL_REG_NUMBER = 1,
+	VAT_ID = 2,
+	LEI_CODE = 3,
+	VIES = 4,
+	EORI = 5
 }
 

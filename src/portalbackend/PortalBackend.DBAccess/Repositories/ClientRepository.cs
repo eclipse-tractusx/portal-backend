@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -26,22 +26,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// <inheritdoc />
 public class ClientRepository : IClientRepository
 {
-    private readonly PortalDbContext _dbContext;
+	private readonly PortalDbContext _dbContext;
 
-    /// <summary>
-    /// Creates an instance of <see cref="ClientRepository"/>
-    /// </summary>
-    /// <param name="dbContext">Access to the database</param>
-    public ClientRepository(PortalDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+	/// <summary>
+	/// Creates an instance of <see cref="ClientRepository"/>
+	/// </summary>
+	/// <param name="dbContext">Access to the database</param>
+	public ClientRepository(PortalDbContext dbContext)
+	{
+		_dbContext = dbContext;
+	}
 
-    /// <inheritdoc />
-    public IamClient CreateClient(string clientId) => 
-        _dbContext.IamClients.Add(new IamClient(Guid.NewGuid(), clientId)).Entity;
+	/// <inheritdoc />
+	public IamClient CreateClient(string clientId) =>
+		_dbContext.IamClients.Add(new IamClient(Guid.NewGuid(), clientId)).Entity;
 
-    /// <inheritdoc />
-    public void RemoveClient(Guid clientId) =>
-        _dbContext.IamClients.Remove(new IamClient(clientId, null!));
+	/// <inheritdoc />
+	public void RemoveClient(Guid clientId) =>
+		_dbContext.IamClients.Remove(new IamClient(clientId, null!));
 }

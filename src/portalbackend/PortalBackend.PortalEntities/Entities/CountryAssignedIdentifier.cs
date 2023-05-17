@@ -18,28 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 public class CountryAssignedIdentifier
 {
-    public CountryAssignedIdentifier(string countryAlpha2Code, UniqueIdentifierId uniqueIdentifierId)
-    {
-        CountryAlpha2Code = countryAlpha2Code;
-        UniqueIdentifierId = uniqueIdentifierId;
-    }
-    
-    [JsonPropertyName("country_alpha2code")]
-    [StringLength(2, MinimumLength = 2)]
-    public string CountryAlpha2Code { get; private set; }
-    public UniqueIdentifierId UniqueIdentifierId { get; private set; }
-    public BpdmIdentifierId? BpdmIdentifierId { get; set; }
+	public CountryAssignedIdentifier(string countryAlpha2Code, UniqueIdentifierId uniqueIdentifierId)
+	{
+		CountryAlpha2Code = countryAlpha2Code;
+		UniqueIdentifierId = uniqueIdentifierId;
+	}
 
-    // Navigation properties
-    public virtual Country? Country { get; private set; }
-    public virtual UniqueIdentifier? UniqueIdentifier { get; private set; }
-    public virtual BpdmIdentifier? BpdmIdentifier { get; set; }
+	[JsonPropertyName("country_alpha2code")]
+	[StringLength(2, MinimumLength = 2)]
+	public string CountryAlpha2Code { get; private set; }
+	public UniqueIdentifierId UniqueIdentifierId { get; private set; }
+	public BpdmIdentifierId? BpdmIdentifierId { get; set; }
+
+	// Navigation properties
+	public virtual Country? Country { get; private set; }
+	public virtual UniqueIdentifier? UniqueIdentifier { get; private set; }
+	public virtual BpdmIdentifier? BpdmIdentifier { get; set; }
 }

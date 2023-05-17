@@ -28,21 +28,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 /// </summary>
 public interface ICustodianService
 {
-    /// <summary>
-    /// Gets a wallet by the bpn
-    /// </summary>
-    /// <param name="bpn">bpn to get the wallet for</param>
-    /// <param name="cancellationToken">Cancellation Token</param>
-    /// <returns>Returns either the wallet for the bpn or null</returns>
-    /// <exception cref="ServiceException"></exception>
-    Task<WalletData> GetWalletByBpnAsync(string bpn, CancellationToken cancellationToken);
-    
-    /// <summary>
-    /// Creates the wallet
-    /// </summary>
-    /// <param name="bpn">BusinessPartnerNumber of the company</param>
-    /// <param name="name">the name of the company</param>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns>The content of the document</returns>
-    Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken);
+	/// <summary>
+	/// Gets a wallet by the bpn
+	/// </summary>
+	/// <param name="bpn">bpn to get the wallet for</param>
+	/// <param name="cancellationToken">Cancellation Token</param>
+	/// <returns>Returns either the wallet for the bpn or null</returns>
+	/// <exception cref="ServiceException"></exception>
+	Task<WalletData> GetWalletByBpnAsync(string bpn, CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Creates the wallet
+	/// </summary>
+	/// <param name="bpn">BusinessPartnerNumber of the company</param>
+	/// <param name="name">the name of the company</param>
+	/// <param name="cancellationToken">CancellationToken</param>
+	/// <returns>The content of the document</returns>
+	Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken);
 }

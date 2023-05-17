@@ -24,9 +24,9 @@
  * SOFTWARE.
  ********************************************************************************/
 
+using Flurl.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Groups;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
-using Flurl.Http;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
@@ -45,7 +45,7 @@ public partial class KeycloakClient
 	public async Task<string?> CreateAndRetrieveUserIdAsync(string realm, User user)
 	{
 		var response = await InternalCreateUserAsync(realm, user).ConfigureAwait(false);
-		string? locationPathAndQuery = response.ResponseMessage.Headers.Location?.PathAndQuery;
+		var locationPathAndQuery = response.ResponseMessage.Headers.Location?.PathAndQuery;
 		return locationPathAndQuery != null ? locationPathAndQuery.Substring(locationPathAndQuery.LastIndexOf("/", StringComparison.Ordinal) + 1) : null;
 	}
 
@@ -320,7 +320,7 @@ public partial class KeycloakClient
 			.PutJsonAsync(credentials)
 			.ConfigureAwait(false);
 		if (response.ResponseMessage.IsSuccessStatusCode)
-			return new SetPasswordResponse {Success = true};
+			return new SetPasswordResponse { Success = true };
 
 		return await response.GetJsonAsync<SetPasswordResponse>();
 	}

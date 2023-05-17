@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -27,21 +27,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
 public interface IServiceAccountCreation
 {
-    /// <summary>
-    /// Creates the technical user account and stores the client in the service account table
-    /// </summary>
-    /// <param name="creationData">Creation Data</param>
-    /// <param name="companyId">Id of the company the technical user is created for</param>
-    /// <param name="bpns">Optional list of bpns to set for the user</param>
-    /// <param name="companyServiceAccountTypeId">The type of the created service account</param>
-    /// <param name="enhanceTechnicalUserName">If <c>true</c> the technicalUserName will get enhanced by the id of the clientID.</param>
-    /// <param name="setOptionalParameter"></param>
-    /// <returns>Returns information about the created technical user</returns>
-    Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, IEnumerable<UserRoleData> userRoleData)> CreateServiceAccountAsync(
-        ServiceAccountCreationInfo creationData,
-        Guid companyId,
-        IEnumerable<string> bpns,
-        CompanyServiceAccountTypeId companyServiceAccountTypeId,
-        bool enhanceTechnicalUserName,
-        Action<CompanyServiceAccount>? setOptionalParameter = null);
+	/// <summary>
+	/// Creates the technical user account and stores the client in the service account table
+	/// </summary>
+	/// <param name="creationData">Creation Data</param>
+	/// <param name="companyId">Id of the company the technical user is created for</param>
+	/// <param name="bpns">Optional list of bpns to set for the user</param>
+	/// <param name="companyServiceAccountTypeId">The type of the created service account</param>
+	/// <param name="enhanceTechnicalUserName">If <c>true</c> the technicalUserName will get enhanced by the id of the clientID.</param>
+	/// <param name="setOptionalParameter"></param>
+	/// <returns>Returns information about the created technical user</returns>
+	Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, IEnumerable<UserRoleData> userRoleData)> CreateServiceAccountAsync(
+		ServiceAccountCreationInfo creationData,
+		Guid companyId,
+		IEnumerable<string> bpns,
+		CompanyServiceAccountTypeId companyServiceAccountTypeId,
+		bool enhanceTechnicalUserName,
+		Action<CompanyServiceAccount>? setOptionalParameter = null);
 }

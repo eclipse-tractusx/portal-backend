@@ -27,7 +27,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 /// </summary>
 public static class EscapeExtensions
 {
-    private static readonly Regex _iLikeExpression = new Regex(@"(?=[\%\\_])", RegexOptions.IgnorePatternWhitespace, TimeSpan.FromSeconds(1));
+	private static readonly Regex _iLikeExpression = new Regex(@"(?=[\%\\_])", RegexOptions.IgnorePatternWhitespace, TimeSpan.FromSeconds(1));
 
-    public static string EscapeForILike(this string value) => _iLikeExpression.Replace(value, @"\");
+	public static string EscapeForILike(this string value) => _iLikeExpression.Replace(value, @"\");
 }

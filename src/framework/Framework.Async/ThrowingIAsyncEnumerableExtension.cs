@@ -24,27 +24,27 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 
 public static class ThrowingIAsyncEnumerableExtension
 {
-    public async static IAsyncEnumerable<TItem> CatchingAsync<TItem>(this IAsyncEnumerable<TItem> asyncItems, Func<Exception,Task> handler, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        await using var enumerator = asyncItems.GetAsyncEnumerator(cancellationToken);
+	public static async IAsyncEnumerable<TItem> CatchingAsync<TItem>(this IAsyncEnumerable<TItem> asyncItems, Func<Exception, Task> handler, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+	{
+		await using var enumerator = asyncItems.GetAsyncEnumerator(cancellationToken);
 
-        bool hasResult = false;
-        do
-        {
-            try
-            {
-                hasResult = await enumerator.MoveNextAsync().ConfigureAwait(false);
-            }
-            catch(Exception e)
-            {
-                hasResult = false;
-                await handler(e).ConfigureAwait(false);
-            }
-            if (hasResult)
-            {
-                yield return enumerator.Current;
-            }
-        }
-        while (hasResult);
-    }
+		var hasResult = false;
+		do
+		{
+			try
+			{
+				hasResult = await enumerator.MoveNextAsync().ConfigureAwait(false);
+			}
+			catch (Exception e)
+			{
+				hasResult = false;
+				await handler(e).ConfigureAwait(false);
+			}
+			if (hasResult)
+			{
+				yield return enumerator.Current;
+			}
+		}
+		while (hasResult);
+	}
 }

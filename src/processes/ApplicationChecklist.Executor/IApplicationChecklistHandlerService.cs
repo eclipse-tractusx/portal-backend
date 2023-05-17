@@ -28,33 +28,33 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Exe
 /// </summary>
 public interface IApplicationChecklistHandlerService
 {
-    /// <summary>
-    /// class used to map processing- and error-functions to ProcessStepTypeIds and ApplicationChecklistEntryTypeIds
-    /// </summary>
-    /// <param name="EntryTypeId">the ApplicationChecklistEntryTypeId this ProcessStepExecution is associated with</param>
-    /// <param name="ProcessFunc">the function to be executed by ChecklistProcessor</param>
-    /// <param name="ErrorFunc">the function to be executed in case ProcessFunc threw an application-exception (optional)</param>
-    record ProcessStepExecution(
-        ApplicationChecklistEntryTypeId EntryTypeId,
-        bool RequiresLock,
-        Func<IApplicationChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>> ProcessFunc,
-        Func<Exception,IApplicationChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>>? ErrorFunc
-    );
+	/// <summary>
+	/// class used to map processing- and error-functions to ProcessStepTypeIds and ApplicationChecklistEntryTypeIds
+	/// </summary>
+	/// <param name="EntryTypeId">the ApplicationChecklistEntryTypeId this ProcessStepExecution is associated with</param>
+	/// <param name="ProcessFunc">the function to be executed by ChecklistProcessor</param>
+	/// <param name="ErrorFunc">the function to be executed in case ProcessFunc threw an application-exception (optional)</param>
+	record ProcessStepExecution(
+		ApplicationChecklistEntryTypeId EntryTypeId,
+		bool RequiresLock,
+		Func<IApplicationChecklistService.WorkerChecklistProcessStepData, CancellationToken, Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>> ProcessFunc,
+		Func<Exception, IApplicationChecklistService.WorkerChecklistProcessStepData, CancellationToken, Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>>? ErrorFunc
+	);
 
-    /// <summary>
-    /// returns the ProcessStepExecution being mapped to a particular ProcessStepTypeId
-    /// </summary>
-    /// <param name="stepTypeId">ProcessStepTypeId</param>
-    ProcessStepExecution GetProcessStepExecution(ProcessStepTypeId stepTypeId);
+	/// <summary>
+	/// returns the ProcessStepExecution being mapped to a particular ProcessStepTypeId
+	/// </summary>
+	/// <param name="stepTypeId">ProcessStepTypeId</param>
+	ProcessStepExecution GetProcessStepExecution(ProcessStepTypeId stepTypeId);
 
-    /// <summary>
-    /// returns whether a ProcessStepTypeId shall be executed automatically by the ChecklistProcessor
-    /// </summary>
-    /// <param name="stepTypeId">ProcessStepTypeId</param>
-    bool IsExecutableProcessStep(ProcessStepTypeId stepTypeId);
+	/// <summary>
+	/// returns whether a ProcessStepTypeId shall be executed automatically by the ChecklistProcessor
+	/// </summary>
+	/// <param name="stepTypeId">ProcessStepTypeId</param>
+	bool IsExecutableProcessStep(ProcessStepTypeId stepTypeId);
 
-    /// <summary>
-    /// returns the ProcessStepTypeIds that shall be executed automatically by the ChecklistProcessor
-    /// </summary>
-    IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds();
+	/// <summary>
+	/// returns the ProcessStepTypeIds that shall be executed automatically by the ChecklistProcessor
+	/// </summary>
+	IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds();
 }

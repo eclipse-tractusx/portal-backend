@@ -18,78 +18,78 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 public class Company : IBaseEntity
 {
-    private Company()
-    {
-        Name = null!;
-        Agreements = new HashSet<Agreement>();
-        BoughtOffers = new HashSet<Offer>();
-        ProvidedOffers = new HashSet<Offer>();
-        CompanyApplications = new HashSet<CompanyApplication>();
-        CompanyAssignedRoles = new HashSet<CompanyAssignedRole>();
-        IdentityProviders = new HashSet<IdentityProvider>();
-        OfferSubscriptions = new HashSet<OfferSubscription>();
-        CompanyUsers = new HashSet<CompanyUser>();
-        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
-        Consents = new HashSet<Consent>();
-        ProvidedConnectors = new HashSet<Connector>();
-        HostedConnectors = new HashSet<Connector>();
-        CompanyIdentifiers = new HashSet<CompanyIdentifier>();
-        CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
-    }
-    
-    public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTimeOffset dateCreated) : this()
-    {
-        Id = id;
-        Name = name;
-        CompanyStatusId = companyStatusId;
-        DateCreated = dateCreated;
-    }
+	private Company()
+	{
+		Name = null!;
+		Agreements = new HashSet<Agreement>();
+		BoughtOffers = new HashSet<Offer>();
+		ProvidedOffers = new HashSet<Offer>();
+		CompanyApplications = new HashSet<CompanyApplication>();
+		CompanyAssignedRoles = new HashSet<CompanyAssignedRole>();
+		IdentityProviders = new HashSet<IdentityProvider>();
+		OfferSubscriptions = new HashSet<OfferSubscription>();
+		CompanyUsers = new HashSet<CompanyUser>();
+		CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
+		Consents = new HashSet<Consent>();
+		ProvidedConnectors = new HashSet<Connector>();
+		HostedConnectors = new HashSet<Connector>();
+		CompanyIdentifiers = new HashSet<CompanyIdentifier>();
+		CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
+	}
 
-    public Guid Id { get; private set; }
+	public Company(Guid id, string name, CompanyStatusId companyStatusId, DateTimeOffset dateCreated) : this()
+	{
+		Id = id;
+		Name = name;
+		CompanyStatusId = companyStatusId;
+		DateCreated = dateCreated;
+	}
 
-    public DateTimeOffset DateCreated { get; private set; }
+	public Guid Id { get; private set; }
 
-    [MaxLength(20)]
-    public string? BusinessPartnerNumber { get; set; }
+	public DateTimeOffset DateCreated { get; private set; }
 
-    [MaxLength(255)]
-    public string Name { get; set; }
+	[MaxLength(20)]
+	public string? BusinessPartnerNumber { get; set; }
 
-    [MaxLength(255)]
-    public string? Shortname { get; set; }
+	[MaxLength(255)]
+	public string Name { get; set; }
 
-    public CompanyStatusId CompanyStatusId { get; set; }
+	[MaxLength(255)]
+	public string? Shortname { get; set; }
 
-    public Guid? AddressId { get; set; }
+	public CompanyStatusId CompanyStatusId { get; set; }
 
-    public Guid? SelfDescriptionDocumentId { get; set; }
+	public Guid? AddressId { get; set; }
 
-    // Navigation properties
-    public virtual Address? Address { get; set; }
-    
-    public virtual ProviderCompanyDetail? ProviderCompanyDetail { get; private set; }
-    public virtual ICollection<Agreement> Agreements { get; private set; }
-    public virtual ICollection<Offer> BoughtOffers { get; private set; }
-    public virtual ICollection<CompanyApplication> CompanyApplications { get; private set; }
-    public virtual ICollection<OfferSubscription> OfferSubscriptions { get; private set; }
-    public virtual CompanyStatus? CompanyStatus { get; set; }
-    public virtual Document? SelfDescriptionDocument { get; set; }
-    public virtual ICollection<CompanyAssignedRole> CompanyAssignedRoles { get; private set; }
-    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
-    public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
-    public virtual ICollection<Consent> Consents { get; private set; }
-    public virtual ICollection<Connector> HostedConnectors { get; private set; }
-    public virtual ICollection<IdentityProvider> IdentityProviders { get; private set; }
-    public virtual ICollection<Offer> ProvidedOffers { get; private set; }
-    public virtual ICollection<Connector> ProvidedConnectors { get; private set; }
-    public virtual ICollection<CompanyIdentifier> CompanyIdentifiers { get; private set; }
-    public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
+	public Guid? SelfDescriptionDocumentId { get; set; }
+
+	// Navigation properties
+	public virtual Address? Address { get; set; }
+
+	public virtual ProviderCompanyDetail? ProviderCompanyDetail { get; private set; }
+	public virtual ICollection<Agreement> Agreements { get; private set; }
+	public virtual ICollection<Offer> BoughtOffers { get; private set; }
+	public virtual ICollection<CompanyApplication> CompanyApplications { get; private set; }
+	public virtual ICollection<OfferSubscription> OfferSubscriptions { get; private set; }
+	public virtual CompanyStatus? CompanyStatus { get; set; }
+	public virtual Document? SelfDescriptionDocument { get; set; }
+	public virtual ICollection<CompanyAssignedRole> CompanyAssignedRoles { get; private set; }
+	public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
+	public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
+	public virtual ICollection<Consent> Consents { get; private set; }
+	public virtual ICollection<Connector> HostedConnectors { get; private set; }
+	public virtual ICollection<IdentityProvider> IdentityProviders { get; private set; }
+	public virtual ICollection<Offer> ProvidedOffers { get; private set; }
+	public virtual ICollection<Connector> ProvidedConnectors { get; private set; }
+	public virtual ICollection<CompanyIdentifier> CompanyIdentifiers { get; private set; }
+	public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
 }

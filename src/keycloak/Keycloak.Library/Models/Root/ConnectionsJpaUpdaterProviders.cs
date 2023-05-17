@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ConnectionsJpaUpdaterProviders
 {
-    [JsonProperty("liquibase")]
-    public HasOrder Liquibase { get; set; }
+	[JsonProperty("liquibase")]
+	public HasOrder Liquibase { get; set; }
 }

@@ -24,124 +24,124 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Flurl.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {
-    public async Task AddClientRoleMappingsToGroupAsync(string realm, string groupId, string clientId, IEnumerable<Role> roles) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/groups/")
-            .AppendPathSegment(groupId, true)
-            .AppendPathSegment("/role-mappings/clients/")
-            .AppendPathSegment(clientId, true)
-            .PostJsonAsync(roles)
-            .ConfigureAwait(false);
+	public async Task AddClientRoleMappingsToGroupAsync(string realm, string groupId, string clientId, IEnumerable<Role> roles) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/groups/")
+			.AppendPathSegment(groupId, true)
+			.AppendPathSegment("/role-mappings/clients/")
+			.AppendPathSegment(clientId, true)
+			.PostJsonAsync(roles)
+			.ConfigureAwait(false);
 
-    public async Task<IEnumerable<Role>> GetClientRoleMappingsForGroupAsync(string realm, string groupId, string clientId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/groups/")
-            .AppendPathSegment(groupId, true)
-            .AppendPathSegment("/role-mappings/clients/")
-            .AppendPathSegment(clientId, true)
-            .GetJsonAsync<IEnumerable<Role>>()
-            .ConfigureAwait(false);
+	public async Task<IEnumerable<Role>> GetClientRoleMappingsForGroupAsync(string realm, string groupId, string clientId) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/groups/")
+			.AppendPathSegment(groupId, true)
+			.AppendPathSegment("/role-mappings/clients/")
+			.AppendPathSegment(clientId, true)
+			.GetJsonAsync<IEnumerable<Role>>()
+			.ConfigureAwait(false);
 
-    public async Task DeleteClientRoleMappingsFromGroupAsync(string realm, string groupId, string clientId, IEnumerable<Role> roles) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/groups/")
-            .AppendPathSegment(groupId, true)
-            .AppendPathSegment("/role-mappings/clients/")
-            .AppendPathSegment(clientId, true)
-            .SendJsonAsync(HttpMethod.Delete, roles)
-            .ConfigureAwait(false);
+	public async Task DeleteClientRoleMappingsFromGroupAsync(string realm, string groupId, string clientId, IEnumerable<Role> roles) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/groups/")
+			.AppendPathSegment(groupId, true)
+			.AppendPathSegment("/role-mappings/clients/")
+			.AppendPathSegment(clientId, true)
+			.SendJsonAsync(HttpMethod.Delete, roles)
+			.ConfigureAwait(false);
 
-    public async Task<IEnumerable<Role>> GetAvailableClientRoleMappingsForGroupAsync(string realm, string groupId, string clientId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/groups/")
-            .AppendPathSegment(groupId, true)
-            .AppendPathSegment("/role-mappings/clients/")
-            .AppendPathSegment(clientId, true)
-            .AppendPathSegment("/available")
-            .GetJsonAsync<IEnumerable<Role>>()
-            .ConfigureAwait(false);
+	public async Task<IEnumerable<Role>> GetAvailableClientRoleMappingsForGroupAsync(string realm, string groupId, string clientId) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/groups/")
+			.AppendPathSegment(groupId, true)
+			.AppendPathSegment("/role-mappings/clients/")
+			.AppendPathSegment(clientId, true)
+			.AppendPathSegment("/available")
+			.GetJsonAsync<IEnumerable<Role>>()
+			.ConfigureAwait(false);
 
-    public async Task<IEnumerable<Role>> GetEffectiveClientRoleMappingsForGroupAsync(string realm, string groupId, string clientId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/groups/")
-            .AppendPathSegment(groupId, true)
-            .AppendPathSegment("/role-mappings/clients/")
-            .AppendPathSegment(clientId, true)
-            .AppendPathSegment("/composite")
-            .GetJsonAsync<IEnumerable<Role>>()
-            .ConfigureAwait(false);
+	public async Task<IEnumerable<Role>> GetEffectiveClientRoleMappingsForGroupAsync(string realm, string groupId, string clientId) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/groups/")
+			.AppendPathSegment(groupId, true)
+			.AppendPathSegment("/role-mappings/clients/")
+			.AppendPathSegment(clientId, true)
+			.AppendPathSegment("/composite")
+			.GetJsonAsync<IEnumerable<Role>>()
+			.ConfigureAwait(false);
 
-    public async Task AddClientRoleMappingsToUserAsync(string realm, string userId, string clientId, IEnumerable<Role> roles) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/users/")
-            .AppendPathSegment(userId, true)
-            .AppendPathSegment("/role-mappings/clients/")
-            .AppendPathSegment(clientId, true)
-            .PostJsonAsync(roles)
-            .ConfigureAwait(false);
+	public async Task AddClientRoleMappingsToUserAsync(string realm, string userId, string clientId, IEnumerable<Role> roles) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/users/")
+			.AppendPathSegment(userId, true)
+			.AppendPathSegment("/role-mappings/clients/")
+			.AppendPathSegment(clientId, true)
+			.PostJsonAsync(roles)
+			.ConfigureAwait(false);
 
-    public async Task<IEnumerable<Role>> GetClientRoleMappingsForUserAsync(string realm, string userId, string clientId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/users/")
-            .AppendPathSegment(userId, true)
-            .AppendPathSegment("/role-mappings/clients/")
-            .AppendPathSegment(clientId, true)
-            .GetJsonAsync<IEnumerable<Role>>()
-            .ConfigureAwait(false);
+	public async Task<IEnumerable<Role>> GetClientRoleMappingsForUserAsync(string realm, string userId, string clientId) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/users/")
+			.AppendPathSegment(userId, true)
+			.AppendPathSegment("/role-mappings/clients/")
+			.AppendPathSegment(clientId, true)
+			.GetJsonAsync<IEnumerable<Role>>()
+			.ConfigureAwait(false);
 
-    public async Task DeleteClientRoleMappingsFromUserAsync(string realm, string userId, string clientId, IEnumerable<Role> roles) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/users/")
-            .AppendPathSegment(userId, true)
-            .AppendPathSegment("/role-mappings/clients/")
-            .AppendPathSegment(clientId, true)
-            .SendJsonAsync(HttpMethod.Delete, roles)
-            .ConfigureAwait(false);
+	public async Task DeleteClientRoleMappingsFromUserAsync(string realm, string userId, string clientId, IEnumerable<Role> roles) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/users/")
+			.AppendPathSegment(userId, true)
+			.AppendPathSegment("/role-mappings/clients/")
+			.AppendPathSegment(clientId, true)
+			.SendJsonAsync(HttpMethod.Delete, roles)
+			.ConfigureAwait(false);
 
-    public async Task<IEnumerable<Role>> GetAvailableClientRoleMappingsForUserAsync(string realm, string userId, string clientId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/users/")
-            .AppendPathSegment(userId, true)
-            .AppendPathSegment("/role-mappings/clients/")
-            .AppendPathSegment(clientId, true)
-            .AppendPathSegment("/available")
-            .GetJsonAsync<IEnumerable<Role>>()
-            .ConfigureAwait(false);
+	public async Task<IEnumerable<Role>> GetAvailableClientRoleMappingsForUserAsync(string realm, string userId, string clientId) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/users/")
+			.AppendPathSegment(userId, true)
+			.AppendPathSegment("/role-mappings/clients/")
+			.AppendPathSegment(clientId, true)
+			.AppendPathSegment("/available")
+			.GetJsonAsync<IEnumerable<Role>>()
+			.ConfigureAwait(false);
 
-    public async Task<IEnumerable<Role>> GetEffectiveClientRoleMappingsForUserAsync(string realm, string userId, string clientId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/users/")
-            .AppendPathSegment(userId, true)
-            .AppendPathSegment("/role-mappings/clients/")
-            .AppendPathSegment(clientId, true)
-            .AppendPathSegment("/composite")
-            .GetJsonAsync<IEnumerable<Role>>()
-            .ConfigureAwait(false);
+	public async Task<IEnumerable<Role>> GetEffectiveClientRoleMappingsForUserAsync(string realm, string userId, string clientId) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/users/")
+			.AppendPathSegment(userId, true)
+			.AppendPathSegment("/role-mappings/clients/")
+			.AppendPathSegment(clientId, true)
+			.AppendPathSegment("/composite")
+			.GetJsonAsync<IEnumerable<Role>>()
+			.ConfigureAwait(false);
 }

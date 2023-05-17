@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -27,15 +27,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public static class ServiceAccountCreationExtensions
 {
-    public static IServiceCollection AddServiceAccountCreation(this IServiceCollection services, IConfigurationSection section)
-    {
-        services.AddOptions<ServiceAccountCreationSettings>()
-            .Bind(section)
-            .ValidateOnStart();
+	public static IServiceCollection AddServiceAccountCreation(this IServiceCollection services, IConfigurationSection section)
+	{
+		services.AddOptions<ServiceAccountCreationSettings>()
+			.Bind(section)
+			.ValidateOnStart();
 
-        services
-            .AddTransient<IServiceAccountCreation, ServiceAccountCreation>();
+		services
+			.AddTransient<IServiceAccountCreation, ServiceAccountCreation>();
 
-        return services;
-    }
+		return services;
+	}
 }

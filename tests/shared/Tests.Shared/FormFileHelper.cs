@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -25,18 +25,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 public static class FormFileHelper
 {
-    public static IFormFile GetFormFile(string content, string fileName, string contentType)
-    {
-        var stream = new MemoryStream();
-        var writer = new StreamWriter(stream);
-        writer.Write(content);
-        writer.Flush();
-        stream.Position = 0;
+	public static IFormFile GetFormFile(string content, string fileName, string contentType)
+	{
+		var stream = new MemoryStream();
+		var writer = new StreamWriter(stream);
+		writer.Write(content);
+		writer.Flush();
+		stream.Position = 0;
 
-        var headers = new HeaderDictionary {{HeaderNames.ContentType, contentType}};
-        return new FormFile(stream, 0, stream.Length, fileName.Split(".").First(), fileName)
-        {
-            Headers = headers 
-        };
-    }
+		var headers = new HeaderDictionary { { HeaderNames.ContentType, contentType } };
+		return new FormFile(stream, 0, stream.Length, fileName.Split(".").First(), fileName)
+		{
+			Headers = headers
+		};
+	}
 }

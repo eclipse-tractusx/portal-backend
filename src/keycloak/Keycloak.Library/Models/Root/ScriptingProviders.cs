@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ScriptingProviders
 {
-    [JsonProperty("script-based-auth")]
-    public HasOrder ScriptBasedAuth { get; set; }
+	[JsonProperty("script-based-auth")]
+	public HasOrder ScriptBasedAuth { get; set; }
 }

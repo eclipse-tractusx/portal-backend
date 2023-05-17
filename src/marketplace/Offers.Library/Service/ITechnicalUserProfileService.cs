@@ -25,17 +25,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
 public interface ITechnicalUserProfileService
 {
-    /// <summary>
-    ///  Gets the technical user profiles for the specific offer
-    /// </summary>
-    /// <param name="offerId">Id of the offer</param>
-    /// <returns></returns>
-    Task<IEnumerable<ServiceAccountCreationInfo>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId);
+	/// <summary>
+	///  Gets the technical user profiles for the specific offer
+	/// </summary>
+	/// <param name="offerId">Id of the offer</param>
+	/// <returns></returns>
+	Task<IEnumerable<ServiceAccountCreationInfo>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId);
 
-    /// <summary>
-    ///  Gets the technical user profiles for the specific offer subscription
-    /// </summary>
-    /// <param name="subscriptionId">Id of the offer</param>
-    /// <returns></returns>
-    Task<IEnumerable<ServiceAccountCreationInfo>> GetTechnicalUserProfilesForOfferSubscription(Guid subscriptionId);
+	/// <summary>
+	///  Gets the technical user profiles for the specific offer subscription
+	/// </summary>
+	/// <param name="subscriptionId">Id of the offer</param>
+	/// <returns></returns>
+	Task<IEnumerable<ServiceAccountCreationInfo>> GetTechnicalUserProfilesForOfferSubscription(Guid subscriptionId);
 }

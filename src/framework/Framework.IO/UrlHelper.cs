@@ -25,41 +25,41 @@ using System.Web;
 
 public static class UrlHelper
 {
-    private static readonly string[] ValidUriSchemes = { "http", "https" };
+	private static readonly string[] ValidUriSchemes = { "http", "https" };
 
-    public static void EnsureValidHttpUrl(this string url, Func<string>? getUrlParameterName)
-    {
-        try
-        {
-            var uri = new Uri(url);
-            if (!uri.IsAbsoluteUri)
-            {
-                throw new ControllerArgumentException($"url {url} must be an absolute Url", getUrlParameterName?.Invoke() ?? "");
-            }
+	public static void EnsureValidHttpUrl(this string url, Func<string>? getUrlParameterName)
+	{
+		try
+		{
+			var uri = new Uri(url);
+			if (!uri.IsAbsoluteUri)
+			{
+				throw new ControllerArgumentException($"url {url} must be an absolute Url", getUrlParameterName?.Invoke() ?? "");
+			}
 
-            if (!ValidUriSchemes.Contains(uri.Scheme))
-            {
-                throw new ControllerArgumentException($"url {url} must either start with http:// or https://", getUrlParameterName?.Invoke() ?? "");
-            }
+			if (!ValidUriSchemes.Contains(uri.Scheme))
+			{
+				throw new ControllerArgumentException($"url {url} must either start with http:// or https://", getUrlParameterName?.Invoke() ?? "");
+			}
 
-            if (!uri.IsWellFormedOriginalString())
-            {
-                throw new ControllerArgumentException($"url {url} is not wellformed", getUrlParameterName?.Invoke() ?? "");
-            }
-        }
-        catch (UriFormatException ufe)
-        {
-            throw new ControllerArgumentException($"url {url} cannot be parsed: {ufe.Message}", getUrlParameterName?.Invoke() ?? "");
-        }
-    }
+			if (!uri.IsWellFormedOriginalString())
+			{
+				throw new ControllerArgumentException($"url {url} is not wellformed", getUrlParameterName?.Invoke() ?? "");
+			}
+		}
+		catch (UriFormatException ufe)
+		{
+			throw new ControllerArgumentException($"url {url} cannot be parsed: {ufe.Message}", getUrlParameterName?.Invoke() ?? "");
+		}
+	}
 
-    public static string AppendToPathEncoded(this string path, string parameter)
-    {
-        return $"{path.Trim('/')}/{HttpUtility.UrlEncode(parameter)}";
-    }
+	public static string AppendToPathEncoded(this string path, string parameter)
+	{
+		return $"{path.Trim('/')}/{HttpUtility.UrlEncode(parameter)}";
+	}
 
-    public static string AppendToPath(this string path, string parameter)
-    {
-        return $"{path.Trim('/')}/{parameter}";
-    }
+	public static string AppendToPath(this string path, string parameter)
+	{
+		return $"{path.Trim('/')}/{parameter}";
+	}
 }

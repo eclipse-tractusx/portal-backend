@@ -24,22 +24,22 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 
 public record CompanyDetailData(
-    Guid CompanyId,
-    string Name,
-    string City,
-    string StreetName,
-    string CountryAlpha2Code,
-    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
-    string? ShortName,
-    string? Region,
-    string? StreetAdditional,
-    string? StreetNumber,
-    string? ZipCode,
-    string? CountryDe,
-    IEnumerable<CompanyUniqueIdData> UniqueIds
+	Guid CompanyId,
+	string Name,
+	string City,
+	string StreetName,
+	string CountryAlpha2Code,
+	[property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
+	string? ShortName,
+	string? Region,
+	string? StreetAdditional,
+	string? StreetNumber,
+	string? ZipCode,
+	string? CountryDe,
+	IEnumerable<CompanyUniqueIdData> UniqueIds
 );
 
 public record CompanyUniqueIdData(
-    [property: JsonPropertyName("type")] UniqueIdentifierId UniqueIdentifierId,
-    string Value
+	[property: JsonPropertyName("type")] UniqueIdentifierId UniqueIdentifierId,
+	string Value
 );

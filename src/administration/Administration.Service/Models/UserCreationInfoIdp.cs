@@ -26,24 +26,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record UserCreationInfoIdp(
 
-    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
-    [property: JsonPropertyName("firstName")]
-    string FirstName,
-    
-    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]    
-    [property: JsonPropertyName("lastName")]
-    string LastName,
+	[RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
+	[property: JsonPropertyName("firstName")]
+	string FirstName,
 
-    [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
-    [property: JsonPropertyName("email")]
-    string Email,
+	[RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
+	[property: JsonPropertyName("lastName")]
+	string LastName,
 
-    [property: JsonPropertyName("roles")]
-    IEnumerable<string> Roles,
+	[RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
+	[property: JsonPropertyName("email")]
+	string Email,
 
-    [property: JsonPropertyName("userName")]
-    string UserName,
+	[property: JsonPropertyName("roles")]
+	IEnumerable<string> Roles,
 
-    [property: JsonPropertyName("userId")]
-    string UserId
+	[property: JsonPropertyName("userName")]
+	string UserName,
+
+	[property: JsonPropertyName("userId")]
+	string UserId
 );

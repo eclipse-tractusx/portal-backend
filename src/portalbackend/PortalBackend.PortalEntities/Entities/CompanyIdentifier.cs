@@ -24,26 +24,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyIdentifier
 {
-    private CompanyIdentifier() 
-    {
-        Value = null!;
-    }
+	private CompanyIdentifier()
+	{
+		Value = null!;
+	}
 
-    public CompanyIdentifier(Guid companyId, UniqueIdentifierId uniqueIdentifierId, string value)
-        : this()
-    {
-        CompanyId = companyId;
-        UniqueIdentifierId = uniqueIdentifierId;
-        Value = value;
-    }
+	public CompanyIdentifier(Guid companyId, UniqueIdentifierId uniqueIdentifierId, string value)
+		: this()
+	{
+		CompanyId = companyId;
+		UniqueIdentifierId = uniqueIdentifierId;
+		Value = value;
+	}
 
-    public Guid CompanyId { get; private set; }
+	public Guid CompanyId { get; private set; }
 
-    public UniqueIdentifierId UniqueIdentifierId { get; private set; }
+	public UniqueIdentifierId UniqueIdentifierId { get; private set; }
 
-    public string Value { get; set; }
+	public string Value { get; set; }
 
-    // Navigation properties
-    public virtual Company? Company { get; private set; }
-    public virtual UniqueIdentifier? UniqueIdentifier { get; private set; }
+	// Navigation properties
+	public virtual Company? Company { get; private set; }
+	public virtual UniqueIdentifier? UniqueIdentifier { get; private set; }
 }

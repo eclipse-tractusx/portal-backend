@@ -24,35 +24,35 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AttackDetection;
 using Flurl.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AttackDetection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {
-    public async Task ClearUserLoginFailuresAsync(string realm) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/attack-detection/brute-force/users")
-            .DeleteAsync()
-            .ConfigureAwait(false);
+	public async Task ClearUserLoginFailuresAsync(string realm) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/attack-detection/brute-force/users")
+			.DeleteAsync()
+			.ConfigureAwait(false);
 
-    public async Task ClearUserLoginFailuresAsync(string realm, string userId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/attack-detection/brute-force/users/")
-            .AppendPathSegment(userId, true)
-            .DeleteAsync()
-            .ConfigureAwait(false);
+	public async Task ClearUserLoginFailuresAsync(string realm, string userId) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/attack-detection/brute-force/users/")
+			.AppendPathSegment(userId, true)
+			.DeleteAsync()
+			.ConfigureAwait(false);
 
-    public async Task<UserNameStatus> GetUserNameStatusInBruteForceDetectionAsync(string realm, string userId) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/attack-detection/brute-force/users/")
-        .AppendPathSegment(userId, true)
-        .GetJsonAsync<UserNameStatus>()
-        .ConfigureAwait(false);
+	public async Task<UserNameStatus> GetUserNameStatusInBruteForceDetectionAsync(string realm, string userId) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+		.AppendPathSegment("/admin/realms/")
+		.AppendPathSegment(realm, true)
+		.AppendPathSegment("/attack-detection/brute-force/users/")
+		.AppendPathSegment(userId, true)
+		.GetJsonAsync<UserNameStatus>()
+		.ConfigureAwait(false);
 }

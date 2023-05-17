@@ -25,31 +25,31 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public class CompanyUserData
 {
-    public CompanyUserData(string userEntityId, Guid companyUserId, CompanyUserStatusId companyUserStatusId, IEnumerable<string> roles)
-    {
-        UserEntityId = userEntityId;
-        CompanyUserId = companyUserId;
-        CompanyUserStatusId = companyUserStatusId;
-        Roles = roles;
-    }
-    [JsonPropertyName("userEntityId")]
-    public string UserEntityId { get; set; }
+	public CompanyUserData(string userEntityId, Guid companyUserId, CompanyUserStatusId companyUserStatusId, IEnumerable<string> roles)
+	{
+		UserEntityId = userEntityId;
+		CompanyUserId = companyUserId;
+		CompanyUserStatusId = companyUserStatusId;
+		Roles = roles;
+	}
+	[JsonPropertyName("userEntityId")]
+	public string UserEntityId { get; set; }
 
-    [JsonPropertyName("companyUserId")]
-    public Guid CompanyUserId { get; set; }
+	[JsonPropertyName("companyUserId")]
+	public Guid CompanyUserId { get; set; }
 
-    [JsonPropertyName("status")]
-    public CompanyUserStatusId CompanyUserStatusId { get; set; }
+	[JsonPropertyName("status")]
+	public CompanyUserStatusId CompanyUserStatusId { get; set; }
 
-    [JsonPropertyName("firstName")]
-    public string? FirstName { get; set; }
+	[JsonPropertyName("firstName")]
+	public string? FirstName { get; set; }
 
-    [JsonPropertyName("lastName")]
-    public string? LastName { get; set; }
+	[JsonPropertyName("lastName")]
+	public string? LastName { get; set; }
 
-    [JsonPropertyName("email")]
-    public string? Email { get; set; }
+	[JsonPropertyName("email")]
+	public string? Email { get; set; }
 
-    [JsonPropertyName("roles")]
-    public IEnumerable<string> Roles { get; set; }
+	[JsonPropertyName("roles")]
+	public IEnumerable<string> Roles { get; set; }
 }

@@ -22,9 +22,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 
 public enum PrivacyPolicyId
 {
-    COMPANY_DATA = 1,
-    USER_DATA = 2,
-    LOCATION = 3,
-    BROWSER_HISTORY = 4,
-    NONE = 5,
+	COMPANY_DATA = 1,
+	USER_DATA = 2,
+	LOCATION = 3,
+	BROWSER_HISTORY = 4,
+	NONE = 5,
 }

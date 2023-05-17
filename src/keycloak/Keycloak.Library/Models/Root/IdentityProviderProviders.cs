@@ -30,12 +30,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class IdentityProviderProviders
 {
-    [JsonProperty("saml")]
-    public HasOrder Saml { get; set; }
+	[JsonProperty("saml")]
+	public HasOrder Saml { get; set; }
 
-    [JsonProperty("oidc")]
-    public HasOrder Oidc { get; set; }
+	[JsonProperty("oidc")]
+	public HasOrder Oidc { get; set; }
 
-    [JsonProperty("keycloak-oidc")]
-    public HasOrder KeycloakOidc { get; set; }
+	[JsonProperty("keycloak-oidc")]
+	public HasOrder KeycloakOidc { get; set; }
 }

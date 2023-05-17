@@ -29,32 +29,32 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
 /// </summary>
 public interface IDapsService
 {
-    /// <summary>
-    /// Registers the Connector at the connectorsSdFactory
-    /// </summary>
-    /// <param name="clientName">name of the client</param>
-    /// <param name="connectorUrl">the connectors url with the bpn of the company append to it</param>
-    /// <param name="businessPartnerNumber">the business partner number</param>
-    /// <param name="formFile">The file</param>
-    /// <param name="cancellationToken">cancellation token</param>
-    /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task<DapsResponse?> EnableDapsAuthAsync(string clientName, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken);
+	/// <summary>
+	/// Registers the Connector at the connectorsSdFactory
+	/// </summary>
+	/// <param name="clientName">name of the client</param>
+	/// <param name="connectorUrl">the connectors url with the bpn of the company append to it</param>
+	/// <param name="businessPartnerNumber">the business partner number</param>
+	/// <param name="formFile">The file</param>
+	/// <param name="cancellationToken">cancellation token</param>
+	/// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
+	Task<DapsResponse?> EnableDapsAuthAsync(string clientName, string connectorUrl, string businessPartnerNumber, IFormFile formFile, CancellationToken cancellationToken);
 
-    /// <summary>
-    /// Deletes the daps client
-    /// </summary>
-    /// <param name="dapsClientId">name of the client</param>
-    /// <param name="cancellationToken">cancellation token</param>
-    /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task<bool> DeleteDapsClient(string dapsClientId, CancellationToken cancellationToken);
+	/// <summary>
+	/// Deletes the daps client
+	/// </summary>
+	/// <param name="dapsClientId">name of the client</param>
+	/// <param name="cancellationToken">cancellation token</param>
+	/// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
+	Task<bool> DeleteDapsClient(string dapsClientId, CancellationToken cancellationToken);
 
-    /// <summary>
-    /// Updates the url of the connector
-    /// </summary>
-    /// <param name="dapsClientId">name of the client</param>
-    /// <param name="connectorUrl">the connectors url with bpn of the company append to it</param>
-    /// <param name="businessPartnerNumber">the business partner number</param>
-    /// <param name="cancellationToken">cancellation token</param>
-    /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task<bool> UpdateDapsConnectorUrl(string dapsClientId, string connectorUrl, string businessPartnerNumber, CancellationToken cancellationToken);
+	/// <summary>
+	/// Updates the url of the connector
+	/// </summary>
+	/// <param name="dapsClientId">name of the client</param>
+	/// <param name="connectorUrl">the connectors url with bpn of the company append to it</param>
+	/// <param name="businessPartnerNumber">the business partner number</param>
+	/// <param name="cancellationToken">cancellation token</param>
+	/// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
+	Task<bool> UpdateDapsConnectorUrl(string dapsClientId, string connectorUrl, string businessPartnerNumber, CancellationToken cancellationToken);
 }

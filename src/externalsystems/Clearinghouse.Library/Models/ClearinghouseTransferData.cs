@@ -18,17 +18,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 
 public record ClearinghouseTransferData(
-    [property: JsonPropertyName("participantDetails")] ParticipantDetails ParticipantDetails,
-    [property: JsonPropertyName("identityDetails")] IdentityDetails IdentityDetails,
-    [property: JsonPropertyName("callbackUrl")] string CallbackUrl,
-    [property: JsonPropertyName("exceptProfile")] bool ExceptProfile);
+	[property: JsonPropertyName("participantDetails")] ParticipantDetails ParticipantDetails,
+	[property: JsonPropertyName("identityDetails")] IdentityDetails IdentityDetails,
+	[property: JsonPropertyName("callbackUrl")] string CallbackUrl,
+	[property: JsonPropertyName("exceptProfile")] bool ExceptProfile);
 
 public record IdentityDetails(
-    [property: JsonPropertyName("did")] string Did,
-    [property: JsonPropertyName("uniqueIds")] IEnumerable<UniqueIdData> UniqueIds);
+	[property: JsonPropertyName("did")] string Did,
+	[property: JsonPropertyName("uniqueIds")] IEnumerable<UniqueIdData> UniqueIds);

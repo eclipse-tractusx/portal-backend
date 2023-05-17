@@ -22,20 +22,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class TechnicalUserProfileAssignedUserRole
 {
-    private TechnicalUserProfileAssignedUserRole()
-    {
-    }
+	private TechnicalUserProfileAssignedUserRole()
+	{
+	}
 
-    public TechnicalUserProfileAssignedUserRole(Guid technicalUserProfileId, Guid userRoleId)
-        :this()
-    {
-        TechnicalUserProfileId = technicalUserProfileId;
-        UserRoleId = userRoleId;
-    }
-    
-    public Guid TechnicalUserProfileId { get; }
-    public Guid UserRoleId { get; }
+	public TechnicalUserProfileAssignedUserRole(Guid technicalUserProfileId, Guid userRoleId)
+		: this()
+	{
+		TechnicalUserProfileId = technicalUserProfileId;
+		UserRoleId = userRoleId;
+	}
 
-    public virtual TechnicalUserProfile? TechnicalUserProfile { get; set; }
-    public virtual UserRole? UserRole { get; set; }
+	public Guid TechnicalUserProfileId { get; }
+	public Guid UserRoleId { get; }
+
+	public virtual TechnicalUserProfile? TechnicalUserProfile { get; set; }
+	public virtual UserRole? UserRole { get; set; }
 }

@@ -22,6 +22,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
-    private async Task<string> GetCentralRealmJwksUrlAsync() =>
-        (await _CentralIdp.GetOpenIDConfigurationAsync(_Settings.CentralRealm).ConfigureAwait(false)).JwksUri.ToString();
+	private async Task<string> GetCentralRealmJwksUrlAsync() =>
+		(await _CentralIdp.GetOpenIDConfigurationAsync(_Settings.CentralRealm).ConfigureAwait(false)).JwksUri.ToString();
 }

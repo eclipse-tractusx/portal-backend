@@ -29,29 +29,29 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// </summary>
 public class ConsentAssignedOfferSubscriptionRepository : IConsentAssignedOfferSubscriptionRepository
 {
-    private readonly PortalDbContext _portalDbContext;
+	private readonly PortalDbContext _portalDbContext;
 
-    public ConsentAssignedOfferSubscriptionRepository(PortalDbContext portalDbContext)
-    {
-        _portalDbContext = portalDbContext;
-    }
-    
-    /// <summary>
-    /// Creates a consent with the given data in the database.
-    /// </summary>
-    /// <param name="consentId">Id of the consent</param>
-    /// <param name="offerSubscriptionId">Id of the offer subscription</param>
-    /// <returns>Returns the newly created consent</returns>
-    public ConsentAssignedOfferSubscription CreateConsentAssignedOfferSubscription(Guid consentId, Guid offerSubscriptionId) =>
-        _portalDbContext.ConsentAssignedOfferSubscriptions.Add(new ConsentAssignedOfferSubscription(offerSubscriptionId, consentId)).Entity;
+	public ConsentAssignedOfferSubscriptionRepository(PortalDbContext portalDbContext)
+	{
+		_portalDbContext = portalDbContext;
+	}
 
-    /// <inheritdoc />
-    public IAsyncEnumerable<(Guid ConsentId, Guid AgreementId, ConsentStatusId ConsentStatusId)> GetConsentAssignedOfferSubscriptionsForSubscriptionAsync(Guid offerSubscriptionId,
-            IEnumerable<Guid> agreementIds) =>
-        _portalDbContext.ConsentAssignedOfferSubscriptions
-            .Where(x =>
-                x.OfferSubscriptionId == offerSubscriptionId &&
-                agreementIds.Any(a => a == x.Consent!.AgreementId))
-            .Select(x => new ValueTuple<Guid,Guid,ConsentStatusId>(x.ConsentId, x.Consent!.AgreementId, x.Consent.ConsentStatusId))
-            .ToAsyncEnumerable();
+	/// <summary>
+	/// Creates a consent with the given data in the database.
+	/// </summary>
+	/// <param name="consentId">Id of the consent</param>
+	/// <param name="offerSubscriptionId">Id of the offer subscription</param>
+	/// <returns>Returns the newly created consent</returns>
+	public ConsentAssignedOfferSubscription CreateConsentAssignedOfferSubscription(Guid consentId, Guid offerSubscriptionId) =>
+		_portalDbContext.ConsentAssignedOfferSubscriptions.Add(new ConsentAssignedOfferSubscription(offerSubscriptionId, consentId)).Entity;
+
+	/// <inheritdoc />
+	public IAsyncEnumerable<(Guid ConsentId, Guid AgreementId, ConsentStatusId ConsentStatusId)> GetConsentAssignedOfferSubscriptionsForSubscriptionAsync(Guid offerSubscriptionId,
+			IEnumerable<Guid> agreementIds) =>
+		_portalDbContext.ConsentAssignedOfferSubscriptions
+			.Where(x =>
+				x.OfferSubscriptionId == offerSubscriptionId &&
+				agreementIds.Any(a => a == x.Consent!.AgreementId))
+			.Select(x => new ValueTuple<Guid, Guid, ConsentStatusId>(x.ConsentId, x.Consent!.AgreementId, x.Consent.ConsentStatusId))
+			.ToAsyncEnumerable();
 }

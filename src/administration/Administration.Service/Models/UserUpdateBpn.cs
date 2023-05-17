@@ -24,15 +24,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public class UserUpdateBpn
 {
-    public UserUpdateBpn(string userId, IEnumerable<string> businessPartnerNumbers)
-    {
-        UserId = userId;
-        BusinessPartnerNumbers = businessPartnerNumbers;
-    }
+	public UserUpdateBpn(string userId, IEnumerable<string> businessPartnerNumbers)
+	{
+		UserId = userId;
+		BusinessPartnerNumbers = businessPartnerNumbers;
+	}
 
-    [JsonPropertyName("userId")]
-    public string UserId { get; set; }
+	[JsonPropertyName("userId")]
+	public string UserId { get; set; }
 
-    [JsonPropertyName("bpns")]
-    public IEnumerable<string> BusinessPartnerNumbers { get; set; }
+	[JsonPropertyName("bpns")]
+	public IEnumerable<string> BusinessPartnerNumbers { get; set; }
 }

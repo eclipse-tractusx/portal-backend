@@ -22,8 +22,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic
 {
-    public interface IInvitationBusinessLogic
-    {
-        Task ExecuteInvitation(CompanyInvitationData invitationData, string iamUserId);
-    }
+	public interface IInvitationBusinessLogic
+	{
+		Task ExecuteInvitation(CompanyInvitationData invitationData, string iamUserId);
+	}
 }

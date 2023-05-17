@@ -24,29 +24,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 public interface IMockLogger<T>
 {
-    void Log(LogLevel logLevel, Exception? exception, string logMessage);
+	void Log(LogLevel logLevel, Exception? exception, string logMessage);
 }
 
 public class MockLogger<T> : ILogger<T>
 {
-    private readonly IMockLogger<T> _logger;
+	private readonly IMockLogger<T> _logger;
 
-    public MockLogger(IMockLogger<T> logger)
-    {
-        _logger = logger;
-    }
+	public MockLogger(IMockLogger<T> logger)
+	{
+		_logger = logger;
+	}
 
-    public IDisposable BeginScope<TState>(TState state) => new TestDisposable();
+	public IDisposable BeginScope<TState>(TState state) => new TestDisposable();
 
-    public bool IsEnabled(LogLevel logLevel) => true;
+	public bool IsEnabled(LogLevel logLevel) => true;
 
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState,Exception?,string> formatter) =>
-        _logger.Log(logLevel,exception,formatter(state,exception));
-    
-    public class TestDisposable : IDisposable
-    {
-        public void Dispose() {
-            GC.SuppressFinalize(this);
-        }
-    }
+	public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+		_logger.Log(logLevel, exception, formatter(state, exception));
+
+	public class TestDisposable : IDisposable
+	{
+		public void Dispose()
+		{
+			GC.SuppressFinalize(this);
+		}
+	}
 }

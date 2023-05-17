@@ -27,40 +27,40 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// </summary>
 public interface IDocumentsBusinessLogic
 {
-    /// <summary>
-    /// Gets the document with the given id
-    /// </summary>
-    /// <param name="documentId">Id of the document to get</param>
-    /// <param name="iamUserId">Id of the iam user</param>
-    /// <returns>Returns the filename and content of the file</returns>
-    Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId, string iamUserId);
+	/// <summary>
+	/// Gets the document with the given id
+	/// </summary>
+	/// <param name="documentId">Id of the document to get</param>
+	/// <param name="iamUserId">Id of the iam user</param>
+	/// <returns>Returns the filename and content of the file</returns>
+	Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId, string iamUserId);
 
-    /// <summary>
-    /// Gets the selfdescription document with the given id
-    /// </summary>
-    /// <param name="documentId">Id of the document to get</param>
-    /// <returns>Returns the filename and content of the file</returns>
-    Task<(string FileName, byte[] Content, string MediaType)> GetSelfDescriptionDocumentAsync(Guid documentId);
-    
-    /// <summary>
-    /// Deletes the document and the corresponding consent from the persistence layer.
-    /// </summary>
-    /// <param name="documentId">Id of the document that should be deleted</param>
-    /// <param name="iamUserId"></param>
-    /// <returns>Returns <c>true</c> if the document and corresponding consent were deleted successfully. Otherwise a specific error is thrown.</returns>
-    Task<bool> DeleteDocumentAsync(Guid documentId, string iamUserId);
+	/// <summary>
+	/// Gets the selfdescription document with the given id
+	/// </summary>
+	/// <param name="documentId">Id of the document to get</param>
+	/// <returns>Returns the filename and content of the file</returns>
+	Task<(string FileName, byte[] Content, string MediaType)> GetSelfDescriptionDocumentAsync(Guid documentId);
 
-    /// <summary>
-    /// Gets the document as json for the seeding data
-    /// </summary>
-    /// <param name="documentId">Id of the document</param>
-    /// <returns>The document as json</returns>
-    Task<DocumentSeedData> GetSeedData(Guid documentId);
-    
-    /// <summary>
-    /// Retrieve Frame Document
-    /// </summary>
-    /// <param name="documentId"></param>
-    /// <returns></returns>
-    Task<(string fileName, byte[] content)> GetFrameDocumentAsync(Guid documentId);
+	/// <summary>
+	/// Deletes the document and the corresponding consent from the persistence layer.
+	/// </summary>
+	/// <param name="documentId">Id of the document that should be deleted</param>
+	/// <param name="iamUserId"></param>
+	/// <returns>Returns <c>true</c> if the document and corresponding consent were deleted successfully. Otherwise a specific error is thrown.</returns>
+	Task<bool> DeleteDocumentAsync(Guid documentId, string iamUserId);
+
+	/// <summary>
+	/// Gets the document as json for the seeding data
+	/// </summary>
+	/// <param name="documentId">Id of the document</param>
+	/// <returns>The document as json</returns>
+	Task<DocumentSeedData> GetSeedData(Guid documentId);
+
+	/// <summary>
+	/// Retrieve Frame Document
+	/// </summary>
+	/// <param name="documentId"></param>
+	/// <returns></returns>
+	Task<(string fileName, byte[] content)> GetFrameDocumentAsync(Guid documentId);
 }

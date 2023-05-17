@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -23,9 +23,9 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record ServiceUpdateData(
-    OfferStatusId OfferState,
-    bool IsUserOfProvider,
-    IEnumerable<(ServiceTypeId ServiceTypeId, bool IsMatch)> ServiceTypeIds,
-    ValueTuple<Guid, string, bool> OfferLicense,
-    IEnumerable<LocalizedDescription> Descriptions,
-    Guid? SalesManagerId);
+	OfferStatusId OfferState,
+	bool IsUserOfProvider,
+	IEnumerable<(ServiceTypeId ServiceTypeId, bool IsMatch)> ServiceTypeIds,
+	ValueTuple<Guid, string, bool> OfferLicense,
+	IEnumerable<LocalizedDescription> Descriptions,
+	Guid? SalesManagerId);

@@ -31,8 +31,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="ConsentStatus">Consent Status</param>
 /// <param name="AgreementName">The agreement name</param>
 public record ConsentDetailData(
-    Guid Id,
-    string CompanyName,
-    Guid CompanyUserId,
-    ConsentStatusId ConsentStatus,
-    string AgreementName);
+	Guid Id,
+	string CompanyName,
+	Guid CompanyUserId,
+	ConsentStatusId ConsentStatus,
+	string AgreementName);

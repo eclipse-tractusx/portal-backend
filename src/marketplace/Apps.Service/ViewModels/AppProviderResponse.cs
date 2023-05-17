@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -44,22 +44,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="SalesManagerId">id of the salesmanager</param>
 /// <param name="PrivacyPolicies">the privacy policies</param>
 /// <param name="TechnicalUserProfile">the technicalUser Profile</param>
-public record AppProviderResponse (
-    string? Title, 
-    string Provider, 
-    Guid LeadPictureId, 
-    string? ProviderName, 
-    IEnumerable<AppUseCaseData> UseCase, 
-    IEnumerable<LocalizedDescription> Descriptions, 
-    IEnumerable<OfferAgreement> Agreements, 
-    IEnumerable<string> SupportedLanguageCodes, 
-    string? Price, 
-    IEnumerable<Guid> Images, 
-    string? ProviderUri, 
-    string? ContactEmail, 
-    string? ContactNumber, 
-    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
-    Guid? SalesManagerId,
-    IEnumerable<PrivacyPolicyId> PrivacyPolicies,
-    IDictionary<Guid, IEnumerable<string>> TechnicalUserProfile
+public record AppProviderResponse(
+	string? Title,
+	string Provider,
+	Guid LeadPictureId,
+	string? ProviderName,
+	IEnumerable<AppUseCaseData> UseCase,
+	IEnumerable<LocalizedDescription> Descriptions,
+	IEnumerable<OfferAgreement> Agreements,
+	IEnumerable<string> SupportedLanguageCodes,
+	string? Price,
+	IEnumerable<Guid> Images,
+	string? ProviderUri,
+	string? ContactEmail,
+	string? ContactNumber,
+	IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
+	Guid? SalesManagerId,
+	IEnumerable<PrivacyPolicyId> PrivacyPolicies,
+	IDictionary<Guid, IEnumerable<string>> TechnicalUserProfile
 );

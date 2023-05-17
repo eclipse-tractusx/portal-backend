@@ -24,13 +24,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
 public interface IProcessExecutor
 {
-    enum ProcessExecutionResult
-    {
-        SaveRequested = 1,
-        LockRequested = 2,
-        Unmodified = 3
-    }
-    IAsyncEnumerable<ProcessExecutionResult> ExecuteProcess(Guid processId, ProcessTypeId processTypeId, CancellationToken cancellationToken);
-    IEnumerable<ProcessTypeId> GetRegisteredProcessTypeIds();
-    IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds();
+	enum ProcessExecutionResult
+	{
+		SaveRequested = 1,
+		LockRequested = 2,
+		Unmodified = 3
+	}
+	IAsyncEnumerable<ProcessExecutionResult> ExecuteProcess(Guid processId, ProcessTypeId processTypeId, CancellationToken cancellationToken);
+	IEnumerable<ProcessTypeId> GetRegisteredProcessTypeIds();
+	IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds();
 }

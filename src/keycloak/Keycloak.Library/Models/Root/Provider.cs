@@ -30,12 +30,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class Provider
 {
-    [JsonProperty("groupName")]
-    public GroupName GroupName { get; set; }
+	[JsonProperty("groupName")]
+	public GroupName GroupName { get; set; }
 
-    [JsonProperty("name")]
-    public string Name { get; set; }
+	[JsonProperty("name")]
+	public string Name { get; set; }
 
-    [JsonProperty("id")]
-    public string Id { get; set; }
+	[JsonProperty("id")]
+	public string Id { get; set; }
 }

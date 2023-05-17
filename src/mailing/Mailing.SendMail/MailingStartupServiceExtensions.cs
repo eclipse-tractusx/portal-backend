@@ -18,18 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 
 public static class MailingStartupServiceExtensions
 {
-    public static IServiceCollection AddMailingAndTemplateManager(this IServiceCollection services, IConfiguration configuration) =>
-        services.AddTransient<IMailingService, MailingService>()
-            .AddTransient<ISendMail, SendMail>()
-            .AddTransient<ITemplateManager, TemplateManager>()
-            .ConfigureTemplateSettings(configuration.GetSection(TemplateSettings.Position))
-            .ConfigureMailSettings(configuration.GetSection(MailSettings.Position));
+	public static IServiceCollection AddMailingAndTemplateManager(this IServiceCollection services, IConfiguration configuration) =>
+		services.AddTransient<IMailingService, MailingService>()
+			.AddTransient<ISendMail, SendMail>()
+			.AddTransient<ITemplateManager, TemplateManager>()
+			.ConfigureTemplateSettings(configuration.GetSection(TemplateSettings.Position))
+			.ConfigureMailSettings(configuration.GetSection(MailSettings.Position));
 }

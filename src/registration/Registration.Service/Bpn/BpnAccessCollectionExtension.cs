@@ -24,16 +24,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn;
 
 public static class BpnAccessCollectionExtension
 {
-    public static IServiceCollection AddBpnAccess(this IServiceCollection services, string baseAddress)
-    {
-        services.AddTransient<LoggingHandler<BpnAccess>>();
-        services.AddHttpClient(nameof(BpnAccess), c =>
-            {
-                c.BaseAddress = new Uri(baseAddress);
-            })
-            .AddHttpMessageHandler<LoggingHandler<BpnAccess>>();
-        services.AddTransient<IBpnAccess, BpnAccess>();
+	public static IServiceCollection AddBpnAccess(this IServiceCollection services, string baseAddress)
+	{
+		services.AddTransient<LoggingHandler<BpnAccess>>();
+		services.AddHttpClient(nameof(BpnAccess), c =>
+			{
+				c.BaseAddress = new Uri(baseAddress);
+			})
+			.AddHttpMessageHandler<LoggingHandler<BpnAccess>>();
+		services.AddTransient<IBpnAccess, BpnAccess>();
 
-        return services;
-    }
+		return services;
+	}
 }

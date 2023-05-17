@@ -18,10 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
- 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -30,26 +29,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// </summary>
 public class StaticDataBusinessLogic : IStaticDataBusinessLogic
 {
-    private readonly IPortalRepositories _portalRepositories;
+	private readonly IPortalRepositories _portalRepositories;
 
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="portalRepositories"></param>
-    public StaticDataBusinessLogic(IPortalRepositories portalRepositories)
-    {
-        _portalRepositories = portalRepositories;
-    }
+	/// <summary>
+	/// Constructor
+	/// </summary>
+	/// <param name="portalRepositories"></param>
+	public StaticDataBusinessLogic(IPortalRepositories portalRepositories)
+	{
+		_portalRepositories = portalRepositories;
+	}
 
-    /// <inheritdoc/>
-    public IAsyncEnumerable<UseCaseData> GetAllUseCase() =>
-        _portalRepositories.GetInstance<IStaticDataRepository>().GetAllUseCase();
+	/// <inheritdoc/>
+	public IAsyncEnumerable<UseCaseData> GetAllUseCase() =>
+		_portalRepositories.GetInstance<IStaticDataRepository>().GetAllUseCase();
 
-    /// <inheritdoc/>
-    public IAsyncEnumerable<LanguageData> GetAllLanguage() =>
-        _portalRepositories.GetInstance<IStaticDataRepository>().GetAllLanguage();  
+	/// <inheritdoc/>
+	public IAsyncEnumerable<LanguageData> GetAllLanguage() =>
+		_portalRepositories.GetInstance<IStaticDataRepository>().GetAllLanguage();
 
-    /// <inheritdoc/>
-    public IAsyncEnumerable<LicenseTypeData> GetAllLicenseType() =>
-        _portalRepositories.GetInstance<IStaticDataRepository>().GetLicenseTypeData(); 
+	/// <inheritdoc/>
+	public IAsyncEnumerable<LicenseTypeData> GetAllLicenseType() =>
+		_portalRepositories.GetInstance<IStaticDataRepository>().GetLicenseTypeData();
 }

@@ -20,11 +20,11 @@
 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
+using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using FluentAssertions;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -35,164 +35,164 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 /// </summary>
 public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
-    private readonly TestDbFixture _dbTestDbFixture;
+	private readonly TestDbFixture _dbTestDbFixture;
 
-    public AgreementRepositoryTests(TestDbFixture testDbFixture)
-    {
-        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => fixture.Behaviors.Remove(b));
+	public AgreementRepositoryTests(TestDbFixture testDbFixture)
+	{
+		var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+		fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+			.ForEach(b => fixture.Behaviors.Remove(b));
 
-        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-        _dbTestDbFixture = testDbFixture;
-    }
+		fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+		_dbTestDbFixture = testDbFixture;
+	}
 
-    #region Check Agreement exists
+	#region Check Agreement exists
 
-    [Fact]
-    public async Task CheckAgreementExistsAsync_WithExistingEntry_ReturnsTrue()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+	[Fact]
+	public async Task CheckAgreementExistsAsync_WithExistingEntry_ReturnsTrue()
+	{
+		// Arrange
+		var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-        // Act
-        var results = await sut
-            .CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), new Guid("3de6a31f-a5d1-4f60-aa3a-4b1a769becbf"), OfferTypeId.SERVICE)
-            .ConfigureAwait(false);
+		// Act
+		var results = await sut
+			.CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), new Guid("3de6a31f-a5d1-4f60-aa3a-4b1a769becbf"), OfferTypeId.SERVICE)
+			.ConfigureAwait(false);
 
-        // Assert
-        results.Should().BeTrue();
-    }
+		// Assert
+		results.Should().BeTrue();
+	}
 
-    [Fact]
-    public async Task CheckAgreementExistsAsync_WithInvalidSubscription_ReturnsFalse()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+	[Fact]
+	public async Task CheckAgreementExistsAsync_WithInvalidSubscription_ReturnsFalse()
+	{
+		// Arrange
+		var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-        // Act
-        var results = await sut
-            .CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), Guid.NewGuid(), OfferTypeId.SERVICE)
-            .ConfigureAwait(false);
+		// Act
+		var results = await sut
+			.CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), Guid.NewGuid(), OfferTypeId.SERVICE)
+			.ConfigureAwait(false);
 
-        // Assert
-        results.Should().BeFalse();
-    }
+		// Assert
+		results.Should().BeFalse();
+	}
 
-    [Fact]
-    public async Task CheckAgreementExistsAsync_WithInvalidOfferType_ReturnsFalse()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+	[Fact]
+	public async Task CheckAgreementExistsAsync_WithInvalidOfferType_ReturnsFalse()
+	{
+		// Arrange
+		var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-        // Act
-        var results = await sut
-            .CheckAgreementExistsForSubscriptionAsync(new Guid("979a29b1-40c2-4169-979c-43c3156dbf64"), new Guid("28149c6d-833f-49c5-aea2-ab6a5a37f462"), OfferTypeId.APP)
-            .ConfigureAwait(false);
+		// Act
+		var results = await sut
+			.CheckAgreementExistsForSubscriptionAsync(new Guid("979a29b1-40c2-4169-979c-43c3156dbf64"), new Guid("28149c6d-833f-49c5-aea2-ab6a5a37f462"), OfferTypeId.APP)
+			.ConfigureAwait(false);
 
-        // Assert
-        results.Should().BeFalse();
-    }
+		// Assert
+		results.Should().BeFalse();
+	}
 
-    [Fact]
-    public async Task CheckAgreementExistsAsync_WithInvalidGuid_ReturnsFalse()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+	[Fact]
+	public async Task CheckAgreementExistsAsync_WithInvalidGuid_ReturnsFalse()
+	{
+		// Arrange
+		var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-        // Act
-        var results = await sut.CheckAgreementExistsForSubscriptionAsync(Guid.NewGuid(), new Guid("28149c6d-833f-49c5-aea2-ab6a5a37f462"), OfferTypeId.SERVICE).ConfigureAwait(false);
+		// Act
+		var results = await sut.CheckAgreementExistsForSubscriptionAsync(Guid.NewGuid(), new Guid("28149c6d-833f-49c5-aea2-ab6a5a37f462"), OfferTypeId.SERVICE).ConfigureAwait(false);
 
-        // Assert
-        results.Should().BeFalse();
-    }
+		// Assert
+		results.Should().BeFalse();
+	}
 
-    #endregion
+	#endregion
 
-    #region Get Agreements
+	#region Get Agreements
 
-    [Fact]
-    public async Task GetActiveServices_ReturnsExpectedAppCount()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+	[Fact]
+	public async Task GetActiveServices_ReturnsExpectedAppCount()
+	{
+		// Arrange
+		var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-        // Act
-        var results = await sut.GetAgreementsForCompanyRolesUntrackedAsync().ToListAsync().ConfigureAwait(false);
+		// Act
+		var results = await sut.GetAgreementsForCompanyRolesUntrackedAsync().ToListAsync().ConfigureAwait(false);
 
-        // Assert
-        results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(6);
-    }
+		// Assert
+		results.Should().NotBeNullOrEmpty();
+		results.Should().HaveCount(6);
+	}
 
-    #endregion
+	#endregion
 
-    #region Get OfferAgreementData for IamUser
-    
-    [Fact]
-    public async Task GetOfferAgreementDataForIamUser_WithExistingUser_ReturnsExpectedCount()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-    
-        // Act
-        var results = await sut.GetOfferAgreementDataForOfferId(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
-    
-        // Assert
-        results.Should().NotBeNullOrEmpty();
-        results.Should().ContainSingle();
-    }
+	#region Get OfferAgreementData for IamUser
 
-    [Fact]
-    public async Task GetOfferAgreementDataForIamUser_WithNotExistingUser_ReturnsEmptyList()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+	[Fact]
+	public async Task GetOfferAgreementDataForIamUser_WithExistingUser_ReturnsExpectedCount()
+	{
+		// Arrange
+		var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-        // Act
-        var result = await sut.GetOfferAgreementDataForOfferId(Guid.NewGuid(), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
+		// Act
+		var results = await sut.GetOfferAgreementDataForOfferId(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
 
-        // Assert
-        result.Should().NotBeNull();
-        result.Should().BeEmpty();
-    }
+		// Assert
+		results.Should().NotBeNullOrEmpty();
+		results.Should().ContainSingle();
+	}
 
-    #endregion
+	[Fact]
+	public async Task GetOfferAgreementDataForIamUser_WithNotExistingUser_ReturnsEmptyList()
+	{
+		// Arrange
+		var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-    #region GetAgreementIdsForOfferAsync
+		// Act
+		var result = await sut.GetOfferAgreementDataForOfferId(Guid.NewGuid(), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
 
-    [Fact]
-    public async Task GetAgreementIdsForOfferAsync_WithExistingAgreementForOffer_ReturnsExpected()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+		// Assert
+		result.Should().NotBeNull();
+		result.Should().BeEmpty();
+	}
 
-        // Act
-        var result = await sut.GetAgreementIdsForOfferAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea")).ToListAsync().ConfigureAwait(false);
+	#endregion
 
-        // Assert
-        result.Should().HaveCount(1).And.Contain(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"));
-    }
+	#region GetAgreementIdsForOfferAsync
 
-    [Fact]
-    public async Task GetAgreementIdsForOfferAsync_WithNonExistingAgreementForOffer_ReturnsEmpty()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+	[Fact]
+	public async Task GetAgreementIdsForOfferAsync_WithExistingAgreementForOffer_ReturnsExpected()
+	{
+		// Arrange
+		var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-        // Act
-        var result = await sut.GetAgreementIdsForOfferAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")).ToListAsync().ConfigureAwait(false);
+		// Act
+		var result = await sut.GetAgreementIdsForOfferAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea")).ToListAsync().ConfigureAwait(false);
 
-        // Assert
-        result.Should().BeEmpty();
-    }
+		// Assert
+		result.Should().HaveCount(1).And.Contain(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"));
+	}
 
-    #endregion
+	[Fact]
+	public async Task GetAgreementIdsForOfferAsync_WithNonExistingAgreementForOffer_ReturnsEmpty()
+	{
+		// Arrange
+		var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-    private async Task<(AgreementRepository, PortalDbContext)> CreateSut()
-    {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
-        var sut = new AgreementRepository(context);
-        return (sut, context);
-    }
+		// Act
+		var result = await sut.GetAgreementIdsForOfferAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")).ToListAsync().ConfigureAwait(false);
+
+		// Assert
+		result.Should().BeEmpty();
+	}
+
+	#endregion
+
+	private async Task<(AgreementRepository, PortalDbContext)> CreateSut()
+	{
+		var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+		var sut = new AgreementRepository(context);
+		return (sut, context);
+	}
 }

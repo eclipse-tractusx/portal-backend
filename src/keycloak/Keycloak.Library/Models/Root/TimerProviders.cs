@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class TimerProviders
 {
-    [JsonProperty("basic")]
-    public HasOrder Basic { get; set; }
+	[JsonProperty("basic")]
+	public HasOrder Basic { get; set; }
 }

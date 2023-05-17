@@ -18,39 +18,39 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 public class UseCase : IBaseEntity
 {
-    private UseCase()
-    {
-        Name = null!;
-        Shortname = null!;
-        Agreements = new HashSet<Agreement>();
-        CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
-        Apps = new HashSet<Offer>();
-    }
-    
-    public UseCase(Guid id, string name, string shortname) : this()
-    {
-        Id = id;
-        Name = name;
-        Shortname = shortname;
-    }
+	private UseCase()
+	{
+		Name = null!;
+		Shortname = null!;
+		Agreements = new HashSet<Agreement>();
+		CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
+		Apps = new HashSet<Offer>();
+	}
 
-    public Guid Id { get; private set; }
+	public UseCase(Guid id, string name, string shortname) : this()
+	{
+		Id = id;
+		Name = name;
+		Shortname = shortname;
+	}
 
-    [MaxLength(255)]
-    public string Name { get; set; }
+	public Guid Id { get; private set; }
 
-    [MaxLength(255)]
-    public string Shortname { get; set; }
+	[MaxLength(255)]
+	public string Name { get; set; }
 
-    // Navigation properties
-    public virtual ICollection<Agreement> Agreements { get; private set; }
-    public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
-    public virtual ICollection<Offer> Apps { get; private set; }
+	[MaxLength(255)]
+	public string Shortname { get; set; }
+
+	// Navigation properties
+	public virtual ICollection<Agreement> Agreements { get; private set; }
+	public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
+	public virtual ICollection<Offer> Apps { get; private set; }
 }

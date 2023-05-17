@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
@@ -46,22 +46,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="PrivacyPolicies">Privacy Policies assigned to offer</param>
 /// <param name="IsSingleInstance">Defines whether the app is a single instance</param>
 public record AppDetailResponse(
-    Guid Id,
-    string Title,
-    Guid LeadPictureId,
-    IEnumerable<Guid> Images,
-    string ProviderUri,
-    string Provider,
-    string? ContactEmail,
-    string? ContactNumber,
-    IEnumerable<AppUseCaseData> UseCases,
-    string LongDescription,
-    LicenseTypeId LicenseType,
-    string Price,
-    IEnumerable<string> Tags,
-    OfferSubscriptionStatusId? IsSubscribed,
-    IEnumerable<string> Languages,
-    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
-    IEnumerable<PrivacyPolicyId> PrivacyPolicies,
-    bool IsSingleInstance
+	Guid Id,
+	string Title,
+	Guid LeadPictureId,
+	IEnumerable<Guid> Images,
+	string ProviderUri,
+	string Provider,
+	string? ContactEmail,
+	string? ContactNumber,
+	IEnumerable<AppUseCaseData> UseCases,
+	string LongDescription,
+	LicenseTypeId LicenseType,
+	string Price,
+	IEnumerable<string> Tags,
+	OfferSubscriptionStatusId? IsSubscribed,
+	IEnumerable<string> Languages,
+	IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
+	IEnumerable<PrivacyPolicyId> PrivacyPolicies,
+	bool IsSingleInstance
 );

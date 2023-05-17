@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class JtaLookupProviders
 {
-    [JsonProperty("jboss")]
-    public HasOrder Jboss { get; set; }
+	[JsonProperty("jboss")]
+	public HasOrder Jboss { get; set; }
 }

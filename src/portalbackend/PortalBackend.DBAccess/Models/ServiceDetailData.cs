@@ -27,68 +27,68 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// </summary>
 public record ServiceDetailsData(
 
-    /// <summary>
-    /// ID of the offer.
-    /// </summary>
-    Guid Id,
+	/// <summary>
+	/// ID of the offer.
+	/// </summary>
+	Guid Id,
 
-    /// <summary>
-    /// Title or name of the offer.
-    /// </summary>
-    string? Title,
+	/// <summary>
+	/// Title or name of the offer.
+	/// </summary>
+	string? Title,
 
-    /// <summary>
-    /// Service Type Id of the offer
-    /// </summary>
-    IEnumerable<ServiceTypeId> ServiceTypeIds,
+	/// <summary>
+	/// Service Type Id of the offer
+	/// </summary>
+	IEnumerable<ServiceTypeId> ServiceTypeIds,
 
-    /// <summary>
-    /// Provider of the offer.
-    /// </summary>
-    string Provider,
-    
-    /// <summary>
-    /// Descriptions of the offer.
-    /// </summary>
-    IEnumerable<LocalizedDescription> Descriptions,
+	/// <summary>
+	/// Provider of the offer.
+	/// </summary>
+	string Provider,
 
-    /// <summary>
-    /// document assigned to offer
-    /// </summary>
-    IEnumerable<DocumentTypeData> Documents,
+	/// <summary>
+	/// Descriptions of the offer.
+	/// </summary>
+	IEnumerable<LocalizedDescription> Descriptions,
 
-     /// <summary>
-    /// Uri to provider's marketing presence.
-    /// </summary>
-    string? ProviderUri,
+	/// <summary>
+	/// document assigned to offer
+	/// </summary>
+	IEnumerable<DocumentTypeData> Documents,
 
-    /// <summary>
-    /// Email address of the app's primary contact.
-    /// </summary>
-    string? ContactEmail,
+	/// <summary>
+	/// Uri to provider's marketing presence.
+	/// </summary>
+	string? ProviderUri,
 
-    /// <summary>
-    /// Phone number of the app's primary contact.
-    /// </summary>
-    string? ContactNumber,
-    
-    /// <summary>
-    /// Offer Status Id
-    /// </summary>
-    OfferStatusId OfferStatusId,
-    
-    /// <summary>
-    /// License Type Id
-    /// </summary>
-    LicenseTypeId LicenseTypeId,
-    
-    ///<summary>
-    /// Technical User Profile
-    ///</summary>
-    IEnumerable<TechnicalUserRoleData> TechnicalUserProfile
+	/// <summary>
+	/// Email address of the app's primary contact.
+	/// </summary>
+	string? ContactEmail,
+
+	/// <summary>
+	/// Phone number of the app's primary contact.
+	/// </summary>
+	string? ContactNumber,
+
+	/// <summary>
+	/// Offer Status Id
+	/// </summary>
+	OfferStatusId OfferStatusId,
+
+	/// <summary>
+	/// License Type Id
+	/// </summary>
+	LicenseTypeId LicenseTypeId,
+
+	///<summary>
+	/// Technical User Profile
+	///</summary>
+	IEnumerable<TechnicalUserRoleData> TechnicalUserProfile
 );
 
 public record TechnicalUserRoleData(
-    Guid TechnicalUserProfileId,
-    IEnumerable<string> UserRoles
+	Guid TechnicalUserProfileId,
+	IEnumerable<string> UserRoles
 );

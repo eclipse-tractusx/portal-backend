@@ -18,61 +18,61 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 public class CompanyServiceAccount : IBaseEntity
 {
-    private CompanyServiceAccount()
-    {
-        Name = default!;
-        Description = default!;
-        UserRoles = new HashSet<UserRole>();
-        CompanyServiceAccountAssignedRoles = new HashSet<CompanyServiceAccountAssignedRole>();
-        AppInstances = new HashSet<AppInstanceAssignedCompanyServiceAccount>();
-    }
-    
-    public CompanyServiceAccount(Guid id, Guid serviceAccountOwnerId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description, DateTimeOffset dateCreated, CompanyServiceAccountTypeId companyServiceAccountTypeId) : this()
-    {
-        Id = id;
-        DateCreated = dateCreated;
-        ServiceAccountOwnerId = serviceAccountOwnerId;
-        CompanyServiceAccountStatusId = companyServiceAccountStatusId;
-        Name = name;
-        Description = description;
-        CompanyServiceAccountTypeId = companyServiceAccountTypeId;
-    }
+	private CompanyServiceAccount()
+	{
+		Name = default!;
+		Description = default!;
+		UserRoles = new HashSet<UserRole>();
+		CompanyServiceAccountAssignedRoles = new HashSet<CompanyServiceAccountAssignedRole>();
+		AppInstances = new HashSet<AppInstanceAssignedCompanyServiceAccount>();
+	}
 
-    [Key]
-    public Guid Id { get; private set; }
+	public CompanyServiceAccount(Guid id, Guid serviceAccountOwnerId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description, DateTimeOffset dateCreated, CompanyServiceAccountTypeId companyServiceAccountTypeId) : this()
+	{
+		Id = id;
+		DateCreated = dateCreated;
+		ServiceAccountOwnerId = serviceAccountOwnerId;
+		CompanyServiceAccountStatusId = companyServiceAccountStatusId;
+		Name = name;
+		Description = description;
+		CompanyServiceAccountTypeId = companyServiceAccountTypeId;
+	}
 
-    public DateTimeOffset DateCreated { get; private set; }
+	[Key]
+	public Guid Id { get; private set; }
 
-    public Guid ServiceAccountOwnerId { get; private set; }
+	public DateTimeOffset DateCreated { get; private set; }
 
-    [MaxLength(255)]
-    public string Name { get; set; }
+	public Guid ServiceAccountOwnerId { get; private set; }
 
-    public string Description { get; set; }
+	[MaxLength(255)]
+	public string Name { get; set; }
 
-    public CompanyServiceAccountTypeId CompanyServiceAccountTypeId { get; set; }
+	public string Description { get; set; }
 
-    public CompanyServiceAccountStatusId CompanyServiceAccountStatusId { get; set; }
+	public CompanyServiceAccountTypeId CompanyServiceAccountTypeId { get; set; }
 
-    public Guid? OfferSubscriptionId { get; set; }
+	public CompanyServiceAccountStatusId CompanyServiceAccountStatusId { get; set; }
 
-    // Navigation properties
-    public virtual Company? ServiceAccountOwner { get; private set; }
-    public virtual IamServiceAccount? IamServiceAccount { get; set; }
-    public virtual CompanyServiceAccountStatus? CompanyServiceAccountStatus { get; set; }
-    public virtual CompanyServiceAccountType? CompanyServiceAccountType { get; set; }
-    public virtual OfferSubscription? OfferSubscription { get; set; }
-    public virtual Connector? Connector { get; set; }
-    public virtual ICollection<UserRole> UserRoles { get; private set; }
-    public virtual ICollection<CompanyServiceAccountAssignedRole> CompanyServiceAccountAssignedRoles { get; private set; }
+	public Guid? OfferSubscriptionId { get; set; }
 
-    public virtual ICollection<AppInstanceAssignedCompanyServiceAccount> AppInstances { get; private set; }
+	// Navigation properties
+	public virtual Company? ServiceAccountOwner { get; private set; }
+	public virtual IamServiceAccount? IamServiceAccount { get; set; }
+	public virtual CompanyServiceAccountStatus? CompanyServiceAccountStatus { get; set; }
+	public virtual CompanyServiceAccountType? CompanyServiceAccountType { get; set; }
+	public virtual OfferSubscription? OfferSubscription { get; set; }
+	public virtual Connector? Connector { get; set; }
+	public virtual ICollection<UserRole> UserRoles { get; private set; }
+	public virtual ICollection<CompanyServiceAccountAssignedRole> CompanyServiceAccountAssignedRoles { get; private set; }
+
+	public virtual ICollection<AppInstanceAssignedCompanyServiceAccount> AppInstances { get; private set; }
 }

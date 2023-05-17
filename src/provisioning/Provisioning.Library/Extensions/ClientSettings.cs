@@ -22,9 +22,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library
 {
-    public partial class ProvisioningSettings
-    {
-        public Client SharedRealmClient { get; set; }
-        public Client CentralOIDCClient { get; set; }
-    }
+	public partial class ProvisioningSettings
+	{
+		public Client SharedRealmClient { get; set; }
+		public Client CentralOIDCClient { get; set; }
+	}
 }

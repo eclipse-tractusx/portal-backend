@@ -25,13 +25,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 /// </summary>
 public enum LicenseTypeId
 {
-    /// <summary>
-    /// Commercial Type Solution
-    /// </summary>
-    COTS = 1,
+	/// <summary>
+	/// Commercial Type Solution
+	/// </summary>
+	COTS = 1,
 
-    /// <summary>
-    /// Free Open Source Solution
-    /// </summary>
-    FOSS = 2
+	/// <summary>
+	/// Free Open Source Solution
+	/// </summary>
+	FOSS = 2
 }

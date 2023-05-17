@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
 public interface IOfferSubscriptionService
 {
-    Task<Guid> AddOfferSubscriptionAsync(Guid offerId,
-        IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken,
-        IDictionary<string, IEnumerable<string>> serviceManagerRoles, OfferTypeId offerTypeId, string basePortalAddress);
+	Task<Guid> AddOfferSubscriptionAsync(Guid offerId,
+		IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken,
+		IDictionary<string, IEnumerable<string>> serviceManagerRoles, OfferTypeId offerTypeId, string basePortalAddress);
 }

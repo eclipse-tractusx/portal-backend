@@ -27,11 +27,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 /// </summary>
 public interface IClearinghouseService
 {
-    /// <summary>
-    /// Triggers the clearinghouse post
-    /// </summary>
-    /// <param name="data">The clearinghouse data</param>
-    /// <param name="cancellationToken">Cancellation Token</param>
-    /// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
-    Task TriggerCompanyDataPost(ClearinghouseTransferData data, CancellationToken cancellationToken);
+	/// <summary>
+	/// Triggers the clearinghouse post
+	/// </summary>
+	/// <param name="data">The clearinghouse data</param>
+	/// <param name="cancellationToken">Cancellation Token</param>
+	/// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
+	Task TriggerCompanyDataPost(ClearinghouseTransferData data, CancellationToken cancellationToken);
 }

@@ -26,74 +26,74 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public interface IApplicationRepository
 {
-    CompanyApplication CreateCompanyApplication(Guid companyId, CompanyApplicationStatusId companyApplicationStatusId);
-    void AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication> setOptionalParameters);
-    Invitation CreateInvitation(Guid applicationId, Guid companyUserId);
-    void DeleteInvitations(IEnumerable<Guid> invitationIds);
-    Task<CompanyApplicationUserData?> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId);
-    Task<CompanyApplicationStatusUserData?> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, string iamUserId);
-    Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, string iamUserId);
-    IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null, IEnumerable<CompanyApplicationStatusId>? applicationStatusIds = null);
-    Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync (Guid applicationId, string iamUserId, Guid? companyId = null);
-    Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdSubmissionStatusForApplication(Guid applicationId);
-    Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IamIdpAliasse)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId);
-    Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber)> GetCompanyAndApplicationDetailsForCreateWalletAsync(Guid applicationId);
-    IAsyncEnumerable<CompanyInvitedUserData> GetInvitedUsersDataByApplicationIdUntrackedAsync(Guid applicationId);
-    IAsyncEnumerable<EmailData> GetEmailDataUntrackedAsync(Guid applicationId);
-    IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null);
-    Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAddressUntrackedAsync(Guid companyApplicationId);
-    Task<(bool IsValidApplicationId, bool IsSameCompanyUser, RegistrationData? Data)> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes);
-    Task<(string? Bpn, IEnumerable<ApplicationChecklistEntryTypeId> ExistingChecklistEntryTypeIds)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId);
+	CompanyApplication CreateCompanyApplication(Guid companyId, CompanyApplicationStatusId companyApplicationStatusId);
+	void AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication> setOptionalParameters);
+	Invitation CreateInvitation(Guid applicationId, Guid companyUserId);
+	void DeleteInvitations(IEnumerable<Guid> invitationIds);
+	Task<CompanyApplicationUserData?> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId);
+	Task<CompanyApplicationStatusUserData?> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, string iamUserId);
+	Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, string iamUserId);
+	IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null, IEnumerable<CompanyApplicationStatusId>? applicationStatusIds = null);
+	Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, string iamUserId, Guid? companyId = null);
+	Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdSubmissionStatusForApplication(Guid applicationId);
+	Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IamIdpAliasse)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId);
+	Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber)> GetCompanyAndApplicationDetailsForCreateWalletAsync(Guid applicationId);
+	IAsyncEnumerable<CompanyInvitedUserData> GetInvitedUsersDataByApplicationIdUntrackedAsync(Guid applicationId);
+	IAsyncEnumerable<EmailData> GetEmailDataUntrackedAsync(Guid applicationId);
+	IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null);
+	Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAddressUntrackedAsync(Guid companyApplicationId);
+	Task<(bool IsValidApplicationId, bool IsSameCompanyUser, RegistrationData? Data)> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes);
+	Task<(string? Bpn, IEnumerable<ApplicationChecklistEntryTypeId> ExistingChecklistEntryTypeIds)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId);
 
-    Task<(Guid CompanyId, string? BusinessPartnerNumber, string Alpha2Code, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers)> GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(Guid applicationId);
-    
-    /// <summary>
-    /// Gets the application status and the status of the application checklist entry of the given type
-    /// </summary>
-    /// <param name="applicationId">Id of the application to get the states for</param>
-    /// <param name="checklistEntryTypeId">Type of the checklist entry to check the status for</param>
-    /// <returns>Returns the status of the application checklist entry of the given type</returns>
-    Task<(CompanyApplicationStatusId ApplicationStatusId, ApplicationChecklistEntryStatusId RegistrationVerificationStatusId)> GetApplicationStatusWithChecklistTypeStatusAsync(Guid applicationId, ApplicationChecklistEntryTypeId checklistEntryTypeId);
+	Task<(Guid CompanyId, string? BusinessPartnerNumber, string Alpha2Code, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers)> GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(Guid applicationId);
 
-    /// <summary>
-    /// Gets the company bpn for the given application
-    /// </summary>
-    /// <param name="applicationId">Id of the application</param>
-    /// <returns>Returns the bpn</returns>
-    Task<string?> GetBpnForApplicationIdAsync(Guid applicationId);
+	/// <summary>
+	/// Gets the application status and the status of the application checklist entry of the given type
+	/// </summary>
+	/// <param name="applicationId">Id of the application to get the states for</param>
+	/// <param name="checklistEntryTypeId">Type of the checklist entry to check the status for</param>
+	/// <returns>Returns the status of the application checklist entry of the given type</returns>
+	Task<(CompanyApplicationStatusId ApplicationStatusId, ApplicationChecklistEntryStatusId RegistrationVerificationStatusId)> GetApplicationStatusWithChecklistTypeStatusAsync(Guid applicationId, ApplicationChecklistEntryTypeId checklistEntryTypeId);
 
-    /// <summary>
-    /// Gets the data needed to make the clearinghouse request for the given application
-    /// </summary>
-    /// <param name="applicationId">Id of the application</param>
-    /// <returns>Return the data needed to make the clearinghouse request</returns>
-    Task<ClearinghouseData?> GetClearinghouseDataForApplicationId(Guid applicationId);
+	/// <summary>
+	/// Gets the company bpn for the given application
+	/// </summary>
+	/// <param name="applicationId">Id of the application</param>
+	/// <returns>Returns the bpn</returns>
+	Task<string?> GetBpnForApplicationIdAsync(Guid applicationId);
 
-    /// <summary>
-    /// Gets the submitted application id and the clearinghouse checklist state for the given bpn
-    /// </summary>
-    /// <param name="bpn">Bpn of the company to get the application for</param>
-    /// <returns></returns>
-    IAsyncEnumerable<Guid> GetSubmittedApplicationIdsByBpn(string bpn);
+	/// <summary>
+	/// Gets the data needed to make the clearinghouse request for the given application
+	/// </summary>
+	/// <param name="applicationId">Id of the application</param>
+	/// <returns>Return the data needed to make the clearinghouse request</returns>
+	Task<ClearinghouseData?> GetClearinghouseDataForApplicationId(Guid applicationId);
 
-    /// <summary>
-    /// Gets the bpdm data for the given application
-    /// </summary>
-    /// <param name="applicationId">Id of the application</param>
-    /// <returns>Returns the bpdm data</returns>
-    Task<(Guid CompanyId, BpdmData BpdmData)> GetBpdmDataForApplicationAsync(Guid applicationId);
+	/// <summary>
+	/// Gets the submitted application id and the clearinghouse checklist state for the given bpn
+	/// </summary>
+	/// <param name="bpn">Bpn of the company to get the application for</param>
+	/// <returns></returns>
+	IAsyncEnumerable<Guid> GetSubmittedApplicationIdsByBpn(string bpn);
 
-    /// <summary>
-    /// Gets the checklist data for a specific application
-    /// </summary>
-    /// <param name="applicationId">Id of the application</param>
-    /// <returns>Returns the checklist data</returns>
-    Task<(bool Exists, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId, string? Comment)> ChecklistData, IEnumerable<ProcessStepTypeId> ProcessStepTypeIds)> GetApplicationChecklistData(Guid applicationId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+	/// <summary>
+	/// Gets the bpdm data for the given application
+	/// </summary>
+	/// <param name="applicationId">Id of the application</param>
+	/// <returns>Returns the bpdm data</returns>
+	Task<(Guid CompanyId, BpdmData BpdmData)> GetBpdmDataForApplicationAsync(Guid applicationId);
 
-    /// <summary>
-    /// Gets the id of the company for the submitted application
-    /// </summary>
-    /// <param name="applicationId">Id of the application</param>
-    /// <returns>The id of the company for the given application</returns>
-    Task<(Guid CompanyId, string CompanyName)> GetCompanyIdNameForSubmittedApplication(Guid applicationId);
+	/// <summary>
+	/// Gets the checklist data for a specific application
+	/// </summary>
+	/// <param name="applicationId">Id of the application</param>
+	/// <returns>Returns the checklist data</returns>
+	Task<(bool Exists, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId, string? Comment)> ChecklistData, IEnumerable<ProcessStepTypeId> ProcessStepTypeIds)> GetApplicationChecklistData(Guid applicationId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+
+	/// <summary>
+	/// Gets the id of the company for the submitted application
+	/// </summary>
+	/// <param name="applicationId">Id of the application</param>
+	/// <returns>The id of the company for the given application</returns>
+	Task<(Guid CompanyId, string CompanyName)> GetCompanyIdNameForSubmittedApplication(Guid applicationId);
 }

@@ -22,18 +22,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class OfferAssignedLicense
 {
-    private OfferAssignedLicense() {}
+	private OfferAssignedLicense() { }
 
-    public OfferAssignedLicense(Guid offerId, Guid offerLicenseId)
-    {
-        OfferId = offerId;
-        OfferLicenseId = offerLicenseId;
-    }
+	public OfferAssignedLicense(Guid offerId, Guid offerLicenseId)
+	{
+		OfferId = offerId;
+		OfferLicenseId = offerLicenseId;
+	}
 
-    public Guid OfferId { get; private set; }
-    public Guid OfferLicenseId { get; private set; }
+	public Guid OfferId { get; private set; }
+	public Guid OfferLicenseId { get; private set; }
 
-    // Navigation properties
-    public virtual Offer? Offer { get; set; }
-    public virtual OfferLicense? OfferLicense { get; set; }
+	// Navigation properties
+	public virtual Offer? Offer { get; set; }
+	public virtual OfferLicense? OfferLicense { get; set; }
 }

@@ -24,34 +24,34 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// </summary>
 public class CompanyIamUser
 {
-    public CompanyIamUser(Guid companyId, IEnumerable<Guid> roleIds)
-    {
-        CompanyId = companyId;
-        RoleIds = roleIds;
-    }
+	public CompanyIamUser(Guid companyId, IEnumerable<Guid> roleIds)
+	{
+		CompanyId = companyId;
+		RoleIds = roleIds;
+	}
 
-    /// <summary>
-    /// Target IamUser Id
-    /// </summary>
-    /// <value></value>
-    public string? TargetIamUserId { get; set; }
+	/// <summary>
+	/// Target IamUser Id
+	/// </summary>
+	/// <value></value>
+	public string? TargetIamUserId { get; set; }
 
-    /// <summary>
-    /// Idp Name
-    /// </summary>
-    /// <value></value>
-    public string? IdpName { get; set; }
+	/// <summary>
+	/// Idp Name
+	/// </summary>
+	/// <value></value>
+	public string? IdpName { get; set; }
 
-    /// <summary>
-    /// Id of the company
-    /// </summary>
-    /// <value></value>
-    public Guid CompanyId { get; set; }
+	/// <summary>
+	/// Id of the company
+	/// </summary>
+	/// <value></value>
+	public Guid CompanyId { get; set; }
 
-    /// <summary>
-    /// Role Ids of User
-    /// </summary>
-    /// <value></value>
-    public IEnumerable<Guid> RoleIds { get; set; }
+	/// <summary>
+	/// Role Ids of User
+	/// </summary>
+	/// <value></value>
+	public IEnumerable<Guid> RoleIds { get; set; }
 }
 

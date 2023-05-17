@@ -24,33 +24,33 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public class InvitationSettings
 {
-    public InvitationSettings()
-    {
-        RegistrationAppAddress = null!;
-        InvitedUserInitialRoles = null!;
-        InitialLoginTheme = null!;
-    }
+	public InvitationSettings()
+	{
+		RegistrationAppAddress = null!;
+		InvitedUserInitialRoles = null!;
+		InitialLoginTheme = null!;
+	}
 
-    [Required(AllowEmptyStrings = false)]
-    public string RegistrationAppAddress { get; set; }
+	[Required(AllowEmptyStrings = false)]
+	public string RegistrationAppAddress { get; set; }
 
-    [Required]
-    public IDictionary<string,IEnumerable<string>> InvitedUserInitialRoles { get; set; }
+	[Required]
+	public IDictionary<string, IEnumerable<string>> InvitedUserInitialRoles { get; set; }
 
-    [Required(AllowEmptyStrings = false)]
-    public string InitialLoginTheme { get; set; }
+	[Required(AllowEmptyStrings = false)]
+	public string InitialLoginTheme { get; set; }
 }
 
 public static class InvitationSettingsExtension
 {
-    public static IServiceCollection ConfigureInvitationSettings(
-        this IServiceCollection services,
-        IConfigurationSection section)
-    {
-        services.AddOptions<InvitationSettings>()
-            .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-        return services;
-    }
+	public static IServiceCollection ConfigureInvitationSettings(
+		this IServiceCollection services,
+		IConfigurationSection section)
+	{
+		services.AddOptions<InvitationSettings>()
+			.Bind(section)
+			.ValidateDataAnnotations()
+			.ValidateOnStart();
+		return services;
+	}
 }

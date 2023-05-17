@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -21,8 +21,8 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
 public record CreateTechnicalUserData(
-    Guid CompanyId,
-    string? Bpn,
-    string TechnicalUserName,
-    bool EnhanceTechnicalUserName
+	Guid CompanyId,
+	string? Bpn,
+	string TechnicalUserName,
+	bool EnhanceTechnicalUserName
 );

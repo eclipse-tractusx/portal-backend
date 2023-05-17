@@ -31,7 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 /// <param name="IamClientAuthMethod">Method of the authentication</param>
 /// <param name="UserRoleIds">ids for the user roles</param>
 public record ServiceAccountCreationInfo(
-    [property: JsonPropertyName("name")] string Name,
-    [property: JsonPropertyName("description")] string Description,
-    [property: JsonPropertyName("authenticationType")] IamClientAuthMethod IamClientAuthMethod,
-    [property: JsonPropertyName("roleIds")] IEnumerable<Guid> UserRoleIds);
+	[property: JsonPropertyName("name")] string Name,
+	[property: JsonPropertyName("description")] string Description,
+	[property: JsonPropertyName("authenticationType")] IamClientAuthMethod IamClientAuthMethod,
+	[property: JsonPropertyName("roleIds")] IEnumerable<Guid> UserRoleIds);

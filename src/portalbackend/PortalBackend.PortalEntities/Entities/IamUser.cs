@@ -24,23 +24,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class IamUser
 {
-    public IamUser()
-    {
-        UserEntityId = null!;
-    }
+	public IamUser()
+	{
+		UserEntityId = null!;
+	}
 
-    public IamUser(string iamUserId, Guid companyUserId)
-    {
-        UserEntityId = iamUserId;
-        CompanyUserId = companyUserId;
-    }
+	public IamUser(string iamUserId, Guid companyUserId)
+	{
+		UserEntityId = iamUserId;
+		CompanyUserId = companyUserId;
+	}
 
-    [Key]
-    [MaxLength(36)]
-    public string UserEntityId { get; set; }
+	[Key]
+	[MaxLength(36)]
+	public string UserEntityId { get; set; }
 
-    public Guid CompanyUserId { get; set; }
+	public Guid CompanyUserId { get; set; }
 
-    // Navigation properties
-    public virtual CompanyUser? CompanyUser { get; set; }
+	// Navigation properties
+	public virtual CompanyUser? CompanyUser { get; set; }
 }

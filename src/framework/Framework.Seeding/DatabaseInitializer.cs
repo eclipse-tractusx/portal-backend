@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -26,30 +26,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
 public class DatabaseInitializer<TDbContext> : IDatabaseInitializer where TDbContext : DbContext
 {
-    private readonly TDbContext _dbContext;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<DatabaseInitializer<TDbContext>> _logger;
+	private readonly TDbContext _dbContext;
+	private readonly IServiceProvider _serviceProvider;
+	private readonly ILogger<DatabaseInitializer<TDbContext>> _logger;
 
-    public DatabaseInitializer(TDbContext dbContext, IServiceProvider serviceProvider, ILogger<DatabaseInitializer<TDbContext>> logger)
-    {
-        _dbContext = dbContext;
-        _serviceProvider = serviceProvider;
-        _logger = logger;
-    }
+	public DatabaseInitializer(TDbContext dbContext, IServiceProvider serviceProvider, ILogger<DatabaseInitializer<TDbContext>> logger)
+	{
+		_dbContext = dbContext;
+		_serviceProvider = serviceProvider;
+		_logger = logger;
+	}
 
-    public async Task InitializeDatabasesAsync(CancellationToken cancellationToken)
-    {
-        if ((await _dbContext.Database.GetPendingMigrationsAsync(cancellationToken).ConfigureAwait(false)).Any())
-        {
-            _logger.LogInformation("Applying Migrations");
-            await _dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
-        }
+	public async Task InitializeDatabasesAsync(CancellationToken cancellationToken)
+	{
+		if ((await _dbContext.Database.GetPendingMigrationsAsync(cancellationToken).ConfigureAwait(false)).Any())
+		{
+			_logger.LogInformation("Applying Migrations");
+			await _dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
+		}
 
-        // First create a new scope
-        using var scope = _serviceProvider.CreateScope();
+		// First create a new scope
+		using var scope = _serviceProvider.CreateScope();
 
-        // Then run the initialization in the new scope
-        await scope.ServiceProvider.GetRequiredService<DbInitializer<TDbContext>>()
-            .InitializeAsync(cancellationToken).ConfigureAwait(false);
-    }
+		// Then run the initialization in the new scope
+		await scope.ServiceProvider.GetRequiredService<DbInitializer<TDbContext>>()
+			.InitializeAsync(cancellationToken).ConfigureAwait(false);
+	}
 }

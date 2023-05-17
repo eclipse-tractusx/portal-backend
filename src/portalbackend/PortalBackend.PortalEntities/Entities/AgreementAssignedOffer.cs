@@ -22,18 +22,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class AgreementAssignedOffer
 {
-    private AgreementAssignedOffer() {}
+	private AgreementAssignedOffer() { }
 
-    public AgreementAssignedOffer(Guid agreementId, Guid offerId)
-    {
-        AgreementId = agreementId;
-        OfferId = offerId;
-    }
+	public AgreementAssignedOffer(Guid agreementId, Guid offerId)
+	{
+		AgreementId = agreementId;
+		OfferId = offerId;
+	}
 
-    public Guid AgreementId { get; private set; }
-    public Guid OfferId { get; private set; }
+	public Guid AgreementId { get; private set; }
+	public Guid OfferId { get; private set; }
 
-    // Navigation properties
-    public virtual Agreement? Agreement { get; private set; }
-    public virtual Offer? Offer { get; private set; }
+	// Navigation properties
+	public virtual Agreement? Agreement { get; private set; }
+	public virtual Offer? Offer { get; private set; }
 }

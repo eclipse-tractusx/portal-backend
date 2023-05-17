@@ -22,6 +22,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 
 public enum IamIdentityProviderProtocol
 {
-    SAML = 1,
-    OIDC = 2
+	SAML = 1,
+	OIDC = 2
 }

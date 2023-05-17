@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmi
 
 public enum Policies
 {
-    Skip,
-    Overwrite,
-    Fail
+	Skip,
+	Overwrite,
+	Fail
 }

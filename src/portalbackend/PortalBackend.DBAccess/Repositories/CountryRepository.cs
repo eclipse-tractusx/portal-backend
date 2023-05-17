@@ -26,30 +26,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public class CountryRepository : ICountryRepository
 {
-    private readonly PortalDbContext _portalDbContext;
+	private readonly PortalDbContext _portalDbContext;
 
-    /// <summary>
-    /// Creates an instance of <see cref="CountryRepository"/>
-    /// </summary>
-    /// <param name="portalDbContext">The database</param>
-    public CountryRepository(PortalDbContext portalDbContext)
-    {
-        _portalDbContext = portalDbContext;
-    }
+	/// <summary>
+	/// Creates an instance of <see cref="CountryRepository"/>
+	/// </summary>
+	/// <param name="portalDbContext">The database</param>
+	public CountryRepository(PortalDbContext portalDbContext)
+	{
+		_portalDbContext = portalDbContext;
+	}
 
-    /// <inheritdoc />
-    public Task<bool> CheckCountryExistsByAlpha2CodeAsync(string alpha2Code) =>
-        _portalDbContext.Countries.AnyAsync(x => x.Alpha2Code == alpha2Code);
+	/// <inheritdoc />
+	public Task<bool> CheckCountryExistsByAlpha2CodeAsync(string alpha2Code) =>
+		_portalDbContext.Countries.AnyAsync(x => x.Alpha2Code == alpha2Code);
 
-    public Task<(bool IsValidCountry, IEnumerable<UniqueIdentifierId> UniqueIdentifierIds)> GetCountryAssignedIdentifiers(string alpha2Code, IEnumerable<UniqueIdentifierId> uniqueIdentifierIds) =>
-        _portalDbContext.Countries
-            .AsNoTracking()
-            .Where(country => country.Alpha2Code == alpha2Code)
-            .Select(country => new ValueTuple<bool,IEnumerable<UniqueIdentifierId>>(
-                true,
-                country.CountryAssignedIdentifiers
-                    .Where(assignedIdentifier => uniqueIdentifierIds.Contains(assignedIdentifier.UniqueIdentifierId))
-                    .Select(assignedIdentifier => assignedIdentifier.UniqueIdentifierId)
-            ))
-            .SingleOrDefaultAsync();
+	public Task<(bool IsValidCountry, IEnumerable<UniqueIdentifierId> UniqueIdentifierIds)> GetCountryAssignedIdentifiers(string alpha2Code, IEnumerable<UniqueIdentifierId> uniqueIdentifierIds) =>
+		_portalDbContext.Countries
+			.AsNoTracking()
+			.Where(country => country.Alpha2Code == alpha2Code)
+			.Select(country => new ValueTuple<bool, IEnumerable<UniqueIdentifierId>>(
+				true,
+				country.CountryAssignedIdentifiers
+					.Where(assignedIdentifier => uniqueIdentifierIds.Contains(assignedIdentifier.UniqueIdentifierId))
+					.Select(assignedIdentifier => assignedIdentifier.UniqueIdentifierId)
+			))
+			.SingleOrDefaultAsync();
 }

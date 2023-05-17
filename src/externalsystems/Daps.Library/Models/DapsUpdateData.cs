@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -23,6 +23,6 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.Daps.Library.Models;
 
 public record DapsUpdateData(
-    [property: JsonPropertyName("referringConnector")]
-    string ReferringConnector
+	[property: JsonPropertyName("referringConnector")]
+	string ReferringConnector
 );

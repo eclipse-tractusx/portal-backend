@@ -18,51 +18,51 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 [AuditEntityV1(typeof(AuditUserRole20221017))]
 public class UserRole : IAuditableV1, IBaseEntity
 {
-    private UserRole()
-    {
-        UserRoleText = null!;
-        CompanyUsers = new HashSet<CompanyUser>();
-        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
-        UserRoleCollections = new HashSet<UserRoleCollection>();
-        UserRoleDescriptions = new HashSet<UserRoleDescription>();
-        TechnicalUserProfiles = new HashSet<TechnicalUserProfile>();
-    }
+	private UserRole()
+	{
+		UserRoleText = null!;
+		CompanyUsers = new HashSet<CompanyUser>();
+		CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
+		UserRoleCollections = new HashSet<UserRoleCollection>();
+		UserRoleDescriptions = new HashSet<UserRoleDescription>();
+		TechnicalUserProfiles = new HashSet<TechnicalUserProfile>();
+	}
 
-    public UserRole(Guid id, string userRoleText, Guid offerId) : this()
-    {
-        Id = id;
-        UserRoleText = userRoleText;
-        OfferId = offerId;
-    }
+	public UserRole(Guid id, string userRoleText, Guid offerId) : this()
+	{
+		Id = id;
+		UserRoleText = userRoleText;
+		OfferId = offerId;
+	}
 
-    public Guid Id { get; private set; }
+	public Guid Id { get; private set; }
 
-    [MaxLength(255)]
-    [Column("user_role")]
-    [JsonPropertyName("user_role")]
-    public string UserRoleText { get; set; }
+	[MaxLength(255)]
+	[Column("user_role")]
+	[JsonPropertyName("user_role")]
+	public string UserRoleText { get; set; }
 
-    public Guid OfferId { get; set; }
-    
-    [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
-    // Navigation properties
-    public virtual Offer? Offer { get; set; }
-    public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
-    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
-    public virtual ICollection<UserRoleCollection> UserRoleCollections { get; private set; }
-    public virtual ICollection<UserRoleDescription> UserRoleDescriptions { get; private set; }
-    public virtual ICollection<TechnicalUserProfile> TechnicalUserProfiles { get; private set; }
+	public Guid OfferId { get; set; }
+
+	[AuditLastEditorV1]
+	public Guid? LastEditorId { get; set; }
+	// Navigation properties
+	public virtual Offer? Offer { get; set; }
+	public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
+	public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
+	public virtual ICollection<UserRoleCollection> UserRoleCollections { get; private set; }
+	public virtual ICollection<UserRoleDescription> UserRoleDescriptions { get; private set; }
+	public virtual ICollection<TechnicalUserProfile> TechnicalUserProfiles { get; private set; }
 }

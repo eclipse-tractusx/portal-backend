@@ -25,13 +25,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// </summary> 
 public enum OfferStatusIdFilter
 {
-    /// <summary>
-    /// Filters the InReview OfferStatusId information
-    /// </summary>    
-    InReview = 1,
+	/// <summary>
+	/// Filters the InReview OfferStatusId information
+	/// </summary>    
+	InReview = 1,
 
-    /// <summary>
-    /// Filters the InReview and Active OfferStatusId information
-    /// </summary>
-    All = 2
+	/// <summary>
+	/// Filters the InReview and Active OfferStatusId information
+	/// </summary>
+	All = 2
 }

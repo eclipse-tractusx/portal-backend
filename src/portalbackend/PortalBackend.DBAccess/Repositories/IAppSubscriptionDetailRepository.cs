@@ -27,11 +27,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// </summary>
 public interface IAppSubscriptionDetailRepository
 {
-    /// <summary>
-    /// Add app Id and Document Id in App Assigned Document table 
-    /// </summary>
-    /// <param name="offerSubscriptionId">Id of the offer subscription to link the details to</param>
-    /// <param name="updateOptionalFields">Action to update the optional fields</param>
-    /// <returns>The created App subscription detail</returns>
-    AppSubscriptionDetail CreateAppSubscriptionDetail(Guid offerSubscriptionId, Action<AppSubscriptionDetail>? updateOptionalFields = null);
+	/// <summary>
+	/// Add app Id and Document Id in App Assigned Document table 
+	/// </summary>
+	/// <param name="offerSubscriptionId">Id of the offer subscription to link the details to</param>
+	/// <param name="updateOptionalFields">Action to update the optional fields</param>
+	/// <returns>The created App subscription detail</returns>
+	AppSubscriptionDetail CreateAppSubscriptionDetail(Guid offerSubscriptionId, Action<AppSubscriptionDetail>? updateOptionalFields = null);
 }

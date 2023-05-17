@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class InvitationStatus
 {
-    private InvitationStatus()
-    {
-        Label = null!;
-        Invitations = new HashSet<Invitation>();
-    }
+	private InvitationStatus()
+	{
+		Label = null!;
+		Invitations = new HashSet<Invitation>();
+	}
 
-    public InvitationStatus(InvitationStatusId invitationStatusId) : this()
-    {
-        Id = invitationStatusId;
-        Label = invitationStatusId.ToString();
-    }
+	public InvitationStatus(InvitationStatusId invitationStatusId) : this()
+	{
+		Id = invitationStatusId;
+		Label = invitationStatusId.ToString();
+	}
 
-    public InvitationStatusId Id { get; private set; }
+	public InvitationStatusId Id { get; private set; }
 
-    [MaxLength(255)]
-    public string Label { get; private set; }
+	[MaxLength(255)]
+	public string Label { get; private set; }
 
-    // Navigation properties
-    public virtual ICollection<Invitation> Invitations { get; private set; }
+	// Navigation properties
+	public virtual ICollection<Invitation> Invitations { get; private set; }
 }

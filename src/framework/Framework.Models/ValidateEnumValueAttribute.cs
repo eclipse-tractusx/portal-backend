@@ -25,15 +25,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 public class ValidateEnumValueAttribute : ValidationAttribute
 {
-    override protected ValidationResult? IsValid(object? value, ValidationContext validationContext)
-    {
-        var type = value?.GetType();
-        if (type is null || !type.IsEnum)
-        {
-            throw new UnexpectedConditionException($"invalid use of attribute ValidateEnumValue: {validationContext.MemberName}, value {validationContext.ObjectInstance} is of type {validationContext.ObjectType} which is not an Enum-type");
-        }
-        return Array.BinarySearch(type.GetEnumValues(), value) < 0
-            ? new ValidationResult($"{value} is not a valid value for {type}. Valid values are: {string.Join(", ", type.GetEnumNames())}")
-            : null;
-    }
+	protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+	{
+		var type = value?.GetType();
+		if (type is null || !type.IsEnum)
+		{
+			throw new UnexpectedConditionException($"invalid use of attribute ValidateEnumValue: {validationContext.MemberName}, value {validationContext.ObjectInstance} is of type {validationContext.ObjectType} which is not an Enum-type");
+		}
+		return Array.BinarySearch(type.GetEnumValues(), value) < 0
+			? new ValidationResult($"{value} is not a valid value for {type}. Valid values are: {string.Join(", ", type.GetEnumNames())}")
+			: null;
+	}
 }

@@ -24,19 +24,19 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
 using Newtonsoft.Json;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Components;
 
 public class ComponentType
 {
-    [JsonProperty("id")]
-    public string Id { get; set; }
-    [JsonProperty("helpText")]
-    public string HelpText { get; set; }
-    [JsonProperty("properties")]
-    public IEnumerable<ConfigProperty> Properties { get; set; }
-    [JsonProperty("metadata")]
-    public IDictionary<string, object> Metadata { get; set; }
+	[JsonProperty("id")]
+	public string Id { get; set; }
+	[JsonProperty("helpText")]
+	public string HelpText { get; set; }
+	[JsonProperty("properties")]
+	public IEnumerable<ConfigProperty> Properties { get; set; }
+	[JsonProperty("metadata")]
+	public IDictionary<string, object> Metadata { get; set; }
 }

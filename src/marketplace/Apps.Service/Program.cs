@@ -22,9 +22,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 var VERSION = "v2";
@@ -32,21 +32,21 @@ var VERSION = "v2";
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-    .AddMailingAndTemplateManager(builder.Configuration)
-    .AddPortalRepositories(builder.Configuration)
-    .AddProvisioningManager(builder.Configuration);
+	.AddMailingAndTemplateManager(builder.Configuration)
+	.AddPortalRepositories(builder.Configuration)
+	.AddProvisioningManager(builder.Configuration);
 
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
-                .AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>()            
-                .AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()            
-                .AddTransient<IOfferService, OfferService>()
-                .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
-                .AddTechnicalUserProfile(builder.Configuration.GetSection("AppMarketPlace"))
-                .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
+				.AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>()
+				.AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()
+				.AddTransient<IOfferService, OfferService>()
+				.AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
+				.AddTechnicalUserProfile()
+				.ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
 
 builder.Services.AddOfferSetupService();
 
 builder.Build()
-    .CreateApp<Program>("apps", VERSION, builder.Environment)
-    .Run();
+	.CreateApp<Program>("apps", VERSION, builder.Environment)
+	.Run();

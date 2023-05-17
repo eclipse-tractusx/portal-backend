@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,63 +18,64 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections.Concurrent;
-using System.Reflection;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.JsonHelper;
+using System.Collections.Concurrent;
+using System.Reflection;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
 public static class SeederHelper
 {
-    public static async Task<IList<T>> GetSeedData<T>(ILogger logger, string fileName, CancellationToken cancellationToken, params string[] additionalEnvironments) where T : class
-    {
-        var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        logger.LogInformation("Looking for files at {Location}", location);
-        if (location == null)
-        {
-            throw new ConflictException($"No location found for assembly {Assembly.GetExecutingAssembly()}");
-        }
+	public static async Task<IList<T>> GetSeedData<T>(ILogger logger, string fileName, CancellationToken cancellationToken, params string[] additionalEnvironments) where T : class
+	{
+		var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+		logger.LogInformation("Looking for files at {Location}", location);
+		if (location == null)
+		{
+			throw new ConflictException($"No location found for assembly {Assembly.GetExecutingAssembly()}");
+		}
 
-        var data = new ConcurrentBag<T>();
-        foreach (var entry in await GetDataFromFile<T>(logger, fileName, location, cancellationToken)
-                     .ConfigureAwait(false))
-        {
-            data.Add(entry);
-        }
+		var data = new ConcurrentBag<T>();
+		foreach (var entry in await GetDataFromFile<T>(logger, fileName, location, cancellationToken)
+					 .ConfigureAwait(false))
+		{
+			data.Add(entry);
+		}
 
-        ParallelOptions parallelOptions = new()
-        {
-            MaxDegreeOfParallelism = 3
-        };
-        await Parallel.ForEachAsync(additionalEnvironments, parallelOptions, async (env, ct) =>
-        {
-            foreach (var entry in await GetDataFromFile<T>(logger, fileName, location, ct, env).ConfigureAwait(false))
-            {
-                data.Add(entry);
-            }
-        }).ConfigureAwait(false);
+		ParallelOptions parallelOptions = new()
+		{
+			MaxDegreeOfParallelism = 3
+		};
+		await Parallel.ForEachAsync(additionalEnvironments, parallelOptions, async (env, ct) =>
+		{
+			foreach (var entry in await GetDataFromFile<T>(logger, fileName, location, ct, env).ConfigureAwait(false))
+			{
+				data.Add(entry);
+			}
+		}).ConfigureAwait(false);
 
-        return data.ToList();
-    }
+		return data.ToList();
+	}
 
-    private static async Task<List<T>> GetDataFromFile<T>(ILogger logger, string fileName, string location, CancellationToken cancellationToken, string? env = null) where T : class
-    {
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = new SnakeCaseNamingPolicy()
-        };
-        options.Converters.Add(new JsonDateTimeOffsetConverter());
+	private static async Task<List<T>> GetDataFromFile<T>(ILogger logger, string fileName, string location, CancellationToken cancellationToken, string? env = null) where T : class
+	{
+		var options = new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = new SnakeCaseNamingPolicy()
+		};
+		options.Converters.Add(new JsonDateTimeOffsetConverter());
 
-        var envPath = env == null ? null : $".{env}";
-        var path = Path.Combine(location, @"Seeder/Data", $"{fileName}{envPath}.json");
-        logger.LogInformation("Looking for file {Path}", path);
-        if (!File.Exists(path)) return new List<T>();
+		var envPath = env == null ? null : $".{env}";
+		var path = Path.Combine(location, @"Seeder/Data", $"{fileName}{envPath}.json");
+		logger.LogInformation("Looking for file {Path}", path);
+		if (!File.Exists(path))
+			return new List<T>();
 
-        var data = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
-        var list = JsonSerializer.Deserialize<List<T>>(data, options);
-        return list ?? new List<T>();
-    }
+		var data = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+		var list = JsonSerializer.Deserialize<List<T>>(data, options);
+		return list ?? new List<T>();
+	}
 }

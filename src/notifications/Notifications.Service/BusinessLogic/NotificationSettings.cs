@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -25,10 +25,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogi
 /// </summary>
 public class NotificationSettings
 {
-    /// <summary>
-    /// Max Page Size
-    /// </summary>
-    public int MaxPageSize { get; set; }
+	/// <summary>
+	/// Max Page Size
+	/// </summary>
+	public int MaxPageSize { get; set; }
 }
 
 /// <summary>
@@ -36,17 +36,17 @@ public class NotificationSettings
 /// </summary>
 public static class NotificationSettingsExtension
 {
-    /// <summary>
-    /// configure notification settings using service collection interface
-    /// </summary>
-    public static IServiceCollection ConfigureNotificationSettings(
-        this IServiceCollection services,
-        IConfigurationSection section)
-    {
-        services.AddOptions<NotificationSettings>()
-            .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-        return services;
-    }
+	/// <summary>
+	/// configure notification settings using service collection interface
+	/// </summary>
+	public static IServiceCollection ConfigureNotificationSettings(
+		this IServiceCollection services,
+		IConfigurationSection section)
+	{
+		services.AddOptions<NotificationSettings>()
+			.Bind(section)
+			.ValidateDataAnnotations()
+			.ValidateOnStart();
+		return services;
+	}
 }

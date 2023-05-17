@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections.Immutable;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +26,7 @@ using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Maintenance.App.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using System.Collections.Immutable;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Maintenance.App.Tests;
@@ -36,51 +36,51 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Maintenance.App.Test
 /// </summary>
 public class BatchDeleteServiceTests : IAssemblyFixture<TestDbFixture>
 {
-    private readonly TestDbFixture _dbTestDbFixture;
-    private readonly IFixture _fixture;
+	private readonly TestDbFixture _dbTestDbFixture;
+	private readonly IFixture _fixture;
 
-    public BatchDeleteServiceTests(TestDbFixture testDbFixture)
-    {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
+	public BatchDeleteServiceTests(TestDbFixture testDbFixture)
+	{
+		_fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+		_fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+			.ForEach(b => _fixture.Behaviors.Remove(b));
 
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-        _dbTestDbFixture = testDbFixture;
-    }
+		_fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+		_dbTestDbFixture = testDbFixture;
+	}
 
-    [Fact]
-    public async Task ExecuteAsync_WithOldDocumentsAndAssigned_Removes()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+	[Fact]
+	public async Task ExecuteAsync_WithOldDocumentsAndAssigned_Removes()
+	{
+		// Arrange
+		var sut = await CreateSut().ConfigureAwait(false);
 
-        // Act
-        await sut.StartAsync(CancellationToken.None).ConfigureAwait(false);
-        
-        // Assert
-        true.Should().BeTrue();
-    }
+		// Act
+		await sut.StartAsync(CancellationToken.None).ConfigureAwait(false);
 
-    private async Task<BatchDeleteService> CreateSut()
-    {
-        var hostApplicationLifetime = _fixture.Create<IHostApplicationLifetime>();
-        var inMemorySettings = new Dictionary<string, string> 
-        {
-            { "DeleteIntervalInDays", "5" }
-        }.ToImmutableDictionary();
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(inMemorySettings)
-            .Build();
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
-        
-        var serviceProvider = _fixture.Create<IServiceProvider>();
-        A.CallTo(() => serviceProvider.GetService(typeof(PortalDbContext))).Returns(context);
-        var serviceScope = _fixture.Create<IServiceScope>();
-        A.CallTo(() => serviceScope.ServiceProvider).Returns(serviceProvider);
-        var serviceScopeFactory = _fixture.Create<IServiceScopeFactory>();
-        A.CallTo(() => serviceScopeFactory.CreateScope()).Returns(serviceScope);
-        
-        return new BatchDeleteService(hostApplicationLifetime, serviceScopeFactory, _fixture.Create<ILogger<BatchDeleteService>>(), config);
-    }
+		// Assert
+		true.Should().BeTrue();
+	}
+
+	private async Task<BatchDeleteService> CreateSut()
+	{
+		var hostApplicationLifetime = _fixture.Create<IHostApplicationLifetime>();
+		var inMemorySettings = new Dictionary<string, string>
+		{
+			{ "DeleteIntervalInDays", "5" }
+		}.ToImmutableDictionary();
+		var config = new ConfigurationBuilder()
+			.AddInMemoryCollection(inMemorySettings)
+			.Build();
+		var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+
+		var serviceProvider = _fixture.Create<IServiceProvider>();
+		A.CallTo(() => serviceProvider.GetService(typeof(PortalDbContext))).Returns(context);
+		var serviceScope = _fixture.Create<IServiceScope>();
+		A.CallTo(() => serviceScope.ServiceProvider).Returns(serviceProvider);
+		var serviceScopeFactory = _fixture.Create<IServiceScopeFactory>();
+		A.CallTo(() => serviceScopeFactory.CreateScope()).Returns(serviceScope);
+
+		return new BatchDeleteService(hostApplicationLifetime, serviceScopeFactory, _fixture.Create<ILogger<BatchDeleteService>>(), config);
+	}
 }

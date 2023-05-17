@@ -22,8 +22,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 
 public static class VersionedEntityExtensions
 {
-    public static void UpdateVersion(this ILockableEntity entity)
-    {
-        entity.Version = Guid.NewGuid();
-    }
+	public static void UpdateVersion(this ILockableEntity entity)
+	{
+		entity.Version = Guid.NewGuid();
+	}
 }

@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -29,36 +29,36 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 /// </summary>
 public class AuditCompanyUser20221005 : IAuditEntityV1
 {
-    /// <inheritdoc />
-    [Key]
-    public Guid AuditV1Id { get; set; }
+	/// <inheritdoc />
+	[Key]
+	public Guid AuditV1Id { get; set; }
 
-    public Guid Id { get; set; }
+	public Guid Id { get; set; }
 
-    public DateTimeOffset DateCreated { get; set; }
+	public DateTimeOffset DateCreated { get; set; }
 
-    public string? Email { get; set; }
+	public string? Email { get; set; }
 
-    public string? Firstname { get; set; }
+	public string? Firstname { get; set; }
 
-    public byte[]? Lastlogin { get; set; }
+	public byte[]? Lastlogin { get; set; }
 
-    public string? Lastname { get; set; }
+	public string? Lastname { get; set; }
 
-    public Guid CompanyId { get; set; }
+	public Guid CompanyId { get; set; }
 
-    public CompanyUserStatusId CompanyUserStatusId { get; set; }
+	public CompanyUserStatusId CompanyUserStatusId { get; set; }
 
-    public DateTimeOffset? DateLastChanged { get; set; }
+	public DateTimeOffset? DateLastChanged { get; set; }
 
-    public Guid? LastEditorId { get; set; }
+	public Guid? LastEditorId { get; set; }
 
-    /// <inheritdoc />
-    public Guid? AuditV1LastEditorId { get; set; }
+	/// <inheritdoc />
+	public Guid? AuditV1LastEditorId { get; set; }
 
-    /// <inheritdoc />
-    public AuditOperationId AuditV1OperationId { get; set; }
-    
-    /// <inheritdoc />
-    public DateTimeOffset AuditV1DateLastChanged { get; set; }
+	/// <inheritdoc />
+	public AuditOperationId AuditV1OperationId { get; set; }
+
+	/// <inheritdoc />
+	public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

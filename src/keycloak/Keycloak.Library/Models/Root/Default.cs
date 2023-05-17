@@ -30,9 +30,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class Default
 {
-    [JsonProperty("order")]
-    public long Order { get; set; }
+	[JsonProperty("order")]
+	public long Order { get; set; }
 
-    [JsonProperty("operationalInfo")]
-    public OperationalInfo OperationalInfo { get; set; }
+	[JsonProperty("operationalInfo")]
+	public OperationalInfo OperationalInfo { get; set; }
 }

@@ -28,40 +28,40 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 /// </summary>
 public class NotificationTopic
 {
-    /// <summary>
-    /// Internal constructor, only for EF
-    /// </summary>
-    private NotificationTopic()
-    {
-        Label = null!;
-        NotificationTypeAssignedTopics = new HashSet<NotificationTypeAssignedTopic>();
-    }
+	/// <summary>
+	/// Internal constructor, only for EF
+	/// </summary>
+	private NotificationTopic()
+	{
+		Label = null!;
+		NotificationTypeAssignedTopics = new HashSet<NotificationTypeAssignedTopic>();
+	}
 
-    /// <summary>
-    /// Creates a new instance of <see cref="NotificationTopicId"/> and initializes the id and label 
-    /// </summary>
-    /// <param name="notificationTopicId">The notification topic id</param>
-    public NotificationTopic(NotificationTopicId notificationTopicId) : this()
-    {
-        Id = notificationTopicId;
-        Label = notificationTopicId.ToString();
-    }
+	/// <summary>
+	/// Creates a new instance of <see cref="NotificationTopicId"/> and initializes the id and label 
+	/// </summary>
+	/// <param name="notificationTopicId">The notification topic id</param>
+	public NotificationTopic(NotificationTopicId notificationTopicId) : this()
+	{
+		Id = notificationTopicId;
+		Label = notificationTopicId.ToString();
+	}
 
-    /// <summary>
-    /// Id of the type
-    /// </summary>
-    public NotificationTopicId Id { get; private set; }
+	/// <summary>
+	/// Id of the type
+	/// </summary>
+	public NotificationTopicId Id { get; private set; }
 
-    /// <summary>
-    /// The type as string 
-    /// </summary>
-    [MaxLength(255)]
-    public string Label { get; private set; }
+	/// <summary>
+	/// The type as string 
+	/// </summary>
+	[MaxLength(255)]
+	public string Label { get; private set; }
 
-    // Navigation properties
+	// Navigation properties
 
-    /// <summary>
-    /// Mapped notification types
-    /// </summary>
-    public virtual ICollection<NotificationTypeAssignedTopic> NotificationTypeAssignedTopics { get; private set; }
+	/// <summary>
+	/// Mapped notification types
+	/// </summary>
+	public virtual ICollection<NotificationTypeAssignedTopic> NotificationTypeAssignedTopics { get; private set; }
 }

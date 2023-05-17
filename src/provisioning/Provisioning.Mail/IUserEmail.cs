@@ -20,8 +20,8 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Mail
 {
-    public interface IUserEmail
-    {
-        Task SendMailAsync(string email, string firstName, string lastName, string realm);
-    }
+	public interface IUserEmail
+	{
+		Task SendMailAsync(string email, string firstName, string lastName, string realm);
+	}
 }

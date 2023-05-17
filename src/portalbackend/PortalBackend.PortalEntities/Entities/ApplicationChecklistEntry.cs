@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -24,30 +24,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ApplicationChecklistEntry
 {
-    public ApplicationChecklistEntry(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId applicationChecklistEntryStatusId, DateTimeOffset dateCreated)
-    {
-        ApplicationId = applicationId;
-        ApplicationChecklistEntryTypeId = applicationChecklistEntryTypeId;
-        ApplicationChecklistEntryStatusId = applicationChecklistEntryStatusId;
-        DateCreated = dateCreated;
-    }
-    
-    public Guid ApplicationId { get; private set; }
+	public ApplicationChecklistEntry(Guid applicationId, ApplicationChecklistEntryTypeId applicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId applicationChecklistEntryStatusId, DateTimeOffset dateCreated)
+	{
+		ApplicationId = applicationId;
+		ApplicationChecklistEntryTypeId = applicationChecklistEntryTypeId;
+		ApplicationChecklistEntryStatusId = applicationChecklistEntryStatusId;
+		DateCreated = dateCreated;
+	}
 
-    public DateTimeOffset DateCreated { get; private set; }
+	public Guid ApplicationId { get; private set; }
 
-    public DateTimeOffset? DateLastChanged { get; set; }
+	public DateTimeOffset DateCreated { get; private set; }
 
-    public ApplicationChecklistEntryTypeId ApplicationChecklistEntryTypeId { get; private set; }
+	public DateTimeOffset? DateLastChanged { get; set; }
 
-    public ApplicationChecklistEntryStatusId ApplicationChecklistEntryStatusId { get; set; }
+	public ApplicationChecklistEntryTypeId ApplicationChecklistEntryTypeId { get; private set; }
 
-    public string? Comment { get; set; }
+	public ApplicationChecklistEntryStatusId ApplicationChecklistEntryStatusId { get; set; }
 
-    // Navigation properties
-    public virtual ApplicationChecklistEntryStatus? ApplicationChecklistEntryStatus { get; private set; }
+	public string? Comment { get; set; }
 
-    public virtual ApplicationChecklistEntryType? ApplicationChecklistEntryType { get; private set; }
+	// Navigation properties
+	public virtual ApplicationChecklistEntryStatus? ApplicationChecklistEntryStatus { get; private set; }
 
-    public virtual CompanyApplication? Application { get; private set; }
+	public virtual ApplicationChecklistEntryType? ApplicationChecklistEntryType { get; private set; }
+
+	public virtual CompanyApplication? Application { get; private set; }
 }

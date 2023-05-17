@@ -22,8 +22,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library
 {
-    public partial class ProvisioningSettings
-    {
-        public Realm SharedRealm { get; set; }
-    }
+	public partial class ProvisioningSettings
+	{
+		public Realm SharedRealm { get; set; }
+	}
 }

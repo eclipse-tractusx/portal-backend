@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ApplicationChecklistEntryType
 {
-    private ApplicationChecklistEntryType()
-    {
-        Label = null!;
-        ApplicationChecklistEntries = new HashSet<ApplicationChecklistEntry>();
-    }
+	private ApplicationChecklistEntryType()
+	{
+		Label = null!;
+		ApplicationChecklistEntries = new HashSet<ApplicationChecklistEntry>();
+	}
 
-    public ApplicationChecklistEntryType(ApplicationChecklistEntryTypeId applicationChecklistEntryTypeId) : this()
-    {
-        Id = applicationChecklistEntryTypeId;
-        Label = applicationChecklistEntryTypeId.ToString();
-    }
+	public ApplicationChecklistEntryType(ApplicationChecklistEntryTypeId applicationChecklistEntryTypeId) : this()
+	{
+		Id = applicationChecklistEntryTypeId;
+		Label = applicationChecklistEntryTypeId.ToString();
+	}
 
-    public ApplicationChecklistEntryTypeId Id { get; private set; }
+	public ApplicationChecklistEntryTypeId Id { get; private set; }
 
-    [MaxLength(255)]
-    public string Label { get; private set; }
+	[MaxLength(255)]
+	public string Label { get; private set; }
 
-    // Navigation properties
-    public virtual ICollection<ApplicationChecklistEntry> ApplicationChecklistEntries { get; private set; }
+	// Navigation properties
+	public virtual ICollection<ApplicationChecklistEntry> ApplicationChecklistEntries { get; private set; }
 }

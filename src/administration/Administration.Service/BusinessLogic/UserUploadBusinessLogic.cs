@@ -32,227 +32,231 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 {
-    private readonly IUserProvisioningService _userProvisioningService;
-    private readonly IMailingService _mailingService;
-    private readonly UserSettings _settings;
+	private readonly IUserProvisioningService _userProvisioningService;
+	private readonly IMailingService _mailingService;
+	private readonly UserSettings _settings;
 
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="userProvisioningService">User Provisioning Service</param>
-    /// <param name="mailingService">Mailing Service</param>
-    /// <param name="settings">Settings</param>
-    public UserUploadBusinessLogic(
-        IUserProvisioningService userProvisioningService,
-        IMailingService mailingService,
-        IOptions<UserSettings> settings)
-    {
-        _userProvisioningService = userProvisioningService;
-        _mailingService = mailingService;
-        _settings = settings.Value;
-    }
+	/// <summary>
+	/// Constructor.
+	/// </summary>
+	/// <param name="userProvisioningService">User Provisioning Service</param>
+	/// <param name="mailingService">Mailing Service</param>
+	/// <param name="settings">Settings</param>
+	public UserUploadBusinessLogic(
+		IUserProvisioningService userProvisioningService,
+		IMailingService mailingService,
+		IOptions<UserSettings> settings)
+	{
+		_userProvisioningService = userProvisioningService;
+		_mailingService = mailingService;
+		_settings = settings.Value;
+	}
 
-    public ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
-    {
-        CsvParser.ValidateContentTypeTextCSV(document.ContentType);
-        return UploadOwnCompanyIdpUsersInternalAsync(identityProviderId, document, iamUserId, cancellationToken);
-    }
+	public ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
+	{
+		CsvParser.ValidateContentTypeTextCSV(document.ContentType);
+		return UploadOwnCompanyIdpUsersInternalAsync(identityProviderId, document, iamUserId, cancellationToken);
+	}
 
-    private async ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersInternalAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
-    {
-        using var stream = document.OpenReadStream();
+	private async ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersInternalAsync(Guid identityProviderId, IFormFile document, string iamUserId, CancellationToken cancellationToken)
+	{
+		using var stream = document.OpenReadStream();
 
-        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
+		var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, iamUserId).ConfigureAwait(false);
 
-        var validRoleData = new List<UserRoleData>();
+		var validRoleData = new List<UserRoleData>();
 
-        var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync(
-            stream,
-            line => {
-                var csvHeaders = new [] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.ProviderUserName, CsvHeaders.ProviderUserId, CsvHeaders.Roles }.Select(h => h.ToString());
-                CsvParser.ValidateCsvHeaders(line, csvHeaders);
-            },
-            async line => {
-                var parsed = ParseUploadOwnIdpUsersCSVLine(line, companyNameIdpAliasData.IsSharedIdp);
-                ValidateUserCreationRoles(parsed.Roles);
-                return new UserCreationRoleDataIdpInfo(
-                    parsed.FirstName,
-                    parsed.LastName,
-                    parsed.Email,
-                    await GetUserRoleDatas(parsed.Roles, validRoleData, iamUserId).ConfigureAwait(false),
-                    parsed.ProviderUserName,
-                    parsed.ProviderUserId);
-            },
-            lines => (companyNameIdpAliasData.IsSharedIdp
-                ? _userProvisioningService
-                    .CreateOwnCompanyIdpUsersAsync(
-                        companyNameIdpAliasData,
-                        lines,
-                        cancellationToken)
-                : CreateOwnCompanyIdpUsersWithEmailAsync(
-                        nameCreatedBy,
-                        companyNameIdpAliasData,
-                        lines,
-                        cancellationToken))
-                    .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
-            cancellationToken).ConfigureAwait(false);
+		var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync(
+			stream,
+			line =>
+			{
+				var csvHeaders = new[] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.ProviderUserName, CsvHeaders.ProviderUserId, CsvHeaders.Roles }.Select(h => h.ToString());
+				CsvParser.ValidateCsvHeaders(line, csvHeaders);
+			},
+			async line =>
+			{
+				var parsed = ParseUploadOwnIdpUsersCSVLine(line, companyNameIdpAliasData.IsSharedIdp);
+				ValidateUserCreationRoles(parsed.Roles);
+				return new UserCreationRoleDataIdpInfo(
+					parsed.FirstName,
+					parsed.LastName,
+					parsed.Email,
+					await GetUserRoleDatas(parsed.Roles, validRoleData, iamUserId).ConfigureAwait(false),
+					parsed.ProviderUserName,
+					parsed.ProviderUserId);
+			},
+			lines => (companyNameIdpAliasData.IsSharedIdp
+				? _userProvisioningService
+					.CreateOwnCompanyIdpUsersAsync(
+						companyNameIdpAliasData,
+						lines,
+						cancellationToken)
+				: CreateOwnCompanyIdpUsersWithEmailAsync(
+						nameCreatedBy,
+						companyNameIdpAliasData,
+						lines,
+						cancellationToken))
+					.Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
+			cancellationToken).ConfigureAwait(false);
 
-        return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
-    }
+		return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
+	}
 
-    async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersWithEmailAsync(string nameCreatedBy, CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        if (companyNameIdpAliasData.IsSharedIdp)
-        {
-            throw new UnexpectedConditionException($"unexpected call to {nameof(CreateOwnCompanyIdpUsersWithEmailAsync)} for shared-idp");
-        }
+	private async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersWithEmailAsync(string nameCreatedBy, CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, [EnumeratorCancellation] CancellationToken cancellationToken)
+	{
+		if (companyNameIdpAliasData.IsSharedIdp)
+		{
+			throw new UnexpectedConditionException($"unexpected call to {nameof(CreateOwnCompanyIdpUsersWithEmailAsync)} for shared-idp");
+		}
 
-        UserCreationRoleDataIdpInfo? userCreationInfo = null;
+		UserCreationRoleDataIdpInfo? userCreationInfo = null;
 
-        await foreach (var result in
-            _userProvisioningService
-                .CreateOwnCompanyIdpUsersAsync(
-                    companyNameIdpAliasData,
-                    userCreationInfos
-                        .Select(info =>
-                        {
-                            userCreationInfo = info;
-                            return info;
-                        }),
-                    cancellationToken)
-                .WithCancellation(cancellationToken)
-                .ConfigureAwait(false))
-        {
-            if (userCreationInfo == null)
-            {
-                throw new UnexpectedConditionException("userCreationInfo should never be null here");
-            }
-            if(result.Error != null || result.CompanyUserId == Guid.Empty || string.IsNullOrEmpty(userCreationInfo.Email))
-            {
-                yield return result;
-                continue;
-            }
+		await foreach (var result in
+			_userProvisioningService
+				.CreateOwnCompanyIdpUsersAsync(
+					companyNameIdpAliasData,
+					userCreationInfos
+						.Select(info =>
+						{
+							userCreationInfo = info;
+							return info;
+						}),
+					cancellationToken)
+				.WithCancellation(cancellationToken)
+				.ConfigureAwait(false))
+		{
+			if (userCreationInfo == null)
+			{
+				throw new UnexpectedConditionException("userCreationInfo should never be null here");
+			}
+			if (result.Error != null || result.CompanyUserId == Guid.Empty || string.IsNullOrEmpty(userCreationInfo.Email))
+			{
+				yield return result;
+				continue;
+			}
 
-            var mailParameters = new Dictionary<string,string>()
-            {
-                { "nameCreatedBy", nameCreatedBy },
-                { "url", _settings.Portal.BasePortalAddress },
-            };
+			var mailParameters = new Dictionary<string, string>()
+			{
+				{ "nameCreatedBy", nameCreatedBy },
+				{ "url", _settings.Portal.BasePortalAddress },
+			};
 
-            var mailTemplates = new [] { "NewUserOwnIdpTemplate" };
+			var mailTemplates = new[] { "NewUserOwnIdpTemplate" };
 
-            Exception? mailError;
-            try
-            {
-                await _mailingService.SendMails(userCreationInfo.Email, mailParameters, mailTemplates).ConfigureAwait(false);
-                mailError = null;
-            }
-            catch(Exception e)
-            {
-                mailError = e;
-            }
-            yield return (result.CompanyUserId, result.UserName, result.Password, mailError);
-        }
-    }
+			Exception? mailError;
+			try
+			{
+				await _mailingService.SendMails(userCreationInfo.Email, mailParameters, mailTemplates).ConfigureAwait(false);
+				mailError = null;
+			}
+			catch (Exception e)
+			{
+				mailError = e;
+			}
+			yield return (result.CompanyUserId, result.UserName, result.Password, mailError);
+		}
+	}
 
-    private static void ValidateUserCreationRoles(IEnumerable<string> roles)
-    {
-        if (!roles.Any())
-        {
-            throw new ControllerArgumentException("at least one role must be specified");
-        }
-    }
+	private static void ValidateUserCreationRoles(IEnumerable<string> roles)
+	{
+		if (!roles.Any())
+		{
+			throw new ControllerArgumentException("at least one role must be specified");
+		}
+	}
 
-    private static (string FirstName, string LastName, string Email, string ProviderUserName, string ProviderUserId, IEnumerable<string> Roles) ParseUploadOwnIdpUsersCSVLine(string line, bool isSharedIdp)
-    {
-        var items = line.Split(",").AsEnumerable().GetEnumerator();
-        var firstName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.FirstName);
-        var lastName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.LastName);
-        var email = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.Email);
-        var providerUserName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.ProviderUserName);
-        var providerUserId = isSharedIdp
-            ? CsvParser.NextStringItemIsNotNull(items,CsvHeaders.ProviderUserId)
-            : CsvParser.NextStringItemIsNotNullOrWhiteSpace(items,CsvHeaders.ProviderUserId);
-        var roles = CsvParser.TrailingStringItemsNotNullOrWhiteSpace(items, CsvHeaders.Roles).ToList();
-        return (firstName, lastName, email, providerUserName, providerUserId, roles);
-    }
+	private static (string FirstName, string LastName, string Email, string ProviderUserName, string ProviderUserId, IEnumerable<string> Roles) ParseUploadOwnIdpUsersCSVLine(string line, bool isSharedIdp)
+	{
+		var items = line.Split(",").AsEnumerable().GetEnumerator();
+		var firstName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.FirstName);
+		var lastName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.LastName);
+		var email = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.Email);
+		var providerUserName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.ProviderUserName);
+		var providerUserId = isSharedIdp
+			? CsvParser.NextStringItemIsNotNull(items, CsvHeaders.ProviderUserId)
+			: CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.ProviderUserId);
+		var roles = CsvParser.TrailingStringItemsNotNullOrWhiteSpace(items, CsvHeaders.Roles).ToList();
+		return (firstName, lastName, email, providerUserName, providerUserId, roles);
+	}
 
-    public ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken)
-    {
-        CsvParser.ValidateContentTypeTextCSV(document.ContentType);
-        return UploadOwnCompanySharedIdpUsersInternalAsync(document, iamUserId, cancellationToken);
-    }
+	public ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken)
+	{
+		CsvParser.ValidateContentTypeTextCSV(document.ContentType);
+		return UploadOwnCompanySharedIdpUsersInternalAsync(document, iamUserId, cancellationToken);
+	}
 
-    private async ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersInternalAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken)
-    {
-        using var stream = document.OpenReadStream();
+	private async ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersInternalAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken)
+	{
+		using var stream = document.OpenReadStream();
 
-        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(iamUserId).ConfigureAwait(false);
+		var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(iamUserId).ConfigureAwait(false);
 
-        var validRoleData = new List<UserRoleData>();
+		var validRoleData = new List<UserRoleData>();
 
-        var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync(
-            stream,
-            line => {
-                var csvHeaders = new [] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.Roles }.Select(h => h.ToString());
-                CsvParser.ValidateCsvHeaders(line, csvHeaders);
-            },
-            async line => {
-                var parsed = ParseUploadSharedIdpUsersCSVLine(line);
-                ValidateUserCreationRoles(parsed.Roles);
-                return new UserCreationRoleDataIdpInfo(
-                    parsed.FirstName,
-                    parsed.LastName,
-                    parsed.Email,
-                    await GetUserRoleDatas(parsed.Roles, validRoleData, iamUserId).ConfigureAwait(false),
-                    parsed.Email,
-                    "");
-            },
-            lines =>
-                _userProvisioningService
-                    .CreateOwnCompanyIdpUsersAsync(
-                        companyNameIdpAliasData,
-                        lines,
-                        cancellationToken)
-                    .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
-            cancellationToken).ConfigureAwait(false);
+		var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync(
+			stream,
+			line =>
+			{
+				var csvHeaders = new[] { CsvHeaders.FirstName, CsvHeaders.LastName, CsvHeaders.Email, CsvHeaders.Roles }.Select(h => h.ToString());
+				CsvParser.ValidateCsvHeaders(line, csvHeaders);
+			},
+			async line =>
+			{
+				var parsed = ParseUploadSharedIdpUsersCSVLine(line);
+				ValidateUserCreationRoles(parsed.Roles);
+				return new UserCreationRoleDataIdpInfo(
+					parsed.FirstName,
+					parsed.LastName,
+					parsed.Email,
+					await GetUserRoleDatas(parsed.Roles, validRoleData, iamUserId).ConfigureAwait(false),
+					parsed.Email,
+					"");
+			},
+			lines =>
+				_userProvisioningService
+					.CreateOwnCompanyIdpUsersAsync(
+						companyNameIdpAliasData,
+						lines,
+						cancellationToken)
+					.Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
+			cancellationToken).ConfigureAwait(false);
 
-        return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
-    }
+		return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
+	}
 
-    private async ValueTask<IEnumerable<UserRoleData>> GetUserRoleDatas(IEnumerable<string> roles, List<UserRoleData> validRoleData, string iamUserId)
-    {
-        var unknownRoles = roles.Except(validRoleData.Select(r => r.UserRoleText));
-        if (unknownRoles.Any())
-        {
-            var roleData = await _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, unknownRoles, iamUserId)
-                .ConfigureAwait(false);
+	private async ValueTask<IEnumerable<UserRoleData>> GetUserRoleDatas(IEnumerable<string> roles, List<UserRoleData> validRoleData, string iamUserId)
+	{
+		var unknownRoles = roles.Except(validRoleData.Select(r => r.UserRoleText));
+		if (unknownRoles.Any())
+		{
+			var roleData = await _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, unknownRoles, iamUserId)
+				.ConfigureAwait(false);
 
-            if (roleData != null)
-            {
-                validRoleData.AddRange(roleData);
-            }
-        }
-        return validRoleData.IntersectBy(roles, r => r.UserRoleText);
-    }
+			if (roleData != null)
+			{
+				validRoleData.AddRange(roleData);
+			}
+		}
+		return validRoleData.IntersectBy(roles, r => r.UserRoleText);
+	}
 
-    private static (string FirstName, string LastName, string Email, IEnumerable<string> Roles) ParseUploadSharedIdpUsersCSVLine(string line)
-    {
-        var items = line.Split(",").AsEnumerable().GetEnumerator();
-        var firstName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.FirstName);
-        var lastName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.LastName);
-        var email = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.Email);
-        var roles = CsvParser.TrailingStringItemsNotNullOrWhiteSpace(items, CsvHeaders.Roles).ToList();
-        return (firstName, lastName, email, roles);
-    }
+	private static (string FirstName, string LastName, string Email, IEnumerable<string> Roles) ParseUploadSharedIdpUsersCSVLine(string line)
+	{
+		var items = line.Split(",").AsEnumerable().GetEnumerator();
+		var firstName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.FirstName);
+		var lastName = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.LastName);
+		var email = CsvParser.NextStringItemIsNotNullOrWhiteSpace(items, CsvHeaders.Email);
+		var roles = CsvParser.TrailingStringItemsNotNullOrWhiteSpace(items, CsvHeaders.Roles).ToList();
+		return (firstName, lastName, email, roles);
+	}
 
-    public enum CsvHeaders
-    {
-        FirstName,
-        LastName,
-        Email,
-        ProviderUserName,
-        ProviderUserId,
-        Roles
-    }
+	public enum CsvHeaders
+	{
+		FirstName,
+		LastName,
+		Email,
+		ProviderUserName,
+		ProviderUserId,
+		Roles
+	}
 }

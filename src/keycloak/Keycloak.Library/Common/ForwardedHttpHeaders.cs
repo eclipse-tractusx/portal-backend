@@ -28,8 +28,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public class ForwardedHttpHeaders
 {
-    public string forwardedFor { get; set; }
-    public string forwardedProto { get; set; }
-    public string forwardedHost { get; set; }
+	public string forwardedFor { get; set; }
+	public string forwardedProto { get; set; }
+	public string forwardedHost { get; set; }
 }
 

@@ -24,23 +24,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class TechnicalUserProfile : IBaseEntity
 {
-    private TechnicalUserProfile()
-    {
-        UserRoles = new HashSet<UserRole>();
-    }
+	private TechnicalUserProfile()
+	{
+		UserRoles = new HashSet<UserRole>();
+	}
 
-    public TechnicalUserProfile(Guid id, Guid offerId)
-        : this()
-    {
-        Id = id;
-        OfferId = offerId;
-    }
+	public TechnicalUserProfile(Guid id, Guid offerId)
+		: this()
+	{
+		Id = id;
+		OfferId = offerId;
+	}
 
-    public Guid Id { get; private set; }
+	public Guid Id { get; private set; }
 
-    public Guid OfferId { get; private set; }
+	public Guid OfferId { get; private set; }
 
-    public virtual Offer? Offer { get; private set; }
+	public virtual Offer? Offer { get; private set; }
 
-    public virtual ICollection<UserRole> UserRoles { get; private set; }
+	public virtual ICollection<UserRole> UserRoles { get; private set; }
 }

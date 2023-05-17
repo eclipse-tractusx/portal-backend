@@ -30,9 +30,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ExportProviders
 {
-    [JsonProperty("singleFile")]
-    public HasOrder SingleFile { get; set; }
+	[JsonProperty("singleFile")]
+	public HasOrder SingleFile { get; set; }
 
-    [JsonProperty("dir")]
-    public HasOrder Dir { get; set; }
+	[JsonProperty("dir")]
+	public HasOrder Dir { get; set; }
 }

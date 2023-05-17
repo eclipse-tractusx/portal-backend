@@ -29,20 +29,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 
 public static class BpdmServiceCollectionExtension
 {
-    public static IServiceCollection AddBpdmService(this IServiceCollection services, IConfigurationSection section)
-    {
-        services.AddOptions<BpdmServiceSettings>()
-            .Bind(section)
-            .ValidateOnStart();
-        services.AddTransient<LoggingHandler<BpdmService>>();
+	public static IServiceCollection AddBpdmService(this IServiceCollection services, IConfigurationSection section)
+	{
+		services.AddOptions<BpdmServiceSettings>()
+			.Bind(section)
+			.ValidateOnStart();
+		services.AddTransient<LoggingHandler<BpdmService>>();
 
-        var sp = services.BuildServiceProvider();
-        var settings = sp.GetRequiredService<IOptions<BpdmServiceSettings>>();
-        services
-            .AddCustomHttpClientWithAuthentication<BpdmService>(settings.Value.BaseAddress, settings.Value.KeycloakTokenAddress)
-            .AddTransient<IBpdmService, BpdmService>()
-            .AddTransient<IBpdmBusinessLogic, BpdmBusinessLogic>();
+		var sp = services.BuildServiceProvider();
+		var settings = sp.GetRequiredService<IOptions<BpdmServiceSettings>>();
+		services
+			.AddCustomHttpClientWithAuthentication<BpdmService>(settings.Value.BaseAddress, settings.Value.KeycloakTokenAddress)
+			.AddTransient<IBpdmService, BpdmService>()
+			.AddTransient<IBpdmBusinessLogic, BpdmBusinessLogic>();
 
-        return services;
-    }
+		return services;
+	}
 }

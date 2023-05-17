@@ -23,98 +23,98 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record InReviewOfferData(
 
-    /// <summary>
-    /// ID of the app.
-    /// </summary>
-    Guid id,
+	/// <summary>
+	/// ID of the app.
+	/// </summary>
+	Guid id,
 
-    /// <summary>
-    /// Title or name of the app.
-    /// </summary>
-    string? title,
+	/// <summary>
+	/// Title or name of the app.
+	/// </summary>
+	string? title,
 
-    /// <summary>
-    /// Id of the Lead Image.
-    /// </summary>
-    Guid leadPictureId,
+	/// <summary>
+	/// Id of the Lead Image.
+	/// </summary>
+	Guid leadPictureId,
 
-    /// <summary>
-    /// List of Images to app's secondary pictures.
-    /// </summary>
-    IEnumerable<Guid> images,
+	/// <summary>
+	/// List of Images to app's secondary pictures.
+	/// </summary>
+	IEnumerable<Guid> images,
 
-    /// <summary>
-    /// Provider of the app.
-    /// </summary>
-    string Provider,
+	/// <summary>
+	/// Provider of the app.
+	/// </summary>
+	string Provider,
 
-    /// <summary>
-    /// Names of the app's use cases.
-    /// </summary>
-    IEnumerable<string> UseCases,
+	/// <summary>
+	/// Names of the app's use cases.
+	/// </summary>
+	IEnumerable<string> UseCases,
 
-    /// <summary>
-    /// Descriptions of the app's
-    /// </summary>
-    IEnumerable<LocalizedDescription> Description,
+	/// <summary>
+	/// Descriptions of the app's
+	/// </summary>
+	IEnumerable<LocalizedDescription> Description,
 
-    /// <summary>
-    /// document assigned to offer
-    /// </summary>
-    IEnumerable<DocumentTypeData> Documents,
-    
-    /// <summary>
-    /// Roles of the Apps
-    /// </summary>
-    IEnumerable<string> Roles,
+	/// <summary>
+	/// document assigned to offer
+	/// </summary>
+	IEnumerable<DocumentTypeData> Documents,
 
-    /// <summary>
-    /// Languages that the app is available in.
-    /// </summary>
-    IEnumerable<string> Languages,
+	/// <summary>
+	/// Roles of the Apps
+	/// </summary>
+	IEnumerable<string> Roles,
 
-    /// <summary>
-    /// Uri to provider's marketing presence.
-    /// </summary>
-    string? ProviderUri,
+	/// <summary>
+	/// Languages that the app is available in.
+	/// </summary>
+	IEnumerable<string> Languages,
 
-    /// <summary>
-    /// Email address of the app's primary contact.
-    /// </summary>
-    string? ContactEmail,
+	/// <summary>
+	/// Uri to provider's marketing presence.
+	/// </summary>
+	string? ProviderUri,
 
-    /// <summary>
-    /// Phone number of the app's primary contact.
-    /// </summary>
-    string? ContactNumber,
+	/// <summary>
+	/// Email address of the app's primary contact.
+	/// </summary>
+	string? ContactEmail,
 
-    /// <summary>
-    /// Pricing information of the app.
-    /// </summary>
-    string? Price,
+	/// <summary>
+	/// Phone number of the app's primary contact.
+	/// </summary>
+	string? ContactNumber,
 
-    /// <summary>
-    /// Tags assigned to offer.
-    /// </summary>
-    IEnumerable<string> Tags,
-    
-    /// <summary>
-    /// Privacy Policy Id assigned to offer.
-    /// </summary>
-    IEnumerable<PrivacyPolicyId> MatchingPrivacyPolicies,
+	/// <summary>
+	/// Pricing information of the app.
+	/// </summary>
+	string? Price,
 
-    /// <summary>
-    /// License TypeId for offer.
-    /// </summary>
-    LicenseTypeId LicenseTypeId,
+	/// <summary>
+	/// Tags assigned to offer.
+	/// </summary>
+	IEnumerable<string> Tags,
 
-    /// <summary>
-    /// License TypeId for offer.
-    /// </summary>
-    OfferStatusId OfferStatusId,
-    
-    /// <summary>
-    /// Technical User Role Data
-    /// </summary>
-    IEnumerable<TechnicalUserRoleData> TechnicalUserProfile
-); 
+	/// <summary>
+	/// Privacy Policy Id assigned to offer.
+	/// </summary>
+	IEnumerable<PrivacyPolicyId> MatchingPrivacyPolicies,
+
+	/// <summary>
+	/// License TypeId for offer.
+	/// </summary>
+	LicenseTypeId LicenseTypeId,
+
+	/// <summary>
+	/// License TypeId for offer.
+	/// </summary>
+	OfferStatusId OfferStatusId,
+
+	/// <summary>
+	/// Technical User Role Data
+	/// </summary>
+	IEnumerable<TechnicalUserRoleData> TechnicalUserProfile
+);

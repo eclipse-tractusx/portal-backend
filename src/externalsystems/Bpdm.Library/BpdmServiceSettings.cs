@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 
@@ -28,6 +28,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 /// </summary>
 public class BpdmServiceSettings : KeyVaultAuthSettings
 {
-    [Required(AllowEmptyStrings = false)]
-    public string BaseAddress { get; set; } = null!;
+	[Required(AllowEmptyStrings = false)]
+	public string BaseAddress { get; set; } = null!;
 }

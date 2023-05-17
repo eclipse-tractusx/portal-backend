@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -22,35 +22,35 @@ using Microsoft.Extensions.Logging;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
-public class LoggingHandler<TLogger> : DelegatingHandler 
-    where TLogger : class
+public class LoggingHandler<TLogger> : DelegatingHandler
+	where TLogger : class
 {
-    private readonly ILogger<TLogger> _logger;
+	private readonly ILogger<TLogger> _logger;
 
-    public LoggingHandler(ILoggerFactory loggerFactory)
-    {
-        _logger = loggerFactory.CreateLogger<TLogger>();
-    }
+	public LoggingHandler(ILoggerFactory loggerFactory)
+	{
+		_logger = loggerFactory.CreateLogger<TLogger>();
+	}
 
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-    {
-        if (!_logger.IsEnabled(LogLevel.Debug))
-        {
-            return base.SendAsync(request, cancellationToken);
-        }
-        return SendAsyncInternal(request, cancellationToken);
-    }
+	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+	{
+		if (!_logger.IsEnabled(LogLevel.Debug))
+		{
+			return base.SendAsync(request, cancellationToken);
+		}
+		return SendAsyncInternal(request, cancellationToken);
+	}
 
-    private async Task<HttpResponseMessage> SendAsyncInternal(HttpRequestMessage request, CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Request: {Request}", request);
-        if (request.Content is { } content)
-        {
-            _logger.LogDebug("Request Content: {Content}", await content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
-        }
-        var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        _logger.LogInformation("Response: {Response}", response);
-        _logger.LogDebug("Responded with status code: {StatusCode} and data: {Data}", response.StatusCode, await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
-        return response;
-    }
+	private async Task<HttpResponseMessage> SendAsyncInternal(HttpRequestMessage request, CancellationToken cancellationToken)
+	{
+		_logger.LogInformation("Request: {Request}", request);
+		if (request.Content is { } content)
+		{
+			_logger.LogDebug("Request Content: {Content}", await content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+		}
+		var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+		_logger.LogInformation("Response: {Response}", response);
+		_logger.LogDebug("Responded with status code: {StatusCode} and data: {Data}", response.StatusCode, await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+		return response;
+	}
 }

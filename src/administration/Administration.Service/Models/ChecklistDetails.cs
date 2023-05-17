@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -23,8 +23,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record ChecklistDetails(
-    ApplicationChecklistEntryTypeId Type,
-    ApplicationChecklistEntryStatusId Status,
-    string? Details,
-    IEnumerable<ProcessStepTypeId> RetriggerableProcessSteps
+	ApplicationChecklistEntryTypeId Type,
+	ApplicationChecklistEntryStatusId Status,
+	string? Details,
+	IEnumerable<ProcessStepTypeId> RetriggerableProcessSteps
 );

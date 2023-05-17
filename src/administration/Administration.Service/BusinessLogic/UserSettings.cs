@@ -18,69 +18,69 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 public class UserSettings
 {
-    public UserSettings()
-    {
-        Portal = null!;
-        PasswordReset = null!;
-    }
+	public UserSettings()
+	{
+		Portal = null!;
+		PasswordReset = null!;
+	}
 
-    [Required]
-    public UserSetting Portal { get; set; }
-    public PasswordReset PasswordReset { get; set; }
-    public int ApplicationsMaxPageSize { get; set; }
+	[Required]
+	public UserSetting Portal { get; set; }
+	public PasswordReset PasswordReset { get; set; }
+	public int ApplicationsMaxPageSize { get; set; }
 
-    /// <summary>
-    /// Company User Status Id
-    /// </summary>
-    /// <value></value>
-    [Required]
-    public IEnumerable<CompanyUserStatusId> CompanyUserStatusIds { get; set; } = null!;
+	/// <summary>
+	/// Company User Status Id
+	/// </summary>
+	/// <value></value>
+	[Required]
+	public IEnumerable<CompanyUserStatusId> CompanyUserStatusIds { get; set; } = null!;
 
-    /// <summary>
-    /// Company User Status Id
-    /// </summary>
-    [Required]
-    public IDictionary<string,IEnumerable<string>> UserAdminRoles { get; set; } = null!;
+	/// <summary>
+	/// Company User Status Id
+	/// </summary>
+	[Required]
+	public IDictionary<string, IEnumerable<string>> UserAdminRoles { get; set; } = null!;
 }
 
 public class UserSetting
 {
-    public UserSetting()
-    {
-        KeycloakClientID = null!;
-        BasePortalAddress = null!;
-    }
+	public UserSetting()
+	{
+		KeycloakClientID = null!;
+		BasePortalAddress = null!;
+	}
 
-    [Required(AllowEmptyStrings = false)]
-    public string KeycloakClientID { get; set; }
+	[Required(AllowEmptyStrings = false)]
+	public string KeycloakClientID { get; set; }
 
-    [Required(AllowEmptyStrings = false)]
-    public string BasePortalAddress { get; set; }
+	[Required(AllowEmptyStrings = false)]
+	public string BasePortalAddress { get; set; }
 }
 
 public class PasswordReset
 {
-    public int NoOfHours { get; set; }
-    public int MaxNoOfReset { get; set; }
+	public int NoOfHours { get; set; }
+	public int MaxNoOfReset { get; set; }
 }
 
 public static class UserSettingsExtension
 {
-    public static IServiceCollection ConfigureUserSettings(
-        this IServiceCollection services,
-        IConfigurationSection section)
-    {
-        services.AddOptions<UserSettings>()
-            .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-        return services;
-    }
+	public static IServiceCollection ConfigureUserSettings(
+		this IServiceCollection services,
+		IConfigurationSection section)
+	{
+		services.AddOptions<UserSettings>()
+			.Bind(section)
+			.ValidateDataAnnotations()
+			.ValidateOnStart();
+		return services;
+	}
 }

@@ -24,23 +24,23 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 using Newtonsoft.Json;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ClientScopes;
 
 public class ClientScope
 {
-    [JsonProperty("id")]
-    public string Id { get; set; }
-    [JsonProperty("name")]
-    public string Name { get; set; }
-    [JsonProperty("description")]
-    public string Description { get; set; }
-    [JsonProperty("protocol")]
-    public string Protocol { get; set; }
-    [JsonProperty("attributes")]
-    public Attributes Attributes { get; set; }
-    [JsonProperty("protocolMappers")]
-    public IEnumerable<ProtocolMapper> ProtocolMappers { get; set; }
+	[JsonProperty("id")]
+	public string Id { get; set; }
+	[JsonProperty("name")]
+	public string Name { get; set; }
+	[JsonProperty("description")]
+	public string Description { get; set; }
+	[JsonProperty("protocol")]
+	public string Protocol { get; set; }
+	[JsonProperty("attributes")]
+	public Attributes Attributes { get; set; }
+	[JsonProperty("protocolMappers")]
+	public IEnumerable<ProtocolMapper> ProtocolMappers { get; set; }
 }

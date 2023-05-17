@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
@@ -45,24 +45,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 /// <param name="ServiceTypeIds">ids of the service types</param>
 /// <param name="TechnicalUserProfile">ids of the service types</param>
 public record OfferProviderResponse(
-    string? Title,
-    string Provider,
-    Guid LeadPictureId,
-    string? ProviderName,
-    IEnumerable<AppUseCaseData>? UseCase,
-    IEnumerable<LocalizedDescription> Descriptions,
-    IEnumerable<OfferAgreement> Agreements,
-    IEnumerable<string> SupportedLanguageCodes,
-    string? Price,
-    IEnumerable<Guid> Images,
-    string? ProviderUri,
-    string? ContactEmail,
-    string? ContactNumber,
-    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
-    Guid? SalesManagerId,
-    IEnumerable<PrivacyPolicyId> PrivacyPolicies,
-    IEnumerable<ServiceTypeId>? ServiceTypeIds,
-    IDictionary<Guid, IEnumerable<string>> TechnicalUserProfile
+	string? Title,
+	string Provider,
+	Guid LeadPictureId,
+	string? ProviderName,
+	IEnumerable<AppUseCaseData>? UseCase,
+	IEnumerable<LocalizedDescription> Descriptions,
+	IEnumerable<OfferAgreement> Agreements,
+	IEnumerable<string> SupportedLanguageCodes,
+	string? Price,
+	IEnumerable<Guid> Images,
+	string? ProviderUri,
+	string? ContactEmail,
+	string? ContactNumber,
+	IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
+	Guid? SalesManagerId,
+	IEnumerable<PrivacyPolicyId> PrivacyPolicies,
+	IEnumerable<ServiceTypeId>? ServiceTypeIds,
+	IDictionary<Guid, IEnumerable<string>> TechnicalUserProfile
 );
 
 /// <summary>

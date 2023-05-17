@@ -18,52 +18,52 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 public class UserBusinessPartnerRepository : IUserBusinessPartnerRepository
 {
-    private readonly PortalDbContext _dbContext;
+	private readonly PortalDbContext _dbContext;
 
-    public UserBusinessPartnerRepository(PortalDbContext portalDbContext)
-    {
-        _dbContext = portalDbContext;
-    }
+	public UserBusinessPartnerRepository(PortalDbContext portalDbContext)
+	{
+		_dbContext = portalDbContext;
+	}
 
-    public CompanyUserAssignedBusinessPartner CreateCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber)
-    {
-        if (businessPartnerNumber.Length > 20)
-        {
-            throw new ArgumentException($"{nameof(businessPartnerNumber)} {businessPartnerNumber} exceeds maximum length of 20 characters", nameof(businessPartnerNumber));
-        }
-        return _dbContext.CompanyUserAssignedBusinessPartners.Add(
-            new CompanyUserAssignedBusinessPartner(
-                companyUserId,
-                businessPartnerNumber
-            )).Entity;
-    }
+	public CompanyUserAssignedBusinessPartner CreateCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber)
+	{
+		if (businessPartnerNumber.Length > 20)
+		{
+			throw new ArgumentException($"{nameof(businessPartnerNumber)} {businessPartnerNumber} exceeds maximum length of 20 characters", nameof(businessPartnerNumber));
+		}
+		return _dbContext.CompanyUserAssignedBusinessPartners.Add(
+			new CompanyUserAssignedBusinessPartner(
+				companyUserId,
+				businessPartnerNumber
+			)).Entity;
+	}
 
-    public CompanyUserAssignedBusinessPartner DeleteCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber) =>
-        _dbContext.Remove(
-            new CompanyUserAssignedBusinessPartner(
-                companyUserId,
-                businessPartnerNumber
-            )).Entity;
+	public CompanyUserAssignedBusinessPartner DeleteCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber) =>
+		_dbContext.Remove(
+			new CompanyUserAssignedBusinessPartner(
+				companyUserId,
+				businessPartnerNumber
+			)).Entity;
 
-    public void DeleteCompanyUserAssignedBusinessPartners(IEnumerable<(Guid CompanyUserId, string BusinessPartnerNumber)> companyUserAssignedBusinessPartnerIds) =>
-        _dbContext.RemoveRange(companyUserAssignedBusinessPartnerIds.Select(ids => new CompanyUserAssignedBusinessPartner(ids.CompanyUserId, ids.BusinessPartnerNumber)));
+	public void DeleteCompanyUserAssignedBusinessPartners(IEnumerable<(Guid CompanyUserId, string BusinessPartnerNumber)> companyUserAssignedBusinessPartnerIds) =>
+		_dbContext.RemoveRange(companyUserAssignedBusinessPartnerIds.Select(ids => new CompanyUserAssignedBusinessPartner(ids.CompanyUserId, ids.BusinessPartnerNumber)));
 
-    public Task<(string? UserEntityId, bool IsAssignedBusinessPartner, bool IsValidUser)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId,string adminUserId, string businessPartnerNumber) =>
-        _dbContext.CompanyUsers
-            .AsNoTracking()
-            .Where(companyUser => companyUser.Id == companyUserId)
-            .Select(companyUser => new ValueTuple<string?,bool,bool>(
-                companyUser.IamUser!.UserEntityId,
-                companyUser.CompanyUserAssignedBusinessPartners!.Any(assignedPartner => assignedPartner.BusinessPartnerNumber == businessPartnerNumber),
-                companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId)
-            ))
-            .SingleOrDefaultAsync();
+	public Task<(string? UserEntityId, bool IsAssignedBusinessPartner, bool IsValidUser)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId, string adminUserId, string businessPartnerNumber) =>
+		_dbContext.CompanyUsers
+			.AsNoTracking()
+			.Where(companyUser => companyUser.Id == companyUserId)
+			.Select(companyUser => new ValueTuple<string?, bool, bool>(
+				companyUser.IamUser!.UserEntityId,
+				companyUser.CompanyUserAssignedBusinessPartners!.Any(assignedPartner => assignedPartner.BusinessPartnerNumber == businessPartnerNumber),
+				companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId)
+			))
+			.SingleOrDefaultAsync();
 }

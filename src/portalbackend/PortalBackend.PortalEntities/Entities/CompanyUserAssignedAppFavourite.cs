@@ -22,18 +22,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyUserAssignedAppFavourite
 {
-    private CompanyUserAssignedAppFavourite() {}
+	private CompanyUserAssignedAppFavourite() { }
 
-    public CompanyUserAssignedAppFavourite(Guid appId, Guid companyUserId)
-    {
-        AppId = appId;
-        CompanyUserId = companyUserId;
-    }
+	public CompanyUserAssignedAppFavourite(Guid appId, Guid companyUserId)
+	{
+		AppId = appId;
+		CompanyUserId = companyUserId;
+	}
 
-    public Guid CompanyUserId { get; private set; }
-    public Guid AppId { get; private set; }
+	public Guid CompanyUserId { get; private set; }
+	public Guid AppId { get; private set; }
 
-    // Navigation properties
-    public virtual CompanyUser? CompanyUser { get; private set; }
-    public virtual Offer? App { get; private set; }
+	// Navigation properties
+	public virtual CompanyUser? CompanyUser { get; private set; }
+	public virtual Offer? App { get; private set; }
 }

@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// </summary>
 public enum OfferSorting
 {
-    /// <summary>
-    /// Ascending by date
-    /// </summary>
-    DateAsc = 1,
-    
-    /// <summary>
-    /// Descending by date
-    /// </summary>
-    DateDesc = 2,
-    
-    /// <summary>
-    /// Ascending by the read status
-    /// </summary>
-    NameAsc = 3,
-    
-    /// <summary>
-    /// Descending by read status
-    /// </summary>
-    NameDesc = 4,
+	/// <summary>
+	/// Ascending by date
+	/// </summary>
+	DateAsc = 1,
+
+	/// <summary>
+	/// Descending by date
+	/// </summary>
+	DateDesc = 2,
+
+	/// <summary>
+	/// Ascending by the read status
+	/// </summary>
+	NameAsc = 3,
+
+	/// <summary>
+	/// Descending by read status
+	/// </summary>
+	NameDesc = 4,
 }

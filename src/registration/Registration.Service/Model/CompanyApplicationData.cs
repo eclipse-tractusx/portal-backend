@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 
 public class CompanyApplicationData
 {
-    public Guid ApplicationId { get; set; }
+	public Guid ApplicationId { get; set; }
 
-    public CompanyApplicationStatusId? ApplicationStatus { get; set; }
+	public CompanyApplicationStatusId? ApplicationStatus { get; set; }
 }

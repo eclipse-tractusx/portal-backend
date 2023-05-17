@@ -24,94 +24,94 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 using Flurl.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {
-    public async Task CreateMultipleProtocolMappersAsync(string realm, string clientScopeId, IEnumerable<ProtocolMapper> protocolMapperRepresentations) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/client-scopes/")
-            .AppendPathSegment(clientScopeId, true)
-            .AppendPathSegment("/protocol-mappers/add-models")
-            .PostJsonAsync(protocolMapperRepresentations)
-            .ConfigureAwait(false);
+	public async Task CreateMultipleProtocolMappersAsync(string realm, string clientScopeId, IEnumerable<ProtocolMapper> protocolMapperRepresentations) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/client-scopes/")
+			.AppendPathSegment(clientScopeId, true)
+			.AppendPathSegment("/protocol-mappers/add-models")
+			.PostJsonAsync(protocolMapperRepresentations)
+			.ConfigureAwait(false);
 
-    public async Task CreateProtocolMapperAsync(string realm, string clientScopeId, ProtocolMapper protocolMapperRepresentation) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/client-scopes/")
-            .AppendPathSegment(clientScopeId, true)
-            .AppendPathSegment("/protocol-mappers/models")
-            .PostJsonAsync(protocolMapperRepresentation)
-            .ConfigureAwait(false);
+	public async Task CreateProtocolMapperAsync(string realm, string clientScopeId, ProtocolMapper protocolMapperRepresentation) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/client-scopes/")
+			.AppendPathSegment(clientScopeId, true)
+			.AppendPathSegment("/protocol-mappers/models")
+			.PostJsonAsync(protocolMapperRepresentation)
+			.ConfigureAwait(false);
 
-    public async Task<IEnumerable<ProtocolMapper>> GetProtocolMappersAsync(string realm, string clientScopeId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/client-scopes/")
-            .AppendPathSegment(clientScopeId, true)
-            .AppendPathSegment("/protocol-mappers/models")
-            .GetJsonAsync<IEnumerable<ProtocolMapper>>()
-            .ConfigureAwait(false);
+	public async Task<IEnumerable<ProtocolMapper>> GetProtocolMappersAsync(string realm, string clientScopeId) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/client-scopes/")
+			.AppendPathSegment(clientScopeId, true)
+			.AppendPathSegment("/protocol-mappers/models")
+			.GetJsonAsync<IEnumerable<ProtocolMapper>>()
+			.ConfigureAwait(false);
 
-    public async Task<ProtocolMapper> GetProtocolMapperAsync(string realm, string clientScopeId, string protocolMapperId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/client-scopes/")
-            .AppendPathSegment(clientScopeId, true)
-            .AppendPathSegment("/protocol-mappers/models/")
-            .AppendPathSegment(protocolMapperId, true)
-            .GetJsonAsync<ProtocolMapper>()
-            .ConfigureAwait(false);
+	public async Task<ProtocolMapper> GetProtocolMapperAsync(string realm, string clientScopeId, string protocolMapperId) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/client-scopes/")
+			.AppendPathSegment(clientScopeId, true)
+			.AppendPathSegment("/protocol-mappers/models/")
+			.AppendPathSegment(protocolMapperId, true)
+			.GetJsonAsync<ProtocolMapper>()
+			.ConfigureAwait(false);
 
-    public async Task UpdateProtocolMapperAsync(string realm, string clientScopeId, string protocolMapperId, ProtocolMapper protocolMapperRepresentation) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/client-scopes/")
-            .AppendPathSegment(clientScopeId, true)
-            .AppendPathSegment("/protocol-mappers/models/")
-            .AppendPathSegment(protocolMapperId, true)
-            .PutJsonAsync(protocolMapperRepresentation)
-            .ConfigureAwait(false);
+	public async Task UpdateProtocolMapperAsync(string realm, string clientScopeId, string protocolMapperId, ProtocolMapper protocolMapperRepresentation) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/client-scopes/")
+			.AppendPathSegment(clientScopeId, true)
+			.AppendPathSegment("/protocol-mappers/models/")
+			.AppendPathSegment(protocolMapperId, true)
+			.PutJsonAsync(protocolMapperRepresentation)
+			.ConfigureAwait(false);
 
-    public async Task DeleteProtocolMapperAsync(string realm, string clientScopeId, string protocolMapperId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/client-scopes/")
-            .AppendPathSegment(clientScopeId, true)
-            .AppendPathSegment("/protocol-mappers/models/")
-            .AppendPathSegment(protocolMapperId, true)
-            .DeleteAsync()
-            .ConfigureAwait(false);
+	public async Task DeleteProtocolMapperAsync(string realm, string clientScopeId, string protocolMapperId) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/client-scopes/")
+			.AppendPathSegment(clientScopeId, true)
+			.AppendPathSegment("/protocol-mappers/models/")
+			.AppendPathSegment(protocolMapperId, true)
+			.DeleteAsync()
+			.ConfigureAwait(false);
 
-    public async Task<IEnumerable<ProtocolMapper>> GetProtocolMappersByNameAsync(string realm, string clientScopeId, string protocol) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/client-scopes/")
-            .AppendPathSegment(clientScopeId, true)
-            .AppendPathSegment("/protocol-mappers/protocol/")
-            .AppendPathSegment(protocol, true)
-            .GetJsonAsync<IEnumerable<ProtocolMapper>>()
-            .ConfigureAwait(false);
+	public async Task<IEnumerable<ProtocolMapper>> GetProtocolMappersByNameAsync(string realm, string clientScopeId, string protocol) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/client-scopes/")
+			.AppendPathSegment(clientScopeId, true)
+			.AppendPathSegment("/protocol-mappers/protocol/")
+			.AppendPathSegment(protocol, true)
+			.GetJsonAsync<IEnumerable<ProtocolMapper>>()
+			.ConfigureAwait(false);
 
-    public async Task CreateClientProtocolMapperAsync(string realm, string clientId, ProtocolMapper protocolMapperRepresentation) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/clients/")
-            .AppendPathSegment(clientId, true)
-            .AppendPathSegment("/protocol-mappers/models")
-            .PostJsonAsync(protocolMapperRepresentation)
-            .ConfigureAwait(false);
-}        
+	public async Task CreateClientProtocolMapperAsync(string realm, string clientId, ProtocolMapper protocolMapperRepresentation) =>
+		await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+			.AppendPathSegment("/admin/realms/")
+			.AppendPathSegment(realm, true)
+			.AppendPathSegment("/clients/")
+			.AppendPathSegment(clientId, true)
+			.AppendPathSegment("/protocol-mappers/models")
+			.PostJsonAsync(protocolMapperRepresentation)
+			.ConfigureAwait(false);
+}

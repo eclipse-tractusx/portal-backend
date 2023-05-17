@@ -19,26 +19,26 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using System.ComponentModel;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public class OwnCompanyUserEditableDetails
 {
-    [DefaultValue("string")]
-    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
-    [JsonPropertyName("firstName")]
-    public string? FirstName { get; set; }
-    
-    [DefaultValue("string")]
-    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
-    [JsonPropertyName("lastName")]
-    public string? LastName { get; set; }
-    
-    [DefaultValue("string")]
-    [RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
-    [JsonPropertyName("email")]
-    public string? Email { get; set; }
+	[DefaultValue("string")]
+	[RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
+	[JsonPropertyName("firstName")]
+	public string? FirstName { get; set; }
+
+	[DefaultValue("string")]
+	[RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
+	[JsonPropertyName("lastName")]
+	public string? LastName { get; set; }
+
+	[DefaultValue("string")]
+	[RegularExpression(ValidationExpressions.Email, ErrorMessage = "Invalid email", MatchTimeoutInMilliseconds = 500)]
+	[JsonPropertyName("email")]
+	public string? Email { get; set; }
 }

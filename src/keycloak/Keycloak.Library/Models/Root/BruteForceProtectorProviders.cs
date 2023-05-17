@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class BruteForceProtectorProviders
 {
-    [JsonProperty("default-brute-force-detector")]
-    public HasOrder DefaultBruteForceDetector { get; set; }
+	[JsonProperty("default-brute-force-detector")]
+	public HasOrder DefaultBruteForceDetector { get; set; }
 }

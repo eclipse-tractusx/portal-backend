@@ -31,114 +31,114 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
 {
-    private readonly TestDbFixture _dbTestDbFixture;
+	private readonly TestDbFixture _dbTestDbFixture;
 
-    public StaticDataRepositoryTest(TestDbFixture testDbFixture)
-    {
-        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => fixture.Behaviors.Remove(b));
+	public StaticDataRepositoryTest(TestDbFixture testDbFixture)
+	{
+		var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+		fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+			.ForEach(b => fixture.Behaviors.Remove(b));
 
-        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-        _dbTestDbFixture = testDbFixture;
-    }
+		fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+		_dbTestDbFixture = testDbFixture;
+	}
 
-    #region GetCompanyIdentifiers
+	#region GetCompanyIdentifiers
 
-    [Theory]
-    [InlineData("DE", new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VAT_ID, UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE }, true)]
-    [InlineData("PT", new [] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VAT_ID, UniqueIdentifierId.EORI }, true)]
-    [InlineData("XY", null, false)]
-    public async Task GetCompanyIdentifiers_ReturnsExpectedResult(string countryCode, IEnumerable<UniqueIdentifierId>? expectedIds, bool validCountry)
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+	[Theory]
+	[InlineData("DE", new[] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VAT_ID, UniqueIdentifierId.EORI, UniqueIdentifierId.LEI_CODE }, true)]
+	[InlineData("PT", new[] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VAT_ID, UniqueIdentifierId.EORI }, true)]
+	[InlineData("XY", null, false)]
+	public async Task GetCompanyIdentifiers_ReturnsExpectedResult(string countryCode, IEnumerable<UniqueIdentifierId>? expectedIds, bool validCountry)
+	{
+		// Arrange
+		var sut = await CreateSut().ConfigureAwait(false);
 
-        // Act
-        var result = await sut.GetCompanyIdentifiers(countryCode).ConfigureAwait(false);
+		// Act
+		var result = await sut.GetCompanyIdentifiers(countryCode).ConfigureAwait(false);
 
-        // Assert
-        result.IsValidCountryCode.Should().Be(validCountry);
-        if (result.IsValidCountryCode)
-        {
-            result.IdentifierIds.Should().NotBeNull();
-            result.IdentifierIds.Should().HaveSameCount(expectedIds);
-            result.IdentifierIds.OrderBy(item => item).Should().ContainInOrder(expectedIds?.OrderBy(item => item));
-        }
-        else
-        {
-            result.IdentifierIds.Should().BeNull();
-        }
-    }
+		// Assert
+		result.IsValidCountryCode.Should().Be(validCountry);
+		if (result.IsValidCountryCode)
+		{
+			result.IdentifierIds.Should().NotBeNull();
+			result.IdentifierIds.Should().HaveSameCount(expectedIds);
+			result.IdentifierIds.OrderBy(item => item).Should().ContainInOrder(expectedIds?.OrderBy(item => item));
+		}
+		else
+		{
+			result.IdentifierIds.Should().BeNull();
+		}
+	}
 
-    #endregion
+	#endregion
 
-    #region GetCountryAssignedIdentifiers
+	#region GetCountryAssignedIdentifiers
 
-    [Theory]
-    [InlineData("DE", new [] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, new [] { BpdmIdentifierId.EU_VAT_ID_DE }, new [] { UniqueIdentifierId.VAT_ID }, true)]
-    [InlineData("DE", new BpdmIdentifierId [] {}, new BpdmIdentifierId [] {}, new UniqueIdentifierId [] {}, true)]
-    [InlineData("PT", new [] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, new BpdmIdentifierId [] {}, new UniqueIdentifierId[] {}, true)]
-    [InlineData("XY", new [] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, null, null, false)]
-    public async Task GetCountryAssignedIdentifiers_ReturnsExpectedResult(string countryCode, IEnumerable<BpdmIdentifierId> bpdmIdentifiers, IEnumerable<BpdmIdentifierId>? expectedBpdmIds, IEnumerable<UniqueIdentifierId>? expectedUniqueIds, bool validCountry)
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+	[Theory]
+	[InlineData("DE", new[] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, new[] { BpdmIdentifierId.EU_VAT_ID_DE }, new[] { UniqueIdentifierId.VAT_ID }, true)]
+	[InlineData("DE", new BpdmIdentifierId[] { }, new BpdmIdentifierId[] { }, new UniqueIdentifierId[] { }, true)]
+	[InlineData("PT", new[] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, new BpdmIdentifierId[] { }, new UniqueIdentifierId[] { }, true)]
+	[InlineData("XY", new[] { BpdmIdentifierId.EU_VAT_ID_DE, BpdmIdentifierId.CH_UID }, null, null, false)]
+	public async Task GetCountryAssignedIdentifiers_ReturnsExpectedResult(string countryCode, IEnumerable<BpdmIdentifierId> bpdmIdentifiers, IEnumerable<BpdmIdentifierId>? expectedBpdmIds, IEnumerable<UniqueIdentifierId>? expectedUniqueIds, bool validCountry)
+	{
+		// Arrange
+		var sut = await CreateSut().ConfigureAwait(false);
 
-        // Act
-        var result = await sut.GetCountryAssignedIdentifiers(bpdmIdentifiers, countryCode).ConfigureAwait(false);
+		// Act
+		var result = await sut.GetCountryAssignedIdentifiers(bpdmIdentifiers, countryCode).ConfigureAwait(false);
 
-        // Assert
-        result.IsValidCountry.Should().Be(validCountry);
-        if (result.IsValidCountry)
-        {
-            var expectedIds = (IEnumerable<(BpdmIdentifierId BpdmId, UniqueIdentifierId UniqueId)>)expectedBpdmIds!.Zip(expectedUniqueIds!);
-            result.Identifiers.Should().NotBeNull();
-            result.Identifiers.Should().HaveSameCount(expectedIds);
-            result.Identifiers.OrderBy(item => item).Should().ContainInOrder(expectedIds?.OrderBy(item => item));
-        }
-        else
-        {
-            result.Identifiers.Should().BeNull();
-        }
-    }
+		// Assert
+		result.IsValidCountry.Should().Be(validCountry);
+		if (result.IsValidCountry)
+		{
+			var expectedIds = (IEnumerable<(BpdmIdentifierId BpdmId, UniqueIdentifierId UniqueId)>)expectedBpdmIds!.Zip(expectedUniqueIds!);
+			result.Identifiers.Should().NotBeNull();
+			result.Identifiers.Should().HaveSameCount(expectedIds);
+			result.Identifiers.OrderBy(item => item).Should().ContainInOrder(expectedIds?.OrderBy(item => item));
+		}
+		else
+		{
+			result.Identifiers.Should().BeNull();
+		}
+	}
 
-    #endregion
-    
-    [Fact]
-    public async Task GetServiceTypeData_ReturnsExpectedResult()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+	#endregion
 
-        // Act
-        var results = await sut.GetServiceTypeData().ToListAsync().ConfigureAwait(false);
+	[Fact]
+	public async Task GetServiceTypeData_ReturnsExpectedResult()
+	{
+		// Arrange
+		var sut = await CreateSut().ConfigureAwait(false);
 
-        // Assert
-        results.Should().HaveCount(2);
-    }
+		// Act
+		var results = await sut.GetServiceTypeData().ToListAsync().ConfigureAwait(false);
 
-    [Fact]
-    public async Task GetLicenseTypeData_ReturnsExpectedResult()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+		// Assert
+		results.Should().HaveCount(2);
+	}
 
-        // Act
-        var results = await sut.GetLicenseTypeData().ToListAsync().ConfigureAwait(false);
+	[Fact]
+	public async Task GetLicenseTypeData_ReturnsExpectedResult()
+	{
+		// Arrange
+		var sut = await CreateSut().ConfigureAwait(false);
 
-        // Assert
-        results.Should().HaveCount(2);
-    }
+		// Act
+		var results = await sut.GetLicenseTypeData().ToListAsync().ConfigureAwait(false);
 
-    #region setup
+		// Assert
+		results.Should().HaveCount(2);
+	}
 
-    private async Task<StaticDataRepository> CreateSut()
-    {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
-        var sut = new StaticDataRepository(context);
-        return sut;
-    }
+	#region setup
 
-    #endregion
+	private async Task<StaticDataRepository> CreateSut()
+	{
+		var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+		var sut = new StaticDataRepository(context);
+		return sut;
+	}
+
+	#endregion
 }

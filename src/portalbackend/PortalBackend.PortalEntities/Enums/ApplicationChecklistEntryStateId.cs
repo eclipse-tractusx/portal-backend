@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -22,8 +22,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 
 public enum ApplicationChecklistEntryStatusId
 {
-    TO_DO = 1,
-    IN_PROGRESS = 2,
-    DONE = 3,
-    FAILED = 4
+	TO_DO = 1,
+	IN_PROGRESS = 2,
+	DONE = 3,
+	FAILED = 4
 }

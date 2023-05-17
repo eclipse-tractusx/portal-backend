@@ -19,8 +19,8 @@
  ********************************************************************************/
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -31,52 +31,52 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 [AuditEntityV1(typeof(AuditAppSubscriptionDetail20221118))]
 public class AppSubscriptionDetail : IAuditableV1, IBaseEntity
 {
-    /// <summary>
-    /// Only needed for ef
-    /// </summary>
-    public AppSubscriptionDetail()
-    { }
+	/// <summary>
+	/// Only needed for ef
+	/// </summary>
+	public AppSubscriptionDetail()
+	{ }
 
-    /// <summary>
-    /// Creates a new instance of <see cref="AppSubscriptionDetail"/>
-    /// </summary>
-    /// <param name="id">Id of the entity</param>
-    /// <param name="offerSubscriptionId">Id of the offer subscription</param>
-    public AppSubscriptionDetail(Guid id, Guid offerSubscriptionId) 
-        : this()
-    {
-        this.Id = id;
-        this.OfferSubscriptionId = offerSubscriptionId;
-    }
-    
-    /// <summary>
-    /// Id of the entity
-    /// </summary>
-    public Guid Id { get; set; }
+	/// <summary>
+	/// Creates a new instance of <see cref="AppSubscriptionDetail"/>
+	/// </summary>
+	/// <param name="id">Id of the entity</param>
+	/// <param name="offerSubscriptionId">Id of the offer subscription</param>
+	public AppSubscriptionDetail(Guid id, Guid offerSubscriptionId)
+		: this()
+	{
+		this.Id = id;
+		this.OfferSubscriptionId = offerSubscriptionId;
+	}
 
-    /// <summary>
-    /// Id of the Offer Subscription
-    /// </summary>
-    public Guid OfferSubscriptionId { get; set; }
+	/// <summary>
+	/// Id of the entity
+	/// </summary>
+	public Guid Id { get; set; }
 
-    /// <summary>
-    /// ID of the app instance.
-    /// </summary>
-    public Guid? AppInstanceId { get; set; }
-    
-    [MaxLength(255)]
-    public string? AppSubscriptionUrl { get; set; }
-    
-    [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
-    
-    /// <summary>
-    /// Subscribing app instance.
-    /// </summary>
-    public virtual AppInstance? AppInstance { get; private set; }
+	/// <summary>
+	/// Id of the Offer Subscription
+	/// </summary>
+	public Guid OfferSubscriptionId { get; set; }
 
-    /// <summary>
-    /// Subscription of an offer
-    /// </summary>
-    public virtual OfferSubscription? OfferSubscription { get; private set; }
+	/// <summary>
+	/// ID of the app instance.
+	/// </summary>
+	public Guid? AppInstanceId { get; set; }
+
+	[MaxLength(255)]
+	public string? AppSubscriptionUrl { get; set; }
+
+	[AuditLastEditorV1]
+	public Guid? LastEditorId { get; set; }
+
+	/// <summary>
+	/// Subscribing app instance.
+	/// </summary>
+	public virtual AppInstance? AppInstance { get; private set; }
+
+	/// <summary>
+	/// Subscription of an offer
+	/// </summary>
+	public virtual OfferSubscription? OfferSubscription { get; private set; }
 }

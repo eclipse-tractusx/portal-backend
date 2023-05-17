@@ -34,118 +34,118 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
 
 public class AppChangeControllerTest
 {
-    private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
-    private readonly IFixture _fixture;
-    private readonly AppChangeController _controller;
-    private readonly IAppChangeBusinessLogic _logic;
+	private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
+	private readonly IFixture _fixture;
+	private readonly AppChangeController _controller;
+	private readonly IAppChangeBusinessLogic _logic;
 
-    public AppChangeControllerTest()
-    {
-        _fixture = new Fixture();
-        _logic = A.Fake<IAppChangeBusinessLogic>();
-        this._controller = new AppChangeController(_logic);
-        _controller.AddControllerContextWithClaim(IamUserId);
-    }
+	public AppChangeControllerTest()
+	{
+		_fixture = new Fixture();
+		_logic = A.Fake<IAppChangeBusinessLogic>();
+		this._controller = new AppChangeController(_logic);
+		_controller.AddControllerContextWithClaim(IamUserId);
+	}
 
-    [Fact]
-    public async Task AddActiveAppUserRole_ReturnsExpectedCount()
-    {
-        var appId = _fixture.Create<Guid>();
-        var iamUserId = _fixture.Create<string>();
+	[Fact]
+	public async Task AddActiveAppUserRole_ReturnsExpectedCount()
+	{
+		var appId = _fixture.Create<Guid>();
+		var iamUserId = _fixture.Create<string>();
 
-        var appUserRoles = _fixture.CreateMany<AppUserRole>(3);
-        var appRoleData = _fixture.CreateMany<AppRoleData>(3);
-        A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles, iamUserId))
-            .Returns(appRoleData);
+		var appUserRoles = _fixture.CreateMany<AppUserRole>(3);
+		var appRoleData = _fixture.CreateMany<AppRoleData>(3);
+		A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles, iamUserId))
+			.Returns(appRoleData);
 
-        //Act
-        var result = await this._controller.AddActiveAppUserRole(appId, appUserRoles).ConfigureAwait(false);
-        foreach (var item in result)
-        {
-            //Assert
-            A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles, iamUserId)).MustHaveHappenedOnceExactly();
-            Assert.NotNull(item);
-            Assert.IsType<AppRoleData>(item);
-        }
-    }
+		//Act
+		var result = await this._controller.AddActiveAppUserRole(appId, appUserRoles).ConfigureAwait(false);
+		foreach (var item in result)
+		{
+			//Assert
+			A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles, iamUserId)).MustHaveHappenedOnceExactly();
+			Assert.NotNull(item);
+			Assert.IsType<AppRoleData>(item);
+		}
+	}
 
-    [Fact]
-    public async Task GetAppUpdateDescriptionsAsync_ReturnsExpected()
-    {
-        //Arrange
-        var appId = _fixture.Create<Guid>();
-        var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
+	[Fact]
+	public async Task GetAppUpdateDescriptionsAsync_ReturnsExpected()
+	{
+		//Arrange
+		var appId = _fixture.Create<Guid>();
+		var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
 
-        A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<string>._))
-            .Returns(offerDescriptionData);
-        
-        //Act
-        var result = await this._controller.GetAppUpdateDescriptionsAsync(appId).ConfigureAwait(false);
+		A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<string>._))
+			.Returns(offerDescriptionData);
 
-        //Assert
-        A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<string>._)).MustHaveHappened();
-    }
+		//Act
+		var result = await this._controller.GetAppUpdateDescriptionsAsync(appId).ConfigureAwait(false);
 
-    [Fact]
-    public async Task CreateOrUpdateAppDescriptionsAsync_ReturnsExpected()
-    {
-        //Arrange
-        var appId = _fixture.Create<Guid>();
-        var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
+		//Assert
+		A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<string>._)).MustHaveHappened();
+	}
 
-        //Act
-        var result = await this._controller.CreateOrUpdateAppDescriptionsByIdAsync(appId,offerDescriptionData).ConfigureAwait(false);
+	[Fact]
+	public async Task CreateOrUpdateAppDescriptionsAsync_ReturnsExpected()
+	{
+		//Arrange
+		var appId = _fixture.Create<Guid>();
+		var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
 
-        //Assert
-        A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<string>._, A<IEnumerable<LocalizedDescription>>._)).MustHaveHappened();
-        result.Should().BeOfType<NoContentResult>(); 
-    }
+		//Act
+		var result = await this._controller.CreateOrUpdateAppDescriptionsByIdAsync(appId, offerDescriptionData).ConfigureAwait(false);
 
-    [Fact]
-    public async Task UploadOfferAssignedAppLeadImageDocumentByIdAsync_ReturnsExpected()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
-        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(A<Guid>._, A<string>._, A<IFormFile>._, CancellationToken.None))
-            .ReturnsLazily(() => Task.CompletedTask);
+		//Assert
+		A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<string>._, A<IEnumerable<LocalizedDescription>>._)).MustHaveHappened();
+		result.Should().BeOfType<NoContentResult>();
+	}
 
-        // Act
-        var result = await this._controller.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None).ConfigureAwait(false);
+	[Fact]
+	public async Task UploadOfferAssignedAppLeadImageDocumentByIdAsync_ReturnsExpected()
+	{
+		// Arrange
+		var appId = _fixture.Create<Guid>();
+		var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
+		A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(A<Guid>._, A<string>._, A<IFormFile>._, CancellationToken.None))
+			.ReturnsLazily(() => Task.CompletedTask);
 
-        // Assert
-        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, IamUserId, file, CancellationToken.None)).MustHaveHappenedOnceExactly();
-        result.Should().BeOfType<NoContentResult>();
-    }
+		// Act
+		var result = await this._controller.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None).ConfigureAwait(false);
 
-    [Fact]
-    public async Task DeactivateApp_ReturnsNoContent()
-    {
-        //Arrange
-        var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(A<Guid>._, A<string>._))
-            .ReturnsLazily(() => Task.CompletedTask);
-        
-        //Act
-        var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);
-        
-        //Assert
-        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
-    }
+		// Assert
+		A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, IamUserId, file, CancellationToken.None)).MustHaveHappenedOnceExactly();
+		result.Should().BeOfType<NoContentResult>();
+	}
 
-    [Fact]
-    public async Task UpdateTenantUrl_ReturnsExpected()
-    {
-        //Arrange
-        var appId = _fixture.Create<Guid>();
-        var subscriptionId = _fixture.Create<Guid>();
-        var data = new UpdateTenantData("http://test.com");
+	[Fact]
+	public async Task DeactivateApp_ReturnsNoContent()
+	{
+		//Arrange
+		var appId = _fixture.Create<Guid>();
+		A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(A<Guid>._, A<string>._))
+			.ReturnsLazily(() => Task.CompletedTask);
 
-        //Act
-        var result = await this._controller.UpdateTenantUrl(appId, subscriptionId, data).ConfigureAwait(false);
+		//Act
+		var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);
 
-        //Assert
-        A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data, IamUserId)).MustHaveHappened();
-        result.Should().BeOfType<NoContentResult>(); 
-    }
+		//Assert
+		A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+	}
+
+	[Fact]
+	public async Task UpdateTenantUrl_ReturnsExpected()
+	{
+		//Arrange
+		var appId = _fixture.Create<Guid>();
+		var subscriptionId = _fixture.Create<Guid>();
+		var data = new UpdateTenantData("http://test.com");
+
+		//Act
+		var result = await this._controller.UpdateTenantUrl(appId, subscriptionId, data).ConfigureAwait(false);
+
+		//Assert
+		A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data, IamUserId)).MustHaveHappened();
+		result.Should().BeOfType<NoContentResult>();
+	}
 }

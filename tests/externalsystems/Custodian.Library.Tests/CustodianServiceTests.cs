@@ -31,168 +31,168 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Tests;
 
 public class CustodianServiceTests
 {
-    #region Initialization
+	#region Initialization
 
-    private readonly ITokenService _tokenService;
-    private readonly IOptions<CustodianSettings> _options;
+	private readonly ITokenService _tokenService;
+	private readonly IOptions<CustodianSettings> _options;
 
-    public CustodianServiceTests()
-    {
-        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization {ConfigureMembers = true});
-        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => fixture.Behaviors.Remove(b));
-        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+	public CustodianServiceTests()
+	{
+		var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+		fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+			.ForEach(b => fixture.Behaviors.Remove(b));
+		fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _options = Options.Create(new CustodianSettings
-        {
-            Password = "passWord",
-            Scope = "test",
-            Username = "user@name",
-            BaseAddress = "https://base.address.com",
-            ClientId = "CatenaX",
-            ClientSecret = "pass@Secret",
-            GrantType = "cred",
-            KeycloakTokenAddress = "https://key.cloak.com"
-        });
-        _tokenService = A.Fake<ITokenService>();
-    }
+		_options = Options.Create(new CustodianSettings
+		{
+			Password = "passWord",
+			Scope = "test",
+			Username = "user@name",
+			BaseAddress = "https://base.address.com",
+			ClientId = "CatenaX",
+			ClientSecret = "pass@Secret",
+			GrantType = "cred",
+			KeycloakTokenAddress = "https://key.cloak.com"
+		});
+		_tokenService = A.Fake<ITokenService>();
+	}
 
-    #endregion
+	#endregion
 
-    #region Create Wallet
+	#region Create Wallet
 
-    [Fact]
-    public async Task CreateWallet_WithValidData_DoesNotThrowException()
-    {
-        // Arrange
-        const string bpn = "123";
-        const string name = "test";
-        var httpMessageHandlerMock =
-            new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
-            .Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
-        
-        // Act
-        await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
+	[Fact]
+	public async Task CreateWallet_WithValidData_DoesNotThrowException()
+	{
+		// Arrange
+		const string bpn = "123";
+		const string name = "test";
+		var httpMessageHandlerMock =
+			new HttpMessageHandlerMock(HttpStatusCode.OK);
+		var httpClient = new HttpClient(httpMessageHandlerMock)
+		{
+			BaseAddress = new Uri("https://base.address.com")
+		};
+		A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
+			.Returns(httpClient);
+		var sut = new CustodianService(_tokenService, _options);
 
-        // Assert
-        true.Should().BeTrue(); // One Assert is needed - just checking for no exception
-    }
+		// Act
+		await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
 
-    [Theory]
-    [InlineData(HttpStatusCode.Conflict, "{ \"message\": \"Wallet with given identifier already exists!\" }", "call to external system custodian-post failed with statuscode 409 - Message: Wallet with given identifier already exists!")]
-    [InlineData(HttpStatusCode.BadRequest, "{ \"test\": \"123\" }", "call to external system custodian-post failed with statuscode 400")]
-    [InlineData(HttpStatusCode.BadRequest, "this is no json", "call to external system custodian-post failed with statuscode 400")]
-    [InlineData(HttpStatusCode.Forbidden, null, "call to external system custodian-post failed with statuscode 403")]
-    public async Task CreateWallet_WithConflict_ThrowsServiceExceptionWithErrorContent(HttpStatusCode statusCode, string content, string message)
-    {
-        // Arrange
-        const string bpn = "123";
-        const string name = "test";
-        var httpMessageHandlerMock = content == null
-            ? new HttpMessageHandlerMock(statusCode)
-            : new HttpMessageHandlerMock(statusCode, new StringContent(content));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+		// Assert
+		true.Should().BeTrue(); // One Assert is needed - just checking for no exception
+	}
 
-        // Act
-        async Task Act() => await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
+	[Theory]
+	[InlineData(HttpStatusCode.Conflict, "{ \"message\": \"Wallet with given identifier already exists!\" }", "call to external system custodian-post failed with statuscode 409 - Message: Wallet with given identifier already exists!")]
+	[InlineData(HttpStatusCode.BadRequest, "{ \"test\": \"123\" }", "call to external system custodian-post failed with statuscode 400")]
+	[InlineData(HttpStatusCode.BadRequest, "this is no json", "call to external system custodian-post failed with statuscode 400")]
+	[InlineData(HttpStatusCode.Forbidden, null, "call to external system custodian-post failed with statuscode 403")]
+	public async Task CreateWallet_WithConflict_ThrowsServiceExceptionWithErrorContent(HttpStatusCode statusCode, string content, string message)
+	{
+		// Arrange
+		const string bpn = "123";
+		const string name = "test";
+		var httpMessageHandlerMock = content == null
+			? new HttpMessageHandlerMock(statusCode)
+			: new HttpMessageHandlerMock(statusCode, new StringContent(content));
+		var httpClient = new HttpClient(httpMessageHandlerMock)
+		{
+			BaseAddress = new Uri("https://base.address.com")
+		};
+		A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+		var sut = new CustodianService(_tokenService, _options);
 
-        // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().Be(message);
-        ex.StatusCode.Should().Be(statusCode);
-    }
+		// Act
+		async Task Act() => await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
 
-    #endregion
+		// Assert
+		var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+		ex.Message.Should().Be(message);
+		ex.StatusCode.Should().Be(statusCode);
+	}
 
-    #region GetWallet By Bpn
+	#endregion
 
-    [Fact]
-    public async Task GetWalletByBpnAsync_WithValidData_ReturnsWallets()
-    {
-        // Arrange
-        const string validBpn = "BPNL00000003CRHK";
-        var data = JsonSerializer.Serialize(new WalletData("abc",
-                validBpn,
-                "123",
-                DateTime.UtcNow,
-                false,
-                null));
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, data.ToFormContent("application/vc+ld+json"));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
-            .Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
-        
-        // Act
-        var result = await sut.GetWalletByBpnAsync(validBpn, CancellationToken.None).ConfigureAwait(false);
+	#region GetWallet By Bpn
 
-        // Assert
-        result.Bpn.Should().NotBeNullOrEmpty();
-        result.Bpn.Should().Be(validBpn);
-        result.Did.Should().Be("123");
-    }
+	[Fact]
+	public async Task GetWalletByBpnAsync_WithValidData_ReturnsWallets()
+	{
+		// Arrange
+		const string validBpn = "BPNL00000003CRHK";
+		var data = JsonSerializer.Serialize(new WalletData("abc",
+				validBpn,
+				"123",
+				DateTime.UtcNow,
+				false,
+				null));
+		var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, data.ToFormContent("application/vc+ld+json"));
+		var httpClient = new HttpClient(httpMessageHandlerMock)
+		{
+			BaseAddress = new Uri("https://base.address.com")
+		};
+		A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
+			.Returns(httpClient);
+		var sut = new CustodianService(_tokenService, _options);
 
-    [Fact]
-    public async Task GetWalletByBpnAsync_WithWalletDataNull_ThrowsServiceException()
-    {
-        // Arrange
-        const string validBpn = "BPNL00000003CRHK";
-        var data = JsonSerializer.Serialize(new WalletData("abc",
-            validBpn,
-            "123",
-            DateTime.UtcNow,
-            false,
-            null));
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
-            .Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
-        
-        // Act
-        async Task Act() => await sut.GetWalletByBpnAsync(validBpn, CancellationToken.None).ConfigureAwait(false);
+		// Act
+		var result = await sut.GetWalletByBpnAsync(validBpn, CancellationToken.None).ConfigureAwait(false);
 
-        // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().Be("Couldn't resolve wallet data");
-    }
+		// Assert
+		result.Bpn.Should().NotBeNullOrEmpty();
+		result.Bpn.Should().Be(validBpn);
+		result.Did.Should().Be("123");
+	}
 
-    [Fact]
-    public async Task GetWalletByBpnAsync_WithInvalidData_ThrowsServiceException()
-    {
-        // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
-        {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new CustodianService(_tokenService, _options);
+	[Fact]
+	public async Task GetWalletByBpnAsync_WithWalletDataNull_ThrowsServiceException()
+	{
+		// Arrange
+		const string validBpn = "BPNL00000003CRHK";
+		var data = JsonSerializer.Serialize(new WalletData("abc",
+			validBpn,
+			"123",
+			DateTime.UtcNow,
+			false,
+			null));
+		var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
+		var httpClient = new HttpClient(httpMessageHandlerMock)
+		{
+			BaseAddress = new Uri("https://base.address.com")
+		};
+		A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._))
+			.Returns(httpClient);
+		var sut = new CustodianService(_tokenService, _options);
 
-        // Act
-        async Task Act() => await sut.GetWalletByBpnAsync("invalidBpn", CancellationToken.None).ConfigureAwait(false);
+		// Act
+		async Task Act() => await sut.GetWalletByBpnAsync(validBpn, CancellationToken.None).ConfigureAwait(false);
 
-        // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    }
+		// Assert
+		var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+		ex.Message.Should().Be("Couldn't resolve wallet data");
+	}
 
-    #endregion
+	[Fact]
+	public async Task GetWalletByBpnAsync_WithInvalidData_ThrowsServiceException()
+	{
+		// Arrange
+		var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+		var httpClient = new HttpClient(httpMessageHandlerMock)
+		{
+			BaseAddress = new Uri("https://base.address.com")
+		};
+		A.CallTo(() => _tokenService.GetAuthorizedClient<CustodianService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+		var sut = new CustodianService(_tokenService, _options);
+
+		// Act
+		async Task Act() => await sut.GetWalletByBpnAsync("invalidBpn", CancellationToken.None).ConfigureAwait(false);
+
+		// Assert
+		var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+		ex.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+	}
+
+	#endregion
 }

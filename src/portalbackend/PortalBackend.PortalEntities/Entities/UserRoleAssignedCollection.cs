@@ -22,16 +22,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class UserRoleAssignedCollection
 {
-    public UserRoleAssignedCollection(Guid userRoleId, Guid userRoleCollectionId)
-    {
-        UserRoleId = userRoleId;
-        UserRoleCollectionId = userRoleCollectionId;
-    }
+	public UserRoleAssignedCollection(Guid userRoleId, Guid userRoleCollectionId)
+	{
+		UserRoleId = userRoleId;
+		UserRoleCollectionId = userRoleCollectionId;
+	}
 
-    public Guid UserRoleId { get; private set; }
-    public Guid UserRoleCollectionId { get; private set; }
+	public Guid UserRoleId { get; private set; }
+	public Guid UserRoleCollectionId { get; private set; }
 
-    // Navigation properties
-    public virtual UserRoleCollection? UserRoleCollection { get; private set; }
-    public virtual UserRole? UserRole{ get; private set; }
+	// Navigation properties
+	public virtual UserRoleCollection? UserRoleCollection { get; private set; }
+	public virtual UserRole? UserRole { get; private set; }
 }

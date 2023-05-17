@@ -25,32 +25,32 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// </summary>
 public class OfferCompanySubscriptionStatusData
 {
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    public OfferCompanySubscriptionStatusData()
-    {
-        CompanySubscriptionStatuses = new HashSet<CompanySubscriptionStatusData>();
-    }
+	/// <summary>
+	/// Constructor.
+	/// </summary>
+	public OfferCompanySubscriptionStatusData()
+	{
+		CompanySubscriptionStatuses = new HashSet<CompanySubscriptionStatusData>();
+	}
 
-    /// <summary>
-    /// Id of the offer.
-    /// </summary>
-    public Guid OfferId { get; set; }
+	/// <summary>
+	/// Id of the offer.
+	/// </summary>
+	public Guid OfferId { get; set; }
 
-    /// <summary>
-    /// Name of the service.
-    /// </summary>
-    public string? ServiceName { get; set; }
+	/// <summary>
+	/// Name of the service.
+	/// </summary>
+	public string? ServiceName { get; set; }
 
-    /// <summary>
-    /// Subscription statuses of subscribing companies.
-    /// </summary>
-    public IEnumerable<CompanySubscriptionStatusData> CompanySubscriptionStatuses { get; set; }
-    
-    /// <summary>
-    /// Id of the lead Image
-    /// </summary>
-    /// <value></value>
-    public Guid Image { get; set; }
+	/// <summary>
+	/// Subscription statuses of subscribing companies.
+	/// </summary>
+	public IEnumerable<CompanySubscriptionStatusData> CompanySubscriptionStatuses { get; set; }
+
+	/// <summary>
+	/// Id of the lead Image
+	/// </summary>
+	/// <value></value>
+	public Guid Image { get; set; }
 }

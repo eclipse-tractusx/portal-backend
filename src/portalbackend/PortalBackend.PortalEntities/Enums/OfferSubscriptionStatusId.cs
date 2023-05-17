@@ -25,18 +25,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 /// </summary>
 public enum OfferSubscriptionStatusId
 {
-    /// <summary>
-    /// App subscription not yet confirmed.
-    /// </summary>
-    PENDING = 1,
+	/// <summary>
+	/// App subscription not yet confirmed.
+	/// </summary>
+	PENDING = 1,
 
-    /// <summary>
-    /// App subscription active.
-    /// </summary>
-    ACTIVE = 2,
+	/// <summary>
+	/// App subscription active.
+	/// </summary>
+	ACTIVE = 2,
 
-    /// <summary>
-    /// App subscription declared to be ended.
-    /// </summary>
-    INACTIVE = 3
+	/// <summary>
+	/// App subscription declared to be ended.
+	/// </summary>
+	INACTIVE = 3
 }

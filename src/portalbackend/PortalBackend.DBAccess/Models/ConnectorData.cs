@@ -27,37 +27,37 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// View model for connectors.
 /// </summary>
 public record ConnectorData(
-    string Name,
-    [StringLength(2, MinimumLength = 2)]
-    string Location,
-    Guid Id,
-    ConnectorTypeId Type,
-    ConnectorStatusId Status,
-    bool? DapsRegistrationSuccessful,
-    Guid? HostId,
-    string? HostCompanyName,
-    Guid? SelfDescriptionDocumentId,
-    string? DocumentName);
+	string Name,
+	[StringLength(2, MinimumLength = 2)]
+	string Location,
+	Guid Id,
+	ConnectorTypeId Type,
+	ConnectorStatusId Status,
+	bool? DapsRegistrationSuccessful,
+	Guid? HostId,
+	string? HostCompanyName,
+	Guid? SelfDescriptionDocumentId,
+	string? DocumentName);
 
 /// <summary>
 /// Connector information for the daps call.
 /// </summary>
 public record ConnectorInformationData(
-    string Name,
-    string Bpn,
-    Guid Id,
-    string Url);
+	string Name,
+	string Bpn,
+	Guid Id,
+	string Url);
 
 /// <summary>
 /// View model for connectors.
 /// </summary>
 public record ManagedConnectorData(
-    string Name,
-    [StringLength(2, MinimumLength = 2)]
-    string Location,
-    Guid Id,
-    ConnectorTypeId Type,
-    ConnectorStatusId Status,
-    bool? DapsRegistrationSuccessful,
-    string? ProviderCompanyName,
-    Guid? SelfDescriptionDocumentId);
+	string Name,
+	[StringLength(2, MinimumLength = 2)]
+	string Location,
+	Guid Id,
+	ConnectorTypeId Type,
+	ConnectorStatusId Status,
+	bool? DapsRegistrationSuccessful,
+	string? ProviderCompanyName,
+	Guid? SelfDescriptionDocumentId);

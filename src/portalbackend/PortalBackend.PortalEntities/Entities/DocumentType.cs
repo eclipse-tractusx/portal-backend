@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class DocumentType
 {
-    private DocumentType()
-    {
-        Label = null!;
-        Documents = new HashSet<Document>();
-    }
+	private DocumentType()
+	{
+		Label = null!;
+		Documents = new HashSet<Document>();
+	}
 
-    public DocumentType(DocumentTypeId documentTypeId) : this()
-    {
-        Id = documentTypeId;
-        Label = documentTypeId.ToString();
-    }
-    
-    public DocumentTypeId Id { get; private set; }
+	public DocumentType(DocumentTypeId documentTypeId) : this()
+	{
+		Id = documentTypeId;
+		Label = documentTypeId.ToString();
+	}
 
-    [MaxLength(255)]
-    public string Label { get; private set; }
+	public DocumentTypeId Id { get; private set; }
 
-    // Navigation properties
-    public virtual ICollection<Document> Documents { get; private set; }
+	[MaxLength(255)]
+	public string Label { get; private set; }
+
+	// Navigation properties
+	public virtual ICollection<Document> Documents { get; private set; }
 }

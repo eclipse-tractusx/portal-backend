@@ -27,48 +27,48 @@ namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 /// Model used to request connector registration at sd factory.
 /// </summary>
 public record SdFactoryRequestModel(
-    [property: JsonPropertyName("externalId")] string ExternalId,
-    [property: JsonPropertyName("registrationNumber")] IEnumerable<RegistrationNumber> RegistrationNumber,
-    [property: JsonPropertyName("headquarterAddress.country")] string HeadquarterCountry,
-    [property: JsonPropertyName("legalAddress.country")] string LegalCountry,
-    [property: JsonPropertyName("type"), JsonConverter(typeof(JsonStringEnumConverter))] SdFactoryRequestModelSdType Type,
-    [property: JsonPropertyName("bpn")] string Bpn,
-    [property: JsonPropertyName("holder")] string Holder,
-    [property: JsonPropertyName("issuer")] string Issuer);
+	[property: JsonPropertyName("externalId")] string ExternalId,
+	[property: JsonPropertyName("registrationNumber")] IEnumerable<RegistrationNumber> RegistrationNumber,
+	[property: JsonPropertyName("headquarterAddress.country")] string HeadquarterCountry,
+	[property: JsonPropertyName("legalAddress.country")] string LegalCountry,
+	[property: JsonPropertyName("type"), JsonConverter(typeof(JsonStringEnumConverter))] SdFactoryRequestModelSdType Type,
+	[property: JsonPropertyName("bpn")] string Bpn,
+	[property: JsonPropertyName("holder")] string Holder,
+	[property: JsonPropertyName("issuer")] string Issuer);
 
 public record RegistrationNumber(
-    [property: JsonPropertyName("type")] string Type,
-    [property: JsonPropertyName("value")] string Value
+	[property: JsonPropertyName("type")] string Type,
+	[property: JsonPropertyName("value")] string Value
 );
 
 /// <summary>
 /// Model used to request connector registration at sd factory.
 /// </summary>
 public record ConnectorSdFactoryRequestModel(
-    [property: JsonPropertyName("externalId")] string ExternalId,
-    [property: JsonPropertyName("type"), JsonConverter(typeof(JsonStringEnumConverter))] SdFactoryRequestModelSdType Type,
-    [property: JsonPropertyName("providedBy")] string ProvidedBy,
-    [property: JsonPropertyName("aggregationOf")] string? AggregationOf,
-    [property: JsonPropertyName("termsAndConditions")] string? TermsAndConditions,
-    [property: JsonPropertyName("policies")] string Policies,
-    [property: JsonPropertyName("issuer")] string Issuer,
-    [property: JsonPropertyName("holder")] string Holder
+	[property: JsonPropertyName("externalId")] string ExternalId,
+	[property: JsonPropertyName("type"), JsonConverter(typeof(JsonStringEnumConverter))] SdFactoryRequestModelSdType Type,
+	[property: JsonPropertyName("providedBy")] string ProvidedBy,
+	[property: JsonPropertyName("aggregationOf")] string? AggregationOf,
+	[property: JsonPropertyName("termsAndConditions")] string? TermsAndConditions,
+	[property: JsonPropertyName("policies")] string Policies,
+	[property: JsonPropertyName("issuer")] string Issuer,
+	[property: JsonPropertyName("holder")] string Holder
 );
 
 public enum SdFactoryRequestModelSdType
 {
-    [EnumMember(Value = "LegalPerson")]
-    LegalPerson,
+	[EnumMember(Value = "LegalPerson")]
+	LegalPerson,
 
-    [EnumMember(Value = "ServiceOffering")]
-    ServiceOffering
+	[EnumMember(Value = "ServiceOffering")]
+	ServiceOffering
 }
 
 public enum SdFactoryResponseModelTitle
 {
-    [EnumMember(Value = "Connector")]
-    Connector,
+	[EnumMember(Value = "Connector")]
+	Connector,
 
-    [EnumMember(Value = "LegalPerson")]
-    LegalPerson
+	[EnumMember(Value = "LegalPerson")]
+	LegalPerson
 }

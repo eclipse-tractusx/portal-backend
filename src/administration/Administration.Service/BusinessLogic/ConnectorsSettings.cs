@@ -27,35 +27,35 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// </summary>
 public class ConnectorsSettings
 {
-    /// <summary>
-    /// Maximum amount of entries per page in paginated connector lists.
-    /// </summary>
-    [Required]
-    public int MaxPageSize { get; set; }
+	/// <summary>
+	/// Maximum amount of entries per page in paginated connector lists.
+	/// </summary>
+	[Required]
+	public int MaxPageSize { get; set; }
 
-    /// <summary>
-    /// Allowed content types for the certificate
-    /// </summary>
-    [Required]
-    public IEnumerable<string> ValidCertificationContentTypes { get; set; } = null!;
+	/// <summary>
+	/// Allowed content types for the certificate
+	/// </summary>
+	[Required]
+	public IEnumerable<string> ValidCertificationContentTypes { get; set; } = null!;
 
-    /// <summary>
-    /// Url to display the self description document
-    /// </summary>
-    [Required(AllowEmptyStrings = false)]
-    public string SelfDescriptionDocumentUrl { get; set; } = null!;
+	/// <summary>
+	/// Url to display the self description document
+	/// </summary>
+	[Required(AllowEmptyStrings = false)]
+	public string SelfDescriptionDocumentUrl { get; set; } = null!;
 }
 
 public static class ConnectorsSettingsExtensions
 {
-    public static IServiceCollection ConfigureConnectorsSettings(
-        this IServiceCollection services,
-        IConfigurationSection section
-        )
-    {
-        services.AddOptions<ConnectorsSettings>()
-            .Bind(section)
-            .ValidateOnStart();
-        return services;
-    }
+	public static IServiceCollection ConfigureConnectorsSettings(
+		this IServiceCollection services,
+		IConfigurationSection section
+		)
+	{
+		services.AddOptions<ConnectorsSettings>()
+			.Bind(section)
+			.ValidateOnStart();
+		return services;
+	}
 }

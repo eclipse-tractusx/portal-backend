@@ -30,10 +30,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Authentica
 
 public class AuthenticatorConfig
 {
-    [JsonProperty("alias")]
-    public string Alias { get; set; }
-    [JsonProperty("config")]
-    public IDictionary<string, object> Config { get; set; }
-    [JsonProperty("id")]
-    public string Id { get; set; }
+	[JsonProperty("alias")]
+	public string Alias { get; set; }
+	[JsonProperty("config")]
+	public IDictionary<string, object> Config { get; set; }
+	[JsonProperty("id")]
+	public string Id { get; set; }
 }

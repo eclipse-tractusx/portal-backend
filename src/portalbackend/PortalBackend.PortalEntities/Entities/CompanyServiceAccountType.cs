@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,31 +18,31 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 public class CompanyServiceAccountType
 {
-    private CompanyServiceAccountType()
-    {
-        Label = null!;
-        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
-    }
+	private CompanyServiceAccountType()
+	{
+		Label = null!;
+		CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
+	}
 
-    public CompanyServiceAccountType(CompanyServiceAccountTypeId companyServiceAccountTypeId) : this()
-    {
-        Id = companyServiceAccountTypeId;
-        Label = companyServiceAccountTypeId.ToString();
-    }
+	public CompanyServiceAccountType(CompanyServiceAccountTypeId companyServiceAccountTypeId) : this()
+	{
+		Id = companyServiceAccountTypeId;
+		Label = companyServiceAccountTypeId.ToString();
+	}
 
-    [Key]
-    public CompanyServiceAccountTypeId Id { get; private set; }
+	[Key]
+	public CompanyServiceAccountTypeId Id { get; private set; }
 
-    [MaxLength(255)]
-    public string Label { get; private set; }
+	[MaxLength(255)]
+	public string Label { get; private set; }
 
-    // Navigation properties
-    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
+	// Navigation properties
+	public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
 }

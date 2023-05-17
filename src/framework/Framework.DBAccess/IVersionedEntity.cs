@@ -27,6 +27,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 /// </summary>
 public interface IVersionedEntity
 {
-    [ConcurrencyCheck]
-    Guid Version { get; set; }
+	[ConcurrencyCheck]
+	Guid Version { get; set; }
 }

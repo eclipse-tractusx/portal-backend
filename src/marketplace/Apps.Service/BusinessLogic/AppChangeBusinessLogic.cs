@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -42,239 +42,239 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 /// </summary>
 public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 {
-    private static readonly JsonSerializerOptions Options = new (){ PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly AppsSettings _settings;
-    private readonly INotificationService _notificationService;
-    private readonly IProvisioningManager _provisioningManager;
-    private readonly IOfferService _offerService;
+	private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+	private readonly IPortalRepositories _portalRepositories;
+	private readonly AppsSettings _settings;
+	private readonly INotificationService _notificationService;
+	private readonly IProvisioningManager _provisioningManager;
+	private readonly IOfferService _offerService;
 
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="portalRepositories">access to the repositories</param>
-    /// <param name="notificationService">the notification service</param>
-    /// <param name="provisioningManager">The provisioning manager</param>
-    /// <param name="settings">Settings for the app change bl</param>
-    /// <param name="offerService">Offer Servicel</param>
-    public AppChangeBusinessLogic(IPortalRepositories portalRepositories, INotificationService notificationService, IProvisioningManager provisioningManager, IOfferService offerService, IOptions<AppsSettings> settings)
-    {
-        _portalRepositories = portalRepositories;
-        _notificationService = notificationService;
-        _provisioningManager = provisioningManager;
-        _settings = settings.Value;
-        _offerService = offerService;
-    }
+	/// <summary>
+	/// Constructor.
+	/// </summary>
+	/// <param name="portalRepositories">access to the repositories</param>
+	/// <param name="notificationService">the notification service</param>
+	/// <param name="provisioningManager">The provisioning manager</param>
+	/// <param name="settings">Settings for the app change bl</param>
+	/// <param name="offerService">Offer Servicel</param>
+	public AppChangeBusinessLogic(IPortalRepositories portalRepositories, INotificationService notificationService, IProvisioningManager provisioningManager, IOfferService offerService, IOptions<AppsSettings> settings)
+	{
+		_portalRepositories = portalRepositories;
+		_notificationService = notificationService;
+		_provisioningManager = provisioningManager;
+		_settings = settings.Value;
+		_offerService = offerService;
+	}
 
-    /// <inheritdoc/>
-    public Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, string iamUserId)
-    {
-        AppExtensions.ValidateAppUserRole(appId, appUserRolesDescription);
-        return InsertActiveAppUserRoleAsync(appId, appUserRolesDescription, iamUserId);
-    }
+	/// <inheritdoc/>
+	public Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, string iamUserId)
+	{
+		AppExtensions.ValidateAppUserRole(appId, appUserRolesDescription);
+		return InsertActiveAppUserRoleAsync(appId, appUserRolesDescription, iamUserId);
+	}
 
-    private async Task<IEnumerable<AppRoleData>> InsertActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles, string iamUserId)
-    {
-        var result = await _portalRepositories.GetInstance<IOfferRepository>().GetInsertActiveAppUserRoleDataAsync(appId, iamUserId, OfferTypeId.APP).ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new NotFoundException($"app {appId} does not exist");
-        }
-       
-        if (result.CompanyUserId == Guid.Empty)
-        {
-            throw new ForbiddenException($"user {iamUserId} is not a member of the provider company of app {appId}");
-        }
+	private async Task<IEnumerable<AppRoleData>> InsertActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles, string iamUserId)
+	{
+		var result = await _portalRepositories.GetInstance<IOfferRepository>().GetInsertActiveAppUserRoleDataAsync(appId, iamUserId, OfferTypeId.APP).ConfigureAwait(false);
+		if (result == default)
+		{
+			throw new NotFoundException($"app {appId} does not exist");
+		}
 
-        if (result.ProviderCompanyId == null)
-        {
-            throw new ConflictException($"App {appId} providing company is not yet set.");
-        }
+		if (result.CompanyUserId == Guid.Empty)
+		{
+			throw new ForbiddenException($"user {iamUserId} is not a member of the provider company of app {appId}");
+		}
 
-        var roleData = AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
-        foreach (var clientId in result.ClientClientIds)
-        {
-            await _provisioningManager.AddRolesToClientAsync(clientId, userRoles.Select(x => x.Role)).ConfigureAwait(false);
-        }
+		if (result.ProviderCompanyId == null)
+		{
+			throw new ConflictException($"App {appId} providing company is not yet set.");
+		}
 
-        var notificationContent = new
-        {
-            AppName = result.AppName,
-            Roles = roleData.Select(x => x.RoleName)
-        };
-        var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
-        var content = _settings.ActiveAppNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(_settings.ActiveAppCompanyAdminRoles, result.CompanyUserId, content, result.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        return roleData;
-    }
+		var roleData = AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
+		foreach (var clientId in result.ClientClientIds)
+		{
+			await _provisioningManager.AddRolesToClientAsync(clientId, userRoles.Select(x => x.Role)).ConfigureAwait(false);
+		}
 
-    /// <inheritdoc />
-    public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, string iamUserId)
-    {        
-        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        return await ValidateAndGetAppDescription(appId, iamUserId, offerRepository);        
-    }
-    
-    /// <inheritdoc />
-    public async Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas)
-    {
-        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+		var notificationContent = new
+		{
+			AppName = result.AppName,
+			Roles = roleData.Select(x => x.RoleName)
+		};
+		var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
+		var content = _settings.ActiveAppNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
+		await _notificationService.CreateNotifications(_settings.ActiveAppCompanyAdminRoles, result.CompanyUserId, content, result.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
+		await _portalRepositories.SaveAsync().ConfigureAwait(false);
+		return roleData;
+	}
 
-        offerRepository.CreateUpdateDeleteOfferDescriptions(appId,
-            await ValidateAndGetAppDescription(appId, iamUserId, offerRepository),
-            offerDescriptionDatas.Select(od => new ValueTuple<string,string, string>(od.LanguageCode,od.LongDescription,od.ShortDescription)));
+	/// <inheritdoc />
+	public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, string iamUserId)
+	{
+		var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+		return await ValidateAndGetAppDescription(appId, iamUserId, offerRepository);
+	}
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
+	/// <inheritdoc />
+	public async Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas)
+	{
+		var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
 
-    private static async Task<IEnumerable<LocalizedDescription>> ValidateAndGetAppDescription(Guid appId, string iamUserId, IOfferRepository offerRepository)
-    {
-        var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, iamUserId).ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new NotFoundException($"App {appId} does not exist.");
-        }
+		offerRepository.CreateUpdateDeleteOfferDescriptions(appId,
+			await ValidateAndGetAppDescription(appId, iamUserId, offerRepository),
+			offerDescriptionDatas.Select(od => new ValueTuple<string, string, string>(od.LanguageCode, od.LongDescription, od.ShortDescription)));
 
-        if (!result.IsStatusActive)
-        {
-            throw new ConflictException($"App {appId} is in InCorrect Status");
-        }
+		await _portalRepositories.SaveAsync().ConfigureAwait(false);
+	}
 
-        if (!result.IsProviderCompanyUser)
-        {
-            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of App {appId}");
-        }
+	private static async Task<IEnumerable<LocalizedDescription>> ValidateAndGetAppDescription(Guid appId, string iamUserId, IOfferRepository offerRepository)
+	{
+		var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, iamUserId).ConfigureAwait(false);
+		if (result == default)
+		{
+			throw new NotFoundException($"App {appId} does not exist.");
+		}
 
-        if (result.OfferDescriptionDatas == null)
-        {
-            throw new UnexpectedConditionException("offerDescriptionDatas should never be null here");
-        }
+		if (!result.IsStatusActive)
+		{
+			throw new ConflictException($"App {appId} is in InCorrect Status");
+		}
 
-        return result.OfferDescriptionDatas;
-    }
+		if (!result.IsProviderCompanyUser)
+		{
+			throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of App {appId}");
+		}
 
-  /// <inheritdoc />
-    public async Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken)
-    {
-        var appLeadImageContentTypes = new []{ MediaTypeId.JPEG, MediaTypeId.PNG };
-        var documentContentType = ContentTypeMapperExtensions.ParseMediaTypeId(document.ContentType);
-        if (!appLeadImageContentTypes.Contains(documentContentType))
-        {
-            throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType :{string.Join(",", appLeadImageContentTypes)} are allowed.");
-        }
+		if (result.OfferDescriptionDatas == null)
+		{
+			throw new UnexpectedConditionException("offerDescriptionDatas should never be null here");
+		}
 
-        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var result = await offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP).ConfigureAwait(false);
+		return result.OfferDescriptionDatas;
+	}
 
-        if(result == default)
-        {
-            throw new NotFoundException($"App {appId} does not exist.");
-        }
-        if (!result.IsStatusActive)
-        {
-            throw new ConflictException("offerStatus is in incorrect State");
-        }
-        var companyUserId = result.CompanyUserId;
-        if (companyUserId == Guid.Empty)
-        {
-            throw new ForbiddenException($"user {iamUserId} is not a member of the provider company of App {appId}");
-        }
+	/// <inheritdoc />
+	public async Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken)
+	{
+		var appLeadImageContentTypes = new[] { MediaTypeId.JPEG, MediaTypeId.PNG };
+		var documentContentType = ContentTypeMapperExtensions.ParseMediaTypeId(document.ContentType);
+		if (!appLeadImageContentTypes.Contains(documentContentType))
+		{
+			throw new UnsupportedMediaTypeException($"Document type not supported. File with contentType :{string.Join(",", appLeadImageContentTypes)} are allowed.");
+		}
 
-        var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
-        var doc = documentRepository.CreateDocument(document.FileName, documentContent, hash, documentContentType, DocumentTypeId.APP_LEADIMAGE, x =>
-        {
-            x.CompanyUserId = companyUserId;
-            x.DocumentStatusId = DocumentStatusId.LOCKED;
-        });
-        offerRepository.CreateOfferAssignedDocument(appId, doc.Id);
+		var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+		var result = await offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP).ConfigureAwait(false);
 
-        offerRepository.RemoveOfferAssignedDocuments(result.documentStatusDatas.Select(data => (appId, data.DocumentId)));
-        documentRepository.RemoveDocuments(result.documentStatusDatas.Select(data => data.DocumentId));
+		if (result == default)
+		{
+			throw new NotFoundException($"App {appId} does not exist.");
+		}
+		if (!result.IsStatusActive)
+		{
+			throw new ConflictException("offerStatus is in incorrect State");
+		}
+		var companyUserId = result.CompanyUserId;
+		if (companyUserId == Guid.Empty)
+		{
+			throw new ForbiddenException($"user {iamUserId} is not a member of the provider company of App {appId}");
+		}
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
+		var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
+		var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
+		var doc = documentRepository.CreateDocument(document.FileName, documentContent, hash, documentContentType, DocumentTypeId.APP_LEADIMAGE, x =>
+		{
+			x.CompanyUserId = companyUserId;
+			x.DocumentStatusId = DocumentStatusId.LOCKED;
+		});
+		offerRepository.CreateOfferAssignedDocument(appId, doc.Id);
 
-    /// <inheritdoc />
-    public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId) =>
-        _offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
+		offerRepository.RemoveOfferAssignedDocuments(result.documentStatusDatas.Select(data => (appId, data.DocumentId)));
+		documentRepository.RemoveDocuments(result.documentStatusDatas.Select(data => data.DocumentId));
 
-    /// <inheritdoc />
-    public Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, string iamUserId)
-    {
-        data.Url.EnsureValidHttpUrl(() => nameof(data.Url));
-        return UpdateTenantUrlAsyncInternal(offerId, subscriptionId, data.Url, iamUserId);
-    }
+		await _portalRepositories.SaveAsync().ConfigureAwait(false);
+	}
 
-    private async Task UpdateTenantUrlAsyncInternal(Guid offerId, Guid subscriptionId, string url, string iamUserId)
-    {
-        var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var result = await offerSubscriptionsRepository.GetUpdateUrlDataAsync(offerId, subscriptionId, iamUserId).ConfigureAwait(false);
-        if (result == null)
-        {
-            throw new NotFoundException($"Offer {offerId} or subscription {subscriptionId} do not exists");
-        }
+	/// <inheritdoc />
+	public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId) =>
+		_offerService.DeactivateOfferIdAsync(appId, iamUserId, OfferTypeId.APP);
 
-        var (offerName, isSingleInstance, isUserOfCompany, requesterId, subscribingCompanyId, offerSubscriptionStatusId, detailData) = result;
-        if (isSingleInstance)
-        {
-            throw new ConflictException("Subscription url of single instance apps can't be changed");
-        }
+	/// <inheritdoc />
+	public Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, string iamUserId)
+	{
+		data.Url.EnsureValidHttpUrl(() => nameof(data.Url));
+		return UpdateTenantUrlAsyncInternal(offerId, subscriptionId, data.Url, iamUserId);
+	}
 
-        if (!isUserOfCompany)
-        {
-            throw new ForbiddenException($"User {iamUserId} is not part of the app's providing company");
-        }
+	private async Task UpdateTenantUrlAsyncInternal(Guid offerId, Guid subscriptionId, string url, string iamUserId)
+	{
+		var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+		var result = await offerSubscriptionsRepository.GetUpdateUrlDataAsync(offerId, subscriptionId, iamUserId).ConfigureAwait(false);
+		if (result == null)
+		{
+			throw new NotFoundException($"Offer {offerId} or subscription {subscriptionId} do not exists");
+		}
 
-        if (offerSubscriptionStatusId != OfferSubscriptionStatusId.ACTIVE)
-        {
-            throw new ConflictException($"Subscription {subscriptionId} must be in status {OfferSubscriptionStatusId.ACTIVE}");
-        }
+		var (offerName, isSingleInstance, isUserOfCompany, requesterId, subscribingCompanyId, offerSubscriptionStatusId, detailData) = result;
+		if (isSingleInstance)
+		{
+			throw new ConflictException("Subscription url of single instance apps can't be changed");
+		}
 
-        if (detailData == null)
-        {
-            throw new ConflictException($"There is no subscription detail data configured for subscription {subscriptionId}");
-        }
+		if (!isUserOfCompany)
+		{
+			throw new ForbiddenException($"User {iamUserId} is not part of the app's providing company");
+		}
 
-        if (url == detailData.SubscriptionUrl)
-            return;
-        
-        offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(detailData.DetailId, subscriptionId,
-            os =>
-            {
-                os.AppSubscriptionUrl = detailData.SubscriptionUrl;
-            },
-            os =>
-            {
-                os.AppSubscriptionUrl = url;
-            });
+		if (offerSubscriptionStatusId != OfferSubscriptionStatusId.ACTIVE)
+		{
+			throw new ConflictException($"Subscription {subscriptionId} must be in status {OfferSubscriptionStatusId.ACTIVE}");
+		}
 
-        if (!string.IsNullOrEmpty(detailData.ClientClientId))
-        {
-            await _provisioningManager.UpdateClient(detailData.ClientClientId, url, url.AppendToPathEncoded("*")).ConfigureAwait(false);
-        }
+		if (detailData == null)
+		{
+			throw new ConflictException($"There is no subscription detail data configured for subscription {subscriptionId}");
+		}
 
-        var notificationContent = JsonSerializer.Serialize(new
-        {
-            AppId = offerId,
-            AppName = offerName,
-            OldUrl = detailData.SubscriptionUrl,
-            NewUrl = url
-        }, Options);
-        if (requesterId != Guid.Empty)
-        {
-            _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(requesterId, NotificationTypeId.SUBSCRIPTION_URL_UPDATE, false,
-                n =>
-                {
-                    n.Content = notificationContent;
-                });
-        }
-        else
-        {
-            await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, new (string?,NotificationTypeId)[] {(notificationContent, NotificationTypeId.SUBSCRIPTION_URL_UPDATE)}, subscribingCompanyId).AwaitAll().ConfigureAwait(false);
-        }
+		if (url == detailData.SubscriptionUrl)
+			return;
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
+		offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(detailData.DetailId, subscriptionId,
+			os =>
+			{
+				os.AppSubscriptionUrl = detailData.SubscriptionUrl;
+			},
+			os =>
+			{
+				os.AppSubscriptionUrl = url;
+			});
+
+		if (!string.IsNullOrEmpty(detailData.ClientClientId))
+		{
+			await _provisioningManager.UpdateClient(detailData.ClientClientId, url, url.AppendToPathEncoded("*")).ConfigureAwait(false);
+		}
+
+		var notificationContent = JsonSerializer.Serialize(new
+		{
+			AppId = offerId,
+			AppName = offerName,
+			OldUrl = detailData.SubscriptionUrl,
+			NewUrl = url
+		}, Options);
+		if (requesterId != Guid.Empty)
+		{
+			_portalRepositories.GetInstance<INotificationRepository>().CreateNotification(requesterId, NotificationTypeId.SUBSCRIPTION_URL_UPDATE, false,
+				n =>
+				{
+					n.Content = notificationContent;
+				});
+		}
+		else
+		{
+			await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, new (string?, NotificationTypeId)[] { (notificationContent, NotificationTypeId.SUBSCRIPTION_URL_UPDATE) }, subscribingCompanyId).AwaitAll().ConfigureAwait(false);
+		}
+
+		await _portalRepositories.SaveAsync().ConfigureAwait(false);
+	}
 }

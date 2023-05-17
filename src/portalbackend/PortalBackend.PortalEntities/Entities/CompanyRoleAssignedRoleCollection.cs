@@ -25,18 +25,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyRoleAssignedRoleCollection
 {
-    public CompanyRoleAssignedRoleCollection(CompanyRoleId companyRoleId, Guid userRoleCollectionId)
-    {
-        CompanyRoleId = companyRoleId;
-        UserRoleCollectionId = userRoleCollectionId;
-    }
+	public CompanyRoleAssignedRoleCollection(CompanyRoleId companyRoleId, Guid userRoleCollectionId)
+	{
+		CompanyRoleId = companyRoleId;
+		UserRoleCollectionId = userRoleCollectionId;
+	}
 
-    [Key]
-    public CompanyRoleId CompanyRoleId { get; private set; }
+	[Key]
+	public CompanyRoleId CompanyRoleId { get; private set; }
 
-    public Guid UserRoleCollectionId { get; private set; }
+	public Guid UserRoleCollectionId { get; private set; }
 
-    // Navigation properties
-    public virtual CompanyRole? CompanyRole { get; private set; }
-    public virtual UserRoleCollection? UserRoleCollection { get; set; }
+	// Navigation properties
+	public virtual CompanyRole? CompanyRole { get; private set; }
+	public virtual UserRoleCollection? UserRoleCollection { get; set; }
 }

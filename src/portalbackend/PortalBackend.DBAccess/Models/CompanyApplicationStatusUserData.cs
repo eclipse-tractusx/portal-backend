@@ -24,10 +24,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 
 public class CompanyApplicationStatusUserData
 {
-    public CompanyApplicationStatusUserData(CompanyApplicationStatusId companyApplicationStatusId)
-    {
-        CompanyApplicationStatusId = companyApplicationStatusId;
-    }
-    public CompanyApplicationStatusId CompanyApplicationStatusId { get; }
-    public Guid CompanyUserId { get; set; }
+	public CompanyApplicationStatusUserData(CompanyApplicationStatusId companyApplicationStatusId)
+	{
+		CompanyApplicationStatusId = companyApplicationStatusId;
+	}
+	public CompanyApplicationStatusId CompanyApplicationStatusId { get; }
+	public Guid CompanyUserId { get; set; }
 }

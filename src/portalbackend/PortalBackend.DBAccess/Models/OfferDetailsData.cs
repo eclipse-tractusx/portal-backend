@@ -44,24 +44,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="IsSingleInstance">defines whether the offer is a single instance</param>
 /// <param name="LicenseTypeId">LicenseTypeId for APp</param>
 public record OfferDetailsData(
-    Guid Id,
-    string? Title,
-    Guid LeadPictureId,
-    IEnumerable<Guid> Images,
-    string? ProviderUri,
-    string Provider,
-    string? ContactEmail,
-    string? ContactNumber,
-    IEnumerable<AppUseCaseData> UseCases,
-    string? LongDescription,
-    string? Price,
-    IEnumerable<string> Tags,
-    OfferSubscriptionStatusId IsSubscribed,
-    IEnumerable<string> Languages,
-    IEnumerable<DocumentTypeData> Documents,
-    IEnumerable<PrivacyPolicyId> PrivacyPolicies,
-    bool IsSingleInstance,
-    LicenseTypeId LicenseTypeId
+	Guid Id,
+	string? Title,
+	Guid LeadPictureId,
+	IEnumerable<Guid> Images,
+	string? ProviderUri,
+	string Provider,
+	string? ContactEmail,
+	string? ContactNumber,
+	IEnumerable<AppUseCaseData> UseCases,
+	string? LongDescription,
+	string? Price,
+	IEnumerable<string> Tags,
+	OfferSubscriptionStatusId IsSubscribed,
+	IEnumerable<string> Languages,
+	IEnumerable<DocumentTypeData> Documents,
+	IEnumerable<PrivacyPolicyId> PrivacyPolicies,
+	bool IsSingleInstance,
+	LicenseTypeId LicenseTypeId
 );
 
 /// <summary>

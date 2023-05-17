@@ -25,13 +25,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 /// </summary>
 public enum CompanyApplicationStatusFilter
 {
-    /// <summary>
-    /// Closed Status for the CompanyApplication
-    /// </summary>
-    Closed = 1,
+	/// <summary>
+	/// Closed Status for the CompanyApplication
+	/// </summary>
+	Closed = 1,
 
-    /// <summary>
-    /// InReview Status for the CompanyApplication
-    /// </summary>
-    InReview = 2
+	/// <summary>
+	/// InReview Status for the CompanyApplication
+	/// </summary>
+	InReview = 2
 }

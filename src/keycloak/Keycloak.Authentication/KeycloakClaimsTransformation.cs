@@ -26,38 +26,38 @@ using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
 {
-    public class KeycloakClaimsTransformation : IClaimsTransformation
-    {
-        readonly JwtBearerOptions _Options;
-        public KeycloakClaimsTransformation(IOptions<JwtBearerOptions> options)
-        {
-            _Options = options.Value;
-        }
+	public class KeycloakClaimsTransformation : IClaimsTransformation
+	{
+		private readonly JwtBearerOptions _Options;
+		public KeycloakClaimsTransformation(IOptions<JwtBearerOptions> options)
+		{
+			_Options = options.Value;
+		}
 
-        public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
-        {
-            var resource_access = principal.Claims.FirstOrDefault(claim => claim.Type == "resource_access" && claim.ValueType == "JSON")?.Value;
-            if ((resource_access != null) &&
-                ((JsonValue.Parse(resource_access) as JsonObject)?.TryGetValue(_Options.TokenValidationParameters.ValidAudience, out JsonValue audience) ?? false) &&
-                ((audience as JsonObject)?.TryGetValue("roles", out JsonValue roles) ?? false) &&
-                roles is JsonArray)
-            {
-                ClaimsIdentity claimsIdentity = new ClaimsIdentity();
-                bool rolesAdded = false;
-                foreach(JsonValue role in roles)
-                {
-                    if (role.JsonType == JsonType.String)
-                    {
-                        claimsIdentity.AddClaim(new Claim(ClaimTypes.Role,role));
-                        rolesAdded = true;
-                    }
-                }
-                if (rolesAdded)
-                {
-                    principal.AddIdentity(claimsIdentity);
-                }
-            }
-            return Task.FromResult(principal);
-        }
-    }
+		public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+		{
+			var resource_access = principal.Claims.FirstOrDefault(claim => claim.Type == "resource_access" && claim.ValueType == "JSON")?.Value;
+			if ((resource_access != null) &&
+				((JsonValue.Parse(resource_access) as JsonObject)?.TryGetValue(_Options.TokenValidationParameters.ValidAudience, out var audience) ?? false) &&
+				((audience as JsonObject)?.TryGetValue("roles", out var roles) ?? false) &&
+				roles is JsonArray)
+			{
+				var claimsIdentity = new ClaimsIdentity();
+				var rolesAdded = false;
+				foreach (JsonValue role in roles)
+				{
+					if (role.JsonType == JsonType.String)
+					{
+						claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, role));
+						rolesAdded = true;
+					}
+				}
+				if (rolesAdded)
+				{
+					principal.AddIdentity(claimsIdentity);
+				}
+			}
+			return Task.FromResult(principal);
+		}
+	}
 }

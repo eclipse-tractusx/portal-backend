@@ -24,26 +24,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class AppInstance : IBaseEntity
 {
-    private AppInstance()
-    {
-        AppSubscriptionDetails = new HashSet<AppSubscriptionDetail>();
-        ServiceAccounts = new HashSet<AppInstanceAssignedCompanyServiceAccount>();
-    }
+	private AppInstance()
+	{
+		AppSubscriptionDetails = new HashSet<AppSubscriptionDetail>();
+		ServiceAccounts = new HashSet<AppInstanceAssignedCompanyServiceAccount>();
+	}
 
-    public AppInstance(Guid id, Guid appId, Guid iamClientId) : this()
-    {
-        Id = id;
-        AppId = appId;
-        IamClientId = iamClientId;
-    }
+	public AppInstance(Guid id, Guid appId, Guid iamClientId) : this()
+	{
+		Id = id;
+		AppId = appId;
+		IamClientId = iamClientId;
+	}
 
-    public Guid Id { get; private set; }
-    public Guid AppId { get; private set; }
-    public Guid IamClientId { get; set; }
+	public Guid Id { get; private set; }
+	public Guid AppId { get; private set; }
+	public Guid IamClientId { get; set; }
 
-    // Navigation properties
-    public virtual Offer? App { get; private set; }
-    public virtual IamClient? IamClient { get; private set; }
-    public virtual ICollection<AppSubscriptionDetail> AppSubscriptionDetails { get; private set; }
-    public virtual ICollection<AppInstanceAssignedCompanyServiceAccount> ServiceAccounts { get; private set; }
+	// Navigation properties
+	public virtual Offer? App { get; private set; }
+	public virtual IamClient? IamClient { get; private set; }
+	public virtual ICollection<AppSubscriptionDetail> AppSubscriptionDetails { get; private set; }
+	public virtual ICollection<AppInstanceAssignedCompanyServiceAccount> ServiceAccounts { get; private set; }
 }

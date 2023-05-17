@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -29,18 +29,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.Depe
 
 public static class ApplicationActivationExtensions
 {
-    public static IServiceCollection AddApplicationActivation(this IServiceCollection services, IConfiguration config)
-    {
-        services.AddOptions<ApplicationActivationSettings>()
-            .Bind(config.GetSection("ApplicationActivation"))
-            .Validate(ApplicationActivationSettings.Validate)
-            .ValidateOnStart();
+	public static IServiceCollection AddApplicationActivation(this IServiceCollection services, IConfiguration config)
+	{
+		services.AddOptions<ApplicationActivationSettings>()
+			.Bind(config.GetSection("ApplicationActivation"))
+			.Validate(ApplicationActivationSettings.Validate)
+			.ValidateOnStart();
 
-        return services
-            .AddDateTimeProvider()
-            .AddTransient<INotificationService, NotificationService>()
-            .AddMailingAndTemplateManager(config)
-            .AddProvisioningManager(config)
-            .AddScoped<IApplicationActivationService, ApplicationActivationService>();
-    }
+		return services
+			.AddDateTimeProvider()
+			.AddTransient<INotificationService, NotificationService>()
+			.AddMailingAndTemplateManager(config)
+			.AddProvisioningManager(config)
+			.AddScoped<IApplicationActivationService, ApplicationActivationService>();
+	}
 }

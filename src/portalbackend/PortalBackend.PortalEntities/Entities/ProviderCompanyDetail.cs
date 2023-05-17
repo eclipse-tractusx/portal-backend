@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -24,28 +24,28 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ProviderCompanyDetail : IBaseEntity
 {
-    private ProviderCompanyDetail()
-    {
-        AutoSetupUrl = null!;
-    }
-    
-    public ProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, DateTimeOffset dateCreated) 
-        : this()
-    {
-        Id = id;
-        CompanyId = companyId;
-        AutoSetupUrl = autoSetupUrl;
-        DateCreated = dateCreated;
-    }
+	private ProviderCompanyDetail()
+	{
+		AutoSetupUrl = null!;
+	}
 
-    public Guid Id { get; private set; }
+	public ProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, DateTimeOffset dateCreated)
+		: this()
+	{
+		Id = id;
+		CompanyId = companyId;
+		AutoSetupUrl = autoSetupUrl;
+		DateCreated = dateCreated;
+	}
 
-    public DateTimeOffset DateCreated { get; private set; }
+	public Guid Id { get; private set; }
 
-    public string AutoSetupUrl { get; set; }
+	public DateTimeOffset DateCreated { get; private set; }
 
-    public Guid CompanyId { get; set; }
+	public string AutoSetupUrl { get; set; }
 
-    // Navigation properties
-    public virtual Company? Company { get; private set; }
+	public Guid CompanyId { get; set; }
+
+	// Navigation properties
+	public virtual Company? Company { get; private set; }
 }

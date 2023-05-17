@@ -30,8 +30,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Authentica
 
 public class AuthenticationExecutionExport : AuthenticationExecutionBase
 {
-    [JsonProperty("flowAlias")]
-    public string FlowAlias { get; set; }
-    [JsonProperty("userSetupAllowed")]
-    public bool? UserSetupAllowed { get; set; }
+	[JsonProperty("flowAlias")]
+	public string FlowAlias { get; set; }
+	[JsonProperty("userSetupAllowed")]
+	public bool? UserSetupAllowed { get; set; }
 }

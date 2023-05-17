@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public class HealthCheckSettings
 {
-    [Required(AllowEmptyStrings = false)]
-    public string Path { get; set; } = null!;
-    public IEnumerable<string>? Tags { get; set; }
+	[Required(AllowEmptyStrings = false)]
+	public string Path { get; set; } = null!;
+	public IEnumerable<string>? Tags { get; set; }
 }

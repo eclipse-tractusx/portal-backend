@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -22,11 +22,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 
 public interface IDateTimeProvider
 {
-    /// <summary>Gets the current timestamp.</summary>
-    DateTime Now { get; }
+	/// <summary>Gets the current timestamp.</summary>
+	DateTime Now { get; }
 
-    /// <summary>
-    /// Gets the current timestamp as <see cref="T:System.DateTimeOffset" />.
-    /// </summary>
-    DateTimeOffset OffsetNow { get; }
+	/// <summary>
+	/// Gets the current timestamp as <see cref="T:System.DateTimeOffset" />.
+	/// </summary>
+	DateTimeOffset OffsetNow { get; }
 }

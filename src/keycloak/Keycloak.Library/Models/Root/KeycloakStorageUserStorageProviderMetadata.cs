@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class KeycloakStorageUserStorageProviderMetadata
 {
-    [JsonProperty("synchronizable")]
-    public bool? Synchronizable { get; set; }
+	[JsonProperty("synchronizable")]
+	public bool? Synchronizable { get; set; }
 }

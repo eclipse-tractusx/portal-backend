@@ -20,105 +20,104 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 
 public class PortalRepositories : IPortalRepositories
 {
-    private readonly PortalDbContext _dbContext;
+	private readonly PortalDbContext _dbContext;
 
-    private static readonly ImmutableDictionary<Type, Func<PortalDbContext, Object>> _types = new Dictionary<Type, Func<PortalDbContext, Object>> {
-        { typeof(IAgreementRepository), context => new AgreementRepository(context) },
-        { typeof(IApplicationRepository), context => new ApplicationRepository(context) },
-        { typeof(IApplicationChecklistRepository), context => new ApplicationChecklistRepository(context) },
-        { typeof(IAppInstanceRepository), context => new AppInstanceRepository(context) },
-        { typeof(IAppSubscriptionDetailRepository), context => new AppSubscriptionDetailRepository(context) },
-        { typeof(IClientRepository), context => new ClientRepository(context) },
-        { typeof(ICompanyRepository), context => new CompanyRepository(context) },
-        { typeof(ICompanyRolesRepository), context => new CompanyRolesRepository(context) },
-        { typeof(IConsentAssignedOfferSubscriptionRepository), context => new ConsentAssignedOfferSubscriptionRepository(context) },
-        { typeof(IConnectorsRepository), context => new ConnectorsRepository(context) },
-        { typeof(IConsentRepository), context => new ConsentRepository(context) },
-        { typeof(ICountryRepository), context => new CountryRepository(context) },
-        { typeof(IDocumentRepository), context => new DocumentRepository(context) },
-        { typeof(IIdentityProviderRepository), context => new IdentityProviderRepository(context) },
-        { typeof(IInvitationRepository), context => new InvitationRepository(context) },
-        { typeof(ILanguageRepository), context => new LanguageRepository(context) },
-        { typeof(INotificationRepository), context => new NotificationRepository(context) },
-        { typeof(IOfferRepository), context => new OfferRepository(context) },
-        { typeof(IOfferSubscriptionsRepository), context => new OfferSubscriptionsRepository(context) },
-        { typeof(IProcessStepRepository), context => new ProcessStepRepository(context) },
-        { typeof(IServiceAccountRepository), context => new ServiceAccountRepository(context) },
-        { typeof(IStaticDataRepository), context => new StaticDataRepository(context) },
-        { typeof(ITechnicalUserProfileRepository), context => new TechnicalUserProfileRepository(context) },
-        { typeof(IUserBusinessPartnerRepository), context => new UserBusinessPartnerRepository(context) },
-        { typeof(IUserRepository), context => new UserRepository(context) },
-        { typeof(IUserRolesRepository), context => new UserRolesRepository(context) },
-    }.ToImmutableDictionary();
+	private static readonly ImmutableDictionary<Type, Func<PortalDbContext, Object>> _types = new Dictionary<Type, Func<PortalDbContext, Object>> {
+		{ typeof(IAgreementRepository), context => new AgreementRepository(context) },
+		{ typeof(IApplicationRepository), context => new ApplicationRepository(context) },
+		{ typeof(IApplicationChecklistRepository), context => new ApplicationChecklistRepository(context) },
+		{ typeof(IAppInstanceRepository), context => new AppInstanceRepository(context) },
+		{ typeof(IAppSubscriptionDetailRepository), context => new AppSubscriptionDetailRepository(context) },
+		{ typeof(IClientRepository), context => new ClientRepository(context) },
+		{ typeof(ICompanyRepository), context => new CompanyRepository(context) },
+		{ typeof(ICompanyRolesRepository), context => new CompanyRolesRepository(context) },
+		{ typeof(IConsentAssignedOfferSubscriptionRepository), context => new ConsentAssignedOfferSubscriptionRepository(context) },
+		{ typeof(IConnectorsRepository), context => new ConnectorsRepository(context) },
+		{ typeof(IConsentRepository), context => new ConsentRepository(context) },
+		{ typeof(ICountryRepository), context => new CountryRepository(context) },
+		{ typeof(IDocumentRepository), context => new DocumentRepository(context) },
+		{ typeof(IIdentityProviderRepository), context => new IdentityProviderRepository(context) },
+		{ typeof(IInvitationRepository), context => new InvitationRepository(context) },
+		{ typeof(ILanguageRepository), context => new LanguageRepository(context) },
+		{ typeof(INotificationRepository), context => new NotificationRepository(context) },
+		{ typeof(IOfferRepository), context => new OfferRepository(context) },
+		{ typeof(IOfferSubscriptionsRepository), context => new OfferSubscriptionsRepository(context) },
+		{ typeof(IProcessStepRepository), context => new ProcessStepRepository(context) },
+		{ typeof(IServiceAccountRepository), context => new ServiceAccountRepository(context) },
+		{ typeof(IStaticDataRepository), context => new StaticDataRepository(context) },
+		{ typeof(ITechnicalUserProfileRepository), context => new TechnicalUserProfileRepository(context) },
+		{ typeof(IUserBusinessPartnerRepository), context => new UserBusinessPartnerRepository(context) },
+		{ typeof(IUserRepository), context => new UserRepository(context) },
+		{ typeof(IUserRolesRepository), context => new UserRolesRepository(context) },
+	}.ToImmutableDictionary();
 
-    public PortalRepositories(PortalDbContext portalDbContext)
-    {
-        _dbContext = portalDbContext;
-    }
+	public PortalRepositories(PortalDbContext portalDbContext)
+	{
+		_dbContext = portalDbContext;
+	}
 
-    public RepositoryType GetInstance<RepositoryType>()
-    {
-        Object? repository = default;
+	public RepositoryType GetInstance<RepositoryType>()
+	{
+		Object? repository = default;
 
-        if (_types.TryGetValue(typeof(RepositoryType), out Func<PortalDbContext, Object>? createFunc))
-        {
-            repository = createFunc(_dbContext);
-        }
-        return (RepositoryType)(repository ?? throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}",nameof(RepositoryType)));
-    }
+		if (_types.TryGetValue(typeof(RepositoryType), out var createFunc))
+		{
+			repository = createFunc(_dbContext);
+		}
+		return (RepositoryType)(repository ?? throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}", nameof(RepositoryType)));
+	}
 
-    /// <inheritdoc />
-    public TEntity Attach<TEntity>(TEntity entity, Action<TEntity>? setOptionalParameters = null) where TEntity : class
-    {
-        var attachedEntity = _dbContext.Attach(entity).Entity;
-        setOptionalParameters?.Invoke(attachedEntity);
+	/// <inheritdoc />
+	public TEntity Attach<TEntity>(TEntity entity, Action<TEntity>? setOptionalParameters = null) where TEntity : class
+	{
+		var attachedEntity = _dbContext.Attach(entity).Entity;
+		setOptionalParameters?.Invoke(attachedEntity);
 
-        return attachedEntity;
-    }
+		return attachedEntity;
+	}
 
-    public void AttachRange<TEntity>(IEnumerable<TEntity> entities, Action<TEntity> setOptionalParameters) where TEntity : class
-    {
-        foreach (var entity in entities)
-        {
-            var attachedEntity = _dbContext.Attach(entity).Entity;
-            setOptionalParameters.Invoke(attachedEntity);
-        }
-    }
+	public void AttachRange<TEntity>(IEnumerable<TEntity> entities, Action<TEntity> setOptionalParameters) where TEntity : class
+	{
+		foreach (var entity in entities)
+		{
+			var attachedEntity = _dbContext.Attach(entity).Entity;
+			setOptionalParameters.Invoke(attachedEntity);
+		}
+	}
 
-    public IEnumerable<TEntity> AttachRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
-    {
-        foreach (var entity in entities)
-        {
-            yield return _dbContext.Attach(entity).Entity;
-        }
-    }
+	public IEnumerable<TEntity> AttachRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
+	{
+		foreach (var entity in entities)
+		{
+			yield return _dbContext.Attach(entity).Entity;
+		}
+	}
 
-    /// <inheritdoc />
-    public TEntity Remove<TEntity>(TEntity entity) where TEntity : class
-        => _dbContext.Remove(entity).Entity;
+	/// <inheritdoc />
+	public TEntity Remove<TEntity>(TEntity entity) where TEntity : class
+		=> _dbContext.Remove(entity).Entity;
 
-    public void RemoveRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
-        => _dbContext.RemoveRange(entities);
-    
+	public void RemoveRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
+		=> _dbContext.RemoveRange(entities);
 
-    public Task<int> SaveAsync()
-    {
-        try
-        {
-            return _dbContext.SaveChangesAsync();
-        }
-        catch(DbUpdateConcurrencyException e)
-        {
-            throw new ConflictException("while processing a concurrent update was saved to the database (reason could also be data to be deleted is no longer existing)", e);
-        }
-    }
-    public void Clear() => _dbContext.ChangeTracker.Clear();
+	public Task<int> SaveAsync()
+	{
+		try
+		{
+			return _dbContext.SaveChangesAsync();
+		}
+		catch (DbUpdateConcurrencyException e)
+		{
+			throw new ConflictException("while processing a concurrent update was saved to the database (reason could also be data to be deleted is no longer existing)", e);
+		}
+	}
+	public void Clear() => _dbContext.ChangeTracker.Clear();
 }

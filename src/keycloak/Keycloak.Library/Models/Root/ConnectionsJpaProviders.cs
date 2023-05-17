@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ConnectionsJpaProviders
 {
-    [JsonProperty("default")]
-    public Default Default { get; set; }
+	[JsonProperty("default")]
+	public Default Default { get; set; }
 }

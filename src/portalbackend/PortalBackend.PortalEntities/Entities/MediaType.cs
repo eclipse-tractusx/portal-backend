@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class MediaType
 {
-    private MediaType()
-    {
-        Label = null!;
-        Documents = new HashSet<Document>();
-    }
+	private MediaType()
+	{
+		Label = null!;
+		Documents = new HashSet<Document>();
+	}
 
-    public MediaType(MediaTypeId mediaTypeId) : this()
-    {
-        Id = mediaTypeId;
-        Label = mediaTypeId.ToString();
-    }
-    
-    public MediaTypeId Id { get; private set; }
+	public MediaType(MediaTypeId mediaTypeId) : this()
+	{
+		Id = mediaTypeId;
+		Label = mediaTypeId.ToString();
+	}
 
-    [MaxLength(255)]
-    public string Label { get; private set; }
+	public MediaTypeId Id { get; private set; }
 
-    // Navigation properties
-    public virtual ICollection<Document> Documents { get; private set; }
+	[MaxLength(255)]
+	public string Label { get; private set; }
+
+	// Navigation properties
+	public virtual ICollection<Document> Documents { get; private set; }
 }

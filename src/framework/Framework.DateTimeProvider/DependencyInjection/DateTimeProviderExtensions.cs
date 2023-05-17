@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -24,8 +24,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider.Depende
 
 public static class DateTimeProviderExtensions
 {
-    public static IServiceCollection AddDateTimeProvider(this IServiceCollection services)
-    {
-        return services.AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
-    }
+	public static IServiceCollection AddDateTimeProvider(this IServiceCollection services)
+	{
+		return services.AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
+	}
 }

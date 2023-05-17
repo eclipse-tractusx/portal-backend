@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
@@ -34,60 +34,60 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 [Consumes("application/json")]
 public class StaticDataController : ControllerBase
 {
-    private readonly IStaticDataBusinessLogic _logic;
+	private readonly IStaticDataBusinessLogic _logic;
 
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="logic">Business Logic</param>
-    public StaticDataController(IStaticDataBusinessLogic logic)
-    {
-        _logic = logic;
-    }
-    
-    /// <summary>
-    /// Retrieves all Use Case Data
-    /// </summary>
-    /// <returns>AsyncEnumerable of Use Case Data</returns>
-    /// <remarks>
-    /// Example: GET: /api/administration/staticdata/usecases
-    /// </remarks>
-    /// <response code="200">Returns a list of all of the use case data.</response>
-    [HttpGet]
-    [Authorize(Roles = "view_use_cases")]
-    [Route("usecases")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<UseCaseData>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<UseCaseData> GetUseCases() =>
-        _logic.GetAllUseCase();
-    
-    /// <summary>
-    /// Retrieve all app language tags - short name (2digit) and long name
-    /// </summary>
-    /// <returns>AsyncEnumerable of Language Data</returns>
-    /// <remarks>
-    /// Example: GET: /api/administration/staticdata/languagetags
-    /// the "lang" parameter is an optional parameter and if not set "en" will be used
-    /// </remarks>
-    /// <response code="200">Returns a list of all of the Language i.e german and english</response>
-    [HttpGet]
-    [Authorize(Roles = "view_app_language")]
-    [Route("languagetags")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<LanguageData>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<LanguageData> GetLanguages() =>
-        _logic.GetAllLanguage();
+	/// <summary>
+	/// Constructor.
+	/// </summary>
+	/// <param name="logic">Business Logic</param>
+	public StaticDataController(IStaticDataBusinessLogic logic)
+	{
+		_logic = logic;
+	}
 
-    /// <summary>
-    /// Retrieve all license types
-    /// </summary>
-    /// <returns>AsyncEnumerable of license type Data</returns>
-    /// <remarks>
-    /// Example: GET: /api/administration/staticdata/licenseType
-    /// </remarks>
-    /// <response code="200">Returns a list of all the license type i.e COTS and FOSS</response>
-    [HttpGet]
-    [Authorize(Roles = "view_license_types")]
-    [Route("licenseType")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<LicenseTypeData>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<LicenseTypeData> GetLicenseTypes() =>
-        _logic.GetAllLicenseType();
+	/// <summary>
+	/// Retrieves all Use Case Data
+	/// </summary>
+	/// <returns>AsyncEnumerable of Use Case Data</returns>
+	/// <remarks>
+	/// Example: GET: /api/administration/staticdata/usecases
+	/// </remarks>
+	/// <response code="200">Returns a list of all of the use case data.</response>
+	[HttpGet]
+	[Authorize(Roles = "view_use_cases")]
+	[Route("usecases")]
+	[ProducesResponseType(typeof(IAsyncEnumerable<UseCaseData>), StatusCodes.Status200OK)]
+	public IAsyncEnumerable<UseCaseData> GetUseCases() =>
+		_logic.GetAllUseCase();
+
+	/// <summary>
+	/// Retrieve all app language tags - short name (2digit) and long name
+	/// </summary>
+	/// <returns>AsyncEnumerable of Language Data</returns>
+	/// <remarks>
+	/// Example: GET: /api/administration/staticdata/languagetags
+	/// the "lang" parameter is an optional parameter and if not set "en" will be used
+	/// </remarks>
+	/// <response code="200">Returns a list of all of the Language i.e german and english</response>
+	[HttpGet]
+	[Authorize(Roles = "view_app_language")]
+	[Route("languagetags")]
+	[ProducesResponseType(typeof(IAsyncEnumerable<LanguageData>), StatusCodes.Status200OK)]
+	public IAsyncEnumerable<LanguageData> GetLanguages() =>
+		_logic.GetAllLanguage();
+
+	/// <summary>
+	/// Retrieve all license types
+	/// </summary>
+	/// <returns>AsyncEnumerable of license type Data</returns>
+	/// <remarks>
+	/// Example: GET: /api/administration/staticdata/licenseType
+	/// </remarks>
+	/// <response code="200">Returns a list of all the license type i.e COTS and FOSS</response>
+	[HttpGet]
+	[Authorize(Roles = "view_license_types")]
+	[Route("licenseType")]
+	[ProducesResponseType(typeof(IAsyncEnumerable<LicenseTypeData>), StatusCodes.Status200OK)]
+	public IAsyncEnumerable<LicenseTypeData> GetLicenseTypes() =>
+		_logic.GetAllLicenseType();
 }

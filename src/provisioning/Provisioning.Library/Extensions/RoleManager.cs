@@ -26,92 +26,93 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
-    private async Task<(string? ClientId, IEnumerable<Role> RoleNames)> GetCentralClientIdRolesAsync(string clientName, IEnumerable<string> roleNames)
-    {
-        var count = roleNames.Count();
-        string? idOfClient = null;
-        try
-        {
-            idOfClient = await GetIdOfCentralClientAsync(clientName).ConfigureAwait(false);
-            switch (count)
-            {
-                case 0:
-                    return (idOfClient, Enumerable.Empty<Role>());
-                case 1:
-                    return (idOfClient, Enumerable.Repeat<Role>(await _CentralIdp.GetRoleByNameAsync(_Settings.CentralRealm, idOfClient, roleNames.Single()).ConfigureAwait(false), 1));
-                default:
-                    return (idOfClient, (await _CentralIdp.GetRolesAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false)).Where(x => roleNames.Contains(x.Name)));
-            }
-        }
-        catch(KeycloakEntityNotFoundException)
-        {
-            return (idOfClient, Enumerable.Empty<Role>());
-        }
-    }
+	private async Task<(string? ClientId, IEnumerable<Role> RoleNames)> GetCentralClientIdRolesAsync(string clientName, IEnumerable<string> roleNames)
+	{
+		var count = roleNames.Count();
+		string? idOfClient = null;
+		try
+		{
+			idOfClient = await GetIdOfCentralClientAsync(clientName).ConfigureAwait(false);
+			switch (count)
+			{
+				case 0:
+					return (idOfClient, Enumerable.Empty<Role>());
+				case 1:
+					return (idOfClient, Enumerable.Repeat<Role>(await _CentralIdp.GetRoleByNameAsync(_Settings.CentralRealm, idOfClient, roleNames.Single()).ConfigureAwait(false), 1));
+				default:
+					return (idOfClient, (await _CentralIdp.GetRolesAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false)).Where(x => roleNames.Contains(x.Name)));
+			}
+		}
+		catch (KeycloakEntityNotFoundException)
+		{
+			return (idOfClient, Enumerable.Empty<Role>());
+		}
+	}
 
-    public async Task DeleteClientRolesFromCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames) =>
-        await Task.WhenAll(clientRoleNames.Select(async x =>
-            {
-                var (client, roleNames) = x;
-                var (clientId, roles) = await GetCentralClientIdRolesAsync(client, roleNames).ConfigureAwait(false);
-                if (clientId == null || !roles.Any()) return;
-                
-                await _CentralIdp.DeleteClientRoleMappingsFromUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
-            }
-        )).ConfigureAwait(false);
+	public async Task DeleteClientRolesFromCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames) =>
+		await Task.WhenAll(clientRoleNames.Select(async x =>
+			{
+				var (client, roleNames) = x;
+				var (clientId, roles) = await GetCentralClientIdRolesAsync(client, roleNames).ConfigureAwait(false);
+				if (clientId == null || !roles.Any())
+					return;
 
-    public async IAsyncEnumerable<(string Client, IEnumerable<string> Roles)> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames)
-    {
-        foreach (var (client, roleNames) in clientRoleNames)
-        {
-            var (clientId, roles) = await GetCentralClientIdRolesAsync(client, roleNames).ConfigureAwait(false);
-            if (clientId == null || !roles.Any())
-            {
-                yield return (Client: client, Roles: Enumerable.Empty<string>());
-                continue;
-            }
-            
-            IEnumerable<string> assigned;
-            try
-            {
-                await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
-                assigned = roles.Select(role => role.Name);
-            }
-            catch (Exception)
-            {
-                assigned = Enumerable.Empty<string>();
-            }
-            yield return (Client: client, Roles: assigned);
-        }
-    }
+				await _CentralIdp.DeleteClientRoleMappingsFromUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
+			}
+		)).ConfigureAwait(false);
 
-    public async Task AddRolesToClientAsync(string clientName, IEnumerable<string> roleNames)
-    {
-        var result = await GetCentralClientIdRolesAsync(clientName, roleNames);
-        if (result.ClientId == null)
-        {
-            throw new ConflictException($"Client {clientName} does not exist");
-        }
+	public async IAsyncEnumerable<(string Client, IEnumerable<string> Roles)> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames)
+	{
+		foreach (var (client, roleNames) in clientRoleNames)
+		{
+			var (clientId, roles) = await GetCentralClientIdRolesAsync(client, roleNames).ConfigureAwait(false);
+			if (clientId == null || !roles.Any())
+			{
+				yield return (Client: client, Roles: Enumerable.Empty<string>());
+				continue;
+			}
 
-        foreach (var roleName in roleNames.Except(result.RoleNames.Select(x => x.Name)))
-        {
-            var role = new Role
-            {
-                Name = roleName,
-                ClientRole = true,
-            };
-            await _CentralIdp.CreateRoleAsync(_Settings.CentralRealm, result.ClientId, role).ConfigureAwait(false);
-        }
-    }
+			IEnumerable<string> assigned;
+			try
+			{
+				await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(false);
+				assigned = roles.Select(role => role.Name);
+			}
+			catch (Exception)
+			{
+				assigned = Enumerable.Empty<string>();
+			}
+			yield return (Client: client, Roles: assigned);
+		}
+	}
 
-    private Task AssignClientRolesToClient(string clientId, IEnumerable<string> clientRoleNames) =>
-        Task.WhenAll(clientRoleNames.Select(x => new Role
-        {
-            Name = x,
-            ClientRole = true
-        }).Select(async role =>
-            {
-                await _CentralIdp.CreateRoleAsync(_Settings.CentralRealm, clientId, role).ConfigureAwait(false);
-            }
-        ));
+	public async Task AddRolesToClientAsync(string clientName, IEnumerable<string> roleNames)
+	{
+		var result = await GetCentralClientIdRolesAsync(clientName, roleNames);
+		if (result.ClientId == null)
+		{
+			throw new ConflictException($"Client {clientName} does not exist");
+		}
+
+		foreach (var roleName in roleNames.Except(result.RoleNames.Select(x => x.Name)))
+		{
+			var role = new Role
+			{
+				Name = roleName,
+				ClientRole = true,
+			};
+			await _CentralIdp.CreateRoleAsync(_Settings.CentralRealm, result.ClientId, role).ConfigureAwait(false);
+		}
+	}
+
+	private Task AssignClientRolesToClient(string clientId, IEnumerable<string> clientRoleNames) =>
+		Task.WhenAll(clientRoleNames.Select(x => new Role
+		{
+			Name = x,
+			ClientRole = true
+		}).Select(async role =>
+			{
+				await _CentralIdp.CreateRoleAsync(_Settings.CentralRealm, clientId, role).ConfigureAwait(false);
+			}
+		));
 }

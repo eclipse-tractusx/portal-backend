@@ -30,10 +30,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="ActionRequired">Count of all messages from type action that are not done yet</param>
 /// <param name="UnreadActionRequired">Count of all unread messages from type action that are not done yet</param>
 public record NotificationCountDetails(
-    int Read,
-    int Unread,
-    int InfoUnread,
-    int OfferUnread,
-    int ActionRequired,
-    int UnreadActionRequired
+	int Read,
+	int Unread,
+	int InfoUnread,
+	int OfferUnread,
+	int ActionRequired,
+	int UnreadActionRequired
 );

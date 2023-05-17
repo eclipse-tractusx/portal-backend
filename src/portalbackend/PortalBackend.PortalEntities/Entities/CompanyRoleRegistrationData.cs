@@ -25,17 +25,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyRoleRegistrationData
 {
-    public CompanyRoleRegistrationData(CompanyRoleId companyRoleId, bool isRegistrationRole)
-    {
-        CompanyRoleId = companyRoleId;
-        IsRegistrationRole = isRegistrationRole;
-    }
+	public CompanyRoleRegistrationData(CompanyRoleId companyRoleId, bool isRegistrationRole)
+	{
+		CompanyRoleId = companyRoleId;
+		IsRegistrationRole = isRegistrationRole;
+	}
 
-    [Key]
-    public CompanyRoleId CompanyRoleId { get; private set; }
+	[Key]
+	public CompanyRoleId CompanyRoleId { get; private set; }
 
-    public bool IsRegistrationRole { get; private set; }
+	public bool IsRegistrationRole { get; private set; }
 
-    // Navigation properties
-    public virtual CompanyRole? CompanyRole { get; private set; }
+	// Navigation properties
+	public virtual CompanyRole? CompanyRole { get; private set; }
 }

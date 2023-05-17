@@ -25,101 +25,111 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Async.Tests;
 
 public class AwaitAllIAsyncEnumerableExtensionTests
 {
-    private readonly IFixture _fixture;
+	private readonly IFixture _fixture;
 
-    public AwaitAllIAsyncEnumerableExtensionTests()
-    {
-        _fixture = new Fixture();
-    }
+	public AwaitAllIAsyncEnumerableExtensionTests()
+	{
+		_fixture = new Fixture();
+	}
 
-    #region AwaitAll
+	#region AwaitAll
 
-    [Fact]
-    public async Task TestAwaitAll_CallsAsyncEnumeratorExpectedNumberOfTimes()
-    {
-        var sut = _fixture.CreateMany<Guid>(10).AsFakeIAsyncEnumerable(out var asyncEnumerator);
+	[Fact]
+	public async Task TestAwaitAll_CallsAsyncEnumeratorExpectedNumberOfTimes()
+	{
+		var sut = _fixture.CreateMany<Guid>(10).AsFakeIAsyncEnumerable(out var asyncEnumerator);
 
-        await sut.AwaitAll().ConfigureAwait(false);
+		await sut.AwaitAll().ConfigureAwait(false);
 
-        A.CallTo(() => asyncEnumerator.MoveNextAsync()).MustHaveHappened(11, Times.Exactly);
-        A.CallTo(() => asyncEnumerator.Current).MustNotHaveHappened();
-    }
+		A.CallTo(() => asyncEnumerator.MoveNextAsync()).MustHaveHappened(11, Times.Exactly);
+		A.CallTo(() => asyncEnumerator.Current).MustNotHaveHappened();
+	}
 
-    #endregion
+	#endregion
 
-    #region CatchingAsync
+	#region CatchingAsync
 
-    [Fact]
-    public async Task TestCatchingAsyncClassType()
-    {
-        var message = _fixture.Create<string>();
+	[Fact]
+	public async Task TestCatchingAsyncClassType()
+	{
+		var message = _fixture.Create<string>();
 
-        var data = _fixture.CreateMany<string>(5).ToImmutableArray();
+		var data = _fixture.CreateMany<string>(5).ToImmutableArray();
 
-        async IAsyncEnumerable<string> CreateSut()
-        {
-            int n = 0;
-            foreach (var x in data)
-            {
-                if (n == 3) throw new Exception(message);
-                yield return x;
-                n++;
-            }
-            await Task.CompletedTask;
-        }
+		async IAsyncEnumerable<string> CreateSut()
+		{
+			var n = 0;
+			foreach (var x in data)
+			{
+				if (n == 3)
+					throw new Exception(message);
+				yield return x;
+				n++;
+			}
+			await Task.CompletedTask;
+		}
 
-        var items = new List<string>();
-        Exception? error = null;
+		var items = new List<string>();
+		Exception? error = null;
 
-        var sut = CreateSut();
+		var sut = CreateSut();
 
-        await foreach (var item in sut.CatchingAsync(exception => { error = exception; return Task.CompletedTask; }))
-        {
-            items.Add(item);
-        }
+		await foreach (var item in sut.CatchingAsync(exception =>
+		{
+			error = exception;
+			return Task.CompletedTask;
+		}))
+		{
+			items.Add(item);
+		}
 
-        error.Should().NotBeNull();
-        error!.Message.Should().Be(message);
+		error.Should().NotBeNull();
+		error!.Message.Should().Be(message);
 
-        items.Should().HaveCount(3)
-            .And.ContainInOrder(data.Take(3));
-    }
+		items.Should().HaveCount(3)
+			.And.ContainInOrder(data.Take(3));
+	}
 
-    [Fact]
-    public async Task TestCatchingAsyncValueType()
-    {
-        var message = _fixture.Create<string>();
+	[Fact]
+	public async Task TestCatchingAsyncValueType()
+	{
+		var message = _fixture.Create<string>();
 
-        var data = _fixture.CreateMany<Guid>(5).ToImmutableArray();
+		var data = _fixture.CreateMany<Guid>(5).ToImmutableArray();
 
-        async IAsyncEnumerable<Guid> CreateSut()
-        {
-            int n = 0;
-            foreach (var x in data)
-            {
-                if (n == 3) throw new Exception(message);
-                yield return x;
-                n++;
-            }
-            await Task.CompletedTask;
-        }
+		async IAsyncEnumerable<Guid> CreateSut()
+		{
+			var n = 0;
+			foreach (var x in data)
+			{
+				if (n == 3)
+					throw new Exception(message);
+				yield return x;
+				n++;
+			}
+			await Task.CompletedTask;
+		}
 
-        var items = new List<Guid>();
-        Exception? error = null;
+		var items = new List<Guid>();
+		Exception? error = null;
 
-        var sut = CreateSut();
+		var sut = CreateSut();
 
-        await foreach (var item in sut.CatchingAsync(exception => { error = exception; return Task.CompletedTask; }))
-        {
-            items.Add(item);
-        }
+		await foreach (var item in sut.CatchingAsync(exception =>
+		{
+			error = exception;
+			return Task.CompletedTask;
+		}))
+		{
+			items.Add(item);
+		}
 
-        error.Should().NotBeNull();
-        error!.Message.Should().Be(message);
+		error.Should().NotBeNull();
+		error!.Message.Should().Be(message);
 
-        items.Should().HaveCount(3)
-            .And.ContainInOrder(data.Take(3));
-    }
+		items.Should().HaveCount(3)
+			.And.ContainInOrder(data.Take(3));
+	}
 
-    #endregion
+	#endregion
 }

@@ -30,10 +30,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="AutoSetupUrl">Url for the autosetup</param>
 /// <param name="IsSingleInstance">Defines if the offer is a single instance offer</param>
 public record OfferProviderDetailsData(
-    string? OfferName,
-    string ProviderName,
-    string? ProviderContactEmail,
-    Guid? SalesManagerId,
-    string? AutoSetupUrl,
-    bool IsSingleInstance
+	string? OfferName,
+	string ProviderName,
+	string? ProviderContactEmail,
+	Guid? SalesManagerId,
+	string? AutoSetupUrl,
+	bool IsSingleInstance
 );

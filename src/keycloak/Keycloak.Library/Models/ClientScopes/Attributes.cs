@@ -30,10 +30,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ClientScop
 
 public class Attributes
 {
-    [JsonProperty("consentscreentext")]
-    public string ConsentScreenText { get; set; }
-    [JsonProperty("displayonconsentscreen")]
-    public string DisplayOnConsentScreen { get; set; }
-    [JsonProperty("includeintokenscope")]
-    public string IncludeInTokenScope { get; set; }
+	[JsonProperty("consentscreentext")]
+	public string ConsentScreenText { get; set; }
+	[JsonProperty("displayonconsentscreen")]
+	public string DisplayOnConsentScreen { get; set; }
+	[JsonProperty("includeintokenscope")]
+	public string IncludeInTokenScope { get; set; }
 }

@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 
@@ -28,9 +28,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 /// </summary>
 public class ClearinghouseSettings : KeyVaultAuthSettings
 {
-    [Required(AllowEmptyStrings = false)]
-    public string BaseAddress { get; set; } = null!;
+	[Required(AllowEmptyStrings = false)]
+	public string BaseAddress { get; set; } = null!;
 
-    [Required(AllowEmptyStrings = false)] 
-    public string CallbackUrl { get; set; } = null!;
+	[Required(AllowEmptyStrings = false)]
+	public string CallbackUrl { get; set; } = null!;
 }

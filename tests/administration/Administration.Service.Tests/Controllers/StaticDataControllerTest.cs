@@ -26,30 +26,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 
 public class StaticDataControllerTest
 {
-    private readonly IStaticDataBusinessLogic _logic;
-    private readonly StaticDataController _controller;
-    private readonly Fixture _fixture;
-    public StaticDataControllerTest()
-    {
-        _fixture = new Fixture();
-        _logic = A.Fake<IStaticDataBusinessLogic>();
-        this._controller = new StaticDataController(_logic);
-    }
+	private readonly IStaticDataBusinessLogic _logic;
+	private readonly StaticDataController _controller;
+	private readonly Fixture _fixture;
+	public StaticDataControllerTest()
+	{
+		_fixture = new Fixture();
+		_logic = A.Fake<IStaticDataBusinessLogic>();
+		this._controller = new StaticDataController(_logic);
+	}
 
-    [Fact]
-    public async Task GetLicenseTypes_ReturnsExpectedResult()
-    {
-        //Arrange
-        var data = _fixture.CreateMany<LicenseTypeData>(5).ToAsyncEnumerable();
-        A.CallTo(() => _logic.GetAllLicenseType())
-            .Returns(data);
+	[Fact]
+	public async Task GetLicenseTypes_ReturnsExpectedResult()
+	{
+		//Arrange
+		var data = _fixture.CreateMany<LicenseTypeData>(5).ToAsyncEnumerable();
+		A.CallTo(() => _logic.GetAllLicenseType())
+			.Returns(data);
 
-        //Act
-        var result = await this._controller.GetLicenseTypes().ToListAsync().ConfigureAwait(false);
-        
-        // Assert 
-        A.CallTo(() => _logic.GetAllLicenseType()).MustHaveHappenedOnceExactly();
-        Assert.IsType<List<LicenseTypeData>>(result);
-        result.Should().HaveCount(5);
-    }
+		//Act
+		var result = await this._controller.GetLicenseTypes().ToListAsync().ConfigureAwait(false);
+
+		// Assert 
+		A.CallTo(() => _logic.GetAllLicenseType()).MustHaveHappenedOnceExactly();
+		Assert.IsType<List<LicenseTypeData>>(result);
+		result.Should().HaveCount(5);
+	}
 }

@@ -25,31 +25,31 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public class RegistrationSettings
 {
-    public RegistrationSettings()
-    {
-        DocumentTypeIds = null!;
-    }
+	public RegistrationSettings()
+	{
+		DocumentTypeIds = null!;
+	}
 
-    public int ApplicationsMaxPageSize { get; set; }
-    
-    /// <summary>
-    /// Document Type Id
-    /// </summary>
-    /// <value></value>
-    [Required]
-    public IEnumerable<DocumentTypeId?> DocumentTypeIds { get; set; }
+	public int ApplicationsMaxPageSize { get; set; }
+
+	/// <summary>
+	/// Document Type Id
+	/// </summary>
+	/// <value></value>
+	[Required]
+	public IEnumerable<DocumentTypeId?> DocumentTypeIds { get; set; }
 }
 
 public static class RegistrationSettingsExtension
 {
-    public static IServiceCollection ConfigureRegistrationSettings(
-        this IServiceCollection services,
-        IConfigurationSection section)
-    {
-        services.AddOptions<RegistrationSettings>()
-            .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-        return services;
-    }
+	public static IServiceCollection ConfigureRegistrationSettings(
+		this IServiceCollection services,
+		IConfigurationSection section)
+	{
+		services.AddOptions<RegistrationSettings>()
+			.Bind(section)
+			.ValidateDataAnnotations()
+			.ValidateOnStart();
+		return services;
+	}
 }

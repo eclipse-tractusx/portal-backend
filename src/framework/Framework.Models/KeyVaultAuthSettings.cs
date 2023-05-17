@@ -24,24 +24,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 public class KeyVaultAuthSettings
 {
-    [Required(AllowEmptyStrings = false)]
-    public string Username { get; set; } = null!;
+	[Required(AllowEmptyStrings = false)]
+	public string Username { get; set; } = null!;
 
-    [Required(AllowEmptyStrings = false)] 
-    public string Password { get; set; } = null!;
+	[Required(AllowEmptyStrings = false)]
+	public string Password { get; set; } = null!;
 
-    [Required(AllowEmptyStrings = false)] 
-    public string ClientId { get; set; } = null!;
+	[Required(AllowEmptyStrings = false)]
+	public string ClientId { get; set; } = null!;
 
-    [Required(AllowEmptyStrings = false)]
-    public string GrantType { get; set; } = null!;
+	[Required(AllowEmptyStrings = false)]
+	public string GrantType { get; set; } = null!;
 
-    [Required(AllowEmptyStrings = false)]
-    public string ClientSecret { get; set; } = null!;
+	[Required(AllowEmptyStrings = false)]
+	public string ClientSecret { get; set; } = null!;
 
-    [Required(AllowEmptyStrings = false)]
-    public string Scope { get; set; } = null!;
+	[Required(AllowEmptyStrings = false)]
+	public string Scope { get; set; } = null!;
 
-    [Required(AllowEmptyStrings = false)]
-    public string KeycloakTokenAddress { get; set; } = null!;
+	[Required(AllowEmptyStrings = false)]
+	public string KeycloakTokenAddress { get; set; } = null!;
 }

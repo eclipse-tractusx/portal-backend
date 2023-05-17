@@ -18,30 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 public class ProcessStepType
 {
-    private ProcessStepType()
-    {
-        this.Label = null!;
-        this.ProcessSteps = new HashSet<ProcessStep>();
-    }
+	private ProcessStepType()
+	{
+		this.Label = null!;
+		this.ProcessSteps = new HashSet<ProcessStep>();
+	}
 
-    public ProcessStepType(ProcessStepTypeId processStepTypeId) : this()
-    {
-        Id = processStepTypeId;
-        Label = processStepTypeId.ToString();
-    }
+	public ProcessStepType(ProcessStepTypeId processStepTypeId) : this()
+	{
+		Id = processStepTypeId;
+		Label = processStepTypeId.ToString();
+	}
 
-    public ProcessStepTypeId Id { get; private set; }
+	public ProcessStepTypeId Id { get; private set; }
 
-    [MaxLength(255)]
-    public string Label { get; private set; }
+	[MaxLength(255)]
+	public string Label { get; private set; }
 
-    // Navigation properties
-    public virtual ICollection<ProcessStep> ProcessSteps { get; private set; }
+	// Navigation properties
+	public virtual ICollection<ProcessStep> ProcessSteps { get; private set; }
 }

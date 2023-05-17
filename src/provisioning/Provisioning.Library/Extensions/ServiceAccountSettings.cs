@@ -24,6 +24,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningSettings
 {
-    public Client ServiceAccountClient { get; set; }
-    public string ServiceAccountClientPrefix { get; set; }
+	public Client ServiceAccountClient { get; set; }
+	public string ServiceAccountClientPrefix { get; set; }
 }

@@ -35,59 +35,59 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 /// </summary>
 public class UserRepositoryFakeDbTests
 {
-    private readonly IFixture _fixture;
-    private readonly PortalDbContext _contextFake;
+	private readonly IFixture _fixture;
+	private readonly PortalDbContext _contextFake;
 
-    public UserRepositoryFakeDbTests()
-    {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+	public UserRepositoryFakeDbTests()
+	{
+		_fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+		_fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+			.ForEach(b => _fixture.Behaviors.Remove(b));
+		_fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _contextFake = A.Fake<PortalDbContext>();
-    }
+		_contextFake = A.Fake<PortalDbContext>();
+	}
 
-    [Fact]
-    public async Task GetAllFavouriteAppsForUser_ReturnsAppsSuccessfully()
-    {
-        // Arrange
-        var favouriteApps = _fixture.CreateMany<Offer>(10).ToList();
-        var (companyUser, iamUser) = CreateTestUserPair();
-        foreach (var app in favouriteApps)
-        {
-            companyUser.Offers.Add(app);
-        }
-        var iamUsersFakeDbSet = new IamUser[]{ iamUser }.AsFakeDbSet();
+	[Fact]
+	public async Task GetAllFavouriteAppsForUser_ReturnsAppsSuccessfully()
+	{
+		// Arrange
+		var favouriteApps = _fixture.CreateMany<Offer>(10).ToList();
+		var (companyUser, iamUser) = CreateTestUserPair();
+		foreach (var app in favouriteApps)
+		{
+			companyUser.Offers.Add(app);
+		}
+		var iamUsersFakeDbSet = new IamUser[] { iamUser }.AsFakeDbSet();
 
-        A.CallTo(() => _contextFake.IamUsers).Returns(iamUsersFakeDbSet);
-        _fixture.Inject(_contextFake);
+		A.CallTo(() => _contextFake.IamUsers).Returns(iamUsersFakeDbSet);
+		_fixture.Inject(_contextFake);
 
-        var sut = _fixture.Create<UserRepository>();
+		var sut = _fixture.Create<UserRepository>();
 
-        // Act
-        var results = await sut.GetAllFavouriteAppsForUserUntrackedAsync(iamUser.UserEntityId).ToListAsync();
+		// Act
+		var results = await sut.GetAllFavouriteAppsForUserUntrackedAsync(iamUser.UserEntityId).ToListAsync();
 
-        // Assert
-        results.Should().NotBeNullOrEmpty();
-        results.Should().HaveCount(favouriteApps.Count);
-        var favouriteAppIds = favouriteApps.Select(app => app.Id).ToList();
-        results.Should().BeEquivalentTo(favouriteAppIds);
-    }
-    
-    #region Setup
+		// Assert
+		results.Should().NotBeNullOrEmpty();
+		results.Should().HaveCount(favouriteApps.Count);
+		var favouriteAppIds = favouriteApps.Select(app => app.Id).ToList();
+		results.Should().BeEquivalentTo(favouriteAppIds);
+	}
 
-    private (CompanyUser, IamUser) CreateTestUserPair()
-    {
-        var companyUser = _fixture.Build<CompanyUser>()
-            .Without(u => u.IamUser)
-            .Create();
-        var iamUser = _fixture.Build<IamUser>()
-            .With(u => u.CompanyUser, companyUser)
-            .Create();
-        companyUser.IamUser = iamUser;
-        return (companyUser, iamUser);
-    }
+	#region Setup
 
-    #endregion
+	private (CompanyUser, IamUser) CreateTestUserPair()
+	{
+		var companyUser = _fixture.Build<CompanyUser>()
+			.Without(u => u.IamUser)
+			.Create();
+		var iamUser = _fixture.Build<IamUser>()
+			.With(u => u.CompanyUser, companyUser)
+			.Create();
+		companyUser.IamUser = iamUser;
+		return (companyUser, iamUser);
+	}
+
+	#endregion
 }

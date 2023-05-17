@@ -23,20 +23,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class OfferAssignedPrivacyPolicy
 {
-    private OfferAssignedPrivacyPolicy() {}
+	private OfferAssignedPrivacyPolicy() { }
 
-    public OfferAssignedPrivacyPolicy(Guid offerId, PrivacyPolicyId privacyPolicyId)
-    {
-        OfferId = offerId;
-        PrivacyPolicyId = privacyPolicyId;
-    }
+	public OfferAssignedPrivacyPolicy(Guid offerId, PrivacyPolicyId privacyPolicyId)
+	{
+		OfferId = offerId;
+		PrivacyPolicyId = privacyPolicyId;
+	}
 
-    public Guid OfferId { get; private set; }
+	public Guid OfferId { get; private set; }
 
-    public PrivacyPolicyId PrivacyPolicyId { get; private set; }
+	public PrivacyPolicyId PrivacyPolicyId { get; private set; }
 
-    // Navigation properties
-    public virtual Offer? Offer { get; private set; }
-    
-    public virtual PrivacyPolicy? PrivacyPolicy { get; private set; }
+	// Navigation properties
+	public virtual Offer? Offer { get; private set; }
+
+	public virtual PrivacyPolicy? PrivacyPolicy { get; private set; }
 }

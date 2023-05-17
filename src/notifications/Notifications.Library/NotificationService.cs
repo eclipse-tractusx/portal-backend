@@ -30,91 +30,91 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 /// </summary>
 public class NotificationService : INotificationService
 {
-    private readonly IPortalRepositories _portalRepositories;
+	private readonly IPortalRepositories _portalRepositories;
 
-    /// <summary>
-    /// Creates a new instance of <see cref="NotificationService"/>
-    /// </summary>
-    /// <param name="portalRepositories">Access to the application's repositories</param>
-    public NotificationService(IPortalRepositories portalRepositories)
-    {
-        _portalRepositories = portalRepositories;
-    }
-    
-    /// <inheritdoc />
-    async IAsyncEnumerable<Guid> INotificationService.CreateNotifications(
-        IDictionary<string, IEnumerable<string>> receiverUserRoles,
-        Guid? creatorId,
-        IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications,
-        Guid companyId,
-        bool? done)
-    {
-        var roleData = await ValidateRoleData(receiverUserRoles);
-        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
-        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleIdForCompany(roleData, companyId))
-        {
-            CreateNotification(receiver, creatorId, notifications, notificationRepository, done);
-            yield return receiver;
-        }
-    }
+	/// <summary>
+	/// Creates a new instance of <see cref="NotificationService"/>
+	/// </summary>
+	/// <param name="portalRepositories">Access to the application's repositories</param>
+	public NotificationService(IPortalRepositories portalRepositories)
+	{
+		_portalRepositories = portalRepositories;
+	}
 
-    /// <inheritdoc />
-    async Task INotificationService.CreateNotifications(
-        IDictionary<string, IEnumerable<string>> receiverUserRoles,
-        Guid? creatorId,
-        IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications,
-        bool? done)
-    {
-        var roleData = await ValidateRoleData(receiverUserRoles);
-        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
-        await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleId(roleData))
-        {
-            CreateNotification(receiver, creatorId, notifications, notificationRepository, done);
-        }
-    }
+	/// <inheritdoc />
+	async IAsyncEnumerable<Guid> INotificationService.CreateNotifications(
+		IDictionary<string, IEnumerable<string>> receiverUserRoles,
+		Guid? creatorId,
+		IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications,
+		Guid companyId,
+		bool? done)
+	{
+		var roleData = await ValidateRoleData(receiverUserRoles);
+		var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+		await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleIdForCompany(roleData, companyId))
+		{
+			CreateNotification(receiver, creatorId, notifications, notificationRepository, done);
+			yield return receiver;
+		}
+	}
 
-    /// <inheritdoc />
-    async Task INotificationService.SetNotificationsForOfferToDone(IDictionary<string, IEnumerable<string>> roles, IEnumerable<NotificationTypeId> notificationTypeIds, Guid offerId, IEnumerable<Guid>? additionalCompanyUserIds)
-    {
-        var roleData = await ValidateRoleData(roles).ConfigureAwait(false);
-        var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+	/// <inheritdoc />
+	async Task INotificationService.CreateNotifications(
+		IDictionary<string, IEnumerable<string>> receiverUserRoles,
+		Guid? creatorId,
+		IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications,
+		bool? done)
+	{
+		var roleData = await ValidateRoleData(receiverUserRoles);
+		var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
+		await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithRoleId(roleData))
+		{
+			CreateNotification(receiver, creatorId, notifications, notificationRepository, done);
+		}
+	}
 
-        var notificationIds = await notificationRepository.GetNotificationUpdateIds(roleData, additionalCompanyUserIds, notificationTypeIds, offerId).ToListAsync().ConfigureAwait(false);
+	/// <inheritdoc />
+	async Task INotificationService.SetNotificationsForOfferToDone(IDictionary<string, IEnumerable<string>> roles, IEnumerable<NotificationTypeId> notificationTypeIds, Guid offerId, IEnumerable<Guid>? additionalCompanyUserIds)
+	{
+		var roleData = await ValidateRoleData(roles).ConfigureAwait(false);
+		var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
 
-        notificationRepository.AttachAndModifyNotifications(
-            notificationIds,
-            not => not.Done = true);
-    }
+		var notificationIds = await notificationRepository.GetNotificationUpdateIds(roleData, additionalCompanyUserIds, notificationTypeIds, offerId).ToListAsync().ConfigureAwait(false);
 
-    private async Task<IEnumerable<Guid>> ValidateRoleData(IDictionary<string, IEnumerable<string>> receiverUserRoles)
-    {
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var roleData = await userRolesRepository
-            .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        if (roleData.Count < receiverUserRoles.Sum(clientRoles => clientRoles.Value.Count()))
-        {
-            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
-        }
-        return roleData;
-    }
+		notificationRepository.AttachAndModifyNotifications(
+			notificationIds,
+			not => not.Done = true);
+	}
 
-    private static void CreateNotification(Guid receiver, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, INotificationRepository notificationRepository, bool? done)
-    {
-        var notificationList = notifications.ToList();
-        foreach (var notificationData in notificationList)
-        {
-            notificationRepository.CreateNotification(
-                receiver,
-                notificationData.notificationTypeId,
-                false,
-                notification =>
-                {
-                    notification.CreatorUserId = creatorId;
-                    notification.Content = notificationData.content;
-                    notification.Done = done;
-                });
-        }
-    }
+	private async Task<IEnumerable<Guid>> ValidateRoleData(IDictionary<string, IEnumerable<string>> receiverUserRoles)
+	{
+		var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+		var roleData = await userRolesRepository
+			.GetUserRoleIdsUntrackedAsync(receiverUserRoles)
+			.ToListAsync()
+			.ConfigureAwait(false);
+		if (roleData.Count < receiverUserRoles.Sum(clientRoles => clientRoles.Value.Count()))
+		{
+			throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", receiverUserRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
+		}
+		return roleData;
+	}
+
+	private static void CreateNotification(Guid receiver, Guid? creatorId, IEnumerable<(string? content, NotificationTypeId notificationTypeId)> notifications, INotificationRepository notificationRepository, bool? done)
+	{
+		var notificationList = notifications.ToList();
+		foreach (var notificationData in notificationList)
+		{
+			notificationRepository.CreateNotification(
+				receiver,
+				notificationData.notificationTypeId,
+				false,
+				notification =>
+				{
+					notification.CreatorUserId = creatorId;
+					notification.Content = notificationData.content;
+					notification.Done = done;
+				});
+		}
+	}
 }

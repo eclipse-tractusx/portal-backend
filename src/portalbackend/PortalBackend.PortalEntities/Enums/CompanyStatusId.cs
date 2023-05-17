@@ -22,9 +22,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 
 public enum CompanyStatusId
 {
-    PENDING = 1,
-    ACTIVE = 2,
-    REJECTED = 3,
-    INACTIVE = 4,
-    DELETED = 5
+	PENDING = 1,
+	ACTIVE = 2,
+	REJECTED = 3,
+	INACTIVE = 4,
+	DELETED = 5
 }

@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -30,15 +30,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 [AttributeUsage(AttributeTargets.Class)]
 public class AuditEntityV1Attribute : Attribute
 {
-    public AuditEntityV1Attribute(Type auditEntityType)
-    {
-        if (!typeof(IAuditEntityV1).IsAssignableFrom(auditEntityType))
-        {
-            throw new ArgumentException($"Entity must derive from {nameof(IAuditEntityV1)}", nameof(auditEntityType));
-        }
+	public AuditEntityV1Attribute(Type auditEntityType)
+	{
+		if (!typeof(IAuditEntityV1).IsAssignableFrom(auditEntityType))
+		{
+			throw new ArgumentException($"Entity must derive from {nameof(IAuditEntityV1)}", nameof(auditEntityType));
+		}
 
-        AuditEntityType = auditEntityType;
-    }
+		AuditEntityType = auditEntityType;
+	}
 
-    public virtual Type AuditEntityType { get; }
+	public virtual Type AuditEntityType { get; }
 }

@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -28,109 +28,109 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service;
 /// </summary>
 public class ServiceSettings
 {
-    [Required]
-    public int ApplicationsMaxPageSize { get; init; }
+	[Required]
+	public int ApplicationsMaxPageSize { get; init; }
 
-    [Required]
-    public IDictionary<string,IEnumerable<string>> CatenaAdminRoles { get; init; } = null!;
-    
-    [Required]
-    public IDictionary<string,IEnumerable<string>> ServiceManagerRoles { get; init; } = null!;
+	[Required]
+	public IDictionary<string, IEnumerable<string>> CatenaAdminRoles { get; init; } = null!;
 
-    [Required]
-    public IDictionary<string,IEnumerable<string>> SalesManagerRoles { get; init; } = null!;
-    
-    /// <summary>
-    /// Notification Type Id
-    /// </summary>
-    /// <value></value>
-    [Required]
-    public IEnumerable<NotificationTypeId> SubmitServiceNotificationTypeIds { get; init; } = null!;
+	[Required]
+	public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; init; } = null!;
 
-    /// <summary>
-    /// BasePortalAddress url required for subscription email 
-    /// </summary>
-    [Required(AllowEmptyStrings = false)]
-    public string BasePortalAddress { get; init; } = null!;
+	[Required]
+	public IDictionary<string, IEnumerable<string>> SalesManagerRoles { get; init; } = null!;
 
-    /// <summary>
-    /// ServiceMarketplaceAddress url required for the rejection email 
-    /// </summary>
-    [Required(AllowEmptyStrings = false)]
-    public string ServiceMarketplaceAddress { get; init; } = null!;
+	/// <summary>
+	/// Notification Type Id
+	/// </summary>
+	/// <value></value>
+	[Required]
+	public IEnumerable<NotificationTypeId> SubmitServiceNotificationTypeIds { get; init; } = null!;
 
-    /// <summary>
-    /// Approve Service Notification Type Id
-    /// </summary>
-    /// <value></value>
-    [Required]
-    public IEnumerable<NotificationTypeId> ApproveServiceNotificationTypeIds { get; init; } = null!;
+	/// <summary>
+	/// BasePortalAddress url required for subscription email 
+	/// </summary>
+	[Required(AllowEmptyStrings = false)]
+	public string BasePortalAddress { get; init; } = null!;
 
-    /// <summary>
-    /// Roles to notify when a new subscription was created for sales and App Manager
-    /// </summary>
-    [Required]
-    public IDictionary<string, IEnumerable<string>> ApproveServiceUserRoles { get; init; } = null!;
+	/// <summary>
+	/// ServiceMarketplaceAddress url required for the rejection email 
+	/// </summary>
+	[Required(AllowEmptyStrings = false)]
+	public string ServiceMarketplaceAddress { get; init; } = null!;
 
-    [Required]
-    public IDictionary<string,IEnumerable<string>> ITAdminRoles { get; init; } = null!;
+	/// <summary>
+	/// Approve Service Notification Type Id
+	/// </summary>
+	/// <value></value>
+	[Required]
+	public IEnumerable<NotificationTypeId> ApproveServiceNotificationTypeIds { get; init; } = null!;
 
-    /// <summary>
-    /// UserManagementAddress url required for subscription email 
-    /// </summary>
-    [Required(AllowEmptyStrings = false)]
-    public string UserManagementAddress { get; init; } = null!;
+	/// <summary>
+	/// Roles to notify when a new subscription was created for sales and App Manager
+	/// </summary>
+	[Required]
+	public IDictionary<string, IEnumerable<string>> ApproveServiceUserRoles { get; init; } = null!;
 
-    /// <summary>
-    /// Service Document Type Id
-    /// </summary>
-    /// <value></value>
-    [Required]
-    public IEnumerable<DocumentTypeId> ServiceImageDocumentTypeIds{ get; init; } = null!;
+	[Required]
+	public IDictionary<string, IEnumerable<string>> ITAdminRoles { get; init; } = null!;
 
-    /// <summary>
-    /// Offer Status Ids
-    /// </summary>
-    /// <value></value>
-    [Required]
-    public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
+	/// <summary>
+	/// UserManagementAddress url required for subscription email 
+	/// </summary>
+	[Required(AllowEmptyStrings = false)]
+	public string UserManagementAddress { get; init; } = null!;
 
-    /// <summary>
-    /// Service Document Type Id
-    /// </summary>
-    /// <value></value>
-    [Required]
-    public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds{ get; init; } = null!;
+	/// <summary>
+	/// Service Document Type Id
+	/// </summary>
+	/// <value></value>
+	[Required]
+	public IEnumerable<DocumentTypeId> ServiceImageDocumentTypeIds { get; init; } = null!;
 
-    /// <summary>
-    /// Client to get the technical user profile client
-    /// </summary>
-    public string TechnicalUserProfileClient { get; set; } = null!;
+	/// <summary>
+	/// Offer Status Ids
+	/// </summary>
+	/// <value></value>
+	[Required]
+	public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
 
-   /// <summary>
-    /// Document Type Id and ContentType to be uploaded
-    /// </summary>
-    /// <value></value>
-    [Required]
-    public IDictionary<DocumentTypeId, IEnumerable<string>> UploadServiceDocumentTypeIds {get; set;} = null!;
+	/// <summary>
+	/// Service Document Type Id
+	/// </summary>
+	/// <value></value>
+	[Required]
+	public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds { get; init; } = null!;
 
-   /// <summary>
-   /// Company Admin Roles
-   /// </summary>
-    [Required]
-    public IDictionary<string, IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
+	/// <summary>
+	/// Client to get the technical user profile client
+	/// </summary>
+	public string TechnicalUserProfileClient { get; set; } = null!;
+
+	/// <summary>
+	/// Document Type Id and ContentType to be uploaded
+	/// </summary>
+	/// <value></value>
+	[Required]
+	public IDictionary<DocumentTypeId, IEnumerable<string>> UploadServiceDocumentTypeIds { get; set; } = null!;
+
+	/// <summary>
+	/// Company Admin Roles
+	/// </summary>
+	[Required]
+	public IDictionary<string, IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
 }
 
 public static class ServiceSettingsExtension
 {
-    public static IServiceCollection ConfigureServiceSettings(
-        this IServiceCollection services,
-        IConfigurationSection section)
-    {
-        services.AddOptions<ServiceSettings>()
-            .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-        return services;
-    }
+	public static IServiceCollection ConfigureServiceSettings(
+		this IServiceCollection services,
+		IConfigurationSection section)
+	{
+		services.AddOptions<ServiceSettings>()
+			.Bind(section)
+			.ValidateDataAnnotations()
+			.ValidateOnStart();
+		return services;
+	}
 }

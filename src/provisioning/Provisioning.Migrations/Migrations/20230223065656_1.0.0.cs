@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,88 +18,88 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 #nullable disable
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
 {
-    public partial class _100 : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.EnsureSchema(
-                name: "provisioning");
+	public partial class _100 : Migration
+	{
+		protected override void Up(MigrationBuilder migrationBuilder)
+		{
+			migrationBuilder.EnsureSchema(
+				name: "provisioning");
 
-            migrationBuilder.CreateSequence<int>(
-                name: "client_sequence_sequence_id_seq",
-                schema: "provisioning");
+			migrationBuilder.CreateSequence<int>(
+				name: "client_sequence_sequence_id_seq",
+				schema: "provisioning");
 
-            migrationBuilder.CreateSequence<int>(
-                name: "identity_provider_sequence_sequence_id_seq",
-                schema: "provisioning");
+			migrationBuilder.CreateSequence<int>(
+				name: "identity_provider_sequence_sequence_id_seq",
+				schema: "provisioning");
 
-            migrationBuilder.CreateTable(
-                name: "client_sequences",
-                schema: "provisioning",
-                columns: table => new
-                {
-                    sequence_id = table.Column<int>(type: "integer", nullable: false, defaultValueSql: "nextval('provisioning.client_sequence_sequence_id_seq'::regclass)")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_client_sequences", x => x.sequence_id);
-                });
+			migrationBuilder.CreateTable(
+				name: "client_sequences",
+				schema: "provisioning",
+				columns: table => new
+				{
+					sequence_id = table.Column<int>(type: "integer", nullable: false, defaultValueSql: "nextval('provisioning.client_sequence_sequence_id_seq'::regclass)")
+				},
+				constraints: table =>
+				{
+					table.PrimaryKey("pk_client_sequences", x => x.sequence_id);
+				});
 
-            migrationBuilder.CreateTable(
-                name: "identity_provider_sequences",
-                schema: "provisioning",
-                columns: table => new
-                {
-                    sequence_id = table.Column<int>(type: "integer", nullable: false, defaultValueSql: "nextval('provisioning.identity_provider_sequence_sequence_id_seq'::regclass)")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_identity_provider_sequences", x => x.sequence_id);
-                });
+			migrationBuilder.CreateTable(
+				name: "identity_provider_sequences",
+				schema: "provisioning",
+				columns: table => new
+				{
+					sequence_id = table.Column<int>(type: "integer", nullable: false, defaultValueSql: "nextval('provisioning.identity_provider_sequence_sequence_id_seq'::regclass)")
+				},
+				constraints: table =>
+				{
+					table.PrimaryKey("pk_identity_provider_sequences", x => x.sequence_id);
+				});
 
-            migrationBuilder.CreateTable(
-                name: "user_password_resets",
-                schema: "provisioning",
-                columns: table => new
-                {
-                    user_entity_id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
-                    password_modified_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    reset_count = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_user_password_resets", x => x.user_entity_id);
-                });
-        }
+			migrationBuilder.CreateTable(
+				name: "user_password_resets",
+				schema: "provisioning",
+				columns: table => new
+				{
+					user_entity_id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+					password_modified_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+					reset_count = table.Column<int>(type: "integer", nullable: false)
+				},
+				constraints: table =>
+				{
+					table.PrimaryKey("pk_user_password_resets", x => x.user_entity_id);
+				});
+		}
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "client_sequences",
-                schema: "provisioning");
+		protected override void Down(MigrationBuilder migrationBuilder)
+		{
+			migrationBuilder.DropTable(
+				name: "client_sequences",
+				schema: "provisioning");
 
-            migrationBuilder.DropTable(
-                name: "identity_provider_sequences",
-                schema: "provisioning");
+			migrationBuilder.DropTable(
+				name: "identity_provider_sequences",
+				schema: "provisioning");
 
-            migrationBuilder.DropTable(
-                name: "user_password_resets",
-                schema: "provisioning");
+			migrationBuilder.DropTable(
+				name: "user_password_resets",
+				schema: "provisioning");
 
-            migrationBuilder.DropSequence(
-                name: "client_sequence_sequence_id_seq",
-                schema: "provisioning");
+			migrationBuilder.DropSequence(
+				name: "client_sequence_sequence_id_seq",
+				schema: "provisioning");
 
-            migrationBuilder.DropSequence(
-                name: "identity_provider_sequence_sequence_id_seq",
-                schema: "provisioning");
-        }
-    }
+			migrationBuilder.DropSequence(
+				name: "identity_provider_sequence_sequence_id_seq",
+				schema: "provisioning");
+		}
+	}
 }

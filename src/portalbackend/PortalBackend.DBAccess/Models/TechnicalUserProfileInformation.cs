@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -21,6 +21,6 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record TechnicalUserProfileInformation(
-    Guid TechnicalUserProfileId,
-    IEnumerable<UserRoleInformation> UserRoles
+	Guid TechnicalUserProfileId,
+	IEnumerable<UserRoleInformation> UserRoles
 );

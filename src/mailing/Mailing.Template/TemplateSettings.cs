@@ -19,40 +19,40 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
 
 public class TemplateSettings
 {
-    /// <summary>
-    /// Default path for the mailing template section in the configuration file
-    /// </summary>        
-    public const string Position = "MailingService";
+	/// <summary>
+	/// Default path for the mailing template section in the configuration file
+	/// </summary>        
+	public const string Position = "MailingService";
 
-    public Dictionary<string, TemplateSetting> Templates { get; set; } = null!;
+	public Dictionary<string, TemplateSetting> Templates { get; set; } = null!;
 
-    public bool Validate()
-    {
-        var validation = new ConfigurationValidation<TemplateSettings>()
-            .NotNull(Templates, () => nameof(Templates));
+	public bool Validate()
+	{
+		var validation = new ConfigurationValidation<TemplateSettings>()
+			.NotNull(Templates, () => nameof(Templates));
 
-        return Templates.Values.All(t =>
-        {
-            validation.NotNullOrWhiteSpace(t.Subject, () => nameof(t.Subject));
-            if (t.Body == null)
-            {
-                validation.NotNull(t.EmailTemplateType, () => nameof(t.EmailTemplateType));
-            }
-            if (!t.EmailTemplateType.HasValue)
-            {
-                validation.NotNullOrWhiteSpace(t.Body, () => nameof(t.Body));
-            }
-            return true;
-        });
-    }
+		return Templates.Values.All(t =>
+		{
+			validation.NotNullOrWhiteSpace(t.Subject, () => nameof(t.Subject));
+			if (t.Body == null)
+			{
+				validation.NotNull(t.EmailTemplateType, () => nameof(t.EmailTemplateType));
+			}
+			if (!t.EmailTemplateType.HasValue)
+			{
+				validation.NotNullOrWhiteSpace(t.Body, () => nameof(t.Body));
+			}
+			return true;
+		});
+	}
 }
 
 /// <summary>
@@ -60,32 +60,32 @@ public class TemplateSettings
 /// </summary>
 public class TemplateSetting
 {
-    /// <summary>
-    /// Subject of the email to be sent.
-    /// </summary>
-    public string Subject { get; set; } = null!;
+	/// <summary>
+	/// Subject of the email to be sent.
+	/// </summary>
+	public string Subject { get; set; } = null!;
 
-    /// <summary>
-    /// Body of the email to be sent (in case of non-html-templated emails)
-    /// </summary>
-    public string? Body { get; set; }
+	/// <summary>
+	/// Body of the email to be sent (in case of non-html-templated emails)
+	/// </summary>
+	public string? Body { get; set; }
 
-    /// <summary>
-    /// Template type to be used for the email (in case of html template).
-    /// </summary>
-    public EmailTemplateType? EmailTemplateType { get; set; }
+	/// <summary>
+	/// Template type to be used for the email (in case of html template).
+	/// </summary>
+	public EmailTemplateType? EmailTemplateType { get; set; }
 }
 
 public static class TemplateSettingsExtention
 {
-    public static IServiceCollection ConfigureTemplateSettings(
-        this IServiceCollection services,
-        IConfigurationSection section)
-    {
-        services.AddOptions<TemplateSettings>()
-            .Bind(section)
-            .Validate(x => x.Validate())
-            .ValidateOnStart();
-        return services;
-    }
+	public static IServiceCollection ConfigureTemplateSettings(
+		this IServiceCollection services,
+		IConfigurationSection section)
+	{
+		services.AddOptions<TemplateSettings>()
+			.Bind(section)
+			.Validate(x => x.Validate())
+			.ValidateOnStart();
+		return services;
+	}
 }

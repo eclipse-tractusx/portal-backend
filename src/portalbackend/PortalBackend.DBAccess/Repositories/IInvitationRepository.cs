@@ -25,6 +25,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public interface IInvitationRepository
 {
-    IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId);
-    Task<Invitation?> GetInvitationStatusAsync(string iamUserId);
+	IAsyncEnumerable<InvitedUserDetail> GetInvitedUserDetailsUntrackedAsync(Guid applicationId);
+	Task<Invitation?> GetInvitationStatusAsync(string iamUserId);
 }

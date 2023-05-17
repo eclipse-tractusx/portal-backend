@@ -33,20 +33,20 @@ var VERSION = "v2";
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-    .AddMailingAndTemplateManager(builder.Configuration)
-    .AddPortalRepositories(builder.Configuration)
-    .AddProvisioningManager(builder.Configuration);
+	.AddMailingAndTemplateManager(builder.Configuration)
+	.AddPortalRepositories(builder.Configuration)
+	.AddProvisioningManager(builder.Configuration);
 
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
-    .AddTransient<IOfferService, OfferService>()
-    .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
-    .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
-    .AddTechnicalUserProfile(builder.Configuration.GetSection("Services"))
-    .ConfigureServiceSettings(builder.Configuration.GetSection("Services"));
+	.AddTransient<IOfferService, OfferService>()
+	.AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
+	.AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
+	.AddTechnicalUserProfile()
+	.ConfigureServiceSettings(builder.Configuration.GetSection("Services"));
 
 builder.Services.AddOfferSetupService();
 
 builder.Build()
-    .CreateApp<Program>("services", VERSION, builder.Environment)
-    .Run();
+	.CreateApp<Program>("services", VERSION, builder.Environment)
+	.Run();

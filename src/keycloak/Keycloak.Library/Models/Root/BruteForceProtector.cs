@@ -30,9 +30,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class BruteForceProtector
 {
-    [JsonProperty("internal")]
-    public bool? Internal { get; set; }
+	[JsonProperty("internal")]
+	public bool? Internal { get; set; }
 
-    [JsonProperty("providers")]
-    public BruteForceProtectorProviders Providers { get; set; }
+	[JsonProperty("providers")]
+	public BruteForceProtectorProviders Providers { get; set; }
 }

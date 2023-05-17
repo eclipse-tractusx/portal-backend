@@ -24,11 +24,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 public class ClientAuthData
 {
-    public ClientAuthData(IamClientAuthMethod iamClientAuthMethod)
-    {
-        IamClientAuthMethod = iamClientAuthMethod;
-    }
+	public ClientAuthData(IamClientAuthMethod iamClientAuthMethod)
+	{
+		IamClientAuthMethod = iamClientAuthMethod;
+	}
 
-    public IamClientAuthMethod IamClientAuthMethod { get; set; }
-    public string? Secret { get; set; }
+	public IamClientAuthMethod IamClientAuthMethod { get; set; }
+	public string? Secret { get; set; }
 }

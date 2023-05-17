@@ -25,27 +25,28 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class IdentityProvider : IBaseEntity
 {
-    private IdentityProvider() {
-        Companies = new HashSet<Company>();
-        CompanyIdentityProviders = new HashSet<CompanyIdentityProvider>();
-    }
-    
-    public IdentityProvider(Guid id, IdentityProviderCategoryId identityProviderCategoryId, DateTimeOffset dateCreated) : this()
-    {
-        Id = id;
-        IdentityProviderCategoryId = identityProviderCategoryId;
-        DateCreated = dateCreated;
-    }
+	private IdentityProvider()
+	{
+		Companies = new HashSet<Company>();
+		CompanyIdentityProviders = new HashSet<CompanyIdentityProvider>();
+	}
 
-    public Guid Id { get; private set; }
+	public IdentityProvider(Guid id, IdentityProviderCategoryId identityProviderCategoryId, DateTimeOffset dateCreated) : this()
+	{
+		Id = id;
+		IdentityProviderCategoryId = identityProviderCategoryId;
+		DateCreated = dateCreated;
+	}
 
-    public DateTimeOffset DateCreated { get; private set; }
+	public Guid Id { get; private set; }
 
-    public IdentityProviderCategoryId IdentityProviderCategoryId { get; private set; }
+	public DateTimeOffset DateCreated { get; private set; }
 
-    // Navigation properties
-    public virtual IdentityProviderCategory? IdentityProviderCategory { get; private set; }
-    public virtual IamIdentityProvider? IamIdentityProvider { get; set; }
-    public virtual ICollection<Company> Companies { get; private set; }
-    public virtual ICollection<CompanyIdentityProvider> CompanyIdentityProviders { get; private set; }
+	public IdentityProviderCategoryId IdentityProviderCategoryId { get; private set; }
+
+	// Navigation properties
+	public virtual IdentityProviderCategory? IdentityProviderCategory { get; private set; }
+	public virtual IamIdentityProvider? IamIdentityProvider { get; set; }
+	public virtual ICollection<Company> Companies { get; private set; }
+	public virtual ICollection<CompanyIdentityProvider> CompanyIdentityProviders { get; private set; }
 }

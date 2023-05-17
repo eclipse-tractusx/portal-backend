@@ -23,100 +23,100 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums
 {
-    /// <summary>
-    /// Base email template types for sending html emails.
-    /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum EmailTemplateType
-    {
-        /// <summary>
-        /// Invitation email template for users that get added to a registration process. Includes a custom message.
-        /// </summary>
-        [Path("additional_user_invitation_with_message.html")]
-        AdditionalUserInvitationWithMessage,
+	/// <summary>
+	/// Base email template types for sending html emails.
+	/// </summary>
+	[JsonConverter(typeof(JsonStringEnumConverter))]
+	public enum EmailTemplateType
+	{
+		/// <summary>
+		/// Invitation email template for users that get added to a registration process. Includes a custom message.
+		/// </summary>
+		[Path("additional_user_invitation_with_message.html")]
+		AdditionalUserInvitationWithMessage,
 
-        /// <summary>
-        /// Invitation email template for users that get added to a registration process.
-        /// </summary>
-        [Path("additional_user_invitation.html")]
-        AdditionalUserInvitation,
+		/// <summary>
+		/// Invitation email template for users that get added to a registration process.
+		/// </summary>
+		[Path("additional_user_invitation.html")]
+		AdditionalUserInvitation,
 
-        /// <summary>
-        /// Email template for Catena-X registration process invitations.
-        /// </summary>
-        [Path("cx_admin_invitation.html")]
-        CxAdminInvitation,
+		/// <summary>
+		/// Email template for Catena-X registration process invitations.
+		/// </summary>
+		[Path("cx_admin_invitation.html")]
+		CxAdminInvitation,
 
-        /// <summary>
-        /// Email template for sending password assignments.
-        /// </summary>
-        [Path("password.html")]
-        Password,
+		/// <summary>
+		/// Email template for sending password assignments.
+		/// </summary>
+		[Path("password.html")]
+		Password,
 
-        /// <summary>
-        /// Email template for declaring the next steps in the registration process.
-        /// </summary>
-        [Path("nextsteps.html")]
-        NextSteps,
+		/// <summary>
+		/// Email template for declaring the next steps in the registration process.
+		/// </summary>
+		[Path("nextsteps.html")]
+		NextSteps,
 
-        /// <summary>
-        /// Email template for welcoming new portal users.
-        /// </summary>
-        [Path("portal_newuser_welcome.html")]
-        PortalNewUserWelcome,
+		/// <summary>
+		/// Email template for welcoming new portal users.
+		/// </summary>
+		[Path("portal_newuser_welcome.html")]
+		PortalNewUserWelcome,
 
-        /// <summary>
-        /// Email template for welcoming after registration process.
-        /// </summary>
-        [Path("portal_welcome_email.html")]
-        PortalWelcomeEmail,
+		/// <summary>
+		/// Email template for welcoming after registration process.
+		/// </summary>
+		[Path("portal_welcome_email.html")]
+		PortalWelcomeEmail,
 
-        /// <summary>
-        /// Email template for decline registration process.
-        /// </summary>
-        [Path("registration_declined.html")]
-        PortalRegistrationDecline,
-        
-        /// <summary>
-        /// Email template for notifying app providers of subscription requests.
-        /// </summary>
-        [Path("appprovider_subscription_request.html")]
-        AppSubscriptionRequest,
+		/// <summary>
+		/// Email template for decline registration process.
+		/// </summary>
+		[Path("registration_declined.html")]
+		PortalRegistrationDecline,
 
-        /// <summary>
-        /// Email template for notifying app providers of subscription activition.
-        /// </summary>
-        [Path("appprovider_subscription_activation.html")]
-        AppSubscriptionActivation,
-        
-        /// <summary>
-        /// Email template for notifying service providers of subscription requests.
-        /// </summary>
-        [Path("serviceprovider_subscription_request.html")]
-        ServiceSubscriptionRequest,
-        
-        /// <summary>
-        /// Email template for notifying requester of subscription activations.
-        /// </summary>
-        [Path("serviceprovider_subscription_activation.html")]
-        ServiceSubscriptionActivation,
-        
-        /// <summary>
-        /// Email template for notifying about decline of an app.
-        /// </summary>
-        [Path("app_request_decline.html")]
-        AppRequestDecline,
-        
-        /// <summary>
-        /// Email template for notifying about decline of an service.
-        /// </summary>
-        [Path("service_request_decline.html")]
-        ServiceRequestDecline,
+		/// <summary>
+		/// Email template for notifying app providers of subscription requests.
+		/// </summary>
+		[Path("appprovider_subscription_request.html")]
+		AppSubscriptionRequest,
 
-        /// <summary>
-        /// Email template for new users being created on own idp
-        /// </summary>
-        [Path("new_user_account_ownidp.html")]
-        NewUserAccountOwnIdp,
-    }
+		/// <summary>
+		/// Email template for notifying app providers of subscription activition.
+		/// </summary>
+		[Path("appprovider_subscription_activation.html")]
+		AppSubscriptionActivation,
+
+		/// <summary>
+		/// Email template for notifying service providers of subscription requests.
+		/// </summary>
+		[Path("serviceprovider_subscription_request.html")]
+		ServiceSubscriptionRequest,
+
+		/// <summary>
+		/// Email template for notifying requester of subscription activations.
+		/// </summary>
+		[Path("serviceprovider_subscription_activation.html")]
+		ServiceSubscriptionActivation,
+
+		/// <summary>
+		/// Email template for notifying about decline of an app.
+		/// </summary>
+		[Path("app_request_decline.html")]
+		AppRequestDecline,
+
+		/// <summary>
+		/// Email template for notifying about decline of an service.
+		/// </summary>
+		[Path("service_request_decline.html")]
+		ServiceRequestDecline,
+
+		/// <summary>
+		/// Email template for new users being created on own idp
+		/// </summary>
+		[Path("new_user_account_ownidp.html")]
+		NewUserAccountOwnIdp,
+	}
 }

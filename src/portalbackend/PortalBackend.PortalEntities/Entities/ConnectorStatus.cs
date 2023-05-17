@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ConnectorStatus
 {
-    private ConnectorStatus()
-    {
-        Label = null!;
-        Connectors = new HashSet<Connector>();
-    }
+	private ConnectorStatus()
+	{
+		Label = null!;
+		Connectors = new HashSet<Connector>();
+	}
 
-    public ConnectorStatus(ConnectorStatusId connectorStatusId) : this()
-    {
-        Id = connectorStatusId;
-        Label = connectorStatusId.ToString();
-    }
+	public ConnectorStatus(ConnectorStatusId connectorStatusId) : this()
+	{
+		Id = connectorStatusId;
+		Label = connectorStatusId.ToString();
+	}
 
-    public ConnectorStatusId Id { get; private set; }
+	public ConnectorStatusId Id { get; private set; }
 
-    [MaxLength(255)]
-    public string Label { get; private set; }
+	[MaxLength(255)]
+	public string Label { get; private set; }
 
-    // Navigation properties
-    public virtual ICollection<Connector> Connectors { get; private set; }
+	// Navigation properties
+	public virtual ICollection<Connector> Connectors { get; private set; }
 }

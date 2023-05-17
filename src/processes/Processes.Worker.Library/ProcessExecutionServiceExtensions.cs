@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -26,13 +26,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
 public static class ProcessExecutionServiceExtensions
 {
-    public static IServiceCollection AddProcessExecutionService(this IServiceCollection services, IConfigurationSection section)
-    {
-        services.AddOptions<ProcessExecutionServiceSettings>().Bind(section);
-        services
-            .AddTransient<ProcessExecutionService>()
-            .AddTransient<IProcessExecutor, ProcessExecutor>()
-            .AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
-        return services;
-    }
+	public static IServiceCollection AddProcessExecutionService(this IServiceCollection services, IConfigurationSection section)
+	{
+		services.AddOptions<ProcessExecutionServiceSettings>().Bind(section);
+		services
+			.AddTransient<ProcessExecutionService>()
+			.AddTransient<IProcessExecutor, ProcessExecutor>()
+			.AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
+		return services;
+	}
 }

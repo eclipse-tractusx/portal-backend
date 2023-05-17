@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
 
 public class ManagementPermission
 {
-    [JsonProperty("enabled")]
-    public bool? Enabled { get; set; }
+	[JsonProperty("enabled")]
+	public bool? Enabled { get; set; }
 }

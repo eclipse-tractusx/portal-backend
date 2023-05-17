@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -25,23 +25,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// </summary>
 public enum NotificationSorting
 {
-    /// <summary>
-    /// Ascending by date
-    /// </summary>
-    DateAsc = 1,
-    
-    /// <summary>
-    /// Descending by date
-    /// </summary>
-    DateDesc = 2,
-    
-    /// <summary>
-    /// Ascending by the read status
-    /// </summary>
-    ReadStatusAsc = 3,
-    
-    /// <summary>
-    /// Descending by read status
-    /// </summary>
-    ReadStatusDesc = 4,
+	/// <summary>
+	/// Ascending by date
+	/// </summary>
+	DateAsc = 1,
+
+	/// <summary>
+	/// Descending by date
+	/// </summary>
+	DateDesc = 2,
+
+	/// <summary>
+	/// Ascending by the read status
+	/// </summary>
+	ReadStatusAsc = 3,
+
+	/// <summary>
+	/// Descending by read status
+	/// </summary>
+	ReadStatusDesc = 4,
 }

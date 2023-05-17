@@ -24,20 +24,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class ServiceDetail
 {
-    private ServiceDetail() {}
+	private ServiceDetail() { }
 
-    public ServiceDetail(Guid serviceId, ServiceTypeId serviceTypeId)
-    {
-        ServiceId = serviceId;
-        ServiceTypeId = serviceTypeId;
-    }
+	public ServiceDetail(Guid serviceId, ServiceTypeId serviceTypeId)
+	{
+		ServiceId = serviceId;
+		ServiceTypeId = serviceTypeId;
+	}
 
-    public Guid ServiceId { get; private set; }
+	public Guid ServiceId { get; private set; }
 
-    public ServiceTypeId ServiceTypeId { get; private set; }
+	public ServiceTypeId ServiceTypeId { get; private set; }
 
-    // Navigation properties
-    public virtual Offer? Service { get; private set; }
+	// Navigation properties
+	public virtual Offer? Service { get; private set; }
 
-    public virtual ServiceType? ServiceType { get; private set; }
+	public virtual ServiceType? ServiceType { get; private set; }
 }

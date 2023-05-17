@@ -22,8 +22,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 
 public enum IamClientAuthMethod
 {
-    JWT = 1,
-    SECRET = 2,
-    X509 = 3,
-    SECRET_JWT = 4
+	JWT = 1,
+	SECRET = 2,
+	X509 = 3,
+	SECRET_JWT = 4
 }

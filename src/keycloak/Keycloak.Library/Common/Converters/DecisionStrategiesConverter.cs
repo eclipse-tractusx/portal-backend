@@ -30,24 +30,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters
 
 public class DecisionStrategiesConverter : JsonEnumConverter<DecisionStrategy>
 {
-    private static readonly Dictionary<DecisionStrategy, string> SPairs = new Dictionary<DecisionStrategy, string>
-    {
-        [DecisionStrategy.Unanimous] = "UNANIMOUS",
-        [DecisionStrategy.Affirmative] = "AFFIRMATIVE",
-        [DecisionStrategy.Consensus] = "CONSENSUS"
-    };
+	private static readonly Dictionary<DecisionStrategy, string> SPairs = new Dictionary<DecisionStrategy, string>
+	{
+		[DecisionStrategy.Unanimous] = "UNANIMOUS",
+		[DecisionStrategy.Affirmative] = "AFFIRMATIVE",
+		[DecisionStrategy.Consensus] = "CONSENSUS"
+	};
 
-    protected override string EntityString { get; } = "decisionStrategy";
+	protected override string EntityString { get; } = "decisionStrategy";
 
-    protected override string ConvertToString(DecisionStrategy value) => SPairs[value];
+	protected override string ConvertToString(DecisionStrategy value) => SPairs[value];
 
-    protected override DecisionStrategy ConvertFromString(string s)
-    {
-        if (SPairs.ContainsValue(s.ToUpper()))
-        {
-            return SPairs.First(kvp => kvp.Value.Equals(s, StringComparison.OrdinalIgnoreCase)).Key;
-        }
+	protected override DecisionStrategy ConvertFromString(string s)
+	{
+		if (SPairs.ContainsValue(s.ToUpper()))
+		{
+			return SPairs.First(kvp => kvp.Value.Equals(s, StringComparison.OrdinalIgnoreCase)).Key;
+		}
 
-        throw new ArgumentException($"Unknown {EntityString}: {s}");
-    }
+		throw new ArgumentException($"Unknown {EntityString}: {s}");
+	}
 }

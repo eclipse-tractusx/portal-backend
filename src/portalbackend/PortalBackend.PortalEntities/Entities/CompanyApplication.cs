@@ -28,36 +28,36 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 [AuditEntityV1(typeof(AuditCompanyApplication20230214))]
 public class CompanyApplication : IAuditableV1, IBaseEntity
 {
-    protected CompanyApplication()
-    {
-        Invitations = new HashSet<Invitation>();
-        ApplicationChecklistEntries = new HashSet<ApplicationChecklistEntry>();
-    }
+	protected CompanyApplication()
+	{
+		Invitations = new HashSet<Invitation>();
+		ApplicationChecklistEntries = new HashSet<ApplicationChecklistEntry>();
+	}
 
-    public CompanyApplication(Guid id, Guid companyId, CompanyApplicationStatusId applicationStatusId, DateTimeOffset dateCreated) : this()
-    {
-        Id = id;
-        CompanyId = companyId;
-        ApplicationStatusId = applicationStatusId;
-        DateCreated = dateCreated;
-    }
+	public CompanyApplication(Guid id, Guid companyId, CompanyApplicationStatusId applicationStatusId, DateTimeOffset dateCreated) : this()
+	{
+		Id = id;
+		CompanyId = companyId;
+		ApplicationStatusId = applicationStatusId;
+		DateCreated = dateCreated;
+	}
 
-    public Guid Id { get; set; }
+	public Guid Id { get; set; }
 
-    public DateTimeOffset DateCreated { get; private set; }
+	public DateTimeOffset DateCreated { get; private set; }
 
-    public DateTimeOffset? DateLastChanged { get; set; }
+	public DateTimeOffset? DateLastChanged { get; set; }
 
-    public CompanyApplicationStatusId ApplicationStatusId { get; set; }
-    public Guid CompanyId { get; private set; }
-    public Guid? ChecklistProcessId { get; set; }
+	public CompanyApplicationStatusId ApplicationStatusId { get; set; }
+	public Guid CompanyId { get; private set; }
+	public Guid? ChecklistProcessId { get; set; }
 
-    [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
-    // Navigation properties
-    public virtual CompanyApplicationStatus? ApplicationStatus { get; set; }
-    public virtual Company? Company { get;  set; }
-    public virtual Process? ChecklistProcess { get; set; }
-    public virtual ICollection<Invitation> Invitations { get; private set; }
-    public virtual ICollection<ApplicationChecklistEntry> ApplicationChecklistEntries { get; private set; }
+	[AuditLastEditorV1]
+	public Guid? LastEditorId { get; set; }
+	// Navigation properties
+	public virtual CompanyApplicationStatus? ApplicationStatus { get; set; }
+	public virtual Company? Company { get; set; }
+	public virtual Process? ChecklistProcess { get; set; }
+	public virtual ICollection<Invitation> Invitations { get; private set; }
+	public virtual ICollection<ApplicationChecklistEntry> ApplicationChecklistEntries { get; private set; }
 }

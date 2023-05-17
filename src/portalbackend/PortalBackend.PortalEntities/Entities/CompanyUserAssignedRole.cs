@@ -26,18 +26,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 [AuditEntityV1(typeof(AuditCompanyUserAssignedRole20221018))]
 public class CompanyUserAssignedRole : IAuditableV1
 {
-    public CompanyUserAssignedRole(Guid companyUserId, Guid userRoleId)
-    {
-        CompanyUserId = companyUserId;
-        UserRoleId = userRoleId;
-    }
-    
-    public Guid CompanyUserId { get; private set; }
-    public Guid UserRoleId { get; private set; }
+	public CompanyUserAssignedRole(Guid companyUserId, Guid userRoleId)
+	{
+		CompanyUserId = companyUserId;
+		UserRoleId = userRoleId;
+	}
 
-    [AuditLastEditorV1]
-    public Guid? LastEditorId { get; set; }
-    // Navigation properties
-    public virtual CompanyUser? CompanyUser { get; private set; }
-    public virtual UserRole? UserRole { get; private set; }
+	public Guid CompanyUserId { get; private set; }
+	public Guid UserRoleId { get; private set; }
+
+	[AuditLastEditorV1]
+	public Guid? LastEditorId { get; set; }
+	// Navigation properties
+	public virtual CompanyUser? CompanyUser { get; private set; }
+	public virtual UserRole? UserRole { get; private set; }
 }

@@ -27,29 +27,29 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class Process : IBaseEntity, ILockableEntity
 {
-    private Process()
-    {
-        ProcessSteps = new HashSet<ProcessStep>();
-    }
+	private Process()
+	{
+		ProcessSteps = new HashSet<ProcessStep>();
+	}
 
-    public Process(Guid id, ProcessTypeId processTypeId, Guid version) : this()
-    {
-        Id = id;
-        ProcessTypeId = processTypeId;
-        Version = version;
-    }
+	public Process(Guid id, ProcessTypeId processTypeId, Guid version) : this()
+	{
+		Id = id;
+		ProcessTypeId = processTypeId;
+		Version = version;
+	}
 
-    public Guid Id { get; private set; }
+	public Guid Id { get; private set; }
 
-    public ProcessTypeId ProcessTypeId { get; set; }
+	public ProcessTypeId ProcessTypeId { get; set; }
 
-    public DateTimeOffset? LockExpiryDate { get; set; }
+	public DateTimeOffset? LockExpiryDate { get; set; }
 
-    [ConcurrencyCheck]
-    public Guid Version { get; set; }
+	[ConcurrencyCheck]
+	public Guid Version { get; set; }
 
-    // Navigation properties
-    public virtual ProcessType? ProcessType { get; set; }
-    public virtual CompanyApplication? CompanyApplication { get; set; }
-    public virtual ICollection<ProcessStep> ProcessSteps { get; private set; }
+	// Navigation properties
+	public virtual ProcessType? ProcessType { get; set; }
+	public virtual CompanyApplication? CompanyApplication { get; set; }
+	public virtual ICollection<ProcessStep> ProcessSteps { get; private set; }
 }

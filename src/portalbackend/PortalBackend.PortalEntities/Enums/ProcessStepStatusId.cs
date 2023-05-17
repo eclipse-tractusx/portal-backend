@@ -22,9 +22,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 
 public enum ProcessStepStatusId
 {
-    TODO = 1,
-    DONE = 2,
-    SKIPPED = 3,
-    FAILED = 4,
-    DUPLICATE = 5,
+	TODO = 1,
+	DONE = 2,
+	SKIPPED = 3,
+	FAILED = 4,
+	DUPLICATE = 5,
 }

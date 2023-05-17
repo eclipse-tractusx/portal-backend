@@ -18,33 +18,33 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
 
 public class FakePolicyEvaluator : IPolicyEvaluator
 {
-    public async Task<AuthenticateResult> AuthenticateAsync(AuthorizationPolicy policy, HttpContext context)
-    {
-        var testScheme = "FakeScheme";
-        var principal = new ClaimsPrincipal();
-        principal.AddIdentity(new ClaimsIdentity(new[] {
-            new Claim("sub", "3d8142f1-860b-48aa-8c2b-1ccb18699f65"),
-            new Claim(ClaimTypes.Role, "Administrator"),
-            new Claim(ClaimTypes.NameIdentifier, "John")
-        }, testScheme));
-        
-        return await Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal,
-            new AuthenticationProperties(), testScheme)));
-    }
+	public async Task<AuthenticateResult> AuthenticateAsync(AuthorizationPolicy policy, HttpContext context)
+	{
+		var testScheme = "FakeScheme";
+		var principal = new ClaimsPrincipal();
+		principal.AddIdentity(new ClaimsIdentity(new[] {
+			new Claim("sub", "3d8142f1-860b-48aa-8c2b-1ccb18699f65"),
+			new Claim(ClaimTypes.Role, "Administrator"),
+			new Claim(ClaimTypes.NameIdentifier, "John")
+		}, testScheme));
 
-    public async Task<PolicyAuthorizationResult> AuthorizeAsync(AuthorizationPolicy policy,
-        AuthenticateResult authenticationResult, HttpContext context, object? resource)
-    {
-        return await Task.FromResult(PolicyAuthorizationResult.Success());
-    }
+		return await Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal,
+			new AuthenticationProperties(), testScheme)));
+	}
+
+	public async Task<PolicyAuthorizationResult> AuthorizeAsync(AuthorizationPolicy policy,
+		AuthenticateResult authenticationResult, HttpContext context, object? resource)
+	{
+		return await Task.FromResult(PolicyAuthorizationResult.Success());
+	}
 }

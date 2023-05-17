@@ -21,8 +21,8 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models
 
 {
-    public class UserIds
-    {
-        public IEnumerable<string>? userIds { get; set; }
-    }
+	public class UserIds
+	{
+		public IEnumerable<string>? userIds { get; set; }
+	}
 }

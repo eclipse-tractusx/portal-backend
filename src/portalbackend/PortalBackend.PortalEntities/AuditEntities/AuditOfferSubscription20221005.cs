@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -30,51 +30,51 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 /// </summary>
 public class AuditOfferSubscription20221005 : IAuditEntityV1
 {
-    /// <inheritdoc />
-    [Key]
-    public Guid AuditV1Id { get; set; }
+	/// <inheritdoc />
+	[Key]
+	public Guid AuditV1Id { get; set; }
 
-    /// <inheritdoc />
-    public Guid Id { get; set; }
+	/// <inheritdoc />
+	public Guid Id { get; set; }
 
-    /// <summary>
-    /// ID of the company subscribing an app.
-    /// </summary>
-    public Guid CompanyId { get; set; }
+	/// <summary>
+	/// ID of the company subscribing an app.
+	/// </summary>
+	public Guid CompanyId { get; set; }
 
-    /// <summary>
-    /// ID of the apps subscribed by a company.
-    /// </summary>
-    public Guid OfferId { get; set; }
+	/// <summary>
+	/// ID of the apps subscribed by a company.
+	/// </summary>
+	public Guid OfferId { get; set; }
 
-    /// <summary>
-    /// ID of the app subscription status.
-    /// </summary>
-    public OfferSubscriptionStatusId OfferSubscriptionStatusId { get; set; }
+	/// <summary>
+	/// ID of the app subscription status.
+	/// </summary>
+	public OfferSubscriptionStatusId OfferSubscriptionStatusId { get; set; }
 
-    /// <summary>
-    /// Display Name for the company app combination
-    /// </summary>
-    public string? DisplayName { get; set; }
-    
-    /// <summary>
-    /// Additional description for clarification
-    /// </summary>
-    public string? Description { get; set; }
+	/// <summary>
+	/// Display Name for the company app combination
+	/// </summary>
+	public string? DisplayName { get; set; }
 
-    /// <summary>
-    /// Id of the app requester 
-    /// </summary>
-    public Guid RequesterId { get; set; }
+	/// <summary>
+	/// Additional description for clarification
+	/// </summary>
+	public string? Description { get; set; }
 
-    public Guid? LastEditorId { get; set; }
-    
-    /// <inheritdoc />
-    public Guid? AuditV1LastEditorId { get; set; }
+	/// <summary>
+	/// Id of the app requester 
+	/// </summary>
+	public Guid RequesterId { get; set; }
 
-    /// <inheritdoc />
-    public DateTimeOffset AuditV1DateLastChanged { get; set; }
+	public Guid? LastEditorId { get; set; }
 
-    /// <inheritdoc />
-    public AuditOperationId AuditV1OperationId { get; set; }
+	/// <inheritdoc />
+	public Guid? AuditV1LastEditorId { get; set; }
+
+	/// <inheritdoc />
+	public DateTimeOffset AuditV1DateLastChanged { get; set; }
+
+	/// <inheritdoc />
+	public AuditOperationId AuditV1OperationId { get; set; }
 }

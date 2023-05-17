@@ -18,31 +18,31 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net.Http.Json;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
+using System.Net.Http.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 
 public class ClearinghouseService : IClearinghouseService
 {
-    private readonly ITokenService _tokenService;
-    private readonly ClearinghouseSettings _settings;
+	private readonly ITokenService _tokenService;
+	private readonly ClearinghouseSettings _settings;
 
-    public ClearinghouseService(ITokenService tokenService, IOptions<ClearinghouseSettings> options)
-    {
-        _tokenService = tokenService;
-        _settings = options.Value;
-    }
+	public ClearinghouseService(ITokenService tokenService, IOptions<ClearinghouseSettings> options)
+	{
+		_tokenService = tokenService;
+		_settings = options.Value;
+	}
 
-    /// <inheritdoc />
-    public async Task TriggerCompanyDataPost(ClearinghouseTransferData data, CancellationToken cancellationToken)
-    {
-        var httpClient = await _tokenService.GetAuthorizedClient<ClearinghouseService>(_settings, cancellationToken).ConfigureAwait(false);
+	/// <inheritdoc />
+	public async Task TriggerCompanyDataPost(ClearinghouseTransferData data, CancellationToken cancellationToken)
+	{
+		var httpClient = await _tokenService.GetAuthorizedClient<ClearinghouseService>(_settings, cancellationToken).ConfigureAwait(false);
 
-        await httpClient.PostAsJsonAsync("/api/v1/validation", data, cancellationToken)
-            .CatchingIntoServiceExceptionFor("clearinghouse-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
-    }
+		await httpClient.PostAsJsonAsync("/api/v1/validation", data, cancellationToken)
+			.CatchingIntoServiceExceptionFor("clearinghouse-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+	}
 }

@@ -31,178 +31,178 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 /// </summary>
 public interface IAppReleaseBusinessLogic
 {
-    /// <summary>
-    /// Update an App
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="updateModel"></param>
-    /// <param name="userId"></param>
-    /// <returns></returns>
-    [Obsolete("This Method is not used anymore,  Planning to delete it with release 3.1")]
-    Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, string userId);
-    
-    /// <summary>
-    /// Upload document for given company user for appId
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="documentTypeId"></param>
-    /// <param name="document"></param>
-    /// <param name="iamUserId"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
-    
-    /// <summary>
-    /// Add User Role for App
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="userRoles"></param>
-    /// <param name="iamUserId"></param>
-    /// <returns></returns>
-    Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles, string iamUserId);
-    
-    /// <summary>
-    /// Return Agreements for App_Contract Category
-    /// </summary>
-    /// <returns></returns>
-    IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync();
+	/// <summary>
+	/// Update an App
+	/// </summary>
+	/// <param name="appId"></param>
+	/// <param name="updateModel"></param>
+	/// <param name="userId"></param>
+	/// <returns></returns>
+	[Obsolete("This Method is not used anymore,  Planning to delete it with release 3.1")]
+	Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, string userId);
 
-    /// <summary>
-    /// Return Offer Agreement Consent
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="userId"></param>
-    /// <returns></returns>
-    Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId);
-    
-    /// <summary>
-    /// Update Agreement Consent
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="offerAgreementConsents"></param>
-    /// <param name="userId"></param>
-    /// <returns></returns>
-    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId);
-    
-    /// <summary>
-    /// Return Offer with Consent Status
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="userId"></param>
-    /// <returns></returns>
-    Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId);
-    
-    /// <summary>
-    /// Delete User Role by appId and roleId
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="roleId"></param>
-    /// <param name="iamUserId"></param>
-    /// <returns></returns>
-    Task DeleteAppRoleAsync(Guid appId, Guid roleId, string iamUserId);
-    
-    /// <summary>
-    /// Get Sales Manager Data
-    /// </summary>
-    /// <param name="iamUserId"></param>
-    /// <returns></returns>
-    IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(string iamUserId);
+	/// <summary>
+	/// Upload document for given company user for appId
+	/// </summary>
+	/// <param name="appId"></param>
+	/// <param name="documentTypeId"></param>
+	/// <param name="document"></param>
+	/// <param name="iamUserId"></param>
+	/// <param name="cancellationToken"></param>
+	/// <returns></returns>
+	Task CreateAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
 
-    /// <summary>
-    /// Creates an application and returns its generated ID.
-    /// </summary>
-    /// <param name="appRequestModel"></param>
-    /// <param name="iamUserId"></param>
-    /// <returns>Guid of the created app.</returns>
-    Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId);
+	/// <summary>
+	/// Add User Role for App
+	/// </summary>
+	/// <param name="appId"></param>
+	/// <param name="userRoles"></param>
+	/// <param name="iamUserId"></param>
+	/// <returns></returns>
+	Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles, string iamUserId);
 
-    /// <summary>
-    /// Creates an application and returns its generated ID.
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="appRequestModel"></param>
-    /// <param name="iamUserId"></param>
-    /// <returns>Guid of the created app.</returns>
-    Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, string iamUserId);
+	/// <summary>
+	/// Return Agreements for App_Contract Category
+	/// </summary>
+	/// <returns></returns>
+	IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync();
 
-    /// <summary>
-    /// Retrieves all in review status apps in the marketplace.
-    /// </summary>
-    Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting, OfferStatusIdFilter? offerStatusIdFilter);
+	/// <summary>
+	/// Return Offer Agreement Consent
+	/// </summary>
+	/// <param name="appId"></param>
+	/// <param name="userId"></param>
+	/// <returns></returns>
+	Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, string userId);
 
-    /// <summary>
-    /// Update app status and create notification
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="iamUserId"></param>
-    /// <returns></returns>
-    Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId);
+	/// <summary>
+	/// Update Agreement Consent
+	/// </summary>
+	/// <param name="appId"></param>
+	/// <param name="offerAgreementConsents"></param>
+	/// <param name="userId"></param>
+	/// <returns></returns>
+	Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId);
 
-    /// <summary>
-    /// Approve App Status from IN_Review to Active
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="iamUserId"></param>
-    /// <returns></returns>
-    Task ApproveAppRequestAsync(Guid appId, string iamUserId);
+	/// <summary>
+	/// Return Offer with Consent Status
+	/// </summary>
+	/// <param name="appId"></param>
+	/// <param name="userId"></param>
+	/// <returns></returns>
+	Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string userId);
 
-    /// <summary>
-    /// Get All Privacy Policy
-    /// </summary>
-    /// <returns></returns>
-    Task<PrivacyPolicyData> GetPrivacyPolicyDataAsync();
+	/// <summary>
+	/// Delete User Role by appId and roleId
+	/// </summary>
+	/// <param name="appId"></param>
+	/// <param name="roleId"></param>
+	/// <param name="iamUserId"></param>
+	/// <returns></returns>
+	Task DeleteAppRoleAsync(Guid appId, Guid roleId, string iamUserId);
 
-    /// <summary>
-    /// Declines the app request
-    /// </summary>
-    /// <param name="appId">Id of the app</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    /// <param name="data">The decline request data</param>
-    Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data);
+	/// <summary>
+	/// Get Sales Manager Data
+	/// </summary>
+	/// <param name="iamUserId"></param>
+	/// <returns></returns>
+	IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(string iamUserId);
 
-    /// <summary>
-    /// Gets InReview App Details Data by Id
-    /// </summary>
-    /// <param name="appId">Id of the app</param>
-    Task<InReviewAppDetails> GetInReviewAppDetailsByIdAsync(Guid appId);
+	/// <summary>
+	/// Creates an application and returns its generated ID.
+	/// </summary>
+	/// <param name="appRequestModel"></param>
+	/// <param name="iamUserId"></param>
+	/// <returns>Guid of the created app.</returns>
+	Task<Guid> AddAppAsync(AppRequestModel appRequestModel, string iamUserId);
 
-    /// <summary>
-    /// Delete the App Document
-    /// </summary>
-    /// <param name="documentId"></param>
-    /// <param name="iamUserId"></param>
-    /// <returns></returns>
-    Task DeleteAppDocumentsAsync(Guid documentId, string iamUserId);
+	/// <summary>
+	/// Creates an application and returns its generated ID.
+	/// </summary>
+	/// <param name="appId"></param>
+	/// <param name="appRequestModel"></param>
+	/// <param name="iamUserId"></param>
+	/// <returns>Guid of the created app.</returns>
+	Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, string iamUserId);
 
-    ///<summary>
-    /// Delete App
-    /// </summary>
-    /// <param name="appId"></param>
-    /// <param name="iamUserId"></param>
-    /// <returns></returns>
-    Task DeleteAppAsync(Guid appId, string iamUserId);
+	/// <summary>
+	/// Retrieves all in review status apps in the marketplace.
+	/// </summary>
+	Task<Pagination.Response<InReviewAppData>> GetAllInReviewStatusAppsAsync(int page, int size, OfferSorting? sorting, OfferStatusIdFilter? offerStatusIdFilter);
 
-    /// <summary>
-    /// Sets the instance type and all related data for the app
-    /// </summary>
-    /// <param name="appId">Id of the app</param>
-    /// <param name="data">the data for the app instance</param>
-    /// <param name="iamUserId">the current user</param>
-    Task SetInstanceType(Guid appId, AppInstanceSetupData data, string iamUserId);
-        
-    /// <summary>
-    /// Get technical user profiles for a specific offer
-    /// </summary>
-    /// <param name="offerId">Id of the offer</param>
-    /// <param name="iamUserId">Id of the iam user</param>
-    /// <returns>AsyncEnumerable with the technical user profile information</returns>
-    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId);
+	/// <summary>
+	/// Update app status and create notification
+	/// </summary>
+	/// <param name="appId"></param>
+	/// <param name="iamUserId"></param>
+	/// <returns></returns>
+	Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId);
 
-    /// <summary>
-    /// Creates or updates the technical user profiles
-    /// </summary>
-    /// <param name="appId">Id of the app</param>
-    /// <param name="data">The technical user profiles</param>
-    /// <param name="iamUserId">Id of the iam user</param>
-    Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data, string iamUserId);
+	/// <summary>
+	/// Approve App Status from IN_Review to Active
+	/// </summary>
+	/// <param name="appId"></param>
+	/// <param name="iamUserId"></param>
+	/// <returns></returns>
+	Task ApproveAppRequestAsync(Guid appId, string iamUserId);
+
+	/// <summary>
+	/// Get All Privacy Policy
+	/// </summary>
+	/// <returns></returns>
+	Task<PrivacyPolicyData> GetPrivacyPolicyDataAsync();
+
+	/// <summary>
+	/// Declines the app request
+	/// </summary>
+	/// <param name="appId">Id of the app</param>
+	/// <param name="iamUserId">Id of the iamUser</param>
+	/// <param name="data">The decline request data</param>
+	Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data);
+
+	/// <summary>
+	/// Gets InReview App Details Data by Id
+	/// </summary>
+	/// <param name="appId">Id of the app</param>
+	Task<InReviewAppDetails> GetInReviewAppDetailsByIdAsync(Guid appId);
+
+	/// <summary>
+	/// Delete the App Document
+	/// </summary>
+	/// <param name="documentId"></param>
+	/// <param name="iamUserId"></param>
+	/// <returns></returns>
+	Task DeleteAppDocumentsAsync(Guid documentId, string iamUserId);
+
+	///<summary>
+	/// Delete App
+	/// </summary>
+	/// <param name="appId"></param>
+	/// <param name="iamUserId"></param>
+	/// <returns></returns>
+	Task DeleteAppAsync(Guid appId, string iamUserId);
+
+	/// <summary>
+	/// Sets the instance type and all related data for the app
+	/// </summary>
+	/// <param name="appId">Id of the app</param>
+	/// <param name="data">the data for the app instance</param>
+	/// <param name="iamUserId">the current user</param>
+	Task SetInstanceType(Guid appId, AppInstanceSetupData data, string iamUserId);
+
+	/// <summary>
+	/// Get technical user profiles for a specific offer
+	/// </summary>
+	/// <param name="offerId">Id of the offer</param>
+	/// <param name="iamUserId">Id of the iam user</param>
+	/// <returns>AsyncEnumerable with the technical user profile information</returns>
+	Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId);
+
+	/// <summary>
+	/// Creates or updates the technical user profiles
+	/// </summary>
+	/// <param name="appId">Id of the app</param>
+	/// <param name="data">The technical user profiles</param>
+	/// <param name="iamUserId">Id of the iam user</param>
+	Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data, string iamUserId);
 }

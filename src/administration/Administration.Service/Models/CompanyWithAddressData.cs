@@ -44,21 +44,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 /// <returns></returns>
 
 public record CompanyWithAddressData(
-    Guid CompanyId,
-    string Name,
-    string ShortName,
-    [property: JsonPropertyName("bpn")] string BusinessPartnerNumber,
-    string City,
-    string StreetName,
-    string CountryAlpha2Code,
-    string Region,
-    string StreetAdditional,
-    string StreetNumber,
-    string ZipCode,
-    string CountryDe,
-    [property: JsonPropertyName("companyRoles")] IEnumerable<AgreementsRoleData> AgreementsRoleData,
-    [property: JsonPropertyName("companyUser")] IEnumerable<InvitedUserData> InvitedUserData,
-    IEnumerable<IdentifierData> UniqueIds
+	Guid CompanyId,
+	string Name,
+	string ShortName,
+	[property: JsonPropertyName("bpn")] string BusinessPartnerNumber,
+	string City,
+	string StreetName,
+	string CountryAlpha2Code,
+	string Region,
+	string StreetAdditional,
+	string StreetNumber,
+	string ZipCode,
+	string CountryDe,
+	[property: JsonPropertyName("companyRoles")] IEnumerable<AgreementsRoleData> AgreementsRoleData,
+	[property: JsonPropertyName("companyUser")] IEnumerable<InvitedUserData> InvitedUserData,
+	IEnumerable<IdentifierData> UniqueIds
 );
 
 /// <summary>
@@ -68,8 +68,8 @@ public record CompanyWithAddressData(
 /// <param name="Agreements"></param>
 /// <returns></returns>
 public record AgreementsRoleData(
-    CompanyRoleId CompanyRole,
-    IEnumerable<AgreementConsentData> Agreements
+	CompanyRoleId CompanyRole,
+	IEnumerable<AgreementConsentData> Agreements
 );
 
 /// <summary>
@@ -79,8 +79,8 @@ public record AgreementsRoleData(
 /// <param name="ConsentStatusId"></param>
 /// <returns></returns>
 public record AgreementConsentData(
-    Guid AgreementId,
-    [property: JsonPropertyName("consentStatus")] ConsentStatusId ConsentStatusId
+	Guid AgreementId,
+	[property: JsonPropertyName("consentStatus")] ConsentStatusId ConsentStatusId
 );
 
 /// <summary>
@@ -92,13 +92,13 @@ public record AgreementConsentData(
 /// <param name="Email"></param>
 /// <returns></returns>
 public record InvitedUserData(
-    Guid UserId,
-    string FirstName,
-    string LastName,
-    string Email
+	Guid UserId,
+	string FirstName,
+	string LastName,
+	string Email
 );
 
 public record IdentifierData(
-    [property: JsonPropertyName("type")] UniqueIdentifierId UniqueIdentifierId,
-    string Value
+	[property: JsonPropertyName("type")] UniqueIdentifierId UniqueIdentifierId,
+	string Value
 );

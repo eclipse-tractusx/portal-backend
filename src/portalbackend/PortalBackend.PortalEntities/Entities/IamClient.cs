@@ -18,29 +18,29 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 public class IamClient : IBaseEntity
 {
-    private IamClient()
-    {
-        ClientClientId = null!;
-        AppInstances = new HashSet<AppInstance>();
-    }
+	private IamClient()
+	{
+		ClientClientId = null!;
+		AppInstances = new HashSet<AppInstance>();
+	}
 
-    public IamClient(Guid id, string clientClientId) : this()
-    {
-        Id = id;
-        ClientClientId = clientClientId;
-    }
+	public IamClient(Guid id, string clientClientId) : this()
+	{
+		Id = id;
+		ClientClientId = clientClientId;
+	}
 
-    public Guid Id { get; private set; }
+	public Guid Id { get; private set; }
 
-    [StringLength(255)]
-    public string ClientClientId { get; private set; }
+	[StringLength(255)]
+	public string ClientClientId { get; private set; }
 
-    public virtual ICollection<AppInstance> AppInstances { get; private set; }
+	public virtual ICollection<AppInstance> AppInstances { get; private set; }
 }

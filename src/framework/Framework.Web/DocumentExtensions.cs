@@ -26,18 +26,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class DocumentExtensions
 {
-    public static async Task<(byte[] Content, byte[] Hash)> GetContentAndHash(this IFormFile document, CancellationToken cancellationToken)
-    {
-        using var sha512 = SHA512.Create();
-        using var ms = new MemoryStream((int)document.Length);
+	public static async Task<(byte[] Content, byte[] Hash)> GetContentAndHash(this IFormFile document, CancellationToken cancellationToken)
+	{
+		using var sha512 = SHA512.Create();
+		using var ms = new MemoryStream((int)document.Length);
 
-        await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
-        var hash = sha512.ComputeHash(ms);
-        var documentContent = ms.GetBuffer();
-        if (ms.Length != document.Length || documentContent.Length != document.Length)
-        {
-            throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
-        }
-        return (documentContent, hash);
-    }
+		await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
+		var hash = sha512.ComputeHash(ms);
+		var documentContent = ms.GetBuffer();
+		if (ms.Length != document.Length || documentContent.Length != document.Length)
+		{
+			throw new ControllerArgumentException($"document {document.FileName} transmitted length {document.Length} doesn't match actual length {ms.Length}.");
+		}
+		return (documentContent, hash);
+	}
 }

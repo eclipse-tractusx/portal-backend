@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -27,17 +27,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// </summary>
 public interface IServiceProviderBusinessLogic
 {
-    /// <summary>
-    /// Gets the service provider company details
-    /// </summary>
-    /// <param name="iamUserId">Id of the iam user</param>
-    /// <returns>The detail data</returns>
-    Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(string iamUserId);
+	/// <summary>
+	/// Gets the service provider company details
+	/// </summary>
+	/// <param name="iamUserId">Id of the iam user</param>
+	/// <returns>The detail data</returns>
+	Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(string iamUserId);
 
-    /// <summary>
-    /// Sets service provider company details
-    /// </summary>
-    /// <param name="data">Detail data for the service provider</param>
-    /// <param name="iamUserId">Id of the iam user</param>
-    Task SetServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId);
+	/// <summary>
+	/// Sets service provider company details
+	/// </summary>
+	/// <param name="data">Detail data for the service provider</param>
+	/// <param name="iamUserId">Id of the iam user</param>
+	Task SetServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId);
 }

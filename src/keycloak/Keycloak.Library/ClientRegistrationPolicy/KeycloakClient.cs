@@ -24,17 +24,17 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Components;
 using Flurl.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Components;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {
-    public async Task<IEnumerable<ComponentType>> GetRetrieveProvidersBasePathAsync(string realm) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
-        .AppendPathSegment("/admin/realms/")
-        .AppendPathSegment(realm, true)
-        .AppendPathSegment("/client-registration-policy/providers")
-        .GetJsonAsync<IEnumerable<ComponentType>>()
-        .ConfigureAwait(false);
+	public async Task<IEnumerable<ComponentType>> GetRetrieveProvidersBasePathAsync(string realm) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+		.AppendPathSegment("/admin/realms/")
+		.AppendPathSegment(realm, true)
+		.AppendPathSegment("/client-registration-policy/providers")
+		.GetJsonAsync<IEnumerable<ComponentType>>()
+		.ConfigureAwait(false);
 }

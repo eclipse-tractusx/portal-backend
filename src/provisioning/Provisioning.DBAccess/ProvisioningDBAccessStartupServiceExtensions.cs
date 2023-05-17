@@ -27,13 +27,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 
 public static class ProvisioningDBAccessStartupServiceExtensions
 {
-    public static IServiceCollection AddProvisioningDBAccess(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>()
-            .AddDbContext<ProvisioningDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("ProvisioningDB")))
-            .AddHealthChecks()
-            .AddDbContextCheck<ProvisioningDbContext>("ProvisioningDbContext", tags: new [] { "provisioningdb" });
-        return services;
-    }
+	public static IServiceCollection AddProvisioningDBAccess(this IServiceCollection services, IConfiguration configuration)
+	{
+		services.AddTransient<IProvisioningDBAccess, ProvisioningDBAccess>()
+			.AddDbContext<ProvisioningDbContext>(options =>
+				options.UseNpgsql(configuration.GetConnectionString("ProvisioningDB")))
+			.AddHealthChecks()
+			.AddDbContextCheck<ProvisioningDbContext>("ProvisioningDbContext", tags: new[] { "provisioningdb" });
+		return services;
+	}
 }

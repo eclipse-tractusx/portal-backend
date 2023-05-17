@@ -25,18 +25,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 /// </summary>
 public static class Constants
 {
-    /// <summary>
-    /// Default value for an Error String
-    /// </summary>
-    public const string ErrorString = "ERROR";
-    
-    /// <summary>
-    /// The default language
-    /// </summary>
-    public const string DefaultLanguage = "en";
+	/// <summary>
+	/// Default value for an Error String
+	/// </summary>
+	public const string ErrorString = "ERROR";
 
-    /// <summary>
-    /// Default value for Language Code Error String
-    /// </summary>
-    public const string InvalidLanguageError = "InvalidLanguage";
+	/// <summary>
+	/// The default language
+	/// </summary>
+	public const string DefaultLanguage = "en";
+
+	/// <summary>
+	/// Default value for Language Code Error String
+	/// </summary>
+	public const string InvalidLanguageError = "InvalidLanguage";
 }

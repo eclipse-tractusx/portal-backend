@@ -22,29 +22,29 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 
 public static class LockableEntityExtensions
 {
-    public static bool TryLock(this ILockableEntity entity, DateTimeOffset lockExpiryDate)
-    {
-        if (entity.IsLocked())
-        {
-            return false;
-        }
-        entity.Version = Guid.NewGuid();
-        entity.LockExpiryDate = lockExpiryDate;
-        return true;
-    }
+	public static bool TryLock(this ILockableEntity entity, DateTimeOffset lockExpiryDate)
+	{
+		if (entity.IsLocked())
+		{
+			return false;
+		}
+		entity.Version = Guid.NewGuid();
+		entity.LockExpiryDate = lockExpiryDate;
+		return true;
+	}
 
-    public static bool ReleaseLock(this ILockableEntity entity)
-    {
-        if (entity.IsLocked())
-        {
-            entity.Version = Guid.NewGuid();
-            entity.LockExpiryDate = null;
-            return true;
-        }
-        return false;
-    }
+	public static bool ReleaseLock(this ILockableEntity entity)
+	{
+		if (entity.IsLocked())
+		{
+			entity.Version = Guid.NewGuid();
+			entity.LockExpiryDate = null;
+			return true;
+		}
+		return false;
+	}
 
-    public static bool IsLocked(this ILockableEntity entity) => entity.LockExpiryDate != null;
+	public static bool IsLocked(this ILockableEntity entity) => entity.LockExpiryDate != null;
 
-    public static bool IsLockExpired(this ILockableEntity entity, DateTimeOffset utcNow) => entity.LockExpiryDate < utcNow;
+	public static bool IsLockExpired(this ILockableEntity entity, DateTimeOffset utcNow) => entity.LockExpiryDate < utcNow;
 }

@@ -35,11 +35,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="UseCases">The apps use cases.</param>
 
 public record AppData(
-    Guid Id,
-    string Name,
-    string ShortDescription,
-    string Provider,
-    LicenseTypeId LicenseType,
-    string Price,
-    Guid LeadPictureId,
-    IEnumerable<string> UseCases);
+	Guid Id,
+	string Name,
+	string ShortDescription,
+	string Provider,
+	LicenseTypeId LicenseType,
+	string Price,
+	Guid LeadPictureId,
+	IEnumerable<string> UseCases);

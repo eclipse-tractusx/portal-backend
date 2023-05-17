@@ -27,43 +27,43 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 /// </summary>
 public class NotificationTypeAssignedTopic
 {
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    private NotificationTypeAssignedTopic()
-    {
-    }
+	/// <summary>
+	/// Constructor.
+	/// </summary>
+	private NotificationTypeAssignedTopic()
+	{
+	}
 
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="notificationTypeId">Id of the notification type.</param>
-    /// <param name="notificationTopicId">Id of the notification topic.</param>
-    public NotificationTypeAssignedTopic(NotificationTypeId notificationTypeId, NotificationTopicId notificationTopicId) : this()
-    {
-        NotificationTypeId = notificationTypeId;
-        NotificationTopicId = notificationTopicId;
-    }
+	/// <summary>
+	/// Constructor.
+	/// </summary>
+	/// <param name="notificationTypeId">Id of the notification type.</param>
+	/// <param name="notificationTopicId">Id of the notification topic.</param>
+	public NotificationTypeAssignedTopic(NotificationTypeId notificationTypeId, NotificationTopicId notificationTopicId) : this()
+	{
+		NotificationTypeId = notificationTypeId;
+		NotificationTopicId = notificationTopicId;
+	}
 
-    /// <summary>
-    /// Id of the notification type.
-    /// </summary>
-    public NotificationTypeId NotificationTypeId { get; private set; }
+	/// <summary>
+	/// Id of the notification type.
+	/// </summary>
+	public NotificationTypeId NotificationTypeId { get; private set; }
 
-    /// <summary>
-    /// Id of the notification topic.
-    /// </summary>
-    public NotificationTopicId NotificationTopicId { get; private set; }
+	/// <summary>
+	/// Id of the notification topic.
+	/// </summary>
+	public NotificationTopicId NotificationTopicId { get; private set; }
 
-    // Navigation properties
+	// Navigation properties
 
-    /// <summary>
-    /// All AppSubscriptions currently with this status.
-    /// </summary>
-    public virtual NotificationType? NotificationType { get; private set; }
-    
-    /// <summary>
-    /// All AppSubscriptions currently with this status.
-    /// </summary>
-    public virtual NotificationTopic? NotificationTopic { get; private set; }
+	/// <summary>
+	/// All AppSubscriptions currently with this status.
+	/// </summary>
+	public virtual NotificationType? NotificationType { get; private set; }
+
+	/// <summary>
+	/// All AppSubscriptions currently with this status.
+	/// </summary>
+	public virtual NotificationTopic? NotificationTopic { get; private set; }
 }

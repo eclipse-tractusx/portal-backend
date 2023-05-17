@@ -29,6 +29,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="LongDescription">Long description in specified language.</param>
 /// <param name="ShortDescription">Short description in specified language.</param>
 public record LocalizedDescription(
-    [StringLength(2, MinimumLength = 2)] string LanguageCode,
-    [MaxLength(4096)] string LongDescription,
-    [MaxLength(255)] string ShortDescription);
+	[StringLength(2, MinimumLength = 2)] string LanguageCode,
+	[MaxLength(4096)] string LongDescription,
+	[MaxLength(255)] string ShortDescription);

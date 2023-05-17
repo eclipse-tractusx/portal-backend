@@ -18,8 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library;
 
@@ -28,15 +28,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library;
 /// </summary>
 public class SdFactorySettings : KeyVaultAuthSettings
 {
-    /// <summary>
-    /// SD Factory endpoint for registering connectors.
-    /// </summary>
-    [Required]
-    public string SdFactoryUrl { get; set; } = null!;
+	/// <summary>
+	/// SD Factory endpoint for registering connectors.
+	/// </summary>
+	[Required]
+	public string SdFactoryUrl { get; set; } = null!;
 
-    /// <summary>
-    /// BPN of the issuer for the sd factory
-    /// </summary>
-    [Required]
-    public string SdFactoryIssuerBpn { get; set; } = null!;
+	/// <summary>
+	/// BPN of the issuer for the sd factory
+	/// </summary>
+	[Required]
+	public string SdFactoryIssuerBpn { get; set; } = null!;
 }

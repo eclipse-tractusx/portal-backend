@@ -25,40 +25,40 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class Country
 {
-    private Country()
-    {
-        Alpha2Code = null!;
-        CountryNameDe = null!;
-        CountryNameEn = null!;
-        Addresses = new HashSet<Address>();
-        Connectors = new HashSet<Connector>();
-        CountryAssignedIdentifiers = new HashSet<CountryAssignedIdentifier>();
-    }
+	private Country()
+	{
+		Alpha2Code = null!;
+		CountryNameDe = null!;
+		CountryNameEn = null!;
+		Addresses = new HashSet<Address>();
+		Connectors = new HashSet<Connector>();
+		CountryAssignedIdentifiers = new HashSet<CountryAssignedIdentifier>();
+	}
 
-    public Country(string alpha2Code, string countryNameDe, string countryNameEn) : this()
-    {
-        Alpha2Code = alpha2Code;
-        CountryNameDe = countryNameDe;
-        CountryNameEn = countryNameEn;
-    }
+	public Country(string alpha2Code, string countryNameDe, string countryNameEn) : this()
+	{
+		Alpha2Code = alpha2Code;
+		CountryNameDe = countryNameDe;
+		CountryNameEn = countryNameEn;
+	}
 
-    [Key]
-    [StringLength(2,MinimumLength = 2)]
-    [JsonPropertyName("alpha2code")]
-    public string Alpha2Code { get; private set; }
+	[Key]
+	[StringLength(2, MinimumLength = 2)]
+	[JsonPropertyName("alpha2code")]
+	public string Alpha2Code { get; private set; }
 
-    [StringLength(3, MinimumLength = 3)]
-    [JsonPropertyName("alpha3code")]
-    public string? Alpha3Code { get; set; }
+	[StringLength(3, MinimumLength = 3)]
+	[JsonPropertyName("alpha3code")]
+	public string? Alpha3Code { get; set; }
 
-    [MaxLength(255)]
-    public string CountryNameDe { get; set; }
+	[MaxLength(255)]
+	public string CountryNameDe { get; set; }
 
-    [MaxLength(255)]
-    public string CountryNameEn { get; set; }
+	[MaxLength(255)]
+	public string CountryNameEn { get; set; }
 
-    // Navigation properties
-    public virtual ICollection<Address> Addresses { get; private set; }
-    public virtual ICollection<Connector> Connectors { get; private set; }
-    public virtual ICollection<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; private set; }
+	// Navigation properties
+	public virtual ICollection<Address> Addresses { get; private set; }
+	public virtual ICollection<Connector> Connectors { get; private set; }
+	public virtual ICollection<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; private set; }
 }

@@ -28,25 +28,25 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationP
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
 
-public class AuthorizationPermissionTypeConverter: JsonEnumConverter<AuthorizationPermissionType>
+public class AuthorizationPermissionTypeConverter : JsonEnumConverter<AuthorizationPermissionType>
 {
-    private static readonly Dictionary<AuthorizationPermissionType, string> SPairs = new Dictionary<AuthorizationPermissionType, string>
-    {
-        [AuthorizationPermissionType.Scope] = "scope",
-        [AuthorizationPermissionType.Resource] = "resource"
-    };
+	private static readonly Dictionary<AuthorizationPermissionType, string> SPairs = new Dictionary<AuthorizationPermissionType, string>
+	{
+		[AuthorizationPermissionType.Scope] = "scope",
+		[AuthorizationPermissionType.Resource] = "resource"
+	};
 
-    protected override string EntityString { get; } = "type";
+	protected override string EntityString { get; } = "type";
 
-    protected override string ConvertToString(AuthorizationPermissionType value) => SPairs[value];
+	protected override string ConvertToString(AuthorizationPermissionType value) => SPairs[value];
 
-    protected override AuthorizationPermissionType ConvertFromString(string s)
-    {
-        if (SPairs.ContainsValue(s.ToLower()))
-        {
-            return SPairs.First(kvp => kvp.Value.Equals(s, StringComparison.OrdinalIgnoreCase)).Key;
-        }
+	protected override AuthorizationPermissionType ConvertFromString(string s)
+	{
+		if (SPairs.ContainsValue(s.ToLower()))
+		{
+			return SPairs.First(kvp => kvp.Value.Equals(s, StringComparison.OrdinalIgnoreCase)).Key;
+		}
 
-        throw new ArgumentException($"Unknown {EntityString}: {s}");
-    }
+		throw new ArgumentException($"Unknown {EntityString}: {s}");
+	}
 }

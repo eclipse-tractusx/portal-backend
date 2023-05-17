@@ -30,26 +30,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests.Integr
 
 public class NotificationControllerIntegrationTests : IClassFixture<IntegrationTestFactory<NotificationController>>
 {
-    private readonly IntegrationTestFactory<NotificationController> _factory;
+	private readonly IntegrationTestFactory<NotificationController> _factory;
 
-    public NotificationControllerIntegrationTests(IntegrationTestFactory<NotificationController> factory)
-    {
-        _factory = factory;
-    }
+	public NotificationControllerIntegrationTests(IntegrationTestFactory<NotificationController> factory)
+	{
+		_factory = factory;
+	}
 
-    [Fact]
-    public async Task NotificationCount_WithTwoUnreadNotifications_ReturnsCorrectAmount()
-    {
-        // Arrange
-        var client = _factory.CreateClient();
-        var endpoint = new NotificationEndpoints(client);
-        
-        // Act
-        var response = await endpoint.NotificationCount(false);
-        
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var count = await response.GetResultFromContent<int>();
-        count.Should().Be(3);
-    }
+	[Fact]
+	public async Task NotificationCount_WithTwoUnreadNotifications_ReturnsCorrectAmount()
+	{
+		// Arrange
+		var client = _factory.CreateClient();
+		var endpoint = new NotificationEndpoints(client);
+
+		// Act
+		var response = await endpoint.NotificationCount(false);
+
+		// Assert
+		response.StatusCode.Should().Be(HttpStatusCode.OK);
+		var count = await response.GetResultFromContent<int>();
+		count.Should().Be(3);
+	}
 }

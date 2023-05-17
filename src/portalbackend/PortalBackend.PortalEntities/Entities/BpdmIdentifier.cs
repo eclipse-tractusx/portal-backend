@@ -18,28 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 public class BpdmIdentifier
 {
-    private BpdmIdentifier()
-    {
-        Label = null!;
-        CountryAssignedIdentifiers = new HashSet<CountryAssignedIdentifier>();
-    }
+	private BpdmIdentifier()
+	{
+		Label = null!;
+		CountryAssignedIdentifiers = new HashSet<CountryAssignedIdentifier>();
+	}
 
-    public BpdmIdentifier(BpdmIdentifierId bpdmIdentifierId) : this()
-    {
-        Id = bpdmIdentifierId;
-        Label = bpdmIdentifierId.ToString();
-    }
+	public BpdmIdentifier(BpdmIdentifierId bpdmIdentifierId) : this()
+	{
+		Id = bpdmIdentifierId;
+		Label = bpdmIdentifierId.ToString();
+	}
 
-    public BpdmIdentifierId Id { get; private set; }
+	public BpdmIdentifierId Id { get; private set; }
 
-    [MaxLength(255)]
-    public string Label { get; private set; }
-    public virtual ICollection<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; private set; }
+	[MaxLength(255)]
+	public string Label { get; private set; }
+	public virtual ICollection<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; private set; }
 }

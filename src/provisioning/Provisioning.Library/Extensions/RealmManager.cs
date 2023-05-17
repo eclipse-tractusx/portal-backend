@@ -26,31 +26,31 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
-    private Task CreateSharedRealmAsync(KeycloakClient keycloak, string realm, string displayName, string? loginTheme)
-    {
-        var newRealm = CloneRealm(_Settings.SharedRealm);
-        newRealm.Id = realm;
-        newRealm._Realm = realm;
-        newRealm.DisplayName = displayName;
-        newRealm.LoginTheme = loginTheme;
-        return keycloak.ImportRealmAsync(realm, newRealm);
-    }
+	private Task CreateSharedRealmAsync(KeycloakClient keycloak, string realm, string displayName, string? loginTheme)
+	{
+		var newRealm = CloneRealm(_Settings.SharedRealm);
+		newRealm.Id = realm;
+		newRealm._Realm = realm;
+		newRealm.DisplayName = displayName;
+		newRealm.LoginTheme = loginTheme;
+		return keycloak.ImportRealmAsync(realm, newRealm);
+	}
 
-    private static async ValueTask UpdateSharedRealmAsync(KeycloakClient keycloak, string alias, string displayName, string? loginTheme)
-    {
-        var realm = await keycloak.GetRealmAsync(alias).ConfigureAwait(false);
-        realm.DisplayName = displayName;
-        realm.LoginTheme = loginTheme;
-        await keycloak.UpdateRealmAsync(alias, realm).ConfigureAwait(false);
-    }
+	private static async ValueTask UpdateSharedRealmAsync(KeycloakClient keycloak, string alias, string displayName, string? loginTheme)
+	{
+		var realm = await keycloak.GetRealmAsync(alias).ConfigureAwait(false);
+		realm.DisplayName = displayName;
+		realm.LoginTheme = loginTheme;
+		await keycloak.UpdateRealmAsync(alias, realm).ConfigureAwait(false);
+	}
 
-    private static async ValueTask SetSharedRealmStatusAsync(KeycloakClient keycloak, string alias, bool enabled)
-    {
-        var realm = await keycloak.GetRealmAsync(alias).ConfigureAwait(false);
-        realm.Enabled = enabled;
-        await keycloak.UpdateRealmAsync(alias, realm).ConfigureAwait(false);
-    }
+	private static async ValueTask SetSharedRealmStatusAsync(KeycloakClient keycloak, string alias, bool enabled)
+	{
+		var realm = await keycloak.GetRealmAsync(alias).ConfigureAwait(false);
+		realm.Enabled = enabled;
+		await keycloak.UpdateRealmAsync(alias, realm).ConfigureAwait(false);
+	}
 
-    private static Realm CloneRealm(Realm realm) =>
-        JsonSerializer.Deserialize<Realm>(JsonSerializer.Serialize(realm))!;
+	private static Realm CloneRealm(Realm realm) =>
+		JsonSerializer.Deserialize<Realm>(JsonSerializer.Serialize(realm))!;
 }

@@ -25,55 +25,55 @@ using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 
 var VERSION = "v2";
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
-                .AddMailingAndTemplateManager(builder.Configuration)
-                .AddPortalRepositories(builder.Configuration)
-                .AddProvisioningManager(builder.Configuration);
+				.AddMailingAndTemplateManager(builder.Configuration)
+				.AddPortalRepositories(builder.Configuration)
+				.AddProvisioningManager(builder.Configuration);
 
 builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
 
 builder.Services.AddTransient<IInvitationBusinessLogic, InvitationBusinessLogic>()
-                .ConfigureInvitationSettings(builder.Configuration.GetSection("Invitation"));
+				.ConfigureInvitationSettings(builder.Configuration.GetSection("Invitation"));
 
 builder.Services.AddTransient<IUserBusinessLogic, UserBusinessLogic>()
-                .AddTransient<IUserUploadBusinessLogic, UserUploadBusinessLogic>()
-                .AddTransient<IUserRolesBusinessLogic, UserRolesBusinessLogic>()
-                .ConfigureUserSettings(builder.Configuration.GetSection("UserManagement"));
+				.AddTransient<IUserUploadBusinessLogic, UserUploadBusinessLogic>()
+				.AddTransient<IUserRolesBusinessLogic, UserRolesBusinessLogic>()
+				.ConfigureUserSettings(builder.Configuration.GetSection("UserManagement"));
 
 builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
-                .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
+				.ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
 builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>()
-                .ConfigureServiceAccountSettings(builder.Configuration.GetSection("ServiceAccount"));
+				.ConfigureServiceAccountSettings(builder.Configuration.GetSection("ServiceAccount"));
 
 builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>()
-                .ConfigureDocumentSettings(builder.Configuration.GetSection("Document"));
+				.ConfigureDocumentSettings(builder.Configuration.GetSection("Document"));
 builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
 builder.Services.AddTransient<IPartnerNetworkBusinessLogic, PartnerNetworkBusinessLogic>();
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services.AddTransient<ICompanyDataBusinessLogic, CompanyDataBusinessLogic>();
 
 builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
-                .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
+				.ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
 builder.Services.AddDapsService(builder.Configuration)
-                .AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"));
+				.AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"));
 
 builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
-                .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
+				.ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
 builder.Services.AddTransient<IServiceProviderBusinessLogic, ServiceProviderBusinessLogic>();
 
 builder.Services.AddProvisioningDBAccess(builder.Configuration);
 
 builder.Build()
-    .CreateApp<Program>("administration", VERSION, builder.Environment)
-    .Run();
+	.CreateApp<Program>("administration", VERSION, builder.Environment)
+	.Run();

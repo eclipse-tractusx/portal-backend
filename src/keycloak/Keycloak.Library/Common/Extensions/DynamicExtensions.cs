@@ -28,13 +28,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Extensions
 
 public static class DynamicExtensions
 {
-    public static IDictionary<string, object> DynamicToDictionary(dynamic obj) => new Dictionary<string, object>(obj);
+	public static IDictionary<string, object> DynamicToDictionary(dynamic obj) => new Dictionary<string, object>(obj);
 
-    private static string GetFirstPropertyName(IDictionary<string, object> map) => map.Keys.FirstOrDefault();
+	private static string GetFirstPropertyName(IDictionary<string, object> map) => map.Keys.FirstOrDefault();
 
-    public static object GetFirstPropertyValue(dynamic obj)
-    {
-        var map = DynamicToDictionary(obj);
-        return map[GetFirstPropertyName(map)];
-    }
+	public static object GetFirstPropertyValue(dynamic obj)
+	{
+		var map = DynamicToDictionary(obj);
+		return map[GetFirstPropertyName(map)];
+	}
 }

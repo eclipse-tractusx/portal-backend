@@ -28,19 +28,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// </summary>
 public interface IConsentAssignedOfferSubscriptionRepository
 {
-    /// <summary>
-    /// Creates a consent with the given data in the database.
-    /// </summary>
-    /// <param name="consentId">Id of the consent</param>
-    /// <param name="offerSubscriptionId">Id of the offer subscription</param>
-    /// <returns>Returns the newly created consent</returns>
-    ConsentAssignedOfferSubscription CreateConsentAssignedOfferSubscription(Guid consentId, Guid offerSubscriptionId);
+	/// <summary>
+	/// Creates a consent with the given data in the database.
+	/// </summary>
+	/// <param name="consentId">Id of the consent</param>
+	/// <param name="offerSubscriptionId">Id of the offer subscription</param>
+	/// <returns>Returns the newly created consent</returns>
+	ConsentAssignedOfferSubscription CreateConsentAssignedOfferSubscription(Guid consentId, Guid offerSubscriptionId);
 
-    /// <summary>
-    /// Gets the existing consent agreements 
-    /// </summary>
-    /// <param name="offerSubscriptionId">id of the offer subscription</param>
-    /// <param name="agreementIds">id of agreement</param>
-    /// <returns>List of existing consent assigned offer subscription</returns>
-    IAsyncEnumerable<(Guid ConsentId, Guid AgreementId, ConsentStatusId ConsentStatusId)> GetConsentAssignedOfferSubscriptionsForSubscriptionAsync(Guid offerSubscriptionId, IEnumerable<Guid> agreementIds);
+	/// <summary>
+	/// Gets the existing consent agreements 
+	/// </summary>
+	/// <param name="offerSubscriptionId">id of the offer subscription</param>
+	/// <param name="agreementIds">id of agreement</param>
+	/// <returns>List of existing consent assigned offer subscription</returns>
+	IAsyncEnumerable<(Guid ConsentId, Guid AgreementId, ConsentStatusId ConsentStatusId)> GetConsentAssignedOfferSubscriptionsForSubscriptionAsync(Guid offerSubscriptionId, IEnumerable<Guid> agreementIds);
 }

@@ -26,47 +26,47 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 
 public class AuditOffer20230406 : IAuditEntityV1
 {
-    public AuditOffer20230406()
-    {
-        Provider = null!;
-    }
-    /// <inheritdoc />
-    [Key]
-    public Guid AuditV1Id { get; set; }
+	public AuditOffer20230406()
+	{
+		Provider = null!;
+	}
+	/// <inheritdoc />
+	[Key]
+	public Guid AuditV1Id { get; set; }
 
-    public Guid Id { get; set; }
+	public Guid Id { get; set; }
 
-    public string? Name { get; set; }
+	public string? Name { get; set; }
 
-    public DateTimeOffset DateCreated { get; set; }
+	public DateTimeOffset DateCreated { get; set; }
 
-    public DateTimeOffset? DateReleased { get; set; }
+	public DateTimeOffset? DateReleased { get; set; }
 
-    public string? MarketingUrl { get; set; }
+	public string? MarketingUrl { get; set; }
 
-    public string? ContactEmail { get; set; }
+	public string? ContactEmail { get; set; }
 
-    public string? ContactNumber { get; set; }
+	public string? ContactNumber { get; set; }
 
-    public string Provider { get; set; }
+	public string Provider { get; set; }
 
-    public OfferTypeId OfferTypeId { get; set; }
+	public OfferTypeId OfferTypeId { get; set; }
 
-    public Guid? SalesManagerId { get; set; }
+	public Guid? SalesManagerId { get; set; }
 
-    public Guid? ProviderCompanyId { get; set; }
+	public Guid? ProviderCompanyId { get; set; }
 
-    public OfferStatusId OfferStatusId { get; set; }
-    
-    public LicenseTypeId LicenseTypeId { get; set; }
+	public OfferStatusId OfferStatusId { get; set; }
 
-    public DateTimeOffset? DateLastChanged { get; set; }
+	public LicenseTypeId LicenseTypeId { get; set; }
 
-    public Guid? LastEditorId { get; set; }
-    /// <inheritdoc />
-    public Guid? AuditV1LastEditorId { get; set; }
-    /// <inheritdoc />
-    public AuditOperationId AuditV1OperationId { get; set; }
-    /// <inheritdoc />
-    public DateTimeOffset AuditV1DateLastChanged { get; set; }
+	public DateTimeOffset? DateLastChanged { get; set; }
+
+	public Guid? LastEditorId { get; set; }
+	/// <inheritdoc />
+	public Guid? AuditV1LastEditorId { get; set; }
+	/// <inheritdoc />
+	public AuditOperationId AuditV1OperationId { get; set; }
+	/// <inheritdoc />
+	public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

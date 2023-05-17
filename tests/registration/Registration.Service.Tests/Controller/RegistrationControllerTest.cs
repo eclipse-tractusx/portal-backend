@@ -18,171 +18,170 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text;
 using AutoFixture;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using Xunit;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Text;
+using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests;
 
 public class RegistrationControllerTest
 {
-    private readonly IFixture _fixture;
-    private readonly RegistrationController _controller;
-    private readonly IRegistrationBusinessLogic _registrationBusinessLogicFake;
-    private readonly string _iamUserId = "7478542d-7878-47a8-a931-08bd8779532d";
-    private readonly string _accessToken = "ac-token";
+	private readonly IFixture _fixture;
+	private readonly RegistrationController _controller;
+	private readonly IRegistrationBusinessLogic _registrationBusinessLogicFake;
+	private readonly string _iamUserId = "7478542d-7878-47a8-a931-08bd8779532d";
+	private readonly string _accessToken = "ac-token";
 
-    public RegistrationControllerTest()
-    {
-        _fixture = new Fixture();
-        _registrationBusinessLogicFake = A.Fake<IRegistrationBusinessLogic>();
-        ILogger<RegistrationController> registrationLoggerFake = A.Fake<ILogger<RegistrationController>>();
-        _controller = new RegistrationController(registrationLoggerFake, _registrationBusinessLogicFake);
-        _controller.AddControllerContextWithClaimAndBearer(_iamUserId, _accessToken);
-    }
+	public RegistrationControllerTest()
+	{
+		_fixture = new Fixture();
+		_registrationBusinessLogicFake = A.Fake<IRegistrationBusinessLogic>();
+		var registrationLoggerFake = A.Fake<ILogger<RegistrationController>>();
+		_controller = new RegistrationController(registrationLoggerFake, _registrationBusinessLogicFake);
+		_controller.AddControllerContextWithClaimAndBearer(_iamUserId, _accessToken);
+	}
 
-    [Fact]
-    public async Task Get_WhenThereAreInvitedUsers_ShouldReturnActionResultOfInvitedUsersWith200StatusCode()
-    {
-        //Arrange
-        Guid id = new Guid("7eab8e16-8298-4b41-953b-515745423658");
-        var invitedUserMapper = _fixture.CreateMany<InvitedUser>(3).ToAsyncEnumerable();
-        A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(id))
-            .Returns(invitedUserMapper);
+	[Fact]
+	public async Task Get_WhenThereAreInvitedUsers_ShouldReturnActionResultOfInvitedUsersWith200StatusCode()
+	{
+		//Arrange
+		var id = new Guid("7eab8e16-8298-4b41-953b-515745423658");
+		var invitedUserMapper = _fixture.CreateMany<InvitedUser>(3).ToAsyncEnumerable();
+		A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(id))
+			.Returns(invitedUserMapper);
 
-        //Act
-        var result = this._controller.GetInvitedUsersAsync(id);
-        await foreach (var item in result)
-        {
-            //Assert
-            A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(id)).MustHaveHappenedOnceExactly();
-            Assert.NotNull(item);
-            Assert.IsType<InvitedUser>(item);
-        }
-    }
+		//Act
+		var result = this._controller.GetInvitedUsersAsync(id);
+		await foreach (var item in result)
+		{
+			//Assert
+			A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(id)).MustHaveHappenedOnceExactly();
+			Assert.NotNull(item);
+			Assert.IsType<InvitedUser>(item);
+		}
+	}
 
-    [Fact]
-    public async Task GetInvitedUsersDetail_WhenIdisNull_ShouldThrowException()
-    {
-        //Arrange
-        Guid id = new Guid("7eab8e16-8298-4b41-953b-515745423658");
-        var invitedUserMapper = _fixture.CreateMany<InvitedUser>(3).ToAsyncEnumerable();
-        A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(id))
-            .Returns(invitedUserMapper);
+	[Fact]
+	public async Task GetInvitedUsersDetail_WhenIdisNull_ShouldThrowException()
+	{
+		//Arrange
+		var id = new Guid("7eab8e16-8298-4b41-953b-515745423658");
+		var invitedUserMapper = _fixture.CreateMany<InvitedUser>(3).ToAsyncEnumerable();
+		A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(id))
+			.Returns(invitedUserMapper);
 
-        //Act
-        var result = this._controller.GetInvitedUsersAsync(Guid.Empty);
+		//Act
+		var result = this._controller.GetInvitedUsersAsync(Guid.Empty);
 
-        //Assert
-        await foreach (var item in result)
-        {
-            A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(Guid.Empty)).Throws(new Exception());
-        }
-    }
+		//Assert
+		await foreach (var item in result)
+		{
+			A.CallTo(() => _registrationBusinessLogicFake.GetInvitedUsersAsync(Guid.Empty)).Throws(new Exception());
+		}
+	}
 
-    [Fact]
-    public async Task GetUploadedDocumentsAsync_ReturnsExpectedResult()
-    {
-        //Arrange
-        var applicationId = _fixture.Create<Guid>();
+	[Fact]
+	public async Task GetUploadedDocumentsAsync_ReturnsExpectedResult()
+	{
+		//Arrange
+		var applicationId = _fixture.Create<Guid>();
 
-        var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3);
-        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _iamUserId))
-            .Returns(uploadDocuments);
+		var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3);
+		A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _iamUserId))
+			.Returns(uploadDocuments);
 
-        //Act
-        var result = await _controller.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT).ConfigureAwait(false);
+		//Act
+		var result = await _controller.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT).ConfigureAwait(false);
 
-        //Assert
-        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _iamUserId)).MustHaveHappenedOnceExactly();
+		//Assert
+		A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _iamUserId)).MustHaveHappenedOnceExactly();
 
-        result.Should().HaveSameCount(uploadDocuments);
-        result.Should().ContainInOrder(uploadDocuments);
-    }
-    
-    [Fact]
-    public async Task SubmitCompanyRoleConsentToAgreementsAsync_WithValidData_ReturnsExpected()
-    {
-        // Arrange
-        var applicationId = _fixture.Create<Guid>();
-        var data = _fixture.Create<CompanyRoleAgreementConsents>();
-        A.CallTo(() => _registrationBusinessLogicFake.SubmitRoleConsentAsync(applicationId, data, _iamUserId))
-            .ReturnsLazily(() => 1);
+		result.Should().HaveSameCount(uploadDocuments);
+		result.Should().ContainInOrder(uploadDocuments);
+	}
 
-        //Act
-        var result = await this._controller.SubmitCompanyRoleConsentToAgreementsAsync(applicationId, data).ConfigureAwait(false);
-        
-        // Assert
-        A.CallTo(() => _registrationBusinessLogicFake.SubmitRoleConsentAsync(applicationId, data, _iamUserId)).MustHaveHappenedOnceExactly();
-        result.Should().Be(1);
-    }
+	[Fact]
+	public async Task SubmitCompanyRoleConsentToAgreementsAsync_WithValidData_ReturnsExpected()
+	{
+		// Arrange
+		var applicationId = _fixture.Create<Guid>();
+		var data = _fixture.Create<CompanyRoleAgreementConsents>();
+		A.CallTo(() => _registrationBusinessLogicFake.SubmitRoleConsentAsync(applicationId, data, _iamUserId))
+			.ReturnsLazily(() => 1);
 
-    [Fact]
-    public async Task GetCompanyIdentifiers_WithValidData_ReturnsExpected()
-    {
-        // Arrange
-        var applicationId = _fixture.Create<Guid>();
-        var data = _fixture.CreateMany<UniqueIdentifierData>(1);
-        A.CallTo(() => _registrationBusinessLogicFake.GetCompanyIdentifiers("DE"))
-            .ReturnsLazily(() => data);
+		//Act
+		var result = await this._controller.SubmitCompanyRoleConsentToAgreementsAsync(applicationId, data).ConfigureAwait(false);
 
-        //Act
-        var result = await this._controller.GetCompanyIdentifiers("DE").ConfigureAwait(false);
-        
-        // Assert
-        foreach (var item in result)
-        {
-            A.CallTo(() => _registrationBusinessLogicFake.GetCompanyIdentifiers("DE")).MustHaveHappenedOnceExactly();
-            Assert.NotNull(item);
-            Assert.IsType<UniqueIdentifierData?>(item);
-        }
-    }
+		// Assert
+		A.CallTo(() => _registrationBusinessLogicFake.SubmitRoleConsentAsync(applicationId, data, _iamUserId)).MustHaveHappenedOnceExactly();
+		result.Should().Be(1);
+	}
 
-    [Fact]
-    public async Task GetDocumentContentFileAsync_WithValidData_ReturnsOk()
-    {
-        //Arrange
-        const string fileName = "test.pdf";
-        const string contentType = "application/pdf";
-        var id = Guid.NewGuid();
-        var content = Encoding.UTF8.GetBytes("This is just test content");
-        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _iamUserId))
-            .ReturnsLazily(() => (fileName, content, contentType));
+	[Fact]
+	public async Task GetCompanyIdentifiers_WithValidData_ReturnsExpected()
+	{
+		// Arrange
+		var applicationId = _fixture.Create<Guid>();
+		var data = _fixture.CreateMany<UniqueIdentifierData>(1);
+		A.CallTo(() => _registrationBusinessLogicFake.GetCompanyIdentifiers("DE"))
+			.ReturnsLazily(() => data);
 
-        //Act
-        var result = await this._controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
+		//Act
+		var result = await this._controller.GetCompanyIdentifiers("DE").ConfigureAwait(false);
 
-        //Assert
-        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _iamUserId)).MustHaveHappenedOnceExactly();
-        result.Should().BeOfType<FileContentResult>();
-        ((FileContentResult) result).ContentType.Should().Be(contentType);
-    }
+		// Assert
+		foreach (var item in result)
+		{
+			A.CallTo(() => _registrationBusinessLogicFake.GetCompanyIdentifiers("DE")).MustHaveHappenedOnceExactly();
+			Assert.NotNull(item);
+			Assert.IsType<UniqueIdentifierData?>(item);
+		}
+	}
 
-    [Fact]
-    public async Task GetRegistrationDocumentAsync_WithValidData_ReturnsExpected()
-    {
-        // Arrange
-        var documentId = _fixture.Create<Guid>();
-        var content = new byte[7];
-        A.CallTo(() => _registrationBusinessLogicFake.GetRegistrationDocumentAsync(documentId))
-            .ReturnsLazily(() => new ValueTuple<string, byte[], string>("test.json", content, "application/json"));
+	[Fact]
+	public async Task GetDocumentContentFileAsync_WithValidData_ReturnsOk()
+	{
+		//Arrange
+		const string fileName = "test.pdf";
+		const string contentType = "application/pdf";
+		var id = Guid.NewGuid();
+		var content = Encoding.UTF8.GetBytes("This is just test content");
+		A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _iamUserId))
+			.ReturnsLazily(() => (fileName, content, contentType));
 
-        //Act
-        var result = await this._controller.GetRegistrationDocumentAsync(documentId).ConfigureAwait(false);
-        
-        // Assert
-        A.CallTo(() => _registrationBusinessLogicFake.GetRegistrationDocumentAsync(documentId)).MustHaveHappenedOnceExactly();
-        result.Should().NotBeNull();
-    }
+		//Act
+		var result = await this._controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
+
+		//Assert
+		A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _iamUserId)).MustHaveHappenedOnceExactly();
+		result.Should().BeOfType<FileContentResult>();
+		((FileContentResult)result).ContentType.Should().Be(contentType);
+	}
+
+	[Fact]
+	public async Task GetRegistrationDocumentAsync_WithValidData_ReturnsExpected()
+	{
+		// Arrange
+		var documentId = _fixture.Create<Guid>();
+		var content = new byte[7];
+		A.CallTo(() => _registrationBusinessLogicFake.GetRegistrationDocumentAsync(documentId))
+			.ReturnsLazily(() => new ValueTuple<string, byte[], string>("test.json", content, "application/json"));
+
+		//Act
+		var result = await this._controller.GetRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+
+		// Assert
+		A.CallTo(() => _registrationBusinessLogicFake.GetRegistrationDocumentAsync(documentId)).MustHaveHappenedOnceExactly();
+		result.Should().NotBeNull();
+	}
 }

@@ -28,36 +28,36 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// </summary>
 public interface IStaticDataRepository
 {
-    /// <summary>
-    /// Retrieves all Use Case.
-    /// </summary>
-    /// <returns>Returns a async enumerable of <see cref="UseCaseData"/></returns>
-    IAsyncEnumerable<UseCaseData> GetAllUseCase();
-    
-    /// <summary>
-    /// Retrieves all Language.
-    /// </summary>
-    /// <returns>Returns a async enumerable of <see cref="LanguageData"/></returns>
-    IAsyncEnumerable<LanguageData> GetAllLanguage();
-    
-    /// <summary>
-    /// Retrieve Unique Identifier Data for Country Alpha2Code
-    /// </summary>
-    /// <param name="alpha2Code"></param>
-    /// <returns>Returns  enumerable of <see cref="UniqueIdentifierData"/> and IsCountryCodeExist</returns>
-    Task<(IEnumerable<UniqueIdentifierId> IdentifierIds, bool IsValidCountryCode)> GetCompanyIdentifiers(string alpha2Code);
+	/// <summary>
+	/// Retrieves all Use Case.
+	/// </summary>
+	/// <returns>Returns a async enumerable of <see cref="UseCaseData"/></returns>
+	IAsyncEnumerable<UseCaseData> GetAllUseCase();
 
-    Task<(bool IsValidCountry, IEnumerable<(BpdmIdentifierId BpdmIdentifierId, UniqueIdentifierId UniqueIdentifierId)> Identifiers)> GetCountryAssignedIdentifiers(IEnumerable<BpdmIdentifierId> bpdmIdentifierIds, string countryAlpha2Code);
-    
-    /// <summary>
-    /// Retrieve Service Type Data
-    /// </summary>
-    /// <returns></returns>
-    IAsyncEnumerable<ServiceTypeData> GetServiceTypeData();
-    
-    /// <summary>
-    /// Return all License Type Data
-    /// </summary>
-    /// <returns>Returns a async enumerable of <see cref="LicenseTypeData"/></returns>
-    IAsyncEnumerable<LicenseTypeData> GetLicenseTypeData();
+	/// <summary>
+	/// Retrieves all Language.
+	/// </summary>
+	/// <returns>Returns a async enumerable of <see cref="LanguageData"/></returns>
+	IAsyncEnumerable<LanguageData> GetAllLanguage();
+
+	/// <summary>
+	/// Retrieve Unique Identifier Data for Country Alpha2Code
+	/// </summary>
+	/// <param name="alpha2Code"></param>
+	/// <returns>Returns  enumerable of <see cref="UniqueIdentifierData"/> and IsCountryCodeExist</returns>
+	Task<(IEnumerable<UniqueIdentifierId> IdentifierIds, bool IsValidCountryCode)> GetCompanyIdentifiers(string alpha2Code);
+
+	Task<(bool IsValidCountry, IEnumerable<(BpdmIdentifierId BpdmIdentifierId, UniqueIdentifierId UniqueIdentifierId)> Identifiers)> GetCountryAssignedIdentifiers(IEnumerable<BpdmIdentifierId> bpdmIdentifierIds, string countryAlpha2Code);
+
+	/// <summary>
+	/// Retrieve Service Type Data
+	/// </summary>
+	/// <returns></returns>
+	IAsyncEnumerable<ServiceTypeData> GetServiceTypeData();
+
+	/// <summary>
+	/// Return all License Type Data
+	/// </summary>
+	/// <returns>Returns a async enumerable of <see cref="LicenseTypeData"/></returns>
+	IAsyncEnumerable<LicenseTypeData> GetLicenseTypeData();
 }

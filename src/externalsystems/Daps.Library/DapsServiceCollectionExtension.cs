@@ -28,19 +28,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
 
 public static class DapsServiceCollectionExtension
 {
-    public static IServiceCollection AddDapsService(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddOptions<DapsSettings>()
-            .Bind(configuration.GetSection("Daps"))
-            .ValidateOnStart();
-        services.AddTransient<LoggingHandler<DapsService>>();
+	public static IServiceCollection AddDapsService(this IServiceCollection services, IConfiguration configuration)
+	{
+		services.AddOptions<DapsSettings>()
+			.Bind(configuration.GetSection("Daps"))
+			.ValidateOnStart();
+		services.AddTransient<LoggingHandler<DapsService>>();
 
-        var sp = services.BuildServiceProvider();
-        var settings = sp.GetRequiredService<IOptions<DapsSettings>>();
-        services
-            .AddCustomHttpClientWithAuthentication<DapsService>(settings.Value.DapsUrl, settings.Value.KeycloakTokenAddress)
-            .AddTransient<IDapsService, DapsService>();
+		var sp = services.BuildServiceProvider();
+		var settings = sp.GetRequiredService<IOptions<DapsSettings>>();
+		services
+			.AddCustomHttpClientWithAuthentication<DapsService>(settings.Value.DapsUrl, settings.Value.KeycloakTokenAddress)
+			.AddTransient<IDapsService, DapsService>();
 
-        return services;
-    }
+		return services;
+	}
 }

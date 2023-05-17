@@ -30,6 +30,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public class AccessTokenAuthorization
 {
-    [JsonProperty("permissions")]
-    public IEnumerable<Permission> Permissions { get; set; }
+	[JsonProperty("permissions")]
+	public IEnumerable<Permission> Permissions { get; set; }
 }

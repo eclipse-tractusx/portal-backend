@@ -39,13 +39,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 /// <param name="Documents">documents assigned to offer</param>
 
 public record ServiceDetailResponse(
-    Guid Id, 
-    string? Title, 
-    string Provider, 
-    string? ContactEmail,
-    string? Description, 
-    LicenseTypeId LicenseType,
-    string Price, 
-    IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData,
-    IEnumerable<ServiceTypeId> ServiceTypes,
-    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents);
+	Guid Id,
+	string? Title,
+	string Provider,
+	string? ContactEmail,
+	string? Description,
+	LicenseTypeId LicenseType,
+	string Price,
+	IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData,
+	IEnumerable<ServiceTypeId> ServiceTypes,
+	IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents);

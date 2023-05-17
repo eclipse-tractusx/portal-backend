@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Builder;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Net.Mime;
 using System.Text.Json;
@@ -30,51 +30,53 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class HealthCheckExtensions
 {
-    private static readonly JsonSerializerOptions _serializerOptions = new ()
-        {
-            WriteIndented = false,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
+	private static readonly JsonSerializerOptions _serializerOptions = new()
+	{
+		WriteIndented = false,
+		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+		DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+	};
 
-    private static Task WriteResponse(
-        HttpContext context,
-        HealthReport report)
-    {
-        context.Response.ContentType = MediaTypeNames.Application.Json;
-        return context.Response.WriteAsync(JsonSerializer.Serialize(
-            new {
-                Status = report.Status.ToString(),
-                Duration = report.TotalDuration,
-                Info = report.Entries
-                    .Select(e => new {
-                            Key = e.Key,
-                            Description = e.Value.Description,
-                            Duration = e.Value.Duration,
-                            Status = Enum.GetName<HealthStatus>(e.Value.Status),
-                            Error = e.Value.Exception?.Message,
-                            Data = e.Value.Data
-                        })
-            },
-            _serializerOptions));
-    }
+	private static Task WriteResponse(
+		HttpContext context,
+		HealthReport report)
+	{
+		context.Response.ContentType = MediaTypeNames.Application.Json;
+		return context.Response.WriteAsync(JsonSerializer.Serialize(
+			new
+			{
+				Status = report.Status.ToString(),
+				Duration = report.TotalDuration,
+				Info = report.Entries
+					.Select(e => new
+					{
+						Key = e.Key,
+						Description = e.Value.Description,
+						Duration = e.Value.Duration,
+						Status = Enum.GetName<HealthStatus>(e.Value.Status),
+						Error = e.Value.Exception?.Message,
+						Data = e.Value.Data
+					})
+			},
+			_serializerOptions));
+	}
 
-    public static void MapDefaultHealthChecks(this WebApplication app, IEnumerable<HealthCheckSettings> settings)
-    {
-        if (settings != null)
-        {
-            if (settings.Select(x => x.Path).Distinct().Count() < settings.Count())
-            {
-                throw new ConfigurationException($"HealthChecks mapping {string.Join(", ", settings.Select(x => x.Path))} contains ambiguous pathes");
-            }
-            foreach (var configured in settings)
-            {
-                app.MapHealthChecks(configured.Path, new ()
-                {
-                    Predicate = registration => configured.Tags != null && configured.Tags.Intersect(registration.Tags).Any(),
-                    ResponseWriter = WriteResponse
-                });
-            }
-        }
-    }
+	public static void MapDefaultHealthChecks(this WebApplication app, IEnumerable<HealthCheckSettings> settings)
+	{
+		if (settings != null)
+		{
+			if (settings.Select(x => x.Path).Distinct().Count() < settings.Count())
+			{
+				throw new ConfigurationException($"HealthChecks mapping {string.Join(", ", settings.Select(x => x.Path))} contains ambiguous pathes");
+			}
+			foreach (var configured in settings)
+			{
+				app.MapHealthChecks(configured.Path, new()
+				{
+					Predicate = registration => configured.Tags != null && configured.Tags.Intersect(registration.Tags).Any(),
+					ResponseWriter = WriteResponse
+				});
+			}
+		}
+	}
 }
