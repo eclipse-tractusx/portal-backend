@@ -215,7 +215,6 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns((true, applicationId, CompanyApplicationStatusId.CREATED, checklist));
 
         var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
-        ;
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);

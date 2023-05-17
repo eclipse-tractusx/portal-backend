@@ -73,7 +73,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     }
 
     /// <inheritdoc />
-    Task<Pagination.Response<NotificationDetailData>> INotificationBusinessLogic.GetNotificationsAsync(int page, int size, string iamUserId,
+    public Task<Pagination.Response<NotificationDetailData>> GetNotificationsAsync(int page, int size, string iamUserId,
         bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId,
         bool onlyDueDate,
         NotificationSorting? sorting) =>

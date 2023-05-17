@@ -150,7 +150,6 @@ public class ProcessExecutorTests
             .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null, null));
 
         IEnumerable<ProcessStep>? createdProcessSteps = null;
-        ;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
@@ -478,7 +477,6 @@ public class ProcessExecutorTests
             .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null, null));
 
         IEnumerable<ProcessStep>? createdProcessSteps = null;
-        ;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
@@ -587,7 +585,6 @@ public class ProcessExecutorTests
             .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null, null));
 
         IEnumerable<ProcessStep>? createdProcessSteps = null;
-        ;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>

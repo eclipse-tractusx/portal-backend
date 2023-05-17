@@ -1629,7 +1629,6 @@ public class OfferServiceTests
         var offerId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
         var fileName = _fixture.Create<string>() + ".jpeg";
-        ;
 
         var documentContentData = new OfferDocumentContentData(false, true, true, false, null, fileName, MediaTypeId.JPEG);
         A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, A<CancellationToken>._))
@@ -1652,7 +1651,6 @@ public class OfferServiceTests
         var offerId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
         var fileName = _fixture.Create<string>() + ".jpeg";
-        ;
 
         var documentContentData = new OfferDocumentContentData(true, true, false, false, null, fileName, MediaTypeId.JPEG);
         A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, A<CancellationToken>._))
@@ -1675,7 +1673,6 @@ public class OfferServiceTests
         var offerId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
         var fileName = _fixture.Create<string>() + ".jpeg";
-        ;
 
         var documentContentData = new OfferDocumentContentData(true, false, true, false, null, fileName, MediaTypeId.JPEG);
         A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, A<CancellationToken>._))
@@ -1698,7 +1695,6 @@ public class OfferServiceTests
         var offerId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
         var fileName = _fixture.Create<string>() + ".jpeg";
-        ;
 
         var documentContentData = new OfferDocumentContentData(true, true, true, true, null, fileName, MediaTypeId.JPEG);
         A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, A<CancellationToken>._))
@@ -1721,7 +1717,6 @@ public class OfferServiceTests
         var offerId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
         var fileName = _fixture.Create<string>() + ".jpeg";
-        ;
 
         var documentContentData = new OfferDocumentContentData(true, true, true, false, null, fileName, MediaTypeId.JPEG);
         A.CallTo(() => _documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, A<CancellationToken>._))

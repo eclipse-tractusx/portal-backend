@@ -126,7 +126,6 @@ public class ChecklistServiceTests
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        ;
 
         // Assert
         result.Message.Should().Be($"application {applicationId} is not associated with a checklist-process");
@@ -153,7 +152,6 @@ public class ChecklistServiceTests
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        ;
 
         // Assert
         result.Message.Should().Be($"checklist-process {process.Id} of {applicationId} is locked, lock expiry is set to {lockExpiryDate}");
@@ -178,7 +176,6 @@ public class ChecklistServiceTests
 
         // Act
         var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
-        ;
 
         // Assert
         result.Message.Should().Be($"application {applicationId} does not exist");
@@ -204,7 +201,6 @@ public class ChecklistServiceTests
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        ;
 
         // Assert
         result.Message.Should().Be($"application {applicationId} is not in status SUBMITTED");
@@ -232,7 +228,6 @@ public class ChecklistServiceTests
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        ;
 
         // Assert
         result.Message.Should().Be($"application {applicationId} does not have a checklist entry for {entryTypeId} in status {string.Join(", ", entryStatusIds)}");
@@ -257,7 +252,6 @@ public class ChecklistServiceTests
 
         // Act
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
-        ;
 
         // Assert
         result.Message.Should().Be($"checklist or processSteps should never be null here");
@@ -285,7 +279,6 @@ public class ChecklistServiceTests
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        ;
 
         // Assert
         result.Message.Should().Be($"application {applicationId} does not have a checklist entry for {entryTypeId} in status {string.Join(", ", entryStatusIds)}");
@@ -313,7 +306,6 @@ public class ChecklistServiceTests
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        ;
 
         // Assert
         result.Message.Should().Be($"application {applicationId} checklist entry {entryTypeId}, process step {processStepTypeId} is not eligible to run");
@@ -341,7 +333,6 @@ public class ChecklistServiceTests
 
         // Act
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
-        ;
 
         // Assert
         result.Message.Should().Be($"processSteps should never have other status then TODO here");
