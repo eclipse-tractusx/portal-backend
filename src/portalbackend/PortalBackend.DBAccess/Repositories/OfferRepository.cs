@@ -131,7 +131,10 @@ public class OfferRepository : IOfferRepository
                     .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
                 offer.OfferAssignedPrivacyPolicies.Select(x => x.PrivacyPolicyId),
                 offer.AppInstanceSetup != null && offer.AppInstanceSetup!.IsSingleInstance,
-                offer.LicenseTypeId
+                offer.LicenseTypeId,
+                offer.TechnicalUserProfiles.Select(tup => new TechnicalUserRoleData(
+                            tup.Id,
+                            tup.UserRoles.Select(ur => ur.UserRoleText)))
             ))
             .SingleOrDefaultAsync();
 
