@@ -147,7 +147,7 @@ public class ServiceBusinessLogicTests
         var offerSubscriptionId = Guid.NewGuid();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
         A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._, A<OfferTypeId>._, A<string>._))
-            .ReturnsLazily(() => offerSubscriptionId);
+            .Returns(offerSubscriptionId);
         var serviceSettings = new ServiceSettings
         {
             ServiceManagerRoles = new Dictionary<string, IEnumerable<string>>
@@ -372,7 +372,7 @@ public class ServiceBusinessLogicTests
         var data = new ConsentDetailData(_validConsentId, "The Company", Guid.NewGuid(), ConsentStatusId.ACTIVE, "Agreed");
         var offerService = A.Fake<IOfferService>();
         A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Matches(x => x == _validConsentId), A<OfferTypeId>._))
-            .ReturnsLazily(() => data);
+            .Returns(data);
         var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, Options.Create(new ServiceSettings()));
 
         // Act

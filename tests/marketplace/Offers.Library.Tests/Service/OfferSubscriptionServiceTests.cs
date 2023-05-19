@@ -65,7 +65,6 @@ public class OfferSubscriptionServiceTests
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IMailingService _mailingService;
-    private readonly Dictionary<string, IEnumerable<string>> _serviceManagerRoles;
     private readonly IProcessStepRepository _processStepRepository;
     private readonly OfferSubscriptionService _sut;
 
@@ -94,10 +93,6 @@ public class OfferSubscriptionServiceTests
         _userRoleId = _fixture.Create<Guid>();
         _offerAgreementIds = _fixture.CreateMany<Guid>().ToImmutableArray();
         _validConsentData = _offerAgreementIds.Select(x => new OfferAgreementConsentData(x, ConsentStatusId.ACTIVE));
-        _serviceManagerRoles = new Dictionary<string, IEnumerable<string>>
-        {
-            { ClientId, new[] { "Service Manager" } }
-        };
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _agreementRepository = A.Fake<IAgreementRepository>();
@@ -223,7 +218,6 @@ public class OfferSubscriptionServiceTests
     {
         // Arrange
         var invalidUser = _fixture.Create<string>();
-        ;
 
         // Act
         async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), invalidUser, offerTypeId, BasePortalUrl).ConfigureAwait(false);

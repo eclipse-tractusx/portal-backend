@@ -628,7 +628,7 @@ public class OfferSetupServiceTests
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://www.test.de");
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(offerSubscriptionId, IamUserId, offerTypeId))
-            .ReturnsLazily(() => (OfferSubscriptionTransferData?)null);
+            .Returns((OfferSubscriptionTransferData?)null);
         // Act
         async Task Act() => await _sut.StartAutoSetupAsync(data, IamUserId, offerTypeId).ConfigureAwait(false);
 
@@ -649,7 +649,7 @@ public class OfferSetupServiceTests
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://www.test.de");
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(offerSubscriptionId, IamUserId, offerTypeId))
-            .ReturnsLazily(() => transferData);
+            .Returns(transferData);
 
         // Act
         async Task Act() => await _sut.StartAutoSetupAsync(data, IamUserId, offerTypeId).ConfigureAwait(false);
@@ -674,7 +674,7 @@ public class OfferSetupServiceTests
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://www.test.de");
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(offerSubscriptionId, IamUserId, offerTypeId))
-            .ReturnsLazily(() => transferData);
+            .Returns(transferData);
 
         // Act
         async Task Act() => await _sut.StartAutoSetupAsync(data, IamUserId, offerTypeId).ConfigureAwait(false);
@@ -699,7 +699,7 @@ public class OfferSetupServiceTests
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://www.test.de");
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(offerSubscriptionId, IamUserId, offerTypeId))
-            .ReturnsLazily(() => transferData);
+            .Returns(transferData);
 
         // Act
         async Task Act() => await _sut.StartAutoSetupAsync(data, IamUserId, offerTypeId).ConfigureAwait(false);
@@ -725,11 +725,11 @@ public class OfferSetupServiceTests
         var process = _fixture.Create<Process>();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://www.test.de");
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(offerSubscriptionId, IamUserId, offerTypeId))
-            .ReturnsLazily(() => transferData);
+            .Returns(transferData);
         A.CallTo(() =>
                 _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId,
                     ProcessStepTypeId.START_AUTOSETUP, null, false))
-            .ReturnsLazily(() => new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(
+            .Returns(new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(
                 offerSubscriptionId, process, Guid.NewGuid(),
                 new ProcessStep[]
                 {
@@ -760,11 +760,11 @@ public class OfferSetupServiceTests
         var process = _fixture.Create<Process>();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://www.test.de");
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(offerSubscriptionId, IamUserId, offerTypeId))
-            .ReturnsLazily(() => transferData);
+            .Returns(transferData);
         A.CallTo(() =>
                 _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId,
                     ProcessStepTypeId.START_AUTOSETUP, null, false))
-            .ReturnsLazily(() => new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(
+            .Returns(new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(
                 offerSubscriptionId, process, Guid.NewGuid(),
                 new ProcessStep[]
                 {
@@ -797,7 +797,7 @@ public class OfferSetupServiceTests
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId))
-            .ReturnsLazily(() => (SubscriptionActivationData?)null);
+            .Returns((SubscriptionActivationData?)null);
 
         // Act
         async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId).ConfigureAwait(false);
@@ -818,7 +818,7 @@ public class OfferSetupServiceTests
             .Create();
         var offerSubscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId))
-            .ReturnsLazily(() => transferData);
+            .Returns(transferData);
 
         // Act
         async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId).ConfigureAwait(false);
@@ -839,7 +839,7 @@ public class OfferSetupServiceTests
             .Create();
         var offerSubscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId))
-            .ReturnsLazily(() => transferData);
+            .Returns(transferData);
 
         // Act
         async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId).ConfigureAwait(false);
@@ -860,7 +860,7 @@ public class OfferSetupServiceTests
             .Create();
         var detail = new AppSubscriptionDetail(Guid.NewGuid(), offerSubscriptionId);
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId))
-            .ReturnsLazily(() => transferData);
+            .Returns(transferData);
         A.CallTo(() => _appSubscriptionDetailRepository.CreateAppSubscriptionDetail(offerSubscriptionId, A<Action<AppSubscriptionDetail?>>._))
             .Invokes((Guid _, Action<AppSubscriptionDetail> setOptionalParameter) =>
             {
@@ -889,7 +889,7 @@ public class OfferSetupServiceTests
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionsRepository.GetClientCreationData(offerSubscriptionId))
-            .ReturnsLazily(() => (OfferSubscriptionClientCreationData?)null);
+            .Returns((OfferSubscriptionClientCreationData?)null);
 
         // Act
         async Task Act() => await _sut.CreateClient(offerSubscriptionId).ConfigureAwait(false);
@@ -908,7 +908,7 @@ public class OfferSetupServiceTests
             .Create();
         var offerSubscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionsRepository.GetClientCreationData(offerSubscriptionId))
-            .ReturnsLazily(() => clientCreationData);
+            .Returns(clientCreationData);
 
         // Act
         async Task Act() => await _sut.CreateClient(offerSubscriptionId).ConfigureAwait(false);
@@ -932,11 +932,11 @@ public class OfferSetupServiceTests
         var data = new OfferSubscriptionClientCreationData(_validOfferId, OfferTypeId.APP, url, technicalUserNeeded);
         var detail = new AppSubscriptionDetail(Guid.NewGuid(), offerSubscriptionId);
         A.CallTo(() => _offerSubscriptionsRepository.GetClientCreationData(offerSubscriptionId))
-            .ReturnsLazily(() => data);
+            .Returns(data);
         A.CallTo(() => _userRolesRepository.GetUserRolesForOfferIdAsync(_validOfferId))
             .Returns(new List<string> { "TestRole" }.ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.SetupClientAsync($"{url}/*", url, A<IEnumerable<string>>._, true))
-            .ReturnsLazily(() => clientId);
+            .Returns(clientId);
         A.CallTo(() => _clientRepository.CreateClient(clientId))
             .Invokes((string paramClientId) =>
             {
@@ -976,7 +976,7 @@ public class OfferSetupServiceTests
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionsRepository.GetTechnicalUserCreationData(offerSubscriptionId))
-            .ReturnsLazily(() => (OfferSubscriptionTechnicalUserCreationData?)null);
+            .Returns((OfferSubscriptionTechnicalUserCreationData?)null);
 
         // Act
         async Task Act() => await _sut.CreateTechnicalUser(offerSubscriptionId, null!).ConfigureAwait(false);
@@ -993,7 +993,7 @@ public class OfferSetupServiceTests
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferSubscriptionTechnicalUserCreationData(false, "cl1", "Test App", "Stark Industries", _companyUserCompanyId, Bpn, OfferTypeId.SERVICE);
         A.CallTo(() => _offerSubscriptionsRepository.GetTechnicalUserCreationData(offerSubscriptionId))
-            .ReturnsLazily(() => data);
+            .Returns(data);
 
         // Act
         async Task Act() => await _sut.CreateTechnicalUser(offerSubscriptionId, null!).ConfigureAwait(false);
@@ -1019,9 +1019,9 @@ public class OfferSetupServiceTests
             .With(x => x.OfferSubscriptionId, (Guid?)null)
             .Create();
         A.CallTo(() => _offerSubscriptionsRepository.GetTechnicalUserCreationData(offerSubscriptionId))
-            .ReturnsLazily(() => data);
+            .Returns(data);
         A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
-            .ReturnsLazily(() => userRoleData.ToAsyncEnumerable());
+            .Returns(userRoleData.ToAsyncEnumerable());
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
             .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, new List<Guid>()) });
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, _companyUserCompanyId, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.Single() == Bpn), CompanyServiceAccountTypeId.MANAGED, false, A<Action<CompanyServiceAccount>>._))
@@ -1059,7 +1059,7 @@ public class OfferSetupServiceTests
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId))
-            .ReturnsLazily(() => (SubscriptionActivationData?)null);
+            .Returns((SubscriptionActivationData?)null);
 
         // Act
         async Task Act() => await _sut.ActivateSubscription(offerSubscriptionId, null!, null!).ConfigureAwait(false);
