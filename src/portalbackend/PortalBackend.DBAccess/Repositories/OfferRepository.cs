@@ -306,7 +306,10 @@ public class OfferRepository : IOfferRepository
                 offer.ServiceDetails.Select(x => x.ServiceTypeId),
                 offer.Documents.Where(doc => doc.DocumentTypeId == DocumentTypeId.ADDITIONAL_DETAILS)
                    .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
-                offer.LicenseTypeId
+                offer.LicenseTypeId,
+                offer.TechnicalUserProfiles.Select(tup => new TechnicalUserRoleData(
+                            tup.Id,
+                            tup.UserRoles.Select(ur => ur.UserRoleText)))
             ))
             .SingleOrDefaultAsync();
 

@@ -95,7 +95,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             result.Price,
             result.OfferSubscriptionDetailData,
             result.ServiceTypeIds,
-            result.Documents.GroupBy(doc => doc.documentTypeId).ToDictionary(d => d.Key, d => d.Select(x => new DocumentData(x.documentId, x.documentName)))
+            result.Documents.GroupBy(doc => doc.documentTypeId).ToDictionary(d => d.Key, d => d.Select(x => new DocumentData(x.documentId, x.documentName))),
+            result.TechnicalUserProfile.ToDictionary(g => g.TechnicalUserProfileId, g => g.UserRoles)
         );
     }
 
