@@ -45,7 +45,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="Documents">documents assigned to offer</param>
 /// <param name="PrivacyPolicies">Privacy Policies assigned to offer</param>
 /// <param name="IsSingleInstance">Defines whether the app is a single instance</param>
-/// <param name="TechnicalUserProfile">Technical User Profile</param>
+/// <param name="TechnicalUserProfile">Technical User Profile for app</param>
 public record AppDetailResponse(
     Guid Id,
     string Title,
