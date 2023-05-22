@@ -113,8 +113,8 @@ public class OfferSetupService : IOfferSetupService
         ClientInfoData? clientInfoData = null;
         if (offerTypeId == OfferTypeId.APP)
         {
-            var (clientId, iamClientId) = await CreateClient(data.OfferUrl, offerDetails.OfferId, true, userRolesRepository).ConfigureAwait(false);
-            clientInfoData = new ClientInfoData(clientId);
+            var (clientId, iamClientId, clientUrl) = await CreateClient(data.OfferUrl, offerDetails.OfferId, true, userRolesRepository).ConfigureAwait(false);
+            clientInfoData = new ClientInfoData(clientId, clientUrl);
             CreateAppInstance(data, offerDetails, iamClientId);
         }
 
@@ -155,7 +155,7 @@ public class OfferSetupService : IOfferSetupService
             return null;
         }
 
-        var (technicalClientId, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation
+        var (technicalClientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation
             .CreateServiceAccountAsync(
                 serviceAccountCreationInfo,
                 data.CompanyId,
@@ -165,7 +165,7 @@ public class OfferSetupService : IOfferSetupService
                 sa => { sa.OfferSubscriptionId = subscriptionId; })
             .ConfigureAwait(false);
 
-        return new TechnicalUserInfoData(serviceAccountId, serviceAccountData.AuthData.Secret, technicalClientId);
+        return new TechnicalUserInfoData(serviceAccountId, userRoleData.Select(x => x.UserRoleText), serviceAccountData.AuthData.Secret, technicalClientId);
     }
 
     /// <inheritdoc />
@@ -179,7 +179,7 @@ public class OfferSetupService : IOfferSetupService
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var (_, iamClientId) = await CreateClient(instanceUrl, offerId, false, userRolesRepository);
+        var (_, iamClientId,_) = await CreateClient(instanceUrl, offerId, false, userRolesRepository);
         _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstance(offerId, iamClientId);
     }
 
@@ -272,7 +272,7 @@ public class OfferSetupService : IOfferSetupService
         return offerDetails;
     }
 
-    private async Task<(string clientId, Guid iamClientId)> CreateClient(string offerUrl, Guid offerId, bool enabled, IUserRolesRepository userRolesRepository)
+    private async Task<(string clientId, Guid iamClientId, string clientUrl)> CreateClient(string offerUrl, Guid offerId, bool enabled, IUserRolesRepository userRolesRepository)
     {
         var userRoles = await userRolesRepository.GetUserRolesForOfferIdAsync(offerId).ToListAsync().ConfigureAwait(false);
         offerUrl.EnsureValidHttpUrl(() => nameof(offerUrl));
@@ -281,7 +281,7 @@ public class OfferSetupService : IOfferSetupService
         var clientId = await _provisioningManager.SetupClientAsync(redirectUrl, offerUrl, userRoles, enabled)
             .ConfigureAwait(false);
         var iamClient = _portalRepositories.GetInstance<IClientRepository>().CreateClient(clientId);
-        return (clientId, iamClient.Id);
+        return (clientId, iamClient.Id, redirectUrl);
     }
 
     private void CreateAppInstance(OfferAutoSetupData data, OfferSubscriptionTransferData offerDetails, Guid iamClientId)
@@ -304,7 +304,7 @@ public class OfferSetupService : IOfferSetupService
         var creationData = await _technicalUserProfileService.GetTechnicalUserProfilesForOffer(offerId, offerTypeId).ConfigureAwait(false);
         foreach (var creationInfo in creationData)
         {
-            var (technicalClientId, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation
+            var (technicalClientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation
                 .CreateServiceAccountAsync(
                     creationInfo,
                     data.CompanyId,
@@ -312,7 +312,7 @@ public class OfferSetupService : IOfferSetupService
                     CompanyServiceAccountTypeId.MANAGED,
                     data.EnhanceTechnicalUserName)
                 .ConfigureAwait(false);
-            yield return new TechnicalUserInfoData(serviceAccountId, serviceAccountData.AuthData.Secret, technicalClientId);
+            yield return new TechnicalUserInfoData(serviceAccountId, userRoleData.Select(x=>x.UserRoleText), serviceAccountData.AuthData.Secret, technicalClientId);
         }
     }
 
