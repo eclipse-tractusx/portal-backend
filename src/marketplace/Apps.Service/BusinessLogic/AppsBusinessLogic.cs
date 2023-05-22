@@ -128,7 +128,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             result.Languages,
             result.Documents.GroupBy(d => d.DocumentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.DocumentId, d.DocumentName))),
             result.PrivacyPolicies,
-            result.IsSingleInstance
+            result.IsSingleInstance,
+            result.TechnicalUserProfile.ToDictionary(g => g.TechnicalUserProfileId, g => g.UserRoles)
         );
     }
 
