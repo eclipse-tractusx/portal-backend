@@ -1,6 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Xunit;
 using static RestAssured.Dsl;
@@ -92,6 +94,27 @@ public class RegistrationEndpointHelper
         }
 
         return companyRolesAndConsents;
+    }
+
+    public CompanyRoleAgreementConsents GetCompanyRolesAndConsentsForSelectedRoles(List<CompanyRoleId> companyRoleIds)
+    {
+        List<CompanyRoleConsentViewData> availableRolesAndConsents = GetCompanyRolesAndConsents();
+        List<CompanyRoleId> selectedCompanyRoleIds = new List<CompanyRoleId>();
+        List<AgreementConsentStatus> agreementConsentStatusList = new List<AgreementConsentStatus>();
+        foreach (var role in availableRolesAndConsents)
+        {
+            if (role.CompanyRolesActive && companyRoleIds.Contains(role.CompanyRoleId))
+            {
+                selectedCompanyRoleIds.Add(role.CompanyRoleId);
+                foreach (var agreementId in role.Agreements)
+                {
+                    AgreementConsentStatus agreementConsentStatus =
+                        new AgreementConsentStatus(agreementId.AgreementId, ConsentStatusId.ACTIVE);
+                    agreementConsentStatusList.Add(agreementConsentStatus);
+                }
+            }
+        }
+        return new CompanyRoleAgreementConsents(selectedCompanyRoleIds, agreementConsentStatusList);
     }
 
     public void SetApplicationStatus(string applicationStatus)
