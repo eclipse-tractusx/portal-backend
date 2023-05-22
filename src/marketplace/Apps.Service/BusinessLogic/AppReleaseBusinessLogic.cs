@@ -426,7 +426,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             result.Provider,
             result.UseCases,
             result.Description,
-            result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))),
+            result.Documents.GroupBy(d => d.DocumentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.DocumentId, d.DocumentName))),
             result.Roles,
             result.Languages,
             result.ProviderUri ?? Constants.ErrorString,

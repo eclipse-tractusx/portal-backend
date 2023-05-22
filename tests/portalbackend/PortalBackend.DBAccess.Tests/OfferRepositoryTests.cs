@@ -154,7 +154,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         offerDetail.Should().NotBeNull();
         offerDetail!.Title.Should().Be("Trace-X");
         offerDetail.Documents.Should().NotBeNull();
-        var documentTypeId = offerDetail.Documents.Select(x => x.documentTypeId);
+        var documentTypeId = offerDetail.Documents.Select(x => x.DocumentTypeId);
         documentTypeId.Should().NotContain(DocumentTypeId.APP_LEADIMAGE);
         documentTypeId.Should().NotContain(DocumentTypeId.APP_IMAGE);
     }
@@ -446,7 +446,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         offerDetail.Documents.Should()
             .NotBeEmpty()
             .And.AllSatisfy(
-                x => x.documentTypeId.Should().Be(DocumentTypeId.ADDITIONAL_DETAILS)
+                x => x.DocumentTypeId.Should().Be(DocumentTypeId.ADDITIONAL_DETAILS)
             );
     }
 
@@ -671,7 +671,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         InReviewAppofferDetail.Should().NotBeNull();
         InReviewAppofferDetail!.title.Should().Be("Latest Service");
         InReviewAppofferDetail!.Documents.Should().NotBeNull();
-        var documenttypeId = InReviewAppofferDetail!.Documents.Select(x => x.documentTypeId);
+        var documenttypeId = InReviewAppofferDetail!.Documents.Select(x => x.DocumentTypeId);
         documenttypeId.Should().NotContain(DocumentTypeId.APP_LEADIMAGE);
         documenttypeId.Should().NotContain(DocumentTypeId.APP_IMAGE);
         InReviewAppofferDetail.OfferStatusId.Should().Be(OfferStatusId.IN_REVIEW);
