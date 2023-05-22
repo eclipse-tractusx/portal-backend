@@ -70,4 +70,4 @@ public record OfferDetailsData(
 /// <param name="documentTypeId"></param>
 /// <param name="documentId"></param>
 /// <param name="documentName"></param>
-public record DocumentTypeData(DocumentTypeId documentTypeId, Guid documentId, string documentName);
+public record DocumentTypeData(DocumentTypeId DocumentTypeId, Guid DocumentId, string DocumentName);

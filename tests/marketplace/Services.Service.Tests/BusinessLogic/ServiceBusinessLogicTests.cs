@@ -289,7 +289,10 @@ public class ServiceBusinessLogicTests
         // Assert
         result.Should().BeOfType<ServiceDetailResponse>();
         result.Id.Should().Be(_existingServiceId);
-        result.Documents.Keys.Should().Contain(DocumentTypeId.ADDITIONAL_DETAILS);
+        result.Documents.Should().ContainSingle().Which.Should().Match<KeyValuePair<DocumentTypeId, IEnumerable<DocumentData>>>(
+            x => x.Key == DocumentTypeId.ADDITIONAL_DETAILS && x.Value.Count() == 1 && x.Value.Any(y => y.DocumentName == "testDocument"));
+        result.TechnicalUserProfile.Should().ContainSingle().Which.Should().Match<KeyValuePair<Guid, IEnumerable<string>>>(
+            x => x.Value.SequenceEqual(new[] { "role1", "role2" }));
     }
 
     [Fact]
@@ -683,7 +686,8 @@ public class ServiceBusinessLogicTests
             .Returns(serviceDetail with
             {
                 OfferSubscriptionDetailData = new[] { new OfferSubscriptionStateDetailData(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE) },
-                Documents = new[] { new DocumentTypeData(DocumentTypeId.ADDITIONAL_DETAILS, Guid.NewGuid(), "testDocument") }
+                Documents = new[] { new DocumentTypeData(DocumentTypeId.ADDITIONAL_DETAILS, Guid.NewGuid(), "testDocument") },
+                TechnicalUserProfile = new[] { new TechnicalUserRoleData(Guid.NewGuid(), new[] { "role1", "role2" }) }
             });
         A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>._, A<string>._))
             .Returns((ServiceDetailData?)null);
