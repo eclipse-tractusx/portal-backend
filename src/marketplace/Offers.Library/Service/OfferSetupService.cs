@@ -281,7 +281,7 @@ public class OfferSetupService : IOfferSetupService
         var clientId = await _provisioningManager.SetupClientAsync(redirectUrl, offerUrl, userRoles, enabled)
             .ConfigureAwait(false);
         var iamClient = _portalRepositories.GetInstance<IClientRepository>().CreateClient(clientId);
-        return (clientId, iamClient.Id, redirectUrl);
+        return (clientId, iamClient.Id, offerUrl);
     }
 
     private void CreateAppInstance(OfferAutoSetupData data, OfferSubscriptionTransferData offerDetails, Guid iamClientId)
