@@ -69,7 +69,7 @@ public record OfferDetailsData(
 /// <summary>
 /// Model for Document with Type
 /// </summary>
-/// <param name="documentTypeId"></param>
-/// <param name="documentId"></param>
-/// <param name="documentName"></param>
+/// <param name="DocumentTypeId"></param>
+/// <param name="DocumentId"></param>
+/// <param name="DocumentName"></param>
 public record DocumentTypeData(DocumentTypeId DocumentTypeId, Guid DocumentId, string DocumentName);

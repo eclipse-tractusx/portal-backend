@@ -133,8 +133,8 @@ public class OfferRepository : IOfferRepository
                 offer.AppInstanceSetup != null && offer.AppInstanceSetup!.IsSingleInstance,
                 offer.LicenseTypeId,
                 offer.TechnicalUserProfiles.Select(tup => new TechnicalUserRoleData(
-                            tup.Id,
-                            tup.UserRoles.Select(ur => ur.UserRoleText)))
+                    tup.Id,
+                    tup.UserRoles.Select(ur => ur.UserRoleText)))
             ))
             .SingleOrDefaultAsync();
 
