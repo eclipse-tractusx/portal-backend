@@ -408,7 +408,7 @@ public class ServiceBusinessLogicTests
     {
         // Arrange
         var offerSetupService = A.Fake<IOfferSetupService>();
-         var userRoleData = new List<string>();
+        var userRoleData = new List<string>();
         userRoleData.Add("Sales Manager");
         userRoleData.Add("IT Manager");
         A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
