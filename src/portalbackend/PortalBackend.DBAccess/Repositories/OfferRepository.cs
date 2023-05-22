@@ -294,6 +294,7 @@ public class OfferRepository : IOfferRepository
     public Task<ServiceDetailData?> GetServiceDetailByIdUntrackedAsync(Guid serviceId, string languageShortName, string iamUserId) =>
         _context.Offers
             .AsNoTracking()
+            .AsSplitQuery()
             .Where(x => x.Id == serviceId && x.OfferTypeId == OfferTypeId.SERVICE)
             .Select(offer => new ServiceDetailData(
                 offer.Id,
@@ -302,14 +303,17 @@ public class OfferRepository : IOfferRepository
                 offer.ContactEmail,
                 offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
                 offer.OfferLicenses.FirstOrDefault()!.Licensetext,
-                offer.OfferSubscriptions.Where(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)).Select(x => new OfferSubscriptionStateDetailData(x.Id, x.OfferSubscriptionStatusId)),
+                offer.OfferSubscriptions
+                    .Where(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
+                    .Select(x => new OfferSubscriptionStateDetailData(x.Id, x.OfferSubscriptionStatusId)),
                 offer.ServiceDetails.Select(x => x.ServiceTypeId),
-                offer.Documents.Where(doc => doc.DocumentTypeId == DocumentTypeId.ADDITIONAL_DETAILS)
-                   .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
+                offer.Documents
+                    .Where(doc => doc.DocumentTypeId == DocumentTypeId.ADDITIONAL_DETAILS)
+                    .Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
                 offer.LicenseTypeId,
                 offer.TechnicalUserProfiles.Select(tup => new TechnicalUserRoleData(
-                            tup.Id,
-                            tup.UserRoles.Select(ur => ur.UserRoleText)))
+                    tup.Id,
+                    tup.UserRoles.Select(ur => ur.UserRoleText)))
             ))
             .SingleOrDefaultAsync();
 
