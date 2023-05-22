@@ -179,7 +179,7 @@ public class OfferSetupService : IOfferSetupService
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var (_, iamClientId,_) = await CreateClient(instanceUrl, offerId, false, userRolesRepository);
+        var (_, iamClientId, _) = await CreateClient(instanceUrl, offerId, false, userRolesRepository);
         _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstance(offerId, iamClientId);
     }
 
@@ -312,7 +312,7 @@ public class OfferSetupService : IOfferSetupService
                     CompanyServiceAccountTypeId.MANAGED,
                     data.EnhanceTechnicalUserName)
                 .ConfigureAwait(false);
-            yield return new TechnicalUserInfoData(serviceAccountId, userRoleData.Select(x=>x.UserRoleText), serviceAccountData.AuthData.Secret, technicalClientId);
+            yield return new TechnicalUserInfoData(serviceAccountId, userRoleData.Select(x => x.UserRoleText), serviceAccountData.AuthData.Secret, technicalClientId);
         }
     }
 
