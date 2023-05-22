@@ -24,6 +24,8 @@ public class HappyPathUpdateCompanyDetailData
     private static string _userCompanyName = "Test-Catena-X-13";
     private static string[] _userEmailAddress;
     private readonly RegistrationEndpointHelper _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _baseUrl, _endPoint);
+    private TestDataHelper _testDataHelper = new TestDataHelper();
+
     JsonSerializerOptions _options = new JsonSerializerOptions
     {
         PropertyNameCaseInsensitive = true,
@@ -80,17 +82,14 @@ public class HappyPathUpdateCompanyDetailData
         if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.CREATED.ToString())
         {
             _regEndpointHelper.SetApplicationStatus(CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString());
-            CompanyDetailData companyDetailData = _regEndpointHelper.GetCompanyDetailData();
-            CompanyUniqueIdData newCompanyUniqueIdData =
-                new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, "DE123456789");
-            CompanyDetailData newCompanyDetailData = companyDetailData with
+            var companyDetailData = _regEndpointHelper.GetCompanyDetailData();
+
+            var testCompanyDetailData = _testDataHelper.GetNewCompanyDetailDataFromTestData();
+            var newCompanyDetailData = testCompanyDetailData with
             {
-                City = "Augsburg", CountryAlpha2Code = "DE", StreetName = "Hauptstrasse", ZipCode = "86199",
-                UniqueIds = new List<CompanyUniqueIdData> { newCompanyUniqueIdData }
+                CompanyId = companyDetailData.CompanyId
             };
             var body = JsonSerializer.Serialize(newCompanyDetailData, _options);
-            _userCompanyName = companyDetailData.Name;
-            string companyId = companyDetailData.CompanyId.ToString();
             var response = Given()
                 .RelaxedHttpsValidation()
                 .Header(
@@ -117,17 +116,15 @@ public class HappyPathUpdateCompanyDetailData
         var actualStatus = _regEndpointHelper.GetApplicationStatus();
         if (actualStatus != CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString() && actualStatus != CompanyApplicationStatusId.SUBMITTED.ToString())
         {
-            CompanyDetailData companyDetailData = _regEndpointHelper.GetCompanyDetailData();
-            CompanyUniqueIdData newCompanyUniqueIdData =
-                new CompanyUniqueIdData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "HRB 12345");
-            CompanyDetailData newCompanyDetailData = companyDetailData with
+            var companyDetailData = _regEndpointHelper.GetCompanyDetailData();
+
+            var updateCompanyDetailData = _testDataHelper.GetUpdateCompanyDetailDataFromTestData();
+            var newCompanyDetailData = updateCompanyDetailData with
             {
-                Name = "Test-Catena-X-Update", StreetName = "Hauptstraße", StreetNumber = "18",
-                UniqueIds = new List<CompanyUniqueIdData> { newCompanyUniqueIdData }
+                CompanyId = companyDetailData.CompanyId
             };
             var body = JsonSerializer.Serialize(newCompanyDetailData, _options);
-            _userCompanyName = companyDetailData.Name;
-            string companyId = companyDetailData.CompanyId.ToString();
+            
             var response = Given()
                 .RelaxedHttpsValidation()
                 .Header(

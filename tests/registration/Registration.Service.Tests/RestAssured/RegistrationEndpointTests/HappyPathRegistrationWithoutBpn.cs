@@ -25,6 +25,8 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     private static string _userCompanyName = "Test-Catena-X-13";
     private static string[] _userEmailAddress;
     private readonly RegistrationEndpointHelper _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _baseUrl, _endPoint);
+    private TestDataHelper _testDataHelper = new TestDataHelper();
+    
     JsonSerializerOptions _options = new JsonSerializerOptions
     {
         PropertyNameCaseInsensitive = true,
@@ -83,17 +85,16 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
         if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.CREATED.ToString())
         {
             _regEndpointHelper.SetApplicationStatus(CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString());
-            CompanyDetailData companyDetailData = _regEndpointHelper.GetCompanyDetailData();
-            CompanyUniqueIdData newCompanyUniqueIdData =
-                new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, "DE123456789");
-            CompanyDetailData newCompanyDetailData = companyDetailData with
+            var companyDetailData = _regEndpointHelper.GetCompanyDetailData();
+
+            var testCompanyDetailData = _testDataHelper.GetNewCompanyDetailDataFromTestData();
+            var newCompanyDetailData = testCompanyDetailData with
             {
-                City = "Augsburg", CountryAlpha2Code = "DE", StreetName = "Hauptstrasse", ZipCode = "86199",
-                UniqueIds = new List<CompanyUniqueIdData> { newCompanyUniqueIdData }
+                CompanyId = companyDetailData.CompanyId
             };
+            
             var body = JsonSerializer.Serialize(newCompanyDetailData, _options);
-            _userCompanyName = companyDetailData.Name;
-            string companyId = companyDetailData.CompanyId.ToString();
+            
             var response = Given()
                 .RelaxedHttpsValidation()
                 .Header(
@@ -119,40 +120,26 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     {
         if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.INVITE_USER.ToString())
         {
-            List<CompanyRoleConsentViewData> availableRolesAndConsents = _regEndpointHelper.GetCompanyRolesAndConsents();
-            List<CompanyRoleId> availableCompanyRoleIds = new List<CompanyRoleId>();
-            List<AgreementConsentStatus> agreementConsentStatusList = new List<AgreementConsentStatus>();
-            foreach (var role in availableRolesAndConsents)
+            var companyRoles = _testDataHelper.GetCompanyRolesFromTestData(3);
+            if (companyRoles != null)
             {
-                if (role.CompanyRolesActive)
-                {
-                    availableCompanyRoleIds.Add(role.CompanyRoleId);
-                    foreach (var agreementId in role.Agreements)
-                    {
-                        AgreementConsentStatus agreementConsentStatus =
-                            new AgreementConsentStatus(agreementId.AgreementId, ConsentStatusId.ACTIVE);
-                        agreementConsentStatusList.Add(agreementConsentStatus);
-                    }
-                }
+                var companyRoleAgreementConsents =
+                    _regEndpointHelper.GetCompanyRolesAndConsentsForSelectedRoles(companyRoles);
+                var body = JsonSerializer.Serialize(companyRoleAgreementConsents, _options);
+                
+                _regEndpointHelper.SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString());
+                Given()
+                    .RelaxedHttpsValidation()
+                    .Header(
+                        "authorization",
+                        $"Bearer {_userCompanyToken}")
+                    .ContentType("application/json")
+                    .Body(body)                
+                    .When()
+                    .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyRoleAgreementConsents")
+                    .Then()
+                    .StatusCode(200);
             }
-            CompanyRoleAgreementConsents companyRoleAgreementConsents =
-                new CompanyRoleAgreementConsents(availableCompanyRoleIds, agreementConsentStatusList);
-            
-            var body = JsonSerializer.Serialize(companyRoleAgreementConsents, _options);
-            
-        
-            _regEndpointHelper.SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString());
-            Given()
-                .RelaxedHttpsValidation()
-                .Header(
-                    "authorization",
-                    $"Bearer {_userCompanyToken}")
-                .ContentType("application/json")
-                .Body(body)                
-                .When()
-                .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyRoleAgreementConsents")
-                .Then()
-                .StatusCode(200);
         }
         else throw new Exception($"Application status is not fitting to the pre-requisite");
     }
