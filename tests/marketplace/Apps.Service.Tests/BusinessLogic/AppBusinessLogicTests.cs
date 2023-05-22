@@ -611,6 +611,112 @@ public class AppBusinessLogicTests
 
     #endregion
 
+    #region GetAppDetailsByIdAsync
+
+    [Fact]
+    public async Task GetAppDetailsByIdAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        var userId = _fixture.Create<string>();
+        var language = "it";
+        var documentData = new DocumentTypeData[]
+        {
+            new(DocumentTypeId.APP_CONTRACT, Guid.NewGuid(), _fixture.Create<string>()),
+            new(DocumentTypeId.APP_TECHNICAL_INFORMATION, Guid.NewGuid(), _fixture.Create<string>()),
+            new(DocumentTypeId.APP_CONTRACT, Guid.NewGuid(), _fixture.Create<string>()),
+            new(DocumentTypeId.APP_TECHNICAL_INFORMATION, Guid.NewGuid(), _fixture.Create<string>()),
+            new(DocumentTypeId.APP_CONTRACT, Guid.NewGuid(), _fixture.Create<string>()),
+        };
+        var technicalUserProfiles = new TechnicalUserRoleData[]
+        {
+            new(Guid.NewGuid(), _fixture.CreateMany<string>(3).ToImmutableArray()),
+            new(Guid.NewGuid(), _fixture.CreateMany<string>(3).ToImmutableArray())
+        };
+        var data = _fixture.Build<OfferDetailsData>()
+            .With(x => x.Documents, documentData)
+            .With(x => x.TechnicalUserProfile, technicalUserProfiles)
+            .Create();
+        A.CallTo(() => _offerRepository.GetOfferDetailsByIdAsync(A<Guid>._, A<string>._, A<string?>._, A<string>._, A<OfferTypeId>._))
+            .Returns(data);
+
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, Options.Create(new AppsSettings()), null!);
+
+        // Act
+        var result = await sut.GetAppDetailsByIdAsync(appId, userId, language).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerRepository.GetOfferDetailsByIdAsync(appId, userId, language, Constants.DefaultLanguage, OfferTypeId.APP))
+            .MustHaveHappenedOnceExactly();
+
+        result.Id.Should().Be(data.Id);
+        result.Title.Should().Be(data.Title);
+        result.LeadPictureId.Should().Be(data.LeadPictureId);
+        result.Images.Should().ContainInOrder(data.Images);
+        result.ProviderUri.Should().Be(data.ProviderUri);
+        result.Provider.Should().Be(data.Provider);
+        result.ContactEmail.Should().Be(data.ContactEmail);
+        result.ContactNumber.Should().Be(data.ContactNumber);
+        result.UseCases.Should().ContainInOrder(data.UseCases);
+        result.LongDescription.Should().Be(data.LongDescription);
+        result.LicenseType.Should().Be(data.LicenseTypeId);
+        result.Price.Should().Be(data.Price);
+        result.Tags.Should().ContainInOrder(data.Tags);
+        result.IsSubscribed.Should().Be(result.IsSubscribed);
+        result.Languages.Should().ContainInOrder(data.Languages);
+        result.Documents.Should().HaveCount(2).And.Satisfy(
+            x => x.Key == DocumentTypeId.APP_CONTRACT &&
+                x.Value.Count() == 3 &&
+                x.Value.Contains(new DocumentData(documentData[0].DocumentId, documentData[0].DocumentName)) &&
+                x.Value.Contains(new DocumentData(documentData[2].DocumentId, documentData[2].DocumentName)) &&
+                x.Value.Contains(new DocumentData(documentData[4].DocumentId, documentData[4].DocumentName)),
+            x => x.Key == DocumentTypeId.APP_TECHNICAL_INFORMATION &&
+                x.Value.Count() == 2 &&
+                x.Value.Contains(new DocumentData(documentData[1].DocumentId, documentData[1].DocumentName)) &&
+                x.Value.Contains(new DocumentData(documentData[3].DocumentId, documentData[3].DocumentName))
+        );
+        result.PrivacyPolicies.Should().ContainInOrder(data.PrivacyPolicies);
+        result.IsSingleInstance.Should().Be(data.IsSingleInstance);
+        result.TechnicalUserProfile.Should().HaveCount(2).And.Satisfy(
+            x => x.Key == technicalUserProfiles[0].TechnicalUserProfileId && x.Value.SequenceEqual(technicalUserProfiles[0].UserRoles),
+            x => x.Key == technicalUserProfiles[1].TechnicalUserProfileId && x.Value.SequenceEqual(technicalUserProfiles[1].UserRoles)
+        );
+    }
+
+    [Fact]
+    public async Task GetAppDetailsByIdAsync_WithNullProperties_ReturnsExpected()
+    {
+        // Arrange
+        var appId = Guid.NewGuid();
+        var userId = _fixture.Create<string>();
+        var data = _fixture.Build<OfferDetailsData>()
+            .With(x => x.Title, (string?)null)
+            .With(x => x.ProviderUri, (string?)null)
+            .With(x => x.LongDescription, (string?)null)
+            .With(x => x.Price, (string?)null)
+            .With(x => x.IsSubscribed, (OfferSubscriptionStatusId)default)
+            .Create();
+        A.CallTo(() => _offerRepository.GetOfferDetailsByIdAsync(A<Guid>._, A<string>._, A<string?>._, A<string>._, A<OfferTypeId>._))
+            .Returns(data);
+
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, Options.Create(new AppsSettings()), null!);
+
+        // Act
+        var result = await sut.GetAppDetailsByIdAsync(appId, userId, null).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _offerRepository.GetOfferDetailsByIdAsync(appId, userId, null, Constants.DefaultLanguage, OfferTypeId.APP))
+            .MustHaveHappenedOnceExactly();
+
+        result.Title.Should().Be(Constants.ErrorString);
+        result.ProviderUri.Should().Be(Constants.ErrorString);
+        result.LongDescription.Should().Be(Constants.ErrorString);
+        result.Price.Should().Be(Constants.ErrorString);
+        result.IsSubscribed.Should().BeNull();
+    }
+
+    #endregion
+
     #region Setup
 
     private (CompanyUser, IamUser) CreateTestUserPair()
