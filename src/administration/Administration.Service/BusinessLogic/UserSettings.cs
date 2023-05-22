@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -47,7 +48,7 @@ public class UserSettings
     /// Company User Status Id
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> UserAdminRoles { get; set; } = null!;
+    public IEnumerable<UserRoleConfig> UserAdminRoles { get; set; } = null!;
 }
 
 public class UserSetting

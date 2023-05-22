@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Models;
@@ -83,10 +84,7 @@ public class OfferProviderBusinessLogicTests
             Password = "test",
             ClientId = "123",
             ClientSecret = "test",
-            ServiceManagerRoles = new Dictionary<string, IEnumerable<string>>
-            {
-                { "Portal", new []{ "Manager" }}
-            }
+            ServiceManagerRoles = Enumerable.Repeat(new UserRoleConfig("Portal", new[] { "Manager" }), 1)
         };
 
         _sut = new OfferProviderBusinessLogic(

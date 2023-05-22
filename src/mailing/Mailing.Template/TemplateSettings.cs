@@ -32,28 +32,40 @@ public class TemplateSettings
     /// </summary>        
     public const string Position = "MailingService";
 
-    public Dictionary<string, TemplateSetting> Templates { get; set; } = null!;
+    public IEnumerable<TemplateInfo> Templates { get; set; } = null!;
 
     public bool Validate()
     {
         var validation = new ConfigurationValidation<TemplateSettings>()
             .NotNull(Templates, () => nameof(Templates));
 
-        return Templates.Values.All(t =>
+        if (Templates.Select(x => x.Name).Distinct().Count() != Templates.Count())
+        {
+            throw new ConfigurationException($"{nameof(Templates)}: The name of the tempalte must be unique");
+        }
+
+        return Templates.Select(x => x.Setting).All(t =>
         {
             validation.NotNullOrWhiteSpace(t.Subject, () => nameof(t.Subject));
             if (t.Body == null)
             {
                 validation.NotNull(t.EmailTemplateType, () => nameof(t.EmailTemplateType));
             }
+
             if (!t.EmailTemplateType.HasValue)
             {
                 validation.NotNullOrWhiteSpace(t.Body, () => nameof(t.Body));
             }
+
             return true;
         });
     }
 }
+
+/// <summary>
+/// Configuration for templated emails that a service can send.
+/// </summary>
+public record TemplateInfo(string Name, TemplateSetting Setting);
 
 /// <summary>
 /// Configuration for templated emails that a service can send.

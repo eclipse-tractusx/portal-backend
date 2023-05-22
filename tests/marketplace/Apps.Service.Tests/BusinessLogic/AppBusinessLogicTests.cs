@@ -25,6 +25,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -205,7 +206,7 @@ public class AppBusinessLogicTests
         var offerAutoSetupResponseData = _fixture.Create<OfferAutoSetupResponseData>();
         // Arrange
         var offerSetupService = A.Fake<IOfferSetupService>();
-        A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<ValueTuple<Guid, Guid>>._, A<OfferTypeId>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IEnumerable<UserRoleConfig>>._, A<ValueTuple<Guid, Guid>>._, A<OfferTypeId>._, A<string>._, A<IEnumerable<UserRoleConfig>>._))
             .Returns(offerAutoSetupResponseData);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
 
@@ -477,7 +478,7 @@ public class AppBusinessLogicTests
         var documentId = _fixture.Create<Guid>();
         var settings = new AppsSettings
         {
-            AppImageDocumentTypeIds = _fixture.Create<IEnumerable<DocumentTypeId>>(),
+            AppImageDocumentTypeIds = _fixture.CreateMany<DocumentTypeId>(),
         };
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, Options.Create(settings), null!);
@@ -549,12 +550,12 @@ public class AppBusinessLogicTests
         var data = _fixture.Create<ProviderSubscriptionDetailData>();
         var settings = new AppsSettings
         {
-            CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            CompanyAdminRoles = new[]
             {
-                {"ClientTest", new[] {"Test"}}
+                new UserRoleConfig("ClientTest", new[] {"Test"})
             }
         };
-        A.CallTo(() => _offerService.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _offerService.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IEnumerable<UserRoleConfig>>._))
             .Returns(data);
         var sut = new AppsBusinessLogic(null!, null!, _offerService, null!, Options.Create(settings), null!);
 
@@ -578,12 +579,12 @@ public class AppBusinessLogicTests
         var data = _fixture.Create<SubscriberSubscriptionDetailData>();
         var settings = new AppsSettings
         {
-            CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            CompanyAdminRoles = new[]
             {
-                {"ClientTest", new[] {"Test"}}
+                new UserRoleConfig("ClientTest", new[] {"Test"})
             }
         };
-        A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(offerId, subscriptionId, _identity.CompanyId, OfferTypeId.APP, A<IEnumerable<UserRoleConfig>>._))
             .Returns(data);
         var sut = new AppsBusinessLogic(null!, null!, _offerService, null!, Options.Create(settings), null!);
 

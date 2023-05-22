@@ -115,7 +115,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         Guid companyUserId,
         string notificationContent)
     {
-        var serviceManagerRoles = _settings.ServiceManagerRoles;
+        var serviceManagerRoles = _settings.ServiceManagerRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames);
         var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
 
         var notificationTypeId = offerTypeId == OfferTypeId.SERVICE ? NotificationTypeId.SERVICE_REQUEST : NotificationTypeId.APP_SUBSCRIPTION_REQUEST;

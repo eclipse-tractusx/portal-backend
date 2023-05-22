@@ -20,6 +20,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -41,7 +42,7 @@ public class OfferDocumentService : IOfferDocumentService
         _portalRepositories = portalRepositories;
     }
 
-    public async Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, IDictionary<DocumentTypeId, IEnumerable<string>> uploadDocumentTypeIdSettings, CancellationToken cancellationToken)
+    public async Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, IEnumerable<UploadDocumentConfig> uploadDocumentTypeIdSettings, CancellationToken cancellationToken)
     {
         if (id == Guid.Empty)
         {
@@ -53,15 +54,16 @@ public class OfferDocumentService : IOfferDocumentService
             throw new ControllerArgumentException("File name should not be null");
         }
 
-        if (!uploadDocumentTypeIdSettings.TryGetValue(documentTypeId, out var uploadContentTypeSettings))
+        var uploadContentTypeSettings = uploadDocumentTypeIdSettings.FirstOrDefault(x => x.DocumentTypeId == documentTypeId);
+        if (uploadContentTypeSettings == null)
         {
-            throw new ControllerArgumentException($"documentType must be either: {string.Join(",", uploadDocumentTypeIdSettings.Keys)}");
+            throw new ControllerArgumentException($"documentType must be either: {string.Join(",", uploadDocumentTypeIdSettings.Select(x => x.DocumentTypeId))}");
         }
         // Check if document is a pdf,jpeg and png file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
         var documentContentType = document.ContentType;
-        if (!uploadContentTypeSettings.Contains(documentContentType))
+        if (!uploadContentTypeSettings.MediaTypes.Contains(documentContentType))
         {
-            throw new UnsupportedMediaTypeException($"Document type {documentTypeId} is not supported. File with contentType :{string.Join(",", uploadContentTypeSettings)} are allowed.");
+            throw new UnsupportedMediaTypeException($"Document type {documentTypeId} is not supported. File with contentType :{string.Join(",", uploadContentTypeSettings.MediaTypes)} are allowed.");
         }
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();

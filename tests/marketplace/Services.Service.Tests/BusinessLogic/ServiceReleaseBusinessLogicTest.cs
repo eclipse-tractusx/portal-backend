@@ -25,6 +25,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
@@ -80,9 +81,9 @@ public class ServiceReleaseBusinessLogicTest
         var serviceSettings = new ServiceSettings
         {
             ApplicationsMaxPageSize = 15,
-            ITAdminRoles = new Dictionary<string, IEnumerable<string>>
+            ITAdminRoles = new[]
             {
-                {"Cl2-CX-Portal", new[] {"IT Admin"}}
+                new UserRoleConfig("Cl2-CX-Portal", new[] {"IT Admin"})
             },
             SubmitServiceNotificationTypeIds = new List<NotificationTypeId>
             {
@@ -446,9 +447,9 @@ public class ServiceReleaseBusinessLogicTest
             null);
         var settings = new ServiceSettings
         {
-            SalesManagerRoles = new Dictionary<string, IEnumerable<string>>
+            SalesManagerRoles = new[]
             {
-                { "portal", new[] { "SalesManager" } }
+                new UserRoleConfig("portal", new[] { "SalesManager" })
             }
         };
         var existingOffer = _fixture.Create<Offer>();
@@ -498,7 +499,7 @@ public class ServiceReleaseBusinessLogicTest
                     _identity.UserId,
                     OfferTypeId.SERVICE,
                     A<IEnumerable<NotificationTypeId>>._,
-                    A<IDictionary<string, IEnumerable<string>>>._))
+                    A<IEnumerable<UserRoleConfig>>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -513,7 +514,7 @@ public class ServiceReleaseBusinessLogicTest
         var data = new OfferDeclineRequest("Just a test");
         var settings = new ServiceSettings
         {
-            ServiceManagerRoles = _fixture.Create<Dictionary<string, IEnumerable<string>>>(),
+            ServiceManagerRoles = _fixture.CreateMany<UserRoleConfig>(),
             BasePortalAddress = "test"
         };
         var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, Options.Create(settings));
@@ -524,8 +525,8 @@ public class ServiceReleaseBusinessLogicTest
         // Assert
         A.CallTo(() => _offerService.DeclineOfferAsync(_existingServiceId, _identity.UserId, data,
             OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION,
-            A<IDictionary<string, IEnumerable<string>>>._, A<string>._,
-            A<IEnumerable<NotificationTypeId>>._, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+            A<IEnumerable<UserRoleConfig>>._, A<string>._,
+            A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -539,8 +540,10 @@ public class ServiceReleaseBusinessLogicTest
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         var settings = new ServiceSettings()
         {
-            UploadServiceDocumentTypeIds = new Dictionary<DocumentTypeId, IEnumerable<string>>{
-                { DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" } }}
+            UploadServiceDocumentTypeIds = new[]
+            {
+                new UploadDocumentConfig(DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" })
+            }
         };
         var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(settings));
 
@@ -567,8 +570,8 @@ public class ServiceReleaseBusinessLogicTest
 
         // Assert
         A.CallTo(() => _offerService.ApproveOfferRequestAsync(appId, _identity.UserId, OfferTypeId.SERVICE,
-            A<IEnumerable<NotificationTypeId>>._, A<IDictionary<string, IEnumerable<string>>>._,
-            A<IEnumerable<NotificationTypeId>>._, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+            A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
+            A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

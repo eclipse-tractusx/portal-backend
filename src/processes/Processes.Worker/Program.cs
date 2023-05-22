@@ -51,7 +51,7 @@ try
 
             if (hostContext.HostingEnvironment.IsDevelopment())
             {
-                var urlsToTrust = hostContext.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
+                var urlsToTrust = hostContext.Configuration.GetSection("Keycloak").Get<KeycloakSettings>().SettingMap.Select(x => x.Settings)
                     .Where(config => config.ConnectionString.StartsWith("https://"))
                     .Select(config => config.ConnectionString)
                     .Distinct();

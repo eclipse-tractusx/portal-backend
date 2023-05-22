@@ -113,6 +113,7 @@ public class ApplicationActivationService : IApplicationActivationService
         if (assignedRoles != null)
         {
             var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
+                .ToDictionary(x => x.ClientId, x => x.UserRoleNames)
                 .Select(initialClientRoles => (
                     client: initialClientRoles.Key,
                     roles: initialClientRoles.Value.Except(assignedRoles[initialClientRoles.Key])))
@@ -152,8 +153,8 @@ public class ApplicationActivationService : IApplicationActivationService
     {
         var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
-        var applicationApprovalInitialRoles = _settings.ApplicationApprovalInitialRoles;
-        var initialRolesData = await GetRoleData(userRolesRepository, applicationApprovalInitialRoles).ConfigureAwait(false);
+        var approvalInitialRoles = _settings.ApplicationApprovalInitialRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames);
+        var initialRolesData = await GetRoleData(userRolesRepository, approvalInitialRoles).ConfigureAwait(false);
 
         IDictionary<string, IEnumerable<string>>? assignedRoles = null;
         var invitedUsersData = applicationRepository
@@ -166,7 +167,7 @@ public class ApplicationActivationService : IApplicationActivationService
             }
 
             assignedRoles = await _provisioningManager
-                .AssignClientRolesToCentralUserAsync(userData.UserEntityId, applicationApprovalInitialRoles)
+                .AssignClientRolesToCentralUserAsync(userData.UserEntityId, approvalInitialRoles)
                 .ToDictionaryAsync(assigned => assigned.Client, assigned => assigned.Roles)
                 .ConfigureAwait(false);
 

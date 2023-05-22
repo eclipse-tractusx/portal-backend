@@ -23,6 +23,7 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -78,9 +79,9 @@ public class NotificationServiceTests
     public async Task CreateNotifications_WithSingleUserRoleAndOneNotificationTypeId_CreatesOneNotification()
     {
         // Arrange
-        var userRoles = new Dictionary<string, IEnumerable<string>>
+        var userRoles = new[]
         {
-            { ClientId, new []{ "CX Admin" } }
+            new UserRoleConfig(ClientId, new []{ "CX Admin" })
         };
         var notificationContent = new
         {
@@ -105,9 +106,9 @@ public class NotificationServiceTests
     public async Task CreateNotifications_WithSingleUserRoleAndMultipleNotificationTypeId_CreatesFiveNotification()
     {
         // Arrange
-        var userRoles = new Dictionary<string, IEnumerable<string>>
+        var userRoles = new[]
         {
-            { ClientId, new []{ "CX Admin" } }
+            new UserRoleConfig(ClientId, new []{ "CX Admin" })
         };
 
         // Act
@@ -141,9 +142,9 @@ public class NotificationServiceTests
     public async Task CreateNotifications_WithMultipleUserRoleAndOneNotificationTypeId_CreatesThreeNotification()
     {
         // Arrange
-        var userRoles = new Dictionary<string, IEnumerable<string>>
+        var userRoles = new[]
         {
-            { ClientId, new []{ "Company Admin" } }
+            new UserRoleConfig(ClientId, new []{ "Company Admin" })
         };
         var notificationContent = new
         {
@@ -174,9 +175,9 @@ public class NotificationServiceTests
     public async Task CreateNotifications_WithNotExistingRole_ThrowsException()
     {
         // Arrange
-        var userRoles = new Dictionary<string, IEnumerable<string>>
+        var userRoles = new[]
         {
-            { ClientId, new []{ "Not Existing" } }
+            new UserRoleConfig(ClientId, new []{ "Not Existing" })
         };
         var notificationContent = new
         {
@@ -203,9 +204,9 @@ public class NotificationServiceTests
     public async Task CreateNotificationsoverloadedmethod_WithSingleUserRoleAndOneNotificationTypeId_CreatesOneNotification()
     {
         // Arrange
-        var userRoles = new Dictionary<string, IEnumerable<string>>
+        var userRoles = new[]
         {
-            { ClientId, new []{ "CX Admin" } }
+            new UserRoleConfig(ClientId, new []{ "CX Admin" })
         };
         var notificationContent = new
         {
@@ -229,9 +230,9 @@ public class NotificationServiceTests
     public async Task CreateNotificationsoverloadedmethod_WithSingleUserRoleAndMultipleNotificationTypeId_CreatesFiveNotification()
     {
         // Arrange
-        var userRoles = new Dictionary<string, IEnumerable<string>>
+        var userRoles = new[]
         {
-            { ClientId, new []{ "CX Admin" } }
+            new UserRoleConfig(ClientId, new []{ "CX Admin" })
         };
 
         // Act
@@ -264,9 +265,9 @@ public class NotificationServiceTests
     public async Task CreateNotificationsoverloadedmethod_WithMultipleUserRoleAndOneNotificationTypeId_CreatesThreeNotification()
     {
         // Arrange
-        var userRoles = new Dictionary<string, IEnumerable<string>>
+        var userRoles = new[]
         {
-            { ClientId, new []{ "Company Admin" } }
+            new UserRoleConfig(ClientId, new []{ "Company Admin" })
         };
         var notificationContent = new
         {
@@ -293,9 +294,9 @@ public class NotificationServiceTests
     public async Task CreateNotificationsoverloadedmethod_WithNotExistingRole_ThrowsException()
     {
         // Arrange
-        var userRoles = new Dictionary<string, IEnumerable<string>>
+        var userRoles = new[]
         {
-            { ClientId, new []{ "Not Existing" } }
+            new UserRoleConfig(ClientId, new []{ "Not Existing" })
         };
         var notificationContent = new
         {
@@ -317,15 +318,17 @@ public class NotificationServiceTests
     #endregion
 
     #region SetNotificationsForOfferToDone
+
     [Fact]
     public async Task SetNotificationsForOfferToDone_WithAdditionalUsersAndMultipleNotifications_UpdatesThreeNotification()
     {
         // Arrange
         var userIds = _fixture.CreateMany<Guid>(3).ToImmutableArray();
         var notifications = _fixture.CreateMany<Guid>(3).ToImmutableArray();
-        var userRoles = new Dictionary<string, IEnumerable<string>>
+
+        var userRoles = new[]
         {
-            { ClientId, new []{ "Company Admin" } }
+            new UserRoleConfig(ClientId, new []{ "Company Admin" })
         };
         var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
         A.CallTo(() => _notificationRepository.GetNotificationUpdateIds(A<IEnumerable<Guid>>._, A<IEnumerable<Guid>?>._, A<IEnumerable<NotificationTypeId>>._, A<Guid>._))
@@ -368,9 +371,9 @@ public class NotificationServiceTests
     {
         // Arrange
         var notifications = _fixture.CreateMany<Guid>(3).ToImmutableArray();
-        var userRoles = new Dictionary<string, IEnumerable<string>>
+        var userRoles = new[]
         {
-            { ClientId, new []{ "Company Admin" } }
+            new UserRoleConfig(ClientId, new []{ "Company Admin" })
         };
         var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
         A.CallTo(() => _notificationRepository.GetNotificationUpdateIds(A<IEnumerable<Guid>>._, A<IEnumerable<Guid>?>._, A<IEnumerable<NotificationTypeId>>._, A<Guid>._))
@@ -412,9 +415,9 @@ public class NotificationServiceTests
     public async Task SetNotificationsForOfferToDone_WithNotExistingRole_ThrowsException()
     {
         // Arrange
-        var userRoles = new Dictionary<string, IEnumerable<string>>
+        var userRoles = new[]
         {
-            { ClientId, new []{ "Not Existing" } }
+            new UserRoleConfig(ClientId, new []{ "Not Existing" })
         };
         var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
 

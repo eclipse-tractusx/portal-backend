@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -35,7 +36,7 @@ public class InvitationSettings
     public string RegistrationAppAddress { get; set; }
 
     [Required]
-    public IDictionary<string, IEnumerable<string>> InvitedUserInitialRoles { get; set; }
+    public IEnumerable<UserRoleConfig> InvitedUserInitialRoles { get; set; }
 
     [Required(AllowEmptyStrings = false)]
     public string InitialLoginTheme { get; set; }

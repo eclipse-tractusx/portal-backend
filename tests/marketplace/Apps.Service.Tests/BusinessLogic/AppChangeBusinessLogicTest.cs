@@ -25,6 +25,8 @@ using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -82,13 +84,13 @@ public class AppChangeBusinessLogicTest
             {
                 NotificationTypeId.APP_ROLE_ADDED
             },
-            ActiveAppCompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            ActiveAppCompanyAdminRoles = new[]
             {
-                { ClientId, new [] { "Company Admin" } }
+                new UserRoleConfig(ClientId, new [] { "Company Admin" })
             },
-            CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            CompanyAdminRoles = new[]
             {
-                { ClientId, new [] { "Company Admin" } }
+                new UserRoleConfig(ClientId, new [] { "Company Admin" })
             }
         };
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
@@ -131,7 +133,7 @@ public class AppChangeBusinessLogicTest
                 return createdUserRoleDescriptions;
             });
 
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._))
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._))
             .Returns(_fixture.CreateMany<Guid>(4).AsFakeIAsyncEnumerable(out var createNotificationsResultAsyncEnumerator));
 
         //Act
@@ -168,7 +170,7 @@ public class AppChangeBusinessLogicTest
                     x => x.UserRoleId == userRoles!.ElementAt(2).Id && x.LanguageShortName == appAssignedRoleDesc[2].Descriptions.ElementAt(0).LanguageCode && x.Description == appAssignedRoleDesc[2].Descriptions.ElementAt(0).Description,
                     x => x.UserRoleId == userRoles!.ElementAt(2).Id && x.LanguageShortName == appAssignedRoleDesc[2].Descriptions.ElementAt(1).LanguageCode && x.Description == appAssignedRoleDesc[2].Descriptions.ElementAt(1).Description));
 
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._))
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => createNotificationsResultAsyncEnumerator.MoveNextAsync())
             .MustHaveHappened(5, Times.Exactly);
@@ -626,7 +628,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, data.Url, A<string>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
         notifications.Should().ContainSingle().Which
             .NotificationTypeId.Should().Be(NotificationTypeId.SUBSCRIPTION_URL_UPDATE);
         details.AppSubscriptionUrl.Should().Be(data.Url);
@@ -658,7 +660,7 @@ public class AppChangeBusinessLogicTest
                 notifications.Add(notification);
             });
 
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, null, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._))
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._))
             .Returns(_fixture.CreateMany<Guid>(4).AsFakeIAsyncEnumerable(out var createNotificationsResultAsyncEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(detailId, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._))
             .Invokes((Guid _, Guid _, Action<AppSubscriptionDetail>? initialize, Action<AppSubscriptionDetail> setParameters) =>
@@ -715,7 +717,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, data.Url, A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustHaveHappenedOnceExactly();
         notifications.Should().BeEmpty();
         details.AppSubscriptionUrl.Should().Be(data.Url);
     }
@@ -740,7 +742,7 @@ public class AppChangeBusinessLogicTest
         // Assert
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, oldUrl, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(detailId, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._)).MustNotHaveHappened();
     }
 
@@ -762,7 +764,7 @@ public class AppChangeBusinessLogicTest
         ex.Message.Should().Be($"url {data.Url} cannot be parsed: Invalid URI: The Authority/Host could not be parsed. (Parameter 'Url')");
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(A<Guid>._, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._)).MustNotHaveHappened();
     }
 
@@ -785,7 +787,7 @@ public class AppChangeBusinessLogicTest
         ex.Message.Should().Be($"Offer {appId} or subscription {subscriptionId} do not exists");
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(A<Guid>._, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._)).MustNotHaveHappened();
     }
 
@@ -811,7 +813,7 @@ public class AppChangeBusinessLogicTest
         ex.Message.Should().Be("Subscription url of single instance apps can't be changed");
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(A<Guid>._, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._)).MustNotHaveHappened();
     }
 
@@ -837,7 +839,7 @@ public class AppChangeBusinessLogicTest
         ex.Message.Should().Be($"Company {_identity.CompanyId} is not the app's providing company");
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(A<Guid>._, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._)).MustNotHaveHappened();
     }
 
@@ -863,7 +865,7 @@ public class AppChangeBusinessLogicTest
         ex.Message.Should().Be($"Subscription {subscriptionId} must be in status ACTIVE");
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(A<Guid>._, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._)).MustNotHaveHappened();
     }
 
@@ -887,7 +889,7 @@ public class AppChangeBusinessLogicTest
         ex.Message.Should().Be($"There is no subscription detail data configured for subscription {subscriptionId}");
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(A<Guid>._, subscriptionId, A<Action<AppSubscriptionDetail>>._, A<Action<AppSubscriptionDetail>>._)).MustNotHaveHappened();
     }
 

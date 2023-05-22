@@ -24,9 +24,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 
-public class KeycloakSettings
+public class KeycloakSettingData
 {
-    public KeycloakSettings()
+    public KeycloakSettingData()
     {
         ConnectionString = null!;
     }
@@ -38,11 +38,11 @@ public class KeycloakSettings
     public string? ClientSecret { get; set; }
     public string? AuthRealm { get; set; }
 
-    public void Validate(string key)
+    public void Validate()
     {
         if (ConnectionString == null)
         {
-            throw new ConfigurationException($"{nameof(KeycloakSettings)}: {nameof(ConnectionString)} must not be null");
+            throw new ConfigurationException($"{nameof(KeycloakSettingData)}: {nameof(ConnectionString)} must not be null");
         }
 
         if ((User != null && Password != null) ||
@@ -51,7 +51,7 @@ public class KeycloakSettings
             return;
         }
 
-        new ConfigurationValidation<KeycloakSettings>()
+        new ConfigurationValidation<KeycloakSettingData>()
             .NotNullOrWhiteSpace(User, () => nameof(User))
             .NotNullOrWhiteSpace(Password, () => nameof(Password))
             .NotNullOrWhiteSpace(ClientId, () => nameof(ClientId))
@@ -59,18 +59,38 @@ public class KeycloakSettings
     }
 }
 
-public class KeycloakSettingsMap : Dictionary<string, KeycloakSettings>
+public class KeycloakSettingsMap
 {
+    public KeycloakSettingsMap()
+    {
+        Name = null!;
+        Settings = null!;
+    }
+
+    public string Name { get; set; }
+
+    public KeycloakSettingData Settings { get; set; }
+
+    public void Validate()
+    {
+        Settings.Validate();
+    }
+}
+
+public class KeycloakSettings
+{
+    public IEnumerable<KeycloakSettingsMap> SettingMap { get; set; } = null!;
+
     public bool Validate()
     {
-        if (!Values.Any())
+        if (!SettingMap.Any())
         {
             throw new ConfigurationException();
         }
 
-        foreach (var (key, settings) in this)
+        foreach (var settings in SettingMap)
         {
-            settings.Validate(key);
+            settings.Validate();
         }
 
         return true;
@@ -83,7 +103,7 @@ public static class KeycloakSettingsExtention
         this IServiceCollection services,
         IConfigurationSection section)
     {
-        services.AddOptions<KeycloakSettingsMap>()
+        services.AddOptions<KeycloakSettings>()
             .Bind(section)
             .Validate(x => x.Validate())
             .ValidateOnStart();

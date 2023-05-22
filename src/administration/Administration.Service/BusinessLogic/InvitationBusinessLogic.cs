@@ -104,7 +104,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         IEnumerable<UserRoleData> roleDatas;
         try
         {
-            roleDatas = await _userProvisioningService.GetRoleDatas(_settings.InvitedUserInitialRoles).ToListAsync().ConfigureAwait(false);
+            roleDatas = await _userProvisioningService.GetRoleDatas(_settings.InvitedUserInitialRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames)).ToListAsync().ConfigureAwait(false);
         }
         catch (Exception e)
         {

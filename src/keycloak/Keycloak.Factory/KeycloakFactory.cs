@@ -26,20 +26,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 
 public class KeycloakFactory : IKeycloakFactory
 {
-    private readonly KeycloakSettingsMap _Settings;
-    public KeycloakFactory(IOptions<KeycloakSettingsMap> settings)
+    private readonly KeycloakSettings _Settings;
+    public KeycloakFactory(IOptions<KeycloakSettings> settings)
     {
         _Settings = settings.Value;
     }
 
     public KeycloakClient CreateKeycloakClient(string instance)
     {
-        if (!_Settings.Keys.Contains(instance, StringComparer.InvariantCultureIgnoreCase))
+        if (!_Settings.SettingMap.Select(x => x.Name).Contains(instance, StringComparer.InvariantCultureIgnoreCase))
         {
             throw new ConfigurationException($"undefined keycloak instance '{instance}'");
         }
 
-        var settings = _Settings.Single(x => x.Key.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Value;
+        var settings = _Settings.SettingMap.Single(x => x.Name.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Settings;
         return settings.ClientSecret == null
             ? new KeycloakClient(settings.ConnectionString, settings.User, settings.Password, settings.AuthRealm)
             : KeycloakClient.CreateWithClientId(settings.ConnectionString, settings.ClientId, settings.ClientSecret, settings.AuthRealm);
@@ -47,12 +47,12 @@ public class KeycloakFactory : IKeycloakFactory
 
     public KeycloakClient CreateKeycloakClient(string instance, string clientId, string secret)
     {
-        if (!_Settings.Keys.Contains(instance, StringComparer.InvariantCultureIgnoreCase))
+        if (!_Settings.SettingMap.Select(x => x.Name).Contains(instance, StringComparer.InvariantCultureIgnoreCase))
         {
             throw new ConfigurationException($"undefined keycloak instance '{instance}'");
         }
 
-        var settings = _Settings.Single(x => x.Key.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Value;
+        var settings = _Settings.SettingMap.Single(x => x.Name.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Settings;
         return KeycloakClient.CreateWithClientId(settings.ConnectionString, clientId, secret, settings.AuthRealm);
     }
 }

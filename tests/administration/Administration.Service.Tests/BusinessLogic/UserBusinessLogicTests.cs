@@ -1302,7 +1302,7 @@ public class UserBusinessLogicTests
 
         // Assert
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>
-            .That.IsSameSequenceAs(_options.Value.UserAdminRoles))).MustHaveHappenedOnceExactly();
+            .That.IsSameSequenceAs(_options.Value.UserAdminRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames)))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(identity.UserId, A<IEnumerable<Guid>>.That.IsSameSequenceAs(userRoleIds))).MustHaveHappenedOnceExactly();
         result.Should().Be(companyOwnUserDetails);
     }

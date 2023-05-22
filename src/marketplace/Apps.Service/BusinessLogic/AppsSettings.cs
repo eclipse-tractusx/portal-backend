@@ -18,7 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -34,7 +36,7 @@ public class AppsSettings
     /// </summary>
     /// <value></value>
     [Required]
-    public IDictionary<string, IEnumerable<string>> CatenaAdminRoles { get; set; } = null!;
+    public IEnumerable<UserRoleConfig> CatenaAdminRoles { get; set; } = null!;
 
     /// <summary>
     /// Notification Type Id
@@ -59,13 +61,13 @@ public class AppsSettings
     /// Sales Manager roles
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> SalesManagerRoles { get; set; } = null!;
+    public IEnumerable<UserRoleConfig> SalesManagerRoles { get; set; } = null!;
 
     /// <summary>
     /// Roles to notify when a new subscription was created
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; set; } = null!;
+    public IEnumerable<UserRoleConfig> ServiceManagerRoles { get; set; } = null!;
 
     /// <summary>
     /// Offer Status Id
@@ -73,12 +75,13 @@ public class AppsSettings
     /// <value></value>
     [Required]
     public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
+
     /// <summary>
     /// Active App Company Admin Roles
     /// </summary>
     /// <value></value>
     [Required]
-    public IDictionary<string, IEnumerable<string>> ActiveAppCompanyAdminRoles { get; set; } = null!;
+    public IEnumerable<UserRoleConfig> ActiveAppCompanyAdminRoles { get; set; } = null!;
 
     /// <summary>
     /// Active App Notification Type Id
@@ -97,7 +100,7 @@ public class AppsSettings
     /// Roles to notify when a new subscription was created for sales and App Manager
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> ApproveAppUserRoles { get; set; } = null!;
+    public IEnumerable<UserRoleConfig> ApproveAppUserRoles { get; set; } = null!;
 
     /// <summary>
     /// Max page size for pagination
@@ -115,7 +118,7 @@ public class AppsSettings
     /// IT Admin Roles
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> ITAdminRoles { get; set; } = null!;
+    public IEnumerable<UserRoleConfig> ITAdminRoles { get; set; } = null!;
 
     /// <summary>
     /// UserManagementAddress url required for subscription email 
@@ -139,7 +142,7 @@ public class AppsSettings
     /// Document Type Id and ContentType to be uploaded
     /// </summary>
     [Required]
-    public IDictionary<DocumentTypeId, IEnumerable<string>> UploadAppDocumentTypeIds { get; set; } = null!;
+    public IEnumerable<UploadDocumentConfig> UploadAppDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Client to get the technical user profile client
@@ -150,7 +153,18 @@ public class AppsSettings
     /// Company Admin Roles
     /// </summary>
     [Required]
-    public IDictionary<string, IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
+    public IEnumerable<UserRoleConfig> CompanyAdminRoles { get; set; } = null!;
+
+    public static bool Validate(AppsSettings settings)
+    {
+        if (settings.UploadAppDocumentTypeIds.Select(x => x.DocumentTypeId).Distinct().Count() !=
+            settings.UploadAppDocumentTypeIds.Count())
+        {
+            throw new ConfigurationException($"{nameof(UploadAppDocumentTypeIds)}: The document type id of the app documents must be unique");
+        }
+
+        return true;
+    }
 }
 
 /// <summary>
@@ -168,6 +182,7 @@ public static class AppsSettingsExtension
         services.AddOptions<AppsSettings>()
             .Bind(section)
             .ValidateDataAnnotations()
+            .Validate(AppsSettings.Validate)
             .ValidateOnStart();
         return services;
     }

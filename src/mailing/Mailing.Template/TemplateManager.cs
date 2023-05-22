@@ -40,10 +40,12 @@ public class TemplateManager : ITemplateManager
 
     public async Task<Mail> ApplyTemplateAsync(string id, IDictionary<string, string> parameters)
     {
-        if (!_settings.Templates.TryGetValue(id, out var template))
+        if (_settings.Templates.All(x => x.Name != id))
         {
             throw new NoSuchTemplateException(id);
         }
+
+        var template = _settings.Templates.Single(x => x.Name == id).Setting;
         var body = template.EmailTemplateType.HasValue
             ? await GetTemplateStringFromType(template.EmailTemplateType.Value).ConfigureAwait(false)
             : template.Body;
@@ -51,6 +53,7 @@ public class TemplateManager : ITemplateManager
         {
             throw new NoSuchTemplateException(id);
         }
+
         return new Mail(
             ReplaceValues(template.Subject, parameters),
             ReplaceValues(body, parameters),
@@ -69,6 +72,7 @@ public class TemplateManager : ITemplateManager
         {
             throw new NoSuchTemplateException(type.ToString());
         }
+
         try
         {
             return await File.ReadAllTextAsync(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/EmailTemplates/" + path).ConfigureAwait(false);

@@ -18,17 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using System.ComponentModel.DataAnnotations;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
-
-/// <summary>
-/// Settings used in business logic concerning daps.
-/// </summary>
-public class OfferProviderSettings : KeyVaultAuthSettings
-{
-    [Required]
-    public IEnumerable<UserRoleConfig> ServiceManagerRoles { get; init; } = null!;
-}
+public record UserRoleConfig(string ClientId, IEnumerable<string> UserRoleNames);
