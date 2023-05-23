@@ -841,6 +841,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         result!.Name.Should().Be("Latest App");
         result!.CompanyName.Should().Be("Catena-X");
         result!.ProviderCompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        result.HasPrivacyPolicies.Should().BeFalse();
+        result.HasTechnicalUserProfiles.Should().BeFalse();
     }
 
     #endregion

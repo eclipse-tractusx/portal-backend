@@ -354,6 +354,14 @@ public class OfferService : IOfferService
         {
             throw new ConflictException("The app has no roles assigned");
         }
+        if(!offerDetails.HasTechnicalUserProfiles)
+        {
+            throw new ConflictException("Technical user profile setup is missing for the app");
+        }
+        if(!offerDetails.HasPrivacyPolicies)
+        {
+            throw new ConflictException("PrivacyPolicies is missing for the app");
+        }
 
         await SubmitAppServiceAsync(offerId, iamUserId, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(false);
     }
