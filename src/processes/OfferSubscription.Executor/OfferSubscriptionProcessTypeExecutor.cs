@@ -36,26 +36,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Execut
 
 public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
 {
-    private static readonly IImmutableList<int> RecoverableStatusCodes = new List<int>
-    {
-        (int) HttpStatusCode.BadGateway,
-        (int) HttpStatusCode.ServiceUnavailable,
-        (int) HttpStatusCode.GatewayTimeout
-    }.ToImmutableList();
+    private static readonly IEnumerable<int> RecoverableStatusCodes = ImmutableArray.Create(
+        (int)HttpStatusCode.BadGateway,
+        (int)HttpStatusCode.ServiceUnavailable,
+        (int)HttpStatusCode.GatewayTimeout);
 
     private readonly IOfferProviderBusinessLogic _offerProviderBusinessLogic;
     private readonly IOfferSetupService _offerSetupService;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
 
-    private readonly IImmutableList<ProcessStepTypeId> _executableProcessSteps = new List<ProcessStepTypeId>
-    {
+    private readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps = ImmutableArray.Create(
         ProcessStepTypeId.TRIGGER_PROVIDER,
         ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION,
         ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION,
         ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION,
         ProcessStepTypeId.ACTIVATE_SUBSCRIPTION,
-        ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK
-    }.ToImmutableList();
+        ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK);
 
     private Guid _offerSubscriptionId;
     private readonly OfferSubscriptionsProcessSettings _settings;

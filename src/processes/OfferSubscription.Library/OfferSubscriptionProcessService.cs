@@ -39,7 +39,9 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
     {
         var allProcessStepTypeIds = processStepTypeIds == null
             ? new[] { processStepTypeId }
-            : processStepTypeIds.Append(processStepTypeId);
+            : processStepTypeIds.Contains(processStepTypeId)
+                ? processStepTypeIds
+                : processStepTypeIds.Append(processStepTypeId);
 
         var processData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetProcessStepData(offerSubscriptionId, allProcessStepTypeIds, mustBePending).ConfigureAwait(false);

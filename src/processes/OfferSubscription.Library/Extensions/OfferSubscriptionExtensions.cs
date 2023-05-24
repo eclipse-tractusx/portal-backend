@@ -79,7 +79,7 @@ public static class VerifyOfferSubscriptionProcessDataExtensions
 
         if (processData.ProcessSteps.Any(step => !processStepStatusIds.Contains(step.ProcessStepStatusId)))
         {
-            throw new UnexpectedConditionException($"processSteps should never have other status then {string.Join(",", processStepStatusIds)} here");
+            throw new UnexpectedConditionException($"processSteps should never have other status than {string.Join(",", processStepStatusIds)} here");
         }
 
         if (processData.ProcessSteps.Count(step => step.ProcessStepTypeId == processStepTypeId) != 1)
@@ -87,7 +87,7 @@ public static class VerifyOfferSubscriptionProcessDataExtensions
             throw new ConflictException($"offer subscription {offerSubscriptionId} process step {processStepTypeId} is not eligible to run");
         }
 
-        return processData.ProcessSteps.Single(step => step.ProcessStepTypeId == processStepTypeId);
+        return processData.ProcessSteps.First(step => step.ProcessStepTypeId == processStepTypeId);
     }
 
     public static IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData CreateManualOfferSubscriptionProcessStepData(this VerifyOfferSubscriptionProcessData checklistData, Guid offerSubscriptionId, ProcessStep processStep) =>

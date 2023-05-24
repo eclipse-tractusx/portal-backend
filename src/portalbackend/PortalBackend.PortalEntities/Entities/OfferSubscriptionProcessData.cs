@@ -2,13 +2,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class OfferSubscriptionProcessData
 {
-    private OfferSubscriptionProcessData()
-    {
-        OfferUrl = null!;
-    }
-
     public OfferSubscriptionProcessData(Guid offerSubscriptionId, string offerUrl)
-        : this()
     {
         OfferSubscriptionId = offerSubscriptionId;
         OfferUrl = offerUrl;

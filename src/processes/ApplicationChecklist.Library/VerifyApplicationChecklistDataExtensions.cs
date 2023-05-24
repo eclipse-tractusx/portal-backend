@@ -62,7 +62,7 @@ public static class VerifyApplicationChecklistDataExtensions
 
         if (checklistData.ProcessSteps == null || checklistData.ProcessSteps.Any(step => !processStepStatusIds.Contains(step.ProcessStepStatusId)))
         {
-            throw new UnexpectedConditionException($"processSteps should never have other status then {string.Join(",", processStepStatusIds)} here");
+            throw new UnexpectedConditionException($"processSteps should never have other status than {string.Join(",", processStepStatusIds)} here");
         }
 
         if (!checklistData.Checklist.Any(entry => entry.TypeId == entryTypeId && entryStatusIds.Contains(entry.StatusId)))
