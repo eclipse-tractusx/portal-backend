@@ -99,7 +99,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                                 s.Company.Address!.CountryAlpha2Code,
                                 s.Company.BusinessPartnerNumber,
                                 s.Requester!.Email,
-                                s.Offer!.TechnicalUserProfiles.Any() && s.Offer!.TechnicalUserProfiles.All(tup => tup.UserRoles.Any()))),
+                                s.Offer!.TechnicalUserProfiles.Any(tup => tup.UserRoles.Any()))),
                     Image = g.Documents
                         .Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId == DocumentStatusId.LOCKED)
                         .Select(document => document.Id)
