@@ -197,7 +197,7 @@ public class ServiceReleaseController : ControllerBase
     /// <param name="data">The data for the new service offering.</param>
     /// <remarks>Example: POST: /api/services/servicerelease/addservice</remarks>
     /// <response code="201">Returns the newly created service id.</response>
-    /// <response code="400">The given service offering data were invalid.</response>
+    /// <response code="400">The given service offering data were invalid i.e At lease one Service Type Id is missing or Title is less than three character or IamUser is not assignable to company user or SalesManager does not exist.</response>
     [HttpPost]
     [Route("addservice")]
     [Authorize(Roles = "add_service_offering")]

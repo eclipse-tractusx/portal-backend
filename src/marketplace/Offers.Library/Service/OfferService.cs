@@ -202,6 +202,14 @@ public class OfferService : IOfferService
     /// <inheritdoc />
     public async Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId, OfferTypeId offerTypeId)
     {
+        if (!data.ServiceTypeIds.Any())
+        {
+            throw new ControllerArgumentException("ServiceTypeIds must be specified", nameof(data.ServiceTypeIds));
+        }
+        if (data.Title.Length < 3)
+        {
+            throw new ControllerArgumentException("Title should be at least three character long", nameof(data.Title));
+        }
         var results = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserWithIamUserCheckAndCompanyName(iamUserId, data.SalesManager)
             .ToListAsync().ConfigureAwait(false);
