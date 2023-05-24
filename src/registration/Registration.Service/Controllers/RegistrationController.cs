@@ -344,7 +344,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <remarks>Example: Post: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/submitRegistration</remarks>
         /// <response code="200">Successfully submitted the registration</response>
         /// <response code="404">Application does not exist</response>
-        /// <response code="403">User is not associated with company application</response>
+        /// <response code="403">User is not associated with company application or Application status is not fitting to the pre-requisite or Application is already closed</response>
         /// <response code="500">Internal Server Error.</response>
         [HttpPost]
         [Authorize(Roles = "submit_registration")]
