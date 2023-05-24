@@ -511,13 +511,18 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(string? OfferName, OfferStatusId OfferStatus, Guid? CompanyId)> GetOfferDeclineDataAsync(Guid offerId, string iamUserId, OfferTypeId offerType) =>
+    public Task<(string? OfferName, OfferStatusId OfferStatus, Guid? CompanyId, IEnumerable<DocumentStatusData> ActiveDocumentStatusDatas)> GetOfferDeclineDataAsync(Guid offerId, string iamUserId, OfferTypeId offerType) =>
         _context.Offers
             .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerType)
-            .Select(offer => new ValueTuple<string?, OfferStatusId, Guid?>(
+            .Select(offer => new ValueTuple<string?, OfferStatusId, Guid?, IEnumerable<DocumentStatusData>>(
                 offer.Name,
                 offer.OfferStatusId,
-                offer.ProviderCompanyId))
+                offer.ProviderCompanyId,
+                offer.Documents
+                    .Where(document => document.DocumentStatusId != DocumentStatusId.INACTIVE)
+                    .Select(documents => new DocumentStatusData(
+                        documents.Id,
+                        documents.DocumentStatusId))))
             .SingleOrDefaultAsync();
 
     ///<inheritdoc/>
