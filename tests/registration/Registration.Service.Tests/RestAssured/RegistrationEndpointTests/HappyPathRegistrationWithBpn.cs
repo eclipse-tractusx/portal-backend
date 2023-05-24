@@ -15,10 +15,10 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithBpn
     private static string _applicationId;
 
     private readonly string _adminEndPoint = "/api/administration";
-    private readonly string _operatorToken;
+    private static string _operatorToken;
     private static string _companyName = "Test-Catena-X";
     private static string _bpn = "1234";
-    private readonly RegistrationEndpointHelper _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _baseUrl, _endPoint);
+    private static RegistrationEndpointHelper _regEndpointHelper;
 
 
     #region Happy Path - new registration with BPN

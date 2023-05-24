@@ -18,12 +18,12 @@ public class HappyPathUpdateCompanyDetailData
     private readonly string _adminEndPoint = "/api/administration";
     private static string _userCompanyToken;
     private static string? _applicationId;
-    private string? _operatorToken;
+    private static string? _operatorToken;
     private readonly string _operatorCompanyName = "CX-Operator";
 
     private static string _userCompanyName = "Test-Catena-X-13";
     private static string[] _userEmailAddress;
-    private readonly RegistrationEndpointHelper _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _baseUrl, _endPoint);
+    private static RegistrationEndpointHelper _regEndpointHelper;
     private TestDataHelper _testDataHelper = new TestDataHelper();
 
     JsonSerializerOptions _options = new JsonSerializerOptions
@@ -71,6 +71,7 @@ public class HappyPathUpdateCompanyDetailData
         _userCompanyToken =
             await new AuthFlow(_userCompanyName).UpdatePasswordAndGetAccessToken(emailAddress, messageData,
                 newPassword);
+        _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _operatorToken);
         _applicationId = _regEndpointHelper.GetFirstApplicationId();
     }
 

@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
@@ -20,11 +21,11 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     private static string? _applicationId;
 
     private readonly string _adminEndPoint = "/api/administration";
-    private string? _operatorToken;
+    private static string? _operatorToken;
     private readonly string _operatorCompanyName = "CX-Operator";
-    private static string _userCompanyName = "Test-Catena-X-13";
+    private static string _userCompanyName = "Test-Catena-X-29";
     private static string[] _userEmailAddress;
-    private readonly RegistrationEndpointHelper _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _baseUrl, _endPoint);
+    private static RegistrationEndpointHelper _regEndpointHelper;
     private TestDataHelper _testDataHelper = new TestDataHelper();
     
     JsonSerializerOptions _options = new JsonSerializerOptions
@@ -74,6 +75,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
         _userCompanyToken =
             await new AuthFlow(_userCompanyName).UpdatePasswordAndGetAccessToken(emailAddress, messageData,
                 newPassword);
+        _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _operatorToken);
         _applicationId = _regEndpointHelper.GetFirstApplicationId();
     }
 
@@ -203,7 +205,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     [Fact]
     public void Test6_GetApplicationDetails_ReturnsExpectedResult()
     {
-        var data = Given()
+        var response = Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
@@ -214,8 +216,11 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             .Then()
             .StatusCode(200)
             .Extract()
-            .Body("$.content[0].applicationStatus");
-        Assert.Equal("SUBMITTED", data);
+            .Response();
+
+        var data = DeserializeData<Pagination.Response<CompanyApplicationDetails>>(response.Content.ReadAsStringAsync()
+            .Result);
+        Assert.Contains("SUBMITTED", data.Content.First().CompanyApplicationStatusId.ToString());
     }
 
     // GET: api/administration/registration/application/{applicationId}/companyDetailsWithAddress
@@ -251,5 +256,16 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             storedData.StreetNumber == postedData.StreetNumber &&
             storedData.ZipCode == postedData.ZipCode && storedData.CountryDe == postedData.CountryDe) return true;
         else return false;
+    }
+    
+    private T? DeserializeData<T>(string jsonString)
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter() }
+        };
+        var deserializedData = JsonSerializer.Deserialize<T>(jsonString, options);
+        return deserializedData;
     }
 }

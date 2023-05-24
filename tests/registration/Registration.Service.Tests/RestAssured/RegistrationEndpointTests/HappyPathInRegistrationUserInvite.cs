@@ -17,11 +17,11 @@ public class HappyPathInRegistrationUserInvite
     private static string? _applicationId;
 
     private readonly string _adminEndPoint = "/api/administration";
-    private string? _operatorToken;
+    private static string? _operatorToken;
     private readonly string _operatorCompanyName = "CX-Operator";
     private static string _userCompanyName = "Test-Catena-X-C5";
     private static string[] _userEmailAddress;
-    private readonly RegistrationEndpointHelper _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _baseUrl, _endPoint);
+    private static RegistrationEndpointHelper _regEndpointHelper;
 
     // POST api/administration/invitation
 
@@ -62,6 +62,7 @@ public class HappyPathInRegistrationUserInvite
         _userCompanyToken =
             await new AuthFlow(_userCompanyName).UpdatePasswordAndGetAccessToken(emailAddress, messageData,
                 newPassword);
+        _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _operatorToken);
         _applicationId = _regEndpointHelper.GetFirstApplicationId();
     }
 

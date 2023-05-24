@@ -11,18 +11,17 @@ namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
 
 public class RegistrationEndpointHelper
 {
-    private readonly string _baseUrl;
-    private readonly string _endPoint;
+    private readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
+    private readonly string _endPoint = "/api/registration";
     private readonly string _adminEndPoint = "/api/administration";
     private readonly string _userCompanyToken;
     private readonly string _operatorToken;
     private static string? _applicationId;
 
-    public RegistrationEndpointHelper(string userCompanyToken, string baseUrl, string endPoint)
+    public RegistrationEndpointHelper(string userCompanyToken, string operatorToken)
     {
         _userCompanyToken = userCompanyToken;
-        _baseUrl = baseUrl;
-        _endPoint = endPoint;
+        _operatorToken = operatorToken;
         //_applicationId = GetFirstApplicationId();
     }
 

@@ -17,7 +17,7 @@ public class UnHappyPathRegistrationWithoutDocument
 
     private readonly string _adminEndPoint = "/api/administration";
     private static string _companyName = "Test-Catena-X";
-    private readonly RegistrationEndpointHelper _registrationEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _baseUrl, _endPoint);
+    private static RegistrationEndpointHelper _registrationEndpointHelper;
 
     #region UnHappy Path - new registration without document
     
