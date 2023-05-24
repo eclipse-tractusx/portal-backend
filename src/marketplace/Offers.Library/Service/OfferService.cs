@@ -538,6 +538,16 @@ public class OfferService : IOfferService
             offer.DateLastChanged = DateTime.UtcNow;
         });
 
+        var documentDatas = declineData.documentStatusDatas.Where(doc => doc.StatusId != DocumentStatusId.INACTIVE);
+        if (documentDatas.Any())
+        {
+            _portalRepositories.GetInstance<IDocumentRepository>()
+                .AttachAndModifyDocuments(
+                    documentDatas.Select(x => new ValueTuple<Guid, Action<Document>?, Action<Document>>(
+                        x.DocumentId,
+                        document => document.DocumentStatusId = x.StatusId,
+                        document => document.DocumentStatusId = DocumentStatusId.INACTIVE)));
+        }
         var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         var notificationContent = new
