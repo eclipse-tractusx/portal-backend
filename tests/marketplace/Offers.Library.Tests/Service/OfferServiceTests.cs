@@ -1047,7 +1047,7 @@ public class OfferServiceTests
         // Arrange
         var notExistingOffer = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, _iamUserId, offerTypeId))
-            .Returns(((string?, OfferStatusId, Guid?))default);
+            .Returns(((string?, OfferStatusId, Guid?, IEnumerable<DocumentStatusData>))default);
 
         // Act
         async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _iamUserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
@@ -1063,8 +1063,9 @@ public class OfferServiceTests
     {
         // Arrange
         var notExistingOffer = _fixture.Create<Guid>();
+        var documentStatusDatas = _fixture.CreateMany<DocumentStatusData>();
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, _iamUserId, offerTypeId))
-            .Returns(("test", OfferStatusId.CREATED, Guid.NewGuid()));
+            .Returns(("test", OfferStatusId.CREATED, Guid.NewGuid(), documentStatusDatas));
 
         // Act
         async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _iamUserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
@@ -1081,8 +1082,9 @@ public class OfferServiceTests
     {
         // Arrange
         var notExistingOffer = _fixture.Create<Guid>();
+        var documentStatusDatas = _fixture.CreateMany<DocumentStatusData>();
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, _iamUserId, offerTypeId))
-            .Returns(((string?)null, OfferStatusId.IN_REVIEW, Guid.NewGuid()));
+            .Returns(((string?)null, OfferStatusId.IN_REVIEW, Guid.NewGuid(), documentStatusDatas));
 
         // Act
         async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _iamUserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
@@ -1099,8 +1101,9 @@ public class OfferServiceTests
     {
         // Arrange
         var notExistingOffer = _fixture.Create<Guid>();
+        var documentStatusDatas = _fixture.CreateMany<DocumentStatusData>();
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(notExistingOffer, _iamUserId, offerTypeId))
-            .Returns(("test", OfferStatusId.IN_REVIEW, null));
+            .Returns(("test", OfferStatusId.IN_REVIEW, null, documentStatusDatas));
 
         // Act
         async Task Act() => await _sut.DeclineOfferAsync(notExistingOffer, _iamUserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, new Dictionary<string, IEnumerable<string>>(), string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
@@ -1120,8 +1123,13 @@ public class OfferServiceTests
         var offerId = _fixture.Create<Guid>();
         var recipients = new Dictionary<string, IEnumerable<string>>() { { "Test", new[] { "Abc" } } };
         var roleIds = _fixture.Create<IEnumerable<Guid>>();
+        var documentStatusDatas = new DocumentStatusData[]
+        {
+            new(Guid.NewGuid(), DocumentStatusId.LOCKED),
+            new(Guid.NewGuid(), DocumentStatusId.PENDING),
+        };
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(offerId, _iamUserId, offerTypeId))
-            .Returns(("test", OfferStatusId.IN_REVIEW, Guid.NewGuid()));
+            .Returns(("test", OfferStatusId.IN_REVIEW, Guid.NewGuid(), documentStatusDatas));
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._))
             .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
             {
@@ -1133,6 +1141,27 @@ public class OfferServiceTests
         A.CallTo(() => _userRepository.GetCompanyUserEmailForCompanyAndRoleId(A<IEnumerable<Guid>>._, A<Guid>._))
             .Returns(new (string Email, string? Firstname, string? Lastname)[] { new("test@email.com", "Test User 1", "cx-user-2") }.ToAsyncEnumerable());
 
+        IEnumerable<Document>? initial = null;
+        IEnumerable<Document>? modified = null;
+        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid DocumentId, Action<Document>? Initialize, Action<Document> Modify)>>._))
+            .Invokes((IEnumerable<(Guid DocumentId, Action<Document>? Initialize, Action<Document> Modify)> data) =>
+            {
+                initial = data.Select(x =>
+                    {
+                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                        x.Initialize?.Invoke(document);
+                        return document;
+                    }
+                ).ToImmutableArray();
+                modified = data.Select(x =>
+                    {
+                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                        x.Modify(document);
+                        return document;
+                    }
+                ).ToImmutableArray();
+            });
+
         // Act
         await _sut.DeclineOfferAsync(offerId, _iamUserId, new OfferDeclineRequest("Test"), offerTypeId, NotificationTypeId.SERVICE_RELEASE_REJECTION, recipients, string.Empty, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
 
@@ -1143,6 +1172,13 @@ public class OfferServiceTests
         A.CallTo(() => _createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappenedOnceExactly();
         offer.OfferStatusId.Should().Be(OfferStatusId.CREATED);
+        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid, Action<Document>?, Action<Document>)>>._)).MustHaveHappenedOnceExactly();
+        initial.Should().HaveCount(2).And.Satisfy(
+            x => x.Id == documentStatusDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.LOCKED,
+            x => x.Id == documentStatusDatas.ElementAt(1).DocumentId && x.DocumentStatusId == DocumentStatusId.PENDING);
+        modified.Should().HaveCount(2).And.Satisfy(
+            x => x.Id == documentStatusDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.INACTIVE,
+            x => x.Id == documentStatusDatas.ElementAt(1).DocumentId && x.DocumentStatusId == DocumentStatusId.INACTIVE);
     }
 
     #endregion

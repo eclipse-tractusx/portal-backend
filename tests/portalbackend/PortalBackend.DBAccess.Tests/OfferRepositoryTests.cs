@@ -469,6 +469,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         offerDetail.Should().NotBeNull();
         offerDetail.OfferStatus.Should().Be(OfferStatusId.ACTIVE);
+        offerDetail.ActiveDocumentStatusDatas.Should().ContainSingle().And.Satisfy(
+            x => x.DocumentId == new Guid("0d68c68c-d689-474c-a3be-8493f99feab2") && x.StatusId == DocumentStatusId.LOCKED);
     }
 
     #endregion
