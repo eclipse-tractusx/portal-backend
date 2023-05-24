@@ -306,7 +306,7 @@ public interface IOfferRepository
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="offerType">Type of the offer</param>
     /// <returns>Returns the data needed to decline an offer</returns>
-    Task<(string? OfferName, OfferStatusId OfferStatus, Guid? CompanyId, IEnumerable<DocumentStatusData> documentStatusDatas)> GetOfferDeclineDataAsync(Guid offerId, string iamUserId, OfferTypeId offerType);
+    Task<(string? OfferName, OfferStatusId OfferStatus, Guid? CompanyId, IEnumerable<DocumentStatusData> ActiveDocumentStatusDatas)> GetOfferDeclineDataAsync(Guid offerId, string iamUserId, OfferTypeId offerType);
 
     /// <summary>
     /// Retireve and Validate Offer Status for App

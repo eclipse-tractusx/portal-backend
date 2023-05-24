@@ -1099,7 +1099,11 @@ public class OfferServiceTests
         var offerId = _fixture.Create<Guid>();
         var recipients = new Dictionary<string, IEnumerable<string>>() { { "Test", new[] { "Abc" } } };
         var roleIds = _fixture.Create<IEnumerable<Guid>>();
-        var documentStatusDatas = _fixture.CreateMany<DocumentStatusData>(2);
+        var documentStatusDatas = new DocumentStatusData[]
+        {
+            new(Guid.NewGuid(), DocumentStatusId.LOCKED),
+            new(Guid.NewGuid(), DocumentStatusId.PENDING),
+        };
         A.CallTo(() => _offerRepository.GetOfferDeclineDataAsync(offerId, _iamUserId, offerTypeId))
             .Returns(("test", OfferStatusId.IN_REVIEW, Guid.NewGuid(), documentStatusDatas));
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._))
@@ -1145,9 +1149,11 @@ public class OfferServiceTests
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappenedOnceExactly();
         offer.OfferStatusId.Should().Be(OfferStatusId.CREATED);
         A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid, Action<Document>?, Action<Document>)>>._)).MustHaveHappenedOnceExactly();
-        initial.Should().NotBeNull().And.HaveCount(2).And.Satisfy(x => x.Id == documentStatusDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.LOCKED,
-           x => x.Id == documentStatusDatas.ElementAt(1).DocumentId && x.DocumentStatusId == DocumentStatusId.PENDING);
-        modified.Should().NotBeNull().And.HaveCount(2).And.Satisfy(x => x.Id == documentStatusDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.INACTIVE,
+        initial.Should().HaveCount(2).And.Satisfy(
+            x => x.Id == documentStatusDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.LOCKED,
+            x => x.Id == documentStatusDatas.ElementAt(1).DocumentId && x.DocumentStatusId == DocumentStatusId.PENDING);
+        modified.Should().HaveCount(2).And.Satisfy(
+            x => x.Id == documentStatusDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.INACTIVE,
             x => x.Id == documentStatusDatas.ElementAt(1).DocumentId && x.DocumentStatusId == DocumentStatusId.INACTIVE);
     }
 
