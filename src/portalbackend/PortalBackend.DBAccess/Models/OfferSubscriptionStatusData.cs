@@ -22,5 +22,12 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-
+/// <summary>
+/// Offer Subscriptions Status Data
+/// </summary>
+/// <param name="OfferId">Id of the Offer</param>
+/// <param name="OfferName">Name of the Offer</param>
+/// <param name="Provider">When called from /provider name of the company subscribing the offer, otherwise the provider company's name</param>
+/// <param name="OfferSubscriptionStatus">Status of the offer subscription</param>
+/// <param name="DocumentId">Id of the documents</param>
 public record OfferSubscriptionStatusData(Guid OfferId, string? OfferName, string Provider, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid? DocumentId);
