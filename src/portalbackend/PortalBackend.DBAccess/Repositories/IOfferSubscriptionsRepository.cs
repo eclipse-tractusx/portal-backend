@@ -41,12 +41,6 @@ public interface IOfferSubscriptionsRepository
     OfferSubscription CreateOfferSubscription(Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, Guid creatorId);
 
     /// <summary>
-    ///
-    /// </summary>
-    /// <param name="iamUserId"></param>
-    IAsyncEnumerable<(Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatusId, string? Name, string Provider, Guid Image)> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId);
-
-    /// <summary>
     /// Gets the provided offer subscription statuses for the user and given company
     /// </summary>
     /// <param name="iamUserId">Id of user of the Providercompany</param>
@@ -119,4 +113,13 @@ public interface IOfferSubscriptionsRepository
     /// <param name="initialize">Initializes the entity</param>
     /// <param name="setParameters">Updates the fields</param>
     void AttachAndModifyAppSubscriptionDetail(Guid detailId, Guid subscriptionId, Action<AppSubscriptionDetail>? initialize, Action<AppSubscriptionDetail> setParameters);
+
+    /// <summary>
+    /// Gets the Service offer subscription statuses for the user
+    /// </summary>
+    /// <param name="iamUserId">Id of user of the Providercompany</param>
+    /// <param name="offerTypeId">Id of the offer type</param>
+    /// <param name="documentTypeId">Id of the document type</param>
+    /// <returns>Returns a func with skip, take and the pagination of the source</returns>
+    Func<int, int, Task<Pagination.Source<OfferSubscriptionStatusData>?>> GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(string iamUserId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
 }
