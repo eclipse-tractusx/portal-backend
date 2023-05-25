@@ -240,8 +240,11 @@ public class OfferSetupServiceTests
         else
         {
             result.TechnicalUserInfo.Should().NotBeNull();
-            result.TechnicalUserInfo!.TechnicalUserId.Should().Be(_technicalUserId);
-            result.TechnicalUserInfo.TechnicalUserSecret.Should().Be("katze!1234");
+            result.TechnicalUserInfo!.Should().Match<TechnicalUserInfoData>(info =>
+                info.TechnicalUserId == _technicalUserId &&
+                info.TechnicalUserSecret == "katze!1234" &&
+                info.TechnicalUserPermissions.SequenceEqual(new[] { "role1", "role2" })
+            );
             companyServiceAccount.OfferSubscriptionId.Should().Be(_pendingSubscriptionId);
         }
 
@@ -622,7 +625,11 @@ public class OfferSetupServiceTests
                     Secret = "katze!1234"
                 }),
                 _technicalUserId,
-                Enumerable.Empty<UserRoleData>()));
+                new UserRoleData[]
+                {
+                    new(Guid.NewGuid(), "client1", "role1"),
+                    new(Guid.NewGuid(), "client1", "role2"),
+                }));
 
         A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._,
                 A<Guid>._, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<bool?>._))
