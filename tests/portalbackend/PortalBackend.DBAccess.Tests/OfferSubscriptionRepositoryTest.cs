@@ -141,13 +141,14 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     #region GetOwnCompanyProvidedOfferSubscriptionStatusesUntracked
 
     [Theory]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, 1)]
-    [InlineData(SubscriptionStatusSorting.OfferIdDesc, null, 1)]
-    [InlineData(SubscriptionStatusSorting.CompanyNameAsc, null, 1)]
-    [InlineData(SubscriptionStatusSorting.CompanyNameDesc, null, 1)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfea", 1)]
-    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "deadbeef-dead-beef-dead-beefdeadbeef", 0)]
-    public async Task GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpectedNotificationDetailData(SubscriptionStatusSorting sorting, string? offerIdTxt, int count)
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, null, 2, true)]
+    [InlineData(SubscriptionStatusSorting.OfferIdDesc, null, 2, false)]
+    [InlineData(SubscriptionStatusSorting.CompanyNameAsc, null, 2, true)]
+    [InlineData(SubscriptionStatusSorting.CompanyNameDesc, null, 2, true)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfea", 1, false)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "a16e73b9-5277-4b69-9f8d-3b227495dfae", 1, true)]
+    [InlineData(SubscriptionStatusSorting.OfferIdAsc, "deadbeef-dead-beef-dead-beefdeadbeef", 0, false)]
+    public async Task GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpectedNotificationDetailData(SubscriptionStatusSorting sorting, string? offerIdTxt, int count, bool technicalUser)
     {
         // Arrange
         Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
@@ -163,7 +164,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             results!.Count.Should().Be(count);
             results.Data.Should().HaveCount(count);
             results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().HaveCount(1);
-            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().Match(x => x.Count() == 1 && x.First().TechnicalUser == false);
+            results.Data.Should().AllBeOfType<OfferCompanySubscriptionStatusData>().Which.First().CompanySubscriptionStatuses.Should().Match(x => x.Count() == 1 && x.First().TechnicalUser == technicalUser);
         }
         else
         {
@@ -206,12 +207,17 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync("502dabcf-01c7-47d9-a88e-0be4279097b5").ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().HaveCount(2).And.Satisfy(
+        result.Should().HaveCount(3).And.Satisfy(
             x => x.AppId == new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea") &&
                 x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
                 x.Name == "SDE with EDC" &&
                 x.Provider == "Service Provider" &&
                 x.Image == Guid.Empty,
+            x => x.AppId == new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfae") &&
+                 x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
+                 x.Name == "Service Test 123" &&
+                 x.Provider == "Service Provider" &&
+                 x.Image == Guid.Empty,
             x => x.AppId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
                 x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
                 x.Name == "Trace-X" &&

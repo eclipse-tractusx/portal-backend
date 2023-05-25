@@ -387,8 +387,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         offerDetail.Should().NotBeNull();
-        offerDetail!.Count.Should().Be(3);
-        offerDetail.Data.Should().HaveCount(3);
+        offerDetail!.Count.Should().Be(4);
+        offerDetail.Data.Should().HaveCount(4);
         if (sorting == ServiceOverviewSorting.ProviderAsc)
         {
             offerDetail.Data.Select(data => data.Provider).Should().BeInAscendingOrder();
@@ -402,9 +402,9 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Theory]
     [InlineData(ServiceTypeId.CONSULTANCE_SERVICE, 0, 2, 1, 1)]
     [InlineData(ServiceTypeId.DATASPACE_SERVICE, 0, 2, 2, 2)]
-    [InlineData(null, 0, 2, 3, 2)]
-    [InlineData(null, 1, 1, 3, 1)]
-    [InlineData(null, 2, 1, 3, 1)]
+    [InlineData(null, 0, 2, 4, 2)]
+    [InlineData(null, 1, 1, 4, 1)]
+    [InlineData(null, 2, 1, 4, 1)]
     public async Task GetActiveServices_WithExistingServiceAndServiceType_ReturnsExpectedResult(ServiceTypeId? serviceTypeId, int page, int size, int count, int numData)
     {
         // Arrange
@@ -1159,7 +1159,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result!.Data.Should().NotBeEmpty();
-        result!.Data.Should().HaveCount(3);
+        result!.Data.Should().HaveCount(4);
         if (sorting == OfferSorting.NameAsc)
         {
             result.Data.Select(data => data.Provider).Should().BeInAscendingOrder();
@@ -1182,7 +1182,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result!.Data.Should().NotBeEmpty()
-            .And.HaveCount(3)
+            .And.HaveCount(4)
             .And.StartWith(new InReviewServiceData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "Consulting Service - Data Readiness", OfferStatusId.ACTIVE, "Catena-X", "Lorem ipsum dolor sit amet, consectetur adipiscing elit."));
     }
 
