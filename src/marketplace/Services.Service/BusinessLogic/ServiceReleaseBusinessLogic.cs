@@ -95,12 +95,12 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         _portalRepositories.GetInstance<IStaticDataRepository>().GetServiceTypeData();
 
     /// <inheritdoc/>
-    public Task<OfferAgreementConsent> GetServiceAgreementConsentAsync(Guid serviceId, string iamUserId) =>
-        _offerService.GetProviderOfferAgreementConsentById(serviceId, iamUserId, OfferTypeId.SERVICE);
+    public Task<OfferAgreementConsent> GetServiceAgreementConsentAsync(Guid serviceId, IdentityData identity) =>
+        _offerService.GetProviderOfferAgreementConsentById(serviceId, identity, OfferTypeId.SERVICE);
 
-    public async Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, string userId)
+    public async Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, IdentityData identity)
     {
-        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, userId, OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, identity, OfferTypeId.SERVICE).ConfigureAwait(false);
         if (result.ServiceTypeIds == null)
         {
             throw new UnexpectedConditionException("serviceTypeIds should never be null here");
@@ -163,11 +163,11 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         _offerService.CreateServiceOfferingAsync(data, iamUserId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public async Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, string iamUserId)
+    public async Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, IdentityData identity)
     {
         var serviceData = await _portalRepositories
             .GetInstance<IOfferRepository>()
-            .GetServiceUpdateData(serviceId, data.ServiceTypeIds, iamUserId)
+            .GetServiceUpdateData(serviceId, data.ServiceTypeIds, identity.CompanyId)
             .ConfigureAwait(false);
         if (serviceData is null)
         {
@@ -181,12 +181,12 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 
         if (!serviceData.IsUserOfProvider)
         {
-            throw new ForbiddenException($"User {iamUserId} is not allowed to change the service.");
+            throw new ForbiddenException($"User {identity.UserEntityId} is not allowed to change the service.");
         }
 
         if (data.SalesManager.HasValue)
         {
-            await _offerService.ValidateSalesManager(data.SalesManager.Value, iamUserId, _settings.SalesManagerRoles).ConfigureAwait(false);
+            await _offerService.ValidateSalesManager(data.SalesManager.Value, identity, _settings.SalesManagerRoles).ConfigureAwait(false);
         }
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
@@ -244,18 +244,18 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         _offerService.DeclineOfferAsync(serviceId, iamUserId, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.ServiceMarketplaceAddress, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
 
     /// <inheritdoc />
-    public Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken) =>
-        _offerDocumentService.UploadDocumentAsync(serviceId, documentTypeId, document, iamUserId, OfferTypeId.SERVICE, _settings.UploadServiceDocumentTypeIds, cancellationToken);
+    public Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken) =>
+        _offerDocumentService.UploadDocumentAsync(serviceId, documentTypeId, document, identity, OfferTypeId.SERVICE, _settings.UploadServiceDocumentTypeIds, cancellationToken);
 
     /// <inheritdoc/>
-    public Task DeleteServiceDocumentsAsync(Guid documentId, string iamUserId) =>
-        _offerService.DeleteDocumentsAsync(documentId, iamUserId, _settings.DeleteDocumentTypeIds, OfferTypeId.SERVICE);
+    public Task DeleteServiceDocumentsAsync(Guid documentId, IdentityData identity) =>
+        _offerService.DeleteDocumentsAsync(documentId, identity, _settings.DeleteDocumentTypeIds, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId) =>
-        _offerService.GetTechnicalUserProfilesForOffer(offerId, iamUserId, OfferTypeId.SERVICE);
+    public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, IdentityData identity) =>
+        _offerService.GetTechnicalUserProfilesForOffer(offerId, identity, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public Task UpdateTechnicalUserProfiles(Guid serviceId, IEnumerable<TechnicalUserProfileData> data, string iamUserId) =>
-        _offerService.UpdateTechnicalUserProfiles(serviceId, OfferTypeId.SERVICE, data, iamUserId, _settings.TechnicalUserProfileClient);
+    public Task UpdateTechnicalUserProfiles(Guid serviceId, IEnumerable<TechnicalUserProfileData> data, IdentityData identity) =>
+        _offerService.UpdateTechnicalUserProfiles(serviceId, OfferTypeId.SERVICE, data, identity, _settings.TechnicalUserProfileClient);
 }

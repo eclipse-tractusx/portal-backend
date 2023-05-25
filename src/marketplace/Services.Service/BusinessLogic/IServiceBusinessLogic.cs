@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
@@ -52,17 +53,17 @@ public interface IServiceBusinessLogic
     /// </summary>
     /// <param name="serviceId">Id of the service the details should be retrieved for.</param>
     /// <param name="lang">Shortcode of the language for the text translations</param>
-    /// <param name="iamUserId">Id of the iam User</param>
+    /// <param name="identity">Identity of the User</param>
     /// <returns>Returns the service detail data</returns>
-    Task<ServiceDetailResponse> GetServiceDetailsAsync(Guid serviceId, string lang, string iamUserId);
+    Task<ServiceDetailResponse> GetServiceDetailsAsync(Guid serviceId, string lang, IdentityData identity);
 
     /// <summary>
     /// Gets the Subscription Details for the given Id
     /// </summary>
     /// <param name="subscriptionId">Id of the subscription</param>
-    /// <param name="iamUserId">Id of the user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <returns>Returns the details for the subscription</returns>
-    Task<SubscriptionDetailData> GetSubscriptionDetailAsync(Guid subscriptionId, string iamUserId);
+    Task<SubscriptionDetailData> GetSubscriptionDetailAsync(Guid subscriptionId, IdentityData identity);
 
     /// <summary>
     /// Gets the service agreement data
@@ -91,12 +92,12 @@ public interface IServiceBusinessLogic
     /// </summary>
     /// <param name="page"></param>
     /// <param name="size"></param>
-    /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
+    /// <param name="identity"></param>
     /// <param name="sorting"></param>
     /// <param name="statusId"></param>
     /// <param name="offerId"></param>
     /// <returns>Pagination of user's company's provided service' statuses.</returns>
-    Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId);
+    Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, IdentityData identity, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId);
 
     /// <summary>
     /// Get the document content by given Id for Service
@@ -112,29 +113,29 @@ public interface IServiceBusinessLogic
     /// </summary>
     /// <param name="page"></param>
     /// <param name="size"></param>
-    /// <param name="userId"></param>
+    /// <param name="identity"></param>
     /// <param name="sorting"></param>
     /// <param name="offerName"></param>
     /// <param name="statusId"></param>
-    Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync(int page, int size, string userId, OfferSorting? sorting, string? offerName, ServiceStatusIdFilter? statusId);
+    Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync(int page, int size, IdentityData identity, OfferSorting? sorting, string? offerName, ServiceStatusIdFilter? statusId);
 
     /// <summary>
     /// Gets the information for the subscription
     /// </summary>
     /// <param name="serviceId">Id of the app</param>
     /// <param name="subscriptionId">Id of the subscription</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid serviceId, Guid subscriptionId, string iamUserId);
+    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid serviceId, Guid subscriptionId, IdentityData identity);
 
     /// <summary>
     /// Gets the information for the subscription
     /// </summary>
     /// <param name="serviceId">Id of the app</param>
     /// <param name="subscriptionId">Id of the subscription</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Id of the user</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid serviceId, Guid subscriptionId, string iamUserId);
+    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid serviceId, Guid subscriptionId, IdentityData identity);
 
     /// <summary>
     /// Retrieves subscription statuses of subscribed Service of the provided user's company.

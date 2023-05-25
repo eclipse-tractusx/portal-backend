@@ -37,11 +37,11 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
     }
 
     /// <inheritdoc />
-    public Task<OfferProfileData?> GetOfferProfileData(Guid offerId, OfferTypeId offerTypeId, string iamUserId) =>
+    public Task<OfferProfileData?> GetOfferProfileData(Guid offerId, OfferTypeId offerTypeId, Guid userCompanyId) =>
         _context.Offers
             .Where(x => x.Id == offerId && x.OfferTypeId == offerTypeId)
             .Select(o => new OfferProfileData(
-                o.ProviderCompany!.CompanyUsers.Any(x => x.UserEntityId == iamUserId),
+                o.ProviderCompanyId == userCompanyId,
                 offerTypeId == OfferTypeId.SERVICE ? o.ServiceDetails.Select(sd => sd.ServiceTypeId) : null,
                 o.TechnicalUserProfiles.Select(tup => new ValueTuple<Guid, IEnumerable<Guid>>(tup.Id, tup.UserRoles.Select(ur => ur.Id)))))
             .SingleOrDefaultAsync();
@@ -70,11 +70,11 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
 
     /// <inheritdoc />
     public Task<(bool IsUserOfProvidingCompany, IEnumerable<TechnicalUserProfileInformation> Information)>
-        GetTechnicalUserProfileInformation(Guid offerId, string iamUserId, OfferTypeId offerTypeId) =>
+        GetTechnicalUserProfileInformation(Guid offerId, Guid usersCompanyId, OfferTypeId offerTypeId) =>
             _context.Offers
                 .Where(x => x.Id == offerId && x.OfferTypeId == offerTypeId)
                 .Select(x => new ValueTuple<bool, IEnumerable<TechnicalUserProfileInformation>>(
-                    x.ProviderCompany!.CompanyUsers.Any(cu => cu.UserEntityId == iamUserId),
+                    x.ProviderCompanyId == usersCompanyId,
                     x.TechnicalUserProfiles.Select(tup => new TechnicalUserProfileInformation(
                         tup.Id,
                         tup.UserRoles.Select(ur => new UserRoleInformation(ur.Id, ur.UserRoleText))))))

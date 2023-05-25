@@ -29,20 +29,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 [AuditEntityV1(typeof(AuditCompanyUser20230522))]
 public class CompanyUser : Identity, IAuditableV1
 {
-    public CompanyUser()
-        : base()
-    {
-        Consents = new HashSet<Consent>();
-        Documents = new HashSet<Document>();
-        Invitations = new HashSet<Invitation>();
-        Offers = new HashSet<Offer>();
-        SalesManagerOfOffers = new HashSet<Offer>();
-        CompanyUserAssignedBusinessPartners = new HashSet<CompanyUserAssignedBusinessPartner>();
-        Notifications = new HashSet<Notification>();
-        CreatedNotifications = new HashSet<Notification>();
-        RequestedSubscriptions = new HashSet<OfferSubscription>();
-    }
-
     public CompanyUser(Guid id, Guid companyId, UserStatusId userStatusId, DateTimeOffset dateCreated, Guid lastEditorId)
         : base(id, dateCreated, companyId, userStatusId, IdentityTypeId.COMPANY_USER)
     {

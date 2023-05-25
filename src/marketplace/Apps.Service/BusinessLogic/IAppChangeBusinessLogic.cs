@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
@@ -33,40 +34,40 @@ public interface IAppChangeBusinessLogic
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="appUserRolesDescription"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <returns>List of the created AppRoles</returns>
-    Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, string iamUserId);
+    Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, IdentityData identity);
 
     /// <summary>
     /// Get OfferDescription by appId
     /// </summary>
     /// <param name="appId">Id of the app</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, string iamUserId);
+    /// <param name="identity"></param>
+    Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, IdentityData identity);
 
     /// <summary>
     /// Create or Update OfferDescription by appId
     /// </summary>
     /// <param name="appId">Id of the app</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="identity"></param>
     /// <param name="offerDescriptionDatas">OfferDescription Data</param>
-    Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas);
+    Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, IdentityData identity, IEnumerable<LocalizedDescription> offerDescriptionDatas);
 
     /// <summary>
     /// Upload OfferAssigned AppLeadImage Document by appId
     /// </summary>
     /// <param name="appId">Id of the app</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="identity"></param>
     /// <param name="document">Document Data</param>
     /// <param name="cancellationToken">cancellationToken</param>
-    Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken);
+    Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, IdentityData identity, IFormFile document, CancellationToken cancellationToken);
 
     /// <summary>
     /// Deactivate Offer Status by appId
     /// </summary>
     /// <param name="appId">Id of the app</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId);
+    /// <param name="identity">Identity of the User</param>
+    public Task DeactivateOfferByAppIdAsync(Guid appId, IdentityData identity);
 
     /// <summary>
     /// Updates the url of the subscription
@@ -74,6 +75,6 @@ public interface IAppChangeBusinessLogic
     /// <param name="offerId">Id of the offer</param>
     /// <param name="subscriptionId">If of the subscription</param>
     /// <param name="data">the data to update the url</param>
-    /// <param name="iamUserId">id of the iamuser</param>
-    Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, string iamUserId);
+    /// <param name="identity"></param>
+    Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, IdentityData identity);
 }

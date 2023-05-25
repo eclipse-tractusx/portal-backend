@@ -43,25 +43,25 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync(string iamUserId)
+    public async Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync(IdentityData identity)
     {
-        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetOwnCompanyDetailsAsync(iamUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetOwnCompanyDetailsAsync(identity.CompanyId).ConfigureAwait(false);
         if (result == null)
         {
-            throw new ConflictException($"user {iamUserId} is not associated with any company");
+            throw new ConflictException($"user {identity.UserEntityId} is not associated with any company");
         }
         return result;
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(string iamUserId) =>
-        _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyAssigendUseCaseDetailsAsync(iamUserId);
+    public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(IdentityData identity) =>
+        _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyAssigendUseCaseDetailsAsync(identity.CompanyId);
 
     /// <inheritdoc/>
-    public async Task<bool> CreateCompanyAssignedUseCaseDetailsAsync(string iamUserId, Guid useCaseId)
+    public async Task<bool> CreateCompanyAssignedUseCaseDetailsAsync(IdentityData identity, Guid useCaseId)
     {
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
-        var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(iamUserId, useCaseId).ConfigureAwait(false);
+        var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(identity.CompanyId, useCaseId).ConfigureAwait(false);
         if (!useCaseDetails.IsActiveCompanyStatus)
         {
             throw new ConflictException("Company Status is Incorrect");
@@ -76,10 +76,10 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task RemoveCompanyAssignedUseCaseDetailsAsync(string iamUserId, Guid useCaseId)
+    public async Task RemoveCompanyAssignedUseCaseDetailsAsync(IdentityData identity, Guid useCaseId)
     {
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
-        var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(iamUserId, useCaseId).ConfigureAwait(false);
+        var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(identity.CompanyId, useCaseId).ConfigureAwait(false);
         if (!useCaseDetails.IsActiveCompanyStatus)
         {
             throw new ConflictException("Company Status is Incorrect");
@@ -92,7 +92,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId, string? languageShortName)
+    public async IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(IdentityData identity, string? languageShortName)
     {
         if (languageShortName != null && !await _portalRepositories.GetInstance<ILanguageRepository>().IsValidLanguageCode(languageShortName).ConfigureAwait(false))
         {
@@ -100,10 +100,10 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         }
 
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
-        var companyData = await companyRepositories.GetCompanyStatusDataAsync(iamUserId).ConfigureAwait(false);
+        var companyData = await companyRepositories.GetCompanyStatusDataAsync(identity.CompanyId).ConfigureAwait(false);
         if (companyData == default)
         {
-            throw new NotFoundException($"User {iamUserId} is not associated with any company");
+            throw new NotFoundException($"User {identity.UserEntityId} is not associated with any company");
         }
         if (!companyData.IsActive)
         {

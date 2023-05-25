@@ -182,7 +182,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [Route("applications")]
         [ProducesResponseType(typeof(IAsyncEnumerable<CompanyApplicationData>), StatusCodes.Status200OK)]
         public IAsyncEnumerable<CompanyApplicationData> GetApplicationsWithStatusAsync() =>
-            this.WithIamUserId(user => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(user));
+            this.WithIdentityData(user => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(user));
 
         /// <summary>
         /// Sets the status of a specific application.
@@ -304,7 +304,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public Task<int> SubmitCompanyRoleConsentToAgreementsAsync([FromRoute] Guid applicationId, [FromBody] CompanyRoleAgreementConsents companyRolesAgreementConsents) =>
-            this.WithIamUserId(iamUserId => _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, companyRolesAgreementConsents, iamUserId));
+            this.WithIdentityData(identity => _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, companyRolesAgreementConsents, identity));
 
         /// <summary>
         /// Gets the agreement consent statuses for the given application
@@ -443,7 +443,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
         public async Task<IActionResult> DeleteRegistrationDocument([FromRoute] Guid documentId)
         {
-            await this.WithIamUserId(iamUserId => _registrationBusinessLogic.DeleteRegistrationDocumentAsync(documentId, iamUserId));
+            await this.WithIdentityData(identity => _registrationBusinessLogic.DeleteRegistrationDocumentAsync(documentId, identity));
             return NoContent();
         }
 

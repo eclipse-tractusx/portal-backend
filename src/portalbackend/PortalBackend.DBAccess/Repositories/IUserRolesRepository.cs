@@ -41,12 +41,12 @@ public interface IUserRolesRepository
     IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<Guid> userRoleIds);
     IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles);
     IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IDictionary<string, IEnumerable<string>> clientRoles);
-    IAsyncEnumerable<UserRoleData> GetOwnCompanyPortalUserRoleDataUntrackedAsync(string clientId, IEnumerable<string> roles, string iamUserId);
-    IAsyncEnumerable<(Guid OfferId, Guid RoleId, string RoleText, string Description)> GetCoreOfferRolesAsync(string iamUserId, string languageShortName, string clientId);
-    IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid offerId, string iamUserid, string languageShortName);
+    IAsyncEnumerable<UserRoleData> GetOwnCompanyPortalUserRoleDataUntrackedAsync(string clientId, IEnumerable<string> roles, Guid userCompanyId);
+    IAsyncEnumerable<(Guid OfferId, Guid RoleId, string RoleText, string Description)> GetCoreOfferRolesAsync(Guid userCompanyId, string languageShortName, string clientId);
+    IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid offerId, Guid userCompanyId, string languageShortName);
     IAsyncEnumerable<string> GetClientRolesCompositeAsync(string keyCloakClientId);
 
-    IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string iamUserId, string clientId, string languageShortName);
+    IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(Guid userCompanyId, string clientId, string languageShortName);
 
     /// <summary>
     /// Gets all user role ids for the given offerId

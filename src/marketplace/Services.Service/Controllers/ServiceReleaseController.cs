@@ -109,7 +109,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<OfferAgreementConsent> GetServiceAgreementConsentByIdAsync([FromRoute] Guid serviceId) =>
-       this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.GetServiceAgreementConsentAsync(serviceId, iamUserId));
+       this.WithIdentityData(identity => _serviceReleaseBusinessLogic.GetServiceAgreementConsentAsync(serviceId, identity));
 
     /// <summary>
     /// Return app detail with status
@@ -126,7 +126,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync([FromRoute] Guid serviceId) =>
-        this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.GetServiceDetailsForStatusAsync(serviceId, iamUserId));
+        this.WithIdentityData(identity => _serviceReleaseBusinessLogic.GetServiceDetailsForStatusAsync(serviceId, identity));
 
     /// <summary>
     /// Update or Insert Consent
@@ -187,7 +187,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<NoContentResult> DeleteServiceDocumentsAsync([FromRoute] Guid documentId)
     {
-        await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.DeleteServiceDocumentsAsync(documentId, iamUserId));
+        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.DeleteServiceDocumentsAsync(documentId, identity));
         return NoContent();
     }
 
@@ -230,7 +230,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateService([FromRoute] Guid serviceId, [FromBody] ServiceUpdateRequestData data)
     {
-        await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.UpdateServiceAsync(serviceId, data, iamUserId));
+        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.UpdateServiceAsync(serviceId, data, identity));
         return NoContent();
     }
 
@@ -331,7 +331,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<NoContentResult> UpdateServiceDocumentAsync([FromRoute] Guid serviceId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {
-        await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.CreateServiceDocumentAsync(serviceId, documentTypeId, document, iamUserId, cancellationToken));
+        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.CreateServiceDocumentAsync(serviceId, documentTypeId, document, identity, cancellationToken));
         return NoContent();
     }
 
@@ -348,7 +348,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfiles([FromRoute] Guid serviceId) =>
-        this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(serviceId, iamUserId));
+        this.WithIdentityData(identity => _serviceReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(serviceId, identity));
 
     /// <summary>
     /// Creates and updates the technical user profiles
@@ -367,7 +367,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<NoContentResult> CreateAndUpdateTechnicalUserProfiles([FromRoute] Guid serviceId, [FromBody] IEnumerable<TechnicalUserProfileData> data)
     {
-        await this.WithIamUserId(iamUserId => _serviceReleaseBusinessLogic.UpdateTechnicalUserProfiles(serviceId, data, iamUserId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.UpdateTechnicalUserProfiles(serviceId, data, identity)).ConfigureAwait(false);
         return NoContent();
     }
 }

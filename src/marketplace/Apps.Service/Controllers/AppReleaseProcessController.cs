@@ -73,7 +73,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateApp([FromRoute] Guid appId, [FromBody] AppEditableDetail updateModel)
     {
-        await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppAsync(appId, updateModel, userId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _appReleaseBusinessLogic.UpdateAppAsync(appId, updateModel, identity)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -104,7 +104,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<NoContentResult> UpdateAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {
-        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.CreateAppDocumentAsync(appId, documentTypeId, document, iamUserId, cancellationToken));
+        await this.WithIdentityData(identity => _appReleaseBusinessLogic.CreateAppDocumentAsync(appId, documentTypeId, document, identity, cancellationToken));
         return NoContent();
     }
 
@@ -126,7 +126,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<IEnumerable<AppRoleData>> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> userRoles) =>
-         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, userRoles, iamUserId)).ConfigureAwait(false);
+         await this.WithIdentityData(identity => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, userRoles, identity)).ConfigureAwait(false);
 
     /// <summary>
     /// Return Agreement Data for offer_type_id App
@@ -155,7 +155,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<OfferAgreementConsent> GetOfferAgreementConsentById([FromRoute] Guid appId) =>
-        this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetOfferAgreementConsentById(appId, iamUserId));
+        this.WithIdentityData(identity => _appReleaseBusinessLogic.GetOfferAgreementConsentById(appId, identity));
 
     /// <summary>
     /// Update or Insert Consent
@@ -192,7 +192,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<AppProviderResponse> GetAppDetailsForStatusAsync([FromRoute] Guid appId) =>
-        this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppDetailsForStatusAsync(appId, iamUserId));
+        this.WithIdentityData(identity => _appReleaseBusinessLogic.GetAppDetailsForStatusAsync(appId, identity));
 
     /// <summary>
     /// Removes a role from persistence layer by appId and roleId.
@@ -213,7 +213,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<NoContentResult> DeleteAppRoleAsync([FromRoute] Guid appId, [FromRoute] Guid roleId)
     {
-        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.DeleteAppRoleAsync(appId, roleId, iamUserId));
+        await this.WithIdentityData(identity => _appReleaseBusinessLogic.DeleteAppRoleAsync(appId, roleId, identity));
         return NoContent();
     }
 
@@ -246,7 +246,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<CreatedAtRouteResult> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
     {
-        var appId = await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddAppAsync(appRequestModel, iamUserId).ConfigureAwait(false));
+        var appId = await this.WithIdentityData(identity => _appReleaseBusinessLogic.AddAppAsync(appRequestModel, identity).ConfigureAwait(false));
         return CreatedAtRoute(nameof(AppsController.GetAppDetailsByIdAsync), new { controller = "Apps", appId = appId }, appId);
     }
 
@@ -272,7 +272,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateAppRelease([FromRoute] Guid appId, [FromBody] AppRequestModel appRequestModel)
     {
-        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.UpdateAppReleaseAsync(appId, appRequestModel, iamUserId).ConfigureAwait(false));
+        await this.WithIdentityData(identity => _appReleaseBusinessLogic.UpdateAppReleaseAsync(appId, appRequestModel, identity).ConfigureAwait(false));
         return NoContent();
     }
 
@@ -415,7 +415,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<NoContentResult> DeleteAppDocumentsAsync([FromRoute] Guid documentId)
     {
-        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.DeleteAppDocumentsAsync(documentId, iamUserId));
+        await this.WithIdentityData(identity => _appReleaseBusinessLogic.DeleteAppDocumentsAsync(documentId, identity));
         return NoContent();
     }
 
@@ -437,7 +437,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> DeleteAppAsync([FromRoute] Guid appId)
     {
-        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.DeleteAppAsync(appId, iamUserId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _appReleaseBusinessLogic.DeleteAppAsync(appId, identity)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -460,7 +460,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> SetInstanceType([FromRoute] Guid appId, [FromBody] AppInstanceSetupData data)
     {
-        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.SetInstanceType(appId, data, iamUserId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _appReleaseBusinessLogic.SetInstanceType(appId, data, identity)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -477,7 +477,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfiles([FromRoute] Guid appId) =>
-        this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(appId, iamUserId));
+        this.WithIdentityData(identity => _appReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(appId, identity));
 
     /// <summary>
     /// Creates and updates the technical user profiles
@@ -496,7 +496,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<NoContentResult> CreateAndUpdateTechnicalUserProfiles([FromRoute] Guid appId, [FromBody] IEnumerable<TechnicalUserProfileData> data)
     {
-        await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.UpdateTechnicalUserProfiles(appId, data, iamUserId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _appReleaseBusinessLogic.UpdateTechnicalUserProfiles(appId, data, identity)).ConfigureAwait(false);
         return NoContent();
     }
 }

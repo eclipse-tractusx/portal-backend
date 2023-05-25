@@ -36,6 +36,13 @@ public static class StartupServiceExtensions
     {
         services.AddCors(options => options.SetupCors(configuration));
 
+        services.AddDistributedMemoryCache();
+        services.AddSession(options =>
+        {
+            options.Cookie.Name = ".Portal";
+            options.IdleTimeout = TimeSpan.FromMinutes(10);
+        });
+
         services.AddControllers()
             .AddJsonOptions(options =>
             {

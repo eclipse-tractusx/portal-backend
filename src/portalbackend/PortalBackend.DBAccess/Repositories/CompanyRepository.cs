@@ -114,10 +114,10 @@ public class CompanyRepository : ICompanyRepository
             .Select(company => company.BusinessPartnerNumber)
             .AsAsyncEnumerable();
 
-    public Task<CompanyAddressDetailData?> GetOwnCompanyDetailsAsync(string iamUserId) =>
+    public Task<CompanyAddressDetailData?> GetOwnCompanyDetailsAsync(Guid userCompanyId) =>
         _context.Companies
             .AsNoTracking()
-            .Where(company => company.CompanyUsers.Any(user => user.UserEntityId == iamUserId))
+            .Where(company => company.Id == userCompanyId)
             .Select(company => new CompanyAddressDetailData(
                 company!.Id,
                 company.Name,
@@ -133,9 +133,9 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(string iamUserId, IEnumerable<CompanyRoleId> companyRoleIds) =>
+    public Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(Guid userCompanyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
         _context.Companies.AsNoTracking()
-            .Where(company => company.CompanyUsers.Any(user => user.UserEntityId == iamUserId) || company.CompanyServiceAccounts.Any(sa => sa.UserEntityId == iamUserId))
+            .Where(company => company.Id == userCompanyId)
             .Select(company => new ValueTuple<Guid, bool>(
                 company.Id,
                 company.CompanyAssignedRoles.Any(companyRole => companyRoleIds.Contains(companyRole.CompanyRoleId))
@@ -143,11 +143,9 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(string iamUserId) =>
+    public Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(Guid userCompanyId) =>
         _context.ProviderCompanyDetails.AsNoTracking()
-            .Where(details =>
-                details.Company!.CompanyUsers.Any(user => user.UserEntityId == iamUserId) ||
-                details.Company!.CompanyServiceAccounts.Any(sa => sa.UserEntityId == iamUserId))
+            .Where(details => details.CompanyId == userCompanyId)
             .Select(details => new ValueTuple<Guid, string>(details.Id, details.AutoSetupUrl))
             .SingleOrDefaultAsync();
 
@@ -160,9 +158,9 @@ public class CompanyRepository : ICompanyRepository
     }
 
     /// <inheritdoc />
-    public Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, string iamUserId) =>
+    public Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, Guid userCompanyId) =>
         _context.Companies
-            .Where(company => company.CompanyUsers.Any(user => user.UserEntityId == iamUserId))
+            .Where(company => company.Id == userCompanyId)
             .Select(company => new ValueTuple<ProviderDetailReturnData, bool>(
                 new ProviderDetailReturnData(
                     company.ProviderCompanyDetail!.Id,
@@ -188,9 +186,9 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(string iamUserId) =>
+    public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(Guid userCompanyId) =>
         _context.Companies
-        .Where(company => company.CompanyUsers.Any(user => user.UserEntityId == iamUserId))
+        .Where(company => company.Id == userCompanyId)
         .SelectMany(company => company.CompanyAssignedUseCase)
         .Select(cauc => new CompanyAssignedUseCaseData(
             cauc.UseCaseId,
@@ -198,9 +196,9 @@ public class CompanyRepository : ICompanyRepository
         .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(bool IsUseCaseIdExists, bool IsActiveCompanyStatus, Guid CompanyId)> GetCompanyStatusAndUseCaseIdAsync(string iamUserId, Guid useCaseId) =>
+    public Task<(bool IsUseCaseIdExists, bool IsActiveCompanyStatus, Guid CompanyId)> GetCompanyStatusAndUseCaseIdAsync(Guid userCompanyId, Guid useCaseId) =>
         _context.Companies
-        .Where(company => company.CompanyUsers.Any(user => user.UserEntityId == iamUserId))
+        .Where(company => company.Id == userCompanyId)
         .Select(company => new ValueTuple<bool, bool, Guid>(
             company.CompanyAssignedUseCase.Any(cauc => cauc.UseCaseId == useCaseId),
             company.CompanyStatusId == CompanyStatusId.ACTIVE,
@@ -273,22 +271,21 @@ public class CompanyRepository : ICompanyRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(bool IsActive, Guid CompanyId)> GetCompanyStatusDataAsync(string iamUserId) =>
+    public Task<(bool IsActive, Guid CompanyId)> GetCompanyStatusDataAsync(Guid userCompanyId) =>
         _context.Companies
-        .Where(company => company.CompanyUsers.Any(user => user.UserEntityId == iamUserId))
+        .Where(company => company.Id == userCompanyId)
         .Select(company => new ValueTuple<bool, Guid>(
             company.CompanyStatusId == CompanyStatusId.ACTIVE,
             company.Id
         )).SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid CompanyId, Guid CompanyUserId)> GetCompanyIdAndUserIdForUserOrTechnicalUser(string iamUserId) =>
+    public Task<(Guid CompanyId, Guid CompanyUserId)> GetCompanyIdAndUserIdForUserOrTechnicalUser(Guid userCompanyId) =>
         _context.Companies
-            .Where(x => x.CompanyUsers.Any(user => user.UserEntityId == iamUserId) ||
-                        x.CompanyServiceAccounts.Any(x => x.UserEntityId == iamUserId))
+            .Where(x => x.Id == userCompanyId)
             .Select(company => new ValueTuple<Guid, Guid>(
                 company.Id,
-                company.CompanyUsers.Select(x => x.Id).SingleOrDefault()
+                company.Identities.Select(x => x.Id).SingleOrDefault()
             ))
             .SingleOrDefaultAsync();
 }

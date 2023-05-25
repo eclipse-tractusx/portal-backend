@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
@@ -54,17 +55,17 @@ public interface IServiceReleaseBusinessLogic
     /// Retrieve Offer Agreemnet Consent Status Data
     /// </summary>
     /// <param name="serviceId"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <returns></returns>
-    Task<OfferAgreementConsent> GetServiceAgreementConsentAsync(Guid serviceId, string iamUserId);
+    Task<OfferAgreementConsent> GetServiceAgreementConsentAsync(Guid serviceId, IdentityData identity);
 
     /// <summary>
     /// Return Offer with Consent Status
     /// </summary>
     /// <param name="serviceId"></param>
-    /// <param name="userId"></param>
+    /// <param name="identity"></param>
     /// <returns></returns>
-    Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, string userId);
+    Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, IdentityData identity);
 
     /// <summary>
     /// Inserts or updates the consent to the specific service
@@ -98,8 +99,8 @@ public interface IServiceReleaseBusinessLogic
     /// </summary>
     /// <param name="serviceId">Id of the service to update</param>
     /// <param name="data">Data of the updated entry</param>
-    /// <param name="iamUserId">Id of the current user</param>
-    Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, string iamUserId);
+    /// <param name="identity">Id of the current user</param>
+    Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, IdentityData identity);
 
     /// <summary>
     /// Update app status and create notification
@@ -130,32 +131,32 @@ public interface IServiceReleaseBusinessLogic
     /// <param name="serviceId"></param>
     /// <param name="documentTypeId"></param>
     /// <param name="document"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken);
+    Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken);
 
     /// <summary>
     /// Delete the Service Document
     /// </summary>
     /// <param name="documentId"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <returns></returns>
-    Task DeleteServiceDocumentsAsync(Guid documentId, string iamUserId);
+    Task DeleteServiceDocumentsAsync(Guid documentId, IdentityData identity);
 
     /// <summary>
     /// Get technical user profiles for a specific offer
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <returns>AsyncEnumerable with the technical user profile information</returns>
-    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId);
+    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, IdentityData identity);
 
     /// <summary>
     /// Creates or updates the technical user profiles
     /// </summary>
     /// <param name="serviceId">Id of the service</param>
     /// <param name="data">The technical user profiles</param>
-    /// <param name="iamUserId">Id of the iam user</param>
-    Task UpdateTechnicalUserProfiles(Guid serviceId, IEnumerable<TechnicalUserProfileData> data, string iamUserId);
+    /// <param name="identity">Identity of the user</param>
+    Task UpdateTechnicalUserProfiles(Guid serviceId, IEnumerable<TechnicalUserProfileData> data, IdentityData identity);
 }

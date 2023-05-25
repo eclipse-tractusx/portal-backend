@@ -20,6 +20,9 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 
@@ -42,6 +45,12 @@ public static class ControllerExtensions
         return idConsumingFunction(sub);
     }
 
+    public static T WithIdentityData<T>(this ControllerBase controller, Func<IdentityData, T> tokenConsumingFunction)
+    {
+        var bearer = controller.GetIdentityData();
+        return tokenConsumingFunction(bearer);
+    }
+
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction)
     {
         var bearer = controller.GetBearerToken();
@@ -55,9 +64,23 @@ public static class ControllerExtensions
         return tokenConsumingFunction((iamUserId, bearerToken));
     }
 
+    private static IdentityData GetIdentityData(this ControllerBase controller)
+    {
+        var sub = controller.User.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
+        if (string.IsNullOrWhiteSpace(sub))
+        {
+            throw new ControllerArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
+        }
+
+        var identityId = controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityType);
+        var identityType = controller.User.Claims.GetEnumFromClaim<IdentityTypeId>(PortalClaimTypes.IdentityType);
+        var companyId = controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId);
+        return new IdentityData(sub, identityId, identityType, companyId);
+    }
+
     private static string GetIamUserId(this ControllerBase controller)
     {
-        var sub = controller.User.Claims.SingleOrDefault(x => x.Type == "sub")?.Value;
+        var sub = controller.User.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
         if (string.IsNullOrWhiteSpace(sub))
         {
             throw new ControllerArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
@@ -82,5 +105,37 @@ public static class ControllerExtensions
         }
 
         return bearer;
+    }
+
+    private static Guid GetGuidFromClaim(this IEnumerable<Claim> claims, string type)
+    {
+        var claimValue = claims.SingleOrDefault(x => x.Type == type)?.Value;
+        if (string.IsNullOrWhiteSpace(claimValue))
+        {
+            throw new ControllerArgumentException($"Claim '{type} must not be null or empty.");
+        }
+
+        if (!Guid.TryParse(type, out var result) || Guid.Empty == result)
+        {
+            throw new ControllerArgumentException($"Claim {type} must contain a Guid");
+        }
+
+        return result;
+    }
+
+    private static T GetEnumFromClaim<T>(this IEnumerable<Claim> claims, string type) where T : struct, Enum
+    {
+        var claimValue = claims.SingleOrDefault(x => x.Type == type)?.Value;
+        if (string.IsNullOrWhiteSpace(claimValue))
+        {
+            throw new ControllerArgumentException($"Claim '{type} must not be null or empty.");
+        }
+
+        if (!Enum.TryParse(claimValue, true, out T result))
+        {
+            throw new ControllerArgumentException($"Claim {type} must contain a {typeof(T)}");
+        }
+
+        return result;
     }
 }

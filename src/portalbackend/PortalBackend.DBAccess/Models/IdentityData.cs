@@ -18,13 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic
-{
-    public interface IInvitationBusinessLogic
-    {
-        Task ExecuteInvitation(CompanyInvitationData invitationData, IdentityData identity);
-    }
-}
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+
+public record IdentityData(string UserEntityId, Guid IdentityId, IdentityTypeId IdentityType, Guid CompanyId);

@@ -68,7 +68,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<IEnumerable<AppRoleData>> AddActiveAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> userRoles) =>
-        await this.WithIamUserId(iamUserId => _businessLogic.AddActiveAppUserRoleAsync(appId, userRoles, iamUserId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _businessLogic.AddActiveAppUserRoleAsync(appId, userRoles, identity)).ConfigureAwait(false);
 
     /// <summary>
     /// Get description of the app by Id.
@@ -85,7 +85,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionsAsync([FromRoute] Guid appId) =>
-        await this.WithIamUserId(userId => _businessLogic.GetAppUpdateDescriptionByIdAsync(appId, userId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _businessLogic.GetAppUpdateDescriptionByIdAsync(appId, identity)).ConfigureAwait(false);
 
     /// <summary>
     /// Create or Update description of the app by Id.
@@ -103,7 +103,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> CreateOrUpdateAppDescriptionsByIdAsync([FromRoute] Guid appId, [FromBody] IEnumerable<LocalizedDescription> offerDescriptionDatas)
     {
-        await this.WithIamUserId(userId => _businessLogic.CreateOrUpdateAppDescriptionByIdAsync(appId, userId, offerDescriptionDatas)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _businessLogic.CreateOrUpdateAppDescriptionByIdAsync(appId, identity, offerDescriptionDatas)).ConfigureAwait(false);
         return NoContent();
     }
     /// <summary>
@@ -128,7 +128,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<NoContentResult> UploadOfferAssignedAppLeadImageDocumentByIdAsync([FromRoute] Guid appId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {
-        await this.WithIamUserId(iamUserId => _businessLogic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, document, cancellationToken));
+        await this.WithIdentityData(identity => _businessLogic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, identity, document, cancellationToken));
         return NoContent();
     }
 
@@ -152,7 +152,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
     {
-        await this.WithIamUserId(userId => _businessLogic.DeactivateOfferByAppIdAsync(appId, userId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _businessLogic.DeactivateOfferByAppIdAsync(appId, identity)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -173,7 +173,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateTenantUrl([FromRoute] Guid appId, [FromRoute] Guid subscriptionId, [FromBody] UpdateTenantData data)
     {
-        await this.WithIamUserId(iamUserId => _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data, iamUserId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data, identity)).ConfigureAwait(false);
         return NoContent();
     }
 }

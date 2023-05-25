@@ -246,9 +246,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return (document.DocumentName, document.DocumentContent, document.MediaTypeId.MapToMediaType());
     }
 
-    public async IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(string userId)
+    public async IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(IdentityData identity)
     {
-        await foreach (var applicationWithStatus in _portalRepositories.GetInstance<IUserRepository>().GetApplicationsWithStatusUntrackedAsync(userId).ConfigureAwait(false))
+        await foreach (var applicationWithStatus in _portalRepositories.GetInstance<IUserRepository>().GetApplicationsWithStatusUntrackedAsync(identity.CompanyId).ConfigureAwait(false))
         {
             yield return new CompanyApplicationData
             {
@@ -551,7 +551,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return applicationStatusUserData.CompanyApplicationStatusId;
     }
 
-    public async Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, string iamUserId)
+    public async Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, IdentityData identity)
     {
         var companyRoleIdsToSet = roleAgreementConsentStatuses.CompanyRoleIds;
         var agreementConsentsToSet = roleAgreementConsentStatuses.AgreementConsentStatuses;
@@ -559,18 +559,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         var companyRolesRepository = _portalRepositories.GetInstance<ICompanyRolesRepository>();
         var consentRepository = _portalRepositories.GetInstance<IConsentRepository>();
 
-        var companyRoleAgreementConsentData = await companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId, iamUserId).ConfigureAwait(false);
+        var companyRoleAgreementConsentData = await companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId, identity.UserEntityId).ConfigureAwait(false);
 
         if (companyRoleAgreementConsentData == null)
         {
             throw new NotFoundException($"application {applicationId} does not exist");
         }
-        if (companyRoleAgreementConsentData.CompanyUserId == Guid.Empty)
-        {
-            throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
-        }
 
-        var (companyUserId, companyId, applicationStatusId, companyAssignedRoleIds, consents) = companyRoleAgreementConsentData;
+        var (applicationStatusId, companyAssignedRoleIds, consents) = companyRoleAgreementConsentData;
 
         var companyRoleAssignedAgreements = await companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet)
             .ToDictionaryAsync(x => x.CompanyRoleId, x => x.AgreementIds)
@@ -592,14 +588,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ControllerArgumentException("consent must be given to all CompanyRole assigned agreements");
         }
 
-        companyRolesRepository.RemoveCompanyAssignedRoles(companyId, companyAssignedRoleIds.Except(companyRoleIdsToSet));
+        companyRolesRepository.RemoveCompanyAssignedRoles(identity.CompanyId, companyAssignedRoleIds.Except(companyRoleIdsToSet));
 
         foreach (var companyRoleId in companyRoleIdsToSet.Except(companyAssignedRoleIds))
         {
-            companyRolesRepository.CreateCompanyAssignedRole(companyId, companyRoleId);
+            companyRolesRepository.CreateCompanyAssignedRole(identity.CompanyId, companyRoleId);
         }
 
-        HandleConsent(consents, agreementConsentsToSet, consentRepository, companyId, companyUserId);
+        HandleConsent(consents, agreementConsentsToSet, consentRepository, identity.CompanyId, identity.IdentityId);
 
         UpdateApplicationStatus(applicationId, applicationStatusId, UpdateApplicationSteps.CompanyRoleAgreementConsents, _portalRepositories.GetInstance<IApplicationRepository>());
 
@@ -877,14 +873,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         };
     }
 
-    public async Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, string iamUserId)
+    public async Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, IdentityData identity)
     {
         if (documentId == Guid.Empty)
         {
             throw new ControllerArgumentException($"documentId must not be empty");
         }
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var details = await documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, iamUserId, _settings.ApplicationStatusIds).ConfigureAwait(false);
+        var details = await documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, identity.CompanyId, _settings.ApplicationStatusIds).ConfigureAwait(false);
         if (details == default)
         {
             throw new NotFoundException("Document does not exist.");

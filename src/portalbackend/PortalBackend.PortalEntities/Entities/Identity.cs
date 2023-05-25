@@ -7,19 +7,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class Identity : IBaseEntity
 {
-    public Identity()
-    {
-        IdentityAssignedRoles = new HashSet<IdentityAssignedRole>();
-    }
-
     public Identity(Guid id, DateTimeOffset dateCreated, Guid companyId, UserStatusId userStatusId, IdentityTypeId identityTypeId)
-        : this()
     {
         Id = id;
         DateCreated = dateCreated;
         CompanyId = companyId;
         UserStatusId = userStatusId;
         IdentityTypeId = identityTypeId;
+
+        IdentityAssignedRoles = new HashSet<IdentityAssignedRole>();
     }
 
     public Guid Id { get; set; }
@@ -37,6 +33,8 @@ public class Identity : IBaseEntity
     public IdentityTypeId IdentityTypeId { get; set; }
 
     // Navigation properties
+    public virtual CompanyUser? CompanyUser { get; set; }
+    public virtual CompanyServiceAccount? CompanyServiceAccount { get; set; }
     public virtual Company? Company { get; set; }
 
     public virtual IdentityUserStatus? IdentityStatus { get; set; }

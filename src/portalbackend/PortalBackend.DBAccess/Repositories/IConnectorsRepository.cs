@@ -40,13 +40,13 @@ public interface IConnectorsRepository
     /// <summary>
     /// Get all managed connectors of a user's company by iam user ID.
     /// </summary>
-    /// <param name="iamUserId">ID of the iam user used to determine company's connectors for.</param>
+    /// <param name="userCompanyId">users company id.</param>
     /// <returns>Pagination.Source of connectors that allows transformation.</returns>
-    Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForIamUser(string iamUserId);
+    Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForIamUser(Guid userCompanyId);
 
-    Task<(ConnectorData ConnectorData, bool IsProviderUser)> GetConnectorByIdForIamUser(Guid connectorId, string iamUser);
+    Task<(ConnectorData ConnectorData, bool IsProviderUser)> GetConnectorByIdForIamUser(Guid connectorId, Guid userCompanyId);
 
-    Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, string iamUser);
+    Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, Guid userCompanyId);
 
     /// <summary>
     /// Creates a given connector in persistence layer. 
@@ -105,7 +105,7 @@ public interface IConnectorsRepository
     /// Gets the data required for the connector update
     /// </summary>
     /// <param name="connectorId">Id of the connector</param>
-    /// <param name="iamUser">Id of the IamUser</param>
+    /// <param name="userCompanyId">Id of the Users company</param>
     /// <returns>Returns the update information</returns>
-    Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, string iamUser);
+    Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, Guid userCompanyId);
 }

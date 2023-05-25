@@ -94,7 +94,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(AppDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<AppDetailResponse> GetAppDetailsByIdAsync([FromRoute] Guid appId, [FromQuery] string? lang = null) =>
-        this.WithIamUserId(userId => _appsBusinessLogic.GetAppDetailsByIdAsync(appId, userId, lang));
+        this.WithIdentityData(identity => _appsBusinessLogic.GetAppDetailsByIdAsync(appId, identity, lang));
 
     /// <summary>
     /// Retrieves IDs of all favourite apps of the current user (by sub claim).
@@ -158,7 +158,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<OfferSubscriptionStatusDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
-        this.WithIamUserId(userId => _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(page, size, userId));
+        this.WithIamUserId(iamUserId => _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(page, size, iamUserId));
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the currently logged in user's company.
     /// </summary>
@@ -169,7 +169,7 @@ public class AppsController : ControllerBase
     [Authorize(Roles = "view_app_subscription")]
     [ProducesResponseType(typeof(Pagination.Response<OfferCompanySubscriptionStatusResponse>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null, [FromQuery] Guid? offerId = null) =>
-        this.WithIamUserId(userId => _appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(page, size, userId, sorting, statusId, offerId));
+        this.WithIdentityData(identity => _appsBusinessLogic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(page, size, identity, sorting, statusId, offerId));
 
     /// <summary>
     /// Adds an app to current user's company's subscriptions.
@@ -231,7 +231,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> ActivateCompanyAppSubscriptionAsync([FromRoute] Guid appId, [FromRoute] Guid companyId)
     {
-        await this.WithIamUserId(userId => _appsBusinessLogic.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, companyId, userId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _appsBusinessLogic.ActivateOwnCompanyProvidedAppSubscriptionAsync(appId, companyId, identity)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -267,7 +267,7 @@ public class AppsController : ControllerBase
     [Authorize(Roles = "app_management")]
     [ProducesResponseType(typeof(IAsyncEnumerable<AllOfferData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<AllOfferData> GetAppDataAsync() =>
-        this.WithIamUserId(userId => _appsBusinessLogic.GetCompanyProvidedAppsDataForUserAsync(userId));
+        this.WithIdentityData(identity => _appsBusinessLogic.GetCompanyProvidedAppsDataForUserAsync(identity));
 
     /// <summary>
     /// Auto setup the app
@@ -346,7 +346,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider([FromRoute] Guid appId, [FromRoute] Guid subscriptionId) =>
-        this.WithIamUserId(iamUserId => _appsBusinessLogic.GetSubscriptionDetailForProvider(appId, subscriptionId, iamUserId));
+        this.WithIdentityData(identity => _appsBusinessLogic.GetSubscriptionDetailForProvider(appId, subscriptionId, identity));
 
     /// <summary>
     /// Retrieves the details of a subscription
@@ -364,5 +364,5 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber([FromRoute] Guid appId, [FromRoute] Guid subscriptionId) =>
-        this.WithIamUserId(iamUserId => _appsBusinessLogic.GetSubscriptionDetailForSubscriber(appId, subscriptionId, iamUserId));
+        this.WithIdentityData(identity => _appsBusinessLogic.GetSubscriptionDetailForSubscriber(appId, subscriptionId, identity));
 }

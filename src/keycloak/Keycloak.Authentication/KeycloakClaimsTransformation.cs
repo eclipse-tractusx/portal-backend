@@ -21,6 +21,9 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using System.Json;
 using System.Security.Claims;
 
@@ -28,36 +31,74 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
 {
     public class KeycloakClaimsTransformation : IClaimsTransformation
     {
-        private readonly JwtBearerOptions _Options;
-        public KeycloakClaimsTransformation(IOptions<JwtBearerOptions> options)
+        private readonly IPortalRepositories _portalDbRepositories;
+        private readonly JwtBearerOptions _options;
+
+        public KeycloakClaimsTransformation(IOptions<JwtBearerOptions> options, IPortalRepositories portalDbRepositories)
         {
-            _Options = options.Value;
+            _portalDbRepositories = portalDbRepositories;
+            _options = options.Value;
         }
 
-        public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+        public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
         {
-            var resource_access = principal.Claims.FirstOrDefault(claim => claim.Type == "resource_access" && claim.ValueType == "JSON")?.Value;
-            if ((resource_access != null) &&
-                ((JsonValue.Parse(resource_access) as JsonObject)?.TryGetValue(_Options.TokenValidationParameters.ValidAudience, out var audience) ?? false) &&
-                ((audience as JsonObject)?.TryGetValue("roles", out var roles) ?? false) &&
-                roles is JsonArray)
+            var claimsIdentity = new ClaimsIdentity();
+            var rolesAdded = AddRoles(principal, claimsIdentity);
+
+            var sub = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
+            if (string.IsNullOrWhiteSpace(sub))
             {
-                var claimsIdentity = new ClaimsIdentity();
-                var rolesAdded = false;
-                foreach (JsonValue role in roles)
-                {
-                    if (role.JsonType == JsonType.String)
-                    {
-                        claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, role));
-                        rolesAdded = true;
-                    }
-                }
                 if (rolesAdded)
                 {
                     principal.AddIdentity(claimsIdentity);
                 }
+                return principal;
             }
-            return Task.FromResult(principal);
+
+            var result = await _portalDbRepositories.GetInstance<IUserRepository>().GetUserDataByUserEntityId(sub).ConfigureAwait(false);
+            if (result == null)
+            {
+                if (rolesAdded)
+                {
+                    principal.AddIdentity(claimsIdentity);
+                }
+                return principal;
+            }
+
+            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, result.IdentityId.ToString()));
+            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityType, Enum.GetName(result.IdentityType) ?? throw new ConflictException($"IdentityType {(int)result.IdentityType} is out of range")));
+            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.CompanyId, result.CompanyId.ToString()));
+            principal.AddIdentity(claimsIdentity);
+            return principal;
+        }
+
+        private bool AddRoles(ClaimsPrincipal principal, ClaimsIdentity claimsIdentity)
+        {
+            var resource_access = principal.Claims
+                .FirstOrDefault(claim => claim.Type == "resource_access" && claim.ValueType == "JSON")?.Value;
+            if (resource_access == null ||
+                !((JsonValue.Parse(resource_access) as JsonObject)?.TryGetValue(
+                    _options.TokenValidationParameters.ValidAudience,
+                    out var audience) ?? false) ||
+                !((audience as JsonObject)?.TryGetValue("roles", out var roles) ?? false) ||
+                roles is not JsonArray)
+            {
+                return false;
+            }
+
+            var rolesAdded = false;
+            foreach (JsonValue role in roles)
+            {
+                if (role.JsonType != JsonType.String)
+                {
+                    continue;
+                }
+
+                claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, role));
+                rolesAdded = true;
+            }
+
+            return rolesAdded;
         }
     }
 }

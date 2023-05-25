@@ -47,22 +47,22 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
         _settings = options.Value;
     }
 
-    public IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles(string iamUserId, string? languageShortName) =>
-        _portalRepositories.GetInstance<IUserRolesRepository>().GetCoreOfferRolesAsync(iamUserId, languageShortName ?? Constants.DefaultLanguage, _settings.Portal.KeycloakClientID)
+    public IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles(IdentityData identity, string? languageShortName) =>
+        _portalRepositories.GetInstance<IUserRolesRepository>().GetCoreOfferRolesAsync(identity.CompanyId, languageShortName ?? Constants.DefaultLanguage, _settings.Portal.KeycloakClientID)
             .PreSortedGroupBy(x => x.OfferId)
             .Select(x => new OfferRoleInfos(x.Key, x.Select(s => new OfferRoleInfo(s.RoleId, s.RoleText, s.Description))));
 
-    public IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid appId, string iamUserId, string? languageShortName) =>
+    public IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid appId, IdentityData identity, string? languageShortName) =>
         _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetAppRolesAsync(appId, iamUserId, languageShortName ?? Constants.DefaultLanguage);
+            .GetAppRolesAsync(appId, identity.CompanyId, languageShortName ?? Constants.DefaultLanguage);
 
-    public Task<IEnumerable<UserRoleWithId>> ModifyCoreOfferUserRolesAsync(Guid offerId, Guid companyUserId, IEnumerable<string> roles, string iamUserId)
+    public Task<IEnumerable<UserRoleWithId>> ModifyCoreOfferUserRolesAsync(Guid offerId, Guid companyUserId, IEnumerable<string> roles, IdentityData identity)
     {
         return ModifyUserRolesInternal(
             async () =>
             {
                 var result = await _portalRepositories.GetInstance<IUserRepository>()
-                    .GetCoreOfferAssignedIamClientUserDataUntrackedAsync(offerId, companyUserId, iamUserId).ConfigureAwait(false);
+                    .GetCoreOfferAssignedIamClientUserDataUntrackedAsync(offerId, companyUserId, identity.CompanyId).ConfigureAwait(false);
                 return result == null
                     ? null
                     : new OfferIamUserData(
@@ -77,7 +77,7 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             },
             (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
                 .GetAssignedAndMatchingCoreOfferRoles(companyUserId, roles, offerId),
-            offerId, companyUserId, roles, iamUserId,
+            offerId, companyUserId, roles, identity.UserEntityId,
             data =>
             {
                 var userName = $"{data.firstname} {data.lastname}";
@@ -92,13 +92,13 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             });
     }
 
-    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, IEnumerable<string> roles, string iamUserId) =>
+    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, IEnumerable<string> roles, IdentityData identity) =>
         ModifyUserRolesInternal(
             () => _portalRepositories.GetInstance<IUserRepository>()
-                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, companyUserId, iamUserId),
+                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, companyUserId, identity.CompanyId),
             (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
                 .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId),
-            appId, companyUserId, roles, iamUserId,
+            appId, companyUserId, roles, identity.UserEntityId,
             data =>
             {
                 var userName = $"{data.firstname} {data.lastname}";
@@ -113,13 +113,13 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             });
 
     [Obsolete("to be replaced by endpoint UserRolesBusinessLogic.ModifyAppUserRolesAsync. Remove as soon frontend is adjusted")]
-    public Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, string adminUserId) =>
+    public Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, IdentityData identity) =>
         ModifyUserRolesInternal(
             () => _portalRepositories.GetInstance<IUserRepository>()
-                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, userRoleInfo.CompanyUserId, adminUserId),
+                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, userRoleInfo.CompanyUserId, identity.CompanyId),
             (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
                 .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId),
-            appId, userRoleInfo.CompanyUserId, userRoleInfo.Roles, adminUserId, null);
+            appId, userRoleInfo.CompanyUserId, userRoleInfo.Roles, identity.UserEntityId, null);
 
     private async Task<IEnumerable<UserRoleWithId>> ModifyUserRolesInternal(
         Func<Task<OfferIamUserData?>> getIamUserData,

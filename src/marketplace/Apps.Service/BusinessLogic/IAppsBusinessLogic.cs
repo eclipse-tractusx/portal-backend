@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
@@ -49,10 +50,10 @@ public interface IAppsBusinessLogic
     /// Get detailed application data for a single app by id.
     /// </summary>
     /// <param name="appId">Persistence ID of the application to be retrieved.</param>
-    /// <param name="iamUserId">ID of the user to evaluate app purchase status for. No company purchase status if not provided.</param>
+    /// <param name="identity">Identity of the user to evaluate app purchase status for. No company purchase status if not provided.</param>
     /// <param name="languageShortName">Optional two character language specifier for the localization of the app description. No description if not provided.</param>
     /// <returns>AppDetailsViewModel of the requested application.</returns>
-    public Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string iamUserId, string? languageShortName = null);
+    public Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, IdentityData identity, string? languageShortName = null);
 
     /// <summary>
     /// Get IDs of all favourite apps of the user by ID.
@@ -78,7 +79,7 @@ public interface IAppsBusinessLogic
     /// <summary>
     /// Retrieves subscription statuses of subscribed apps of the provided user's company.
     /// </summary>
-    /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
+    /// <param name="iamUserId">Id of the iamUser.</param>
     /// <param name ="page">page</param>
     /// <param name ="size">size</param>
     /// <returns>Returns the details of the subscription status for App user</returns>
@@ -89,12 +90,12 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="page"></param>
     /// <param name="size"></param>
-    /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
+    /// <param name="identity"></param>
     /// <param name="sorting"></param>
     /// <param name="statusId"></param>
     /// <param name="offerId"></param>
     /// <returns>Async enumberable of user's company's provided apps' statuses.</returns>
-    public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId);
+    public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, IdentityData identity, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId);
 
     /// <summary>
     /// Adds a subscription relation between an application and a user's company.
@@ -110,9 +111,9 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="appId">ID of the pending app to be activated.</param>
     /// <param name="subscribingCompanyId">ID of the company subscribing the app.</param>
-    /// <param name="iamUserId">IAM ID of the user requesting the activation.</param>
+    /// <param name="identity">identity of the current user.</param>
     [Obsolete("This Method is not used anymore")]
-    public Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string iamUserId);
+    public Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, IdentityData identity);
 
     /// <summary>
     /// Unsubscribes an app for the current users company.
@@ -124,9 +125,9 @@ public interface IAppsBusinessLogic
     /// <summary>
     /// Retrieve Company Owned App Data
     /// </summary>
-    /// <param name="userId">IAM ID of the user to retrieve own company app.</param>
+    /// <param name="identity">Identity of the user to retrieve own company app.</param>
     /// <returns>Async enumberable of company owned apps data</returns>
-    IAsyncEnumerable<AllOfferData> GetCompanyProvidedAppsDataForUserAsync(string userId);
+    IAsyncEnumerable<AllOfferData> GetCompanyProvidedAppsDataForUserAsync(IdentityData identity);
 
     /// <summary>
     /// Auto setup the app.
@@ -165,16 +166,16 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="appId">Id of the app</param>
     /// <param name="subscriptionId">Id of the subscription</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Id of the user</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid appId, Guid subscriptionId, string iamUserId);
+    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid appId, Guid subscriptionId, IdentityData identity);
 
     /// <summary>
     /// Gets the information for the subscription
     /// </summary>
     /// <param name="appId">Id of the app</param>
     /// <param name="subscriptionId">Id of the subscription</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid appId, Guid subscriptionId, string iamUserId);
+    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid appId, Guid subscriptionId, IdentityData identity);
 }

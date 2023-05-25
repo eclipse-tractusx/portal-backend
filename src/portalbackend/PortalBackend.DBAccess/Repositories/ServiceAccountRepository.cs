@@ -80,12 +80,12 @@ public class ServiceAccountRepository : IServiceAccountRepository
         modify(companyServiceAccount);
     }
 
-    public Task<CompanyServiceAccountWithRoleDataClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, string adminUserId) =>
+    public Task<CompanyServiceAccountWithRoleDataClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, Guid userCompanyId) =>
         _dbContext.CompanyServiceAccounts
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
                 && serviceAccount.UserStatusId == UserStatusId.ACTIVE
-                && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == adminUserId))
+                && serviceAccount.CompanyId == userCompanyId)
             .Select(serviceAccount => new CompanyServiceAccountWithRoleDataClientId(
                     serviceAccount.Id,
                     serviceAccount.UserStatusId,
@@ -103,25 +103,25 @@ public class ServiceAccountRepository : IServiceAccountRepository
                             userRole.UserRoleText))))
             .SingleOrDefaultAsync();
 
-    public Task<(IEnumerable<Guid> UserRoleIds, Guid? ConnectorId, string? ClientId)> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, string adminUserId) =>
+    public Task<(IEnumerable<Guid> UserRoleIds, Guid? ConnectorId, string? ClientId)> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid userCompanyId) =>
         _dbContext.CompanyServiceAccounts
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
                 && serviceAccount.UserStatusId == UserStatusId.ACTIVE
-                && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == adminUserId))
+                && serviceAccount.CompanyId == userCompanyId)
             .Select(sa => new ValueTuple<IEnumerable<Guid>, Guid?, string?>(
                 sa.IdentityAssignedRoles.Select(r => r.UserRoleId),
                 sa.Connector!.Id,
                 sa.ClientId))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, string adminUserId) =>
+    public Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, Guid userCompanyId) =>
         _dbContext.CompanyServiceAccounts
             .AsNoTracking()
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
                 && serviceAccount.UserStatusId == UserStatusId.ACTIVE
-                && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == adminUserId))
+                && serviceAccount.CompanyId == userCompanyId)
             .Select(serviceAccount => new CompanyServiceAccountDetailedData(
                     serviceAccount.Id,
                     serviceAccount.ClientId,
@@ -139,14 +139,14 @@ public class ServiceAccountRepository : IServiceAccountRepository
                     serviceAccount.OfferSubscriptionId))
             .SingleOrDefaultAsync();
 
-    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(string adminUserId) =>
+    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
             _dbContext.CompanyServiceAccounts
                 .AsNoTracking()
                 .Where(serviceAccount =>
-                    serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == adminUserId) &&
+                    serviceAccount.CompanyId == userCompanyId &&
                     serviceAccount.UserStatusId == UserStatusId.ACTIVE)
                 .GroupBy(serviceAccount => serviceAccount.CompanyId),
             serviceAccounts => serviceAccounts.OrderBy(serviceAccount => serviceAccount.Name),

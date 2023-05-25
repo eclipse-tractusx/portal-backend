@@ -30,7 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 /// </summary>
 public interface IUserRepository
 {
-    IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(string iamUserId);
+    IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(Guid userCompanyId);
     CompanyUser CreateCompanyUser(string? firstName, string? lastName, string email, Guid companyId, UserStatusId userStatusId, Guid lastEditorId);
     void AttachAndModifyCompanyUser(Guid companyUserId, Action<CompanyUser>? initialize, Action<CompanyUser> setOptionalParameters);
     IQueryable<CompanyUser> GetOwnCompanyUserQuery(string adminUserId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null, IEnumerable<UserStatusId>? statusIds = null);
@@ -40,7 +40,7 @@ public interface IUserRepository
     Task<Guid> GetOwnCompanyId(string iamUserId);
     Task<(CompanyInformationData companyInformation, Guid companyUserId, string? userEmail)> GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(string iamUserId);
     Task<bool> IsOwnCompanyUserWithEmailExisting(string email, string adminUserId);
-    Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, string iamUserId);
+    Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, Guid userCompanyId);
     Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, string adminUserId);
     Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId);
     Task<(Guid CompanyId, string? Bpn, IEnumerable<Guid> TechnicalUserRoleIds)> GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(string iamUserId, string technicalUserClientId);
@@ -103,9 +103,9 @@ public interface IUserRepository
     /// <returns>Returns a list of the company user emails</returns>
     IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForCompanyAndRoleId(IEnumerable<Guid> userRoleIds, Guid companyId);
 
-    Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
+    Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, Guid userCompanyId);
 
-    Task<CoreOfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
+    Task<CoreOfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, Guid userCompanyId);
 
     IAsyncEnumerable<Guid> GetServiceProviderCompanyUserWithRoleIdAsync(Guid offerId, List<Guid> userRoleIds);
 
@@ -128,11 +128,11 @@ public interface IUserRepository
     /// <summary>
     /// Validate CompanyUser is Member of all roleIds and belongs to same company as executing user 
     /// </summary>
-    /// <param name="iamUserId"></param>
+    /// <param name="userCompanyId"></param>
     /// <param name="roleIds"></param>
     /// <param name="companyUserId"></param>
     /// <returns></returns>
-    Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany, Guid UserCompanyId)> GetRolesAndCompanyMembershipUntrackedAsync(string iamUserId, IEnumerable<Guid> roleIds, Guid companyUserId);
+    Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany, Guid UserCompanyId)> GetRolesAndCompanyMembershipUntrackedAsync(Guid userCompanyId, IEnumerable<Guid> roleIds, Guid companyUserId);
 
     /// <summary>
     /// Retrieve BPN for applicationId and Logged In User Company
@@ -148,4 +148,6 @@ public interface IUserRepository
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>The bpn of the company for the user</returns>
     Task<string?> GetCompanyBpnForIamUserAsync(string iamUserId);
+
+    Task<IdentityData?> GetUserDataByUserEntityId(string userEntityId);
 }

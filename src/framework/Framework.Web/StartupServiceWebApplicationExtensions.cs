@@ -65,6 +65,8 @@ public static class StartupServiceWebApplicationExtensions
 
         app.UseRouting();
 
+        app.UseSession();
+
         app.UseCors(CorsExtensions.AllowSpecificOrigins);
 
         app.UseMiddleware<GeneralHttpErrorHandler>();

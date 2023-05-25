@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 
@@ -42,31 +43,31 @@ public interface IConnectorsBusinessLogic
     /// <summary>
     /// Get all of a user's company's connectors by iam user ID.
     /// </summary>
-    /// <param name="iamUserId">ID of the user to retrieve company connectors for.</param>
+    /// <param name="identity"></param>
     /// <param name="page"></param>
     /// <param name="size"></param>
     /// <returns>AsyncEnumerable of the result connectors.</returns>
-    Task<Pagination.Response<ManagedConnectorData>> GetManagedConnectorForIamUserAsync(string iamUserId, int page, int size);
+    Task<Pagination.Response<ManagedConnectorData>> GetManagedConnectorForIamUserAsync(IdentityData identity, int page, int size);
 
-    Task<ConnectorData> GetCompanyConnectorDataForIdIamUserAsync(Guid connectorId, string iamUserId);
+    Task<ConnectorData> GetCompanyConnectorDataForIdIamUserAsync(Guid connectorId, IdentityData identity);
 
     /// <summary>
     /// Add a connector to persistence layer and calls the sd factory service with connector parameters.
     /// </summary>
     /// <param name="connectorInputModel">Connector parameters for creation.</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <param name="cancellationToken"></param>
     /// <returns>View model of created connector.</returns>
-    Task<Guid> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken);
+    Task<Guid> CreateConnectorAsync(ConnectorInputModel connectorInputModel, IdentityData identity, CancellationToken cancellationToken);
 
     /// <summary>
     /// Add a managed connector to persistence layer and calls the sd factory service with connector parameters.
     /// </summary>
     /// <param name="connectorInputModel">Connector parameters for creation.</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <param name="cancellationToken"></param>
     /// <returns>View model of created connector.</returns>
-    Task<Guid> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken);
+    Task<Guid> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, IdentityData identity, CancellationToken cancellationToken);
 
     /// <summary>
     /// Remove a connector from persistence layer by id.
@@ -88,10 +89,10 @@ public interface IConnectorsBusinessLogic
     /// </summary>
     /// <param name="connectorId">Id of the connector the endpoint should get triggered for.</param>
     /// <param name="certificate">The certificate</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <param name="cancellationToken"></param>
     /// <returns><c>true</c> if the call to daps was successful, otherwise <c>false</c>.</returns>
-    Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, string iamUserId, CancellationToken cancellationToken);
+    Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, IdentityData identity, CancellationToken cancellationToken);
 
     /// <summary>
     /// Processes the clearinghouse self description
@@ -106,7 +107,7 @@ public interface IConnectorsBusinessLogic
     /// </summary>
     /// <param name="connectorId">Id of the connector</param>
     /// <param name="data">Update data for the connector</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <param name="cancellationToken">CancellationToken</param>
-    Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data, string iamUserId, CancellationToken cancellationToken);
+    Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data, IdentityData identity, CancellationToken cancellationToken);
 }

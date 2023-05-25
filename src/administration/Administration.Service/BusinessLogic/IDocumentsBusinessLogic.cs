@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -31,9 +32,9 @@ public interface IDocumentsBusinessLogic
     /// Gets the document with the given id
     /// </summary>
     /// <param name="documentId">Id of the document to get</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <returns>Returns the filename and content of the file</returns>
-    Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId, string iamUserId);
+    Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId, IdentityData identity);
 
     /// <summary>
     /// Gets the selfdescription document with the given id

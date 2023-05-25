@@ -98,13 +98,13 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(byte[]? Content, string FileName, MediaTypeId MediaTypeId, bool IsUserInCompany)> GetDocumentDataAndIsCompanyUserAsync(Guid documentId, string iamUserId) =>
+    public Task<(byte[]? Content, string FileName, MediaTypeId MediaTypeId, bool IsUserInCompany)> GetDocumentDataAndIsCompanyUserAsync(Guid documentId, Guid userCompanyId) =>
         this._dbContext.Documents
             .Where(x => x.Id == documentId)
             .Select(x => new
             {
                 Document = x,
-                IsUserInSameCompany = x.CompanyUser!.Company!.CompanyUsers.Any(cu => cu.UserEntityId == iamUserId)
+                IsUserInSameCompany = x.CompanyUser!.CompanyId == userCompanyId
             })
             .Select(x => new ValueTuple<byte[]?, string, MediaTypeId, bool>(
                 x.IsUserInSameCompany ? x.Document.DocumentContent : null,
@@ -129,7 +129,7 @@ public class DocumentRepository : IDocumentRepository
         this._dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
 
     /// <inheritdoc />
-    public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, string iamUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
+    public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
         _dbContext.Documents
             .AsNoTracking()
             .Where(x => x.Id == documentId)
@@ -141,7 +141,7 @@ public class DocumentRepository : IDocumentRepository
             .Select(x => new ValueTuple<Guid, DocumentStatusId, bool, DocumentTypeId, bool>(
                 x.Document.Id,
                 x.Document.DocumentStatusId,
-                x.Applications.Any(companyApplication => companyApplication.Company!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == iamUserId)),
+                x.Applications.Any(companyApplication => companyApplication.CompanyId == userCompanyId),
                 x.Document.DocumentTypeId,
                 x.Applications.Any(companyApplication => applicationStatusIds.Contains(companyApplication.ApplicationStatusId))))
             .SingleOrDefaultAsync();
@@ -213,7 +213,7 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync(cancellationToken);
 
     /// <inheritdoc />
-    public Task<(IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)> OfferData, bool IsDocumentTypeMatch, DocumentStatusId DocumentStatusId, bool IsProviderCompanyUser)> GetOfferDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId) =>
+    public Task<(IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)> OfferData, bool IsDocumentTypeMatch, DocumentStatusId DocumentStatusId, bool IsProviderCompanyUser)> GetOfferDocumentsAsync(Guid documentId, Guid userCompanyId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId) =>
         _dbContext.Documents
             .Where(document => document.Id == documentId)
             .Select(document => new
@@ -227,7 +227,7 @@ public class DocumentRepository : IDocumentRepository
                 OfferData = x.Offers.Select(o => new ValueTuple<OfferStatusId, Guid, bool>(o.OfferStatusId, o.Id, o.OfferTypeId == offerTypeId)),
                 IsDocumentTypeMatch = documentTypeIds.Contains(x.Document.DocumentTypeId),
                 DocumentStatus = x.Document.DocumentStatusId,
-                IsProviderCompanyUser = x.Document.CompanyUser!.Company!.CompanyUsers.Any(cu => cu.UserEntityId == iamUserId)
+                IsProviderCompanyUser = x.Document.CompanyUser!.CompanyId == userCompanyId
             })
             .Select(x => new ValueTuple<IEnumerable<ValueTuple<OfferStatusId, Guid, bool>>, bool, DocumentStatusId, bool>(
                 x.OfferData,

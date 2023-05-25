@@ -48,10 +48,10 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId, string iamUserId)
+    public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId, IdentityData identity)
     {
         var documentDetails = await _portalRepositories.GetInstance<IDocumentRepository>()
-            .GetDocumentDataAndIsCompanyUserAsync(documentId, iamUserId)
+            .GetDocumentDataAndIsCompanyUserAsync(documentId, identity.CompanyId)
             .ConfigureAwait(false);
         if (documentDetails == default)
         {

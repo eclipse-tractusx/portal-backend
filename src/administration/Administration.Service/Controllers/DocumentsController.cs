@@ -65,7 +65,7 @@ public class DocumentsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
     {
-        var (fileName, content, mediaType) = await this.WithIamUserId(iamUserId => _businessLogic.GetDocumentAsync(documentId, iamUserId).ConfigureAwait(false));
+        var (fileName, content, mediaType) = await this.WithIdentityData(identity => _businessLogic.GetDocumentAsync(documentId, identity).ConfigureAwait(false));
         return File(content, mediaType, fileName);
     }
 

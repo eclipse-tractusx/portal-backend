@@ -102,7 +102,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(SubscriptionDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<SubscriptionDetailData> GetSubscriptionDetail([FromRoute] Guid subscriptionId) =>
-        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetSubscriptionDetailAsync(subscriptionId, iamUserId));
+        this.WithIdentityData(identity => _serviceBusinessLogic.GetSubscriptionDetailAsync(subscriptionId, identity));
 
     /// <summary>
     /// Retrieves service offer details for the respective service id.
@@ -118,7 +118,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ServiceDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<ServiceDetailResponse> GetServiceDetails([FromRoute] Guid serviceId, [FromQuery] string? lang = "en") =>
-        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang!, iamUserId));
+        this.WithIdentityData(identity => _serviceBusinessLogic.GetServiceDetailsAsync(serviceId, lang!, identity));
 
     /// <summary>
     /// Gets the service agreement consent details.
@@ -195,7 +195,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<OfferCompanySubscriptionStatusResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null, [FromQuery] Guid? offerId = null) =>
-        this.WithIamUserId(userId => _serviceBusinessLogic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(page, size, userId, sorting, statusId, offerId));
+        this.WithIdentityData(identity => _serviceBusinessLogic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(page, size, identity, sorting, statusId, offerId));
 
     /// <summary>
     /// Retrieve Document Content for Service by ID
@@ -238,7 +238,7 @@ public class ServicesController : ControllerBase
     [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(Pagination.Response<AllOfferStatusData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<AllOfferStatusData>> GetCompanyProvidedServiceStatusDataAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSorting? sorting = null, [FromQuery] string? offerName = null, [FromQuery] ServiceStatusIdFilter? statusId = null) =>
-        this.WithIamUserId(userId => _serviceBusinessLogic.GetCompanyProvidedServiceStatusDataAsync(page, size, userId, sorting, offerName, statusId));
+        this.WithIdentityData(identity => _serviceBusinessLogic.GetCompanyProvidedServiceStatusDataAsync(page, size, identity, sorting, offerName, statusId));
 
     /// <summary>
     /// Retrieves the details of a subscription
@@ -256,7 +256,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider([FromRoute] Guid serviceId, [FromRoute] Guid subscriptionId) =>
-        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetSubscriptionDetailForProvider(serviceId, subscriptionId, iamUserId));
+        this.WithIdentityData(identity => _serviceBusinessLogic.GetSubscriptionDetailForProvider(serviceId, subscriptionId, identity));
 
     /// <summary>
     /// Retrieves the details of a subscription
@@ -274,7 +274,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber([FromRoute] Guid serviceId, [FromRoute] Guid subscriptionId) =>
-        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId, iamUserId));
+        this.WithIdentityData(identity => _serviceBusinessLogic.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId, identity));
 
     /// <summary>
     /// Retrieves subscription statuses of services.

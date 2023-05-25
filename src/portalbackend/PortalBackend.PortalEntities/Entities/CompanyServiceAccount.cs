@@ -26,14 +26,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyServiceAccount : Identity
 {
-    private CompanyServiceAccount()
-        : base()
-    {
-        Name = default!;
-        Description = default!;
-        AppInstances = new HashSet<AppInstanceAssignedCompanyServiceAccount>();
-    }
-
     public CompanyServiceAccount(Guid id, Guid companyId, UserStatusId userStatusId, string name, string description, DateTimeOffset dateCreated, CompanyServiceAccountTypeId companyServiceAccountTypeId)
         : base(id, dateCreated, companyId, userStatusId, IdentityTypeId.COMPANY_SERVICE_ACCOUNT)
     {

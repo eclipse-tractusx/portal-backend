@@ -74,16 +74,17 @@ public class ApplicationRepository : IApplicationRepository
             .Where(application => application.Id == applicationId)
             .Select(application => new CompanyApplicationUserData(application)
             {
-                CompanyUserId = application.Company!.CompanyUsers.Where(companyUser => companyUser.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault()
+                CompanyUserId = application.Company!.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!).Where(companyUser => companyUser.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault()
             })
             .SingleOrDefaultAsync();
+
     public Task<CompanyApplicationStatusUserData?> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, string iamUserId) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId)
             .Select(application => new CompanyApplicationStatusUserData(application.ApplicationStatusId)
             {
-                CompanyUserId = application.Company!.CompanyUsers.Where(companyUser => companyUser.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault()
+                CompanyUserId = application.Company!.Identities.Where(companyUser => companyUser.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault()
             })
             .SingleOrDefaultAsync();
 
@@ -93,8 +94,8 @@ public class ApplicationRepository : IApplicationRepository
             .Select(application => new
             {
                 Application = application,
-                CompanyUser = application.Company!.CompanyUsers.Where(companyUser => companyUser.UserEntityId == iamUserId).SingleOrDefault(),
-                Documents = application.Company.CompanyUsers.SelectMany(companyUser => companyUser.Documents).Where(Doc => Doc.DocumentStatusId != DocumentStatusId.LOCKED)
+                CompanyUser = application.Company!.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!).SingleOrDefault(companyUser => companyUser.UserEntityId == iamUserId),
+                Documents = application.Company.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!).SelectMany(companyUser => companyUser.Documents).Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED)
             })
             .Select(data => new CompanyApplicationUserEmailData(
                 data.Application.ApplicationStatusId,
@@ -131,7 +132,7 @@ public class ApplicationRepository : IApplicationRepository
                 application.Company.Address.Region,
                 application.Company.Address.CountryAlpha2Code,
                 application.Company.Address.Country!.CountryNameDe,
-                application.Company.CompanyUsers
+                application.Company.Identities
                     .Where(companyUser => companyUser.UserEntityId == iamUserId)
                     .Select(companyUser => companyUser.Id)
                     .SingleOrDefault(),
@@ -200,7 +201,7 @@ public class ApplicationRepository : IApplicationRepository
             .AsNoTracking()
             .Where(application => application.Id == applicationId)
             .SelectMany(application =>
-                application.Company!.CompanyUsers
+                application.Company!.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!)
                     .Where(companyUser => companyUser.UserStatusId == UserStatusId.ACTIVE)
                     .Select(companyUser => new EmailData(
                         companyUser.Id,
@@ -256,7 +257,7 @@ public class ApplicationRepository : IApplicationRepository
                 application.Id == applicationId)
             .Select(application => new
             {
-                IsSameCompanyUser = application.Company!.CompanyUsers.Any(user => user.UserEntityId == iamUserId),
+                IsSameCompanyUser = application.Company!.Identities.Any(user => user.UserEntityId == iamUserId),
                 Company = application.Company
             })
             .Select(x => new ValueTuple<bool, bool, RegistrationData?>(
@@ -276,10 +277,10 @@ public class ApplicationRepository : IApplicationRepository
                     x.Company.Address.CountryAlpha2Code,
                     x.Company.Address.Country!.CountryNameDe,
                     x.Company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                    x.Company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
+                    x.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)
                         .Select(consent => new ValueTuple<Guid, ConsentStatusId>(
                             consent.AgreementId, consent.ConsentStatusId)),
-                    x.Company.CompanyUsers.SelectMany(companyUser => companyUser.Documents.Where(document => documentTypes.Contains(document.DocumentTypeId)).Select(document => document.DocumentName)),
+                    x.Company.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!).SelectMany(companyUser => companyUser.Documents.Where(document => documentTypes.Contains(document.DocumentTypeId)).Select(document => document.DocumentName)),
                     x.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value)))
                     : null))
             .SingleOrDefaultAsync();

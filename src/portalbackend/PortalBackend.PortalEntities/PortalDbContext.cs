@@ -661,7 +661,14 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<Identity>(entity =>
         {
-            entity.HasIndex(e => e.UserEntityId).HasFilter("user_entity_id IS NOT NULL").IsUnique();
+            entity.HasIndex(e => e.UserEntityId)
+                // .HasFilter("user_entity_id IS NOT NULL")
+                .IsUnique();
+
+            entity.HasOne(d => d.Company)
+                .WithMany(p => p.Identities)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(e => e.IdentityStatus)
                 .WithMany(e => e.Identities)
@@ -677,11 +684,6 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<CompanyUser>(entity =>
         {
             entity.HasBaseType<Identity>();
-
-            entity.HasOne(d => d.Company)
-                .WithMany(p => p.CompanyUsers)
-                .HasForeignKey(d => d.CompanyId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasMany(p => p.Offers)
                 .WithMany(p => p.CompanyUsers)
@@ -711,11 +713,6 @@ public class PortalDbContext : DbContext
         {
             entity.HasBaseType<Identity>();
 
-            entity.HasOne(d => d.Company)
-                .WithMany(p => p.CompanyServiceAccounts)
-                .HasForeignKey(d => d.CompanyId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
             entity.HasOne(d => d.CompanyServiceAccountType)
                 .WithMany(p => p.CompanyServiceAccounts)
                 .HasForeignKey(d => d.CompanyServiceAccountTypeId);
@@ -725,6 +722,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.OfferSubscriptionId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
+            // TODO (PS): Check ohne filter - ggfs. schon Standard
             entity.HasIndex(e => e.ClientClientId)
                 .HasFilter("client_client_id IS NOT NULL")
                 .IsUnique();

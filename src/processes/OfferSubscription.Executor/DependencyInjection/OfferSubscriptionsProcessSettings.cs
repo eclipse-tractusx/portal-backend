@@ -33,12 +33,16 @@ public class OfferSubscriptionsProcessSettings
     /// <summary>
     /// Service Manager Roles
     /// </summary>
+    /// <param name="identity">Identity of the user</param>
+    /// <returns>The detail data</returns>
     [Required]
     public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; set; } = null!;
 
     /// <summary>
     /// BasePortalAddress url required for subscription email 
     /// </summary>
+    /// <param name="data">Detail data for the service provider</param>
+    /// <param name="identity">Identity of the user</param>
     [Required(AllowEmptyStrings = false)]
     public string BasePortalAddress { get; init; } = null!;
 }

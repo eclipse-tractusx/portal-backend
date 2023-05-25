@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
@@ -36,22 +37,22 @@ public interface IOfferService
     /// <param name="subscriptionId">Id of the offer to create the consents for.</param>
     /// <param name="agreementId">id of the agreement the consent is created for</param>
     /// <param name="consentStatusId">consent status</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>Returns the id of the created consent</returns>
     Task<Guid> CreateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId,
-        Guid agreementId, ConsentStatusId consentStatusId, string iamUserId, OfferTypeId offerTypeId);
+        Guid agreementId, ConsentStatusId consentStatusId, IdentityData identity, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Updates the existing consent offer subscriptions in the database and creates new entries for the non existing.
     /// </summary>
     /// <param name="subscriptionId">Id of the offer subscription</param>
     /// <param name="offerAgreementConsentData">List of the agreement and status of the consent</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     Task CreateOrUpdateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId,
         IEnumerable<OfferAgreementConsentData> offerAgreementConsentData,
-        string iamUserId, OfferTypeId offerTypeId);
+        IdentityData identity, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the offer agreement data
@@ -80,10 +81,10 @@ public interface IOfferService
     /// Return Offer Agreement Consent
     /// </summary>
     /// <param name="offerId"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <param name="offerTypeId">OfferTypeId the agreements are associated with</param>
     /// <returns></returns>
-    Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
+    Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, IdentityData identity, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Create or Update consent to agreements associated with an offer
@@ -108,19 +109,19 @@ public interface IOfferService
     /// 
     /// </summary>
     /// <param name="offerId"></param>
-    /// <param name="userId"></param>
+    /// <param name="identity"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId);
+    Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, IdentityData identity, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Checks whether the sales manager has the a sales manager role assigned and is in the same company as the user
     /// </summary>
     /// <param name="salesManagerId">Id of the sales manager</param>
-    /// <param name="iamUserId">id of the current user</param>
+    /// <param name="identity">identity of current user</param>
     /// <param name="salesManagerRoles">the sales manager roles</param>
     /// <returns>Returns the company id of the user</returns>
-    Task<Guid> ValidateSalesManager(Guid salesManagerId, string iamUserId, IDictionary<string, IEnumerable<string>> salesManagerRoles);
+    Task<Guid> ValidateSalesManager(Guid salesManagerId, IdentityData identity, IDictionary<string, IEnumerable<string>> salesManagerRoles);
 
     void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<LocalizedDescription> updateDescriptions, IEnumerable<LocalizedDescription> existingDescriptions);
 
@@ -169,9 +170,9 @@ public interface IOfferService
     /// Deactivate the given offerStatus by offerId and offerType
     /// </summary>
     /// <param name="offerId">Id of the offer that should be Deactivate</param>
-    /// <param name="iamUserId">Id of the iam User</param>
+    /// <param name="identity">Identity of the user</param>
     /// <param name="offerTypeId">Type of the offer</param>
-    Task DeactivateOfferIdAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
+    Task DeactivateOfferIdAsync(Guid offerId, IdentityData identity, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Update offer status and create notification for Service
@@ -199,20 +200,20 @@ public interface IOfferService
     /// Get offer Document Content for given offertypeId by Id
     /// </summary>
     /// <param name="documentId"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <param name="documentTypeIdSettings"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task DeleteDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIdSettings, OfferTypeId offerTypeId);
+    Task DeleteDocumentsAsync(Guid documentId, IdentityData identity, IEnumerable<DocumentTypeId> documentTypeIdSettings, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Get technical user profiles for a specific offer
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
-    /// <param name="iamUserId">Id of the iam User</param>
+    /// <param name="identity">Identity of the User</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>IEnumerable with the technical user profile information</returns>
-    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
+    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, IdentityData identity, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Creates or updates the technical user profiles
@@ -220,31 +221,31 @@ public interface IOfferService
     /// <param name="offerId">Id of the offer</param>
     /// <param name="offerTypeId">The OfferTypeId of the offer</param>
     /// <param name="data">The technical user profiles</param>
-    /// <param name="iamUserId">id of the iam user</param>
+    /// <param name="identity">identity of the user</param>
     /// <param name="technicalUserProfileClient">Client to get the technicalUserProfiles</param>
-    Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, string iamUserId, string technicalUserProfileClient);
+    Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, IdentityData identity, string technicalUserProfileClient);
 
     /// <summary>
     /// Gets the information for the subscription for the provider
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
     /// <param name="subscriptionId">Id of the subscription</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <param name="offerTypeId">Offer type</param>
     /// <param name="contactUserRoles">The roles of the users that will be listed as contact</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles);
+    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, IdentityData identity, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles);
 
     /// <summary>
     /// Gets the information for the subscription for the subscriber
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
     /// <param name="subscriptionId">Id of the subscription</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <param name="offerTypeId">Offer type</param>
     /// <param name="contactUserRoles">The roles of the users that will be listed as contact</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles);
+    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, IdentityData identity, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles);
 
     /// <summary>
     /// Gets the information of company Subscribed, Subscription Status for user by OfferType

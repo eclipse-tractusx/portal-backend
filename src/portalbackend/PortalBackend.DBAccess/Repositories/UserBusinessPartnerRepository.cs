@@ -56,14 +56,14 @@ public class UserBusinessPartnerRepository : IUserBusinessPartnerRepository
     public void DeleteCompanyUserAssignedBusinessPartners(IEnumerable<(Guid CompanyUserId, string BusinessPartnerNumber)> companyUserAssignedBusinessPartnerIds) =>
         _dbContext.RemoveRange(companyUserAssignedBusinessPartnerIds.Select(ids => new CompanyUserAssignedBusinessPartner(ids.CompanyUserId, ids.BusinessPartnerNumber)));
 
-    public Task<(string? UserEntityId, bool IsAssignedBusinessPartner, bool IsValidUser)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId, string adminUserId, string businessPartnerNumber) =>
+    public Task<(string? UserEntityId, bool IsAssignedBusinessPartner, bool IsValidUser)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId, Guid userCompanyId, string businessPartnerNumber) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new ValueTuple<string?, bool, bool>(
                 companyUser.UserEntityId,
                 companyUser.CompanyUserAssignedBusinessPartners!.Any(assignedPartner => assignedPartner.BusinessPartnerNumber == businessPartnerNumber),
-                companyUser.Company!.CompanyUsers.Any(cu => cu.UserEntityId == adminUserId)
+                companyUser.CompanyId == userCompanyId
             ))
             .SingleOrDefaultAsync();
 }

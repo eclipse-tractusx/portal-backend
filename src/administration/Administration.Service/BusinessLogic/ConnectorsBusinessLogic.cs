@@ -93,38 +93,38 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<ManagedConnectorData>> GetManagedConnectorForIamUserAsync(string iamUserId, int page, int size) =>
+    public Task<Pagination.Response<ManagedConnectorData>> GetManagedConnectorForIamUserAsync(IdentityData identity, int page, int size) =>
         Pagination.CreateResponseAsync(
             page,
             size,
             _settings.MaxPageSize,
-            _portalRepositories.GetInstance<IConnectorsRepository>().GetManagedConnectorsForIamUser(iamUserId));
+            _portalRepositories.GetInstance<IConnectorsRepository>().GetManagedConnectorsForIamUser(identity.CompanyId));
 
-    public async Task<ConnectorData> GetCompanyConnectorDataForIdIamUserAsync(Guid connectorId, string iamUserId)
+    public async Task<ConnectorData> GetCompanyConnectorDataForIdIamUserAsync(Guid connectorId, IdentityData identity)
     {
-        var result = await _portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorByIdForIamUser(connectorId, iamUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorByIdForIamUser(connectorId, identity.CompanyId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"connector {connectorId} does not exist");
         }
         if (!result.IsProviderUser)
         {
-            throw new ForbiddenException($"user {iamUserId} is not permitted to access connector {connectorId}");
+            throw new ForbiddenException($"user {identity.UserEntityId} is not permitted to access connector {connectorId}");
         }
         return result.ConnectorData;
     }
 
     /// <inheritdoc/>
-    public Task<Guid> CreateConnectorAsync(ConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
+    public Task<Guid> CreateConnectorAsync(ConnectorInputModel connectorInputModel, IdentityData identity, CancellationToken cancellationToken)
     {
         ValidateCertificationType(connectorInputModel.Certificate);
-        return CreateConnectorInternalAsync(connectorInputModel, iamUserId, cancellationToken);
+        return CreateConnectorInternalAsync(connectorInputModel, identity, cancellationToken);
     }
 
-    public Task<Guid> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
+    public Task<Guid> CreateManagedConnectorAsync(ManagedConnectorInputModel connectorInputModel, IdentityData identity, CancellationToken cancellationToken)
     {
         ValidateCertificationType(connectorInputModel.Certificate);
-        return CreateManagedConnectorInternalAsync(connectorInputModel, iamUserId, cancellationToken);
+        return CreateManagedConnectorInternalAsync(connectorInputModel, identity, cancellationToken);
     }
 
     private void ValidateCertificationType(IFormFile? certificate)
@@ -136,12 +136,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         }
     }
 
-    private async Task<Guid> CreateConnectorInternalAsync(ConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
+    private async Task<Guid> CreateConnectorInternalAsync(ConnectorInputModel connectorInputModel, IdentityData identity, CancellationToken cancellationToken)
     {
         var (name, connectorUrl, location, certificate, technicalUserId) = connectorInputModel;
         await CheckLocationExists(location);
 
-        var (companyId, userId) = await GetCompanyOfUserOrTechnicalUser(iamUserId).ConfigureAwait(false);
+        var (companyId, userId) = await GetCompanyOfUserOrTechnicalUser(identity).ConfigureAwait(false);
         var result = await _portalRepositories
             .GetInstance<ICompanyRepository>()
             .GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(companyId)
@@ -168,9 +168,9 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<Guid> CreateManagedConnectorInternalAsync(ManagedConnectorInputModel connectorInputModel, string iamUserId, CancellationToken cancellationToken)
+    private async Task<Guid> CreateManagedConnectorInternalAsync(ManagedConnectorInputModel connectorInputModel, IdentityData identity, CancellationToken cancellationToken)
     {
-        var (companyId, userId) = await GetCompanyOfUserOrTechnicalUser(iamUserId).ConfigureAwait(false);
+        var (companyId, userId) = await GetCompanyOfUserOrTechnicalUser(identity).ConfigureAwait(false);
         var (name, connectorUrl, location, providerBpn, certificate, technicalUserId) = connectorInputModel;
         await CheckLocationExists(location).ConfigureAwait(false);
 
@@ -200,14 +200,14 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<(Guid CompanyId, Guid? UserId)> GetCompanyOfUserOrTechnicalUser(string iamUserId)
+    private async Task<(Guid CompanyId, Guid? UserId)> GetCompanyOfUserOrTechnicalUser(IdentityData identity)
     {
         var result = await _portalRepositories.GetInstance<ICompanyRepository>()
-            .GetCompanyIdAndUserIdForUserOrTechnicalUser(iamUserId)
+            .GetCompanyIdAndUserIdForUserOrTechnicalUser(identity.CompanyId)
             .ConfigureAwait(false);
         if (result == default)
         {
-            throw new ConflictException($"No company found for user {iamUserId}");
+            throw new ConflictException($"No company found for user {identity.UserEntityId}");
         }
 
         return (result.CompanyId, result.CompanyUserId == Guid.Empty ? null : result.CompanyUserId);
@@ -364,12 +364,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, string iamUserId, CancellationToken cancellationToken)
+    public async Task<bool> TriggerDapsAsync(Guid connectorId, IFormFile certificate, IdentityData identity, CancellationToken cancellationToken)
     {
         var connectorsRepository = _portalRepositories
             .GetInstance<IConnectorsRepository>();
         var connector = await connectorsRepository
-            .GetConnectorInformationByIdForIamUser(connectorId, iamUserId)
+            .GetConnectorInformationByIdForIamUser(connectorId, identity.CompanyId)
             .ConfigureAwait(false);
 
         if (connector == default)
@@ -392,11 +392,11 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         }
 
         var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+            .GetCompanyUserIdForIamUserUntrackedAsync(identity.UserEntityId).ConfigureAwait(false);
 
         if (companyUserId == Guid.Empty)
         {
-            throw new ConflictException($"user {iamUserId} is not mapped to a valid companyUser");
+            throw new ConflictException($"user {identity.UserEntityId} is not mapped to a valid companyUser");
         }
 
         connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
@@ -443,18 +443,18 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data, string iamUserId, CancellationToken cancellationToken)
+    public Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data, IdentityData identity, CancellationToken cancellationToken)
     {
         data.ConnectorUrl.EnsureValidHttpUrl(() => nameof(data.ConnectorUrl));
-        return UpdateConnectorUrlInternal(connectorId, data, iamUserId, cancellationToken);
+        return UpdateConnectorUrlInternal(connectorId, data, identity, cancellationToken);
     }
 
-    public async Task UpdateConnectorUrlInternal(Guid connectorId, ConnectorUpdateRequest data, string iamUserId, CancellationToken cancellationToken)
+    public async Task UpdateConnectorUrlInternal(Guid connectorId, ConnectorUpdateRequest data, IdentityData identity, CancellationToken cancellationToken)
     {
         var connectorsRepository = _portalRepositories
             .GetInstance<IConnectorsRepository>();
         var connector = await connectorsRepository
-            .GetConnectorUpdateInformation(connectorId, iamUserId)
+            .GetConnectorUpdateInformation(connectorId, identity.CompanyId)
             .ConfigureAwait(false);
 
         if (connector == null)
@@ -469,7 +469,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         if (!connector.IsUserOfHostCompany)
         {
-            throw new ForbiddenException($"User {iamUserId} is no user of the connectors host company");
+            throw new ForbiddenException($"User {identity.UserEntityId} is no user of the connectors host company");
         }
 
         if (connector.Status == ConnectorStatusId.INACTIVE)
@@ -485,7 +485,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         var bpn = connector.Type == ConnectorTypeId.CONNECTOR_AS_A_SERVICE
             ? connector.Bpn
             : await _portalRepositories.GetInstance<IUserRepository>()
-                .GetCompanyBpnForIamUserAsync(iamUserId)
+                .GetCompanyBpnForIamUserAsync(identity.UserEntityId)
                 .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(bpn))
         {

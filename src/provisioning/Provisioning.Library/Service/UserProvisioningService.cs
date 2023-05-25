@@ -300,10 +300,10 @@ public class UserProvisioningService : IUserProvisioningService
         }
     }
 
-    public async Task<IEnumerable<UserRoleData>> GetOwnCompanyPortalRoleDatas(string clientId, IEnumerable<string> roles, string iamUserId)
+    public async Task<IEnumerable<UserRoleData>> GetOwnCompanyPortalRoleDatas(string clientId, IEnumerable<string> roles, IdentityData identity)
     {
         var roleDatas = await _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetOwnCompanyPortalUserRoleDataUntrackedAsync(clientId, roles, iamUserId).ToListAsync().ConfigureAwait(false);
+            .GetOwnCompanyPortalUserRoleDataUntrackedAsync(clientId, roles, identity.CompanyId).ToListAsync().ConfigureAwait(false);
         ValidateRoleData(roleDatas, clientId, roles);
         return roleDatas;
     }
