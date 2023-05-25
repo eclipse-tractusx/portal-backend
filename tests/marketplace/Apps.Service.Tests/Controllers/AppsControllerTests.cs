@@ -275,10 +275,13 @@ public class AppsControllerTests
     {
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
+        var userRoleData = new List<string>();
+        userRoleData.Add("Sales Manager");
+        userRoleData.Add("IT Manager");
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
         var responseData = new OfferAutoSetupResponseData(
-            new TechnicalUserInfoData(Guid.NewGuid(), "abcPW", "sa1"),
-            new ClientInfoData(Guid.NewGuid().ToString())
+            new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcPW", "sa1"),
+            new ClientInfoData(Guid.NewGuid().ToString(), "http://www.google.com")
         );
         A.CallTo(() => _logic.AutoSetupAppAsync(A<OfferAutoSetupData>._, A<string>.That.Matches(x => x == IamUserId)))
             .Returns(responseData);

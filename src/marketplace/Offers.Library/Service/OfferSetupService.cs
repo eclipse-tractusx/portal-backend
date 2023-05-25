@@ -114,7 +114,7 @@ public class OfferSetupService : IOfferSetupService
         if (offerTypeId == OfferTypeId.APP)
         {
             var (clientId, iamClientId) = await CreateClient(data.OfferUrl, offerDetails.OfferId, true, userRolesRepository).ConfigureAwait(false);
-            clientInfoData = new ClientInfoData(clientId);
+            clientInfoData = new ClientInfoData(clientId, data.OfferUrl);
             CreateAppInstance(data, offerDetails, iamClientId);
         }
 
@@ -155,7 +155,7 @@ public class OfferSetupService : IOfferSetupService
             return null;
         }
 
-        var (technicalClientId, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation
+        var (technicalClientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation
             .CreateServiceAccountAsync(
                 serviceAccountCreationInfo,
                 data.CompanyId,
@@ -165,7 +165,7 @@ public class OfferSetupService : IOfferSetupService
                 sa => { sa.OfferSubscriptionId = subscriptionId; })
             .ConfigureAwait(false);
 
-        return new TechnicalUserInfoData(serviceAccountId, serviceAccountData.AuthData.Secret, technicalClientId);
+        return new TechnicalUserInfoData(serviceAccountId, userRoleData.Select(x => x.UserRoleText), serviceAccountData.AuthData.Secret, technicalClientId);
     }
 
     /// <inheritdoc />
@@ -304,7 +304,7 @@ public class OfferSetupService : IOfferSetupService
         var creationData = await _technicalUserProfileService.GetTechnicalUserProfilesForOffer(offerId, offerTypeId).ConfigureAwait(false);
         foreach (var creationInfo in creationData)
         {
-            var (technicalClientId, serviceAccountData, serviceAccountId, _) = await _serviceAccountCreation
+            var (technicalClientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation
                 .CreateServiceAccountAsync(
                     creationInfo,
                     data.CompanyId,
@@ -312,7 +312,7 @@ public class OfferSetupService : IOfferSetupService
                     CompanyServiceAccountTypeId.MANAGED,
                     data.EnhanceTechnicalUserName)
                 .ConfigureAwait(false);
-            yield return new TechnicalUserInfoData(serviceAccountId, serviceAccountData.AuthData.Secret, technicalClientId);
+            yield return new TechnicalUserInfoData(serviceAccountId, userRoleData.Select(x => x.UserRoleText), serviceAccountData.AuthData.Secret, technicalClientId);
         }
     }
 
