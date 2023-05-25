@@ -339,7 +339,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc/>
-    public async Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds)
+    public async Task SubmitOfferAsync(Guid offerId, IdentityData identity, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds)
     {
         var offerDetails = await GetOfferReleaseData(offerId, offerTypeId).ConfigureAwait(false);
 
@@ -361,14 +361,14 @@ public class OfferService : IOfferService
             throw new ConflictException("PrivacyPolicies is missing for the app");
         }
 
-        await SubmitAppServiceAsync(offerId, iamUserId, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(false);
+        await SubmitAppServiceAsync(offerId, identity, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async Task SubmitServiceAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
+    public async Task SubmitServiceAsync(Guid offerId, IdentityData identity, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
     {
         var offerDetails = await GetOfferReleaseData(offerId, offerTypeId).ConfigureAwait(false);
-        await SubmitAppServiceAsync(offerId, iamUserId, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(false);
+        await SubmitAppServiceAsync(offerId, identity, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(false);
     }
 
     private async Task<OfferReleaseData> GetOfferReleaseData(Guid offerId, OfferTypeId offerTypeId)
@@ -382,7 +382,7 @@ public class OfferService : IOfferService
         return offerDetails;
     }
 
-    private async Task SubmitAppServiceAsync(Guid offerId, string iamUserId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, OfferReleaseData offerDetails)
+    private async Task SubmitAppServiceAsync(Guid offerId, IdentityData identity, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, OfferReleaseData offerDetails)
     {
         GetAndValidateOfferDetails(offerDetails);
         var pendingDocuments = offerDetails.DocumentDatas.Where(data => data.StatusId == DocumentStatusId.PENDING);
@@ -402,13 +402,6 @@ public class OfferService : IOfferService
             offer.DateLastChanged = DateTimeOffset.UtcNow;
         });
 
-        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        if (requesterId == Guid.Empty)
-        {
-            throw new ConflictException($"keycloak user {iamUserId} is not associated with any portal user");
-        }
-
         var notificationContent = new
         {
             offerId,
@@ -418,7 +411,7 @@ public class OfferService : IOfferService
 
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(catenaAdminRoles, requesterId, content, false).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(catenaAdminRoles, identity.IdentityId, content, false).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -456,7 +449,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc/>
-    public async Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
+    public async Task ApproveOfferRequestAsync(Guid offerId, IdentityData identity, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var offerDetails = await offerRepository.GetOfferStatusDataByIdAsync(offerId, offerTypeId).ConfigureAwait(false);
@@ -478,13 +471,6 @@ public class OfferService : IOfferService
         if (offerDetails.ProviderCompanyId == null)
         {
             throw new ConflictException($"Offer {offerId} providing company is not yet set.");
-        }
-
-        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        if (requesterId == Guid.Empty)
-        {
-            throw new ConflictException($"keycloak user ${iamUserId} is not associated with any portal user");
         }
 
         offerRepository.AttachAndModifyOffer(offerId, offer =>
@@ -515,14 +501,14 @@ public class OfferService : IOfferService
 
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = approveOfferNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content, offerDetails.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
+        await _notificationService.CreateNotifications(approveOfferRoles, identity.IdentityId, content, offerDetails.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _notificationService.SetNotificationsForOfferToDone(catenaAdminRoles, submitOfferNotificationTypeIds, offerId).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string, IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
+    public async Task DeclineOfferAsync(Guid offerId, IdentityData identity, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string, IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var declineData = await offerRepository.GetOfferDeclineDataAsync(offerId, offerType).ConfigureAwait(false);
@@ -562,8 +548,6 @@ public class OfferService : IOfferService
                         document => document.DocumentStatusId = x.StatusId,
                         document => document.DocumentStatusId = DocumentStatusId.PENDING)));
         }
-        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         var notificationContent = new
         {
             declineData.OfferName,
@@ -573,7 +557,7 @@ public class OfferService : IOfferService
 
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = Enumerable.Repeat(notificationTypeId, 1).Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(notificationRecipients, requesterId, content, declineData.CompanyId.Value).AwaitAll().ConfigureAwait(false);
+        await _notificationService.CreateNotifications(notificationRecipients, identity.IdentityId, content, declineData.CompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _notificationService.SetNotificationsForOfferToDone(catenaAdminRoles, submitOfferNotificationTypeIds, offerId).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

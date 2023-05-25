@@ -1,3 +1,23 @@
+/********************************************************************************
+ * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
 using Microsoft.EntityFrameworkCore.Migrations;
 using System;
 
@@ -78,6 +98,29 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateTable(
+                name: "audit_identity20230526",
+                schema: "portal",
+                columns: table => new
+                {
+                    audit_v1id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    date_created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    company_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    user_status_id = table.Column<int>(type: "integer", nullable: false),
+                    user_entity_id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: true),
+                    identity_type_id = table.Column<int>(type: "integer", nullable: false),
+                    date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_v1last_editor_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_v1operation_id = table.Column<int>(type: "integer", nullable: false),
+                    audit_v1date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_audit_identity20230526", x => x.audit_v1id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "identity_type",
                 schema: "portal",
                 columns: table => new
@@ -113,11 +156,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     company_id = table.Column<Guid>(type: "uuid", nullable: false),
                     user_status_id = table.Column<int>(type: "integer", nullable: false),
                     user_entity_id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: true),
-                    identity_type_id = table.Column<int>(type: "integer", nullable: false)
+                    identity_type_id = table.Column<int>(type: "integer", nullable: false),
+                    date_last_changed = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    last_editor_id = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_identities", x => x.id);
+                    table.PrimaryKey("pk_identities", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_identities_companies_company_id",
+                        column: x => x.company_id,
+                        principalSchema: "portal",
+                        principalTable: "companies",
+                        principalColumn: "id");
                     table.ForeignKey(
                         name: "fk_identities_identity_type_identity_type_id",
                         column: x => x.identity_type_id,
@@ -125,7 +176,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         principalTable: "identity_type",
                         principalColumn: "id");
                     table.ForeignKey(
-                        name: "fk_identities_identity_user_statuses_user_status_id",
+                        name: "fk_identities_identity_user_statuses_identity_status_id",
                         column: x => x.user_status_id,
                         principalSchema: "portal",
                         principalTable: "identity_user_statuses",
@@ -186,11 +237,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.Sql("INSERT INTO portal.identity_assigned_roles (identity_id, user_role_id, last_editor_id) SELECT company_service_account_id, user_role_id, null FROM portal.company_service_accounts as sa JOIN portal.company_service_account_assigned_roles as sar ON sa.id = sar.company_service_account_id;");
 
             migrationBuilder.DropForeignKey(
-                name: "fk_app_instance_assigned_service_accounts_company_service_acco",
-                schema: "portal",
-                table: "app_instance_assigned_service_accounts");
-
-            migrationBuilder.DropForeignKey(
                 name: "fk_company_service_accounts_companies_service_account_owner_id",
                 schema: "portal",
                 table: "company_service_accounts");
@@ -201,16 +247,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "company_service_accounts");
 
             migrationBuilder.DropForeignKey(
-                name: "fk_company_user_assigned_app_favourites_company_users_company_",
-                schema: "portal",
-                table: "company_user_assigned_app_favourites");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_company_user_assigned_business_partners_company_users_compa",
-                schema: "portal",
-                table: "company_user_assigned_business_partners");
-
-            migrationBuilder.DropForeignKey(
                 name: "fk_company_users_companies_company_id",
                 schema: "portal",
                 table: "company_users");
@@ -219,51 +255,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "fk_company_users_company_user_statuses_company_user_status_id",
                 schema: "portal",
                 table: "company_users");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_connectors_company_service_accounts_company_service_account",
-                schema: "portal",
-                table: "connectors");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_connectors_company_users_last_editor_id",
-                schema: "portal",
-                table: "connectors");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_consents_company_users_company_user_id",
-                schema: "portal",
-                table: "consents");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_documents_company_users_company_user_id",
-                schema: "portal",
-                table: "documents");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_invitations_company_users_company_user_id",
-                schema: "portal",
-                table: "invitations");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_offer_subscriptions_company_users_requester_id",
-                schema: "portal",
-                table: "offer_subscriptions");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_offers_company_users_sales_manager_id",
-                schema: "portal",
-                table: "offers");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_notifications_company_users_creator_id",
-                schema: "portal",
-                table: "notifications");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_notifications_company_users_receiver_id",
-                schema: "portal",
-                table: "notifications");
 
             migrationBuilder.DropTable(
                 name: "company_service_account_assigned_roles",
@@ -289,11 +280,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "iam_users",
                 schema: "portal");
 
-            migrationBuilder.DropPrimaryKey(
-                name: "pk_company_users",
-                schema: "portal",
-                table: "company_users");
-
             migrationBuilder.DropIndex(
                 name: "ix_company_users_company_id",
                 schema: "portal",
@@ -303,11 +289,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "ix_company_users_company_user_status_id",
                 schema: "portal",
                 table: "company_users");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "pk_company_service_accounts",
-                schema: "portal",
-                table: "company_service_accounts");
 
             migrationBuilder.DropIndex(
                 name: "ix_company_service_accounts_company_service_account_status_id",
@@ -349,25 +330,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "company_service_accounts");
 
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_company_users",
-                schema: "portal",
-                table: "company_users",
-                column: "id");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_company_service_accounts",
-                schema: "portal",
-                table: "company_service_accounts",
-                column: "id");
-
             migrationBuilder.CreateIndex(
                 name: "ix_company_service_accounts_client_client_id",
                 schema: "portal",
                 table: "company_service_accounts",
                 column: "client_client_id",
-                unique: true,
-                filter: "client_client_id IS NOT NULL");
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_identities_company_id",
+                schema: "portal",
+                table: "identities",
+                column: "company_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_identities_identity_type_id",
@@ -380,8 +354,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "identities",
                 column: "user_entity_id",
-                unique: true,
-                filter: "user_entity_id IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_identities_user_status_id",
@@ -396,16 +369,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "user_role_id");
 
             migrationBuilder.AddForeignKey(
-                name: "fk_app_instance_assigned_service_accounts_identities_company_s",
-                schema: "portal",
-                table: "app_instance_assigned_service_accounts",
-                column: "company_service_account_id",
-                principalSchema: "portal",
-                principalTable: "company_service_accounts",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_company_service_accounts_identities_id",
+                name: "fk_company_service_accounts_identities_identity_id",
                 schema: "portal",
                 table: "company_service_accounts",
                 column: "id",
@@ -415,26 +379,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "fk_company_user_assigned_app_favourites_identities_company_use",
-                schema: "portal",
-                table: "company_user_assigned_app_favourites",
-                column: "company_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_company_user_assigned_business_partners_identities_company_",
-                schema: "portal",
-                table: "company_user_assigned_business_partners",
-                column: "company_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_company_users_identities_id",
+                name: "fk_company_users_identities_identity_id",
                 schema: "portal",
                 table: "company_users",
                 column: "id",
@@ -443,86 +388,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
 
-            migrationBuilder.AddForeignKey(
-                name: "fk_connectors_identities_company_service_account_id",
-                schema: "portal",
-                table: "connectors",
-                column: "company_service_account_id",
-                principalSchema: "portal",
-                principalTable: "company_service_accounts",
-                principalColumn: "id");
+            migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_IDENTITY() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_IDENTITY$\r\nBEGIN\r\n  INSERT INTO portal.audit_identity20230526 (\"id\", \"date_created\", \"company_id\", \"user_status_id\", \"user_entity_id\", \"identity_type_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT OLD.id, \r\n  OLD.date_created, \r\n  OLD.company_id, \r\n  OLD.user_status_id, \r\n  OLD.user_entity_id, \r\n  OLD.identity_type_id, \r\n  OLD.date_last_changed, \r\n  OLD.last_editor_id, \r\n  gen_random_uuid(), \r\n  3, \r\n  CURRENT_DATE, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_IDENTITY$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_IDENTITY AFTER DELETE\r\nON portal.identities\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_IDENTITY();");
 
-            migrationBuilder.AddForeignKey(
-                name: "fk_connectors_identities_last_editor_id",
-                schema: "portal",
-                table: "connectors",
-                column: "last_editor_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
+            migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_INSERT_IDENTITY() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_IDENTITY$\r\nBEGIN\r\n  INSERT INTO portal.audit_identity20230526 (\"id\", \"date_created\", \"company_id\", \"user_status_id\", \"user_entity_id\", \"identity_type_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.date_created, \r\n  NEW.company_id, \r\n  NEW.user_status_id, \r\n  NEW.user_entity_id, \r\n  NEW.identity_type_id, \r\n  NEW.date_last_changed, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_IDENTITY$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_IDENTITY AFTER INSERT\r\nON portal.identities\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_INSERT_IDENTITY();");
 
-            migrationBuilder.AddForeignKey(
-                name: "fk_consents_identities_company_user_id",
-                schema: "portal",
-                table: "consents",
-                column: "company_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_documents_identities_company_user_id",
-                schema: "portal",
-                table: "documents",
-                column: "company_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_invitations_identities_company_user_id",
-                schema: "portal",
-                table: "invitations",
-                column: "company_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_offer_subscriptions_identities_requester_id",
-                schema: "portal",
-                table: "offer_subscriptions",
-                column: "requester_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_offers_identities_sales_manager_id",
-                schema: "portal",
-                table: "offers",
-                column: "sales_manager_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_notifications_company_users_creator_id",
-                schema: "portal",
-                table: "notifications",
-                column: "creator_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_notifications_company_users_receiver_id",
-                schema: "portal",
-                table: "notifications",
-                column: "receiver_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
+            migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_IDENTITY() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_IDENTITY$\r\nBEGIN\r\n  INSERT INTO portal.audit_identity20230526 (\"id\", \"date_created\", \"company_id\", \"user_status_id\", \"user_entity_id\", \"identity_type_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.id, \r\n  NEW.date_created, \r\n  NEW.company_id, \r\n  NEW.user_status_id, \r\n  NEW.user_entity_id, \r\n  NEW.identity_type_id, \r\n  NEW.date_last_changed, \r\n  NEW.last_editor_id, \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_DATE, \r\n  NEW.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_IDENTITY$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_IDENTITY AFTER UPDATE\r\nON portal.identities\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_UPDATE_IDENTITY();");
 
             migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_IDENTITYASSIGNEDROLE() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_IDENTITYASSIGNEDROLE$\r\nBEGIN\r\n  INSERT INTO portal.audit_identity_assigned_role20230522 (\"identity_id\", \"user_role_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT OLD.identity_id, \r\n  OLD.user_role_id, \r\n  OLD.last_editor_id, \r\n  gen_random_uuid(), \r\n  3, \r\n  CURRENT_DATE, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_IDENTITYASSIGNEDROLE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_IDENTITYASSIGNEDROLE AFTER DELETE\r\nON portal.identity_assigned_roles\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_IDENTITYASSIGNEDROLE();");
 
@@ -539,6 +409,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_DELETE_IDENTITY() CASCADE;");
+
+            migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_INSERT_IDENTITY() CASCADE;");
+
+            migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_UPDATE_IDENTITY() CASCADE;");
+
             migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_DELETE_IDENTITYASSIGNEDROLE() CASCADE;");
 
             migrationBuilder.Sql("DROP FUNCTION portal.LC_TRIGGER_AFTER_INSERT_IDENTITYASSIGNEDROLE() CASCADE;");
@@ -747,94 +623,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.Sql("INSERT INTO portal.company_service_account_assigned_roles (company_service_account_id, user_role_id) SELECT ir.identity_id, ir.user_role_id FROM portal.identity_assigned_roles as ir INNER JOIN portal.identities as i ON i.id = ir.identity_id WHERE i.identity_type_id = 2;");
 
             migrationBuilder.DropForeignKey(
-                name: "fk_app_instance_assigned_service_accounts_identities_company_s",
-                schema: "portal",
-                table: "app_instance_assigned_service_accounts");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_company_service_accounts_identities_id",
+                name: "fk_company_service_accounts_identities_identity_id",
                 schema: "portal",
                 table: "company_service_accounts");
 
             migrationBuilder.DropForeignKey(
-                name: "fk_company_user_assigned_app_favourites_identities_company_use",
-                schema: "portal",
-                table: "company_user_assigned_app_favourites");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_company_user_assigned_business_partners_identities_company_",
-                schema: "portal",
-                table: "company_user_assigned_business_partners");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_company_users_identities_id",
+                name: "fk_company_users_identities_identity_id",
                 schema: "portal",
                 table: "company_users");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_connectors_identities_company_service_account_id",
-                schema: "portal",
-                table: "connectors");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_connectors_identities_last_editor_id",
-                schema: "portal",
-                table: "connectors");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_consents_identities_company_user_id",
-                schema: "portal",
-                table: "consents");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_documents_identities_company_user_id",
-                schema: "portal",
-                table: "documents");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_invitations_identities_company_user_id",
-                schema: "portal",
-                table: "invitations");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_offer_subscriptions_identities_requester_id",
-                schema: "portal",
-                table: "offer_subscriptions");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_offers_identities_sales_manager_id",
-                schema: "portal",
-                table: "offers");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_notifications_company_users_creator_id",
-                schema: "portal",
-                table: "notifications");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_notifications_company_users_receiver_id",
-                schema: "portal",
-                table: "notifications");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_company_user_assigned_roles_company_users_company_user_id",
-                schema: "portal",
-                table: "company_user_assigned_roles");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_iam_users_company_users_company_user_id",
-                schema: "portal",
-                table: "iam_users");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_company_service_account_assigned_roles_company_service_acco",
-                schema: "portal",
-                table: "company_service_account_assigned_roles");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_iam_service_accounts_company_service_accounts_company_servi",
-                schema: "portal",
-                table: "iam_service_accounts");
 
             migrationBuilder.DropTable(
                 name: "audit_company_user20230523",
@@ -842,6 +638,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.DropTable(
                 name: "audit_identity_assigned_role20230522",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
+                name: "audit_identity20230526",
                 schema: "portal");
 
             migrationBuilder.DropTable(
@@ -860,16 +660,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "identity_user_statuses",
                 schema: "portal");
 
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_company_users",
-                schema: "portal",
-                table: "company_users");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_company_service_accounts",
-                schema: "portal",
-                table: "company_service_accounts");
-
             migrationBuilder.DropIndex(
                 name: "ix_company_service_accounts_client_client_id",
                 schema: "portal",
@@ -884,18 +674,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "client_id",
                 schema: "portal",
                 table: "company_service_accounts");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "pk_company_users",
-                schema: "portal",
-                table: "company_users",
-                column: "id");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "pk_company_service_accounts",
-                schema: "portal",
-                table: "company_service_accounts",
-                column: "id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_company_users_company_id",
@@ -962,15 +740,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 unique: true);
 
             migrationBuilder.AddForeignKey(
-                name: "fk_app_instance_assigned_service_accounts_company_service_acco",
-                schema: "portal",
-                table: "app_instance_assigned_service_accounts",
-                column: "company_service_account_id",
-                principalSchema: "portal",
-                principalTable: "company_service_accounts",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
                 name: "fk_company_service_accounts_companies_service_account_owner_id",
                 schema: "portal",
                 table: "company_service_accounts",
@@ -986,25 +755,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "company_service_account_status_id",
                 principalSchema: "portal",
                 principalTable: "company_service_account_statuses",
-                principalColumn: "id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_company_user_assigned_app_favourites_company_users_company_",
-                schema: "portal",
-                table: "company_user_assigned_app_favourites",
-                column: "company_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_company_user_assigned_business_partners_company_users_compa",
-                schema: "portal",
-                table: "company_user_assigned_business_partners",
-                column: "company_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
 
@@ -1026,123 +776,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 principalTable: "company_user_statuses",
                 principalColumn: "id",
                 onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_connectors_company_service_accounts_company_service_account",
-                schema: "portal",
-                table: "connectors",
-                column: "company_service_account_id",
-                principalSchema: "portal",
-                principalTable: "company_service_accounts",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_connectors_company_users_last_editor_id",
-                schema: "portal",
-                table: "connectors",
-                column: "last_editor_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_consents_company_users_company_user_id",
-                schema: "portal",
-                table: "consents",
-                column: "company_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_documents_company_users_company_user_id",
-                schema: "portal",
-                table: "documents",
-                column: "company_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_invitations_company_users_company_user_id",
-                schema: "portal",
-                table: "invitations",
-                column: "company_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_offer_subscriptions_company_users_requester_id",
-                schema: "portal",
-                table: "offer_subscriptions",
-                column: "requester_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_offers_company_users_sales_manager_id",
-                schema: "portal",
-                table: "offers",
-                column: "sales_manager_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_notifications_company_users_creator_id",
-                schema: "portal",
-                table: "notifications",
-                column: "creator_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_notifications_company_users_receiver_id",
-                schema: "portal",
-                table: "notifications",
-                column: "receiver_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_company_user_assigned_roles_company_users_company_user_id",
-                schema: "portal",
-                table: "company_user_assigned_roles",
-                column: "company_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_iam_users_company_users_company_user_id",
-                schema: "portal",
-                table: "iam_users",
-                column: "company_user_id",
-                principalSchema: "portal",
-                principalTable: "company_users",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_company_service_account_assigned_roles_company_service_acco",
-                schema: "portal",
-                table: "company_service_account_assigned_roles",
-                column: "company_service_account_id",
-                principalSchema: "portal",
-                principalTable: "company_service_accounts",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_iam_service_accounts_company_service_accounts_company_servi",
-                schema: "portal",
-                table: "iam_service_accounts",
-                column: "company_service_account_id",
-                principalSchema: "portal",
-                principalTable: "company_service_accounts",
-                principalColumn: "id");
 
             migrationBuilder.Sql("CREATE FUNCTION portal.LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE() RETURNS trigger as $LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE$\r\nBEGIN\r\n  INSERT INTO portal.audit_company_user_assigned_role20221018 (\"company_user_id\", \"user_role_id\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT OLD.company_user_id, \r\n  OLD.user_role_id, \r\n  OLD.last_editor_id, \r\n  gen_random_uuid(), \r\n  3, \r\n  CURRENT_DATE, \r\n  OLD.last_editor_id;\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE AFTER DELETE\r\nON portal.company_user_assigned_roles\r\nFOR EACH ROW EXECUTE PROCEDURE portal.LC_TRIGGER_AFTER_DELETE_COMPANYUSERASSIGNEDROLE();");
 

@@ -25,7 +25,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
@@ -35,6 +37,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
 public class AppChangeControllerTest
 {
     private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
+    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private readonly IFixture _fixture;
     private readonly AppChangeController _controller;
     private readonly IAppChangeBusinessLogic _logic;
@@ -44,18 +47,16 @@ public class AppChangeControllerTest
         _fixture = new Fixture();
         _logic = A.Fake<IAppChangeBusinessLogic>();
         this._controller = new AppChangeController(_logic);
-        _controller.AddControllerContextWithClaim(IamUserId);
+        _controller.AddControllerContextWithClaim(IamUserId, _identity);
     }
 
     [Fact]
     public async Task AddActiveAppUserRole_ReturnsExpectedCount()
     {
         var appId = _fixture.Create<Guid>();
-        var iamUserId = _fixture.Create<string>();
-
         var appUserRoles = _fixture.CreateMany<AppUserRole>(3);
         var appRoleData = _fixture.CreateMany<AppRoleData>(3);
-        A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles, iamUserId))
+        A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles, _identity))
             .Returns(appRoleData);
 
         //Act
@@ -63,7 +64,7 @@ public class AppChangeControllerTest
         foreach (var item in result)
         {
             //Assert
-            A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles, iamUserId)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.AddActiveAppUserRoleAsync(appId, appUserRoles, _identity)).MustHaveHappenedOnceExactly();
             Assert.NotNull(item);
             Assert.IsType<AppRoleData>(item);
         }
@@ -76,14 +77,14 @@ public class AppChangeControllerTest
         var appId = _fixture.Create<Guid>();
         var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
 
-        A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<string>._))
+        A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<IdentityData>._))
             .Returns(offerDescriptionData);
 
         //Act
         var result = await this._controller.GetAppUpdateDescriptionsAsync(appId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<string>._)).MustHaveHappened();
+        A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._, A<IdentityData>._)).MustHaveHappened();
     }
 
     [Fact]
@@ -97,7 +98,7 @@ public class AppChangeControllerTest
         var result = await this._controller.CreateOrUpdateAppDescriptionsByIdAsync(appId, offerDescriptionData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<string>._, A<IEnumerable<LocalizedDescription>>._)).MustHaveHappened();
+        A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<IdentityData>._, A<IEnumerable<LocalizedDescription>>._)).MustHaveHappened();
         result.Should().BeOfType<NoContentResult>();
     }
 
@@ -107,14 +108,14 @@ public class AppChangeControllerTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
-        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(A<Guid>._, A<string>._, A<IFormFile>._, CancellationToken.None))
+        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(A<Guid>._, A<IdentityData>._, A<IFormFile>._, CancellationToken.None))
             .ReturnsLazily(() => Task.CompletedTask);
 
         // Act
         var result = await this._controller.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, IamUserId, file, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, _identity, file, CancellationToken.None)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 
@@ -123,14 +124,14 @@ public class AppChangeControllerTest
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(A<Guid>._, A<string>._))
+        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(A<Guid>._, A<IdentityData>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.DeactivateApp(appId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId, _identity)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -145,7 +146,7 @@ public class AppChangeControllerTest
         var result = await this._controller.UpdateTenantUrl(appId, subscriptionId, data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data, IamUserId)).MustHaveHappened();
+        A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data, _identity)).MustHaveHappened();
         result.Should().BeOfType<NoContentResult>();
     }
 }

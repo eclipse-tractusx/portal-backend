@@ -1,0 +1,76 @@
+[
+  {
+    "id": "ac1cf001-7fbc-1f2f-817f-bce058020006",
+    "date_last_changed": "2022-03-24 18:01:33.570000 +00:00",
+    "last_editor_id": null,
+    "date_created": "2022-03-24 18:01:33.570000 +00:00",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "user_status_id": 1,
+    "user_entity_id": "502dabcf-01c7-47d9-a88e-0be4279097b5",
+    "identity_type_id": 1
+  },
+  {
+    "id": "7e85a0b8-0001-ab67-10d1-0ef508201006",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2022-06-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "6e9d388a-1a21-4196-8210-80e9a696ae87",
+    "identity_type_id": 2
+  },
+  {
+    "id": "7e85a0b8-0001-ab67-10d1-0ef508201007",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2022-06-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "ca2657a8-eba9-4cb4-8b66-8cc30911dfa1",
+    "identity_type_id": 2
+  },
+  {
+    "id": "7e85a0b8-0001-ab67-10d1-0ef508201023",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2022-06-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "965ae857-1e91-4e0b-bdb5-4efd1fc7ea9c",
+    "identity_type_id": 2
+  },
+  {
+    "id": "7e85a0b8-0001-ab67-10d1-0ef508201024",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2022-06-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "f014ed5d-9e05-4f29-a5c0-227c7e7b479e",
+    "identity_type_id": 2
+  },
+  {
+    "id": "7e85a0b8-0001-ab67-10d1-0ef508201025",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2022-06-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "50dfc73d-e0a1-4992-be95-75def1dadbfa",
+    "identity_type_id": 2
+  },
+  {
+    "id": "7e85a0b8-0001-ab67-10d1-0ef508201026",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2023-01-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "4ba959c0-3d44-40bc-84ab-13019b8e4b7a",
+    "identity_type_id": 2
+  },
+  {
+    "id": "7e85a0b8-0001-ab67-10d1-0ef508201027",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2023-01-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "69ac2d10-0ae2-4e0e-98f2-35610f54957e",
+    "identity_type_id": 2
+  },
+  {
+    "id": "7e85a0b8-0001-ab67-10d1-0ef508201028",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2023-01-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "383eaec3-4332-47fa-9279-28edc74cb752",
+    "identity_type_id": 2
+  }
+]

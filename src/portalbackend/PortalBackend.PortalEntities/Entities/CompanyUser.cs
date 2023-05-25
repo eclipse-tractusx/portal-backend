@@ -27,11 +27,11 @@ using System.ComponentModel.DataAnnotations;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 [AuditEntityV1(typeof(AuditCompanyUser20230522))]
-public class CompanyUser : Identity, IAuditableV1
+public class CompanyUser : IBaseEntity, IAuditableV1
 {
-    public CompanyUser(Guid id, Guid companyId, UserStatusId userStatusId, DateTimeOffset dateCreated, Guid lastEditorId)
-        : base(id, dateCreated, companyId, userStatusId, IdentityTypeId.COMPANY_USER)
+    public CompanyUser(Guid id, Guid? lastEditorId)
     {
+        Id = id;
         LastEditorId = lastEditorId;
 
         Consents = new HashSet<Consent>();
@@ -44,6 +44,9 @@ public class CompanyUser : Identity, IAuditableV1
         CreatedNotifications = new HashSet<Notification>();
         RequestedSubscriptions = new HashSet<OfferSubscription>();
     }
+
+    /// <inheritdoc />
+    public Guid Id { get; set; }
 
     [MaxLength(255)]
     public string? Email { get; set; }
@@ -61,6 +64,7 @@ public class CompanyUser : Identity, IAuditableV1
     [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
 
+    public virtual Identity? Identity { get; set; }
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Document> Documents { get; private set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }

@@ -58,8 +58,13 @@ public class NotificationBusinessLogicTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
+        var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER)
+        {
+            UserEntityId = IamUserId
+        };
+
         _companyUser = _fixture.Build<CompanyUser>()
-            .With(u => u.UserEntityId, IamUserId)
+            .With(u => u.Identity, identity)
             .Create();
         _notificationDetail = new NotificationDetailData(Guid.NewGuid(), DateTime.UtcNow, NotificationTypeId.INFO, NotificationTopicId.INFO, false, "Test Message", null, false);
 
@@ -498,8 +503,6 @@ public class NotificationBusinessLogicTests
             .ReturnsLazily(() => new List<(Guid CompanyUserId, bool iamUser)> { new(_companyUser.Id, true), new(_companyUser.Id, false) }.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(A<string>.That.Not.Matches(x => x == IamUserId), A<Guid>.That.Not.Matches(x => x == _companyUser.Id)))
             .ReturnsLazily(() => new List<(Guid CompanyUserId, bool iamUser)>().ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyIdForIamUserUntrackedAsync(IamUserId))
-            .ReturnsLazily(() => Task.FromResult(_companyUser.Id));
         A.CallTo(() =>
                 _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(_notificationDetail.Id, IamUserId))
             .Returns((true, _notificationDetail));

@@ -94,8 +94,8 @@ public class CompanyRepository : ICompanyRepository
     public Task<(string CompanyName, Guid CompanyId)> GetCompanyNameIdUntrackedAsync(string iamUserId) =>
         _context.CompanyUsers
             .AsNoTracking()
-            .Where(user => user.UserEntityId == iamUserId)
-            .Select(user => user.Company)
+            .Where(user => user.Identity!.UserEntityId == iamUserId)
+            .Select(user => user.Identity!.Company)
             .Select(company => new ValueTuple<string, Guid>(company!.Name, company.Id))
             .SingleOrDefaultAsync();
 
@@ -236,12 +236,12 @@ public class CompanyRepository : ICompanyRepository
         _context.CompanyUsers
             .AsNoTracking()
             .AsSplitQuery()
-            .Where(user => user.UserEntityId == iamUserId)
+            .Where(user => user.Identity!.UserEntityId == iamUserId)
             .Select(user => new
             {
                 User = user,
-                Company = user.Company,
-                IsActive = user.Company!.CompanyStatusId == CompanyStatusId.ACTIVE
+                Company = user.Identity!.Company,
+                IsActive = user.Identity!.Company!.CompanyStatusId == CompanyStatusId.ACTIVE
             })
             .Select(x => new ValueTuple<bool, Guid, IEnumerable<CompanyRoleId>?, Guid, IEnumerable<ConsentStatusDetails>?>(
                 x.IsActive,

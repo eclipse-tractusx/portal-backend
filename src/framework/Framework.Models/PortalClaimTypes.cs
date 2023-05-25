@@ -1,4 +1,4 @@
-namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+namespace Framework.Models;
 
 public static class PortalClaimTypes
 {

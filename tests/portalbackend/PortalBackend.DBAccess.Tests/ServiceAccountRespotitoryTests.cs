@@ -36,7 +36,6 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
-    private const string IamUserId = "502dabcf-01c7-47d9-a88e-0be4279097b5";
     private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
     private readonly Guid _validSubscriptionId = new("eb98bdf5-14e1-4feb-a954-453eac0b93cd");
     private readonly Guid _validServiceAccountId = new("7e85a0b8-0001-ab67-10d1-0ef508201006");
@@ -62,7 +61,6 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var result = sut.CreateCompanyServiceAccount(
             _validCompanyId,
-            UserStatusId.ACTIVE,
             "test",
             "Only a test service account",
             "test-1",
@@ -97,7 +95,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamClientIdAsync(_validServiceAccountId, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountWithIamClientIdAsync(_validServiceAccountId, _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -111,7 +109,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid.NewGuid(), _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -128,7 +126,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(_validServiceAccountId, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(_validServiceAccountId, _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
@@ -142,7 +140,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid.NewGuid(), _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(default);
@@ -159,7 +157,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(_validServiceAccountId, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(_validServiceAccountId, _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -173,7 +171,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid.NewGuid(), _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -192,7 +190,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(IamUserId)(page, size).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId)(page, size).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();

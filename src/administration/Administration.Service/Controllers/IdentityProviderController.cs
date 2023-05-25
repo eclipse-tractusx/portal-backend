@@ -260,7 +260,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
-            this.WithIamUserId(iamUserId => _businessLogic.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(document, iamUserId, cancellationToken));
+            this.WithIdentityData(identityData => _businessLogic.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(document, identityData, cancellationToken));
 
     /// <summary>
     /// Adds the user to the given identity provider

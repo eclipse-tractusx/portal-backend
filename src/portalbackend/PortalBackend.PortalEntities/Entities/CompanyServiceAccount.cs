@@ -24,16 +24,19 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyServiceAccount : Identity
+public class CompanyServiceAccount : IBaseEntity
 {
-    public CompanyServiceAccount(Guid id, Guid companyId, UserStatusId userStatusId, string name, string description, DateTimeOffset dateCreated, CompanyServiceAccountTypeId companyServiceAccountTypeId)
-        : base(id, dateCreated, companyId, userStatusId, IdentityTypeId.COMPANY_SERVICE_ACCOUNT)
+    public CompanyServiceAccount(Guid id, string name, string description, CompanyServiceAccountTypeId companyServiceAccountTypeId)
     {
+        Id = id;
         Name = name;
         Description = description;
         CompanyServiceAccountTypeId = companyServiceAccountTypeId;
         AppInstances = new HashSet<AppInstanceAssignedCompanyServiceAccount>();
     }
+
+    /// <inheritdoc />
+    public Guid Id { get; set; }
 
     [StringLength(36)]
     public string? ClientId { get; set; }
@@ -51,6 +54,7 @@ public class CompanyServiceAccount : Identity
     public Guid? OfferSubscriptionId { get; set; }
 
     // Navigation properties
+    public virtual Identity? Identity { get; set; }
     public virtual CompanyServiceAccountType? CompanyServiceAccountType { get; set; }
     public virtual OfferSubscription? OfferSubscription { get; set; }
     public virtual Connector? Connector { get; set; }

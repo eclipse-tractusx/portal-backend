@@ -107,6 +107,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<Document>("documents", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<Offer>("offers", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<IamClient>("iam_clients", cancellationToken).ConfigureAwait(false);
+        await SeedTableForBaseEntity<Identity>("identities", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<CompanyApplication>("company_applications", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<IdentityProvider>("identity_providers", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<UserRoleCollection>("user_role_collections", cancellationToken).ConfigureAwait(false);

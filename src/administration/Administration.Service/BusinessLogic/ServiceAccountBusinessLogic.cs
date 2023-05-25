@@ -104,9 +104,9 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             throw new NotFoundException($"serviceAccount {serviceAccountId} not found in company of user {identity.UserEntityId}");
         }
 
-        serviceAccountRepository.AttachAndModifyCompanyServiceAccount(serviceAccountId, null, serviceAccount =>
+        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(serviceAccountId, null, i =>
         {
-            serviceAccount.UserStatusId = UserStatusId.INACTIVE;
+            i.UserStatusId = UserStatusId.INACTIVE;
         });
 
         // serviceAccount

@@ -66,7 +66,7 @@ public class DocumentRepository : IDocumentRepository
                 new(document.Id,
                     document.DocumentStatusId,
                     document.Consents.Select(consent => consent.Id),
-                    document.CompanyUser!.UserEntityId == iamUserId))
+                    document.CompanyUser!.Identity!.UserEntityId == iamUserId))
             .SingleOrDefaultAsync();
 
     public Task<(bool IsApplicationAssignedUser, IEnumerable<UploadDocuments> Documents)> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId) =>
@@ -75,7 +75,7 @@ public class DocumentRepository : IDocumentRepository
             .Where(application => application.Id == applicationId)
             .Select(application => new
             {
-                IsApplicationAssignedUser = application.Invitations.Any(invitation => invitation.CompanyUser!.UserEntityId == iamUserId),
+                IsApplicationAssignedUser = application.Invitations.Any(invitation => invitation.CompanyUser!.Identity!.UserEntityId == iamUserId),
                 Invitations = application.Invitations
             })
             .Select(x => new ValueTuple<bool, IEnumerable<UploadDocuments>>(
@@ -94,7 +94,7 @@ public class DocumentRepository : IDocumentRepository
     public Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, string iamUserId) =>
         this._dbContext.Documents
             .Where(x => x.Id == documentId)
-            .Select(x => new ValueTuple<Guid, bool>(x.Id, x.CompanyUser!.UserEntityId == iamUserId))
+            .Select(x => new ValueTuple<Guid, bool>(x.Id, x.CompanyUser!.Identity!.UserEntityId == iamUserId))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -104,7 +104,7 @@ public class DocumentRepository : IDocumentRepository
             .Select(x => new
             {
                 Document = x,
-                IsUserInSameCompany = x.CompanyUser!.CompanyId == userCompanyId
+                IsUserInSameCompany = x.CompanyUser!.Identity!.CompanyId == userCompanyId
             })
             .Select(x => new ValueTuple<byte[]?, string, MediaTypeId, bool>(
                 x.IsUserInSameCompany ? x.Document.DocumentContent : null,
@@ -136,7 +136,7 @@ public class DocumentRepository : IDocumentRepository
             .Select(document => new
             {
                 Document = document,
-                Applications = document.CompanyUser!.Company!.CompanyApplications
+                Applications = document.CompanyUser!.Identity!.Company!.CompanyApplications
             })
             .Select(x => new ValueTuple<Guid, DocumentStatusId, bool, DocumentTypeId, bool>(
                 x.Document.Id,
@@ -227,7 +227,7 @@ public class DocumentRepository : IDocumentRepository
                 OfferData = x.Offers.Select(o => new ValueTuple<OfferStatusId, Guid, bool>(o.OfferStatusId, o.Id, o.OfferTypeId == offerTypeId)),
                 IsDocumentTypeMatch = documentTypeIds.Contains(x.Document.DocumentTypeId),
                 DocumentStatus = x.Document.DocumentStatusId,
-                IsProviderCompanyUser = x.Document.CompanyUser!.CompanyId == userCompanyId
+                IsProviderCompanyUser = x.Document.CompanyUser!.Identity!.CompanyId == userCompanyId
             })
             .Select(x => new ValueTuple<IEnumerable<ValueTuple<OfferStatusId, Guid, bool>>, bool, DocumentStatusId, bool>(
                 x.OfferData,

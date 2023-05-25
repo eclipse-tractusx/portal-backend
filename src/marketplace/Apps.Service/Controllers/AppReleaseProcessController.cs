@@ -311,7 +311,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> SubmitAppReleaseRequest([FromRoute] Guid appId)
     {
-        await this.WithIamUserId(userId => _appReleaseBusinessLogic.SubmitAppReleaseRequestAsync(appId, userId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _appReleaseBusinessLogic.SubmitAppReleaseRequestAsync(appId, identity)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -333,7 +333,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> ApproveAppRequest([FromRoute] Guid appId)
     {
-        await this.WithIamUserId(userId => _appReleaseBusinessLogic.ApproveAppRequestAsync(appId, userId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _appReleaseBusinessLogic.ApproveAppRequestAsync(appId, identity)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -373,7 +373,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<NoContentResult> DeclineAppRequest([FromRoute] Guid appId, [FromBody] OfferDeclineRequest data)
     {
-        await this.WithIamUserId(userId => _appReleaseBusinessLogic.DeclineAppRequestAsync(appId, userId, data)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _appReleaseBusinessLogic.DeclineAppRequestAsync(appId, identity, data)).ConfigureAwait(false);
         return NoContent();
     }
 

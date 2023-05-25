@@ -6,11 +6,6 @@
     "firstname": "Operator",
     "lastlogin": null,
     "lastname": "CX Admin",
-    "last_editor_id": null,
-    "date_created": "2022-03-24 18:01:33.570000 +00:00",
-    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
-    "user_status_id": 1,
-    "user_entity_id": "502dabcf-01c7-47d9-a88e-0be4279097b5",
-    "identity_type_id": 1
+    "last_editor_id": null
   }
 ]

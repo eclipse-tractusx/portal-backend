@@ -124,7 +124,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddFavouriteAppForCurrentUserAsync([FromRoute] Guid appId)
     {
-        await this.WithIamUserId(userId => _appsBusinessLogic.AddFavouriteAppForUserAsync(appId, userId)).ConfigureAwait(false);
+        await this.WithIdentityData(identityData => _appsBusinessLogic.AddFavouriteAppForUserAsync(appId, identityData)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -142,7 +142,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RemoveFavouriteAppForCurrentUserAsync([FromRoute] Guid appId)
     {
-        await this.WithIamUserId(userId => _appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId, userId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId, identity)).ConfigureAwait(false);
         return NoContent();
     }
 

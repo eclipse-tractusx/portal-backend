@@ -121,8 +121,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     public Task<(Guid companyId, OfferSubscription? offerSubscription)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId) =>
         _context.CompanyUsers
-            .Where(user => user.UserEntityId == iamUserId)
-            .Select(user => user.Company)
+            .Where(user => user.Identity!.UserEntityId == iamUserId)
+            .Select(user => user.Identity!.Company)
             .Select(company => new ValueTuple<Guid, OfferSubscription?>(
                 company!.Id,
                 company.OfferSubscriptions.SingleOrDefault(os => os.Id == subscriptionId && os.Offer!.OfferTypeId == offerTypeId)
@@ -181,8 +181,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     /// <inheritdoc />
     public IAsyncEnumerable<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId) =>
         _context.CompanyUsers.AsNoTracking()
-            .Where(user => user.UserEntityId == iamUserId)
-            .SelectMany(user => user.Company!.OfferSubscriptions.Where(subscription =>
+            .Where(user => user.Identity!.UserEntityId == iamUserId)
+            .SelectMany(user => user.Identity!.Company!.OfferSubscriptions.Where(subscription =>
                 subscription.Offer!.UserRoles.Any(ur => ur.IdentityAssignedRoles.Any(cu => cu.IdentityId == user.Id && cu.Identity!.IdentityTypeId == IdentityTypeId.COMPANY_USER)) &&
                 subscription.AppSubscriptionDetail!.AppInstance != null &&
                 subscription.AppSubscriptionDetail.AppSubscriptionUrl != null))
@@ -217,8 +217,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     x.OfferName,
                     x.OtherCompany!.Name,
                     x.OtherCompany!.BusinessPartnerNumber,
-                    x.OtherCompany.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!).Where(cu => cu.Email != null && cu.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
-                    x.CompanyServiceAccounts.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))))))
+                    x.OtherCompany.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!).Where(cu => cu.Email != null && cu.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
+                    x.CompanyServiceAccounts.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))))))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -288,7 +288,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .Where(x => x.Id == offerSubscriptionId)
             .Select(x => new
             {
-                RequesterCompany = x.Requester!.Company,
+                RequesterCompany = x.Requester!.Identity!.Company,
                 x.Requester.Email,
                 OfferId = x.Offer!.Id,
                 OfferName = x.Offer.Name,
@@ -326,8 +326,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.OfferSubscriptionStatusId,
                 x.Offer!.OfferTypeId,
                 x.Offer.Name,
-                x.Requester!.Company!.Name,
-                x.Requester.CompanyId,
+                x.Requester!.Identity!.Company!.Name,
+                x.Requester.Identity!.CompanyId,
                 x.Requester.Email,
                 x.Requester.Firstname,
                 x.Requester.Lastname,

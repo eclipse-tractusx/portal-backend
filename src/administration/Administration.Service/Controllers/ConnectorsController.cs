@@ -225,7 +225,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteConnectorAsync([FromRoute] Guid connectorId, CancellationToken cancellationToken)
     {
-        await this.WithIamUserId(iamUserId => _businessLogic.DeleteConnectorAsync(connectorId, iamUserId, cancellationToken));
+        await this.WithIdentityData(identity => _businessLogic.DeleteConnectorAsync(connectorId, identity, cancellationToken));
         return NoContent();
     }
 
@@ -259,7 +259,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ProcessClearinghouseSelfDescription([FromBody] SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        await this.WithIamUserId(iamUserId => _businessLogic.ProcessClearinghouseSelfDescription(data, iamUserId, cancellationToken).ConfigureAwait(false));
+        await this.WithIdentityData(identity => _businessLogic.ProcessClearinghouseSelfDescription(data, identity, cancellationToken).ConfigureAwait(false));
         return NoContent();
     }
 

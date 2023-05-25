@@ -43,9 +43,9 @@ public class IdentityProviderBusinessLogicTests
     private readonly IdentityProviderCsvSettings _csvSettings;
     private readonly IFormFile _document;
     private readonly Encoding _encoding;
-    private readonly string _iamUserId;
     private readonly Guid _companyId;
     private readonly Guid _companyUserId;
+    private readonly IdentityData _identity;
     private readonly Guid _sharedIdentityProviderId;
     private readonly string _sharedIdpAlias;
     private readonly Guid _otherIdentityProviderId;
@@ -65,7 +65,6 @@ public class IdentityProviderBusinessLogicTests
         _options = A.Fake<IOptions<IdentityProviderSettings>>();
         _document = A.Fake<IFormFile>();
 
-        _iamUserId = _fixture.Create<string>();
         _companyId = _fixture.Create<Guid>();
         _companyUserId = _fixture.Create<Guid>();
         _sharedIdentityProviderId = _fixture.Create<Guid>();
@@ -73,6 +72,7 @@ public class IdentityProviderBusinessLogicTests
         _otherIdentityProviderId = _fixture.Create<Guid>();
         _otherIdpAlias = _fixture.Create<string>();
         _encoding = _fixture.Create<Encoding>();
+        _identity = new(Guid.NewGuid().ToString(), _companyUserId, IdentityTypeId.COMPANY_USER, _companyId);
 
         _csvSettings = new IdentityProviderCsvSettings
         {
@@ -109,7 +109,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers);
@@ -143,34 +143,10 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity, CancellationToken.None).ConfigureAwait(false);
 
         var error = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"Only contentType {_csvSettings.ContentType} files are allowed.");
-    }
-
-    [Fact]
-    public async Task TestUploadOwnCompanyUsersIdentityProviderLinkDataInvalidUserThrows()
-    {
-        var numUsers = 1;
-
-        var users = _fixture.CreateMany<TestUserData>(numUsers).ToList();
-
-        var lines = new[] { HeaderLine() }.Concat(users.Select(u => NextLine(u)));
-
-        var iamUserId = _fixture.Create<string>();
-
-        SetupFakes(users, lines);
-
-        var sut = new IdentityProviderBusinessLogic(
-            _portalRepositories,
-            _provisioningManager,
-            _options);
-
-        async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, iamUserId, CancellationToken.None).ConfigureAwait(false);
-
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be($"user {iamUserId} is not associated with a company");
     }
 
     [Fact]
@@ -214,7 +190,7 @@ public class IdentityProviderBusinessLogicTests
                 var companyUserId = x.Arguments.Get<Guid>("companyUserId")!;
                 var setOptionalParameters = x.Arguments.Get<Action<CompanyUser>>("setOptionalParameters");
 
-                var companyUser = new CompanyUser(companyUserId, Guid.Empty, default!, default!, Guid.Empty);
+                var companyUser = new CompanyUser(companyUserId, Guid.Empty);
                 setOptionalParameters?.Invoke(companyUser);
                 changedEmailResult = companyUser.Email;
                 lastEditorId = companyUser.LastEditorId;
@@ -226,7 +202,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(1);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -282,7 +258,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -334,7 +310,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(1);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -385,7 +361,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity, CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -415,11 +391,6 @@ public class IdentityProviderBusinessLogicTests
 
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
-
-        A.CallTo(() => _userRepository.GetOwnCompanyAndCompanyUserId(A<string>.That.Not.IsEqualTo(_iamUserId))).Returns(
-            ((Guid companyId, Guid companyUserId))default);
-        A.CallTo(() => _userRepository.GetOwnCompanyAndCompanyUserId(A<string>.That.IsEqualTo(_iamUserId))).Returns(
-            (companyId: _companyId, companyUserId: _companyUserId));
 
         A.CallTo(() => _userRepository.GetUserEntityDataAsync(A<Guid>._, A<Guid>._)).ReturnsLazily((Guid companyUserId, Guid _) =>
             userData.Where(d => d.CompanyUserId == companyUserId)

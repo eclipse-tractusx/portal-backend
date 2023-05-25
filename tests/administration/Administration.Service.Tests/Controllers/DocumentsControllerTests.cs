@@ -1,6 +1,8 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Text;
 
@@ -9,6 +11,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 public class DocumentsControllerTests
 {
     private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
+    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private readonly IDocumentsBusinessLogic _logic;
     private readonly DocumentsController _controller;
     private readonly Fixture _fixture;
@@ -18,7 +21,7 @@ public class DocumentsControllerTests
         _fixture = new Fixture();
         _logic = A.Fake<IDocumentsBusinessLogic>();
         this._controller = new DocumentsController(_logic);
-        _controller.AddControllerContextWithClaim(IamUserId);
+        _controller.AddControllerContextWithClaim(IamUserId, _identity);
     }
 
     [Fact]
@@ -29,14 +32,14 @@ public class DocumentsControllerTests
         const string contentType = "application/pdf";
         var id = Guid.NewGuid();
         var content = Encoding.UTF8.GetBytes("This is just test content");
-        A.CallTo(() => _logic.GetDocumentAsync(id, IamUserId))
+        A.CallTo(() => _logic.GetDocumentAsync(id, _identity))
             .ReturnsLazily(() => (fileName, content, contentType));
 
         //Act
         await this._controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetDocumentAsync(id, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetDocumentAsync(id, _identity)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

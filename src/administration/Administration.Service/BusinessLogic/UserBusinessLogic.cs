@@ -240,14 +240,14 @@ public class UserBusinessLogic : IUserBusinessLogic
             _settings.ApplicationsMaxPageSize,
             (int skip, int take) => new Pagination.AsyncSource<CompanyUserData>(
                 companyUsers.CountAsync(),
-                companyUsers.OrderByDescending(companyUser => companyUser.DateCreated)
+                companyUsers.OrderByDescending(companyUser => companyUser.Identity!.DateCreated)
                 .Skip(skip)
                 .Take(take)
                 .Select(companyUser => new CompanyUserData(
-                    companyUser.UserEntityId!,
+                    companyUser.Identity!.UserEntityId!,
                     companyUser.Id,
-                    companyUser.UserStatusId,
-                    companyUser.IdentityAssignedRoles.Select(x => x.UserRole!).Select(userRole => userRole.UserRoleText))
+                    companyUser.Identity!.UserStatusId,
+                    companyUser.Identity!.IdentityAssignedRoles.Select(x => x.UserRole!).Select(userRole => userRole.UserRoleText))
                 {
                     FirstName = companyUser.Firstname,
                     LastName = companyUser.Lastname,
@@ -325,7 +325,8 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     public async Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, string iamUserId)
     {
-        var userData = await _portalRepositories.GetInstance<IUserRepository>().GetUserWithCompanyIdpAsync(iamUserId).ConfigureAwait(false);
+        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+        var userData = await userRepository.GetUserWithCompanyIdpAsync(iamUserId).ConfigureAwait(false);
         if (userData == null)
         {
             throw new ArgumentOutOfRangeException($"iamUser {iamUserId} is not a shared idp user");
@@ -348,15 +349,24 @@ public class UserBusinessLogic : IUserBusinessLogic
             ownCompanyUserEditableDetails.LastName ?? "",
             ownCompanyUserEditableDetails.Email ?? "").ConfigureAwait(false);
 
-        companyUser.Firstname = ownCompanyUserEditableDetails.FirstName;
-        companyUser.Lastname = ownCompanyUserEditableDetails.LastName;
-        companyUser.Email = ownCompanyUserEditableDetails.Email;
+        userRepository.AttachAndModifyCompanyUser(companyUserId, cu =>
+            {
+                cu.Firstname = companyUser.Firstname;
+                cu.Lastname = companyUser.Lastname;
+                cu.Email = companyUser.Email;
+            },
+            cu =>
+            {
+                cu.Firstname = ownCompanyUserEditableDetails.FirstName;
+                cu.Lastname = ownCompanyUserEditableDetails.LastName;
+                cu.Email = ownCompanyUserEditableDetails.Email;
+            });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return new CompanyUserDetails(
             companyUser.Id,
             companyUser.DateCreated,
             userData.BusinessPartnerNumbers,
-            companyUser.Company!.Name,
+            companyUser.CompanyName,
             companyUser.UserStatusId,
             userData.AssignedRoles)
         {
@@ -425,15 +435,22 @@ public class UserBusinessLogic : IUserBusinessLogic
         {
             await DeleteIamUserAsync(sharedIdpAlias, userEntityId).ConfigureAwait(false);
         }
-        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyCompanyUser(companyUserId, cu =>
+
+        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(companyUserId, i =>
             {
-                cu.UserEntityId = userEntityId;
+                i.UserEntityId = userEntityId;
             },
-            companyUser =>
+            i =>
             {
-                companyUser.UserStatusId = UserStatusId.DELETED;
-                companyUser.LastEditorId = administratorId;
-                companyUser.UserEntityId = null;
+                i.UserStatusId = UserStatusId.DELETED;
+                i.LastEditorId = administratorId;
+                i.UserEntityId = null;
+            });
+
+        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyCompanyUser(companyUserId, null,
+            i =>
+            {
+                i.LastEditorId = administratorId;
             });
 
         _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()

@@ -106,24 +106,24 @@ public interface IServiceReleaseBusinessLogic
     /// Update app status and create notification
     /// </summary>
     /// <param name="serviceId">Id of the service that should be submitted</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    Task SubmitServiceAsync(Guid serviceId, string iamUserId);
+    /// <param name="identity">Identity of the User</param>
+    Task SubmitServiceAsync(Guid serviceId, IdentityData identity);
 
     /// <summary>
     /// Approve Service Status from IN_Review to Active
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <returns></returns>
-    Task ApproveServiceRequestAsync(Guid appId, string iamUserId);
+    Task ApproveServiceRequestAsync(Guid appId, IdentityData identity);
 
     /// <summary>
     /// Declines the service request
     /// </summary>
     /// <param name="serviceId">Id of the service</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="identity">Identity of the User</param>
     /// <param name="data">The decline request data</param>
-    Task DeclineServiceRequestAsync(Guid serviceId, string iamUserId, OfferDeclineRequest data);
+    Task DeclineServiceRequestAsync(Guid serviceId, IdentityData identity, OfferDeclineRequest data);
 
     /// <summary>
     /// Upload document for given company user for Service

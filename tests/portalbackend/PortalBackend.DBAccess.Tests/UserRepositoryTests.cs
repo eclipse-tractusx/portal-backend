@@ -35,6 +35,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     private const string ClientId = "technical_roles_management";
     private const string ValidIamUserId = "502dabcf-01c7-47d9-a88e-0be4279097b5";
     private const string ValidCompanyUserTxt = "ac1cf001-7fbc-1f2f-817f-bce058020006";
+    private const string ValidUserCompanyId = "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87";
     private readonly Guid _validCompanyUser = new(ValidCompanyUserTxt);
     private readonly Guid _validOfferId = new("ac1cf001-7fbc-1f2f-817f-bce0572c0007");
 
@@ -73,37 +74,6 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(Guid.NewGuid().ToString()).ConfigureAwait(false);
-
-        // Assert
-        (result == default).Should().BeTrue();
-    }
-
-    #endregion
-
-    #region GetOwnCompanAndCompanyUseryId
-
-    [Fact]
-    public async Task GetOwnCompanAndCompanyUseryId_WithValidIamUser_ReturnsExpectedResult()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetOwnCompanyAndCompanyUserId(ValidIamUserId).ConfigureAwait(false);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.companyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
-    }
-
-    [Fact]
-    public async Task GetOwnCompanAndCompanyUseryId_WithNotExistingIamUser_ReturnsDefault()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetOwnCompanyAndCompanyUserId(Guid.NewGuid().ToString()).ConfigureAwait(false);
 
         // Assert
         (result == default).Should().BeTrue();
@@ -386,15 +356,15 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetAppAssignedIamClientUserDataUntrackedAsync
 
     [Theory]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", ValidIamUserId, true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, "SDE with EDC", "User", "Active")]
-    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", "78d664de-04a0-41c6-9a47-478d303403d2", ValidIamUserId, true, false, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, null, "User", "Active")]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", "not valid", true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", false, "SDE with EDC", "User", "Active")]
-    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "deadbeef-dead-beef-dead-beefdeadbeef", ValidIamUserId, false, false, null, false, null, null, null)]
-    public async Task GetAppAssignedIamClientUserDataUntrackedAsync_ReturnsExpected(Guid offerId, Guid companyUserId, string iamUserId, bool found, bool validOffer, string resultIamUserId, bool sameCompany, string? offerName, string? firstName, string? lastName)
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", ValidUserCompanyId, true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, "SDE with EDC", "User", "Active")]
+    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", "78d664de-04a0-41c6-9a47-478d303403d2", ValidUserCompanyId, true, false, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, null, "User", "Active")]
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "78d664de-04a0-41c6-9a47-478d303403d2", "00000000-0000-0000-0000-000000000000", true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", false, "SDE with EDC", "User", "Active")]
+    [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "deadbeef-dead-beef-dead-beefdeadbeef", ValidUserCompanyId, false, false, null, false, null, null, null)]
+    public async Task GetAppAssignedIamClientUserDataUntrackedAsync_ReturnsExpected(Guid offerId, Guid companyUserId, Guid userCompanyId, bool found, bool validOffer, string resultIamUserId, bool sameCompany, string? offerName, string? firstName, string? lastName)
     {
         var sut = await CreateSut().ConfigureAwait(false);
 
-        var iamUserData = await sut.GetAppAssignedIamClientUserDataUntrackedAsync(offerId, companyUserId, iamUserId)
+        var iamUserData = await sut.GetAppAssignedIamClientUserDataUntrackedAsync(offerId, companyUserId, userCompanyId)
             .ConfigureAwait(false);
 
         if (found)
@@ -418,15 +388,15 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetCoreOfferAssignedIamClientUserDataUntrackedAsync
 
     [Theory]
-    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "78d664de-04a0-41c6-9a47-478d303403d2", ValidIamUserId, true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, "User", "Active")]
-    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", "78d664de-04a0-41c6-9a47-478d303403d2", ValidIamUserId, true, false, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, "User", "Active")]
-    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "78d664de-04a0-41c6-9a47-478d303403d2", "not valid", true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", false, "User", "Active")]
-    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "deadbeef-dead-beef-dead-beefdeadbeef", ValidIamUserId, false, false, null, false, null, null)]
-    public async Task GetCoreOfferAssignedIamClientUserDataUntrackedAsync_ReturnsExpected(Guid offerId, Guid companyUserId, string iamUserId, bool found, bool validOffer, string resultIamUserId, bool sameCompany, string? firstName, string? lastName)
+    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "78d664de-04a0-41c6-9a47-478d303403d2", ValidUserCompanyId, true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, "User", "Active")]
+    [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", "78d664de-04a0-41c6-9a47-478d303403d2", ValidUserCompanyId, true, false, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", true, "User", "Active")]
+    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "78d664de-04a0-41c6-9a47-478d303403d2", "00000000-0000-0000-0000-000000000000", true, true, "f3e2bcd8-1b42-4a62-ab09-2d86e40d0f85", false, "User", "Active")]
+    [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "deadbeef-dead-beef-dead-beefdeadbeef", ValidUserCompanyId, false, false, null, false, null, null)]
+    public async Task GetCoreOfferAssignedIamClientUserDataUntrackedAsync_ReturnsExpected(Guid offerId, Guid companyUserId, Guid userCompanyId, bool found, bool validOffer, string resultIamUserId, bool sameCompany, string? firstName, string? lastName)
     {
         var sut = await CreateSut().ConfigureAwait(false);
 
-        var iamUserData = await sut.GetCoreOfferAssignedIamClientUserDataUntrackedAsync(offerId, companyUserId, iamUserId)
+        var iamUserData = await sut.GetCoreOfferAssignedIamClientUserDataUntrackedAsync(offerId, companyUserId, userCompanyId)
             .ConfigureAwait(false);
 
         if (found)

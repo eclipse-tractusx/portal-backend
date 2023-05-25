@@ -71,9 +71,9 @@ public class CompanyRolesRepository : ICompanyRolesRepository
         _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(user =>
-                user.UserEntityId == iamUserId
-                && user.Company!.CompanyApplications.Any(application => application.Id == applicationId))
-            .Select(user => user.Company)
+                user.Identity!.UserEntityId == iamUserId
+                && user.Identity!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
+            .Select(user => user.Identity!.Company)
             .Select(company => new CompanyRoleAgreementConsents(
                 company!.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
                 company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE).Select(consent => new AgreementConsentStatus(

@@ -41,6 +41,7 @@ public class OfferSetupServiceTests
     private const string Bpn = "CAXSDUMMYCATENAZZ";
     private const string IamUserId = "9aae7a3b-b188-4a42-b46b-fb2ea5f47668";
     private const string IamUserIdWithoutMail = "9aae7a3b-b188-4a42-b46b-fb2ea5f47669";
+    private const string CompanyName = "Catena";
 
     private readonly Guid _companyUserCompanyId = new("395f955b-f11b-4a74-ab51-92a526c1973a");
     private readonly Guid _existingServiceId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
@@ -79,9 +80,13 @@ public class OfferSetupServiceTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
+        var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, _companyUserCompanyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER)
+        {
+            UserEntityId = IamUserId
+        };
+
         _companyUser = _fixture.Build<CompanyUser>()
-            .With(u => u.UserEntityId, IamUserId)
-            .With(u => u.CompanyId, _companyUserCompanyId)
+            .With(u => u.Identity, identity)
             .Create();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _appSubscriptionDetailRepository = A.Fake<IAppSubscriptionDetailRepository>();
@@ -121,7 +126,7 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, Guid.Empty);
-        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), Guid.Empty, UserStatusId.ACTIVE, "test", "test", DateTimeOffset.UtcNow, CompanyServiceAccountTypeId.OWN);
+        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), "test", "test", CompanyServiceAccountTypeId.OWN);
         var createNotificationsEnumerator = SetupAutoSetup(offerSubscription, isSingleInstance, companyServiceAccount);
         var clientId = Guid.NewGuid();
         var appInstanceId = Guid.NewGuid();
@@ -1193,7 +1198,7 @@ public class OfferSetupServiceTests
                 A<OfferTypeId>._))
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.ACTIVE, _companyUser.Id,
                 Guid.Empty,
-                _companyUser.Company!.Name, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
+                CompanyName, _companyUserCompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
                 _salesManagerId));
@@ -1203,7 +1208,7 @@ public class OfferSetupServiceTests
                 A<OfferTypeId>._))
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id,
                 Guid.Empty,
-                _companyUser.Company!.Name, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
+                CompanyName, _companyUserCompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, null, null, null, (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
                 _salesManagerId));
@@ -1213,7 +1218,7 @@ public class OfferSetupServiceTests
                 A<OfferTypeId>._))
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id,
                 Guid.Empty,
-                string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
+                string.Empty, _companyUserCompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
                 _salesManagerId));
@@ -1223,7 +1228,7 @@ public class OfferSetupServiceTests
                 A<OfferTypeId>._))
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, _companyUser.Id,
                 Guid.Empty,
-                string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
+                string.Empty, _companyUserCompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, null),
                 Enumerable.Empty<Guid>(),
                 null));
@@ -1238,7 +1243,7 @@ public class OfferSetupServiceTests
                 A<OfferTypeId>._))
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, Guid.Empty,
                 Guid.Empty,
-                string.Empty, _companyUser.CompanyId, _companyUser.Id, _existingServiceId, "Test Service",
+                string.Empty, _companyUserCompanyId, _companyUser.Id, _existingServiceId, "Test Service",
                 Bpn, null, null, null, (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
                 null));

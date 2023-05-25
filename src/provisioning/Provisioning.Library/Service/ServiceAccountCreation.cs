@@ -103,9 +103,9 @@ public class ServiceAccountCreation : IServiceAccountCreation
             await _provisioningManager.AddProtocolMapperAsync(serviceAccountData.InternalClientId).ConfigureAwait(false);
         }
 
+        var identity = _portalRepositories.GetInstance<IUserRepository>().CreateIdentity(companyId, UserStatusId.ACTIVE);
         var serviceAccount = serviceAccountsRepository.CreateCompanyServiceAccount(
-            companyId,
-            UserStatusId.ACTIVE,
+            identity.Id,
             enhancedName,
             description,
             serviceAccountData.InternalClientId,

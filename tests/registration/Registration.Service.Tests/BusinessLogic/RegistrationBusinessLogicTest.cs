@@ -63,6 +63,7 @@ public class RegistrationBusinessLogicTest
     private readonly IProcessStepRepository _processStepRepository;
     private readonly IApplicationChecklistCreationService _checklistService;
     private readonly string _iamUserId;
+    private readonly IdentityData _identity;
     private readonly Guid _companyUserId;
     private readonly Guid _existingApplicationId;
     private readonly string _displayName;
@@ -114,6 +115,10 @@ public class RegistrationBusinessLogicTest
         _existingApplicationId = _fixture.Create<Guid>();
         _displayName = _fixture.Create<string>();
         _alpha2code = "XY";
+        _identity = _fixture.Build<IdentityData>()
+            .With(x => x.UserEntityId, _iamUserId)
+            .With(x => x.IdentityId, _companyUserId)
+            .Create();
         _error = _fixture.Create<TestException>();
 
         _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
@@ -321,7 +326,10 @@ public class RegistrationBusinessLogicTest
     public async Task GetAllApplicationsForUserWithStatus_WithValidUser_GetsAllRoles()
     {
         //Arrange
-        var userId = _fixture.Create<string>();
+        var userCompanyId = _fixture.Create<Guid>();
+        var identity = _fixture.Build<IdentityData>()
+            .With(x => x.CompanyId, userCompanyId)
+            .Create();
         var sut = new RegistrationBusinessLogic(
             _options,
             null!,
@@ -339,11 +347,11 @@ public class RegistrationBusinessLogicTest
                 ApplicationStatus = CompanyApplicationStatusId.VERIFY
             }
         };
-        A.CallTo(() => _userRepository.GetApplicationsWithStatusUntrackedAsync(userId))
+        A.CallTo(() => _userRepository.GetApplicationsWithStatusUntrackedAsync(userCompanyId))
             .Returns(resultList.ToAsyncEnumerable());
 
         // Act
-        var result = await sut.GetAllApplicationsForUserWithStatus(userId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllApplicationsForUserWithStatus(identity).ToListAsync().ConfigureAwait(false);
         result.Should().ContainSingle();
         result.Single().ApplicationStatus.Should().Be(CompanyApplicationStatusId.VERIFY);
     }
@@ -1469,7 +1477,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
-        async Task Act() => await sut.SubmitRoleConsentAsync(notExistingId, _fixture.Create<CompanyRoleAgreementConsents>(), _iamUserId)
+        async Task Act() => await sut.SubmitRoleConsentAsync(notExistingId, _fixture.Create<CompanyRoleAgreementConsents>(), _identity)
                 .ConfigureAwait(false);
 
         // Arrange
@@ -1483,13 +1491,13 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var applicationId = _fixture.Create<Guid>();
         var applicationStatusId = _fixture.Create<CompanyApplicationStatusId>();
-        var data = new CompanyRoleAgreementConsentData(Guid.Empty, Guid.NewGuid(), applicationStatusId, _fixture.CreateMany<CompanyRoleId>(2), _fixture.CreateMany<ConsentData>(5));
+        var data = new CompanyRoleAgreementConsentData(applicationStatusId, _fixture.CreateMany<CompanyRoleId>(2), _fixture.CreateMany<ConsentData>(5));
         A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId, _iamUserId))
             .ReturnsLazily(() => data);
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
-        async Task Act() => await sut.SubmitRoleConsentAsync(applicationId, _fixture.Create<CompanyRoleAgreementConsents>(), _iamUserId)
+        async Task Act() => await sut.SubmitRoleConsentAsync(applicationId, _fixture.Create<CompanyRoleAgreementConsents>(), _identity)
             .ConfigureAwait(false);
 
         // Arrange
@@ -1503,7 +1511,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var applicationId = _fixture.Create<Guid>();
         var applicationStatusId = _fixture.Create<CompanyApplicationStatusId>();
-        var data = new CompanyRoleAgreementConsentData(Guid.NewGuid(), Guid.NewGuid(), applicationStatusId, _fixture.CreateMany<CompanyRoleId>(2), _fixture.CreateMany<ConsentData>(5));
+        var data = new CompanyRoleAgreementConsentData(applicationStatusId, _fixture.CreateMany<CompanyRoleId>(2), _fixture.CreateMany<ConsentData>(5));
         var roleIds = new List<CompanyRoleId>
         {
             CompanyRoleId.APP_PROVIDER,
@@ -1519,7 +1527,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
-        async Task Act() => await sut.SubmitRoleConsentAsync(applicationId, _fixture.Create<CompanyRoleAgreementConsents>(), _iamUserId)
+        async Task Act() => await sut.SubmitRoleConsentAsync(applicationId, _fixture.Create<CompanyRoleAgreementConsents>(), _identity)
             .ConfigureAwait(false);
 
         // Arrange
@@ -1548,7 +1556,7 @@ public class RegistrationBusinessLogicTest
             new ("e38da3a1-36f9-4002-9447-c55a38ac2a53")
         };
         var companyId = Guid.NewGuid();
-        var data = new CompanyRoleAgreementConsentData(Guid.NewGuid(), companyId, applicationStatusId, new[] { CompanyRoleId.APP_PROVIDER }, new List<ConsentData>());
+        var data = new CompanyRoleAgreementConsentData(applicationStatusId, new[] { CompanyRoleId.APP_PROVIDER }, new List<ConsentData>());
         var companyRoleAssignedAgreements = new List<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)>
         {
             new ValueTuple<CompanyRoleId, IEnumerable<Guid>>(CompanyRoleId.APP_PROVIDER, agreementIds)
@@ -1561,7 +1569,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
-        async Task Act() => await sut.SubmitRoleConsentAsync(applicationId, consents, _iamUserId)
+        async Task Act() => await sut.SubmitRoleConsentAsync(applicationId, consents, _identity)
             .ConfigureAwait(false);
 
         // Arrange
@@ -1600,8 +1608,7 @@ public class RegistrationBusinessLogicTest
         };
         var companyId = Guid.NewGuid();
         var data = new CompanyRoleAgreementConsentData(
-            Guid.NewGuid(),
-            companyId,
+
             applicationStatusId,
             new[]
             {
@@ -1645,7 +1652,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
-        await sut.SubmitRoleConsentAsync(applicationId, consents, _iamUserId).ConfigureAwait(false);
+        await sut.SubmitRoleConsentAsync(applicationId, consents, _identity).ConfigureAwait(false);
 
         // Arrange
         A.CallTo(() => _consentRepository.AttachAndModifiesConsents(A<IEnumerable<Guid>>._, A<Action<Consent>>._)).MustHaveHappened(2, Times.Exactly);

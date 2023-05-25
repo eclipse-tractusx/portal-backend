@@ -43,13 +43,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.BusinessLog
 
 public class ServiceReleaseBusinessLogicTest
 {
+    private const string IamUserId = "1cb10522-bd03-4214-bd85-de8122acf212";
+    private static readonly Guid CompanyUserId = Guid.NewGuid();
+    private static readonly Guid CompanyUserCompanyId = Guid.NewGuid();
+
+    private readonly IdentityData _identity = new(IamUserId, CompanyUserId, IdentityTypeId.COMPANY_USER, CompanyUserCompanyId);
     private readonly Guid _notExistingServiceId = Guid.NewGuid();
-    private readonly Guid _companyUserId = Guid.NewGuid();
-    private readonly Guid _companyUserCompanyId = Guid.NewGuid();
     private readonly Guid _existingServiceId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47661");
     private readonly Guid _activeServiceId = Guid.NewGuid();
     private readonly Guid _differentCompanyServiceId = Guid.NewGuid();
-    private readonly string _iamUserId = Guid.NewGuid().ToString();
     private readonly IFixture _fixture;
     private readonly IOfferRepository _offerRepository;
     private readonly IPortalRepositories _portalRepositories;
@@ -223,15 +225,15 @@ public class ServiceReleaseBusinessLogicTest
         var iamUserId = _fixture.Create<string>();
         var offerService = A.Fake<IOfferService>();
         _fixture.Inject(offerService);
-        A.CallTo(() => offerService.GetProviderOfferAgreementConsentById(A<Guid>._, A<string>._, OfferTypeId.SERVICE))
+        A.CallTo(() => offerService.GetProviderOfferAgreementConsentById(A<Guid>._, A<IdentityData>._, OfferTypeId.SERVICE))
             .Returns(data);
 
         //Act
         var sut = _fixture.Create<ServiceReleaseBusinessLogic>();
-        var result = await sut.GetServiceAgreementConsentAsync(serviceId, iamUserId).ConfigureAwait(false);
+        var result = await sut.GetServiceAgreementConsentAsync(serviceId, _identity).ConfigureAwait(false);
 
         // Assert 
-        A.CallTo(() => offerService.GetProviderOfferAgreementConsentById(serviceId, iamUserId, OfferTypeId.SERVICE))
+        A.CallTo(() => offerService.GetProviderOfferAgreementConsentById(serviceId, _identity, OfferTypeId.SERVICE))
             .MustHaveHappenedOnceExactly();
         result.Should().BeOfType<OfferAgreementConsent>();
     }
@@ -248,10 +250,10 @@ public class ServiceReleaseBusinessLogicTest
             .With(x => x.ServiceTypeIds, new[] { ServiceTypeId.DATASPACE_SERVICE, ServiceTypeId.CONSULTANCE_SERVICE })
             .Create();
 
-        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, iamUserId, OfferTypeId.SERVICE))
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, _identity, OfferTypeId.SERVICE))
             .Returns(data);
 
-        var result = await _sut.GetServiceDetailsForStatusAsync(serviceId, iamUserId).ConfigureAwait(false);
+        var result = await _sut.GetServiceDetailsForStatusAsync(serviceId, _identity).ConfigureAwait(false);
 
         result.Should().NotBeNull();
         result.Title.Should().Be("test title");
@@ -343,10 +345,10 @@ public class ServiceReleaseBusinessLogicTest
         var IamUserId = _fixture.Create<Guid>().ToString();
 
         // Act
-        await _sut.DeleteServiceDocumentsAsync(documentId, IamUserId).ConfigureAwait(false);
+        await _sut.DeleteServiceDocumentsAsync(documentId, _identity).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.DeleteDocumentsAsync(documentId, IamUserId, A<IEnumerable<DocumentTypeId>>._, OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.DeleteDocumentsAsync(documentId, _identity, A<IEnumerable<DocumentTypeId>>._, OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();
 
     }
 
@@ -365,7 +367,7 @@ public class ServiceReleaseBusinessLogicTest
         var sut = _fixture.Create<ServiceReleaseBusinessLogic>();
 
         // Act
-        var result = await sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _companyUserId, new List<LocalizedDescription>(), new List<ServiceTypeId>(), null), _iamUserId);
+        var result = await sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", CompanyUserId, new List<LocalizedDescription>(), new List<ServiceTypeId>(), null), IamUserId);
 
         // Assert
         result.Should().Be(serviceId);
@@ -384,7 +386,7 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(new ServiceSettings()));
 
         // Act
-        async Task Act() => await sut.UpdateServiceAsync(_notExistingServiceId, data, _iamUserId).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateServiceAsync(_notExistingServiceId, data, _identity).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -400,7 +402,7 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(new ServiceSettings()));
 
         // Act
-        async Task Act() => await sut.UpdateServiceAsync(_activeServiceId, data, _iamUserId).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateServiceAsync(_activeServiceId, data, _identity).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -416,11 +418,11 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(new ServiceSettings()));
 
         // Act
-        async Task Act() => await sut.UpdateServiceAsync(_differentCompanyServiceId, data, _iamUserId).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateServiceAsync(_differentCompanyServiceId, data, _identity).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be($"User {_iamUserId} is not allowed to change the service.");
+        error.Message.Should().Be($"User {IamUserId} is not allowed to change the service.");
     }
 
     [Fact]
@@ -440,7 +442,7 @@ public class ServiceReleaseBusinessLogicTest
             },
             "43",
             "test@email.com",
-            _companyUserId,
+            CompanyUserId,
             null);
         var settings = new ServiceSettings
         {
@@ -459,7 +461,7 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(settings));
 
         // Act
-        await sut.UpdateServiceAsync(_existingServiceId, data, _iamUserId).ConfigureAwait(false);
+        await sut.UpdateServiceAsync(_existingServiceId, data, _identity).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
@@ -487,13 +489,13 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, _options);
 
         // Act
-        await sut.SubmitServiceAsync(_existingServiceId, _iamUserId).ConfigureAwait(false);
+        await sut.SubmitServiceAsync(_existingServiceId, _identity).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() =>
                 _offerService.SubmitServiceAsync(
                     _existingServiceId,
-                    _iamUserId,
+                    _identity,
                     OfferTypeId.SERVICE,
                     A<IEnumerable<NotificationTypeId>>._,
                     A<IDictionary<string, IEnumerable<string>>>._))
@@ -517,10 +519,10 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, Options.Create(settings));
 
         // Act
-        await sut.DeclineServiceRequestAsync(_existingServiceId, _iamUserId, data).ConfigureAwait(false);
+        await sut.DeclineServiceRequestAsync(_existingServiceId, _identity, data).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.DeclineOfferAsync(_existingServiceId, _iamUserId, data,
+        A.CallTo(() => _offerService.DeclineOfferAsync(_existingServiceId, _identity, data,
             OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION,
             A<IDictionary<string, IEnumerable<string>>>._, A<string>._,
             A<IEnumerable<NotificationTypeId>>._, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
@@ -543,10 +545,10 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(settings));
 
         // Act
-        await sut.CreateServiceDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, _iamUserId, CancellationToken.None).ConfigureAwait(false);
+        await sut.CreateServiceDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, (_identity.IdentityId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerDocumentService.UploadDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, _iamUserId, OfferTypeId.SERVICE, settings.UploadServiceDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerDocumentService.UploadDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.IdentityId && x.Item2 == _identity.CompanyId), OfferTypeId.SERVICE, settings.UploadServiceDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -561,10 +563,10 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(new ServiceSettings()));
 
         // Act
-        await sut.ApproveServiceRequestAsync(appId, _iamUserId).ConfigureAwait(false);
+        await sut.ApproveServiceRequestAsync(appId, _identity).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.ApproveOfferRequestAsync(appId, _iamUserId, OfferTypeId.SERVICE,
+        A.CallTo(() => _offerService.ApproveOfferRequestAsync(appId, _identity, OfferTypeId.SERVICE,
             A<IEnumerable<NotificationTypeId>>._, A<IDictionary<string, IEnumerable<string>>>._,
             A<IEnumerable<NotificationTypeId>>._, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
     }
@@ -577,12 +579,12 @@ public class ServiceReleaseBusinessLogicTest
     public async Task GetTechnicalUserProfilesForOffer_ReturnsExpected()
     {
         // Arrange
-        A.CallTo(() => _offerService.GetTechnicalUserProfilesForOffer(_existingServiceId, _iamUserId, OfferTypeId.SERVICE))
+        A.CallTo(() => _offerService.GetTechnicalUserProfilesForOffer(_existingServiceId, _identity, OfferTypeId.SERVICE))
             .Returns(_fixture.CreateMany<TechnicalUserProfileInformation>(5));
         var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, Options.Create(new ServiceSettings()));
 
         // Act
-        var result = await sut.GetTechnicalUserProfilesForOffer(_existingServiceId, _iamUserId)
+        var result = await sut.GetTechnicalUserProfilesForOffer(_existingServiceId, _identity)
             .ConfigureAwait(false);
 
         result.Should().HaveCount(5);
@@ -602,11 +604,11 @@ public class ServiceReleaseBusinessLogicTest
 
         // Act
         await sut
-            .UpdateTechnicalUserProfiles(_existingServiceId, data, _iamUserId)
+            .UpdateTechnicalUserProfiles(_existingServiceId, data, _identity)
             .ConfigureAwait(false);
 
         A.CallTo(() => _offerService.UpdateTechnicalUserProfiles(_existingServiceId, OfferTypeId.SERVICE,
-                A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), _iamUserId, clientProfile))
+                A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), _identity, clientProfile))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -614,15 +616,15 @@ public class ServiceReleaseBusinessLogicTest
 
     private void SetupUpdateService()
     {
-        A.CallTo(() => _offerRepository.GetServiceUpdateData(_notExistingServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUserId))
+        A.CallTo(() => _offerRepository.GetServiceUpdateData(_notExistingServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
             .ReturnsLazily(() => (ServiceUpdateData?)null);
-        A.CallTo(() => _offerRepository.GetServiceUpdateData(_activeServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUserId))
+        A.CallTo(() => _offerRepository.GetServiceUpdateData(_activeServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
             .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<LocalizedDescription>(), null));
-        A.CallTo(() => _offerRepository.GetServiceUpdateData(_differentCompanyServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUserId))
+        A.CallTo(() => _offerRepository.GetServiceUpdateData(_differentCompanyServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
             .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), new ValueTuple<Guid, string, bool>(), Array.Empty<LocalizedDescription>(), null));
-        A.CallTo(() => _offerRepository.GetServiceUpdateData(_existingServiceId, A<IEnumerable<ServiceTypeId>>._, _iamUserId))
+        A.CallTo(() => _offerRepository.GetServiceUpdateData(_existingServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
             .ReturnsLazily(() => new ServiceUpdateData(OfferStatusId.CREATED, true, Enumerable.Repeat(new ValueTuple<ServiceTypeId, bool>(ServiceTypeId.DATASPACE_SERVICE, false), 1), new ValueTuple<Guid, string, bool>(Guid.NewGuid(), "123", false), Array.Empty<LocalizedDescription>(), Guid.NewGuid()));
-        A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).Returns(_companyUserCompanyId);
+        A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<IdentityData>._, A<IDictionary<string, IEnumerable<string>>>._)).Returns(CompanyUserCompanyId);
     }
 
     private void SetupRepositories()

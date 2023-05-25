@@ -44,8 +44,8 @@ public class ConnectorsRepository : IConnectorsRepository
     /// <inheritdoc/>
     public IQueryable<Connector> GetAllCompanyConnectorsForIamUser(string iamUserId) =>
         _context.CompanyUsers.AsNoTracking()
-            .Where(u => u.UserEntityId == iamUserId)
-            .SelectMany(u => u.Company!.ProvidedConnectors.Where(c => c.StatusId != ConnectorStatusId.INACTIVE));
+            .Where(u => u.Identity!.UserEntityId == iamUserId)
+            .SelectMany(u => u.Identity!.Company!.ProvidedConnectors.Where(c => c.StatusId != ConnectorStatusId.INACTIVE));
 
     /// <inheritdoc/>
     public Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForIamUser(Guid userCompanyId) =>

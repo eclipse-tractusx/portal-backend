@@ -74,7 +74,7 @@ public class ApplicationRepository : IApplicationRepository
             .Where(application => application.Id == applicationId)
             .Select(application => new CompanyApplicationUserData(application)
             {
-                CompanyUserId = application.Company!.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!).Where(companyUser => companyUser.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault()
+                CompanyUserId = application.Company!.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!).Where(companyUser => companyUser.Identity!.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault()
             })
             .SingleOrDefaultAsync();
 
@@ -94,7 +94,7 @@ public class ApplicationRepository : IApplicationRepository
             .Select(application => new
             {
                 Application = application,
-                CompanyUser = application.Company!.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!).SingleOrDefault(companyUser => companyUser.UserEntityId == iamUserId),
+                CompanyUser = application.Company!.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!).SingleOrDefault(companyUser => companyUser.Identity!.UserEntityId == iamUserId),
                 Documents = application.Company.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!).SelectMany(companyUser => companyUser.Documents).Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED)
             })
             .Select(data => new CompanyApplicationUserEmailData(
@@ -188,12 +188,12 @@ public class ApplicationRepository : IApplicationRepository
             .AsNoTracking()
             .Where(invitation => invitation.CompanyApplicationId == applicationId)
             .Select(invitation => invitation.CompanyUser)
-            .Where(companyUser => companyUser!.UserStatusId == UserStatusId.ACTIVE)
+            .Where(companyUser => companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE)
             .Select(companyUser => new CompanyInvitedUserData(
                 companyUser!.Id,
-                companyUser.UserEntityId,
+                companyUser.Identity!.UserEntityId,
                 companyUser.CompanyUserAssignedBusinessPartners.Select(companyUserAssignedBusinessPartner => companyUserAssignedBusinessPartner.BusinessPartnerNumber),
-                companyUser.IdentityAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)))
+                companyUser.Identity!.IdentityAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)))
             .AsAsyncEnumerable();
 
     public IAsyncEnumerable<EmailData> GetEmailDataUntrackedAsync(Guid applicationId) =>
@@ -202,7 +202,7 @@ public class ApplicationRepository : IApplicationRepository
             .Where(application => application.Id == applicationId)
             .SelectMany(application =>
                 application.Company!.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!)
-                    .Where(companyUser => companyUser.UserStatusId == UserStatusId.ACTIVE)
+                    .Where(companyUser => companyUser.Identity!.UserStatusId == UserStatusId.ACTIVE)
                     .Select(companyUser => new EmailData(
                         companyUser.Id,
                         companyUser.Firstname,

@@ -140,7 +140,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         application.ApplicationChecklistEntries.Where(x => x.ApplicationChecklistEntryTypeId != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION).OrderBy(x => x.ApplicationChecklistEntryTypeId).Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)),
                         application.Invitations
                             .Select(invitation => invitation.CompanyUser)
-                            .Where(companyUser => companyUser!.UserStatusId == UserStatusId.ACTIVE
+                            .Where(companyUser => companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE
                                 && companyUser.Email != null)
                             .Select(companyUser => companyUser!.Email)
                             .FirstOrDefault(),
@@ -166,7 +166,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         Application = application,
                         CompanyUser = application.Invitations.Select(invitation => invitation.CompanyUser)
                     .FirstOrDefault(companyUser =>
-                        companyUser!.UserStatusId == UserStatusId.ACTIVE
+                        companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE
                         && companyUser.Firstname != null
                         && companyUser.Lastname != null
                         && companyUser.Email != null

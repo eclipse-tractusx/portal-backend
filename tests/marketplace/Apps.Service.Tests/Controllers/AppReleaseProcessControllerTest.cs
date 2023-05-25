@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -39,6 +40,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
 public class AppReleaseProcessControllerTest
 {
     private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
+    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private readonly IFixture _fixture;
     private readonly AppReleaseProcessController _controller;
     private readonly IAppReleaseBusinessLogic _logic;
@@ -48,7 +50,7 @@ public class AppReleaseProcessControllerTest
         _fixture = new Fixture();
         _logic = A.Fake<IAppReleaseBusinessLogic>();
         this._controller = new AppReleaseProcessController(_logic);
-        _controller.AddControllerContextWithClaim(IamUserId);
+        _controller.AddControllerContextWithClaim(IamUserId, _identity);
     }
 
     [Fact]
@@ -64,7 +66,7 @@ public class AppReleaseProcessControllerTest
             "https://test.provider.com",
             null,
             null);
-        A.CallTo(() => _logic.UpdateAppAsync(A<Guid>._, A<AppEditableDetail>._, A<string>._))
+        A.CallTo(() => _logic.UpdateAppAsync(A<Guid>._, A<AppEditableDetail>._, A<IdentityData>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
         // Act
@@ -72,7 +74,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert
         Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.UpdateAppAsync(appId, data, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UpdateAppAsync(appId, data, _identity)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -83,14 +85,14 @@ public class AppReleaseProcessControllerTest
         var documentTypeId = DocumentTypeId.ADDITIONAL_DETAILS;
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
-        A.CallTo(() => _logic.CreateAppDocumentAsync(A<Guid>._, A<DocumentTypeId>._, A<FormFile>._, A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _logic.CreateAppDocumentAsync(A<Guid>._, A<DocumentTypeId>._, A<FormFile>._, A<IdentityData>._, A<CancellationToken>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         await this._controller.UpdateAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None).ConfigureAwait(false);
 
         // Assert 
-        A.CallTo(() => _logic.CreateAppDocumentAsync(appId, documentTypeId, file, IamUserId, CancellationToken.None))
+        A.CallTo(() => _logic.CreateAppDocumentAsync(appId, documentTypeId, file, _identity, CancellationToken.None))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -99,10 +101,9 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
-        var userId = new Guid("7eab8e16-8298-4b41-953b-515745423658");
         var appUserRoles = _fixture.CreateMany<AppUserRole>(3);
         var appRoleData = _fixture.CreateMany<AppRoleData>(3);
-        A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles, userId.ToString()))
+        A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles, _identity))
             .Returns(appRoleData);
 
         //Act
@@ -110,7 +111,7 @@ public class AppReleaseProcessControllerTest
         foreach (var item in result)
         {
             //Assert
-            A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles, userId.ToString())).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _logic.AddAppUserRoleAsync(appId, appUserRoles, _identity)).MustHaveHappenedOnceExactly();
             Assert.NotNull(item);
             Assert.IsType<AppRoleData>(item);
         }
@@ -137,7 +138,7 @@ public class AppReleaseProcessControllerTest
         //Arrange
         var appId = Guid.NewGuid();
         var data = _fixture.Create<OfferAgreementConsent>();
-        A.CallTo(() => _logic.GetOfferAgreementConsentById(A<Guid>._, A<string>._))
+        A.CallTo(() => _logic.GetOfferAgreementConsentById(A<Guid>._, A<IdentityData>._))
             .Returns(data);
 
         //Act
@@ -145,7 +146,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert 
         result.Should().Be(data);
-        A.CallTo(() => _logic.GetOfferAgreementConsentById(appId, IamUserId))
+        A.CallTo(() => _logic.GetOfferAgreementConsentById(appId, _identity))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -174,7 +175,7 @@ public class AppReleaseProcessControllerTest
         //Arrange
         var appId = Guid.NewGuid();
         var data = _fixture.Create<AppProviderResponse>();
-        A.CallTo(() => _logic.GetAppDetailsForStatusAsync(A<Guid>._, A<string>._))
+        A.CallTo(() => _logic.GetAppDetailsForStatusAsync(A<Guid>._, A<IdentityData>._))
             .ReturnsLazily(() => data);
 
         //Act
@@ -182,7 +183,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert 
         result.Should().Be(data);
-        A.CallTo(() => _logic.GetAppDetailsForStatusAsync(appId, IamUserId))
+        A.CallTo(() => _logic.GetAppDetailsForStatusAsync(appId, _identity))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -192,7 +193,7 @@ public class AppReleaseProcessControllerTest
         //Arrange
         var appId = Guid.NewGuid();
         var roleId = Guid.NewGuid();
-        A.CallTo(() => _logic.DeleteAppRoleAsync(A<Guid>._, A<Guid>._, A<string>._))
+        A.CallTo(() => _logic.DeleteAppRoleAsync(A<Guid>._, A<Guid>._, A<IdentityData>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
@@ -200,7 +201,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert 
         Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.DeleteAppRoleAsync(appId, roleId, IamUserId))
+        A.CallTo(() => _logic.DeleteAppRoleAsync(appId, roleId, _identity))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -227,14 +228,14 @@ public class AppReleaseProcessControllerTest
         //Arrange
         var appId = _fixture.Create<Guid>();
         var data = _fixture.Create<AppRequestModel>();
-        A.CallTo(() => _logic.AddAppAsync(A<AppRequestModel>._, A<string>._))
+        A.CallTo(() => _logic.AddAppAsync(A<AppRequestModel>._, A<IdentityData>._))
             .ReturnsLazily(() => appId);
 
         //Act
         var result = await this._controller.ExecuteAppCreation(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddAppAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AddAppAsync(data, _identity)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(appId);
     }
@@ -269,7 +270,7 @@ public class AppReleaseProcessControllerTest
             "test@gmail.com",
             "9456321678"
             );
-        A.CallTo(() => _logic.UpdateAppReleaseAsync(A<Guid>._, A<AppRequestModel>._, A<string>._))
+        A.CallTo(() => _logic.UpdateAppReleaseAsync(A<Guid>._, A<AppRequestModel>._, A<IdentityData>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
         // Act
@@ -277,7 +278,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert
         Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.UpdateAppReleaseAsync(appId, data, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UpdateAppReleaseAsync(appId, data, _identity)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -301,14 +302,14 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.SubmitAppReleaseRequestAsync(appId, A<string>._))
+        A.CallTo(() => _logic.SubmitAppReleaseRequestAsync(appId, A<IdentityData>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.SubmitAppReleaseRequest(appId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.SubmitAppReleaseRequestAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.SubmitAppReleaseRequestAsync(appId, _identity)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -317,14 +318,14 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.ApproveAppRequestAsync(appId, A<string>._))
+        A.CallTo(() => _logic.ApproveAppRequestAsync(appId, A<IdentityData>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.ApproveAppRequest(appId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.ApproveAppRequestAsync(appId, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.ApproveAppRequestAsync(appId, _identity)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -334,14 +335,14 @@ public class AppReleaseProcessControllerTest
         //Arrange
         var appId = _fixture.Create<Guid>();
         var data = new OfferDeclineRequest("Just a test");
-        A.CallTo(() => _logic.DeclineAppRequestAsync(A<Guid>._, A<string>._, A<OfferDeclineRequest>._))
+        A.CallTo(() => _logic.DeclineAppRequestAsync(A<Guid>._, A<IdentityData>._, A<OfferDeclineRequest>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.DeclineAppRequest(appId, data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.DeclineAppRequestAsync(appId, IamUserId, data)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeclineAppRequestAsync(appId, _identity, data)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 
@@ -369,7 +370,7 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var documentId = Guid.NewGuid();
-        A.CallTo(() => _logic.DeleteAppDocumentsAsync(A<Guid>._, A<string>._))
+        A.CallTo(() => _logic.DeleteAppDocumentsAsync(A<Guid>._, A<IdentityData>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
@@ -377,7 +378,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert 
         Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.DeleteAppDocumentsAsync(documentId, IamUserId))
+        A.CallTo(() => _logic.DeleteAppDocumentsAsync(documentId, _identity))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -386,7 +387,7 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.DeleteAppAsync(A<Guid>._, A<string>._))
+        A.CallTo(() => _logic.DeleteAppAsync(A<Guid>._, A<IdentityData>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
@@ -394,7 +395,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert 
         Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.DeleteAppAsync(appId, IamUserId))
+        A.CallTo(() => _logic.DeleteAppAsync(appId, _identity))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -407,7 +408,7 @@ public class AppReleaseProcessControllerTest
         var result = await _controller.SetInstanceType(appId, data).ConfigureAwait(false);
 
         Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.SetInstanceType(appId, data, IamUserId))
+        A.CallTo(() => _logic.SetInstanceType(appId, data, _identity))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -418,14 +419,14 @@ public class AppReleaseProcessControllerTest
         var offerId = Guid.NewGuid();
 
         var data = _fixture.CreateMany<TechnicalUserProfileInformation>(5);
-        A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId, IamUserId))
+        A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId, _identity))
             .Returns(data);
 
         //Act
         var result = await this._controller.GetTechnicalUserProfiles(offerId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId, _identity)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
     }
 
@@ -440,7 +441,7 @@ public class AppReleaseProcessControllerTest
         var result = await this._controller.CreateAndUpdateTechnicalUserProfiles(offerId, data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.UpdateTechnicalUserProfiles(offerId, A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UpdateTechnicalUserProfiles(offerId, A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), _identity)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 }

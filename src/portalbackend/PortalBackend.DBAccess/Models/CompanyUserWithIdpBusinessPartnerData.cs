@@ -18,13 +18,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyUserWithIdpBusinessPartnerData(
-    [property: JsonPropertyName("companyUser")] CompanyUser CompanyUser,
+    [property: JsonPropertyName("companyUser")] CompanyUserInformation CompanyUser,
     [property: JsonPropertyName("iamIdpAlias")] string IamIdpAlias,
     [property: JsonPropertyName("businessPartnerNumbers")] IEnumerable<string> BusinessPartnerNumbers,
     [property: JsonPropertyName("assignedRoles")] IEnumerable<CompanyUserAssignedRoleDetails> AssignedRoles);
+
+public record CompanyUserInformation(
+    Guid Id,
+    string? Email,
+    string? Firstname,
+    string? Lastname,
+    string CompanyName,
+    DateTimeOffset DateCreated,
+    UserStatusId UserStatusId,
+    string? UserEntityId
+);

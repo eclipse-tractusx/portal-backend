@@ -1,3 +1,4 @@
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
@@ -5,7 +6,8 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class Identity : IBaseEntity
+[AuditEntityV1(typeof(AuditIdentity20230526))]
+public class Identity : IBaseEntity, IAuditableV1
 {
     public Identity(Guid id, DateTimeOffset dateCreated, Guid companyId, UserStatusId userStatusId, IdentityTypeId identityTypeId)
     {
@@ -31,6 +33,11 @@ public class Identity : IBaseEntity
     public string? UserEntityId { get; set; }
 
     public IdentityTypeId IdentityTypeId { get; set; }
+
+    public DateTimeOffset? DateLastChanged { get; set; }
+
+    [AuditLastEditorV1]
+    public Guid? LastEditorId { get; set; }
 
     // Navigation properties
     public virtual CompanyUser? CompanyUser { get; set; }

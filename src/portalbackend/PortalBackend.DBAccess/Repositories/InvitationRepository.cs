@@ -40,7 +40,7 @@ public class InvitationRepository : IInvitationRepository
          join companyuser in _dbContext.CompanyUsers on invitation.CompanyUserId equals companyuser.Id
          where invitation.CompanyApplicationId == applicationId
          select new InvitedUserDetail(
-             companyuser.UserEntityId,
+             companyuser.Identity!.UserEntityId,
              invitationStatus.Id,
              companyuser.Email
          ))
@@ -49,6 +49,6 @@ public class InvitationRepository : IInvitationRepository
 
     public Task<Invitation?> GetInvitationStatusAsync(string iamUserId) =>
         _dbContext.Invitations
-            .Where(invitation => invitation.CompanyUser!.UserEntityId == iamUserId)
+            .Where(invitation => invitation.CompanyUser!.Identity!.UserEntityId == iamUserId)
             .SingleOrDefaultAsync();
 }

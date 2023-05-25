@@ -71,13 +71,14 @@ public class UserProvisioningService : IUserProvisioningService
 
             try
             {
-                CompanyUser? companyUser = null;
+                Identity? identity = null;
                 var companyUserId = await ValidateDuplicateIdpUsersAsync(userRepository, alias, user, companyId).ConfigureAwait(false);
 
                 if (companyUserId == Guid.Empty)
                 {
-                    companyUser = userRepository.CreateCompanyUser(user.FirstName, user.LastName, user.Email, companyId, UserStatusId.ACTIVE, creatorId);
-                    companyUserId = companyUser.Id;
+                    identity = userRepository.CreateIdentity(companyId, UserStatusId.ACTIVE);
+                    userRepository.CreateCompanyUser(identity.Id, user.FirstName, user.LastName, user.Email, identity.Id);
+                    companyUserId = identity.Id;
                     if (businessPartnerNumber != null)
                     {
                         businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber);
@@ -104,16 +105,16 @@ public class UserProvisioningService : IUserProvisioningService
                 await _provisioningManager.AddProviderUserLinkToCentralUserAsync(centralUserId, new IdentityProviderLink(alias, providerUserId, user.UserName)).ConfigureAwait(false);
 
                 userdata = new(centralUserId, companyUserId);
-                if (companyUser == null)
+                if (identity == null)
                 {
-                    userRepository.AttachAndModifyCompanyUser(companyUserId, null, cu =>
+                    userRepository.AttachAndModifyIdentity(companyUserId, null, cu =>
                     {
                         cu.UserEntityId = centralUserId;
                     });
                 }
                 else
                 {
-                    companyUser.UserEntityId = centralUserId;
+                    identity.UserEntityId = centralUserId;
                 }
 
                 await AssignRolesToNewUserAsync(userRolesRepository, user.RoleDatas, userdata).ConfigureAwait(false);

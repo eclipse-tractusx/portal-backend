@@ -301,7 +301,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task DeleteConnectorAsync(Guid connectorId, string iamUserId, CancellationToken cancellationToken)
+    public async Task DeleteConnectorAsync(Guid connectorId, IdentityData identity, CancellationToken cancellationToken)
     {
         var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
         var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId).ConfigureAwait(false);
@@ -328,18 +328,11 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
                 a => { a.DocumentStatusId = DocumentStatusId.INACTIVE; });
         }
 
-        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-
-        if (companyUserId == Guid.Empty)
-        {
-            throw new ConflictException($"user {iamUserId} is not mapped to a valid companyUser");
-        }
-
         connectorsRepository.DeleteConnectorClientDetails(connectorId);
         connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
         {
             con.StatusId = ConnectorStatusId.INACTIVE;
-            con.LastEditorId = companyUserId;
+            con.LastEditorId = identity.IdentityId;
             con.DateLastChanged = DateTimeOffset.UtcNow;
         });
         await _dapsService.DeleteDapsClient(result.DapsClientId, cancellationToken).ConfigureAwait(false);
@@ -391,20 +384,12 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ConflictException("Client Id should be set here");
         }
 
-        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserIdForIamUserUntrackedAsync(identity.UserEntityId).ConfigureAwait(false);
-
-        if (companyUserId == Guid.Empty)
-        {
-            throw new ConflictException($"user {identity.UserEntityId} is not mapped to a valid companyUser");
-        }
-
         connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
         {
             con.DapsRegistrationSuccessful = true;
             con.StatusId = ConnectorStatusId.ACTIVE;
             con.DateLastChanged = DateTimeOffset.UtcNow;
-            con.LastEditorId = companyUserId;
+            con.LastEditorId = identity.IdentityId;
         });
 
         connectorsRepository.CreateConnectorClientDetails(connectorId, response.ClientId);
@@ -414,7 +399,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, string iamUserId, CancellationToken cancellationToken)
+    public async Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, IdentityData identity, CancellationToken cancellationToken)
     {
         var result = await _portalRepositories.GetInstance<IConnectorsRepository>()
             .GetConnectorDataById(data.ExternalId)
@@ -430,15 +415,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ConflictException($"Connector {data.ExternalId} already has a document assigned");
         }
 
-        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId)
-            .ConfigureAwait(false);
-
-        if (companyUserId == Guid.Empty)
-        {
-            throw new ConflictException($"user {iamUserId} is not mapped to a valid companyUser");
-        }
-
-        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, companyUserId, cancellationToken).ConfigureAwait(false);
+        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, identity.IdentityId, cancellationToken).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

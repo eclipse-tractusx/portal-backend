@@ -131,32 +131,32 @@ public interface IOfferService
     /// Approve App Status from IN_Review to Active
     /// </summary>
     /// <param name="offerId"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <param name="offerTypeId"></param>
     /// <param name="approveOfferNotificationTypeIds"></param>
     /// <param name="approveOfferRoles"></param>
     /// <param name="submitOfferNotificationTypeIds"></param>
     /// <param name="catenaAdminRoles"></param>
     /// <returns></returns>
-    Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
+    Task ApproveOfferRequestAsync(Guid offerId, IdentityData identity, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
 
     /// <summary>
     /// Update offer status and create notification for App 
     /// </summary>
     /// <param name="offerId">Id of the offer that should be submitted</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <param name="offerTypeId">Type of the offer</param>
     /// <param name="notificationTypeIds">Ids for the notifications that are created</param>
     /// <param name="catenaAdminRoles">Company Admin Roles</param>
     /// <param name="submitAppDocumentTypeIds">Document Type Id</param>
     /// <returns></returns>
-    Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds);
+    Task SubmitOfferAsync(Guid offerId, IdentityData identity, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds);
 
     /// <summary>
     /// Declines the given offer
     /// </summary>
     /// <param name="offerId">Id of the offer that should be declined</param>
-    /// <param name="iamUserId">Id of the iam User</param>
+    /// <param name="identity">Identity of the User</param>
     /// <param name="data">The offer decline data</param>
     /// <param name="offerType">The offer type</param>
     /// <param name="notificationTypeId">Id of the notification that should be send</param>
@@ -164,7 +164,7 @@ public interface IOfferService
     /// <param name="basePortalAddress">the base portal address</param>
     /// <param name="submitOfferNotificationTypeIds">the submit notification notification type ids</param>
     /// <param name="catenaAdminRoles">The catena x admin roles</param>
-    Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string, IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
+    Task DeclineOfferAsync(Guid offerId, IdentityData identity, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string, IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
 
     /// <summary>
     /// Deactivate the given offerStatus by offerId and offerType
@@ -178,12 +178,12 @@ public interface IOfferService
     /// Update offer status and create notification for Service
     /// </summary>
     /// <param name="offerId"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <param name="offerTypeId"></param>
     /// <param name="notificationTypeIds"></param>
     /// <param name="catenaAdminRoles"></param>
     /// <returns></returns>
-    Task SubmitServiceAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
+    Task SubmitServiceAsync(Guid offerId, IdentityData identity, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
 
     /// <summary>
     /// Get offer Document Content for given offertypeId by Id

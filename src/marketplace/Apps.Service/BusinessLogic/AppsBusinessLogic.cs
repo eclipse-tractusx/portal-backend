@@ -140,18 +140,16 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             .GetAllFavouriteAppsForUserUntrackedAsync(userId);
 
     /// <inheritdoc/>
-    public async Task RemoveFavouriteAppForUserAsync(Guid appId, string userId)
+    public async Task RemoveFavouriteAppForUserAsync(Guid appId, IdentityData identity)
     {
-        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(userId).ConfigureAwait(false);
-        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, companyUserId));
+        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, identity.IdentityId));
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async Task AddFavouriteAppForUserAsync(Guid appId, string userId)
+    public async Task AddFavouriteAppForUserAsync(Guid appId, IdentityData identity)
     {
-        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(userId).ConfigureAwait(false);
-        _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, companyUserId);
+        _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, identity.IdentityId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

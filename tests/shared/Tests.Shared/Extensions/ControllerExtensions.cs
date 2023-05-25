@@ -18,8 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Framework.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -34,34 +37,18 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="controller">The controller that should be enriched</param>
     /// <param name="iamUserId">Id of the iamUser</param>
-    /// <param name="accessToken">Access Token for the authorization header</param>
-    public static void AddControllerContextWithClaimAndBearerTokenX(this ControllerBase controller, string iamUserId, string accessToken)
+    /// <param name="identity">identity of the user</param>
+    public static void AddControllerContextWithClaim(this ControllerBase controller, string iamUserId, IdentityData? identity = null)
     {
         var claimsIdentity = new ClaimsIdentity();
         claimsIdentity.AddClaims(new[] { new Claim("sub", iamUserId) });
-        var httpContext = new DefaultHttpContext
+        if (identity != null)
         {
-            User = new ClaimsPrincipal(claimsIdentity)
-        };
+            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityId, identity.IdentityId.ToString()) });
+            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityType, Enum.GetName(identity.IdentityType)!) });
+            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.CompanyId, identity.CompanyId.ToString()) });
+        }
 
-        httpContext.Request.Headers.Authorization = $"Bearer {accessToken}";
-        var controllerContext = new ControllerContext
-        {
-            HttpContext = httpContext
-        };
-
-        controller.ControllerContext = controllerContext;
-    }
-
-    /// <summary>
-    /// Creates a claim for the identity user and adds it to the controller context
-    /// </summary>
-    /// <param name="controller">The controller that should be enriched</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    public static void AddControllerContextWithClaim(this ControllerBase controller, string iamUserId)
-    {
-        var claimsIdentity = new ClaimsIdentity();
-        claimsIdentity.AddClaims(new[] { new Claim("sub", iamUserId) });
         var httpContext = new DefaultHttpContext
         {
             User = new ClaimsPrincipal(claimsIdentity)
@@ -80,10 +67,19 @@ public static class ControllerExtensions
     /// </summary>
     /// <param name="controller">The controller that should be enriched</param>
     /// <param name="iamUserId">Id of the iamUser</param>
-    public static void AddControllerContextWithClaimAndBearer(this ControllerBase controller, string iamUserId, string accessToken)
+    /// <param name="accessToken">Access token</param>
+    /// <param name="identity">Identity of the user</param>
+    public static void AddControllerContextWithClaimAndBearer(this ControllerBase controller, string iamUserId, string accessToken, IdentityData? identity = null)
     {
         var claimsIdentity = new ClaimsIdentity();
-        claimsIdentity.AddClaims(new[] { new Claim("sub", iamUserId) });
+        claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.Sub, iamUserId) });
+        if (identity != null)
+        {
+            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityId, identity.IdentityId.ToString()) });
+            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityType, Enum.GetName(identity.IdentityType)!) });
+            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.CompanyId, identity.CompanyId.ToString()) });
+        }
+
         var httpContext = new DefaultHttpContext
         {
             User = new ClaimsPrincipal(claimsIdentity)

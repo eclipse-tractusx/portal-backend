@@ -71,6 +71,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditCompanyUser20230522> AuditCompanyUser20230523 { get; set; } = default!;
     public virtual DbSet<AuditConnector20230405> AuditConnector20230405 { get; set; } = default!;
     public virtual DbSet<AuditConnector20230503> AuditConnector20230503 { get; set; } = default!;
+    public virtual DbSet<AuditIdentity20230526> AuditIdentity20230526 { get; set; } = default!;
     public virtual DbSet<AuditUserRole20221017> AuditUserRole20221017 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole20221018> AuditCompanyUserAssignedRole20221018 { get; set; } = default!;
     public virtual DbSet<AuditCompanyAssignedRole2023316> AuditCompanyAssignedRole2023316 { get; set; } = default!;
@@ -679,11 +680,15 @@ public class PortalDbContext : DbContext
                 .WithMany(e => e.Identities)
                 .HasForeignKey(e => e.IdentityTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasAuditV1Triggers<Identity, AuditIdentity20230526>();
         });
 
         modelBuilder.Entity<CompanyUser>(entity =>
         {
-            entity.HasBaseType<Identity>();
+            entity.HasOne(x => x.Identity)
+                .WithOne(x => x.CompanyUser)
+                .HasForeignKey<CompanyUser>(x => x.Id);
 
             entity.HasMany(p => p.Offers)
                 .WithMany(p => p.CompanyUsers)
@@ -711,7 +716,9 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<CompanyServiceAccount>(entity =>
         {
-            entity.HasBaseType<Identity>();
+            entity.HasOne(x => x.Identity)
+                .WithOne(x => x.CompanyServiceAccount)
+                .HasForeignKey<CompanyServiceAccount>(x => x.Id);
 
             entity.HasOne(d => d.CompanyServiceAccountType)
                 .WithMany(p => p.CompanyServiceAccounts)
@@ -724,7 +731,7 @@ public class PortalDbContext : DbContext
 
             // TODO (PS): Check ohne filter - ggfs. schon Standard
             entity.HasIndex(e => e.ClientClientId)
-                .HasFilter("client_client_id IS NOT NULL")
+                // .HasFilter("client_client_id IS NOT NULL")
                 .IsUnique();
 
             entity.ToTable("company_service_accounts");

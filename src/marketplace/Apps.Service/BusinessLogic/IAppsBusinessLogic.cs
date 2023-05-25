@@ -66,15 +66,15 @@ public interface IAppsBusinessLogic
     /// Adds an app to a user's favourites.
     /// </summary>
     /// <param name="appId">ID of the app to add to user's favourites.</param>
-    /// <param name="userId">ID of the user to add app favourite to.</param>
-    public Task AddFavouriteAppForUserAsync(Guid appId, string userId);
+    /// <param name="identity">Identity of the user to add app favourite to.</param>
+    public Task AddFavouriteAppForUserAsync(Guid appId, IdentityData identity);
 
     /// <summary>
     /// Removes an app from a user's favourites.
     /// </summary>
     /// <param name="appId">ID of the app to remove from user's favourites.</param>
-    /// <param name="userId">ID of the user to remove app favourite from.</param>
-    public Task RemoveFavouriteAppForUserAsync(Guid appId, string userId);
+    /// <param name="identity">Identity of the user to remove app favourite from.</param>
+    public Task RemoveFavouriteAppForUserAsync(Guid appId, IdentityData identity);
 
     /// <summary>
     /// Retrieves subscription statuses of subscribed apps of the provided user's company.

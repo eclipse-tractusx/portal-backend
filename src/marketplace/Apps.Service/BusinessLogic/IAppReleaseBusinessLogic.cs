@@ -135,17 +135,17 @@ public interface IAppReleaseBusinessLogic
     /// Update app status and create notification
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <returns></returns>
-    Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId);
+    Task SubmitAppReleaseRequestAsync(Guid appId, IdentityData identity);
 
     /// <summary>
     /// Approve App Status from IN_Review to Active
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <returns></returns>
-    Task ApproveAppRequestAsync(Guid appId, string iamUserId);
+    Task ApproveAppRequestAsync(Guid appId, IdentityData identity);
 
     /// <summary>
     /// Get All Privacy Policy
@@ -157,9 +157,9 @@ public interface IAppReleaseBusinessLogic
     /// Declines the app request
     /// </summary>
     /// <param name="appId">Id of the app</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
+    /// <param name="identity">Identity of the User</param>
     /// <param name="data">The decline request data</param>
-    Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data);
+    Task DeclineAppRequestAsync(Guid appId, IdentityData identity, OfferDeclineRequest data);
 
     /// <summary>
     /// Gets InReview App Details Data by Id

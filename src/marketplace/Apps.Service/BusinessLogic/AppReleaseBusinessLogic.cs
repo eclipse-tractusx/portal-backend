@@ -247,13 +247,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
         else
         {
-            companyId = await _portalRepositories.GetInstance<IUserRepository>()
-                .GetOwnCompanyId(identity.UserEntityId)
-                .ConfigureAwait(false);
-            if (companyId == Guid.Empty)
-            {
-                throw new ControllerArgumentException($"user {identity.UserEntityId} is not associated with any company");
-            }
+            companyId = identity.CompanyId;
         }
 
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
@@ -377,12 +371,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 .GetAllInReviewStatusAppsAsync(GetOfferStatusIds(offerStatusIdFilter), sorting ?? OfferSorting.DateDesc));
 
     /// <inheritdoc/>
-    public Task SubmitAppReleaseRequestAsync(Guid appId, string iamUserId) =>
-        _offerService.SubmitOfferAsync(appId, iamUserId, OfferTypeId.APP, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles, _settings.SubmitAppDocumentTypeIds);
+    public Task SubmitAppReleaseRequestAsync(Guid appId, IdentityData identity) =>
+        _offerService.SubmitOfferAsync(appId, identity, OfferTypeId.APP, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles, _settings.SubmitAppDocumentTypeIds);
 
     /// <inheritdoc/>
-    public Task ApproveAppRequestAsync(Guid appId, string iamUserId) =>
-        _offerService.ApproveOfferRequestAsync(appId, iamUserId, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, _settings.ApproveAppUserRoles, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles);
+    public Task ApproveAppRequestAsync(Guid appId, IdentityData identity) =>
+        _offerService.ApproveOfferRequestAsync(appId, identity, OfferTypeId.APP, _settings.ApproveAppNotificationTypeIds, _settings.ApproveAppUserRoles, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles);
 
     private IEnumerable<OfferStatusId> GetOfferStatusIds(OfferStatusIdFilter? offerStatusIdFilter)
     {
@@ -406,8 +400,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task DeclineAppRequestAsync(Guid appId, string iamUserId, OfferDeclineRequest data) =>
-        _offerService.DeclineOfferAsync(appId, iamUserId, data, OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.AppOverviewAddress, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles);
+    public Task DeclineAppRequestAsync(Guid appId, IdentityData identity, OfferDeclineRequest data) =>
+        _offerService.DeclineOfferAsync(appId, identity, data, OfferTypeId.APP, NotificationTypeId.APP_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.AppOverviewAddress, _settings.SubmitAppNotificationTypeIds, _settings.CatenaAdminRoles);
 
     /// <inheritdoc />
     public async Task<InReviewAppDetails> GetInReviewAppDetailsByIdAsync(Guid appId)

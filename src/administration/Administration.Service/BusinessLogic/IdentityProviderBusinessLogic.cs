@@ -516,24 +516,19 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return (new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, unlinkedUsersOnly, iamUserId), csvSettings.Encoding), csvSettings.ContentType, csvSettings.FileName, csvSettings.Encoding);
     }
 
-    public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken)
+    public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, IdentityData identity, CancellationToken cancellationToken)
     {
         if (!document.ContentType.Equals(_settings.CsvSettings.ContentType, StringComparison.OrdinalIgnoreCase))
         {
             throw new UnsupportedMediaTypeException($"Only contentType {_settings.CsvSettings.ContentType} files are allowed.");
         }
-        return UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(document, iamUserId, cancellationToken);
+        return UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(document, identity, cancellationToken);
     }
 
-    private async ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IFormFile document, string iamUserId, CancellationToken cancellationToken)
+    private async ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IFormFile document, IdentityData identity, CancellationToken cancellationToken)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var (companyId, creatorId) = await userRepository.GetOwnCompanyAndCompanyUserId(iamUserId).ConfigureAwait(false);
-        if (companyId == Guid.Empty)
-        {
-            throw new ControllerArgumentException($"user {iamUserId} is not associated with a company");
-        }
-        var (sharedIdpAlias, existingAliase) = await GetCompanyAliasDataAsync(companyId).ConfigureAwait(false);
+        var (sharedIdpAlias, existingAliase) = await GetCompanyAliasDataAsync(identity.CompanyId).ConfigureAwait(false);
 
         using var stream = document.OpenReadStream();
 
@@ -546,7 +541,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 numIdps = ParseCSVFirstLineReturningNumIdps(line);
             },
             line => ParseCSVLine(line, numIdps, existingAliase),
-            lines => ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(lines, userRepository, companyId, sharedIdpAlias, creatorId, cancellationToken),
+            lines => ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(lines, userRepository, identity.CompanyId, sharedIdpAlias, identity.IdentityId, cancellationToken),
             cancellationToken
         ).ConfigureAwait(false);
 
@@ -845,7 +840,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     companyUser.Firstname,
                     companyUser.Lastname,
                     companyUser.Email,
-                    companyUser.UserEntityId))
+                    companyUser.Identity!.UserEntityId))
             .ToAsyncEnumerable().ConfigureAwait(false))
         {
             if (userEntityId != null)

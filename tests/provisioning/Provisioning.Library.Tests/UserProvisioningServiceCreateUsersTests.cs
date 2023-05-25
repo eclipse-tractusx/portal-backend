@@ -250,15 +250,20 @@ public class UserProvisioningServiceCreateUsersTests
         var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
 
         var userInfo = userCreationInfoIdp.ElementAt(_indexSpecialUser);
-        var companyUserId = _fixture.Create<Guid>();
+        var identityId = _fixture.Create<Guid>();
         var centralUserId = _fixture.Create<string>();
         var utcNow = DateTimeOffset.UtcNow;
 
         A.CallTo(() => _userRepository.GetMatchingCompanyIamUsersByNameEmail(A<string>.That.IsEqualTo(userInfo.FirstName), A<string>._, A<string>._, A<Guid>._, A<IEnumerable<UserStatusId>>._))
             .Returns(new[] { (UserEntityId: (string?)null, CompanyUserId: Guid.Empty) }.ToAsyncEnumerable());
 
-        A.CallTo(() => _userRepository.CreateCompanyUser(userInfo.FirstName, A<string?>._, A<string>._, A<Guid>._, A<UserStatusId>._, A<Guid>._))
-            .ReturnsLazily((string? firstName, string? lastName, string email, Guid companyId, UserStatusId statusId, Guid creatorId) => new CompanyUser(companyUserId, companyId, statusId, utcNow, creatorId) { Firstname = firstName, Lastname = lastName });
+        A.CallTo(() => _userRepository.CreateIdentity(A<Guid>._, A<UserStatusId>._))
+            .ReturnsLazily((Guid companyId, UserStatusId userStatusId) => new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, companyId, userStatusId, IdentityTypeId.COMPANY_USER)
+            {
+                UserEntityId = centralUserId
+            });
+        A.CallTo(() => _userRepository.CreateCompanyUser(A<Guid>._, userInfo.FirstName, A<string?>._, A<string>._, A<Guid>._))
+            .ReturnsLazily((Guid _, string? firstName, string? lastName, string email, Guid creatorId) => new CompanyUser(identityId, creatorId) { Firstname = firstName, Lastname = lastName, Email = email });
 
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string, IEnumerable<string>)>>._))
             .Returns(centralUserId);
@@ -272,12 +277,13 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.CreateCompanyUser(A<string?>._, A<string?>._, A<string>._, _companyNameIdpAliasData.CompanyId, UserStatusId.ACTIVE, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
-        A.CallTo(() => _userRepository.CreateCompanyUser(userInfo.FirstName, userInfo.LastName, userInfo.Email, _companyNameIdpAliasData.CompanyId, UserStatusId.ACTIVE, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.CreateIdentity(_companyNameIdpAliasData.CompanyId, UserStatusId.ACTIVE)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _userRepository.CreateCompanyUser(A<Guid>._, A<string?>._, A<string?>._, A<string>._, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _userRepository.CreateCompanyUser(identityId, userInfo.FirstName, userInfo.LastName, userInfo.Email, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, _companyNameIdpAliasData.BusinessPartnerNumber!)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, _companyNameIdpAliasData.BusinessPartnerNumber!)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, null, A<Action<CompanyUser>>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
-        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(companyUserId, null, A<Action<CompanyUser>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(identityId, _companyNameIdpAliasData.BusinessPartnerNumber!)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, null, A<Action<Identity>>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(identityId, null, A<Action<Identity>>._)).MustHaveHappenedOnceExactly();
 
         result.Should().HaveCount(_numUsers);
         result.Should().AllSatisfy(r => r.Error.Should().BeNull());
@@ -309,8 +315,9 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.CreateCompanyUser(A<string?>._, A<string?>._, A<string>._, _companyNameIdpAliasData.CompanyId, UserStatusId.ACTIVE, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappened(userCreationInfoIdp.Count - 1, Times.Exactly);
-        A.CallTo(() => _userRepository.CreateCompanyUser(userInfo.FirstName, A<string?>._, A<string>._, A<Guid>._, A<UserStatusId>._, A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRepository.CreateIdentity(_companyNameIdpAliasData.CompanyId, UserStatusId.ACTIVE)).MustHaveHappened(userCreationInfoIdp.Count - 1, Times.Exactly);
+        A.CallTo(() => _userRepository.CreateCompanyUser(A<Guid>._, A<string?>._, A<string?>._, A<string>._, _companyNameIdpAliasData.CompanyUserId)).MustHaveHappened(userCreationInfoIdp.Count - 1, Times.Exactly);
+        A.CallTo(() => _userRepository.CreateCompanyUser(A<Guid>._, userInfo.FirstName, A<string?>._, A<string>._, A<Guid>._)).MustNotHaveHappened();
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, _companyNameIdpAliasData.BusinessPartnerNumber!)).MustHaveHappened(userCreationInfoIdp.Count - 1, Times.Exactly);
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, A<string?>._)).MustNotHaveHappened();
         A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, null, A<Action<CompanyUser>>._)).MustHaveHappened(userCreationInfoIdp.Count, Times.Exactly);
@@ -364,11 +371,11 @@ public class UserProvisioningServiceCreateUsersTests
     {
         var client = _fixture.Create<string>();
         var roles = _fixture.CreateMany<string>();
-        var iamUserId = _fixture.Create<string>();
+        var identity = _fixture.Create<IdentityData>();
 
         var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
 
-        var result = await sut.GetOwnCompanyPortalRoleDatas(client, roles, iamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyPortalRoleDatas(client, roles, identity).ConfigureAwait(false);
 
         result.Should().HaveSameCount(roles);
     }
@@ -378,9 +385,9 @@ public class UserProvisioningServiceCreateUsersTests
     {
         var client = _fixture.Create<string>();
         var roles = _fixture.CreateMany<string>();
-        var iamUserId = _fixture.Create<string>();
+        var identity = _fixture.Create<IdentityData>();
 
-        A.CallTo(() => _userRolesRepository.GetOwnCompanyPortalUserRoleDataUntrackedAsync(A<string>._, A<IEnumerable<string>>._, A<string>._))
+        A.CallTo(() => _userRolesRepository.GetOwnCompanyPortalUserRoleDataUntrackedAsync(A<string>._, A<IEnumerable<string>>._, A<Guid>._))
             .ReturnsLazily((string clientId, IEnumerable<string> roles, string _) =>
                 roles.Take(roles.Count() - 1).Select(role => _fixture.Build<UserRoleData>()
                     .With(x => x.ClientClientId, clientId)
@@ -388,7 +395,7 @@ public class UserProvisioningServiceCreateUsersTests
 
         var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
 
-        async Task Act() => await sut.GetOwnCompanyPortalRoleDatas(client, roles, iamUserId).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyPortalRoleDatas(client, roles, identity).ConfigureAwait(false);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().StartWith("invalid roles: clientId:");
@@ -404,13 +411,19 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
 
-        A.CallTo(() => _userRepository.CreateCompanyUser(A<string>._, A<string>._, A<string>._, A<Guid>._, A<UserStatusId>._, A<Guid>._))
-            .ReturnsLazily((string firstName, string lastName, string email, Guid companyId, UserStatusId companyUserStatusId, Guid lastEditorId) =>
+        A.CallTo(() => _userRepository.CreateIdentity(A<Guid>._, A<UserStatusId>._))
+            .ReturnsLazily((Guid companyId, UserStatusId userStatusId) =>
+                new Identity(
+                    Guid.NewGuid(),
+                    DateTimeOffset.UtcNow,
+                    companyId,
+                    userStatusId,
+                    IdentityTypeId.COMPANY_USER));
+
+        A.CallTo(() => _userRepository.CreateCompanyUser(A<Guid>._, A<string>._, A<string>._, A<string>._, A<Guid>._))
+            .ReturnsLazily((Guid _, string firstName, string _, string _, Guid lastEditorId) =>
                 new CompanyUser(
                     firstName == _firstNameSpecialUser ? _companyUserIdSpecialUser : Guid.NewGuid(),
-                    companyId,
-                    companyUserStatusId,
-                    DateTimeOffset.UtcNow,
                     lastEditorId));
 
         A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, A<string>._))
@@ -422,7 +435,7 @@ public class UserProvisioningServiceCreateUsersTests
                     .With(x => x.ClientClientId, r.Key)
                     .With(x => x.UserRoleText, role).Create())).ToAsyncEnumerable());
 
-        A.CallTo(() => _userRolesRepository.GetOwnCompanyPortalUserRoleDataUntrackedAsync(A<string>._, A<IEnumerable<string>>._, A<string>._))
+        A.CallTo(() => _userRolesRepository.GetOwnCompanyPortalUserRoleDataUntrackedAsync(A<string>._, A<IEnumerable<string>>._, A<Guid>._))
             .ReturnsLazily((string client, IEnumerable<string> roles, string _) =>
                 roles.Select(role => _fixture.Build<UserRoleData>()
                     .With(x => x.ClientClientId, client)

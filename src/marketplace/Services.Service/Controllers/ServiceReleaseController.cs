@@ -251,7 +251,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> SubmitService([FromRoute] Guid serviceId)
     {
-        await this.WithIamUserId(userId => _serviceReleaseBusinessLogic.SubmitServiceAsync(serviceId, userId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.SubmitServiceAsync(serviceId, identity)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -273,7 +273,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<NoContentResult> ApproveServiceRequest([FromRoute] Guid serviceId)
     {
-        await this.WithIamUserId(userId => _serviceReleaseBusinessLogic.ApproveServiceRequestAsync(serviceId, userId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.ApproveServiceRequestAsync(serviceId, identity)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -300,7 +300,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<NoContentResult> DeclineServiceRequest([FromRoute] Guid serviceId, [FromBody] OfferDeclineRequest data)
     {
-        await this.WithIamUserId(userId => _serviceReleaseBusinessLogic.DeclineServiceRequestAsync(serviceId, userId, data)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.DeclineServiceRequestAsync(serviceId, identity, data)).ConfigureAwait(false);
         return NoContent();
     }
 
