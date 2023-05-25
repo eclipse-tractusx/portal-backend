@@ -265,9 +265,10 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     os.Offer!.Name,
                     os.Offer.Provider,
                     os.OfferSubscriptionStatusId,
-                    os.Offer!.Documents
-                    .Where(document => document.DocumentTypeId == documentTypeId
-                        && document.DocumentStatusId == DocumentStatusId.LOCKED)
-                    .Select(document => document.Id).FirstOrDefault()))
+                    os.Offer.Documents
+                        .Where(document =>
+                            document.DocumentTypeId == documentTypeId &&
+                            document.DocumentStatusId == DocumentStatusId.LOCKED)
+                        .Select(document => document.Id).FirstOrDefault()))
             .SingleOrDefaultAsync();
 }

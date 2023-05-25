@@ -659,7 +659,7 @@ public class ServiceBusinessLogicTests
         var iamUserId = _fixture.Create<Guid>().ToString();
         var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(5).ToImmutableArray();
         var paginationResponse = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
-        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, iamUserId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE))
+        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._, A<OfferTypeId>._, A<DocumentTypeId>._))
             .Returns(paginationResponse);
 
         var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, Options.Create(new ServiceSettings()));
@@ -670,28 +670,8 @@ public class ServiceBusinessLogicTests
         // Assert
         result.Meta.NumberOfElements.Should().Be(5);
         result.Content.Should().HaveCount(5);
-        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, iamUserId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE)).MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task GetCompanySubscribedServiceSubscriptionStatusesForUserAsync_NullableProperties_ReturnsExpected()
-    {
-        // Arrange
-        var iamUserId = _fixture.Create<Guid>().ToString();
-        var paginationResult = (int skip, int take) => Task.FromResult((Pagination.Source<OfferSubscriptionStatusDetailData>?)null!);
-        var response = Pagination.CreateResponseAsync<OfferSubscriptionStatusDetailData>(0, 10, 15, paginationResult);
         A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, iamUserId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE))
-            .Returns(response);
-
-        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, Options.Create(new ServiceSettings()));
-
-        // Act
-        var result = await sut.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 10, iamUserId).ConfigureAwait(false);
-
-        // Assert
-        result.Meta.NumberOfElements.Should().Be(0);
-        result.Content.Should().BeEmpty();
-        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, iamUserId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE)).MustHaveHappenedOnceExactly();
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion

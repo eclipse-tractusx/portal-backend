@@ -170,7 +170,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             return offerCompanySubscriptionResponse == null
                 ? null
                 : new Pagination.Source<OfferCompanySubscriptionStatusResponse>(
-                    offerCompanySubscriptionResponse!.Count,
+                    offerCompanySubscriptionResponse.Count,
                     offerCompanySubscriptionResponse.Data.Select(item =>
                         new OfferCompanySubscriptionStatusResponse(
                             item.OfferId,

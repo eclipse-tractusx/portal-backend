@@ -512,7 +512,7 @@ public class AppBusinessLogicTests
         var iamUserId = _fixture.Create<Guid>().ToString();
         var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(5).ToImmutableArray();
         var pagination = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
-        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, iamUserId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE))
+        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._, A<OfferTypeId>._, A<DocumentTypeId>._))
             .Returns(pagination);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, _fixture.Create<IOptions<AppsSettings>>(), _mailingService);
@@ -523,27 +523,6 @@ public class AppBusinessLogicTests
         // Assert
         result.Meta.NumberOfElements.Should().Be(5);
         result.Content.Should().HaveCount(5);
-        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, iamUserId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE)).MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task GetCompanySubscribedAppSubscriptionStatusesForUserAsync_NullableProperties_ReturnsExpected()
-    {
-        // Arrange
-        var iamUserId = _fixture.Create<Guid>().ToString();
-        var paginationResult = (int skip, int take) => Task.FromResult((Pagination.Source<OfferSubscriptionStatusDetailData>?)null!);
-        var response = Pagination.CreateResponseAsync<OfferSubscriptionStatusDetailData>(0, 10, 15, paginationResult);
-        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, iamUserId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE))
-            .Returns(response);
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, _fixture.Create<IOptions<AppsSettings>>(), _mailingService);
-
-        // Act
-        var result = await sut.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(0, 10, iamUserId).ConfigureAwait(false);
-
-        // Assert
-        result.Meta.NumberOfElements.Should().Be(0);
-        result.Content.Should().BeEmpty();
         A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, iamUserId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE)).MustHaveHappenedOnceExactly();
     }
 

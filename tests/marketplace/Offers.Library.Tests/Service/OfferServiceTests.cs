@@ -2310,7 +2310,7 @@ public class OfferServiceTests
         // Arrange
         var iamUserId = _fixture.Create<Guid>().ToString();
         var data = _fixture.CreateMany<OfferSubscriptionStatusData>(5).ToImmutableArray();
-        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(iamUserId, offerTypeId, documentTypeId))
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(A<string>._, A<OfferTypeId>._, A<DocumentTypeId>._))
             .Returns((skip, take) => Task.FromResult(new Pagination.Source<OfferSubscriptionStatusData>(data.Length, data.Skip(skip).Take(take)))!);
 
         // Act
@@ -2325,6 +2325,26 @@ public class OfferServiceTests
             x => x.OfferId == data[3].OfferId && x.OfferName == data[3].OfferName && x.Provider == data[3].Provider && x.OfferSubscriptionStatusId == data[3].OfferSubscriptionStatusId && x.DocumentId == data[3].DocumentId,
             x => x.OfferId == data[4].OfferId && x.OfferName == data[4].OfferName && x.Provider == data[4].Provider && x.OfferSubscriptionStatusId == data[4].OfferSubscriptionStatusId && x.DocumentId == data[4].DocumentId
         );
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(iamUserId, offerTypeId, documentTypeId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE)]
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE)]
+    public async Task GetCompanySubscribedOfferSubscriptionStatusesForUserAsync_WithQueryNullResult_ReturnsExpected(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    {
+        // Arrange
+        var iamUserId = _fixture.Create<Guid>().ToString();
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(A<string>._, A<OfferTypeId>._, A<DocumentTypeId>._))
+            .Returns((skip, take) => Task.FromResult((Pagination.Source<OfferSubscriptionStatusData>?)null));
+
+        // Act
+        var result = await _sut.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, iamUserId, offerTypeId, documentTypeId).ConfigureAwait(false);
+
+        // Assert
+        result.Meta.NumberOfElements.Should().Be(0);
+        result.Content.Should().BeEmpty();
         A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(iamUserId, offerTypeId, documentTypeId))
             .MustHaveHappenedOnceExactly();
     }

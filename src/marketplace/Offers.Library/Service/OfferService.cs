@@ -916,6 +916,7 @@ public class OfferService : IOfferService
         }
         return roleData;
     }
+
     /// <inheritdoc/>
     public async Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
     {
@@ -927,7 +928,7 @@ public class OfferService : IOfferService
             return offerCompanySubscriptionResponse == null
                 ? null
                 : new Pagination.Source<OfferSubscriptionStatusDetailData>(
-                    offerCompanySubscriptionResponse!.Count,
+                    offerCompanySubscriptionResponse.Count,
                     offerCompanySubscriptionResponse.Data.Select(item =>
                         new OfferSubscriptionStatusDetailData(
                             item.OfferId,
