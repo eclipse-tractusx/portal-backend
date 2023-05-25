@@ -135,4 +135,13 @@ public interface IServiceBusinessLogic
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the details of the subscription</returns>
     Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid serviceId, Guid subscriptionId, string iamUserId);
+
+    /// <summary>
+    /// Retrieves subscription statuses of subscribed Service of the provided user's company.
+    /// </summary>
+    /// <param name="iamUserId">IAM ID of the user to retrieve Service subscription statuses for.</param>
+    /// <param name ="page">page</param>
+    /// <param name ="size">size</param>
+    /// <returns>Returns the details of the subscription status for Service user</returns>
+    Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId);
 }

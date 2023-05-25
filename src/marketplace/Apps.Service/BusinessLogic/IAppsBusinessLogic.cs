@@ -79,8 +79,10 @@ public interface IAppsBusinessLogic
     /// Retrieves subscription statuses of subscribed apps of the provided user's company.
     /// </summary>
     /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
-    /// <returns>Async enumerable of user's company's subscribed apps' statuses.</returns>
-    public IAsyncEnumerable<AppWithSubscriptionStatus> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId);
+    /// <param name ="page">page</param>
+    /// <param name ="size">size</param>
+    /// <returns>Returns the details of the subscription status for App user</returns>
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(int page, int size, string iamUserId);
 
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the provided user's company.

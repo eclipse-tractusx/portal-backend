@@ -21,6 +21,7 @@
 using Microsoft.AspNetCore.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
@@ -914,5 +915,28 @@ public class OfferService : IOfferService
             throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", userRoles.Select(clientRoles => $"client: {clientRoles.Key}, roles: [{string.Join(", ", clientRoles.Value)}]"))}");
         }
         return roleData;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    {
+        async Task<Pagination.Source<OfferSubscriptionStatusDetailData>?> GetCompanySubscribedOfferSubscriptionStatusesData(int skip, int take)
+        {
+            var offerCompanySubscriptionResponse = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+                .GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(iamUserId, offerTypeId, documentTypeId)(skip, take).ConfigureAwait(false);
+
+            return offerCompanySubscriptionResponse == null
+                ? null
+                : new Pagination.Source<OfferSubscriptionStatusDetailData>(
+                    offerCompanySubscriptionResponse.Count,
+                    offerCompanySubscriptionResponse.Data.Select(item =>
+                        new OfferSubscriptionStatusDetailData(
+                            item.OfferId,
+                            item.OfferName,
+                            item.Provider,
+                            item.OfferSubscriptionStatusId,
+                            item.DocumentId == Guid.Empty ? null : item.DocumentId)));
+        }
+        return await Pagination.CreateResponseAsync(page, size, 15, GetCompanySubscribedOfferSubscriptionStatusesData).ConfigureAwait(false);
     }
 }

@@ -650,6 +650,32 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
+    #region GetCompanySubscribedServiceSubscriptionStatusesForUserAsync
+
+    [Fact]
+    public async Task GetCompanySubscribedServiceSubscriptionStatusesForUserAsync_ReturnsExpected()
+    {
+        // Arrange
+        var iamUserId = _fixture.Create<Guid>().ToString();
+        var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(5).ToImmutableArray();
+        var paginationResponse = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._, A<OfferTypeId>._, A<DocumentTypeId>._))
+            .Returns(paginationResponse);
+
+        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, Options.Create(new ServiceSettings()));
+
+        // Act
+        var result = await sut.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 10, iamUserId).ConfigureAwait(false);
+
+        // Assert
+        result.Meta.NumberOfElements.Should().Be(5);
+        result.Content.Should().HaveCount(5);
+        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, iamUserId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupPagination(int count = 5)
