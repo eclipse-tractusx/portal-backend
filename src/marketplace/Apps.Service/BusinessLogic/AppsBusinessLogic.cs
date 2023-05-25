@@ -155,17 +155,9 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
-    public IAsyncEnumerable<AppWithSubscriptionStatus> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId) =>
-        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(iamUserId)
-            .Select(x => new AppWithSubscriptionStatus(
-                x.AppId,
-                x.OfferSubscriptionStatusId,
-                x.Name,
-                x.Provider,
-                x.Image == Guid.Empty ? null : x.Image
-            ));
+    /// <inheritdoc />
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(int page, int size, string iamUserId) =>
+        _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, iamUserId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE);
 
     /// <inheritdoc/>
     public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId)

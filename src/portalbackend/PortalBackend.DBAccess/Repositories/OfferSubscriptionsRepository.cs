@@ -47,23 +47,6 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
         _context.OfferSubscriptions.Add(new OfferSubscription(Guid.NewGuid(), offerId, companyId, offerSubscriptionStatusId, requesterId, creatorId)).Entity;
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatusId, string? Name, string Provider, Guid Image)> GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(string iamUserId) =>
-        _context.OfferSubscriptions.AsNoTracking()
-            .Where(subscription => subscription.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
-            .Select(s => new ValueTuple<Guid, OfferSubscriptionStatusId, string?, string, Guid>(
-                s.OfferId,
-                s.OfferSubscriptionStatusId,
-                s.Offer!.Name,
-                s.Offer.Provider,
-                s.Offer.Documents
-                    .Where(document =>
-                        document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE &&
-                        document.DocumentStatusId == DocumentStatusId.LOCKED)
-                    .Select(document => document.Id)
-                    .FirstOrDefault()))
-            .ToAsyncEnumerable();
-
-    /// <inheritdoc />
     public Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(string iamUserId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId statusId, Guid? offerId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
                 skip,
@@ -264,4 +247,27 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
         _context.Attach(appSubscriptionDetail);
         setParameters.Invoke(appSubscriptionDetail);
     }
+
+    /// <inheritdoc />
+    public Func<int, int, Task<Pagination.Source<OfferSubscriptionStatusData>?>> GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(string iamUserId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+                skip,
+                take,
+                _context.OfferSubscriptions
+                    .AsNoTracking()
+                    .Where(os =>
+                        os.Offer!.OfferTypeId == offerTypeId &&
+                        os.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
+                    .GroupBy(os => os.OfferId),
+                null,
+                os => new OfferSubscriptionStatusData(
+                    os.OfferId,
+                    os.Offer!.Name,
+                    os.Offer.Provider,
+                    os.OfferSubscriptionStatusId,
+                    os.Offer!.Documents
+                    .Where(document => document.DocumentTypeId == documentTypeId
+                        && document.DocumentStatusId == DocumentStatusId.LOCKED)
+                    .Select(document => document.Id).FirstOrDefault()))
+            .SingleOrDefaultAsync();
 }

@@ -197,35 +197,6 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.OfferName.Should().Be("Trace-X");
     }
 
-    [Fact]
-    public async Task GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync_WithExistingData_ReturnsExpectedResult()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync("502dabcf-01c7-47d9-a88e-0be4279097b5").ToListAsync().ConfigureAwait(false);
-
-        // Assert
-        result.Should().HaveCount(3).And.Satisfy(
-            x => x.AppId == new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea") &&
-                x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
-                x.Name == "SDE with EDC" &&
-                x.Provider == "Service Provider" &&
-                x.Image == Guid.Empty,
-            x => x.AppId == new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfae") &&
-                 x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
-                 x.Name == "Service Test 123" &&
-                 x.Provider == "Service Provider" &&
-                 x.Image == Guid.Empty,
-            x => x.AppId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
-                x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
-                x.Name == "Trace-X" &&
-                x.Provider == "Catena-X" &&
-                x.Image == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1")
-        );
-    }
-
     #endregion
 
     #region GetSubscriptionDetailForProviderAsync
@@ -406,6 +377,45 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         // Assert
         var changeTracker = context.ChangeTracker;
         changeTracker.HasChanges().Should().BeFalse();
+    }
+
+    #endregion
+
+    #region  GetOwnCompanySubscribedOfferSubscriptionStatuse
+
+    [Theory]
+    [InlineData("502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE)]
+    [InlineData("502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE)]
+    public async Task GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpected(string iamUserId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(iamUserId, offerTypeId, documentTypeId)(0, 15).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        if (offerTypeId == OfferTypeId.APP)
+        {
+            result!.Data.Should().HaveCount(1).And.Satisfy(
+                x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
+                    x.offerSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
+                    x.OfferName == "Trace-X" &&
+                    x.Provider == "Catena-X" &&
+                    x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1")
+            );
+        }
+        else
+        {
+            result!.Data.Should().HaveCount(1).And.Satisfy(
+                x => x.OfferId == new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea") &&
+                    x.offerSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
+                    x.OfferName == "SDE with EDC" &&
+                    x.Provider == "Service Provider" &&
+                    x.DocumentId == Guid.Empty
+            );
+        }
     }
 
     #endregion

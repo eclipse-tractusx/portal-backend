@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -2295,6 +2296,37 @@ public class OfferServiceTests
         result.Customer.Should().Be("Stark Industry");
         result.Contact.Should().HaveCount(2);
         result.TechnicalUserData.Should().HaveCount(5);
+    }
+
+    #endregion
+
+    #region  GetCompanySubscribedOfferSubscriptionStatusesForUser
+
+    [Theory]
+    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE)]
+    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE)]
+    public async Task GetCompanySubscribedOfferSubscriptionStatusesForUserAsync_ReturnsExpected(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    {
+        // Arrange
+        var iamUserId = _fixture.Create<Guid>().ToString();
+        var data = _fixture.CreateMany<OfferSubscriptionStatusData>(5).ToImmutableArray();
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(iamUserId, offerTypeId, documentTypeId))
+            .Returns((skip, take) => Task.FromResult(new Pagination.Source<OfferSubscriptionStatusData>(data.Length, data.Skip(skip).Take(take)))!);
+
+        // Act
+        var result = await _sut.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, iamUserId, offerTypeId, documentTypeId).ConfigureAwait(false);
+
+        // Assert
+        result.Meta.NumberOfElements.Should().Be(5);
+        result.Content.Should().HaveCount(5).And.Satisfy(
+            x => x.OfferId == data[0].OfferId && x.OfferName == data[0].OfferName && x.Provider == data[0].Provider && x.offerSubscriptionStatusId == data[0].offerSubscriptionStatusId && x.DocumentId == data[0].DocumentId,
+            x => x.OfferId == data[1].OfferId && x.OfferName == data[1].OfferName && x.Provider == data[1].Provider && x.offerSubscriptionStatusId == data[1].offerSubscriptionStatusId && x.DocumentId == data[1].DocumentId,
+            x => x.OfferId == data[2].OfferId && x.OfferName == data[2].OfferName && x.Provider == data[2].Provider && x.offerSubscriptionStatusId == data[2].offerSubscriptionStatusId && x.DocumentId == data[2].DocumentId,
+            x => x.OfferId == data[3].OfferId && x.OfferName == data[3].OfferName && x.Provider == data[3].Provider && x.offerSubscriptionStatusId == data[3].offerSubscriptionStatusId && x.DocumentId == data[3].DocumentId,
+            x => x.OfferId == data[4].OfferId && x.OfferName == data[4].OfferName && x.Provider == data[4].Provider && x.offerSubscriptionStatusId == data[4].offerSubscriptionStatusId && x.DocumentId == data[4].DocumentId
+        );
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(iamUserId, offerTypeId, documentTypeId))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion

@@ -256,4 +256,18 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber([FromRoute] Guid serviceId, [FromRoute] Guid subscriptionId) =>
         this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId, iamUserId));
+
+    /// <summary>
+    /// Retrieves subscription statuses of services.
+    /// </summary>
+    /// <remarks>Example: GET: /api/services/subscribed/subscription-status</remarks>
+    /// <response code="200">Returns list of applicable service subscription statuses.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
+    [HttpGet]
+    [Route("subscribed/subscription-status")]
+    [Authorize(Roles = "view_subscription")]
+    [ProducesResponseType(typeof(Pagination.Response<OfferSubscriptionStatusDetailData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
+        this.WithIamUserId(userId => _serviceBusinessLogic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(page, size, userId));
 }

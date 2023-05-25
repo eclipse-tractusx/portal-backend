@@ -32,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.Controllers;
@@ -277,4 +278,25 @@ public class ServiceControllerTest
         A.CallTo(() => _logic.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId, IamUserId)).MustHaveHappenedOnceExactly();
         result.Should().Be(data);
     }
+
+    #region GetCompanySubscribedServiceSubscriptionStatusesForCurrentUserAsync
+
+    [Fact]
+    public async Task GetCompanySubscribedServiceSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount()
+    {
+        //Arrange
+        var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(3).ToImmutableArray();
+        var pagination = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
+        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._))
+            .Returns(pagination);
+
+        //Act
+        var result = await this._controller.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync().ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 15, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Content.Should().HaveCount(3).And.ContainInOrder(data);
+    }
+
+    #endregion
 }

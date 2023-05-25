@@ -147,17 +147,18 @@ public class AppsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves subscription statuses of subscribed apps of the currently logged in user's company.
+    /// Retrieves subscription statuses of apps.
     /// </summary>
     /// <remarks>Example: GET: /api/apps/subscribed/subscription-status</remarks>
-    /// <response code="200">Returns list of applicable app subscription statuses.</response>
+    /// <response code="200">Returns list of applicable apps subscription statuses.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
     [Route("subscribed/subscription-status")]
     [Authorize(Roles = "view_subscription")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<(Guid AppId, OfferSubscriptionStatusId AppSubscriptionStatus)>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<AppWithSubscriptionStatus> GetCompanySubscribedAppSubscriptionStatusesForCurrentUserAsync() =>
-        this.WithIamUserId(userId => _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(userId));
-
+    [ProducesResponseType(typeof(Pagination.Response<OfferSubscriptionStatusDetailData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
+        this.WithIamUserId(userId => _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(page, size, userId));
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the currently logged in user's company.
     /// </summary>
