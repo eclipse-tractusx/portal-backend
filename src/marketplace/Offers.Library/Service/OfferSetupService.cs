@@ -113,8 +113,8 @@ public class OfferSetupService : IOfferSetupService
         ClientInfoData? clientInfoData = null;
         if (offerTypeId == OfferTypeId.APP)
         {
-            var (clientId, iamClientId, clientUrl) = await CreateClient(data.OfferUrl, offerDetails.OfferId, true, userRolesRepository).ConfigureAwait(false);
-            clientInfoData = new ClientInfoData(clientId, clientUrl);
+            var (clientId, iamClientId) = await CreateClient(data.OfferUrl, offerDetails.OfferId, true, userRolesRepository).ConfigureAwait(false);
+            clientInfoData = new ClientInfoData(clientId, data.OfferUrl);
             CreateAppInstance(data, offerDetails, iamClientId);
         }
 
@@ -179,7 +179,7 @@ public class OfferSetupService : IOfferSetupService
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var (_, iamClientId, _) = await CreateClient(instanceUrl, offerId, false, userRolesRepository);
+        var (_, iamClientId) = await CreateClient(instanceUrl, offerId, false, userRolesRepository);
         _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstance(offerId, iamClientId);
     }
 
@@ -272,7 +272,7 @@ public class OfferSetupService : IOfferSetupService
         return offerDetails;
     }
 
-    private async Task<(string clientId, Guid iamClientId, string clientUrl)> CreateClient(string offerUrl, Guid offerId, bool enabled, IUserRolesRepository userRolesRepository)
+    private async Task<(string clientId, Guid iamClientId)> CreateClient(string offerUrl, Guid offerId, bool enabled, IUserRolesRepository userRolesRepository)
     {
         var userRoles = await userRolesRepository.GetUserRolesForOfferIdAsync(offerId).ToListAsync().ConfigureAwait(false);
         offerUrl.EnsureValidHttpUrl(() => nameof(offerUrl));
@@ -281,7 +281,7 @@ public class OfferSetupService : IOfferSetupService
         var clientId = await _provisioningManager.SetupClientAsync(redirectUrl, offerUrl, userRoles, enabled)
             .ConfigureAwait(false);
         var iamClient = _portalRepositories.GetInstance<IClientRepository>().CreateClient(clientId);
-        return (clientId, iamClient.Id, offerUrl);
+        return (clientId, iamClient.Id);
     }
 
     private void CreateAppInstance(OfferAutoSetupData data, OfferSubscriptionTransferData offerDetails, Guid iamClientId)
