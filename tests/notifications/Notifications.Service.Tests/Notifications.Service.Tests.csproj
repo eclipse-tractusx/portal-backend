@@ -50,6 +50,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\..\src\notifications\Notifications.Service\Notifications.Service.csproj" />
       <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+      <ProjectReference Include="..\..\registration\Registration.Service.Tests\Registration.Service.Tests.csproj" />
       <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
     </ItemGroup>
 

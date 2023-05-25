@@ -251,13 +251,13 @@ public class AuthFlow
         return token;
     }
 
-    public async Task<string> GetAccessToken()
+    public async Task<string> GetAccessToken(string username, string password)
     {
         var companies = StartCentralIdp();
         var sharedIdpCompanyUrl = await GetCompanySharedIdpUrl(companies);
         var authUrlFromSharedIdp = await GetAuthUrlFromSharedIdp(sharedIdpCompanyUrl);
         var authenticateInCentralIdpUrl =
-            await AuthenticateInSharedIdp(authUrlFromSharedIdp, _secrets.OperatorUserName, _secrets.OperatorUserPassword);
+            await AuthenticateInSharedIdp(authUrlFromSharedIdp, username, password);
         var authCode = await GetAuthCodeFromCentralIdp(authenticateInCentralIdpUrl);
         return await GetTokenWithAuthCode(authCode);
     }

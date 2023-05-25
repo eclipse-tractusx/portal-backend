@@ -8,6 +8,7 @@ using static RestAssured.Dsl;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Expressions;
+using Registration.Service.Tests.RestAssured;
 
 namespace Notifications.Service.Tests.RestAssured;
 
@@ -21,22 +22,19 @@ public class NotificationEndpointTests
     private readonly string _regEndPoint = "/api/registration";
     private static string _companyUserId;
     private static readonly string _userToken;
+    private const string _techCompanyName = "TestAutomation";
     private static string _username;
     private static string _notificationId = "";
     private const string _offerId = "9b957704-3505-4445-822c-d7ef80f27fcd";
-    private static string _techUserToken;
+    private static readonly Secrets _secrets = new ();
+    private static string _techUserToken; 
 
-    public NotificationEndpointTests()
-    {
-        //_techUserToken = "TechUserToken";
-        //_techUserToken = GetTechUserToken();
-        _companyUserId = GetCompanyUserId();
-    }
-    
     //PUT: api/administration/user/owncompany/users/{companyUserId}/coreoffers/{offerId}/roles
     [Fact]
-    public void ModifyCoreUserRoles_AssignRole_ReturnsExpectedResult()
+    public async Task ModifyCoreUserRoles_AssignRole_ReturnsExpectedResult()
     {
+        _techUserToken = await new AuthFlow(_techCompanyName).GetAccessToken(_secrets.TechUserName, _secrets.TechUserPassword);
+        _companyUserId = GetCompanyUserId();
         string newRole = "App Manager";
         List<string> assignedRoles = GetUserAssignedRoles();
         assignedRoles.Add("App Manager");

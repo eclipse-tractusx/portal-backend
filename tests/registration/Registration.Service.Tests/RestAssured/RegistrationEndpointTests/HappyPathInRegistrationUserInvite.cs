@@ -1,6 +1,7 @@
 ﻿using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using PasswordGenerator;
 using Xunit;
 using static RestAssured.Dsl;
@@ -22,6 +23,7 @@ public class HappyPathInRegistrationUserInvite
     private static string _userCompanyName = "Test-Catena-X-C5";
     private static string[] _userEmailAddress;
     private static RegistrationEndpointHelper _regEndpointHelper;
+    private static readonly Secrets _secrets = new ();
 
     // POST api/administration/invitation
 
@@ -36,7 +38,7 @@ public class HappyPathInRegistrationUserInvite
         
         Thread.Sleep(20000);
 
-        _operatorToken = await new AuthFlow(_operatorCompanyName).GetAccessToken();
+        _operatorToken = await new AuthFlow(_operatorCompanyName).GetAccessToken(_secrets.OperatorUserName, _secrets.OperatorUserPassword);
 
         Given()
             .RelaxedHttpsValidation()

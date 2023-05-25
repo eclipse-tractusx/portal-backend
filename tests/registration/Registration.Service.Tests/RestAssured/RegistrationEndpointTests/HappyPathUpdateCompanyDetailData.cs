@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using PasswordGenerator;
 using Xunit;
 using static RestAssured.Dsl;
@@ -25,6 +26,7 @@ public class HappyPathUpdateCompanyDetailData
     private static string[] _userEmailAddress;
     private static RegistrationEndpointHelper _regEndpointHelper;
     private TestDataHelper _testDataHelper = new TestDataHelper();
+    private static readonly Secrets _secrets = new ();
 
     JsonSerializerOptions _options = new JsonSerializerOptions
     {
@@ -45,7 +47,7 @@ public class HappyPathUpdateCompanyDetailData
         
         Thread.Sleep(20000);
         
-        _operatorToken = await new AuthFlow(_operatorCompanyName).GetAccessToken();
+        _operatorToken = await new AuthFlow(_operatorCompanyName).GetAccessToken(_secrets.OperatorUserName, _secrets.OperatorUserPassword);
         
         Given()
             .RelaxedHttpsValidation()

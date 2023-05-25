@@ -5,6 +5,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using PasswordGenerator;
 using Xunit;
 using static RestAssured.Dsl;
@@ -27,6 +28,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     private static string[] _userEmailAddress;
     private static RegistrationEndpointHelper _regEndpointHelper;
     private TestDataHelper _testDataHelper = new TestDataHelper();
+    private readonly Secrets _secrets = new ();
     
     JsonSerializerOptions _options = new JsonSerializerOptions
     {
@@ -49,7 +51,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
         
         Thread.Sleep(20000);
         
-        _operatorToken = await new AuthFlow(_operatorCompanyName).GetAccessToken();
+        _operatorToken = await new AuthFlow(_operatorCompanyName).GetAccessToken(_secrets.OperatorUserName, _secrets.OperatorUserPassword);
         
         Given()
             .RelaxedHttpsValidation()
