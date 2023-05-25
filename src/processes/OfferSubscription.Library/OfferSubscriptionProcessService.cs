@@ -37,11 +37,13 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
 
     async Task<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData> IOfferSubscriptionProcessService.VerifySubscriptionAndProcessSteps(Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId>? processStepTypeIds, bool mustBePending)
     {
-        var allProcessStepTypeIds = processStepTypeIds == null
-            ? new[] { processStepTypeId }
-            : processStepTypeIds.Contains(processStepTypeId)
-                ? processStepTypeIds
-                : processStepTypeIds.Append(processStepTypeId);
+        var allProcessStepTypeIds = processStepTypeIds switch
+        {
+            null => new[] { processStepTypeId },
+            _ => processStepTypeIds.Contains(processStepTypeId)
+                    ? processStepTypeIds
+                    : processStepTypeIds.Append(processStepTypeId)
+        };
 
         var processData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetProcessStepData(offerSubscriptionId, allProcessStepTypeIds, mustBePending).ConfigureAwait(false);
