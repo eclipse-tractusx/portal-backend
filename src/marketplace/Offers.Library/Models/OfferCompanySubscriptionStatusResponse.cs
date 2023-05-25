@@ -26,13 +26,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 /// View model of an Offer Company Subscription.
 /// </summary>
 /// <param name="OfferId"></param>
-/// <param name="ServiceName"></param>
+/// <param name="OfferName"></param>
 /// <param name="CompanySubscriptionStatuses"></param>
 /// <param name="Image"></param>
 /// <returns></returns>
 public record OfferCompanySubscriptionStatusResponse(
     Guid OfferId,
-    string? ServiceName,
+    string? OfferName,
     IEnumerable<CompanySubscriptionStatusData> CompanySubscriptionStatuses,
     Guid? Image
 );
