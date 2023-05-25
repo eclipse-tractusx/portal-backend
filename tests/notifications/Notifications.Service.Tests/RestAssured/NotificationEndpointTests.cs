@@ -28,6 +28,7 @@ public class NotificationEndpointTests
     private const string _offerId = "9b957704-3505-4445-822c-d7ef80f27fcd";
     private static readonly Secrets _secrets = new ();
     private static string _techUserToken; 
+    private const string _testDataDirectory = "..\\..\\..\\..\\..\\shared\\Tests.Shared\\RestAssured\\TestData";
 
     //PUT: api/administration/user/owncompany/users/{companyUserId}/coreoffers/{offerId}/roles
     [Fact]
@@ -302,6 +303,16 @@ public class NotificationEndpointTests
             var notificationContent = DeserializeData<NotificationContent>(data.First().Content);
             if (data.First().TypeId.ToString() == notificationTypeId && notificationContent.username == username && notificationContent.removedRoles == removedRoles && notificationContent.addedRoles == addedRoles) return true;
             return false;
+    }
+    
+    [Fact]
+    public List<string> GetTestData()
+    {
+        var filePath = Path.Combine(_testDataDirectory, "HappyPathModifyCoreUserRoles.json");
+        var jsonData = File.ReadAllText(filePath);
+        var testData = JsonSerializer.Deserialize<List<string>>(jsonData);
+
+        return testData;
     }
     
 }
