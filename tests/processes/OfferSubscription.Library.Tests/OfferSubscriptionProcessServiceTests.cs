@@ -68,20 +68,21 @@ public class OfferSubscriptionProcessServiceTests
 
         IEnumerable<ProcessStep>? processSteps = null;
 
-        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._, A<bool>._))
-            .ReturnsLazily((Guid id, IEnumerable<ProcessStepTypeId> processStepTypes, bool _) =>
+        A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
+            .Returns(new ValueTuple<bool, bool>(true, false));
+        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .ReturnsLazily((Guid id, IEnumerable<ProcessStepTypeId> processStepTypes) =>
             {
                 processSteps = processStepTypes.Select(typeId => new ProcessStep(Guid.NewGuid(), typeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)).ToImmutableArray();
                 return subscriptionId == id ?
                     new VerifyOfferSubscriptionProcessData(
-                    false,
                     process,
                     processSteps) :
                     null;
             });
 
         // Act
-        var result = await _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds).ConfigureAwait(false);
+        var result = await _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -103,10 +104,12 @@ public class OfferSubscriptionProcessServiceTests
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(Enum.GetValues<ProcessStepTypeId>().Length - 2).ToImmutableArray();
 
-        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._, A<bool>._))
+        A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
+            .Returns(new ValueTuple<bool, bool>(false, false));
+        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns((VerifyOfferSubscriptionProcessData?)null);
 
-        var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds);
+        var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Act
         var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
@@ -126,10 +129,12 @@ public class OfferSubscriptionProcessServiceTests
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(Enum.GetValues<ProcessStepTypeId>().Length - 2).ToImmutableArray();
 
-        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._, A<bool>._))
-            .Returns(new VerifyOfferSubscriptionProcessData(true, process, null));
+        A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
+            .Returns(new ValueTuple<bool, bool>(true, true));
+        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new VerifyOfferSubscriptionProcessData(process, null));
 
-        var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds);
+        var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -147,10 +152,12 @@ public class OfferSubscriptionProcessServiceTests
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(Enum.GetValues<ProcessStepTypeId>().Length - 2).ToImmutableArray();
 
-        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._, A<bool>._))
-            .Returns(new VerifyOfferSubscriptionProcessData(false, null, null));
+        A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
+            .Returns(new ValueTuple<bool, bool>(true, false));
+        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new VerifyOfferSubscriptionProcessData(null, null));
 
-        var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds);
+        var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -170,10 +177,12 @@ public class OfferSubscriptionProcessServiceTests
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(Enum.GetValues<ProcessStepTypeId>().Length - 2).ToImmutableArray();
 
-        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._, A<bool>._))
-            .Returns(new VerifyOfferSubscriptionProcessData(false, process, null));
+        A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
+            .Returns(new ValueTuple<bool, bool>(true, false));
+        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new VerifyOfferSubscriptionProcessData(process, null));
 
-        var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds);
+        var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -192,10 +201,12 @@ public class OfferSubscriptionProcessServiceTests
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         IEnumerable<ProcessStepTypeId>? processStepTypeIds = null;
 
-        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._, A<bool>._))
-            .Returns(new VerifyOfferSubscriptionProcessData(false, process, null));
+        A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
+            .Returns(new ValueTuple<bool, bool>(true, false));
+        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new VerifyOfferSubscriptionProcessData(process, null));
 
-        var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds);
+        var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Act
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
@@ -215,10 +226,12 @@ public class OfferSubscriptionProcessServiceTests
 
         var processSteps = new ProcessStep[] { new(Guid.NewGuid(), processStepTypeId, ProcessStepStatusId.SKIPPED, process.Id, DateTimeOffset.UtcNow) };
 
-        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._, A<bool>._))
-            .Returns(new VerifyOfferSubscriptionProcessData(false, process, processSteps));
+        A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
+            .Returns(new ValueTuple<bool, bool>(true, false));
+        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new VerifyOfferSubscriptionProcessData(process, processSteps));
 
-        var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds);
+        var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Act
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
@@ -242,10 +255,12 @@ public class OfferSubscriptionProcessServiceTests
             new (Guid.NewGuid(), processStepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)
         };
 
-        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._, A<bool>._))
-            .Returns(new VerifyOfferSubscriptionProcessData(false, process, processSteps));
+        A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
+            .Returns(new ValueTuple<bool, bool>(true, false));
+        A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new VerifyOfferSubscriptionProcessData(process, processSteps));
 
-        var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds);
+        var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);

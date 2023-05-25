@@ -318,6 +318,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     /// <inheritdoc />
     public Task<SubscriptionActivationData?> GetSubscriptionActivationDataByIdAsync(Guid offerSubscriptionId) =>
         _context.OfferSubscriptions
+            .AsSplitQuery()
             .Where(x => x.Id == offerSubscriptionId)
             .Select(x => new SubscriptionActivationData(
                 x.OfferId,
@@ -336,26 +337,29 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             ))
             .SingleOrDefaultAsync();
 
-    /// <inheritdoc />
-    public Task<VerifyOfferSubscriptionProcessData?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds, bool mustBePending) =>
+    public Task<(bool IsValidSubscriptionId, bool IsActive)> IsActiveOfferSubscription(Guid offerSubscriptionId) =>
         _context.OfferSubscriptions
             .AsNoTracking()
-            .AsSplitQuery()
+            .Where(os => os.Id == offerSubscriptionId)
+            .Select(os => new ValueTuple<bool, bool>(
+                true,
+                os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE
+            ))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<VerifyOfferSubscriptionProcessData?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+        _context.OfferSubscriptions
+            .AsNoTracking()
             .Where(os => os.Id == offerSubscriptionId)
             .Select(os => new
             {
-                Subscription = os,
                 IsActive = os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE,
                 os.Process,
             })
             .Select(x => new VerifyOfferSubscriptionProcessData(
-                x.IsActive,
-                mustBePending && x.IsActive
-                    ? null
-                    : x.Process,
-                mustBePending && x.IsActive
-                    ? null
-                    : x.Process!.ProcessSteps
+                    x.Process,
+                    x.Process!.ProcessSteps
                         .Where(step =>
                             processStepTypeIds.Contains(step.ProcessStepTypeId) &&
                             step.ProcessStepStatusId == ProcessStepStatusId.TODO)))
@@ -389,10 +393,10 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(IEnumerable<(Guid TechnicalUserId, string TechnicalClientId)> ServiceAccounts, string ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId) =>
+    public Task<(IEnumerable<(Guid TechnicalUserId, string TechnicalClientId)> ServiceAccounts, string? ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId) =>
         _context.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
-            .Select(x => new ValueTuple<IEnumerable<(Guid, string)>, string, string?, OfferSubscriptionStatusId>(
+            .Select(x => new ValueTuple<IEnumerable<(Guid, string)>, string?, string?, OfferSubscriptionStatusId>(
                     x.CompanyServiceAccounts.Select(sa => new ValueTuple<Guid, string>(sa.Id, sa.IamServiceAccount!.ClientId)),
                     x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId,
                     x.Offer!.ProviderCompany!.ProviderCompanyDetail!.AutoSetupCallbackUrl,
@@ -412,7 +416,6 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     public IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId) =>
         _context.OfferSubscriptions
             .AsNoTracking()
-            .AsSplitQuery()
             .Where(os => os.Id == offerSubscriptionId)
             .SelectMany(x => x.Process!.ProcessSteps)
             .Select(x => new ProcessStepData(

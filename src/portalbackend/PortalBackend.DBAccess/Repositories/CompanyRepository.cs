@@ -154,10 +154,9 @@ public class CompanyRepository : ICompanyRepository
     /// <inheritdoc />
     ProviderCompanyDetail ICompanyRepository.CreateProviderCompanyDetail(Guid companyId, string dataUrl, Action<ProviderCompanyDetail>? setOptionalParameter)
     {
-        var entity = _context.ProviderCompanyDetails
-            .Add(new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow)).Entity;
-        setOptionalParameter?.Invoke(entity);
-        return entity;
+        var providerCompanyDetail = new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow);
+        setOptionalParameter?.Invoke(providerCompanyDetail);
+        return _context.ProviderCompanyDetails.Add(providerCompanyDetail).Entity;
     }
 
     /// <inheritdoc />

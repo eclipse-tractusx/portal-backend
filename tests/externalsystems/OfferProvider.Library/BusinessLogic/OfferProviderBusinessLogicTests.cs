@@ -212,12 +212,28 @@ public class OfferProviderBusinessLogicTests
     }
 
     [Fact]
+    public async Task TriggerProviderCallback_WithClientIdNotSet_Throws()
+    {
+        // Arrange
+        var fakeId = Guid.NewGuid();
+        A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<(Guid, string)>, string?, string?, OfferSubscriptionStatusId>(new List<(Guid, string)>(), null, null, OfferSubscriptionStatusId.ACTIVE));
+        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be("Client should be set");
+    }
+
+    [Fact]
     public async Task TriggerProviderCallback_WithCallbackUrlNotSet_Throws()
     {
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<(Guid, string)>, string, string?, OfferSubscriptionStatusId>(new List<(Guid, string)>(), string.Empty, null, OfferSubscriptionStatusId.ACTIVE));
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<(Guid, string)>, string?, string?, OfferSubscriptionStatusId>(new List<(Guid, string)>(), "cl1", null, OfferSubscriptionStatusId.ACTIVE));
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
 
         // Act
@@ -233,7 +249,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<(Guid, string)>, string, string?, OfferSubscriptionStatusId>(new List<(Guid, string)>(), string.Empty, "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<(Guid, string)>, string?, string?, OfferSubscriptionStatusId>(new List<(Guid, string)>(), "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
 
         // Act
@@ -254,7 +270,7 @@ public class OfferProviderBusinessLogicTests
             new(Guid.NewGuid(), "sa2")
         };
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<(Guid, string)>, string, string?, OfferSubscriptionStatusId>(serviceAccounts, string.Empty, "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
+            .ReturnsLazily(() => new ValueTuple<IEnumerable<(Guid, string)>, string?, string?, OfferSubscriptionStatusId>(serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
 
         // Act

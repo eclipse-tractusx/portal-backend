@@ -482,17 +482,14 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc />
     public Task SetInstanceType(Guid appId, AppInstanceSetupData data, string iamUserId)
     {
-        switch (data.IsSingleInstance)
+        if (data.IsSingleInstance)
         {
-            case true when !string.IsNullOrWhiteSpace(data.InstanceUrl):
-                data.InstanceUrl!.EnsureValidHttpUrl(() => nameof(data.InstanceUrl));
-                break;
-            case true when string.IsNullOrWhiteSpace(data.InstanceUrl):
-                throw new ControllerArgumentException("InstanceUrl must be set for a single instance app",
-                    nameof(data.InstanceUrl));
-            case false when !string.IsNullOrWhiteSpace(data.InstanceUrl):
-                throw new ControllerArgumentException("Multi instance app must not have a instance url set",
-                    nameof(data.InstanceUrl));
+            data.InstanceUrl.EnsureValidHttpUrl(() => nameof(data.InstanceUrl));
+        }
+        else if (!string.IsNullOrWhiteSpace(data.InstanceUrl))
+        {
+            throw new ControllerArgumentException("Multi instance app must not have a instance url set",
+                nameof(data.InstanceUrl));
         }
 
         return SetInstanceTypeInternal(appId, data, iamUserId);

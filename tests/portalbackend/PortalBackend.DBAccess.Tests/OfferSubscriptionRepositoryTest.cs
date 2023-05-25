@@ -376,14 +376,13 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.GetProcessStepData(new Guid("e8886159-9258-44a5-88d8-f5735a197a09"), new[]
-            {
-                ProcessStepTypeId.START_AUTOSETUP
-            }, false).ConfigureAwait(false);
+        {
+            ProcessStepTypeId.START_AUTOSETUP
+        }).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result!.IsActive.Should().BeFalse();
-        result.ProcessSteps.Should().HaveCount(1);
+        result!.ProcessSteps.Should().HaveCount(1);
     }
 
     [Fact]
@@ -393,10 +392,58 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProcessStepData(Guid.NewGuid(), new[] { ProcessStepTypeId.START_AUTOSETUP }, false).ConfigureAwait(false);
+        var result = await sut.GetProcessStepData(Guid.NewGuid(), new[] { ProcessStepTypeId.START_AUTOSETUP }).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
+    }
+
+    #endregion
+
+    #region IsActiveOfferSubscription
+
+    [Fact]
+    public async Task IsActiveOfferSubscription_WithValidData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.IsActiveOfferSubscription(new Guid("e8886159-9258-44a5-88d8-f5735a197a09")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.IsValidSubscriptionId.Should().BeTrue();
+        result.IsActive.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task IsActiveOfferSubscription_WithActive_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.IsActiveOfferSubscription(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.IsValidSubscriptionId.Should().BeTrue();
+        result.IsActive.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task IsActiveOfferSubscription_WithNotExistingId_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.IsActiveOfferSubscription(Guid.NewGuid()).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.IsValidSubscriptionId.Should().BeFalse();
     }
 
     #endregion

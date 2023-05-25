@@ -66,10 +66,10 @@ public class SubscriptionConfigurationBusinessLogicTests
         _sut = new SubscriptionConfigurationBusinessLogic(_offerSubscriptionProcessService, _portalRepositories);
     }
 
-    #region GetProcessStepData
+    #region GetProcessStepsForSubscription
 
     [Fact]
-    public async Task GetProcessStepData_WithValidInput_ReturnsExpected()
+    public async Task GetProcessStepsForSubscription_WithValidInput_ReturnsExpected()
     {
         // Arrange
         var list = _fixture.CreateMany<ProcessStepData>(5);
@@ -88,45 +88,88 @@ public class SubscriptionConfigurationBusinessLogicTests
 
     #region GetProcessStepData
 
-    [Theory]
-    [InlineData(ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepTypeId.TRIGGER_PROVIDER)]
-    [InlineData(ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION)]
-    [InlineData(ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION)]
-    [InlineData(ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK, false)]
-    public async Task TriggerProcessStep_WithValidInput_ReturnsExpected(ProcessStepTypeId retriggerStep, ProcessStepTypeId nextStep, bool mustBePending = true)
+    [Fact]
+    public async Task RetriggerProvider_WithValidInput_ReturnsExpected()
     {
         // Arrange
         var processStepId = Guid.NewGuid();
         var processId = Guid.NewGuid();
-        var processStep = new ProcessStep(processStepId, retriggerStep, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
-        A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(OfferSubscriptionId, retriggerStep, null, mustBePending))
+        var processStep = new ProcessStep(processStepId, ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
+        A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER, null, true))
             .ReturnsLazily(() => new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(OfferSubscriptionId, _fixture.Create<Process>(), processStepId, Enumerable.Repeat(processStep, 1)));
 
         // Act
-        await _sut.TriggerProcessStep(OfferSubscriptionId, retriggerStep, mustBePending);
+        await _sut.RetriggerProvider(OfferSubscriptionId);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
                 A<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData>._,
-                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == nextStep)))
+                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.TRIGGER_PROVIDER)))
             .MustHaveHappenedOnceExactly();
     }
 
     [Fact]
-    public async Task TriggerProcessStep_WithInvalidStep_ThrowsConflictException()
+    public async Task RetriggerCreateClient_WithValidInput_ReturnsExpected()
     {
+        // Arrange
+        var processStepId = Guid.NewGuid();
+        var processId = Guid.NewGuid();
+        var processStep = new ProcessStep(processStepId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
+        A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, null, true))
+            .ReturnsLazily(() => new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(OfferSubscriptionId, _fixture.Create<Process>(), processStepId, Enumerable.Repeat(processStep, 1)));
+
         // Act
-        async Task Act() => await _sut.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.START_AUTOSETUP, false);
+        await _sut.RetriggerCreateClient(OfferSubscriptionId);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Step {ProcessStepTypeId.START_AUTOSETUP} is not retriggerable");
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
                 A<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData>._,
-                A<IEnumerable<ProcessStepTypeId>>._))
-            .MustNotHaveHappened();
+                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION)))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerCreateTechnicalUser_WithValidInput_ReturnsExpected()
+    {
+        // Arrange
+        var processStepId = Guid.NewGuid();
+        var processId = Guid.NewGuid();
+        var processStep = new ProcessStep(processStepId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
+        A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, null, true))
+            .ReturnsLazily(() => new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(OfferSubscriptionId, _fixture.Create<Process>(), processStepId, Enumerable.Repeat(processStep, 1)));
+
+        // Act
+        await _sut.RetriggerCreateTechnicalUser(OfferSubscriptionId);
+
+        // Assert
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
+                A<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData>._,
+                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION)))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerProviderCallback_WithValidInput_ReturnsExpected()
+    {
+        // Arrange
+        var processStepId = Guid.NewGuid();
+        var processId = Guid.NewGuid();
+        var processStep = new ProcessStep(processStepId, ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
+        A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, null, false))
+            .ReturnsLazily(() => new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(OfferSubscriptionId, _fixture.Create<Process>(), processStepId, Enumerable.Repeat(processStep, 1)));
+
+        // Act
+        await _sut.RetriggerProviderCallback(OfferSubscriptionId);
+
+        // Assert
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
+                A<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData>._,
+                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK)))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion

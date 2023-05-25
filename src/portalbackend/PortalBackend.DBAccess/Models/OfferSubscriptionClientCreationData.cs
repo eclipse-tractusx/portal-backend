@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 public record OfferSubscriptionClientCreationData(
     Guid OfferId,
     OfferTypeId OfferType,
-    string OfferUrl,
+    string? OfferUrl,
     bool IsTechnicalUserNeeded
 );
 

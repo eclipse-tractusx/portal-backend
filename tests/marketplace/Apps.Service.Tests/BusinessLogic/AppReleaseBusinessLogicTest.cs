@@ -821,7 +821,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("InstanceUrl must be set for a single instance app (Parameter 'InstanceUrl')");
+        ex.Message.Should().Be("InstanceUrl must be set (Parameter 'InstanceUrl')");
     }
 
     [Fact]

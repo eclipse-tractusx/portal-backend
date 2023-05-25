@@ -65,6 +65,11 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             throw new NotFoundException($"OfferSubscription {offerSubscriptionId} does not exist");
         }
 
+        if (string.IsNullOrWhiteSpace(data.CompanyInformationData.Country))
+        {
+            throw new ConflictException("Country should be set for the company");
+        }
+
         var triggerProvider = !string.IsNullOrWhiteSpace(data.AutoSetupUrl) && !data.IsSingleInstance;
         if (triggerProvider)
         {
@@ -164,6 +169,11 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         if (data.Status != OfferSubscriptionStatusId.ACTIVE)
         {
             throw new ConflictException("offer subscription should be active");
+        }
+
+        if (string.IsNullOrWhiteSpace(data.ClientId))
+        {
+            throw new ConflictException("Client should be set");
         }
 
         if (string.IsNullOrWhiteSpace(data.CallbackUrl))

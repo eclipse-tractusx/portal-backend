@@ -124,7 +124,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerProvider([FromRoute] Guid offerSubscriptionId)
     {
-        await _businessLogic.TriggerProcessStep(offerSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER).ConfigureAwait(false);
+        await _businessLogic.RetriggerProvider(offerSubscriptionId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -145,7 +145,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerCreateClient([FromRoute] Guid offerSubscriptionId)
     {
-        await _businessLogic.TriggerProcessStep(offerSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION).ConfigureAwait(false);
+        await _businessLogic.RetriggerCreateClient(offerSubscriptionId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -166,7 +166,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerCreateTechnicalUser([FromRoute] Guid offerSubscriptionId)
     {
-        await _businessLogic.TriggerProcessStep(offerSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION).ConfigureAwait(false);
+        await _businessLogic.RetriggerCreateTechnicalUser(offerSubscriptionId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -187,7 +187,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerProviderCallback([FromRoute] Guid offerSubscriptionId)
     {
-        await _businessLogic.TriggerProcessStep(offerSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, false).ConfigureAwait(false);
+        await _businessLogic.RetriggerProviderCallback(offerSubscriptionId).ConfigureAwait(false);
         return NoContent();
     }
 }

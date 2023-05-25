@@ -27,29 +27,47 @@ public static class UrlHelper
 {
     private static readonly string[] ValidUriSchemes = { "http", "https" };
 
-    public static void EnsureValidHttpUrl(this string url, Func<string>? getUrlParameterName)
+    public static void EnsureValidHttpsUrl(this string? url, Func<string>? getUrlParameterName)
     {
+        EnsureValidUrlInternal(url, getUrlParameterName, Enumerable.Repeat("https", 1));
+    }
+
+    public static void EnsureValidHttpUrl(this string? url, Func<string>? getUrlParameterName)
+    {
+        EnsureValidUrlInternal(url, getUrlParameterName, ValidUriSchemes);
+    }
+
+    private static void EnsureValidUrlInternal(string? url, Func<string>? getUrlParameterName, IEnumerable<string> validUriSchemes)
+    {
+        var paramName = getUrlParameterName?.Invoke() ?? "";
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new ControllerArgumentException($"{paramName} must be set", paramName);
+        }
+
         try
         {
             var uri = new Uri(url);
             if (!uri.IsAbsoluteUri)
             {
-                throw new ControllerArgumentException($"url {url} must be an absolute Url", getUrlParameterName?.Invoke() ?? "");
+                throw new ControllerArgumentException($"url {url} must be an absolute Url",
+                    paramName);
             }
 
-            if (!ValidUriSchemes.Contains(uri.Scheme))
+            if (!validUriSchemes.Contains(uri.Scheme))
             {
-                throw new ControllerArgumentException($"url {url} must either start with http:// or https://", getUrlParameterName?.Invoke() ?? "");
+                throw new ControllerArgumentException($"url {url} must either start with http:// or https://",
+                    paramName);
             }
 
             if (!uri.IsWellFormedOriginalString())
             {
-                throw new ControllerArgumentException($"url {url} is not wellformed", getUrlParameterName?.Invoke() ?? "");
+                throw new ControllerArgumentException($"url {url} is not wellformed", paramName);
             }
         }
         catch (UriFormatException ufe)
         {
-            throw new ControllerArgumentException($"url {url} cannot be parsed: {ufe.Message}", getUrlParameterName?.Invoke() ?? "");
+            throw new ControllerArgumentException($"url {url} cannot be parsed: {ufe.Message}", paramName);
         }
     }
 

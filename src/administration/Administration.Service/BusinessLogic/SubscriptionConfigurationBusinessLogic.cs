@@ -61,8 +61,8 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
     /// <inheritdoc />
     public Task SetProviderCompanyDetailsAsync(ProviderDetailData data, string iamUserId)
     {
-        data.Url.EnsureValidHttpUrl(() => nameof(data.Url));
-        data.CallbackUrl?.EnsureValidHttpUrl(() => nameof(data.CallbackUrl));
+        data.Url.EnsureValidHttpsUrl(() => nameof(data.Url));
+        data.CallbackUrl?.EnsureValidHttpsUrl(() => nameof(data.CallbackUrl));
 
         if (!data.Url.StartsWith("https://") || data.Url.Length > 100)
         {
@@ -111,10 +111,26 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
     }
 
     /// <inheritdoc />
-    async Task ISubscriptionConfigurationBusinessLogic.TriggerProcessStep(Guid offerSubscriptionId, ProcessStepTypeId stepToTrigger, bool mustBePending)
+    public Task RetriggerProvider(Guid offerSubscriptionId) =>
+        this.TriggerProcessStep(offerSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER, true);
+
+    /// <inheritdoc />
+    public Task RetriggerCreateClient(Guid offerSubscriptionId) =>
+        this.TriggerProcessStep(offerSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, true);
+
+    /// <inheritdoc />
+    public Task RetriggerCreateTechnicalUser(Guid offerSubscriptionId) =>
+        this.TriggerProcessStep(offerSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, true);
+
+    /// <inheritdoc />
+    public Task RetriggerProviderCallback(Guid offerSubscriptionId) =>
+        this.TriggerProcessStep(offerSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, false);
+
+    /// <inheritdoc />
+    private async Task TriggerProcessStep(Guid offerSubscriptionId, ProcessStepTypeId stepToTrigger, bool mustBePending)
     {
         var nextStep = stepToTrigger.GetStepToRetrigger();
-        var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, stepToTrigger, null)
+        var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, stepToTrigger, null, mustBePending)
             .ConfigureAwait(false);
 
         _offerSubscriptionProcessService.FinalizeProcessSteps(context, Enumerable.Repeat(nextStep, 1));

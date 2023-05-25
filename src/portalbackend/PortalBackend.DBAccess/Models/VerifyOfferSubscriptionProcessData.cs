@@ -23,6 +23,5 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record VerifyOfferSubscriptionProcessData(
-    bool IsActive,
     Process? Process,
     IEnumerable<ProcessStep>? ProcessSteps);

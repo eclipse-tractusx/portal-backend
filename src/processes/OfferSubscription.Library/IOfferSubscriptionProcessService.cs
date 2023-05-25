@@ -27,6 +27,6 @@ public interface IOfferSubscriptionProcessService
 {
     record ManualOfferSubscriptionProcessStepData(Guid OfferSubscriptionId, Process Process, Guid ProcessStepId, IEnumerable<ProcessStep> ProcessSteps);
 
-    Task<ManualOfferSubscriptionProcessStepData> VerifySubscriptionAndProcessSteps(Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId>? processStepTypeIds, bool mustBePending = true);
+    Task<ManualOfferSubscriptionProcessStepData> VerifySubscriptionAndProcessSteps(Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId>? processStepTypeIds, bool mustBePending);
     void FinalizeProcessSteps(ManualOfferSubscriptionProcessStepData context, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds);
 }

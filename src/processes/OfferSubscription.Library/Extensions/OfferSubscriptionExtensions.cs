@@ -57,11 +57,6 @@ public static class VerifyOfferSubscriptionProcessDataExtensions
             throw new NotFoundException($"offer subscription {offerSubscriptionId} does not exist");
         }
 
-        if (processData.IsActive)
-        {
-            throw new ConflictException($"offer subscription {offerSubscriptionId} is already activated");
-        }
-
         if (processData.Process == null)
         {
             throw new ConflictException($"offer subscription {offerSubscriptionId} is not associated with a process");
@@ -90,6 +85,9 @@ public static class VerifyOfferSubscriptionProcessDataExtensions
         return processData.ProcessSteps.First(step => step.ProcessStepTypeId == processStepTypeId);
     }
 
-    public static IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData CreateManualOfferSubscriptionProcessStepData(this VerifyOfferSubscriptionProcessData checklistData, Guid offerSubscriptionId, ProcessStep processStep) =>
-        new(offerSubscriptionId, checklistData.Process!, processStep.Id, checklistData.ProcessSteps!);
+    public static IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData CreateManualOfferSubscriptionProcessStepData(this VerifyOfferSubscriptionProcessData checklistData, Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId)
+    {
+        var processStep = checklistData.ValidateOfferSubscriptionProcessData(offerSubscriptionId, new[] { ProcessStepStatusId.TODO }, processStepTypeId);
+        return new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(offerSubscriptionId, checklistData.Process!, processStep.Id, checklistData.ProcessSteps!);
+    }
 }

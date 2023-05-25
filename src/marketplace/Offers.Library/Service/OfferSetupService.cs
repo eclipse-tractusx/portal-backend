@@ -392,7 +392,7 @@ public class OfferSetupService : IOfferSetupService
         }
 
         var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(data.RequestId,
-            ProcessStepTypeId.START_AUTOSETUP, null).ConfigureAwait(false);
+            ProcessStepTypeId.START_AUTOSETUP, null, true).ConfigureAwait(false);
 
         offerSubscriptionRepository.CreateOfferSubscriptionProcessData(data.RequestId, data.OfferUrl);
 
@@ -450,6 +450,11 @@ public class OfferSetupService : IOfferSetupService
         if (clientCreationData == null)
         {
             throw new NotFoundException($"offer subscription {offerSubscriptionId} does not exist");
+        }
+
+        if (string.IsNullOrWhiteSpace(clientCreationData.OfferUrl))
+        {
+            throw new ConflictException("OfferUrl should be set");
         }
 
         if (clientCreationData.OfferType != OfferTypeId.APP)

@@ -26,12 +26,28 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public interface ISubscriptionConfigurationBusinessLogic
 {
     /// <summary>
-    /// Retriggers the given process step
+    /// Retriggers the process step
     /// </summary>
     /// <param name="offerSubscriptionId">Id of the offer subscription</param>
-    /// <param name="stepToTrigger">The step to retrigger</param>
-    /// <param name="mustBePending">If true the offer subscription must be in status pending</param>
-    Task TriggerProcessStep(Guid offerSubscriptionId, ProcessStepTypeId stepToTrigger, bool mustBePending = true);
+    Task RetriggerProvider(Guid offerSubscriptionId);
+
+    /// <summary>
+    /// Retriggers the process step
+    /// </summary>
+    /// <param name="offerSubscriptionId">Id of the offer subscription</param>
+    Task RetriggerCreateClient(Guid offerSubscriptionId);
+
+    /// <summary>
+    /// Retriggers the process step
+    /// </summary>
+    /// <param name="offerSubscriptionId">Id of the offer subscription</param>
+    Task RetriggerCreateTechnicalUser(Guid offerSubscriptionId);
+
+    /// <summary>
+    /// Retriggers the process step
+    /// </summary>
+    /// <param name="offerSubscriptionId">Id of the offer subscription</param>
+    Task RetriggerProviderCallback(Guid offerSubscriptionId);
 
     /// <summary>
     /// Gets the process steps for the given offer subscription id

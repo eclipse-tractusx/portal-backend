@@ -19,7 +19,9 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.Extensions;
@@ -35,7 +37,7 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
         _portalRepositories = portalRepositories;
     }
 
-    async Task<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData> IOfferSubscriptionProcessService.VerifySubscriptionAndProcessSteps(Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId>? processStepTypeIds, bool mustBePending)
+    public async Task<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData> VerifySubscriptionAndProcessSteps(Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId>? processStepTypeIds, bool mustBePending)
     {
         var allProcessStepTypeIds = processStepTypeIds switch
         {
@@ -45,11 +47,22 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
                     : processStepTypeIds.Append(processStepTypeId)
         };
 
-        var processData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetProcessStepData(offerSubscriptionId, allProcessStepTypeIds, mustBePending).ConfigureAwait(false);
+        var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+        var subscriptionInfo = await offerSubscriptionsRepository.IsActiveOfferSubscription(offerSubscriptionId).ConfigureAwait(false);
+        if (!subscriptionInfo.IsValidSubscriptionId)
+        {
+            throw new NotFoundException($"offer subscription {offerSubscriptionId} does not exist");
+        }
 
-        var processStep = processData.ValidateOfferSubscriptionProcessData(offerSubscriptionId, new[] { ProcessStepStatusId.TODO }, processStepTypeId);
-        return processData!.CreateManualOfferSubscriptionProcessStepData(offerSubscriptionId, processStep);
+        if (mustBePending && subscriptionInfo.IsActive)
+        {
+            throw new ConflictException($"offer subscription {offerSubscriptionId} is already activated");
+        }
+
+        var processData = await offerSubscriptionsRepository
+            .GetProcessStepData(offerSubscriptionId, allProcessStepTypeIds).ConfigureAwait(false);
+
+        return processData!.CreateManualOfferSubscriptionProcessStepData(offerSubscriptionId, processStepTypeId);
     }
 
     public void FinalizeProcessSteps(IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData context, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
@@ -66,10 +79,10 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
                 .Except(context.ProcessSteps.Select(step => step.ProcessStepTypeId))
                 .Select(stepTypeId => (stepTypeId, ProcessStepStatusId.TODO, context.Process.Id)));
 
+        _portalRepositories.Attach(context.Process);
         if (context.Process.ReleaseLock())
             return;
 
-        _portalRepositories.Attach(context.Process);
         context.Process.UpdateVersion();
     }
 }

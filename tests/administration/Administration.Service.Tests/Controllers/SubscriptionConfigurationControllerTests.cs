@@ -63,14 +63,14 @@ public class SubscriptionConfigurationControllerTests
     public async Task RetriggerProvider_WithValidData_ReturnsNoContent()
     {
         //Arrange
-        A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER, true))
+        A.CallTo(() => _logic.RetriggerProvider(OfferSubscriptionId))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.RetriggerProvider(OfferSubscriptionId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER, true)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.RetriggerProvider(OfferSubscriptionId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -78,14 +78,14 @@ public class SubscriptionConfigurationControllerTests
     public async Task RetriggerCreateClient_WithValidData_ReturnsNoContent()
     {
         //Arrange
-        A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, true))
+        A.CallTo(() => _logic.RetriggerCreateClient(OfferSubscriptionId))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.RetriggerCreateClient(OfferSubscriptionId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, true)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.RetriggerCreateClient(OfferSubscriptionId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -93,14 +93,14 @@ public class SubscriptionConfigurationControllerTests
     public async Task RetriggerCreateTechnicalUser_WithValidData_ReturnsNoContent()
     {
         //Arrange
-        A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, true))
+        A.CallTo(() => _logic.RetriggerCreateTechnicalUser(OfferSubscriptionId))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.RetriggerCreateTechnicalUser(OfferSubscriptionId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, true)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.RetriggerCreateTechnicalUser(OfferSubscriptionId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -108,14 +108,14 @@ public class SubscriptionConfigurationControllerTests
     public async Task RetriggerProviderCallback_WithValidData_ReturnsNoContent()
     {
         //Arrange
-        A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, false))
+        A.CallTo(() => _logic.RetriggerProviderCallback(OfferSubscriptionId))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.RetriggerProviderCallback(OfferSubscriptionId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.TriggerProcessStep(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, false)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.RetriggerProviderCallback(OfferSubscriptionId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
