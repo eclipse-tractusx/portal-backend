@@ -126,9 +126,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             result.Tags,
             result.IsSubscribed == default ? null : result.IsSubscribed,
             result.Languages,
-            result.Documents.GroupBy(d => d.documentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.documentId, d.documentName))),
+            result.Documents.GroupBy(d => d.DocumentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.DocumentId, d.DocumentName))),
             result.PrivacyPolicies,
-            result.IsSingleInstance
+            result.IsSingleInstance,
+            result.TechnicalUserProfile.ToDictionary(g => g.TechnicalUserProfileId, g => g.UserRoles)
         );
     }
 

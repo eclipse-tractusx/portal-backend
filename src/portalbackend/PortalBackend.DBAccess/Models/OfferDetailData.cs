@@ -54,6 +54,7 @@ public record OfferDetailData(
 /// <param name="ServiceTypeIds">Collection of the assigned serviceTypeIds.</param>
 /// <param name="Documents">Collections of the Document type Data.</param>
 /// <param name="LicenseTypeId">LicenseType Id for offer</param>
+/// <param name="TechnicalUserProfile">Technical User Profile</param>
 public record ServiceDetailData(
     Guid Id,
     string? Title,
@@ -64,7 +65,8 @@ public record ServiceDetailData(
     IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData,
     IEnumerable<ServiceTypeId> ServiceTypeIds,
     IEnumerable<DocumentTypeData> Documents,
-    LicenseTypeId LicenseTypeId
+    LicenseTypeId LicenseTypeId,
+    IEnumerable<TechnicalUserRoleData> TechnicalUserProfile
 );
 
 /// <summary>
