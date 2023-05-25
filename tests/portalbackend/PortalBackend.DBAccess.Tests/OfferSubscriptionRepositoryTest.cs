@@ -717,9 +717,14 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         {
             case OfferTypeId.APP:
                 result.Should().NotBeNull();
-                result!.Data.Should().HaveCount(1).And.Satisfy(
+                result!.Data.Should().HaveCount(2).And.Satisfy(
                     x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
                         x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
+                        x.OfferName == "Trace-X" &&
+                        x.Provider == "Catena-X" &&
+                        x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1"),
+                    x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
+                        x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.PENDING &&
                         x.OfferName == "Trace-X" &&
                         x.Provider == "Catena-X" &&
                         x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1")
