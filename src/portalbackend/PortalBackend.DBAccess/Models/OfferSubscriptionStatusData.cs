@@ -30,4 +30,4 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="Provider">When called from /provider name of the company subscribing the offer, otherwise the provider company's name</param>
 /// <param name="OfferSubscriptionStatus">Status of the offer subscription</param>
 /// <param name="DocumentId">Id of the documents</param>
-public record OfferSubscriptionStatusData(Guid OfferId, string? OfferName, string Provider, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid? DocumentId);
+public record OfferSubscriptionStatusData(Guid OfferId, string? OfferName, string Provider, OfferSubscriptionStatusId OfferSubscriptionStatusId, Guid? DocumentId);

@@ -400,7 +400,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         {
             result!.Data.Should().HaveCount(1).And.Satisfy(
                 x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
-                    x.offerSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
+                    x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
                     x.OfferName == "Trace-X" &&
                     x.Provider == "Catena-X" &&
                     x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1")
@@ -408,10 +408,15 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         }
         else
         {
-            result!.Data.Should().HaveCount(1).And.Satisfy(
+            result!.Data.Should().HaveCount(2).And.Satisfy(
                 x => x.OfferId == new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea") &&
-                    x.offerSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
+                    x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
                     x.OfferName == "SDE with EDC" &&
+                    x.Provider == "Service Provider" &&
+                    x.DocumentId == Guid.Empty,
+                x => x.OfferId == new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfae") &&
+                    x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
+                    x.OfferName == "Service Test 123" &&
                     x.Provider == "Service Provider" &&
                     x.DocumentId == Guid.Empty
             );

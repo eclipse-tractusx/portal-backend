@@ -933,7 +933,7 @@ public class OfferService : IOfferService
                             item.OfferId,
                             item.OfferName,
                             item.Provider,
-                            item.offerSubscriptionStatusId,
+                            item.OfferSubscriptionStatusId,
                             item.DocumentId == Guid.Empty ? null : item.DocumentId)));
         }
         return await Pagination.CreateResponseAsync(page, size, 15, GetCompanySubscribedOfferSubscriptionStatusesData).ConfigureAwait(false);

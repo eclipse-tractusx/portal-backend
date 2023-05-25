@@ -258,7 +258,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     .Where(os =>
                         os.Offer!.OfferTypeId == offerTypeId &&
                         os.Company!.CompanyUsers.Any(user => user.IamUser!.UserEntityId == iamUserId))
-                    .GroupBy(os => os.OfferId),
+                    .GroupBy(os => os.CompanyId),
                 null,
                 os => new OfferSubscriptionStatusData(
                     os.OfferId,
