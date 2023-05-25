@@ -28,5 +28,15 @@
     "last_editor_id": null,
     "display_name": null,
     "description": null
+  },
+  {
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "offer_id": "a16e73b9-5277-4b69-9f8d-3b227495dfae",
+    "offer_subscription_status_id": 2,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce058020001",
+    "id": "e80b5f5c-3a16-480b-b82e-1cc06a71fddc",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
   }
 ]

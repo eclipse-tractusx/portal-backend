@@ -32,5 +32,6 @@ public record CompanySubscriptionStatusData(
     OfferSubscriptionStatusId OfferSubscriptionStatus,
     string? Country,
     string? BpnNumber,
-    string? Email
+    string? Email,
+    bool TechnicalUser
 );
