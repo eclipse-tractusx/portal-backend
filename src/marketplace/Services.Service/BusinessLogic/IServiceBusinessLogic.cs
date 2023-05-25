@@ -144,7 +144,7 @@ public interface IServiceBusinessLogic
     /// <param name ="size">size</param>
     /// <returns>Returns the details of the subscription status for Service user</returns>
     Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId);
-    
+
     /// <summary>
     /// Starts the auto setup process.
     /// </summary>

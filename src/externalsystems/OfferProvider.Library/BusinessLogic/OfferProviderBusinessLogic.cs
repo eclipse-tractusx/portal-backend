@@ -186,7 +186,11 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             throw new ConflictException("There should be exactly one service account for the offer subscription");
         }
 
-        var serviceAccount = data.ServiceAccounts.Single();
+        var serviceAccount = data.ServiceAccounts.First();
+        if (serviceAccount.TechnicalClientId == null)
+        {
+            throw new ConflictException($"ClientId of serviceAccount {serviceAccount.TechnicalUserId} should be set");
+        }
         var authData = await _provisioningManager.GetCentralClientAuthDataAsync(serviceAccount.TechnicalClientId).ConfigureAwait(false);
         var callbackData = new OfferProviderCallbackData(
             new CallbackTechnicalUserInfoData(

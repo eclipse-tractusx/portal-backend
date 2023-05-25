@@ -21,15 +21,17 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using System.Collections.Immutable;
 using System.Web;
 
 public static class UrlHelper
 {
-    private static readonly string[] ValidUriSchemes = { "http", "https" };
+    private static readonly IEnumerable<string> ValidUriSchemes = ImmutableArray.Create("http", "https");
+    private static readonly IEnumerable<string> ValidHttpsUriSchemes = ImmutableArray.Create("https");
 
     public static void EnsureValidHttpsUrl(this string? url, Func<string>? getUrlParameterName)
     {
-        EnsureValidUrlInternal(url, getUrlParameterName, Enumerable.Repeat("https", 1));
+        EnsureValidUrlInternal(url, getUrlParameterName, ValidHttpsUriSchemes);
     }
 
     public static void EnsureValidHttpUrl(this string? url, Func<string>? getUrlParameterName)

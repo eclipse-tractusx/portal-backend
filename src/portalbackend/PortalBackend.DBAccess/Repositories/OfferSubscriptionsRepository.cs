@@ -331,7 +331,9 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.Requester.Firstname,
                 x.Requester.Lastname,
                 x.RequesterId,
-                x.Offer.AppInstanceSetup == null ? new ValueTuple<bool, string?>() : new ValueTuple<bool, string?>(x.Offer.AppInstanceSetup.IsSingleInstance, x.Offer.AppInstanceSetup.InstanceUrl),
+                x.Offer.AppInstanceSetup == null
+                    ? new ValueTuple<bool, string?>()
+                    : new ValueTuple<bool, string?>(x.Offer.AppInstanceSetup.IsSingleInstance, x.Offer.AppInstanceSetup.InstanceUrl),
                 x.Offer.AppInstances.Select(ai => ai.Id),
                 x.OfferSubscriptionProcessData != null
             ))
@@ -352,17 +354,12 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
         _context.OfferSubscriptions
             .AsNoTracking()
             .Where(os => os.Id == offerSubscriptionId)
-            .Select(os => new
-            {
-                IsActive = os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE,
-                os.Process,
-            })
             .Select(x => new VerifyOfferSubscriptionProcessData(
-                    x.Process,
-                    x.Process!.ProcessSteps
-                        .Where(step =>
-                            processStepTypeIds.Contains(step.ProcessStepTypeId) &&
-                            step.ProcessStepStatusId == ProcessStepStatusId.TODO)))
+                x.Process,
+                x.Process!.ProcessSteps
+                    .Where(step =>
+                        processStepTypeIds.Contains(step.ProcessStepTypeId) &&
+                        step.ProcessStepStatusId == ProcessStepStatusId.TODO)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -393,11 +390,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(IEnumerable<(Guid TechnicalUserId, string TechnicalClientId)> ServiceAccounts, string? ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId) =>
+    public Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId)> ServiceAccounts, string? ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId) =>
         _context.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
-            .Select(x => new ValueTuple<IEnumerable<(Guid, string)>, string?, string?, OfferSubscriptionStatusId>(
-                    x.CompanyServiceAccounts.Select(sa => new ValueTuple<Guid, string>(sa.Id, sa.IamServiceAccount!.ClientId)),
+            .Select(x => new ValueTuple<IEnumerable<(Guid, string?)>, string?, string?, OfferSubscriptionStatusId>(
+                    x.CompanyServiceAccounts.Select(sa => new ValueTuple<Guid, string?>(sa.Id, sa.IamServiceAccount!.ClientId)),
                     x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId,
                     x.Offer!.ProviderCompany!.ProviderCompanyDetail!.AutoSetupCallbackUrl,
                     x.OfferSubscriptionStatusId

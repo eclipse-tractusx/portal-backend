@@ -64,10 +64,10 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
         data.Url.EnsureValidHttpsUrl(() => nameof(data.Url));
         data.CallbackUrl?.EnsureValidHttpsUrl(() => nameof(data.CallbackUrl));
 
-        if (!data.Url.StartsWith("https://") || data.Url.Length > 100)
+        if (data.Url.Length > 100)
         {
             throw new ControllerArgumentException(
-                "Url must start with https and the maximum allowed length is 100 characters", nameof(data.Url));
+                "the maximum allowed length is 100 characters", nameof(data.Url));
         }
 
         return SetOfferProviderCompanyDetailsInternalAsync(data, iamUserId);

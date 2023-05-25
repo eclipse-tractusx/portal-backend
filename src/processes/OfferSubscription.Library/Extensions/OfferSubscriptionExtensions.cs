@@ -85,9 +85,9 @@ public static class VerifyOfferSubscriptionProcessDataExtensions
         return processData.ProcessSteps.First(step => step.ProcessStepTypeId == processStepTypeId);
     }
 
-    public static IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData CreateManualOfferSubscriptionProcessStepData(this VerifyOfferSubscriptionProcessData checklistData, Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId)
+    public static IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData CreateManualOfferSubscriptionProcessStepData(this VerifyOfferSubscriptionProcessData? checklistData, Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId)
     {
         var processStep = checklistData.ValidateOfferSubscriptionProcessData(offerSubscriptionId, new[] { ProcessStepStatusId.TODO }, processStepTypeId);
-        return new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(offerSubscriptionId, checklistData.Process!, processStep.Id, checklistData.ProcessSteps!);
+        return new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(offerSubscriptionId, checklistData!.Process!, processStep.Id, checklistData.ProcessSteps!);
     }
 }

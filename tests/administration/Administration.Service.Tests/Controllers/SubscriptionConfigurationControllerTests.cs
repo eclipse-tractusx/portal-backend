@@ -22,7 +22,6 @@ using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
@@ -62,10 +61,6 @@ public class SubscriptionConfigurationControllerTests
     [Fact]
     public async Task RetriggerProvider_WithValidData_ReturnsNoContent()
     {
-        //Arrange
-        A.CallTo(() => _logic.RetriggerProvider(OfferSubscriptionId))
-            .ReturnsLazily(() => Task.CompletedTask);
-
         //Act
         var result = await this._controller.RetriggerProvider(OfferSubscriptionId).ConfigureAwait(false);
 
@@ -77,10 +72,6 @@ public class SubscriptionConfigurationControllerTests
     [Fact]
     public async Task RetriggerCreateClient_WithValidData_ReturnsNoContent()
     {
-        //Arrange
-        A.CallTo(() => _logic.RetriggerCreateClient(OfferSubscriptionId))
-            .ReturnsLazily(() => Task.CompletedTask);
-
         //Act
         var result = await this._controller.RetriggerCreateClient(OfferSubscriptionId).ConfigureAwait(false);
 
@@ -92,10 +83,6 @@ public class SubscriptionConfigurationControllerTests
     [Fact]
     public async Task RetriggerCreateTechnicalUser_WithValidData_ReturnsNoContent()
     {
-        //Arrange
-        A.CallTo(() => _logic.RetriggerCreateTechnicalUser(OfferSubscriptionId))
-            .ReturnsLazily(() => Task.CompletedTask);
-
         //Act
         var result = await this._controller.RetriggerCreateTechnicalUser(OfferSubscriptionId).ConfigureAwait(false);
 
@@ -107,10 +94,6 @@ public class SubscriptionConfigurationControllerTests
     [Fact]
     public async Task RetriggerProviderCallback_WithValidData_ReturnsNoContent()
     {
-        //Arrange
-        A.CallTo(() => _logic.RetriggerProviderCallback(OfferSubscriptionId))
-            .ReturnsLazily(() => Task.CompletedTask);
-
         //Act
         var result = await this._controller.RetriggerProviderCallback(OfferSubscriptionId).ConfigureAwait(false);
 
@@ -124,9 +107,6 @@ public class SubscriptionConfigurationControllerTests
     {
         //Arrange
         var data = new ProviderDetailData("https://this-is-a-test.de", null);
-        A.CallTo(() => _logic.SetProviderCompanyDetailsAsync(data, IamUserId))
-            .ReturnsLazily(() => Task.CompletedTask);
-
         //Act
         var result = await this._controller.SetProviderCompanyDetail(data).ConfigureAwait(false);
 
@@ -142,7 +122,7 @@ public class SubscriptionConfigurationControllerTests
         var id = Guid.NewGuid();
         var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de");
         A.CallTo(() => _logic.GetProviderCompanyDetailsAsync(IamUserId))
-            .ReturnsLazily(() => data);
+            .Returns(data);
 
         //Act
         var result = await this._controller.GetServiceProviderCompanyDetail().ConfigureAwait(false);

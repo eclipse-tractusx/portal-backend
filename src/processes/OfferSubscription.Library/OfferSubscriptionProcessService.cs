@@ -48,21 +48,24 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
         };
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var subscriptionInfo = await offerSubscriptionsRepository.IsActiveOfferSubscription(offerSubscriptionId).ConfigureAwait(false);
-        if (!subscriptionInfo.IsValidSubscriptionId)
-        {
-            throw new NotFoundException($"offer subscription {offerSubscriptionId} does not exist");
-        }
 
-        if (mustBePending && subscriptionInfo.IsActive)
+        if (mustBePending)
         {
-            throw new ConflictException($"offer subscription {offerSubscriptionId} is already activated");
+            var subscriptionInfo = await offerSubscriptionsRepository.IsActiveOfferSubscription(offerSubscriptionId).ConfigureAwait(false);
+            if (!subscriptionInfo.IsValidSubscriptionId)
+            {
+                throw new NotFoundException($"offer subscription {offerSubscriptionId} does not exist");
+            }
+            if (subscriptionInfo.IsActive)
+            {
+                throw new ConflictException($"offer subscription {offerSubscriptionId} is already activated");
+            }
         }
 
         var processData = await offerSubscriptionsRepository
             .GetProcessStepData(offerSubscriptionId, allProcessStepTypeIds).ConfigureAwait(false);
 
-        return processData!.CreateManualOfferSubscriptionProcessStepData(offerSubscriptionId, processStepTypeId);
+        return processData.CreateManualOfferSubscriptionProcessStepData(offerSubscriptionId, processStepTypeId);
     }
 
     public void FinalizeProcessSteps(IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData context, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
