@@ -1,0 +1,51 @@
+﻿[
+  {
+    "companyDetailData": {
+    "companyId": "00000000-0000-0000-0000-000000000000",
+    "name": "Test-Catena-X-1",
+    "city": "Munich",
+    "streetName": "Main street",
+    "countryAlpha2Code": "DE",
+    "bpn": null,
+    "shortName": "Test-Catena-X",
+    "region": "Bayern",
+    "streetAdditional": "Test",
+    "streetNumber": "1",
+    "zipCode": "12345",
+    "countryDe": "Deutschland",
+    "uniqueIds": [
+      {
+        "type": "COMMERCIAL_REG_NUMBER",
+        "value": "HRB 12345"
+      }
+    ]
+  },
+    "companyRoles": [
+      "ACTIVE_PARTICIPANT", "APP_PROVIDER"
+    ]
+  },
+  {
+    "companyDetailData": {
+    "companyId": "00000000-0000-0000-0000-000000000000",
+    "name": "Test-Catena-X-2",
+    "city": "Munich",
+    "streetName": "Main street",
+    "countryAlpha2Code": "DE",
+    "bpn": null,
+    "shortName": "Test-Catena-X",
+    "region": "Bayern",
+    "streetAdditional": "Test",
+    "streetNumber": "1",
+    "zipCode": "12345",
+    "countryDe": "Deutschland",
+    "uniqueIds": [
+      {
+        "type": "COMMERCIAL_REG_NUMBER",
+        "value": "HRB 12345"
+      }
+    ]
+  },
+    "companyRoles": [
+      "ACTIVE_PARTICIPANT", "APP_PROVIDER", "SERVICE_PROVIDER"
+    ]}
+]
