@@ -96,6 +96,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
             {
                 CompanyId = companyDetailData.CompanyId
             };
+            _userCompanyName = newCompanyDetailData.Name;
             
             var body = JsonSerializer.Serialize(newCompanyDetailData, _options);
             
@@ -223,6 +224,8 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
         var data = DeserializeData<Pagination.Response<CompanyApplicationDetails>>(response.Content.ReadAsStringAsync()
             .Result);
         Assert.Contains("SUBMITTED", data.Content.First().CompanyApplicationStatusId.ToString());
+        Assert.Equal(_applicationId.ToString(), data.Content.First().ApplicationId.ToString());
+        
     }
 
     // GET: api/administration/registration/application/{applicationId}/companyDetailsWithAddress
