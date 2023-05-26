@@ -538,6 +538,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             "99c5fd12-8085-4de2-abfd-215e1ee4baa4",
             "99c5fd12-8085-4de2-abfd-215e1ee4baa6",
             "99c5fd12-8085-4de2-abfd-215e1ee4baa7",
+            "99c5fd12-8085-4de2-abfd-215e1ee4baa9",
         },
         new[] {
             "e020787d-1e04-4c0b-9c06-bd1cd44724b1",
@@ -827,20 +828,25 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #region GetOfferReleaseDataById
 
-    [Fact]
-    public async Task GetOfferReleaseDataByIdAsync_ReturnsExpected()
+    [Theory]
+    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA9", "Test App", "Catena-X", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", false, false)]
+    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7", "Latest App", "Catena-X", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", true, true)]
+    public async Task GetOfferReleaseDataByIdAsync_ReturnsExpected(Guid offerId, string name, string companyName, Guid companyId, bool hasTechnicalUserProfiles, bool hasPrivacyPolicies)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferReleaseDataByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferReleaseDataByIdAsync(offerId, OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
+
         result.Should().NotBeNull();
-        result!.Name.Should().Be("Latest App");
-        result!.CompanyName.Should().Be("Catena-X");
-        result!.ProviderCompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        result!.Name.Should().Be(name);
+        result!.CompanyName.Should().Be(companyName);
+        result!.ProviderCompanyId.Should().Be(companyId);
+        result.HasPrivacyPolicies.Should().Be(hasPrivacyPolicies);
+        result.HasTechnicalUserProfiles.Should().Be(hasTechnicalUserProfiles);
     }
 
     #endregion
