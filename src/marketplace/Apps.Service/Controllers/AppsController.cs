@@ -220,6 +220,7 @@ public class AppsController : ControllerBase
     /// <response code="404">App does not exist.</response>
     /// <response code="409">App Name not set.</response>
     /// <response code="500">Internal Server Error.</response>
+    [Obsolete("This endpoint is not used anymore")]
     [HttpPut]
     [Route("{appId}/subscription/company/{companyId}/activate")]
     [Authorize(Roles = "activate_subscription")]
