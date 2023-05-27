@@ -125,7 +125,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetAllBusinessAppDataForUserIdAsync(new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllBusinessAppDataForUserIdAsync("502dabcf-01c7-47d9-a88e-0be4279097b5").ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNullOrEmpty();
@@ -181,7 +181,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferDetailsAndCheckUser(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"), new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferDetailsAndCheckUser(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"), "502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();

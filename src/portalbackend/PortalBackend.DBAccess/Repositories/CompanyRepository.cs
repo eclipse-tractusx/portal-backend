@@ -278,14 +278,4 @@ public class CompanyRepository : ICompanyRepository
             company.CompanyStatusId == CompanyStatusId.ACTIVE,
             company.Id
         )).SingleOrDefaultAsync();
-
-    /// <inheritdoc />
-    public Task<(Guid CompanyId, Guid CompanyUserId)> GetCompanyIdAndUserIdForUserOrTechnicalUser(Guid userCompanyId) =>
-        _context.Companies
-            .Where(x => x.Id == userCompanyId)
-            .Select(company => new ValueTuple<Guid, Guid>(
-                company.Id,
-                company.Identities.Select(x => x.Id).SingleOrDefault()
-            ))
-            .SingleOrDefaultAsync();
 }

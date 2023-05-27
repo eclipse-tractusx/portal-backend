@@ -68,6 +68,7 @@ public class AppBusinessLogicTests
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
         _notificationRepository = A.Fake<INotificationRepository>();
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionRepository);
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
     }
 

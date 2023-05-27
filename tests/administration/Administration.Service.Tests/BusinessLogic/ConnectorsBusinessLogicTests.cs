@@ -178,22 +178,6 @@ public class ConnectorsBusinessLogicTests
     }
 
     [Fact]
-    public async Task CreateConnectorAsync_WithNotExistingUser_ThrowsConflictException()
-    {
-        // Arrange
-        var identity = _fixture.Create<IdentityData>();
-        var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", file, null);
-
-        // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, identity, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
-        exception.Message.Should().Be($"No company found for user {identity.UserEntityId}");
-    }
-
-    [Fact]
     public async Task CreateConnectorAsync_WithInvalidLocation_ThrowsControllerArgumentException()
     {
         // Arrange
@@ -945,17 +929,6 @@ public class ConnectorsBusinessLogicTests
             .Returns(((ConnectorInformationData, bool))default);
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(ExistingConnectorId, A<Guid>.That.Not.Matches(x => x == _identity.CompanyId)))
             .Returns((_fixture.Create<ConnectorInformationData>(), false));
-
-        A.CallTo(() => _companyRepository.GetCompanyIdAndUserIdForUserOrTechnicalUser(_identity.CompanyId))
-            .Returns((ValidCompanyId, CompanyUserId));
-        A.CallTo(() => _companyRepository.GetCompanyIdAndUserIdForUserOrTechnicalUser(A<Guid>.That.Matches(x => x == _identityWithoutBpn.CompanyId)))
-            .Returns((CompanyWithoutBpnId, CompanyUserId));
-        A.CallTo(() => _companyRepository.GetCompanyIdAndUserIdForUserOrTechnicalUser(A<Guid>.That.Matches(x => x == _identityWithoutSdDocument.CompanyId)))
-            .Returns((CompanyIdWithoutSdDocument, CompanyUserId));
-        A.CallTo(() => _companyRepository.GetCompanyIdAndUserIdForUserOrTechnicalUser(A<Guid>.That.Matches(x => x == _technicalUserIdentity.CompanyId)))
-            .Returns((ValidCompanyId, Guid.Empty));
-        A.CallTo(() => _companyRepository.GetCompanyIdAndUserIdForUserOrTechnicalUser(A<Guid>.That.Not.Matches(x => x == _technicalUserIdentity.CompanyId || x == _identity.CompanyId || x == _identityWithoutBpn.CompanyId || x == _identityWithoutSdDocument.CompanyId)))
-            .Returns(new ValueTuple<Guid, Guid>());
 
         A.CallTo(() => _serviceAccountRepository.CheckActiveServiceAccountExistsForCompanyAsync(ServiceAccountUserId, ValidCompanyId))
             .Returns(true);

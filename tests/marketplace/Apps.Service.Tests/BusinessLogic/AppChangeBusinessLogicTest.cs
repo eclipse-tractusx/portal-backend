@@ -113,7 +113,7 @@ public class AppChangeBusinessLogicTest
         var clientIds = new[] { "client" };
 
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetInsertActiveAppUserRoleDataAsync(appId, OfferTypeId.APP))
-            .Returns((true, appName, companyId, clientIds));
+            .Returns((true, appName, _identity.CompanyId, clientIds));
 
         IEnumerable<UserRole>? userRoles = null;
         A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid, string)>>._))
@@ -455,7 +455,6 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var iamUserId = _fixture.Create<Guid>().ToString();
         var documentId = _fixture.Create<Guid>();
         var documentStatusData = _fixture.CreateMany<DocumentStatusData>(2).ToImmutableArray();
         var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");

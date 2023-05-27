@@ -566,7 +566,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new NotFoundException($"application {applicationId} does not exist");
         }
 
-        var (applicationStatusId, companyAssignedRoleIds, consents) = companyRoleAgreementConsentData;
+        var (applicationCompanyId, applicationStatusId, companyAssignedRoleIds, consents) = companyRoleAgreementConsentData;
+        if (applicationCompanyId != identity.CompanyId)
+        {
+            throw new ForbiddenException($"iamUserId {identity.UserEntityId} is not assigned with CompanyApplication {applicationId}");
+        }
 
         var companyRoleAssignedAgreements = await companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet)
             .ToDictionaryAsync(x => x.CompanyRoleId, x => x.AgreementIds)

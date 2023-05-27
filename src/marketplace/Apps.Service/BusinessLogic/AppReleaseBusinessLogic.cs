@@ -308,7 +308,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         if (!appData.IsUserOfProvider)
         {
-            throw new ForbiddenException($"User {identity.CompanyId} is not allowed to change the app.");
+            throw new ForbiddenException($"User {identity.UserEntityId} is not allowed to change the app.");
         }
 
         if (appRequestModel.SalesManagerId.HasValue)

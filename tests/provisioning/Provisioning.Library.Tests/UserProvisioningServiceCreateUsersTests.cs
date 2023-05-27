@@ -100,7 +100,7 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>._, A<IEnumerable<(string, IEnumerable<string>)>>._)).MustHaveHappened();
         A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappened();
         A.CallTo(() => _provisioningManager.CreateSharedRealmUserAsync(A<string>._, A<UserProfile>._)).MustNotHaveHappened();
-        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, null, A<Action<CompanyUser>>._)).MustHaveHappened();
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, null, A<Action<Identity>>._)).MustHaveHappened();
     }
 
     [Fact]

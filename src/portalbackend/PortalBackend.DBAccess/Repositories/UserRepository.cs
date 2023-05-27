@@ -305,7 +305,7 @@ public class UserRepository : IUserRepository
             .Where(x =>
                 x.Identity!.CompanyId == companyId &&
                 x.Identity!.UserStatusId == UserStatusId.ACTIVE &&
-                x.Identity!.IdentityAssignedRoles.Select(u => u.UserRoleId).Any(userRoleIds.Contains))
+                x.Identity!.IdentityAssignedRoles.Select(u => u.UserRoleId).Any(u => userRoleIds.Any(ur => u == ur)))
             .Select(x => x.Id)
             .ToAsyncEnumerable();
 
@@ -314,7 +314,7 @@ public class UserRepository : IUserRepository
         _dbContext.CompanyUsers
             .Where(x =>
                 x.Identity!.UserStatusId == UserStatusId.ACTIVE &&
-                x.Identity!.IdentityAssignedRoles.Select(u => u.UserRoleId).Any(userRoleIds.Contains))
+                x.Identity!.IdentityAssignedRoles.Select(u => u.UserRoleId).Any(u => userRoleIds.Any(ur => ur == u)))
             .Select(x => x.Id)
             .ToAsyncEnumerable();
 
@@ -324,7 +324,7 @@ public class UserRepository : IUserRepository
             .Where(x =>
                 x.Identity!.CompanyId == companyId &&
                 x.Identity!.UserStatusId == UserStatusId.ACTIVE &&
-                x.Identity!.IdentityAssignedRoles.Select(u => u.UserRoleId).Any(userRoleIds.Contains) &&
+                x.Identity!.IdentityAssignedRoles.Select(u => u.UserRoleId).Any(u => userRoleIds.Any(ur => ur == u)) &&
                 x.Email != null)
             .Select(x => new ValueTuple<string, string?, string?>(x.Email!, x.Firstname, x.Lastname))
             .ToAsyncEnumerable();
@@ -376,7 +376,7 @@ public class UserRepository : IUserRepository
             .SelectMany(x => x.ProviderCompany!.Identities)
             .Where(x =>
                 x.UserStatusId == UserStatusId.ACTIVE &&
-                x.IdentityAssignedRoles.Select(u => u.UserRoleId).Any(userRoleIds.Contains))
+                x.IdentityAssignedRoles.Select(u => u.UserRoleId).Any(u => userRoleIds.Any(ur => ur == u)))
             .Select(x => x.Id)
             .ToAsyncEnumerable();
 

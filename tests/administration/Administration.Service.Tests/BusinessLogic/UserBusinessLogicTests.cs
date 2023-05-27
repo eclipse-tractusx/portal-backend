@@ -599,32 +599,6 @@ public class UserBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
-    [Fact]
-    public async Task TestDeleteOwnUserErrorDeletingThrows()
-    {
-        SetupFakesForUserDeletion();
-
-        var sut = new UserBusinessLogic(
-            _provisioningManager,
-            null!,
-            null!,
-            _portalRepositories,
-            null!,
-            _logger,
-            _options
-        );
-
-        Task Act() => sut.DeleteOwnUserAsync(_companyUserId, _iamUserId);
-
-        var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be(_error.Message);
-
-        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._, A<string>._)).MustHaveHappened();
-        A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappened();
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-    }
-
     #endregion
 
     #region Modify UserRole Async

@@ -175,7 +175,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         {
             throw new ConflictException("offerStatus is in incorrect State");
         }
-        if (result.IsUserOfProvider)
+        if (!result.IsUserOfProvider)
         {
             throw new ForbiddenException($"user {identity.UserEntityId} is not a member of the provider company of App {appId}");
         }

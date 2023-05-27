@@ -505,11 +505,11 @@ public class UserUploadBusinessLogicTests
             .Returns((_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, true).Create(), _fixture.Create<string>()));
 
         A.CallTo(() => _userProvisioningService.GetOwnCompanyPortalRoleDatas(A<string>._, A<IEnumerable<string>>._, A<IdentityData>._))
-            .ReturnsLazily((string clientId, IEnumerable<string> roles, string _) =>
+            .ReturnsLazily((string clientId, IEnumerable<string> roles, IdentityData _) =>
                 roles.Select(role => _fixture.Build<UserRoleData>().With(x => x.ClientClientId, clientId).With(x => x.UserRoleText, role).Create()));
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
-            .ReturnsLazily((CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken cancellationToken) =>
+            .ReturnsLazily((CompanyNameIdpAliasData _, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken _) =>
                 userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
 
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(

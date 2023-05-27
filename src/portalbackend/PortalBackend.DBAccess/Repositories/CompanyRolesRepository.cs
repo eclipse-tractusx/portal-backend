@@ -53,6 +53,7 @@ public class CompanyRolesRepository : ICompanyRolesRepository
         _dbContext.CompanyApplications
             .Where(application => application.Id == applicationId)
             .Select(application => new CompanyRoleAgreementConsentData(
+                application.CompanyId,
                 application.ApplicationStatusId,
                 application.Company!.CompanyAssignedRoles.Select(ar => ar.CompanyRoleId),
                 application.Company!.Consents.Select(c => new ConsentData(c.Id, c.ConsentStatusId, c.AgreementId))))

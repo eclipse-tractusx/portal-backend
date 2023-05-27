@@ -73,7 +73,7 @@ public static class ControllerExtensions
             throw new ControllerArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
         }
 
-        var identityId = controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityType);
+        var identityId = controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId);
         var identityType = controller.User.Claims.GetEnumFromClaim<IdentityTypeId>(PortalClaimTypes.IdentityType);
         var companyId = controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId);
         return new IdentityData(sub, identityId, identityType, companyId);
@@ -116,7 +116,7 @@ public static class ControllerExtensions
             throw new ControllerArgumentException($"Claim '{type} must not be null or empty.");
         }
 
-        if (!Guid.TryParse(type, out var result) || Guid.Empty == result)
+        if (!Guid.TryParse(claimValue, out var result) || Guid.Empty == result)
         {
             throw new ControllerArgumentException($"Claim {type} must contain a Guid");
         }

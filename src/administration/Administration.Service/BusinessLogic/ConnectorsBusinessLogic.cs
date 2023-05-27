@@ -141,7 +141,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         var (name, connectorUrl, location, certificate, technicalUserId) = connectorInputModel;
         await CheckLocationExists(location);
 
-        var (companyId, userId) = await GetCompanyOfUserOrTechnicalUser(identity).ConfigureAwait(false);
+        var (companyId, userId) = (identity.CompanyId, identity.IdentityId);
         var result = await _portalRepositories
             .GetInstance<ICompanyRepository>()
             .GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(companyId)
@@ -170,7 +170,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
     private async Task<Guid> CreateManagedConnectorInternalAsync(ManagedConnectorInputModel connectorInputModel, IdentityData identity, CancellationToken cancellationToken)
     {
-        var (companyId, userId) = await GetCompanyOfUserOrTechnicalUser(identity).ConfigureAwait(false);
         var (name, connectorUrl, location, providerBpn, certificate, technicalUserId) = connectorInputModel;
         await CheckLocationExists(location).ConfigureAwait(false);
 
@@ -190,27 +189,14 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         }
         await ValidateTechnicalUser(technicalUserId, result.CompanyId).ConfigureAwait(false);
 
-        var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.CONNECTOR_AS_A_SERVICE, location, result.CompanyId, companyId, technicalUserId);
+        var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.CONNECTOR_AS_A_SERVICE, location, result.CompanyId, identity.CompanyId, technicalUserId);
         return await CreateAndRegisterConnectorAsync(
             connectorRequestModel,
             providerBpn,
             result.SelfDescriptionDocumentId!.Value,
             certificate,
-            userId,
+            identity.IdentityId,
             cancellationToken).ConfigureAwait(false);
-    }
-
-    private async Task<(Guid CompanyId, Guid? UserId)> GetCompanyOfUserOrTechnicalUser(IdentityData identity)
-    {
-        var result = await _portalRepositories.GetInstance<ICompanyRepository>()
-            .GetCompanyIdAndUserIdForUserOrTechnicalUser(identity.CompanyId)
-            .ConfigureAwait(false);
-        if (result == default)
-        {
-            throw new ConflictException($"No company found for user {identity.UserEntityId}");
-        }
-
-        return (result.CompanyId, result.CompanyUserId == Guid.Empty ? null : result.CompanyUserId);
     }
 
     private async Task CheckLocationExists(string location)

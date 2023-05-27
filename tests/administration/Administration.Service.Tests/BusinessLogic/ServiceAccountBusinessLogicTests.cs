@@ -413,6 +413,7 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange
         var identity = _fixture.Build<Identity>()
+            .With(x => x.Id, ValidServiceAccountId)
             .With(x => x.UserStatusId, UserStatusId.ACTIVE)
             .Create();
         var connector = _fixture.Build<Connector>()
@@ -566,6 +567,8 @@ public class ServiceAccountBusinessLogicTests
 
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorsRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
     }
 
     #endregion

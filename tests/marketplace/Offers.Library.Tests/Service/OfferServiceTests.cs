@@ -308,7 +308,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("iamUserId");
+        ex.ParamName.Should().Be("UserEntityId");
     }
 
     [Fact]
@@ -404,7 +404,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("iamUserId");
+        ex.ParamName.Should().Be("UserEntityId");
     }
 
     [Fact]
@@ -734,7 +734,6 @@ public class OfferServiceTests
                 (Guid.NewGuid(), DocumentStatusId.LOCKED, DocumentTypeId.APP_IMAGE) })
             .With(x => x.HasUserRoles, true)
             .Create();
-        var userId = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerType)).Returns(data);
 
         IEnumerable<Document>? initial = null;
@@ -772,7 +771,7 @@ public class OfferServiceTests
         await _sut.SubmitOfferAsync(offerId, _identity, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS, DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.APP_IMAGE }).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, userId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._, false)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, _identity.IdentityId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._, false)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid, Action<Document>?, Action<Document>)>>._)).MustHaveHappenedOnceExactly();
         initial.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.Id == data.DocumentDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.PENDING);
         modified.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.Id == data.DocumentDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.LOCKED);
@@ -984,25 +983,6 @@ public class OfferServiceTests
         result.Message.Should().StartWith("Missing  : ");
     }
 
-    [Fact]
-    public async Task SubmitService_WithInvalidRequester_ThrowsConflictException()
-    {
-        // Arrange
-        var data = _fixture.Build<OfferReleaseData>()
-            .With(x => x.IsDescriptionLongNotSet, false)
-            .With(x => x.IsDescriptionShortNotSet, false)
-            .With(x => x.DocumentDatas, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) })
-            .Create();
-        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(data);
-
-        // Act
-        async Task Act() => await _sut.SubmitServiceAsync(Guid.NewGuid(), _identity, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
-
-        // Assert
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        result.Message.Should().StartWith($"keycloak user {IamUserId} is not associated with any portal user");
-    }
-
     [Theory]
     [InlineData(OfferTypeId.SERVICE)]
     public async Task SubmitService_WithValidOfferData_UpdatesAppAndSendsNotification(OfferTypeId offerType)
@@ -1017,7 +997,6 @@ public class OfferServiceTests
                 (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS),
                 (Guid.NewGuid(), DocumentStatusId.INACTIVE, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) })
             .Create();
-        var userId = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerType)).Returns(data);
 
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._))
@@ -1064,7 +1043,7 @@ public class OfferServiceTests
         await _sut.SubmitServiceAsync(offerId, _identity, offerType, new[] { NotificationTypeId.APP_SUBSCRIPTION_REQUEST }, _fixture.Create<IDictionary<string, IEnumerable<string>>>()).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, userId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._, A<bool?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IDictionary<string, IEnumerable<string>>>._, _identity.IdentityId, A<IEnumerable<(string? content, NotificationTypeId notifcationTypeId)>>._, A<bool?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid, Action<Document>?, Action<Document>)>>._)).MustHaveHappenedOnceExactly();
         initial.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.Id == data.DocumentDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.PENDING);
         modified.Should().NotBeNull().And.HaveCount(1).And.Satisfy(x => x.Id == data.DocumentDatas.ElementAt(0).DocumentId && x.DocumentStatusId == DocumentStatusId.LOCKED);
@@ -2127,7 +2106,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Contain($"User {identity} is not part of the Provider company");
+        ex.Message.Should().Contain($"User {identity.UserEntityId} is not part of the Provider company");
     }
 
     [Theory]

@@ -651,11 +651,11 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetProviderCompanyUserIdForOfferUntrackedAsync(new Guid("0ffcb416-1101-4ba6-8d4a-a9dfa31745a4"), _userCompanyId, OfferStatusId.ACTIVE, OfferTypeId.CORE_COMPONENT);
+        var result = await sut.GetProviderCompanyUserIdForOfferUntrackedAsync(new Guid("0ffcb416-1101-4ba6-8d4a-a9dfa31745a4"), _userCompanyId, OfferStatusId.CREATED, OfferTypeId.CORE_COMPONENT);
 
         // Assert
         result.Should().NotBeNull();
-        result.IsStatusCreated.Should().BeFalse();
+        result.IsStatusMatching.Should().BeFalse();
     }
 
     #endregion
@@ -997,7 +997,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", OfferTypeId.APP, UserCompanyId, OfferStatusId.ACTIVE, true, true, true, true, true)]
     [InlineData("deadbeef-dead-beef-dead-beefdeadbeef", OfferTypeId.APP, UserCompanyId, OfferStatusId.ACTIVE, false, false, false, false, false)]
     [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", OfferTypeId.SERVICE, UserCompanyId, OfferStatusId.ACTIVE, true, false, true, true, false)]
-    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", OfferTypeId.APP, "no-valid-user", OfferStatusId.ACTIVE, true, true, true, false, false)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", OfferTypeId.APP, "00000000-0000-0000-0000-000000000000", OfferStatusId.ACTIVE, true, true, true, false, false)]
     [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", OfferTypeId.APP, UserCompanyId, OfferStatusId.CREATED, true, true, false, true, false)]
     public async Task GetAppUntrackedAsync_ReturnsExpectedResult(Guid offerId, OfferTypeId offerTypeId, Guid userCompanyId, OfferStatusId offerStatusId, bool isValidApp, bool isOfferType, bool isOfferStatus, bool isCompanyUser, bool hasData)
     {
