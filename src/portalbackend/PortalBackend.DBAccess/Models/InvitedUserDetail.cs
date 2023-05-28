@@ -20,19 +20,6 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
-{
-    public class InvitedUserDetail
-    {
-        public InvitedUserDetail(string userId, InvitationStatusId invitationStatus, string? emailId)
-        {
-            UserId = userId;
-            InvitationStatus = invitationStatus;
-            EmailId = emailId;
-        }
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-        public string UserId { get; set; }
-        public InvitationStatusId InvitationStatus { get; set; }
-        public string? EmailId { get; set; }
-    }
-}
+public record InvitedUserDetail(string? UserId, InvitationStatusId InvitationStatus, string? EmailId);

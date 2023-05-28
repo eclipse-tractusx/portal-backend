@@ -114,14 +114,14 @@ public class AppsControllerTests
     {
         //Arrange
         var ids = new AsyncEnumerableStub<Guid>(_fixture.CreateMany<Guid>(5));
-        A.CallTo(() => _logic.GetAllFavouriteAppsForUserAsync(A<string>._))
+        A.CallTo(() => _logic.GetAllFavouriteAppsForUserAsync(A<IdentityData>._))
             .Returns(ids.AsAsyncEnumerable());
 
         //Act
         var result = await this._controller.GetAllFavouriteAppsForCurrentUserAsync().ToListAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAllFavouriteAppsForUserAsync(IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetAllFavouriteAppsForUserAsync(_identity)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
     }
 

@@ -663,7 +663,6 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<Identity>(entity =>
         {
             entity.HasIndex(e => e.UserEntityId)
-                // .HasFilter("user_entity_id IS NOT NULL")
                 .IsUnique();
 
             entity.HasOne(d => d.Company)
@@ -729,9 +728,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.OfferSubscriptionId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            // TODO (PS): Check ohne filter - ggfs. schon Standard
             entity.HasIndex(e => e.ClientClientId)
-                // .HasFilter("client_client_id IS NOT NULL")
                 .IsUnique();
 
             entity.ToTable("company_service_accounts");

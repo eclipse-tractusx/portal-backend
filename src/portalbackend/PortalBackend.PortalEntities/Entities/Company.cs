@@ -37,8 +37,6 @@ public class Company : IBaseEntity
         IdentityProviders = new HashSet<IdentityProvider>();
         OfferSubscriptions = new HashSet<OfferSubscription>();
         Identities = new HashSet<Identity>();
-        // CompanyUsers = new HashSet<CompanyUser>();
-        // CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
         Consents = new HashSet<Consent>();
         ProvidedConnectors = new HashSet<Connector>();
         HostedConnectors = new HashSet<Connector>();
@@ -84,8 +82,6 @@ public class Company : IBaseEntity
     public virtual CompanyStatus? CompanyStatus { get; set; }
     public virtual Document? SelfDescriptionDocument { get; set; }
     public virtual ICollection<CompanyAssignedRole> CompanyAssignedRoles { get; private set; }
-    // public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
-    // public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
     public virtual ICollection<Identity> Identities { get; private set; }
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Connector> HostedConnectors { get; private set; }

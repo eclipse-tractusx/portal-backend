@@ -160,6 +160,11 @@ public class ApplicationActivationService : IApplicationActivationService
             .GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId);
         await foreach (var userData in invitedUsersData.ConfigureAwait(false))
         {
+            if (string.IsNullOrWhiteSpace(userData.UserEntityId))
+            {
+                throw new ConflictException($"UserEntityId must be set for company user {userData.CompanyUserId}.");
+            }
+
             assignedRoles = await _provisioningManager
                 .AssignClientRolesToCentralUserAsync(userData.UserEntityId, applicationApprovalInitialRoles)
                 .ToDictionaryAsync(assigned => assigned.Client, assigned => assigned.Roles)

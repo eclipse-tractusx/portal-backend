@@ -287,9 +287,9 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserUntrackedAsync(string userId) =>
+    public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserUntrackedAsync(Guid companyUserId) =>
         _dbContext.CompanyUsers.AsNoTracking()
-            .Where(u => u.Identity!.UserEntityId == userId) // Id is unique, so single user
+            .Where(u => u.Id == companyUserId)
             .SelectMany(u => u.Offers.Select(a => a.Id))
             .ToAsyncEnumerable();
 

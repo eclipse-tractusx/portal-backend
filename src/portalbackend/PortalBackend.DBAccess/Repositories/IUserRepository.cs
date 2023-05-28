@@ -50,9 +50,9 @@ public interface IUserRepository
     /// <summary>
     /// GGets all apps for the give user from the persistence layer.
     /// </summary>
-    /// <param name="userId">Id of the user which apps should be selected.</param>
+    /// <param name="companyUserId">Id of the user which apps should be selected.</param>
     /// <returns>Returns an IAsyncEnumerable of GUIDs</returns>
-    IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserUntrackedAsync(string userId);
+    IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserUntrackedAsync(Guid companyUserId);
 
     /// <summary>
     /// Gets the company user ids and checks if its the given iamUser
@@ -60,8 +60,7 @@ public interface IUserRepository
     /// <param name="iamUserId">Id of the iamUser</param>
     /// <param name="companyUserId">The id of the company user to check in the persistence layer.</param>
     /// <returns><c>true</c> if the user exists, otherwise <c>false</c></returns>
-    IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser)> GetCompanyUserWithIamUserCheck(string iamUserId,
-        Guid companyUserId);
+    IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser)> GetCompanyUserWithIamUserCheck(string iamUserId, Guid companyUserId);
 
     /// <summary>
     /// Gets the company user ids and checks if its the given iamUser

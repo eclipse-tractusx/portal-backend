@@ -446,7 +446,26 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    // TODO (PS): GetAllFavouriteAppsForUserUntrackedAsync
+    #region  GetAllFavouriteAppsForUserUntrackedAsync
+
+    [Fact]
+    public async Task GetAllFavouriteAppsForUserUntrackedAsync_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetAllFavouriteAppsForUserUntrackedAsync(new("ac1cf001-7fbc-1f2f-817f-bce058020006")).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull().And.NotBeEmpty()
+            .And.HaveCount(2)
+            .And.Satisfy(
+            x => x == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"),
+            x => x == new Guid("ac1cf001-7fbc-1f2f-817f-bce05744000b"));
+    }
+
+    #endregion
 
     private async Task<UserRepository> CreateSut()
     {

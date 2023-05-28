@@ -336,6 +336,11 @@ public class UserBusinessLogic : IUserBusinessLogic
             throw new ForbiddenException($"invalid companyUserId {companyUserId} for user {iamUserId}");
         }
         var companyUser = userData.CompanyUser;
+        if (string.IsNullOrWhiteSpace(companyUser.UserEntityId))
+        {
+            throw new ForbiddenException("UserEntityId must be set.");
+        }
+
         var iamIdpAlias = userData.IamIdpAlias;
         var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.UserEntityId).ConfigureAwait(false);
         if (userIdShared == null)

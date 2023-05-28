@@ -624,12 +624,12 @@ public class ApplicationActivationTests
             new(CompanyUserId2, CentralUserId2.ToString(), Enumerable.Repeat(BusinessPartnerNumber, 1), Enumerable.Repeat(UserRoleId, 1)),
             new(CompanyUserId3, CentralUserId3.ToString(), Enumerable.Empty<string>(), Enumerable.Empty<Guid>())
         }.ToAsyncEnumerable();
-        var businessPartnerNumbers = new string[] { BusinessPartnerNumber }.AsEnumerable();
+        var businessPartnerNumbers = new[] { BusinessPartnerNumber }.AsEnumerable();
 
         _settings.ApplicationApprovalInitialRoles = clientRoleNames;
         _settings.CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
         {
-            { ClientId, new string [] { "Company Admin" }.AsEnumerable() }
+            { ClientId, new[] { "Company Admin" }.AsEnumerable() }
         };
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == Id)))

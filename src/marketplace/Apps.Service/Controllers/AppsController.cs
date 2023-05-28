@@ -108,7 +108,7 @@ public class AppsController : ControllerBase
     [Authorize(Roles = "view_apps")]
     [ProducesResponseType(typeof(IAsyncEnumerable<Guid>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForCurrentUserAsync() =>
-        this.WithIamUserId(userId => _appsBusinessLogic.GetAllFavouriteAppsForUserAsync(userId));
+        this.WithIdentityData(identity => _appsBusinessLogic.GetAllFavouriteAppsForUserAsync(identity));
 
     /// <summary>
     /// Adds an app to current user's favourites.

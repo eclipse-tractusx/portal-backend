@@ -144,7 +144,7 @@ public class NotificationRepository : INotificationRepository
         _dbContext.CompanyUsers
             .Where(x =>
                 x.Identity!.UserStatusId == UserStatusId.ACTIVE &&
-                (companyUserIds != null && companyUserIds.Any(cu => cu == x.Id)) || x.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole).Any(ur => userRoleIds.Contains(ur.Id)))
+                (companyUserIds != null && companyUserIds.Any(cu => cu == x.Id)) || x.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id)))
             .SelectMany(x => x.Notifications
                 .Where(n =>
                     notificationTypeIds.Contains(n.NotificationTypeId) &&

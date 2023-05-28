@@ -134,10 +134,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(string userId) =>
+    public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(IdentityData identity) =>
         _portalRepositories
             .GetInstance<IUserRepository>()
-            .GetAllFavouriteAppsForUserUntrackedAsync(userId);
+            .GetAllFavouriteAppsForUserUntrackedAsync(identity.IdentityId);
 
     /// <inheritdoc/>
     public async Task RemoveFavouriteAppForUserAsync(Guid appId, IdentityData identity)

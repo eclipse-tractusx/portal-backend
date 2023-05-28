@@ -56,7 +56,6 @@ public class UserProvisioningService : IUserProvisioningService
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
         var (companyId, companyName, businessPartnerNumber, creatorId, alias, isSharedIdp) = companyNameIdpAliasData;
 
@@ -71,19 +70,7 @@ public class UserProvisioningService : IUserProvisioningService
 
             try
             {
-                Identity? identity = null;
-                var companyUserId = await ValidateDuplicateIdpUsersAsync(userRepository, alias, user, companyId).ConfigureAwait(false);
-
-                if (companyUserId == Guid.Empty)
-                {
-                    identity = userRepository.CreateIdentity(companyId, UserStatusId.ACTIVE);
-                    userRepository.CreateCompanyUser(identity.Id, user.FirstName, user.LastName, user.Email, identity.Id);
-                    companyUserId = identity.Id;
-                    if (businessPartnerNumber != null)
-                    {
-                        businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber);
-                    }
-                }
+                var (identity, companyUserId) = await GetOrCreateCompanyUser(userRepository, alias, user, companyId, creatorId, businessPartnerNumber);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -132,6 +119,33 @@ public class UserProvisioningService : IUserProvisioningService
 
             yield return new(userdata.CompanyUserId, user.UserName, nextPassword, error);
         }
+    }
+
+    private async Task<(Identity? identity, Guid companyUserId)> GetOrCreateCompanyUser(
+        IUserRepository userRepository,
+        string alias,
+        UserCreationRoleDataIdpInfo user,
+        Guid companyId,
+        Guid creatorId,
+        string? businessPartnerNumber)
+    {
+        var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
+
+        Identity? identity = null;
+        var companyUserId = await ValidateDuplicateIdpUsersAsync(userRepository, alias, user, companyId).ConfigureAwait(false);
+        if (companyUserId != Guid.Empty)
+        {
+            return (identity, companyUserId);
+        }
+
+        identity = userRepository.CreateIdentity(companyId, UserStatusId.ACTIVE);
+        companyUserId = userRepository.CreateCompanyUser(identity.Id, user.FirstName, user.LastName, user.Email, creatorId).Id;
+        if (businessPartnerNumber != null)
+        {
+            businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber);
+        }
+
+        return (identity, companyUserId);
     }
 
     private sealed class OptionalPasswordProvider
@@ -282,7 +296,7 @@ public class UserProvisioningService : IUserProvisioningService
 
             if (messages.Any())
             {
-                throw new ConflictException($"invalid role data [{String.Join(", ", messages)}] has not been assigned in keycloak");
+                throw new ConflictException($"invalid role data [{string.Join(", ", messages)}] has not been assigned in keycloak");
             }
         }
     }

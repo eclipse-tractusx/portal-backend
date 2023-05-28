@@ -183,15 +183,15 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.SubscriptionId);
     }
 
-    public async Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountEditableDetails, IdentityData identity)
+    public async Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountDetails, IdentityData identity)
     {
-        if (serviceAccountEditableDetails.IamClientAuthMethod != IamClientAuthMethod.SECRET)
+        if (serviceAccountDetails.IamClientAuthMethod != IamClientAuthMethod.SECRET)
         {
             throw new ArgumentException("other authenticationType values than SECRET are not supported yet", "authenticationType"); //TODO implement other authenticationTypes
         }
-        if (serviceAccountId != serviceAccountEditableDetails.ServiceAccountId)
+        if (serviceAccountId != serviceAccountDetails.ServiceAccountId)
         {
-            throw new ArgumentException($"serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountEditableDetails.ServiceAccountId}", "serviceAccountId");
+            throw new ArgumentException($"serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountDetails.ServiceAccountId}", "serviceAccountId");
         }
         var serviceAccountRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
         var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(serviceAccountId, identity.CompanyId).ConfigureAwait(false);
@@ -215,9 +215,9 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         await _provisioningManager.UpdateCentralClientAsync(
             result.ClientId,
             new ClientConfigData(
-                serviceAccountEditableDetails.Name,
-                serviceAccountEditableDetails.Description,
-                serviceAccountEditableDetails.IamClientAuthMethod)).ConfigureAwait(false);
+                serviceAccountDetails.Name,
+                serviceAccountDetails.Description,
+                serviceAccountDetails.IamClientAuthMethod)).ConfigureAwait(false);
 
         var authData = await _provisioningManager.GetCentralClientAuthDataAsync(result.ClientId).ConfigureAwait(false);
 
@@ -230,8 +230,8 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             },
             sa =>
             {
-                sa.Name = serviceAccountEditableDetails.Name;
-                sa.Description = serviceAccountEditableDetails.Description;
+                sa.Name = serviceAccountDetails.Name;
+                sa.Description = serviceAccountDetails.Description;
             });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -239,8 +239,8 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         return new ServiceAccountDetails(
             result.ServiceAccountId,
             result.ClientClientId,
-            serviceAccountEditableDetails.Name,
-            serviceAccountEditableDetails.Description,
+            serviceAccountDetails.Name,
+            serviceAccountDetails.Description,
             authData.IamClientAuthMethod,
             result.UserRoleDatas,
             result.CompanyServiceAccountTypeId,

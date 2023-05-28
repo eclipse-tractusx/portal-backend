@@ -58,9 +58,9 @@ public interface IAppsBusinessLogic
     /// <summary>
     /// Get IDs of all favourite apps of the user by ID.
     /// </summary>
-    /// <param name="userId">ID of the user to get favourite apps for.</param>
+    /// <param name="identity">Identity of the user to get favourite apps for.</param>
     /// <returns>List of IDs of user's favourite apps.</returns>
-    public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(string userId);
+    public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(IdentityData identity);
 
     /// <summary>
     /// Adds an app to a user's favourites.

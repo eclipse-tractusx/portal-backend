@@ -695,6 +695,11 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         await foreach (var item in _portalRepositories.GetInstance<IInvitationRepository>().GetInvitedUserDetailsUntrackedAsync(applicationId).ConfigureAwait(false))
         {
+            if (string.IsNullOrWhiteSpace(item.UserId))
+            {
+                throw new ConflictException("UserEntityId must be set.");
+            }
+
             var userRoles = await _provisioningManager.GetClientRoleMappingsForUserAsync(item.UserId, _settings.KeycloakClientID).ConfigureAwait(false);
             yield return new InvitedUser(
                 item.InvitationStatus,
