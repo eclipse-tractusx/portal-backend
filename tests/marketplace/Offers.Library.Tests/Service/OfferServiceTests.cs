@@ -1188,6 +1188,7 @@ public class OfferServiceTests
 
     [Theory]
     [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
     public async Task DeactivateOfferStatusIdAsync_WithoutExistingAppId_ThrowsForbiddenExceptionException(OfferTypeId offerTypeId)
     {
         // Arrange
@@ -1204,6 +1205,7 @@ public class OfferServiceTests
 
     [Theory]
     [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
     public async Task DeactivateOfferStatusIdAsync_WithNotAssignedUser_ThrowsForbiddenException(OfferTypeId offerTypeId)
     {
         // Arrange
@@ -1222,6 +1224,7 @@ public class OfferServiceTests
 
     [Theory]
     [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
     public async Task DeactivateOfferStatusIdAsync_WithNotOfferStatusId_ThrowsConflictException(OfferTypeId offerTypeId)
     {
         // Arrange
@@ -1240,6 +1243,7 @@ public class OfferServiceTests
 
     [Theory]
     [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
     public async Task DeactivateOfferStatusIdAsync_WithValidData_CallsExpected(OfferTypeId offerTypeId)
     {
         // Arrange

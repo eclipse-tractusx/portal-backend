@@ -42,6 +42,7 @@ builder.Services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
     .AddTransient<IOfferService, OfferService>()
     .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
     .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
+    .AddTransient<IServiceChangeBusinessLogic, ServiceChangeBusinessLogic>()
     .AddTechnicalUserProfile()
     .ConfigureServiceSettings(builder.Configuration.GetSection("Services"));
 
