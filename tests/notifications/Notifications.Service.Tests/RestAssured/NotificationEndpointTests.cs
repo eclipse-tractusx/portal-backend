@@ -239,7 +239,7 @@ public class NotificationEndpointTests
         var data = response.Content.ReadAsStringAsync().Result;
         var companyUserDetails = DeserializeData<CompanyUserDetails>(data);
         _username = companyUserDetails.FirstName + " " + companyUserDetails.LastName; 
-        return companyUserDetails.companyUserId.ToString();
+        return companyUserDetails.Company2UserId.ToString();
     }
 
     //GET: api/administration/user/owncompany/roles/coreoffers
@@ -278,7 +278,7 @@ public class NotificationEndpointTests
             .Extract()
             .Response();
         var data = response.Content.ReadAsStringAsync().Result;
-        var assignedRoles = DeserializeData<CompanyUserDetails>(data).assignedRoles.First().UserRoles.ToList();
+        var assignedRoles = DeserializeData<CompanyUserDetails>(data).AssignedRoles.First().UserRoles.ToList();
         return assignedRoles;
     }
     
