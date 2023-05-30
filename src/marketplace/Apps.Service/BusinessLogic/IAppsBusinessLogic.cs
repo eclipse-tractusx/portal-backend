@@ -36,7 +36,7 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="languageShortName">Optional two character language specifier for the app description. No description if not provided.</param>
     /// <returns>List of active marketplace apps.</returns>
-    public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName = null);
+    public IAsyncEnumerable<AppData> GetAllActiveAppsAsync(string? languageShortName);
 
     /// <summary>
     /// Get all apps that a user has been assigned roles in.
@@ -90,8 +90,9 @@ public interface IAppsBusinessLogic
     /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
     /// <param name="sorting"></param>
     /// <param name="statusId"></param>
+    /// <param name="offerId"></param>
     /// <returns>Async enumberable of user's company's provided apps' statuses.</returns>
-    public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId);
+    public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId);
 
     /// <summary>
     /// Adds a subscription relation between an application and a user's company.
@@ -140,13 +141,6 @@ public interface IAppsBusinessLogic
     IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId);
 
     /// <summary>
-    /// Deactivate Offer Status by appId
-    /// </summary>
-    /// <param name="appId">Id of the app</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    public Task DeactivateOfferByAppIdAsync(Guid appId, string iamUserId);
-
-    /// <summary>
     /// Retrieve Document Content for document type  by ID
     /// </summary>
     /// <param name="appId"></param>
@@ -156,11 +150,20 @@ public interface IAppsBusinessLogic
     Task<(byte[] Content, string ContentType, string FileName)> GetAppDocumentContentAsync(Guid appId, Guid documentId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Create OfferAssigned AppLeadImage Document by appId
+    /// Gets the information for the subscription
     /// </summary>
     /// <param name="appId">Id of the app</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    /// <param name="document">Document Data</param>
-    /// <param name="cancellationToken">cancellationToken</param>
-    Task CreatOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken);
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the details of the subscription</returns>
+    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid appId, Guid subscriptionId, string iamUserId);
+    
+    /// <summary>
+    /// Gets the information for the subscription
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="subscriptionId">Id of the subscription</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the details of the subscription</returns>
+    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid appId, Guid subscriptionId, string iamUserId);
 }

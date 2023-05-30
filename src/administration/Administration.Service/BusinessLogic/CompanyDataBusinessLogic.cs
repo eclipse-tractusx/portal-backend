@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -91,8 +92,13 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId)
+    public async IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId, string? languageShortName)
     {
+        if (languageShortName != null && !await _portalRepositories.GetInstance<ILanguageRepository>().IsValidLanguageCode(languageShortName).ConfigureAwait(false))
+        {
+            throw new ControllerArgumentException($"language {languageShortName} is not a valid languagecode");
+        }
+
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
         var companyData = await companyRepositories.GetCompanyStatusDataAsync(iamUserId).ConfigureAwait(false);
         if(companyData == default)
@@ -103,14 +109,16 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         {
             throw new ConflictException("Company Status is Incorrect");
         }
-        await foreach (var data in companyRepositories.GetCompanyRoleAndConsentAgreementDataAsync(companyData.CompanyId).ConfigureAwait(false))
+        await foreach (var data in companyRepositories.GetCompanyRoleAndConsentAgreementDataAsync(companyData.CompanyId, languageShortName ?? Constants.DefaultLanguage).ConfigureAwait(false))
         {
             yield return new CompanyRoleConsentViewData(
                 data.CompanyRoleId,
+                data.RoleDescription,
                 data.CompanyRolesActive,
                 data.Agreements.Select(x => new ConsentAgreementViewData(
                     x.AgreementId,
                     x.AgreementName,
+                    x.DocumentId,
                     x.ConsentStatus == 0
                         ? null
                         : x.ConsentStatus

@@ -34,7 +34,7 @@ public interface ICompanyDataBusinessLogic
 
     Task RemoveCompanyAssignedUseCaseDetailsAsync(string iamUserId, Guid useCaseId);
 
-    IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId);
+    IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId, string? languageShortName);
 
     Task CreateCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId, IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails);
 }

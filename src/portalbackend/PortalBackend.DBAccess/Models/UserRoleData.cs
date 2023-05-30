@@ -36,7 +36,7 @@ public record UserRoleData(
 public record UserRoleWithDescription(
         [property: JsonPropertyName("roleId")] Guid UserRoleId,
         [property: JsonPropertyName("roleName")] string UserRoleText,
-        [property: JsonPropertyName("roleDescription")] string RoleDescription);
+        [property: JsonPropertyName("roleDescription")] string? RoleDescription);
 
 public record UserRoleInformation(
     [property: JsonPropertyName("roleId")] Guid UserRoleId,

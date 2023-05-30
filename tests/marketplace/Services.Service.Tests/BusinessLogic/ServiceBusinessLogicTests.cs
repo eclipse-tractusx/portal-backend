@@ -178,15 +178,17 @@ public class ServiceBusinessLogicTests
 
     #region GetCompanyProvidedServiceSubscriptionStatusesForUser
     
-    [Fact]
-    public async Task GetCompanyProvidedServiceSubscriptionStatusesForUserAsync_ReturnsExpectedCount()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("c714b905-9d2a-4cf3-b9f7-10be4eeddfc8")]
+    public async Task GetCompanyProvidedServiceSubscriptionStatusesForUserAsync_ReturnsExpected(string? offerIdTxt)
     {
         // Arrange
         var (_, iamUser) = CreateTestUserPair();
-
-        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5);
-        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUser.UserEntityId, OfferTypeId.SERVICE, null, OfferSubscriptionStatusId.ACTIVE))
-            .Returns((skip, take) => Task.FromResult(new Pagination.Source<OfferCompanySubscriptionStatusData>(data.Count(), data.Skip(skip).Take(take)))!);
+        Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
+        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5).ToImmutableArray();
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUser.UserEntityId, OfferTypeId.SERVICE, null, OfferSubscriptionStatusId.ACTIVE, A<Guid?>._))
+            .Returns((skip, take) => Task.FromResult(new Pagination.Source<OfferCompanySubscriptionStatusData>(data.Length, data.Skip(skip).Take(take)))!);
 
         var serviceSettings = new ServiceSettings
         {
@@ -195,10 +197,80 @@ public class ServiceBusinessLogicTests
         var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(serviceSettings));
 
         // Act
-        var result = await sut.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 10, iamUser.UserEntityId, null, null).ConfigureAwait(false);
+        var result = await sut.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 10, iamUser.UserEntityId, null, null, offerId).ConfigureAwait(false);
 
         // Assert
-        result.Content.Should().HaveCount(5);
+        result.Meta.NumberOfElements.Should().Be(5);
+        result.Content.Should().HaveCount(5).And.Satisfy(
+            x => x.OfferId == data[0].OfferId && x.ServiceName == data[0].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[0].CompanySubscriptionStatuses) && x.Image == data[0].Image,
+            x => x.OfferId == data[1].OfferId && x.ServiceName == data[1].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[1].CompanySubscriptionStatuses) && x.Image == data[1].Image,
+            x => x.OfferId == data[2].OfferId && x.ServiceName == data[2].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[2].CompanySubscriptionStatuses) && x.Image == data[2].Image,
+            x => x.OfferId == data[3].OfferId && x.ServiceName == data[3].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[3].CompanySubscriptionStatuses) && x.Image == data[3].Image,
+            x => x.OfferId == data[4].OfferId && x.ServiceName == data[4].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[4].CompanySubscriptionStatuses) && x.Image == data[4].Image
+        );
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUser.UserEntityId, OfferTypeId.SERVICE, null, OfferSubscriptionStatusId.ACTIVE, offerId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetCompanyProvidedServiceSubscriptionStatusesForUserAsync_EmptyImage_ReturnsExpected()
+    {
+        // Arrange
+        var (_, iamUser) = CreateTestUserPair();
+        var offerId = Guid.NewGuid();
+        var data = new [] {
+            _fixture.Build<OfferCompanySubscriptionStatusData>().With(x => x.Image, Guid.Empty).Create(),
+            _fixture.Build<OfferCompanySubscriptionStatusData>().With(x => x.Image, Guid.NewGuid()).Create()
+        };
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUser.UserEntityId, OfferTypeId.SERVICE, null, OfferSubscriptionStatusId.ACTIVE, A<Guid?>._))
+            .Returns((skip, take) => Task.FromResult(new Pagination.Source<OfferCompanySubscriptionStatusData>(data.Length, data.Skip(skip).Take(take)))!);
+
+        var serviceSettings = new ServiceSettings
+        {
+            ApplicationsMaxPageSize = 15
+        };
+        var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(serviceSettings));
+
+        // Act
+        var result = await sut.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 10, iamUser.UserEntityId, null, null, offerId).ConfigureAwait(false);
+
+        // Assert
+        result.Meta.NumberOfElements.Should().Be(2);
+        result.Content.Should().HaveCount(2).And.Satisfy(
+            x => x.OfferId == data[0].OfferId && x.ServiceName == data[0].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[0].CompanySubscriptionStatuses) && x.Image == null,
+            x => x.OfferId == data[1].OfferId && x.ServiceName == data[1].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[1].CompanySubscriptionStatuses) && x.Image == data[1].Image
+        );
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUser.UserEntityId, OfferTypeId.SERVICE, null, OfferSubscriptionStatusId.ACTIVE, offerId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetCompanyProvidedServiceSubscriptionStatusesForUserAsync_QueryResultNull_ReturnsExpected()
+    {
+        // Arrange
+        var (_, iamUser) = CreateTestUserPair();
+        var offerId = Guid.NewGuid();
+        var data = new [] {
+            _fixture.Build<OfferCompanySubscriptionStatusData>().With(x => x.Image, Guid.Empty).Create(),
+            _fixture.Build<OfferCompanySubscriptionStatusData>().With(x => x.Image, Guid.NewGuid()).Create()
+        };
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUser.UserEntityId, OfferTypeId.SERVICE, null, OfferSubscriptionStatusId.ACTIVE, A<Guid?>._))
+            .Returns((skip, take) => Task.FromResult((Pagination.Source<OfferCompanySubscriptionStatusData>?)null));
+
+        var serviceSettings = new ServiceSettings
+        {
+            ApplicationsMaxPageSize = 15
+        };
+        var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(serviceSettings));
+
+        // Act
+        var result = await sut.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 10, iamUser.UserEntityId, null, null, offerId).ConfigureAwait(false);
+
+        // Assert
+        result.Meta.NumberOfElements.Should().Be(0);
+        result.Content.Should().BeEmpty();
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUser.UserEntityId, OfferTypeId.SERVICE, null, OfferSubscriptionStatusId.ACTIVE, offerId))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -508,47 +580,64 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
-    #region GetTechnicalUserProfilesForOffer
+    #region GetSubscriptionDetailForProvider
 
     [Fact]
-    public async Task GetTechnicalUserProfilesForOffer_ReturnsExpected()
+    public async Task GetSubscriptionDetailForProvider_WithNotMatchingUserRoles_ThrowsException()
     {
         // Arrange
-        A.CallTo(() => _offerService.GetTechnicalUserProfilesForOffer(_existingServiceId, _iamUser.UserEntityId, OfferTypeId.SERVICE))
-            .Returns(_fixture.CreateMany<TechnicalUserProfileInformation>(5));
-        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, Options.Create(new ServiceSettings()));
+        var offerId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var data = _fixture.Create<ProviderSubscriptionDetailData>();
+        var settings = new ServiceSettings
+        {
+            CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                {"ClientTest", new[] {"Test"}}
+            }
+        };
+        A.CallTo(() => _offerService.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, _iamUser.UserEntityId, OfferTypeId.SERVICE, A<IDictionary<string, IEnumerable<string>>>._))
+            .Returns(data);
+        var sut = new ServiceBusinessLogic(null!, _offerService,  null!, null!, Options.Create(settings));
 
         // Act
-        var result = await sut.GetTechnicalUserProfilesForOffer(_existingServiceId, _iamUser.UserEntityId)
-            .ConfigureAwait(false);
+        var result = await sut.GetSubscriptionDetailForProvider(offerId, subscriptionId, _iamUser.UserEntityId).ConfigureAwait(false);
 
-        result.Should().HaveCount(5);
+        // Assert
+        result.Should().Be(data);
     }
 
     #endregion
 
-    #region UpdateTechnicalUserProfiles
+    #region GetSubscriptionDetailForSubscriber
 
     [Fact]
-    public async Task UpdateTechnicalUserProfiles_ReturnsExpected()
+    public async Task GetSubscriptionDetailForSubscriber_WithNotMatchingUserRoles_ThrowsException()
     {
         // Arrange
-        const string clientProfile = "cl";
-        var data = _fixture.CreateMany<TechnicalUserProfileData>(5);
-        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, Options.Create(new ServiceSettings{TechnicalUserProfileClient = clientProfile}));
+        var offerId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var data = _fixture.Create<SubscriberSubscriptionDetailData>();
+        var settings = new ServiceSettings
+        {
+            CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                {"ClientTest", new[] {"Test"}}
+            }
+        };
+        A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(offerId, subscriptionId, _iamUser.UserEntityId, OfferTypeId.SERVICE, A<IDictionary<string, IEnumerable<string>>>._))
+            .Returns(data);
+        var sut = new ServiceBusinessLogic(null!, _offerService,  null!, null!, Options.Create(settings));
 
         // Act
-        await sut
-            .UpdateTechnicalUserProfiles(_existingServiceId, data, _iamUser.UserEntityId)
-            .ConfigureAwait(false);
+        var result = await sut.GetSubscriptionDetailForSubscriber(offerId, subscriptionId, _iamUser.UserEntityId).ConfigureAwait(false);
 
-        A.CallTo(() => _offerService.UpdateTechnicalUserProfiles(_existingServiceId, OfferTypeId.SERVICE,
-                A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), _iamUser.UserEntityId, clientProfile))
-            .MustHaveHappenedOnceExactly();
+        // Assert
+        result.Should().Be(data);
     }
 
     #endregion
-    
+
     #region Setup
 
     private void SetupPagination(int count = 5)
@@ -556,7 +645,7 @@ public class ServiceBusinessLogicTests
         var serviceDetailData = _fixture.CreateMany<ServiceOverviewData>(count);
         var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<ServiceOverviewData>(serviceDetailData.Count(), serviceDetailData.Skip(skip).Take(take)));
         
-        A.CallTo(() => _offerRepository.GetActiveServicesPaginationSource(A<ServiceOverviewSorting?>._, A<ServiceTypeId?>._))
+        A.CallTo(() => _offerRepository.GetActiveServicesPaginationSource(A<ServiceOverviewSorting?>._, A<ServiceTypeId?>._, A<string>._))
             .Returns(paginationResult);
         
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);

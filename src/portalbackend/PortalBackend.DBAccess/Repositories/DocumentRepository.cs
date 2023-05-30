@@ -119,7 +119,7 @@ public class DocumentRepository : IDocumentRepository
         .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public void RemoveDocument(Guid documentId) => 
+    public void RemoveDocument(Guid documentId) =>
         _dbContext.Documents.Remove(new Document(documentId, null!, null!, null!, default, default, default, default));
 
     /// <inheritdoc />
@@ -150,6 +150,19 @@ public class DocumentRepository : IDocumentRepository
         initialize?.Invoke(document);
         _dbContext.Attach(document);
         modify(document);
+    }
+
+    public void AttachAndModifyDocuments(IEnumerable<(Guid DocumentId, Action<Document>? Initialize, Action<Document> Modify)> documentData)
+    {
+        var initial = documentData.Select(x =>
+            {
+                var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                x.Initialize?.Invoke(document);
+                return (Document: document, x.Modify);
+            }
+        ).ToList();
+        _dbContext.AttachRange(initial.Select(x => x.Document));
+        initial.ForEach(x => x.Modify(x.Document));
     }
 
     /// <inheritdoc />

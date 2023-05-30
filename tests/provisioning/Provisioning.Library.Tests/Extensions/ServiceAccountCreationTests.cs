@@ -82,14 +82,14 @@ public class ServiceAccountCreationTests
         Setup();
         
         // Act
-        async Task Act() => await _sut.CreateServiceAccountAsync(creationData, _companyId, new List<string>(), CompanyServiceAccountTypeId.OWN, false).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateServiceAccountAsync(creationData, _companyId, Enumerable.Empty<string>(), CompanyServiceAccountTypeId.OWN, false).ConfigureAwait(false);
         
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"{_invalidUserRoleId} is not a valid UserRoleId");
+        ex.Message.Should().Be($"{_invalidUserRoleId} are not a valid UserRoleIds");
         A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(A<string>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.AddProtocolMapperAsync(A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccountAssignedRole(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccountAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustNotHaveHappened();
         A.CallTo(() => _serviceAccountRepository.CreateIamServiceAccount(A<string>._, A<string>._, A<string>._, A<Guid>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -115,7 +115,7 @@ public class ServiceAccountCreationTests
         result.serviceAccountData.AuthData.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
         A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(_iamUserId, bpns)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.AddProtocolMapperAsync("internal-sa1")).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccountAssignedRole(_serviceAccountId, A<Guid>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccountAssignedRoles(A<IEnumerable<(Guid ServiceAccountId, Guid)>>.That.Matches(x => x.Count() == 1 && x.First().ServiceAccountId == _serviceAccountId))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _serviceAccountRepository.CreateIamServiceAccount("internal-sa1", A<string>._, _iamUserId, _serviceAccountId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -143,7 +143,7 @@ public class ServiceAccountCreationTests
         A.CallTo(() => _provisioningManager.SetupCentralServiceAccountClientAsync(A<string>._, A<ClientConfigRolesData>.That.Matches(x => x.Name == "sa1-testName"))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(_iamUserId, bpns)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.AddProtocolMapperAsync("internal-sa1")).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccountAssignedRole(_serviceAccountId, A<Guid>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccountAssignedRoles(A<IEnumerable<(Guid ServiceAccountId,Guid)>>.That.Matches(x => x.Count() == 1 && x.First().ServiceAccountId == _serviceAccountId))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _serviceAccountRepository.CreateIamServiceAccount("internal-sa1", A<string>._, _iamUserId, _serviceAccountId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         serviceAccounts.Should().ContainSingle().Which.Name.Should().Be("sa1-testName");
@@ -154,10 +154,10 @@ public class ServiceAccountCreationTests
     private void Setup(ICollection<CompanyServiceAccount>? serviceAccounts = null)
     {
         A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync())
-            .ReturnsLazily(() => 1);
+            .Returns(1);
 
         A.CallTo(() => _provisioningManager.SetupCentralServiceAccountClientAsync(A<string>._, A<ClientConfigRolesData>._))
-            .ReturnsLazily(() => new ServiceAccountData("internal-sa1", _iamUserId, new ClientAuthData(IamClientAuthMethod.SECRET)));
+            .Returns(new ServiceAccountData("internal-sa1", _iamUserId, new ClientAuthData(IamClientAuthMethod.SECRET)));
 
         A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(_companyId, CompanyServiceAccountStatusId.ACTIVE, A<string>._, A<string>._, A<CompanyServiceAccountTypeId>._, A<Action<CompanyServiceAccount>>._))
             .Invokes((Guid companyId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description, CompanyServiceAccountTypeId companyServiceAccountTypeId, Action<CompanyServiceAccount>? setOptionalParameters) =>
@@ -173,12 +173,12 @@ public class ServiceAccountCreationTests
                 setOptionalParameters?.Invoke(sa);
                 serviceAccounts?.Add(sa);
             })
-            .ReturnsLazily(() => new CompanyServiceAccount(_serviceAccountId, Guid.Empty, CompanyServiceAccountStatusId.ACTIVE, null!, null!, default, default));
+            .Returns(new CompanyServiceAccount(_serviceAccountId, Guid.Empty, CompanyServiceAccountStatusId.ACTIVE, null!, null!, default, default));
         
         A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<Guid>>.That.Matches(x => x.Count(y => y == _validUserRoleId) == 1)))
-            .ReturnsLazily(() => new[] {new UserRoleData(_validUserRoleId, Guid.NewGuid().ToString(), "UserRole")}.ToAsyncEnumerable());
+            .Returns(new[] {new UserRoleData(_validUserRoleId, Guid.NewGuid().ToString(), "UserRole")}.ToAsyncEnumerable());
         A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<Guid>>.That.Matches(x => x.Count(y => y == _invalidUserRoleId) == 1)))
-            .ReturnsLazily(() => new List<UserRoleData>().ToAsyncEnumerable());
+            .Returns(Enumerable.Empty<UserRoleData>().ToAsyncEnumerable());
     }
 
     #endregion

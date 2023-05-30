@@ -133,7 +133,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         {
             documentId = await ProcessDocument(SdFactoryResponseModelTitle.Connector, data, cancellationToken).ConfigureAwait(false);
         }
-        _portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, con =>
+        _portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
         {
             if (documentId != null)
             {

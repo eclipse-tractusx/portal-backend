@@ -18,5 +18,10 @@
     "id": "b161d570-f6ff-45b4-a077-243f72487af6",
     "app_id": "ac1cf001-7fbc-1f2f-817f-bce0572c0007",
     "iam_client_id": "f032a042-d035-11ec-9d64-0242ac120002"
+  },
+  {
+    "id": "1ef3a9b0-e8ef-48cc-9b88-65bacd6f05fb",
+    "app_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "iam_client_id": "f032a049-d035-11ec-9d64-0242ac120002"
   }
 ]

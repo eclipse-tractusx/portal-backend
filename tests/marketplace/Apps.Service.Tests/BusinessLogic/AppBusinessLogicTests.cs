@@ -17,7 +17,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-
+// 
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic.Tests;
@@ -41,6 +42,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic.Tests;
 public class AppBusinessLogicTests
 {
     private const string IamUserId = "3e8343f7-4fe5-4296-8312-f33aa6dbde5d";
+
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferRepository _offerRepository;
@@ -120,12 +122,12 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var results = _fixture.CreateMany<ActiveAppData>(5);
-        A.CallTo(() => _offerRepository.GetAllActiveAppsAsync(A<string>._)).Returns(results.ToAsyncEnumerable());
+        A.CallTo(() => _offerRepository.GetAllActiveAppsAsync(A<string>._, A<string>._)).Returns(results.ToAsyncEnumerable());
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), null!);
 
         // Act
-        var result = await sut.GetAllActiveAppsAsync().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllActiveAppsAsync(null).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().HaveCount(5);
@@ -139,7 +141,7 @@ public class AppBusinessLogicTests
     public async Task GetAllUserUserBusinessAppsAsync_WithValidData_ReturnsExpectedData()
     {
         // Arrange
-        var appData = _fixture.CreateMany<(Guid, string?, string, Guid, string)>(5);
+        var appData = _fixture.CreateMany<(Guid, Guid, string?, string, Guid, string)>(5);
         A.CallTo(() => _offerSubscriptionRepository.GetAllBusinessAppDataForUserIdAsync(A<string>._)).Returns(appData.ToAsyncEnumerable());
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), null!);
 
@@ -185,7 +187,7 @@ public class AppBusinessLogicTests
         var offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
         A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._, A<OfferTypeId>._, A<string>._))
-            .ReturnsLazily(() => offerSubscriptionId);
+            .Returns(offerSubscriptionId);
         var sut = new AppsBusinessLogic(null!, offerSubscriptionService, null!, null!, Options.Create(new AppsSettings()), null!);
 
         // Act
@@ -215,7 +217,7 @@ public class AppBusinessLogicTests
         // Arrange
         var offerSetupService = A.Fake<IOfferSetupService>();
         A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<string>._, A<OfferTypeId>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
-            .ReturnsLazily(() => offerAutoSetupResponseData);
+            .Returns(offerAutoSetupResponseData);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
 
         var sut = new AppsBusinessLogic(null!, null!, null!, offerSetupService, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
@@ -231,14 +233,17 @@ public class AppBusinessLogicTests
 
     #region GetCompanyProvidedAppSubscriptionStatusesForUser
     
-    [Fact]
-    public async Task GetCompanyProvidedAppSubscriptionStatusesForUserAsync_ReturnsExpectedCount()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("c714b905-9d2a-4cf3-b9f7-10be4eeddfc8")]
+    public async Task GetCompanyProvidedAppSubscriptionStatusesForUserAsync_ReturnsExpected(string? offerIdTxt)
     {
         // Arrange
         var iamUserId = _fixture.Create<string>();
-        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5);
-        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.APP, default, OfferSubscriptionStatusId.ACTIVE))
-            .Returns((skip, take) => Task.FromResult(new Pagination.Source<OfferCompanySubscriptionStatusData>(data.Count(), data.Skip(skip).Take(take)))!);
+        Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
+        var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5).ToImmutableArray();
+        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.APP, default, OfferSubscriptionStatusId.ACTIVE, A<Guid?>._))
+            .Returns((skip, take) => Task.FromResult(new Pagination.Source<OfferCompanySubscriptionStatusData>(data.Length, data.Skip(skip).Take(take)))!);
 
         var appsSettings = new AppsSettings
         {
@@ -248,10 +253,82 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(appsSettings), null!);
 
         // Act
-        var result = await sut.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 10, iamUserId, null, null).ConfigureAwait(false);
+        var result = await sut.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 10, iamUserId, null, null, offerId).ConfigureAwait(false);
 
         // Assert
-        result.Content.Should().HaveCount(5);
+        result.Meta.NumberOfElements.Should().Be(5);
+        result.Content.Should().HaveCount(5).And.Satisfy(
+            x => x.OfferId == data[0].OfferId && x.ServiceName == data[0].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[0].CompanySubscriptionStatuses) && x.Image == data[0].Image,
+            x => x.OfferId == data[1].OfferId && x.ServiceName == data[1].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[1].CompanySubscriptionStatuses) && x.Image == data[1].Image,
+            x => x.OfferId == data[2].OfferId && x.ServiceName == data[2].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[2].CompanySubscriptionStatuses) && x.Image == data[2].Image,
+            x => x.OfferId == data[3].OfferId && x.ServiceName == data[3].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[3].CompanySubscriptionStatuses) && x.Image == data[3].Image,
+            x => x.OfferId == data[4].OfferId && x.ServiceName == data[4].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[4].CompanySubscriptionStatuses) && x.Image == data[4].Image
+        );
+        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.APP, default, OfferSubscriptionStatusId.ACTIVE, offerId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetCompanyProvidedAppSubscriptionStatusesForUserAsync_EmptyImage_ReturnsExpected()
+    {
+        // Arrange
+        var iamUserId = _fixture.Create<string>();
+        var offerId = Guid.NewGuid();
+        var data = new [] {
+            _fixture.Build<OfferCompanySubscriptionStatusData>().With(x => x.Image, Guid.Empty).Create(),
+            _fixture.Build<OfferCompanySubscriptionStatusData>().With(x => x.Image, Guid.NewGuid()).Create()
+        };
+        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.APP, default, OfferSubscriptionStatusId.ACTIVE, A<Guid?>._))
+            .Returns((skip, take) => Task.FromResult(new Pagination.Source<OfferCompanySubscriptionStatusData>(data.Length, data.Skip(skip).Take(take)))!);
+
+        var appsSettings = new AppsSettings
+        {
+            ApplicationsMaxPageSize = 15
+        };
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(appsSettings), null!);
+
+        // Act
+        var result = await sut.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 10, iamUserId, null, null, offerId).ConfigureAwait(false);
+
+        // Assert
+        result.Meta.NumberOfElements.Should().Be(2);
+        result.Content.Should().HaveCount(2).And.Satisfy(
+            x => x.OfferId == data[0].OfferId && x.ServiceName == data[0].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[0].CompanySubscriptionStatuses) && x.Image == null,
+            x => x.OfferId == data[1].OfferId && x.ServiceName == data[1].ServiceName && x.CompanySubscriptionStatuses.SequenceEqual(data[1].CompanySubscriptionStatuses) && x.Image == data[1].Image
+        );
+        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.APP, default, OfferSubscriptionStatusId.ACTIVE, offerId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetCompanyProvidedAppSubscriptionStatusesForUserAsync_QueryNullResult_ReturnsExpected()
+    {
+        // Arrange
+        var iamUserId = _fixture.Create<string>();
+        var offerId = Guid.NewGuid();
+        var data = new [] {
+            _fixture.Build<OfferCompanySubscriptionStatusData>().With(x => x.Image, Guid.Empty).Create(),
+            _fixture.Build<OfferCompanySubscriptionStatusData>().With(x => x.Image, Guid.NewGuid()).Create()
+        };
+        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.APP, default, OfferSubscriptionStatusId.ACTIVE, A<Guid?>._))
+            .Returns((skip, take) => Task.FromResult((Pagination.Source<OfferCompanySubscriptionStatusData>?)null));
+
+        var appsSettings = new AppsSettings
+        {
+            ApplicationsMaxPageSize = 15
+        };
+        
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(appsSettings), null!);
+
+        // Act
+        var result = await sut.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 10, iamUserId, null, null, offerId).ConfigureAwait(false);
+
+        // Assert
+        result.Meta.NumberOfElements.Should().Be(0);
+        result.Content.Should().BeEmpty();
+        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(iamUserId, OfferTypeId.APP, default, OfferSubscriptionStatusId.ACTIVE, offerId))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -264,7 +341,7 @@ public class AppBusinessLogicTests
         // Arrange
         var notExistingAppId = _fixture.Create<Guid>();
         A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(notExistingAppId, A<Guid>._, IamUserId))
-            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData>());
+            .Returns(((Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData))default);
         
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), null!);
 
@@ -281,7 +358,7 @@ public class AppBusinessLogicTests
         // Arrange
         var appId = _fixture.Create<Guid>();
         A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, A<string>.That.Not.Matches(x => x == IamUserId)))
-            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData>(
+            .Returns((
                 Guid.Empty,
                 default,
                 Guid.Empty,
@@ -308,7 +385,7 @@ public class AppBusinessLogicTests
         var companyId = _fixture.Create<Guid>();
         offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
         A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, companyId, IamUserId))
-            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData>(
+            .Returns((
                 offerSubscription.Id,
                 offerSubscription.OfferSubscriptionStatusId,
                 offerSubscription.RequesterId,
@@ -334,7 +411,7 @@ public class AppBusinessLogicTests
         var offerSubscription = _fixture.Create<OfferSubscription>();
         offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
         A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, IamUserId))
-            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData>(
+            .Returns((
                 offerSubscription.Id,
                 offerSubscription.OfferSubscriptionStatusId,
                 offerSubscription.RequesterId,
@@ -360,7 +437,7 @@ public class AppBusinessLogicTests
         var offerSubscription = _fixture.Create<OfferSubscription>();
         offerSubscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
         A.CallTo(() => _offerSubscriptionRepository.GetCompanyAssignedAppDataForProvidingCompanyUserAsync(appId, A<Guid>._, IamUserId))
-            .ReturnsLazily(() => new ValueTuple<Guid, OfferSubscriptionStatusId, Guid, string?, Guid, RequesterData>(
+            .Returns((
                 offerSubscription.Id,
                 offerSubscription.OfferSubscriptionStatusId,
                 offerSubscription.RequesterId,
@@ -376,29 +453,6 @@ public class AppBusinessLogicTests
         // Assert
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false, A<Action<Notification>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingService.SendMails("test@email.com", A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.Matches(x => x.Count() == 1 && x.First() == "subscription-activation"))).MustHaveHappenedOnceExactly();
-    }
-
-    #endregion
-
-    #region  DeactivateOfferbyAppId
-
-    [Fact]
-    public async Task DeactivateOfferStatusbyAppIdAsync_CallsExpected()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var settings = new AppsSettings
-        {
-            ServiceManagerRoles = _fixture.Create<Dictionary<string, IEnumerable<string>>>(),
-            BasePortalAddress = "test"
-        };
-        var sut = new AppsBusinessLogic(null!, null!, _offerService, null!, Options.Create(settings), _mailingService);
-        
-        // Act
-        await sut.DeactivateOfferByAppIdAsync(appId, IamUserId).ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _offerService.DeactivateOfferIdAsync(appId, IamUserId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -449,159 +503,116 @@ public class AppBusinessLogicTests
 
     #endregion
 
-    
+    #region GetCompanySubscribedAppSubscriptionStatusesForUserAsync
 
     [Fact]
-    public async Task GetCompanySubscribedAppSubscriptionStatusesForUserAsync_ReturnsExpectedCount()
+    public async Task GetCompanySubscribedAppSubscriptionStatusesForUserAsync_ReturnsExpected()
     {
         // Arrange
         var iamUserId = _fixture.Create<string>();
-        var data = _fixture.CreateMany<AppWithSubscriptionStatus>(5);
+        var data = _fixture.CreateMany<(Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatusId, string? Name, string Provider, Guid Image)>(3).ToImmutableArray();
         A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(iamUserId))
             .Returns(data.ToAsyncEnumerable());
-        
+
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!,  null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
 
         // Act
         var result = await sut.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(iamUserId).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        result.Should().HaveCount(5);
-    }
-    
-    #region  CreateOfferAssignedAppLeadImageDocumentById
-
-    [Fact]
-    public async Task CreateOfferAssignedAppLeadImageDocumentById_ExpectedCalls()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var iamUserId = _fixture.Create<Guid>().ToString();
-        var documentId = _fixture.Create<Guid>();
-        var documentStatusData = _fixture.CreateMany<DocumentStatusData>(2);
-        var companyUserId =  _fixture.Create<Guid>();
-        var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
-        var documents = new List<Document>();
-        var offerAssignedDocuments = new List<OfferAssignedDocument>();
-
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, companyUserId, documentStatusData));
-
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._,A<Action<Document>?>._))
-            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentType, Action<Document>? setupOptionalFields) =>
-            {
-                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, documentType);
-                setupOptionalFields?.Invoke(document);
-                documents.Add(document);
-            });
-
-        A.CallTo(() => _offerRepository.CreateOfferAssignedDocument(A<Guid>._, A<Guid>._))
-            .Invokes((Guid offerId, Guid docId) =>
-            {
-                var offerAssignedDocument = new OfferAssignedDocument(offerId, docId);
-                offerAssignedDocuments.Add(offerAssignedDocument);
-            });
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
-
-        // Act
-        await sut.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, file, CancellationToken.None);
-
-        // Assert
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._,A<Action<Document>?>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.CreateOfferAssignedDocument(A<Guid>._, A<Guid>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.RemoveOfferAssignedDocument(A<Guid>._,A<Guid>._)).MustHaveHappenedTwiceExactly();
-        A.CallTo(() => _documentRepository.RemoveDocument(A<Guid>._)).MustHaveHappenedTwiceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        documents.Should().HaveCount(1);
-        offerAssignedDocuments.Should().HaveCount(1);
+        result.Should().HaveCount(3).And.Satisfy(
+            x => x.AppId == data[0].AppId && x.Name == data[0].Name && x.OfferSubscriptionStatus == data[0].OfferSubscriptionStatusId && x.Provider == data[0].Provider && x.Image == data[0].Image,
+            x => x.AppId == data[1].AppId && x.Name == data[1].Name && x.OfferSubscriptionStatus == data[1].OfferSubscriptionStatusId && x.Provider == data[1].Provider && x.Image == data[1].Image,
+            x => x.AppId == data[2].AppId && x.Name == data[2].Name && x.OfferSubscriptionStatus == data[2].OfferSubscriptionStatusId && x.Provider == data[2].Provider && x.Image == data[2].Image
+        );
     }
 
     [Fact]
-    public async Task CreateOfferAssignedAppLeadImageDocumentById_ThrowsUnsupportedMediaTypeException()
+    public async Task GetCompanySubscribedAppSubscriptionStatusesForUserAsync_NullableProperties_ReturnsExpected()
     {
         // Arrange
-        var appId = _fixture.Create<Guid>();
-        var iamUserId = _fixture.Create<Guid>().ToString();
-        var appLeadImageContentTypes = new [] {"image/jpeg","image/png"};
-        var file = FormFileHelper.GetFormFile("Test File", "TestImage.pdf", "application/pdf");
+        var iamUserId = _fixture.Create<string>();
+        var data = new (Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatusId, string? Name, string Provider, Guid Image) [] {
+            ( Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE, null, _fixture.Create<string>(), Guid.Empty )
+        };
 
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+        _fixture.CreateMany<(Guid AppId, OfferSubscriptionStatusId OfferSubscriptionStatusId, string? Name, string Provider, Guid Image)>(3).ToImmutableArray();
+        A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanySubscribedAppSubscriptionStatusesUntrackedAsync(iamUserId))
+            .Returns(data.ToAsyncEnumerable());
 
-        // Act
-        var Act = () => sut.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, file, CancellationToken.None);
-
-        // Assert
-        var result = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
-        result.Message.Should().Be($"Document type not supported. File with contentType :{string.Join(",", appLeadImageContentTypes)} are allowed.");
-    }
-
-    [Fact]
-    public async Task CreateOfferAssignedAppLeadImageDocumentById_ThrowsConflictException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var iamUserId = _fixture.Create<Guid>().ToString();
-        var companyUserId = _fixture.Create<Guid>();
-        var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
-
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP))
-            .ReturnsLazily(() => (false, companyUserId, null!));
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
+        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!,  null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
 
         // Act
-        var Act = () => sut.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, file, CancellationToken.None);
+        var result = await sut.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(iamUserId).ToListAsync().ConfigureAwait(false);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        result.Message.Should().Be("offerStatus is in incorrect State");
+        result.Should().HaveCount(1).And.Satisfy(
+            x => x.AppId == data[0].AppId && x.Name == null && x.Image == null
+        );
     }
 
-    [Fact]
-    public async Task CreateOfferAssignedAppLeadImageDocumentById_ThrowsForbiddenException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var iamUserId = _fixture.Create<Guid>().ToString();
-        var companyUserId = _fixture.Create<Guid>();
-        var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
-
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP))
-            .ReturnsLazily(() => (true, Guid.Empty, null!));
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
-
-        // Act
-        async Task Act() => await sut.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, file, CancellationToken.None);
-
-        // Assert
-        var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
-        result.Message.Should().Be($"user {iamUserId} is not a member of the provider company of App {appId}");
-    }
-
-    [Fact]
-    public async Task CreateOfferAssignedAppLeadImageDocumentById_ThrowsNotFoundException()
-    {
-        // Arrange
-        var appId = _fixture.Create<Guid>();
-        var iamUserId = _fixture.Create<Guid>().ToString();
-        var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
-
-        A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP))
-            .ReturnsLazily(() => new ValueTuple<bool,Guid,IEnumerable<DocumentStatusData>>());
-
-        var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
-
-        // Act
-        async Task Act() => await sut.CreatOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, file, CancellationToken.None);
-
-        // Assert
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
-        result.Message.Should().Be($"App {appId} does not exist.");
-    }
     #endregion
 
+    #region GetSubscriptionDetailForProvider
+
+    [Fact]
+    public async Task GetSubscriptionDetailForProvider_WithNotMatchingUserRoles_ThrowsException()
+    {
+        // Arrange
+        var offerId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var data = _fixture.Create<ProviderSubscriptionDetailData>();
+        var settings = new AppsSettings
+        {
+            CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                {"ClientTest", new[] {"Test"}}
+            }
+        };
+        A.CallTo(() => _offerService.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, IamUserId, OfferTypeId.APP, A<IDictionary<string, IEnumerable<string>>>._))
+            .Returns(data);
+        var sut = new AppsBusinessLogic(null!, null!, _offerService,  null!, Options.Create(settings), null!);
+
+        // Act
+        var result = await sut.GetSubscriptionDetailForProvider(offerId, subscriptionId, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(data);
+    }
+
+    #endregion
+
+    #region GetSubscriptionDetailForSubscriber
+
+    [Fact]
+    public async Task GetSubscriptionDetailForSubscriber_WithNotMatchingUserRoles_ThrowsException()
+    {
+        // Arrange
+        var offerId = _fixture.Create<Guid>();
+        var subscriptionId = _fixture.Create<Guid>();
+        var data = _fixture.Create<SubscriberSubscriptionDetailData>();
+        var settings = new AppsSettings
+        {
+            CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
+            {
+                {"ClientTest", new[] {"Test"}}
+            }
+        };
+        A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(offerId, subscriptionId, IamUserId, OfferTypeId.APP, A<IDictionary<string, IEnumerable<string>>>._))
+            .Returns(data);
+        var sut = new AppsBusinessLogic(null!, null!, _offerService,  null!, Options.Create(settings), null!);
+
+        // Act
+        var result = await sut.GetSubscriptionDetailForSubscriber(offerId, subscriptionId, IamUserId).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Be(data);
+    }
+
+    #endregion
+
+    #region Setup
+    
     private (CompanyUser, IamUser) CreateTestUserPair()
     {
         var companyUser = _fixture.Build<CompanyUser>()
@@ -613,4 +624,6 @@ public class AppBusinessLogicTests
         companyUser.IamUser = iamUser;
         return (companyUser, iamUser);
     }
+
+    #endregion
 }

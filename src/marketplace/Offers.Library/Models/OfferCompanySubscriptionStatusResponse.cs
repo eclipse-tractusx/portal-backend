@@ -18,21 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Service.BusinessLogic
-{
-    public class ClientBusinessLogic : IClientBusinessLogic
-    {
-        private readonly IProvisioningManager _provisioningManager;
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
-        public ClientBusinessLogic(IProvisioningManager provisioningManager)
-        {
-            _provisioningManager = provisioningManager;
-        }
-
-        public Task<string> CreateClient(ClientSetupData clientSetupData) =>
-            _provisioningManager.SetupClientAsync(clientSetupData.redirectUrl);
-    }
-}
+/// <summary>
+/// View model of an Offer Company Subscription.
+/// </summary>
+/// <param name="OfferId"></param>
+/// <param name="ServiceName"></param>
+/// <param name="CompanySubscriptionStatuses"></param>
+/// <param name="Image"></param>
+/// <returns></returns>
+public record OfferCompanySubscriptionStatusResponse(
+    Guid OfferId,
+    string? ServiceName,
+    IEnumerable<CompanySubscriptionStatusData> CompanySubscriptionStatuses,
+    Guid? Image
+);

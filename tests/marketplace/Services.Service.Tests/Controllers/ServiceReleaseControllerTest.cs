@@ -82,7 +82,7 @@ public class ServiceReleaseControllerTest
         
         // Assert 
         A.CallTo(() => _logic.GetServiceDetailsByIdAsync(serviceId)).MustHaveHappenedOnceExactly();
-        Assert.IsType<ServiceData>(result);
+        result.Should().BeOfType<ServiceData>();
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public class ServiceReleaseControllerTest
         
         // Assert 
         A.CallTo(() => _logic.GetServiceTypeDataAsync()).MustHaveHappenedOnceExactly();
-        Assert.IsType<List<ServiceTypeData>>(result);
+        result.Should().AllBeOfType<ServiceTypeData>();
         result.Should().HaveCount(5);
     }
 
@@ -162,14 +162,14 @@ public class ServiceReleaseControllerTest
     {
         //Arrange
         var paginationResponse = new Pagination.Response<InReviewServiceData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<InReviewServiceData>(5));
-        A.CallTo(() => _logic.GetAllInReviewStatusServiceAsync(A<int>._, A<int>._,A<OfferSorting?>._,A<string>._,A<string>._))
+        A.CallTo(() => _logic.GetAllInReviewStatusServiceAsync(A<int>._, A<int>._,A<OfferSorting?>._,A<string>._,A<string>._,A<ServiceReleaseStatusIdFilter?>._))
             .ReturnsLazily(() => paginationResponse);
 
         //Act
         var result = await this._controller.GetAllInReviewStatusServiceAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAllInReviewStatusServiceAsync(0, 15, null, null,null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetAllInReviewStatusServiceAsync(0, 15, null, null,null,null)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
 
@@ -287,5 +287,38 @@ public class ServiceReleaseControllerTest
         // Assert
         A.CallTo(() => _logic.CreateServiceDocumentAsync(serviceId,
             DocumentTypeId.ADDITIONAL_DETAILS, file, IamUserId, CancellationToken.None)).MustHaveHappened();
+    }
+    
+    [Fact]
+    public async Task GetTechnicalUserProfiles_ReturnsExpectedCount()
+    {
+        //Arrange
+        var offerId = Guid.NewGuid();
+        
+        var data = _fixture.CreateMany<TechnicalUserProfileInformation>(5);
+        A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId, IamUserId))
+            .Returns(data);
+
+        //Act
+        var result = await this._controller.GetTechnicalUserProfiles(offerId).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.GetTechnicalUserProfilesForOffer(offerId, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+    
+    [Fact]
+    public async Task UpdateTechnicalUserProfiles_ReturnsExpectedCount()
+    {
+        //Arrange
+        var offerId = Guid.NewGuid();
+        var data = _fixture.CreateMany<TechnicalUserProfileData>(5);
+
+        //Act
+        var result = await this._controller.CreateAndUpdateTechnicalUserProfiles(offerId, data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.UpdateTechnicalUserProfiles(offerId, A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5),IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 }

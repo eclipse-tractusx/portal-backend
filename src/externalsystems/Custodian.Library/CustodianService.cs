@@ -30,6 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 
 public class CustodianService : ICustodianService
 {
+    private static readonly JsonSerializerOptions _options = new (){ PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly ITokenService _tokenService;
     private readonly CustodianSettings _settings;
 
@@ -49,8 +50,11 @@ public class CustodianService : ICustodianService
         var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
         const string walletUrl = "/api/wallets";
 
+        async ValueTask<string?> CreateErrorMessage(HttpContent errorContent) =>
+            (await JsonSerializer.DeserializeAsync<WalletErrorResponse>(errorContent.ReadAsStream(cancellationToken), _options, cancellationToken).ConfigureAwait(false))?.Message;
+
         var result = await httpClient.PostAsync(walletUrl, stringContent, cancellationToken)
-            .CatchingIntoServiceExceptionFor("custodian-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+            .CatchingIntoServiceExceptionFor("custodian-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
 
         return await result.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
     }

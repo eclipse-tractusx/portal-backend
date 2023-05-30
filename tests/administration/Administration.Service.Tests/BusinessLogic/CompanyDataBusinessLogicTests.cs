@@ -37,6 +37,7 @@ public class CompanyDataBusinessLogicTests
     private IPortalRepositories _portalRepositories;
     private IConsentRepository _consentRepository;
     private ICompanyRolesRepository _companyRolesRepository;
+    private ILanguageRepository _languageRepository;
     private readonly CompanyDataBusinessLogic _sut;
 
     public CompanyDataBusinessLogicTests()
@@ -50,10 +51,12 @@ public class CompanyDataBusinessLogicTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _consentRepository = A.Fake<IConsentRepository>();
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
+        _languageRepository = A.Fake<ILanguageRepository>();
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRolesRepository>()).Returns(_companyRolesRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
         _sut = new CompanyDataBusinessLogic(_portalRepositories);
     }
 
@@ -106,26 +109,31 @@ public class CompanyDataBusinessLogicTests
             _fixture.Create<CompanyRoleConsentData>(),
             new CompanyRoleConsentData(
                 _fixture.Create<CompanyRoleId>(),
+                _fixture.Create<string>(),
                 true,
                 new ConsentAgreementData [] {
-                    new (Guid.NewGuid(), _fixture.Create<string>(), 0),
-                    new (Guid.NewGuid(), _fixture.Create<string>(), ConsentStatusId.ACTIVE),
-                    new (Guid.NewGuid(), _fixture.Create<string>(), ConsentStatusId.INACTIVE),
+                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), 0),
+                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), ConsentStatusId.ACTIVE),
+                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), ConsentStatusId.INACTIVE),
                 }),
             _fixture.Create<CompanyRoleConsentData>(),
         };
         var companyId = _fixture.Create<Guid>();
+        var languageShortName = "en";
 
         A.CallTo(() => _companyRepository.GetCompanyStatusDataAsync(IamUserId))
             .Returns((true, companyId));
+        
+        A.CallTo(() => _languageRepository.IsValidLanguageCode(languageShortName))
+            .Returns(true);
 
-        A.CallTo(() => _companyRepository.GetCompanyRoleAndConsentAgreementDataAsync(companyId))
+        A.CallTo(() => _companyRepository.GetCompanyRoleAndConsentAgreementDataAsync(companyId, languageShortName))
             .Returns(companyRoleConsentDatas.ToAsyncEnumerable());
 
         var sut = new CompanyDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetCompanyRoleAndConsentAgreementDetailsAsync(IamUserId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCompanyRoleAndConsentAgreementDetailsAsync(IamUserId, languageShortName).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull()
@@ -135,23 +143,29 @@ public class CompanyDataBusinessLogicTests
             .AllSatisfy(x => x.Should().Match<(CompanyRoleConsentViewData Result, CompanyRoleConsentData Mock)>(
                 z =>
                 z.Result.CompanyRoleId == z.Mock.CompanyRoleId &&
+                z.Result.RoleDescription == z.Mock.RoleDescription &&
                 z.Result.CompanyRolesActive == z.Mock.CompanyRolesActive &&
-                z.Result.Agreements.SequenceEqual(z.Mock.Agreements.Select(a => new ConsentAgreementViewData(a.AgreementId, a.AgreementName, a.ConsentStatus == 0 ? null : a.ConsentStatus)))));
+                z.Result.Agreements.SequenceEqual(z.Mock.Agreements.Select(a => new ConsentAgreementViewData(a.AgreementId, a.AgreementName, a.DocumentId, a.ConsentStatus == 0 ? null : a.ConsentStatus)))));
 
-        A.CallTo(() => _companyRepository.GetCompanyRoleAndConsentAgreementDataAsync(companyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.GetCompanyRoleAndConsentAgreementDataAsync(companyId, languageShortName)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
     public async Task GetCompanyRoleAndConsentAgreementDetails_ThrowsNotFoundException()
     {
         // Arrange
+        var languageShortName = "en";
+
         A.CallTo(() => _companyRepository.GetCompanyStatusDataAsync(IamUserId))
             .Returns(((bool,Guid))default);
+
+        A.CallTo(() => _languageRepository.IsValidLanguageCode(languageShortName))
+            .Returns(true);
 
         var sut = new CompanyDataBusinessLogic(_portalRepositories);
 
         // Act
-        async Task Act() => await sut.GetCompanyRoleAndConsentAgreementDetailsAsync(IamUserId).ToListAsync().ConfigureAwait(false);
+        async Task Act() => await sut.GetCompanyRoleAndConsentAgreementDetailsAsync(IamUserId, languageShortName).ToListAsync().ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -163,18 +177,42 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var companyId = _fixture.Create<Guid>();
+        var languageShortName = "en";
 
         A.CallTo(() => _companyRepository.GetCompanyStatusDataAsync(IamUserId))
             .Returns((false, companyId));
 
+        A.CallTo(() => _languageRepository.IsValidLanguageCode(languageShortName))
+            .Returns(true);
+
         var sut = new CompanyDataBusinessLogic(_portalRepositories);
 
         // Act
-        async Task Act() => await sut.GetCompanyRoleAndConsentAgreementDetailsAsync(IamUserId).ToListAsync().ConfigureAwait(false);
+        async Task Act() => await sut.GetCompanyRoleAndConsentAgreementDetailsAsync(IamUserId, languageShortName).ToListAsync().ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Company Status is Incorrect");
+        ex.Message.Should().Be("Company Status is Incorrect");
+    }
+
+    [Fact]
+    public async Task GetCompanyRoleAndConsentAgreementDetails_Throws()
+    {
+        // Arrange
+        var languageShortName = "eng";
+
+        A.CallTo(() => _languageRepository.IsValidLanguageCode(languageShortName))
+            .Returns(false);
+        
+        var sut = new CompanyDataBusinessLogic(_portalRepositories);
+
+        // Act
+        async Task Act() => await sut.GetCompanyRoleAndConsentAgreementDetailsAsync(IamUserId, languageShortName).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"language {languageShortName} is not a valid languagecode");
+
     }
 
     #endregion

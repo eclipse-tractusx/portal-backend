@@ -173,10 +173,10 @@ public class ServicesController : ControllerBase
     [HttpGet]
     [Route("provided/subscription-status")]
     [Authorize(Roles = "view_service_subscriptions")]
-    [ProducesResponseType(typeof(Pagination.Response<OfferCompanySubscriptionStatusData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Pagination.Response<OfferCompanySubscriptionStatusResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public Task<Pagination.Response<OfferCompanySubscriptionStatusData>> GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null) =>
-        this.WithIamUserId(userId => _serviceBusinessLogic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(page, size, userId, sorting, statusId));
+    public Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] SubscriptionStatusSorting? sorting = null, [FromQuery] OfferSubscriptionStatusId? statusId = null, [FromQuery] Guid? offerId = null) =>
+        this.WithIamUserId(userId => _serviceBusinessLogic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(page, size, userId, sorting, statusId, offerId));
 
     /// <summary>
     /// Retrieve Document Content for Service by ID
@@ -222,38 +222,38 @@ public class ServicesController : ControllerBase
         this.WithIamUserId(userId =>_serviceBusinessLogic.GetCompanyProvidedServiceStatusDataAsync(page, size, userId, sorting, offerName, statusId));
 
     /// <summary>
-    /// Retrieve the technical user profile information
+    /// Retrieves the details of a subscription
     /// </summary>
-    /// <param name="serviceId">id of the service to receive the technical user profiles for</param>
-    /// <remarks>Example: GET: /api/services/{serviceId}/technical-user-profiles</remarks>
-    /// <response code="200">Returns a list of profiles</response>
-    /// <response code="403">Requesting user is not part of the providing company for the service.</response>
+    /// <param name="serviceId">id of the service to receive the details for</param>
+    /// <param name="subscriptionId">id of the subscription to receive the details for</param>
+    /// <remarks>Example: GET: /api/services/{serviceId}/subscription/{subscriptionId}/provider</remarks>
+    /// <response code="200">Returns the subscription details for the provider</response>
+    /// <response code="403">User's company does not provide the service.</response>
+    /// <response code="404">No service or subscription found.</response>
     [HttpGet]
-    [Route("{serviceId}/technical-user-profiles")]
     [Authorize(Roles = "add_service_offering")]
-    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
+    [Route("{serviceId}/subscription/{subscriptionId}/provider")]
+    [ProducesResponseType(typeof(ProviderSubscriptionDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfiles([FromRoute] Guid serviceId) =>
-        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetTechnicalUserProfilesForOffer(serviceId, iamUserId));
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider([FromRoute] Guid serviceId, [FromRoute] Guid subscriptionId) =>
+        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetSubscriptionDetailForProvider(serviceId, subscriptionId, iamUserId));
 
     /// <summary>
-    /// Creates and updates the technical user profiles
+    /// Retrieves the details of a subscription
     /// </summary>
-    /// <param name="serviceId">id of the service to receive the technical user profiles for</param>
-    /// <param name="data">The data for the update of the technical user profile</param>
-    /// <remarks>Example: GET: /api/services/{serviceId}/technical-user-profiles</remarks>
-    /// <response code="200">Returns a list of profiles</response>
-    /// <response code="403">Requesting user is not part of the providing company for the service.</response>
-    [HttpPut]
-    [Route("{serviceId}/technical-user-profiles")]
+    /// <param name="serviceId">id of the service to receive the details for</param>
+    /// <param name="subscriptionId">id of the subscription to receive the details for</param>
+    /// <remarks>Example: GET: /api/services/{serviceId}/subscription/{subscriptionId}/subscriber</remarks>
+    /// <response code="200">Returns the subscription details for the subscriber</response>
+    /// <response code="403">User's company does not provide the service.</response>
+    /// <response code="404">No service or subscription found.</response>
+    [HttpGet]
     [Authorize(Roles = "add_service_offering")]
-    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [Route("{serviceId}/subscription/{subscriptionId}/subscriber")]
+    [ProducesResponseType(typeof(SubscriberSubscriptionDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<NoContentResult> CreateAndUpdateTechnicalUserProfiles([FromRoute] Guid serviceId, [FromBody] IEnumerable<TechnicalUserProfileData> data)
-    {
-        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.UpdateTechnicalUserProfiles(serviceId, data, iamUserId)).ConfigureAwait(false);
-        return NoContent();
-    }
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber([FromRoute] Guid serviceId, [FromRoute] Guid subscriptionId) =>
+        this.WithIamUserId(iamUserId => _serviceBusinessLogic.GetSubscriptionDetailForSubscriber(serviceId, subscriptionId, iamUserId));
 }

@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
@@ -130,7 +131,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var offers = await sut.GetAllActiveAppsAsync(null).ToListAsync().ConfigureAwait(false);
+        var offers = await sut.GetAllActiveAppsAsync(null!, Constants.DefaultLanguage).ToListAsync().ConfigureAwait(false);
 
         // Assert
         offers.Should().HaveCount(3);
@@ -382,7 +383,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var offerDetail = await sut.GetActiveServicesPaginationSource(sorting, null)(0, 15).ConfigureAwait(false);
+        var offerDetail = await sut.GetActiveServicesPaginationSource(sorting, null, Constants.DefaultLanguage)(0, 15).ConfigureAwait(false);
 
         // Assert
         offerDetail.Should().NotBeNull();
@@ -400,7 +401,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     [Theory]
     [InlineData(ServiceTypeId.CONSULTANCE_SERVICE, 0, 2, 1, 1)]
-    [InlineData(ServiceTypeId.DATASPACE_SERVICE, 0, 2, 1, 1)]
+    [InlineData(ServiceTypeId.DATASPACE_SERVICE, 0, 2, 2, 2)]
     [InlineData(null, 0, 2, 3, 2)]
     [InlineData(null, 1, 1, 3, 1)]
     [InlineData(null, 2, 1, 3, 1)]
@@ -410,7 +411,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var offerDetail = await sut.GetActiveServicesPaginationSource(null, serviceTypeId)(page, size).ConfigureAwait(false);
+        var offerDetail = await sut.GetActiveServicesPaginationSource(null, serviceTypeId, Constants.DefaultLanguage)(page, size).ConfigureAwait(false);
 
         // Assert
         if (count == 0)
@@ -548,6 +549,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         new [] {
             "ac1cf001-7fbc-1f2f-817f-bce0000c0001",
             "99c5fd12-8085-4de2-abfd-215e1ee4baa5",
+            "99c5fd12-8085-4de2-abfd-215e1ee4baa8"
         },
         new [] {
             "00000000-0000-0000-0000-000000000000",
@@ -672,6 +674,20 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var documenttypeId = InReviewAppofferDetail!.Documents.Select(x => x.documentTypeId);
         documenttypeId.Should().NotContain(DocumentTypeId.APP_LEADIMAGE);
         documenttypeId.Should().NotContain(DocumentTypeId.APP_IMAGE);
+        InReviewAppofferDetail.OfferStatusId.Should().Be(OfferStatusId.IN_REVIEW);
+    }
+
+    [Fact]
+    public async Task GetInReviewAppDataByIdAsync_InCorrectOfferStatus_ReturnsNullt()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var InReviewAppofferDetail = await sut.GetInReviewAppDataByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.APP).ConfigureAwait(false);
+
+        // Assert
+        InReviewAppofferDetail.Should().BeNull();
     }
 
     #endregion
@@ -1110,6 +1126,19 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result!.Title.Should().Be("SDE with EDC");
         result.Provider.Should().Be("Service Provider");
+        result.OfferStatusId.Should().Be(OfferStatusId.ACTIVE);
+    }
+    [Fact]
+    public async Task GetServiceDetailsByIdAsync_InCorrectOfferStatus_ReturnsNull()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetServiceDetailsByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA8")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
     }
 
     #endregion
@@ -1119,13 +1148,13 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Theory]
     [InlineData(new[] { OfferStatusId.ACTIVE }, OfferSorting.NameDesc,null,"en")]
     [InlineData(new[] { OfferStatusId.ACTIVE }, OfferSorting.NameAsc,null,"en")]
-    public async Task GetAllInReviewStatusServiceAsync_ReturnsExpectedResult(IEnumerable<OfferStatusId> statusids, OfferSorting? sorting, string? serviceName, string? languagename)
+    public async Task GetAllInReviewStatusServiceAsync_ReturnsExpectedResult(IEnumerable<OfferStatusId> statusids, OfferSorting? sorting, string? serviceName, string languagename)
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetAllInReviewStatusServiceAsync(statusids, OfferTypeId.SERVICE, sorting,serviceName, languagename)(0, 10).ConfigureAwait(false);
+        var result = await sut.GetAllInReviewStatusServiceAsync(statusids, OfferTypeId.SERVICE, sorting,serviceName, languagename, Constants.DefaultLanguage)(0, 10).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -1148,7 +1177,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetAllInReviewStatusServiceAsync(new[] { OfferStatusId.ACTIVE }, OfferTypeId.SERVICE, OfferSorting.NameAsc, null, "en")(0, 10).ConfigureAwait(false);
+        var result = await sut.GetAllInReviewStatusServiceAsync(new[] { OfferStatusId.ACTIVE }, OfferTypeId.SERVICE, OfferSorting.NameAsc, null, "en", Constants.DefaultLanguage)(0, 10).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();

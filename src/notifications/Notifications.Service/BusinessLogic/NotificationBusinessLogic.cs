@@ -114,9 +114,10 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         return new NotificationCountDetails(
             details.Where(x => x.IsRead).Sum(x => x.Count),
             unreadNotifications.Sum(x => x.Count),
-            unreadNotifications.SingleOrDefault(x => x.NotificationTopicId == NotificationTopicId.INFO).Count,
-            unreadNotifications.SingleOrDefault(x => x.NotificationTopicId == NotificationTopicId.OFFER).Count,
-            unreadNotifications.SingleOrDefault(x => x.NotificationTopicId == NotificationTopicId.ACTION).Count);
+            unreadNotifications.Where(x => x.NotificationTopicId == NotificationTopicId.INFO).Sum(x => x.Count),
+            unreadNotifications.Where(x => x.NotificationTopicId == NotificationTopicId.OFFER).Sum(x => x.Count),
+            details.Where(x => x is { NotificationTopicId: NotificationTopicId.ACTION, Done: null or false }).Sum(x => x.Count),
+            unreadNotifications.Where(x => x is { NotificationTopicId: NotificationTopicId.ACTION }).Sum(x => x.Count));
     }
 
     /// <inheritdoc />

@@ -113,7 +113,6 @@ public class AppsSettings
     /// <summary>
     /// IT Admin Roles
     /// </summary>
-    /// <value></value>
     [Required]
     public IDictionary<string,IEnumerable<string>> ITAdminRoles { get; set; } = null!;
 
@@ -126,23 +125,31 @@ public class AppsSettings
     /// <summary>
     /// Document Type Id to be deleted
     /// </summary>
-    /// <value></value>
     [Required]
     public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds { get; set; } = null!;
     
     /// <summary>
     /// Document Type Id to be deleted
     /// </summary>
-    /// <value></value>
     [Required]
     public IEnumerable<DocumentTypeId> SubmitAppDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Document Type Id and ContentType to be uploaded
     /// </summary>
-    /// <value></value>
     [Required]
     public IDictionary<DocumentTypeId, IEnumerable<string>> UploadAppDocumentTypeIds {get; set;} = null!;
+
+    /// <summary>
+    /// Client to get the technical user profile client
+    /// </summary>
+    public string TechnicalUserProfileClient { get; set; } = null!;
+
+    /// <summary>
+    /// Company Admin Roles
+    /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
 }
 
 /// <summary>
