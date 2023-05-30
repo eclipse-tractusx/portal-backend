@@ -167,12 +167,12 @@ public interface IOfferService
     Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string, IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
 
     /// <summary>
-    /// Deactivate the given offerStatus by appsId
+    /// Deactivate the given offerStatus by offerId and offerType
     /// </summary>
-    /// <param name="appId">Id of the offer that should be Deactivate</param>
+    /// <param name="offerId">Id of the offer that should be Deactivate</param>
     /// <param name="iamUserId">Id of the iam User</param>
     /// <param name="offerTypeId">Type of the offer</param>
-    Task DeactivateOfferIdAsync(Guid appId, string iamUserId, OfferTypeId offerTypeId);
+    Task DeactivateOfferIdAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Upload Document the given offertypeId by Id
