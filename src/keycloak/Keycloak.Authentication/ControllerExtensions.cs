@@ -42,8 +42,8 @@ public static class ControllerExtensions
     /// <exception cref="ArgumentException">If expected claim value is not provided.</exception>
     public static T WithIamUserId<T>(this ControllerBase controller, Func<string, T> idConsumingFunction)
     {
-        var sub = controller.GetIamUserId();
-        return idConsumingFunction(sub);
+        var iamUserId = controller.User.Claims.GetStringFromClaim(PortalClaimTypes.Sub);
+        return idConsumingFunction(iamUserId);
     }
 
     public static T WithIdentityData<T>(this ControllerBase controller, Func<IdentityData, T> tokenConsumingFunction)
@@ -61,33 +61,17 @@ public static class ControllerExtensions
     public static T WithIamUserAndBearerToken<T>(this ControllerBase controller, Func<(string iamUserId, string bearerToken), T> tokenConsumingFunction)
     {
         var bearerToken = controller.GetBearerToken();
-        var iamUserId = controller.GetIamUserId();
+        var iamUserId = controller.User.Claims.GetStringFromClaim(PortalClaimTypes.Sub);
         return tokenConsumingFunction((iamUserId, bearerToken));
     }
 
     private static IdentityData GetIdentityData(this ControllerBase controller)
     {
-        var sub = controller.User.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
-        if (string.IsNullOrWhiteSpace(sub))
-        {
-            throw new ControllerArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
-        }
-
+        var sub = controller.User.Claims.GetStringFromClaim(PortalClaimTypes.Sub);
         var identityId = controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId);
         var identityType = controller.User.Claims.GetEnumFromClaim<IdentityTypeId>(PortalClaimTypes.IdentityType);
         var companyId = controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId);
         return new IdentityData(sub, identityId, identityType, companyId);
-    }
-
-    private static string GetIamUserId(this ControllerBase controller)
-    {
-        var sub = controller.User.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
-        if (string.IsNullOrWhiteSpace(sub))
-        {
-            throw new ControllerArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
-        }
-
-        return sub;
     }
 
     private static string GetBearerToken(this ControllerBase controller)
@@ -106,6 +90,17 @@ public static class ControllerExtensions
         }
 
         return bearer;
+    }
+
+    private static string GetStringFromClaim(this IEnumerable<Claim> claims, string claimType)
+    {
+        var sub = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
+        if (string.IsNullOrWhiteSpace(sub))
+        {
+            throw new ControllerArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
+        }
+
+        return sub;
     }
 
     private static Guid GetGuidFromClaim(this IEnumerable<Claim> claims, string type)
