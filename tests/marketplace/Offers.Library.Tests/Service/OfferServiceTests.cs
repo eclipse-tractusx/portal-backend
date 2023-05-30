@@ -1241,6 +1241,7 @@ public class OfferServiceTests
 
     [Theory]
     [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
     public async Task DeactivateOfferStatusIdAsync_WithoutExistingAppId_ThrowsForbiddenExceptionException(OfferTypeId offerTypeId)
     {
         // Arrange
@@ -1252,20 +1253,22 @@ public class OfferServiceTests
         async Task Act() => await _sut.DeactivateOfferIdAsync(notExistingId, _iamUserId, offerTypeId).ConfigureAwait(false);
 
         // Assert
-        await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        ex.Message.Should().Be($"{offerTypeId} {notExistingId} does not exist.");
     }
 
     [Theory]
     [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
     public async Task DeactivateOfferStatusIdAsync_WithNotAssignedUser_ThrowsForbiddenException(OfferTypeId offerTypeId)
     {
         // Arrange
-        var appid = _fixture.Create<Guid>();
-        A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(appid, offerTypeId, _iamUserId))
+        var offerId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, _iamUserId))
             .Returns((true, false));
 
         // Act
-        async Task Act() => await _sut.DeactivateOfferIdAsync(appid, _iamUserId, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeactivateOfferIdAsync(offerId, _iamUserId, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
@@ -1275,15 +1278,16 @@ public class OfferServiceTests
 
     [Theory]
     [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
     public async Task DeactivateOfferStatusIdAsync_WithNotOfferStatusId_ThrowsConflictException(OfferTypeId offerTypeId)
     {
         // Arrange
-        var appid = _fixture.Create<Guid>();
-        A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(appid, offerTypeId, _iamUserId))
+        var offerId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, _iamUserId))
             .Returns((false, true));
 
         // Act
-        async Task Act() => await _sut.DeactivateOfferIdAsync(appid, _iamUserId, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeactivateOfferIdAsync(offerId, _iamUserId, offerTypeId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -1293,15 +1297,16 @@ public class OfferServiceTests
 
     [Theory]
     [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
     public async Task DeactivateOfferStatusIdAsync_WithValidData_CallsExpected(OfferTypeId offerTypeId)
     {
         // Arrange
         var offer = _fixture.Create<Offer>();
-        var appid = _fixture.Create<Guid>();
-        A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(appid, offerTypeId, _iamUserId))
+        var offerId = _fixture.Create<Guid>();
+        A.CallTo(() => _offerRepository.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, _iamUserId))
             .Returns(new ValueTuple<bool, bool>(true, true));
 
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appid, A<Action<Offer>>._, A<Action<Offer>?>._))
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._))
             .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
             {
                 initializeParemeters?.Invoke(offer);
@@ -1309,10 +1314,10 @@ public class OfferServiceTests
             });
 
         // Act
-        await _sut.DeactivateOfferIdAsync(appid, _iamUserId, offerTypeId).ConfigureAwait(false);
+        await _sut.DeactivateOfferIdAsync(offerId, _iamUserId, offerTypeId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appid, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         offer.OfferStatusId.Should().Be(OfferStatusId.INACTIVE);
     }
