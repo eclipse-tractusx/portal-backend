@@ -703,14 +703,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private static void GetAndValidateCompanyDataDetails(CompanyApplicationUserEmailData companyApplicationDetails)
     {
-         if (companyApplicationDetails.Name is not null &&
-            companyApplicationDetails.AddressId is not null &&
-            companyApplicationDetails.Streetname is not null &&
-            companyApplicationDetails.City is not null &&
-            companyApplicationDetails.Country is not null &&
-            companyApplicationDetails.UniqueIds.Any()  &&
-            companyApplicationDetails.CompanyRoleIds.Any()  &&
-            companyApplicationDetails.AgreementConsentStatuses.Any())
+        if (companyApplicationDetails.Name is not null &&
+           companyApplicationDetails.AddressId is not null &&
+           companyApplicationDetails.Streetname is not null &&
+           companyApplicationDetails.City is not null &&
+           companyApplicationDetails.Country is not null &&
+           companyApplicationDetails.UniqueIds.Any() &&
+           companyApplicationDetails.CompanyRoleIds.Any() &&
+           companyApplicationDetails.AgreementConsentStatuses.Any())
         {
             return;
         }
