@@ -185,7 +185,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<(Guid, string)>, string, string?, OfferSubscriptionStatusId>());
+            .Returns(((IEnumerable<(Guid, string?)>, string, string?, OfferSubscriptionStatusId))default);
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
 
         // Act
@@ -201,7 +201,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<(Guid, string)>, string, string?, OfferSubscriptionStatusId>(new List<(Guid, string)>(), string.Empty, null, OfferSubscriptionStatusId.PENDING));
+            .Returns((Enumerable.Empty<(Guid, string?)>(), string.Empty, null, OfferSubscriptionStatusId.PENDING));
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
 
         // Act
@@ -217,7 +217,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<(Guid, string)>, string?, string?, OfferSubscriptionStatusId>(new List<(Guid, string)>(), null, null, OfferSubscriptionStatusId.ACTIVE));
+            .Returns((Enumerable.Empty<(Guid, string?)>(), null, null, OfferSubscriptionStatusId.ACTIVE));
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
 
         // Act
@@ -233,7 +233,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<(Guid, string)>, string?, string?, OfferSubscriptionStatusId>(new List<(Guid, string)>(), "cl1", null, OfferSubscriptionStatusId.ACTIVE));
+            .Returns((Enumerable.Empty<(Guid, string?)>(), "cl1", null, OfferSubscriptionStatusId.ACTIVE));
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
 
         // Act
@@ -249,7 +249,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<(Guid, string)>, string?, string?, OfferSubscriptionStatusId>(new List<(Guid, string)>(), "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
+            .Returns((Enumerable.Empty<(Guid, string?)>(), "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
 
         // Act
@@ -264,13 +264,13 @@ public class OfferProviderBusinessLogicTests
     {
         // Arrange
         var fakeId = Guid.NewGuid();
-        var serviceAccounts = new (Guid, string)[]
+        var serviceAccounts = new (Guid, string?)[]
         {
             new(Guid.NewGuid(), "sa1"),
             new(Guid.NewGuid(), "sa2")
         };
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<(Guid, string)>, string?, string?, OfferSubscriptionStatusId>(serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
+            .Returns((serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
 
         // Act
@@ -286,14 +286,14 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var technicalUserId = Guid.NewGuid();
         var technicalUserClientId = "sa1";
-        var serviceAccounts = new (Guid, string)[]
+        var serviceAccounts = new (Guid, string?)[]
         {
             new(technicalUserId, technicalUserClientId)
         };
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(_subscriptionId))
-            .ReturnsLazily(() => new ValueTuple<IEnumerable<(Guid, string)>, string, string?, OfferSubscriptionStatusId>(serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
+            .Returns((serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
         A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(technicalUserClientId))
-            .ReturnsLazily(() => new ClientAuthData(IamClientAuthMethod.SECRET) { Secret = "test123" });
+            .Returns(new ClientAuthData(IamClientAuthMethod.SECRET) { Secret = "test123" });
 
         // Act
         var result = await _sut.TriggerProviderCallback(_subscriptionId, CancellationToken.None).ConfigureAwait(false);
@@ -313,7 +313,7 @@ public class OfferProviderBusinessLogicTests
     private void SetupTriggerProvider(OfferTypeId offerTypeId = OfferTypeId.APP)
     {
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderInformation(_subscriptionId))
-            .ReturnsLazily(() => new TriggerProviderInformation(
+            .Returns(new TriggerProviderInformation(
                 _offerId,
                 "Test App",
                 "https://www.test.com",
@@ -326,7 +326,7 @@ public class OfferProviderBusinessLogicTests
             ));
 
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderInformation(_singleInstanceSubscriptionId))
-            .ReturnsLazily(() => new TriggerProviderInformation(
+            .Returns(new TriggerProviderInformation(
                 _offerId,
                 "Single Test App",
                 "https://www.test.com",
@@ -339,14 +339,14 @@ public class OfferProviderBusinessLogicTests
             ));
 
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderInformation(A<Guid>.That.Not.Matches(x => x == _subscriptionId || x == _singleInstanceSubscriptionId)))
-            .ReturnsLazily(() => (TriggerProviderInformation?)null);
+            .Returns((TriggerProviderInformation?)null);
 
         var userRoleId = Guid.NewGuid();
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
-            .Returns(new List<Guid> { userRoleId }.ToAsyncEnumerable());
+            .Returns(new[] { userRoleId }.ToAsyncEnumerable());
 
         A.CallTo(() => _userRepository.GetServiceProviderCompanyUserWithRoleIdAsync(_offerId, A<List<Guid>>.That.Matches(x => x.Count() == 1 && x.Single() == userRoleId)))
-            .ReturnsLazily(() => new List<Guid> { _receiverId }.ToAsyncEnumerable());
+            .Returns(new[] { _receiverId }.ToAsyncEnumerable());
     }
 
     #endregion

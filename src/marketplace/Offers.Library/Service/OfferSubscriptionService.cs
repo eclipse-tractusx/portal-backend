@@ -55,11 +55,11 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         await ValidateConsent(offerAgreementConsentData, offerId).ConfigureAwait(false);
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var offerSubscription = offerTypeId == OfferTypeId.APP
+        var (offerSubscription, process, processSteps) = offerTypeId == OfferTypeId.APP
             ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, companyUserId).ConfigureAwait(false)
-            : offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+            : (offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId), null, null);
 
-        CreateProcessSteps(offerSubscription);
+        CreateProcessSteps(offerSubscription, process, processSteps);
         CreateConsentsForSubscription(offerSubscription.Id, offerAgreementConsentData, companyInformation.CompanyId, companyUserId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
@@ -76,11 +76,18 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         return offerSubscription.Id;
     }
 
-    private void CreateProcessSteps(OfferSubscription offerSubscription)
+    private void CreateProcessSteps(OfferSubscription offerSubscription, Process? process, IEnumerable<ProcessStepTypeId>? processStepTypeIds)
     {
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-        offerSubscription.ProcessId ??= processStepRepository.CreateProcess(ProcessTypeId.OFFER_SUBSCRIPTION).Id;
-        processStepRepository.CreateProcessStepRange(new (ProcessStepTypeId, ProcessStepStatusId, Guid)[] { (ProcessStepTypeId.TRIGGER_PROVIDER, ProcessStepStatusId.TODO, offerSubscription.ProcessId.Value) });
+        if (process == null)
+        {
+            process = processStepRepository.CreateProcess(ProcessTypeId.OFFER_SUBSCRIPTION);
+            offerSubscription.ProcessId = process.Id;
+        }
+        if (processStepTypeIds == null || !processStepTypeIds.Any())
+        {
+            processStepRepository.CreateProcessStepRange(new (ProcessStepTypeId, ProcessStepStatusId, Guid)[] { (ProcessStepTypeId.TRIGGER_PROVIDER, ProcessStepStatusId.TODO, process.Id) });
+        }
     }
 
     private async Task<OfferProviderDetailsData> ValidateOfferProviderDetailDataAsync(Guid offerId, OfferTypeId offerTypeId)
@@ -137,33 +144,36 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         return (companyInformation, companyUserId);
     }
 
-    private static async Task<OfferSubscription> HandleAppSubscriptionAsync(
+    private static async Task<(OfferSubscription, Process?, IEnumerable<ProcessStepTypeId>?)> HandleAppSubscriptionAsync(
         Guid offerId,
         IOfferSubscriptionsRepository offerSubscriptionsRepository,
         CompanyInformationData companyInformation,
         Guid companyUserId)
     {
-        var (offerSubscriptionId, offerSubscriptionStateId) = await offerSubscriptionsRepository
+        var result = await offerSubscriptionsRepository
             .GetOfferSubscriptionStateForCompanyAsync(offerId, companyInformation.CompanyId, OfferTypeId.APP)
             .ConfigureAwait(false);
-        if (offerSubscriptionId == Guid.Empty)
+        if (result == default)
         {
-            return offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId,
-                OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId);
+            return (offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId,
+                OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId), null, null);
         }
 
-        if (offerSubscriptionStateId is OfferSubscriptionStatusId.ACTIVE or OfferSubscriptionStatusId.PENDING)
+        if (result.OfferSubscriptionStatusId is OfferSubscriptionStatusId.ACTIVE or OfferSubscriptionStatusId.PENDING)
         {
             throw new ConflictException(
                 $"company {companyInformation.CompanyId} is already subscribed to {offerId}");
         }
 
-        return offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscriptionId,
-            os =>
-            {
-                os.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
-                os.LastEditorId = companyUserId;
-            });
+        return (
+            offerSubscriptionsRepository.AttachAndModifyOfferSubscription(result.OfferSubscriptionId,
+                os =>
+                {
+                    os.OfferSubscriptionStatusId = OfferSubscriptionStatusId.PENDING;
+                    os.LastEditorId = companyUserId;
+                }),
+            result.Process,
+            result.ProcessStepTypeIds);
     }
 
     private void CreateConsentsForSubscription(Guid offerSubscriptionId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, Guid companyId, Guid companyUserId)

@@ -21,12 +21,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library</AssemblyName>
-        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library</RootNamespace>
+        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Processes.Library</AssemblyName>
+        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Processes.Library</RootNamespace>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <UserSecretsId>10475eed-3b71-47aa-abf6-db32fca27634</UserSecretsId>
+        <UserSecretsId>76a1cf69-39e1-43a7-b6a7-fef83be5359f</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>

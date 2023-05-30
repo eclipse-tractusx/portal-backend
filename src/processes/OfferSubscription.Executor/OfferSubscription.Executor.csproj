@@ -32,8 +32,8 @@
     <ItemGroup>
         <ProjectReference Include="..\..\externalsystems\OfferProvider.Library\OfferProvider.Library.csproj" />
         <ProjectReference Include="..\..\marketplace\Offers.Library\Offers.Library.csproj" />
-        <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
         <ProjectReference Include="..\Processes.Worker.Library\Processes.Worker.Library.csproj" />
+        <ProjectReference Include="..\Processes.Library\Processes.Library.csproj" />
     </ItemGroup>
 
 </Project>

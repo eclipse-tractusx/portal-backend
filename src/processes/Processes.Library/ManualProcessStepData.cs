@@ -18,10 +18,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 
-public record VerifyOfferSubscriptionProcessData(
-    Process? Process,
-    IEnumerable<ProcessStep>? ProcessSteps);
+public record ManualProcessStepData(
+    ProcessStepTypeId ProcessStepTypeId,
+    Process Process,
+    IEnumerable<ProcessStep> ProcessSteps,
+    IPortalRepositories PortalRepositories
+);

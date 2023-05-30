@@ -26,14 +26,13 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
 
@@ -729,12 +728,14 @@ public class OfferSetupServiceTests
         A.CallTo(() =>
                 _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId,
                     ProcessStepTypeId.START_AUTOSETUP, null, false))
-            .Returns(new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(
-                offerSubscriptionId, process, Guid.NewGuid(),
+            .Returns(new ManualProcessStepData(
+                ProcessStepTypeId.START_AUTOSETUP,
+                process,
                 new ProcessStep[]
                 {
                     new (Guid.NewGuid(), ProcessStepTypeId.START_AUTOSETUP, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.Now)
-                }));
+                },
+                _portalRepositories));
 
         // Act
         async Task Act() => await _sut.StartAutoSetupAsync(data, IamUserId, offerTypeId).ConfigureAwait(false);
@@ -764,12 +765,14 @@ public class OfferSetupServiceTests
         A.CallTo(() =>
                 _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId,
                     ProcessStepTypeId.START_AUTOSETUP, null, false))
-            .Returns(new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(
-                offerSubscriptionId, process, Guid.NewGuid(),
+            .Returns(new ManualProcessStepData(
+                ProcessStepTypeId.START_AUTOSETUP,
+                process,
                 new ProcessStep[]
                 {
                     new (Guid.NewGuid(), ProcessStepTypeId.START_AUTOSETUP, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.Now)
-                }));
+                },
+                _portalRepositories));
 
         // Act
         await _sut.StartAutoSetupAsync(data, IamUserId, offerTypeId).ConfigureAwait(false);
@@ -781,7 +784,7 @@ public class OfferSetupServiceTests
             ? ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION
             : ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION;
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
-                A<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData>._,
+                A<ManualProcessStepData>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == nextStepId)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();

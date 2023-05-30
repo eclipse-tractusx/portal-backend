@@ -18,15 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.Extensions;
 
-public static class VerifyOfferSubscriptionProcessDataExtensions
+public static class OfferSubscriptionExtensions
 {
     public static IEnumerable<ProcessStepTypeId>? GetRetriggerStep(this ProcessStepTypeId processStepTypeId) =>
         processStepTypeId switch
@@ -47,47 +44,4 @@ public static class VerifyOfferSubscriptionProcessDataExtensions
             ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK => ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK,
             _ => throw new ConflictException($"Step {retriggerProcessStep} is not retriggerable")
         };
-
-    public static ProcessStep ValidateOfferSubscriptionProcessData(this VerifyOfferSubscriptionProcessData? processData,
-        Guid offerSubscriptionId,
-        IEnumerable<ProcessStepStatusId> processStepStatusIds, ProcessStepTypeId processStepTypeId)
-    {
-        if (processData is null)
-        {
-            throw new NotFoundException($"offer subscription {offerSubscriptionId} does not exist");
-        }
-
-        if (processData.Process == null)
-        {
-            throw new ConflictException($"offer subscription {offerSubscriptionId} is not associated with a process");
-        }
-
-        if (processData.Process.IsLocked())
-        {
-            throw new ConflictException($"process {processData.Process.Id} of {offerSubscriptionId} is locked, lock expiry is set to {processData.Process.LockExpiryDate}");
-        }
-
-        if (processData.ProcessSteps == null)
-        {
-            throw new UnexpectedConditionException("processSteps should never be null here");
-        }
-
-        if (processData.ProcessSteps.Any(step => !processStepStatusIds.Contains(step.ProcessStepStatusId)))
-        {
-            throw new UnexpectedConditionException($"processSteps should never have other status than {string.Join(",", processStepStatusIds)} here");
-        }
-
-        if (processData.ProcessSteps.Count(step => step.ProcessStepTypeId == processStepTypeId) != 1)
-        {
-            throw new ConflictException($"offer subscription {offerSubscriptionId} process step {processStepTypeId} is not eligible to run");
-        }
-
-        return processData.ProcessSteps.First(step => step.ProcessStepTypeId == processStepTypeId);
-    }
-
-    public static IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData CreateManualOfferSubscriptionProcessStepData(this VerifyOfferSubscriptionProcessData? checklistData, Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId)
-    {
-        var processStep = checklistData.ValidateOfferSubscriptionProcessData(offerSubscriptionId, new[] { ProcessStepStatusId.TODO }, processStepTypeId);
-        return new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(offerSubscriptionId, checklistData!.Process!, processStep.Id, checklistData.ProcessSteps!);
-    }
 }

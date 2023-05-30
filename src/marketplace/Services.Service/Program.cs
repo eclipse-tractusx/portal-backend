@@ -39,9 +39,9 @@ builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
 builder.Services.AddTransient<INotificationService, NotificationService>();
 builder.Services
     .AddServiceBusinessLogic(builder.Configuration)
-    .AddTechnicalUserProfile()
     .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
-    .AddTransient<IServiceChangeBusinessLogic, ServiceChangeBusinessLogic>();
+    .AddTransient<IServiceChangeBusinessLogic, ServiceChangeBusinessLogic>()
+    .AddTechnicalUserProfile();
 
 builder.Services.AddOfferServices();
 

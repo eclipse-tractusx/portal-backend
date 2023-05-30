@@ -163,10 +163,10 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid OfferSubscriptionId, OfferSubscriptionStatusId OfferSubscriptionStatusId)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId) =>
+    public Task<(Guid OfferSubscriptionId, OfferSubscriptionStatusId OfferSubscriptionStatusId, Process? Process, IEnumerable<ProcessStepTypeId>? ProcessStepTypeIds)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId) =>
         _context.OfferSubscriptions.AsNoTracking()
             .Where(x => x.OfferId == offerId && x.CompanyId == companyId && x.Offer!.OfferTypeId == offerTypeId)
-            .Select(x => new ValueTuple<Guid, OfferSubscriptionStatusId>(x.Id, x.OfferSubscriptionStatusId))
+            .Select(x => new ValueTuple<Guid, OfferSubscriptionStatusId, Process?, IEnumerable<ProcessStepTypeId>?>(x.Id, x.OfferSubscriptionStatusId, x.Process, x.Process!.ProcessSteps.Where(step => step.ProcessStepStatusId == ProcessStepStatusId.TODO).Select(step => step.ProcessStepTypeId)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -350,11 +350,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<VerifyOfferSubscriptionProcessData?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+    public Task<VerifyProcessData?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         _context.OfferSubscriptions
             .AsNoTracking()
             .Where(os => os.Id == offerSubscriptionId)
-            .Select(x => new VerifyOfferSubscriptionProcessData(
+            .Select(x => new VerifyProcessData(
                 x.Process,
                 x.Process!.ProcessSteps
                     .Where(step =>

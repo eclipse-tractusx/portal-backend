@@ -18,13 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 
@@ -37,7 +35,7 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
         _portalRepositories = portalRepositories;
     }
 
-    public async Task<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData> VerifySubscriptionAndProcessSteps(Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId>? processStepTypeIds, bool mustBePending)
+    public async Task<ManualProcessStepData> VerifySubscriptionAndProcessSteps(Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId>? processStepTypeIds, bool mustBePending)
     {
         var allProcessStepTypeIds = processStepTypeIds switch
         {
@@ -65,27 +63,16 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
         var processData = await offerSubscriptionsRepository
             .GetProcessStepData(offerSubscriptionId, allProcessStepTypeIds).ConfigureAwait(false);
 
-        return processData.CreateManualOfferSubscriptionProcessStepData(offerSubscriptionId, processStepTypeId);
+        return processData.CreateManualProcessData(processStepTypeId, _portalRepositories, () => $"offer subscription {offerSubscriptionId}");
     }
 
-    public void FinalizeProcessSteps(IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData context, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
+    public void FinalizeProcessSteps(ManualProcessStepData context, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
     {
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-        processStepRepository.AttachAndModifyProcessStep(context.ProcessStepId, null, step => step.ProcessStepStatusId = ProcessStepStatusId.DONE);
-        if (nextProcessStepTypeIds == null || !nextProcessStepTypeIds.Any())
+        if (nextProcessStepTypeIds != null && nextProcessStepTypeIds.Any())
         {
-            return;
+            context.ScheduleProcessSteps(nextProcessStepTypeIds);
         }
 
-        processStepRepository.CreateProcessStepRange(
-            nextProcessStepTypeIds
-                .Except(context.ProcessSteps.Select(step => step.ProcessStepTypeId))
-                .Select(stepTypeId => (stepTypeId, ProcessStepStatusId.TODO, context.Process.Id)));
-
-        _portalRepositories.Attach(context.Process);
-        if (context.Process.ReleaseLock())
-            return;
-
-        context.Process.UpdateVersion();
+        context.FinalizeProcessStep();
     }
 }

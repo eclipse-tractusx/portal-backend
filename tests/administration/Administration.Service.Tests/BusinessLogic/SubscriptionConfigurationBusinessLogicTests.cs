@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -96,7 +97,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var processId = Guid.NewGuid();
         var processStep = new ProcessStep(processStepId, ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER, null, true))
-            .ReturnsLazily(() => new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(OfferSubscriptionId, _fixture.Create<Process>(), processStepId, Enumerable.Repeat(processStep, 1)));
+            .Returns(new ManualProcessStepData(ProcessStepTypeId.RETRIGGER_PROVIDER, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
 
         // Act
         await _sut.RetriggerProvider(OfferSubscriptionId);
@@ -104,7 +105,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
-                A<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData>._,
+                A<ManualProcessStepData>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.TRIGGER_PROVIDER)))
             .MustHaveHappenedOnceExactly();
     }
@@ -117,7 +118,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var processId = Guid.NewGuid();
         var processStep = new ProcessStep(processStepId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, null, true))
-            .ReturnsLazily(() => new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(OfferSubscriptionId, _fixture.Create<Process>(), processStepId, Enumerable.Repeat(processStep, 1)));
+            .Returns(new ManualProcessStepData(ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
 
         // Act
         await _sut.RetriggerCreateClient(OfferSubscriptionId);
@@ -125,7 +126,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
-                A<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData>._,
+                A<ManualProcessStepData>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION)))
             .MustHaveHappenedOnceExactly();
     }
@@ -138,7 +139,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var processId = Guid.NewGuid();
         var processStep = new ProcessStep(processStepId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, null, true))
-            .ReturnsLazily(() => new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(OfferSubscriptionId, _fixture.Create<Process>(), processStepId, Enumerable.Repeat(processStep, 1)));
+            .Returns(new ManualProcessStepData(ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
 
         // Act
         await _sut.RetriggerCreateTechnicalUser(OfferSubscriptionId);
@@ -146,7 +147,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
-                A<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData>._,
+                A<ManualProcessStepData>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION)))
             .MustHaveHappenedOnceExactly();
     }
@@ -159,7 +160,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var processId = Guid.NewGuid();
         var processStep = new ProcessStep(processStepId, ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, null, false))
-            .ReturnsLazily(() => new IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData(OfferSubscriptionId, _fixture.Create<Process>(), processStepId, Enumerable.Repeat(processStep, 1)));
+            .Returns(new ManualProcessStepData(ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
 
         // Act
         await _sut.RetriggerProviderCallback(OfferSubscriptionId);
@@ -167,7 +168,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
-                A<IOfferSubscriptionProcessService.ManualOfferSubscriptionProcessStepData>._,
+                A<ManualProcessStepData>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK)))
             .MustHaveHappenedOnceExactly();
     }
