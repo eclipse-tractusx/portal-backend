@@ -667,7 +667,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         if (applicationUserData.DocumentDatas.Any())
         {
-            if(!applicationUserData.DocumentDatas.Select(x=>x.TypeId).Contains(DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT))
+            if (!applicationUserData.DocumentDatas.Select(x => x.TypeId).Contains(DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT))
             {
                 throw new ControllerArgumentException($"At least one Document type Id must be COMMERCIAL_REGISTER_EXTRACT");
             }
