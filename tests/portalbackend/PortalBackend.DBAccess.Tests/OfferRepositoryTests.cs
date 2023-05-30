@@ -1324,7 +1324,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, "502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
+        var result = await sut.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
         // Assert
         result.Should().NotBeNull();
         result.IsStatusActive.Should().Be(isStatusActive);

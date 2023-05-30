@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
@@ -41,7 +42,7 @@ public class ServiceChangeBusinessLogic : IServiceChangeBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task DeactivateOfferByServiceIdAsync(Guid serviceId, string iamUserId) =>
-        _offerService.DeactivateOfferIdAsync(serviceId, iamUserId, OfferTypeId.SERVICE);
+    public Task DeactivateOfferByServiceIdAsync(Guid serviceId, IdentityData identity) =>
+        _offerService.DeactivateOfferIdAsync(serviceId, identity, OfferTypeId.SERVICE);
 
 }
