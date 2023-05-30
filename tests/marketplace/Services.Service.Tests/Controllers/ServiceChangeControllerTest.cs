@@ -56,13 +56,12 @@ public class ServiceChangeControllerTest
     {
         //Arrange
         var serviceId = _fixture.Create<Guid>();
-        A.CallTo(() => _logic.DeactivateOfferByServiceIdAsync(A<Guid>._, A<string>._))
-            .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         var result = await this._controller.DeactivateService(serviceId).ConfigureAwait(false);
 
         //Assert
         A.CallTo(() => _logic.DeactivateOfferByServiceIdAsync(serviceId, IamUserId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
     }
 }
