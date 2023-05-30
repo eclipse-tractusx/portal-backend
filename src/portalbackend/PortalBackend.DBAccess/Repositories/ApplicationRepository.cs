@@ -96,19 +96,18 @@ public class ApplicationRepository : IApplicationRepository
                 StreetName = application.Company!.Address!.Streetname,
                 City = application.Company!.Address!.City,
                 Country = application.Company!.Address!.Country,
-                CompanyIdentifiers = application.Company.CompanyIdentifiers.Select(x=>x.UniqueIdentifierId),
+                CompanyIdentifiers = application.Company.CompanyIdentifiers.Select(x => x.UniqueIdentifierId),
                 CompanyRoleIds = application.Company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
                 AgreementConsents = application.Company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
                         .Select(consent => new ValueTuple<Guid, ConsentStatusId>(
-                            consent.AgreementId, consent.ConsentStatusId)),
-
+                            consent.AgreementId, consent.ConsentStatusId))
             })
             .Select(data => new CompanyApplicationUserEmailData(
                 data.Application.ApplicationStatusId,
                 data.CompanyUser != null,
                 data.CompanyUser!.Email,
                 data.Documents.Select(doc => new DocumentStatusTypeData(doc.Id, doc.DocumentStatusId, doc.DocumentTypeId)),
-                data.CompanyName, 
+                data.CompanyName,
                 data.AddressId,
                 data.StreetName,
                 data.City,
