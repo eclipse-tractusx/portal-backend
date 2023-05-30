@@ -69,32 +69,26 @@ public class ApplicationRepository : IApplicationRepository
                     default,
                     default)));
 
-    public Task<CompanyApplicationUserData?> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId) =>
+    public Task<(bool Exists, CompanyApplicationStatusId StatusId)> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, Guid userCompanyId) =>
         _dbContext.CompanyApplications
-            .Where(application => application.Id == applicationId)
-            .Select(application => new CompanyApplicationUserData(application)
-            {
-                CompanyUserId = application.Company!.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!).Where(companyUser => companyUser.Identity!.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault()
-            })
+            .Where(application => application.Id == applicationId && application.CompanyId == userCompanyId)
+            .Select(application => new ValueTuple<bool, CompanyApplicationStatusId>(true, application.ApplicationStatusId))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyApplicationStatusUserData?> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, string iamUserId) =>
+    public Task<(bool Exists, bool IsUserOfCompany, CompanyApplicationStatusId ApplicationStatus)> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, Guid userCompanyId) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId)
-            .Select(application => new CompanyApplicationStatusUserData(application.ApplicationStatusId)
-            {
-                CompanyUserId = application.Company!.Identities.Where(companyUser => companyUser.UserEntityId == iamUserId).Select(companyUser => companyUser.Id).SingleOrDefault()
-            })
+            .Select(application => new ValueTuple<bool, bool, CompanyApplicationStatusId>(true, application.CompanyId == userCompanyId, application.ApplicationStatusId))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, string iamUserId) =>
+    public Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, Guid companyUserId) =>
         _dbContext.CompanyApplications
             .Where(application => application.Id == applicationId)
             .Select(application => new
             {
                 Application = application,
-                CompanyUser = application.Company!.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!).SingleOrDefault(companyUser => companyUser.Identity!.UserEntityId == iamUserId),
+                CompanyUser = application.Company!.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!).SingleOrDefault(companyUser => companyUser.Id == companyUserId),
                 Documents = application.Company.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!).SelectMany(companyUser => companyUser.Documents).Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED)
             })
             .Select(data => new CompanyApplicationUserEmailData(
@@ -111,7 +105,7 @@ public class ApplicationRepository : IApplicationRepository
                 (companyName == null || EF.Functions.ILike(application.Company!.Name, $"{companyName.EscapeForILike()}%")) &&
                 (applicationStatusIds == null || applicationStatusIds.Contains(application.ApplicationStatusId)));
 
-    public Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, string iamUserId, Guid? companyId = null) =>
+    public Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, Guid userCompanyId, Guid? companyId = null) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId &&
@@ -132,10 +126,7 @@ public class ApplicationRepository : IApplicationRepository
                 application.Company.Address.Region,
                 application.Company.Address.CountryAlpha2Code,
                 application.Company.Address.Country!.CountryNameDe,
-                application.Company.Identities
-                    .Where(companyUser => companyUser.UserEntityId == iamUserId)
-                    .Select(companyUser => companyUser.Id)
-                    .SingleOrDefault(),
+                application.CompanyId == userCompanyId,
                 application.Company.CompanyIdentifiers
                     .Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value))))
             .SingleOrDefaultAsync();
@@ -249,7 +240,7 @@ public class ApplicationRepository : IApplicationRepository
             .AsNoTracking()
             .SingleOrDefaultAsync();
 
-    public Task<(bool IsValidApplicationId, bool IsSameCompanyUser, RegistrationData? Data)> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes) =>
+    public Task<(bool IsValidApplicationId, bool IsSameCompanyUser, RegistrationData? Data)> GetRegistrationDataUntrackedAsync(Guid applicationId, Guid userCompanyId, IEnumerable<DocumentTypeId> documentTypes) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .AsSplitQuery()
@@ -257,7 +248,7 @@ public class ApplicationRepository : IApplicationRepository
                 application.Id == applicationId)
             .Select(application => new
             {
-                IsSameCompanyUser = application.Company!.Identities.Any(user => user.UserEntityId == iamUserId),
+                IsSameCompanyUser = application.CompanyId == userCompanyId,
                 Company = application.Company
             })
             .Select(x => new ValueTuple<bool, bool, RegistrationData?>(

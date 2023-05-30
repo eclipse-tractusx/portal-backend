@@ -91,19 +91,19 @@ public interface IOfferService
     /// </summary>
     /// <param name="offerId"></param>
     /// <param name="offerAgreementConsent"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <param name="offerTypeId">OfferTypeId the agreements are associated with</param>
     /// <returns></returns>
-    Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId);
+    Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, IdentityData identity, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Creates a new service offering
     /// </summary>
     /// <param name="data">The data to create the service offering</param>
-    /// <param name="iamUserId">the iamUser id</param>
+    /// <param name="identity">the User</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>The id of the newly created service</returns>
-    Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId, OfferTypeId offerTypeId);
+    Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, IdentityData identity, OfferTypeId offerTypeId);
 
     /// <summary>
     /// 
@@ -252,9 +252,9 @@ public interface IOfferService
     /// </summary>
     /// <param name="page"></param>
     /// <param name="size"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <param name="offerTypeId"></param>
     /// <param name="documentTypeId"></param>
     /// <returns>Returns the details of the subscription status for user by OfferType</returns>
-    Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
+    Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(int page, int size, IdentityData identity, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
 }

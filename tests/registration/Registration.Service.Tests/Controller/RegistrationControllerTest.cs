@@ -38,9 +38,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests;
 
 public class RegistrationControllerTest
 {
-    private const string IamUserId = "7478542d-7878-47a8-a931-08bd8779532d";
-    private const string AccessToken = "ac-token";
-    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
+    private readonly IdentityData _identity = new("7478542d-7878-47a8-a931-08bd8779532d", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private readonly IFixture _fixture;
     private readonly RegistrationController _controller;
     private readonly IRegistrationBusinessLogic _registrationBusinessLogicFake;
@@ -51,7 +49,7 @@ public class RegistrationControllerTest
         _registrationBusinessLogicFake = A.Fake<IRegistrationBusinessLogic>();
         var registrationLoggerFake = A.Fake<ILogger<RegistrationController>>();
         _controller = new RegistrationController(registrationLoggerFake, _registrationBusinessLogicFake);
-        _controller.AddControllerContextWithClaimAndBearer(IamUserId, AccessToken, _identity);
+        _controller.AddControllerContextWithClaimAndBearer(_identity.UserEntityId, "ac-token", _identity);
     }
 
     [Fact]
@@ -100,14 +98,14 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
 
         var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3);
-        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, IamUserId))
+        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _identity))
             .Returns(uploadDocuments);
 
         //Act
         var result = await _controller.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _identity)).MustHaveHappenedOnceExactly();
 
         result.Should().HaveSameCount(uploadDocuments);
         result.Should().ContainInOrder(uploadDocuments);
@@ -159,14 +157,14 @@ public class RegistrationControllerTest
         const string contentType = "application/pdf";
         var id = Guid.NewGuid();
         var content = Encoding.UTF8.GetBytes("This is just test content");
-        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, IamUserId))
+        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _identity))
             .ReturnsLazily(() => (fileName, content, contentType));
 
         //Act
         var result = await this._controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _identity)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<FileContentResult>();
         ((FileContentResult)result).ContentType.Should().Be(contentType);
     }

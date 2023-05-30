@@ -249,7 +249,7 @@ public class CompanyDataBusinessLogicTests
             new (agreementId5, CompanyRoleId.APP_PROVIDER),
         }.ToAsyncEnumerable();
 
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.UserEntityId, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, companyId, Enumerable.Empty<CompanyRoleId>(), companyUserId, consentStatusDetails));
 
         A.CallTo(() => _companyRepository.GetAgreementAssignedRolesDataAsync(A<IEnumerable<CompanyRoleId>>._))
@@ -265,7 +265,7 @@ public class CompanyDataBusinessLogicTests
             });
 
         // Act
-        await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity.UserEntityId, companyRoleConsentDetails).ConfigureAwait(false);
+        await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity, companyRoleConsentDetails).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _companyRolesRepository.CreateCompanyAssignedRoles(
@@ -301,11 +301,11 @@ public class CompanyDataBusinessLogicTests
         var companyId = _fixture.Create<Guid>();
         var companyUserId = _fixture.Create<Guid>();
 
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.UserEntityId, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
             .Returns((false, companyId, null, companyUserId, null));
 
         // Act
-        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity.UserEntityId, companyRoleConsentDetails).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity, companyRoleConsentDetails).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -353,14 +353,14 @@ public class CompanyDataBusinessLogicTests
             new (agreementId5, CompanyRoleId.APP_PROVIDER),
         }.ToAsyncEnumerable();
 
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.UserEntityId, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, companyId, Enumerable.Empty<CompanyRoleId>(), companyUserId, consentStatusDetails));
 
         A.CallTo(() => _companyRepository.GetAgreementAssignedRolesDataAsync(A<IEnumerable<CompanyRoleId>>._))
             .Returns(agreementData);
 
         // Act
-        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity.UserEntityId, companyRoleConsentDetails).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity, companyRoleConsentDetails).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -413,14 +413,14 @@ public class CompanyDataBusinessLogicTests
             new (agreementId5, CompanyRoleId.APP_PROVIDER),
         }.ToAsyncEnumerable();
 
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.UserEntityId, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, companyId, Enumerable.Empty<CompanyRoleId>(), companyUserId, consentStatusDetails));
 
         A.CallTo(() => _companyRepository.GetAgreementAssignedRolesDataAsync(A<IEnumerable<CompanyRoleId>>._))
             .Returns(agreementData);
 
         // Act
-        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity.UserEntityId, companyRoleConsentDetails).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity, companyRoleConsentDetails).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -439,11 +439,11 @@ public class CompanyDataBusinessLogicTests
         var consentStatusDetails = _fixture.CreateMany<ConsentStatusDetails>();
         var companyRoles = new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.ACTIVE_PARTICIPANT };
 
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.UserEntityId, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, companyId, companyRoles, companyUserId, consentStatusDetails));
 
         // Act
-        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity.UserEntityId, companyRoleConsentDetails).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity, companyRoleConsentDetails).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -455,11 +455,11 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var companyRoleConsentDetails = _fixture.CreateMany<CompanyRoleConsentDetails>(2);
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.UserEntityId, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
             .Returns(((bool, Guid, IEnumerable<CompanyRoleId>?, Guid, IEnumerable<ConsentStatusDetails>?))default);
 
         // Act
-        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity.UserEntityId, companyRoleConsentDetails).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity, companyRoleConsentDetails).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -471,11 +471,11 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var companyRoleConsentDetails = _fixture.CreateMany<CompanyRoleConsentDetails>(2);
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.UserEntityId, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, Guid.NewGuid(), null!, Guid.NewGuid(), null!));
 
         // Act
-        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity.UserEntityId, companyRoleConsentDetails).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity, companyRoleConsentDetails).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -487,11 +487,11 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var companyRoleConsentDetails = _fixture.CreateMany<CompanyRoleConsentDetails>(2);
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.UserEntityId, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, Guid.NewGuid(), Enumerable.Empty<CompanyRoleId>(), Guid.NewGuid(), null!));
 
         // Act
-        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity.UserEntityId, companyRoleConsentDetails).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity, companyRoleConsentDetails).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);

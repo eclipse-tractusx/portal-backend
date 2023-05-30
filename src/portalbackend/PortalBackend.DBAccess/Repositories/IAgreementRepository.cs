@@ -71,11 +71,11 @@ public interface IAgreementRepository
     /// Return matching Agreement ,Consent,CompanyUserId and CompanyId for agreement category app_contract , offer id and offer status created
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="userCompanyId"></param>
     /// <param name="statusId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(OfferAgreementConsentUpdate OfferAgreementConsentUpdate, bool IsProviderCompany)> GetOfferAgreementConsent(Guid appId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId);
+    Task<(OfferAgreementConsentUpdate OfferAgreementConsentUpdate, bool IsProviderCompany)> GetOfferAgreementConsent(Guid appId, Guid userCompanyId, OfferStatusId statusId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Checks whether the given agreements exists in the database

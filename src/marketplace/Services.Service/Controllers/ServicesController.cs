@@ -85,7 +85,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<CreatedAtRouteResult> AddServiceSubscription([FromRoute] Guid serviceId, [FromBody] IEnumerable<OfferAgreementConsentData> offerAgreementConsentData)
     {
-        var serviceSubscriptionId = await this.WithIamUserAndBearerToken(auth => _serviceBusinessLogic.AddServiceSubscription(serviceId, offerAgreementConsentData, auth.iamUserId, auth.bearerToken)).ConfigureAwait(false);
+        var serviceSubscriptionId = await this.WithIdentityAndBearerToken(auth => _serviceBusinessLogic.AddServiceSubscription(serviceId, offerAgreementConsentData, auth.identity, auth.bearerToken)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetSubscriptionDetail), new { subscriptionId = serviceSubscriptionId }, serviceSubscriptionId);
     }
 
@@ -288,5 +288,5 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<OfferSubscriptionStatusDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
-        this.WithIamUserId(userId => _serviceBusinessLogic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(page, size, userId));
+        this.WithIdentityData(identity => _serviceBusinessLogic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(page, size, identity));
 }

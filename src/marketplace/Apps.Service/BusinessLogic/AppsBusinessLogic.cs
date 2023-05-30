@@ -88,9 +88,9 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     app.UseCaseNames));
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(string userId) =>
+    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(IdentityData identity) =>
         _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetAllBusinessAppDataForUserIdAsync(userId)
+            .GetAllBusinessAppDataForUserIdAsync(identity.CompanyId)
             .Select(x =>
                 new BusinessAppData(
                     x.OfferId,
@@ -137,25 +137,25 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(IdentityData identity) =>
         _portalRepositories
             .GetInstance<IUserRepository>()
-            .GetAllFavouriteAppsForUserUntrackedAsync(identity.IdentityId);
+            .GetAllFavouriteAppsForUserUntrackedAsync(identity.Id);
 
     /// <inheritdoc/>
     public async Task RemoveFavouriteAppForUserAsync(Guid appId, IdentityData identity)
     {
-        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, identity.IdentityId));
+        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, identity.Id));
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task AddFavouriteAppForUserAsync(Guid appId, IdentityData identity)
     {
-        _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, identity.IdentityId);
+        _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, identity.Id);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(int page, int size, string iamUserId) =>
-        _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, iamUserId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE);
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(int page, int size, IdentityData identity) =>
+        _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, identity, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE);
 
     /// <inheritdoc/>
     public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, IdentityData identity, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId)
@@ -180,8 +180,8 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken) =>
-        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, offerAgreementConsentData, iamUserId, OfferTypeId.APP, _settings.BasePortalAddress);
+    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, IdentityData identity) =>
+        _offerSubscriptionService.AddOfferSubscriptionAsync(appId, offerAgreementConsentData, identity, _settings.ServiceManagerRoles, OfferTypeId.APP, _settings.BasePortalAddress);
 
     /// <inheritdoc/>
     [Obsolete("This Method is not used anymore")]
@@ -221,7 +221,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false,
             notification =>
             {
-                notification.CreatorUserId = identity.IdentityId;
+                notification.CreatorUserId = identity.Id;
                 notification.Content = JsonSerializer.Serialize(new
                 {
                     AppId = appId,
@@ -245,9 +245,9 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId)
+    public async Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, IdentityData identity)
     {
-        var assignedAppData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetCompanyAssignedAppDataForCompanyUserAsync(appId, iamUserId).ConfigureAwait(false);
+        var assignedAppData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetCompanyAssignedAppDataForCompanyUserAsync(appId, identity.CompanyId).ConfigureAwait(false);
 
         if (assignedAppData == default)
         {
@@ -258,7 +258,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
 
         if (subscription == null)
         {
-            throw new ArgumentException($"There is no active subscription for user '{iamUserId}' and app '{appId}'");
+            throw new ArgumentException($"There is no active subscription for user '{identity.UserEntityId}' and app '{appId}'");
         }
         subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.INACTIVE;
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

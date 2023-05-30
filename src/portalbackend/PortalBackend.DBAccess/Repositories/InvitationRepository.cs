@@ -47,8 +47,8 @@ public class InvitationRepository : IInvitationRepository
         .AsNoTracking()
         .AsAsyncEnumerable();
 
-    public Task<Invitation?> GetInvitationStatusAsync(string iamUserId) =>
+    public Task<Invitation?> GetInvitationStatusAsync(Guid companyUserId) =>
         _dbContext.Invitations
-            .Where(invitation => invitation.CompanyUser!.Identity!.UserEntityId == iamUserId)
+            .Where(invitation => invitation.CompanyUserId == companyUserId)
             .SingleOrDefaultAsync();
 }

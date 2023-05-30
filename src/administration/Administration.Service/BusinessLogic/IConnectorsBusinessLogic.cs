@@ -34,11 +34,11 @@ public interface IConnectorsBusinessLogic
     /// <summary>
     /// Get all of a user's company's connectors by iam user ID.
     /// </summary>
-    /// <param name="iamUserId">ID of the user to retrieve company connectors for.</param>
+    /// <param name="identity">Identity of the user to retrieve company connectors for.</param>
     /// <param name="page"></param>
     /// <param name="size"></param>
     /// <returns>AsyncEnumerable of the result connectors.</returns>
-    Task<Pagination.Response<ConnectorData>> GetAllCompanyConnectorDatasForIamUserAsync(string iamUserId, int page, int size);
+    Task<Pagination.Response<ConnectorData>> GetAllCompanyConnectorDatasForIamUserAsync(IdentityData identity, int page, int size);
 
     /// <summary>
     /// Get all of a user's company's connectors by iam user ID.

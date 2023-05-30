@@ -42,9 +42,9 @@ public interface IAppsBusinessLogic
     /// <summary>
     /// Get all apps that a user has been assigned roles in.
     /// </summary>
-    /// <param name="userId">ID of the user to get available apps for.</param>
+    /// <param name="identity">Identity of the user to get available apps for.</param>
     /// <returns>List of available apps for user.</returns>
-    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(string userId);
+    public IAsyncEnumerable<BusinessAppData> GetAllUserUserBusinessAppsAsync(IdentityData identity);
 
     /// <summary>
     /// Get detailed application data for a single app by id.
@@ -79,11 +79,11 @@ public interface IAppsBusinessLogic
     /// <summary>
     /// Retrieves subscription statuses of subscribed apps of the provided user's company.
     /// </summary>
-    /// <param name="iamUserId">Id of the iamUser.</param>
+    /// <param name="identity">Identity of the user.</param>
     /// <param name ="page">page</param>
     /// <param name ="size">size</param>
     /// <returns>Returns the details of the subscription status for App user</returns>
-    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(int page, int size, string iamUserId);
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(int page, int size, IdentityData identity);
 
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the provided user's company.
@@ -102,9 +102,9 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="appId">ID of the app to subscribe to.</param>
     /// <param name="offerAgreementConsentData">The agreement consent data</param>
-    /// <param name="iamUserId">ID of the user that initiated app subscription for their company.</param>
+    /// <param name="identity">ID of the user that initiated app subscription for their company.</param>
     /// <param name="accessToken">Access token of the current User</param>
-    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken);
+    public Task<Guid> AddOwnCompanyAppSubscriptionAsync(Guid appId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, IdentityData identity, string accessToken);
 
     /// <summary>
     /// Activates a pending app subscription for an app provided by the current user's company.
@@ -119,8 +119,8 @@ public interface IAppsBusinessLogic
     /// Unsubscribes an app for the current users company.
     /// </summary>
     /// <param name="appId">ID of the app to unsubscribe from.</param>
-    /// <param name="iamUserId">ID of the user that initiated app unsubscription for their company.</param>
-    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, string iamUserId);
+    /// <param name="identity">Identity of the user that initiated app unsubscription for their company.</param>
+    public Task UnsubscribeOwnCompanyAppSubscriptionAsync(Guid appId, IdentityData identity);
 
     /// <summary>
     /// Retrieve Company Owned App Data

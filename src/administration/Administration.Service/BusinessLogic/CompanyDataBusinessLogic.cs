@@ -128,17 +128,17 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task CreateCompanyRoleAndConsentAgreementDetailsAsync(string iamUserId, IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails)
+    public async Task CreateCompanyRoleAndConsentAgreementDetailsAsync(IdentityData identity, IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails)
     {
         if (!companyRoleConsentDetails.Any())
         {
             return;
         }
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
-        var result = await companyRepositories.GetCompanyRolesDataAsync(iamUserId, companyRoleConsentDetails.Select(x => x.CompanyRole)).ConfigureAwait(false);
+        var result = await companyRepositories.GetCompanyRolesDataAsync(identity.Id, companyRoleConsentDetails.Select(x => x.CompanyRole)).ConfigureAwait(false);
         if (result == default)
         {
-            throw new ForbiddenException($"user {iamUserId} is not associated with any company");
+            throw new ForbiddenException($"user {identity.UserEntityId} is not associated with any company");
         }
         if (!result.IsCompanyActive)
         {

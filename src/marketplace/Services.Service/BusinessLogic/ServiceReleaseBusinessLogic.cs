@@ -123,18 +123,18 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, string userId)
+    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, IdentityData identity)
     {
         if (serviceId == Guid.Empty)
         {
             throw new ControllerArgumentException("ServiceId must not be empty");
         }
 
-        return SubmitOfferConsentInternalAsync(serviceId, offerAgreementConsents, userId);
+        return SubmitOfferConsentInternalAsync(serviceId, offerAgreementConsents, identity);
     }
 
-    private Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentInternalAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, string userId) =>
-        _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, offerAgreementConsents, userId, OfferTypeId.SERVICE);
+    private Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentInternalAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, IdentityData identity) =>
+        _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, offerAgreementConsents, identity, OfferTypeId.SERVICE);
 
     /// <inheritdoc/>
     public Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync(int page, int size, OfferSorting? sorting, string? serviceName, string? languageShortName, ServiceReleaseStatusIdFilter? statusId) =>
@@ -159,8 +159,8 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId) =>
-        _offerService.CreateServiceOfferingAsync(data, iamUserId, OfferTypeId.SERVICE);
+    public Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, IdentityData identity) =>
+        _offerService.CreateServiceOfferingAsync(data, identity, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
     public async Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, IdentityData identity)

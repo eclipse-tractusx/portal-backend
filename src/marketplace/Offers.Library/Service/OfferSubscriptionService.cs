@@ -127,12 +127,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             .GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(iamUserId).ConfigureAwait(false);
         if (companyInformation.CompanyId == Guid.Empty)
         {
-            throw new ControllerArgumentException($"User {iamUserId} has no company assigned", nameof(iamUserId));
-        }
-
-        if (companyUserId == Guid.Empty)
-        {
-            throw new ControllerArgumentException($"User {iamUserId} has no company user assigned", nameof(iamUserId));
+            throw new ControllerArgumentException($"User {identity.UserEntityId} has no company assigned", nameof(identity.UserEntityId));
         }
 
         if (companyInformation.BusinessPartnerNumber == null)

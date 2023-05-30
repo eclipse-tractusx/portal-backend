@@ -79,7 +79,7 @@ public class ServiceControllerTest
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
-        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, IamUserId, AccessToken))
+        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, _identity, AccessToken))
             .Returns(offerSubscriptionId);
 
         //Act
@@ -87,7 +87,7 @@ public class ServiceControllerTest
         var result = await this._controller.AddServiceSubscription(serviceId, consentData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddServiceSubscription(serviceId, consentData, IamUserId, AccessToken)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AddServiceSubscription(serviceId, consentData, _identity, AccessToken)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(offerSubscriptionId);
     }
@@ -304,14 +304,14 @@ public class ServiceControllerTest
         //Arrange
         var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(3).ToImmutableArray();
         var pagination = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
-        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._))
+        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<IdentityData>._))
             .Returns(pagination);
 
         //Act
         var result = await this._controller.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 15, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 15, _identity)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(3).And.ContainInOrder(data);
     }
 

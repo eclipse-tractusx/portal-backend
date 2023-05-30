@@ -49,7 +49,7 @@ public class CompanyRolesRepository : ICompanyRolesRepository
     public void RemoveCompanyAssignedRoles(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
         _dbContext.RemoveRange(companyRoleIds.Select(companyRoleId => new CompanyAssignedRole(companyId, companyRoleId)));
 
-    public Task<CompanyRoleAgreementConsentData?> GetCompanyRoleAgreementConsentDataAsync(Guid applicationId, string iamUserId) =>
+    public Task<CompanyRoleAgreementConsentData?> GetCompanyRoleAgreementConsentDataAsync(Guid applicationId) =>
         _dbContext.CompanyApplications
             .Where(application => application.Id == applicationId)
             .Select(application => new CompanyRoleAgreementConsentData(
@@ -68,11 +68,11 @@ public class CompanyRolesRepository : ICompanyRolesRepository
                 companyRole.AgreementAssignedCompanyRoles!.Select(agreementAssignedCompanyRole => agreementAssignedCompanyRole.AgreementId)
             )).AsAsyncEnumerable();
 
-    public Task<CompanyRoleAgreementConsents?> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, string iamUserId) =>
+    public Task<CompanyRoleAgreementConsents?> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, Guid companyUserId) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(user =>
-                user.Identity!.UserEntityId == iamUserId
+                user.Id == companyUserId
                 && user.Identity!.Company!.CompanyApplications.Any(application => application.Id == applicationId))
             .Select(user => user.Identity!.Company)
             .Select(company => new CompanyRoleAgreementConsents(

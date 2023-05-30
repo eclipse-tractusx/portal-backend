@@ -44,7 +44,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.BusinessLog
 public class ServiceBusinessLogicTests
 {
     private const string IamUserId = "502dabcf-01c7-47d9-a88e-0be4279097b5";
-    private const string NotAssignedCompanyIdUser = "395f955b-f11b-4a74-ab51-92a526c1973c";
     private static readonly Guid CompanyUserCompanyId = new("395f955b-f11b-4a74-ab51-92a526c1973a");
 
     private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, CompanyUserCompanyId);
@@ -155,7 +154,7 @@ public class ServiceBusinessLogicTests
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
-        A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._, A<OfferTypeId>._, A<string>._))
+        A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<IdentityData>._, A<OfferTypeId>._, A<string>._))
             .Returns(offerSubscriptionId);
         var serviceSettings = new ServiceSettings
         {
@@ -168,14 +167,14 @@ public class ServiceBusinessLogicTests
         var sut = new ServiceBusinessLogic(null!, null!, null!, _offerSubscriptionService, null!, Options.Create(serviceSettings));
 
         // Act
-        var result = await sut.AddServiceSubscription(_existingServiceId, consentData, IamUserId, "THISISAACCESSTOKEN");
+        var result = await sut.AddServiceSubscription(_existingServiceId, consentData, _identity, "THISISAACCESSTOKEN");
 
         // Assert
         result.Should().Be(offerSubscriptionId);
         A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(
             A<Guid>._,
             A<IEnumerable<OfferAgreementConsentData>>._,
-            A<string>._,
+            A<IdentityData>._,
             A<OfferTypeId>.That.Matches(x => x == OfferTypeId.SERVICE),
             A<string>._))
             .MustHaveHappenedOnceExactly();
@@ -583,21 +582,21 @@ public class ServiceBusinessLogicTests
     public async Task GetCompanySubscribedServiceSubscriptionStatusesForUserAsync_ReturnsExpected()
     {
         // Arrange
-        var iamUserId = _fixture.Create<Guid>().ToString();
+        var identity = _fixture.Create<IdentityData>();
         var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(5).ToImmutableArray();
         var paginationResponse = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
-        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<string>._, A<OfferTypeId>._, A<DocumentTypeId>._))
+        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<IdentityData>._, A<OfferTypeId>._, A<DocumentTypeId>._))
             .Returns(paginationResponse);
 
         var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, null!, Options.Create(new ServiceSettings()));
 
         // Act
-        var result = await sut.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 10, iamUserId).ConfigureAwait(false);
+        var result = await sut.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 10, identity).ConfigureAwait(false);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(5);
         result.Content.Should().HaveCount(5);
-        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, iamUserId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE))
+        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, identity, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -621,21 +620,6 @@ public class ServiceBusinessLogicTests
         var serviceDetail = _fixture.Build<ServiceDetailData>()
             .With(x => x.Id, _existingServiceId)
             .Create();
-        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyName(IamUserId, _companyUser.Id))
-            .Returns(new[] { (_companyUser.Id, true, "COMPANYBPN", _companyUserCompanyId: CompanyUserCompanyId), (_companyUser.Id, false, "OTHERCOMPANYBPN", _companyUserCompanyId: CompanyUserCompanyId) }.ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyName(IamUserId, A<Guid>.That.Not.Matches(x => x == _companyUser.Id)))
-            .Returns(new[] { (_companyUser.Id, true, "COMPANYBPN", _companyUserCompanyId: CompanyUserCompanyId) }.ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyName(A<string>.That.Not.Matches(x => x == IamUserId), _companyUser.Id))
-            .Returns(new[] { (_companyUser.Id, false, "OTHERCOMPANYBPN", _companyUserCompanyId: CompanyUserCompanyId) }.ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheckAndCompanyName(A<string>.That.Not.Matches(x => x == IamUserId), A<Guid>.That.Not.Matches(x => x == _companyUser.Id)))
-            .Returns(Enumerable.Empty<(Guid CompanyUserId, bool IsIamUser, string CompanyUserName, Guid CompanyId)>().ToAsyncEnumerable());
-
-        A.CallTo(() => _userRepository.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(IamUserId))
-            .Returns((new CompanyInformationData(_identity.CompanyId, "The Company", "DE", "BPN00000001"), _companyUser.Id, "test@mail.de"));
-        A.CallTo(() => _userRepository.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(NotAssignedCompanyIdUser))
-            .Returns((new CompanyInformationData(Guid.Empty, "The Company", "DE", "BPN00000001"), _companyUser.Id, "test@mail.de"));
-        A.CallTo(() => _userRepository.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(A<string>.That.Not.Matches(x => x == IamUserId || x == NotAssignedCompanyIdUser)))
-            .Returns((new CompanyInformationData(_identity.CompanyId, "The Company", "DE", "BPN00000001"), Guid.Empty, "test@mail.de"));
 
         A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(_existingServiceId, A<string>.That.Matches(x => x == "en"), A<Guid>._))
             .Returns(serviceDetail with
@@ -678,14 +662,14 @@ public class ServiceBusinessLogicTests
                 A<OfferTypeId>._))
             .Returns((SubscriptionDetailData?)null);
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Matches(x => x == _existingServiceId), _identity.UserEntityId, A<OfferTypeId>._))
+                A<Guid>.That.Matches(x => x == _existingServiceId), _identity.Id, A<OfferTypeId>._))
             .Returns((_identity.CompanyId, offerSubscription));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Not.Matches(x => x == _existingServiceId), _identity.UserEntityId,
+                A<Guid>.That.Not.Matches(x => x == _existingServiceId), _identity.Id,
                 A<OfferTypeId>._))
             .Returns((_identity.CompanyId, (OfferSubscription?)null));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Matches(x => x == _existingServiceId), A<string>.That.Not.Matches(x => x == _identity.UserEntityId),
+                A<Guid>.That.Matches(x => x == _existingServiceId), A<Guid>.That.Not.Matches(x => x == _identity.Id),
                 A<OfferTypeId>._))
             .Returns(((Guid companyId, OfferSubscription? offerSubscription))default);
 

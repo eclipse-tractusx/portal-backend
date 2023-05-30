@@ -175,7 +175,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid appId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
-        this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.SubmitOfferConsentAsync(appId, offerAgreementConsents, iamUserId));
+        this.WithIdentityData(identity => _appReleaseBusinessLogic.SubmitOfferConsentAsync(appId, offerAgreementConsents, identity));
 
     /// <summary>
     /// Return app detail with status
@@ -227,7 +227,7 @@ public class AppReleaseProcessController : ControllerBase
     [Authorize(Roles = "add_apps")]
     [ProducesResponseType(typeof(IAsyncEnumerable<CompanyUserNameData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagerAsync() =>
-        this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppProviderSalesManagersAsync(iamUserId));
+        this.WithIdentityData(identity => _appReleaseBusinessLogic.GetAppProviderSalesManagersAsync(identity));
 
     /// <summary>
     /// Creates an app according to request model

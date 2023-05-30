@@ -47,9 +47,9 @@ public interface IDocumentsBusinessLogic
     /// Deletes the document and the corresponding consent from the persistence layer.
     /// </summary>
     /// <param name="documentId">Id of the document that should be deleted</param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <returns>Returns <c>true</c> if the document and corresponding consent were deleted successfully. Otherwise a specific error is thrown.</returns>
-    Task<bool> DeleteDocumentAsync(Guid documentId, string iamUserId);
+    Task<bool> DeleteDocumentAsync(Guid documentId, IdentityData identity);
 
     /// <summary>
     /// Gets the document as json for the seeding data

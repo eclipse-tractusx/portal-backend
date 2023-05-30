@@ -156,17 +156,17 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId)
+    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, IdentityData identity)
     {
         if (appId == Guid.Empty)
         {
             throw new ControllerArgumentException($"AppId must not be empty");
         }
-        return SubmitOfferConsentInternalAsync(appId, offerAgreementConsents, userId);
+        return SubmitOfferConsentInternalAsync(appId, offerAgreementConsents, identity);
     }
 
-    private Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentInternalAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId) =>
-        _offerService.CreateOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, userId, OfferTypeId.APP);
+    private Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentInternalAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, IdentityData identity) =>
+        _offerService.CreateOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, identity, OfferTypeId.APP);
 
     /// <inheritdoc/>
     public async Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId, IdentityData identity)
@@ -217,8 +217,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(string iamUserId) =>
-       _portalRepositories.GetInstance<IUserRolesRepository>().GetUserDataByAssignedRoles(iamUserId, _settings.SalesManagerRoles);
+    public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(IdentityData identity) =>
+       _portalRepositories.GetInstance<IUserRolesRepository>().GetUserDataByAssignedRoles(identity.CompanyId, _settings.SalesManagerRoles);
 
     /// <inheritdoc/>
     public Task<Guid> AddAppAsync(AppRequestModel appRequestModel, IdentityData identity)

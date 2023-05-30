@@ -93,7 +93,7 @@ public class AgreementRepository : IAgreementRepository
             .SingleOrDefaultAsync();
 
     ///<inheritdoc/>
-    public Task<(OfferAgreementConsentUpdate OfferAgreementConsentUpdate, bool IsProviderCompany)> GetOfferAgreementConsent(Guid appId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId) =>
+    public Task<(OfferAgreementConsentUpdate OfferAgreementConsentUpdate, bool IsProviderCompany)> GetOfferAgreementConsent(Guid appId, Guid userCompanyId, OfferStatusId statusId, OfferTypeId offerTypeId) =>
         _context.Offers
             .AsNoTracking()
             .AsSplitQuery()
@@ -109,7 +109,7 @@ public class AgreementRepository : IAgreementRepository
                         consentAssignedOffer.Consent.Id,
                         consentAssignedOffer.Consent.ConsentStatusId)),
                     offer.OfferType!.AgreementAssignedOfferTypes.Select(assigned => assigned.AgreementId)),
-                offer.ProviderCompany!.Identities.Any(user => user.UserEntityId == iamUserId && user.IdentityTypeId == IdentityTypeId.COMPANY_USER)))
+                offer.ProviderCompanyId == userCompanyId))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

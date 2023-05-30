@@ -33,9 +33,9 @@ public interface IConnectorsRepository
     /// <summary>
     /// Get all connectors of a user's company by iam user ID.
     /// </summary>
-    /// <param name="iamUserId">ID of the iam user used to determine company's connectors for.</param>
+    /// <param name="companyId">The id of the provider company.</param>
     /// <returns>Queryable of connectors that allows transformation.</returns>
-    IQueryable<Connector> GetAllCompanyConnectorsForIamUser(string iamUserId);
+    IQueryable<Connector> GetAllCompanyConnectorsForIamUser(Guid companyId);
 
     /// <summary>
     /// Get all managed connectors of a user's company by iam user ID.

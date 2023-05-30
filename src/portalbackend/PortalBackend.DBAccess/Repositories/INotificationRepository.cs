@@ -49,45 +49,45 @@ public interface INotificationRepository
     /// <summary>
     ///     Gets all Notifications for a specific user
     /// </summary>
-    /// <param name="iamUserId">Id of the user</param>
+    /// <param name="receiverUserId">Id of the user</param>
     /// <param name="isRead">OPTIONAL: filter read or unread notifications</param>
     /// <param name="typeId">OPTIONAL: The type of the notifications</param>
     /// <param name="topicId">OPTIONAL: The topic of the notifications</param>
     /// <param name="onlyDueDate">OPTIONAL: If true only notifications with a due date will be returned</param>
     /// <param name="sorting"></param>
     /// <returns>Returns a collection of NotificationDetailData</returns>
-    Func<int, int, Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, bool onlyDueDate, NotificationSorting? sorting);
+    Func<int, int, Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByCompanyUserIdUntracked(Guid receiverUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, bool onlyDueDate, NotificationSorting? sorting);
 
     /// <summary>
     ///     Returns a notification for the given id and given user if it exists in the persistence layer, otherwise null
     /// </summary>
     /// <param name="notificationId">Id of the notification</param>
-    /// <param name="iamUserId">Id of the receiver</param>
+    /// <param name="companyUserId">Id of the receiver</param>
     /// <returns>Returns a notification for the given id and given user if it exists in the persistence layer, otherwise null</returns>
-    Task<(bool IsUserReceiver, NotificationDetailData NotificationDetailData)> GetNotificationByIdAndIamUserIdUntrackedAsync(Guid notificationId, string iamUserId);
+    Task<(bool IsUserReceiver, NotificationDetailData NotificationDetailData)> GetNotificationByIdAndIamUserIdUntrackedAsync(Guid notificationId, Guid companyUserId);
 
     /// <summary>
     /// Checks if a notification exists for the given id and companyUserId
     /// </summary>
     /// <param name="notificationId">Id of the notification</param>
-    /// <param name="iamUserId">Id of the receiver</param>
+    /// <param name="companyUserId">Id of the receiver</param>
     /// <returns><c>true</c> if the notification exists, <c>false</c> if it doesn't exist</returns>
-    Task<(bool IsUserReceiver, bool IsNotificationExisting)> CheckNotificationExistsByIdAndIamUserIdAsync(Guid notificationId, string iamUserId);
+    Task<(bool IsUserReceiver, bool IsNotificationExisting)> CheckNotificationExistsByIdAndIamUserIdAsync(Guid notificationId, Guid companyUserId);
 
     /// <summary>
     /// Gets the count of the notifications for the given user and optional status
     /// </summary>
-    /// <param name="iamUserId">Id of the iam User</param>
+    /// <param name="companyUserId">Id of the User</param>
     /// <param name="isRead">OPTIONAL: filter read or unread notifications</param>
     /// <returns>Returns the count of the notifications</returns>
-    Task<(bool IsUserExisting, int Count)> GetNotificationCountForIamUserAsync(string iamUserId, bool? isRead);
+    Task<(bool IsUserExisting, int Count)> GetNotificationCountForUserAsync(Guid companyUserId, bool? isRead);
 
     /// <summary>
     /// Gets the count details of the notifications for the given user
     /// </summary>
-    /// <param name="iamUserId">id of the iam user</param>
+    /// <param name="companyUserId">id of the user</param>
     /// <returns>Returns the notification count details</returns>
-    IAsyncEnumerable<(bool IsRead, bool? Done, NotificationTopicId NotificationTopicId, int Count)> GetCountDetailsForUserAsync(string iamUserId);
+    IAsyncEnumerable<(bool IsRead, bool? Done, NotificationTopicId NotificationTopicId, int Count)> GetCountDetailsForUserAsync(Guid companyUserId);
 
     /// <summary>
     /// Gets the notification ids that should be updated

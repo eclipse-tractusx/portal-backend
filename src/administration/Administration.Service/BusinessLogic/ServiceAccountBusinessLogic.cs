@@ -53,7 +53,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         _settings = options.Value;
     }
 
-    public async Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos, string iamAdminId)
+    public async Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos, IdentityData identity)
     {
         if (serviceAccountCreationInfos.IamClientAuthMethod != IamClientAuthMethod.SECRET)
         {
@@ -64,10 +64,10 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             throw new ControllerArgumentException("name must not be empty", "name");
         }
 
-        var result = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(iamAdminId, _settings.ClientId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(identity.Id, _settings.ClientId).ConfigureAwait(false);
         if (result == default)
         {
-            throw new NotFoundException($"user {iamAdminId} is not associated with any company");
+            throw new NotFoundException($"user {identity.UserEntityId} is not associated with any company");
         }
         if (string.IsNullOrEmpty(result.Bpn))
         {

@@ -61,10 +61,10 @@ public interface IUserRolesRepository
     /// <summary>
     /// Get user name data by assinged roles
     /// </summary>
-    /// <param name="iamUserId"></param>
+    /// <param name="userCompanyId"></param>
     /// <param name="clientRoles"></param>
     /// <returns></returns>
-    IAsyncEnumerable<CompanyUserNameData> GetUserDataByAssignedRoles(string iamUserId, IDictionary<string, IEnumerable<string>> clientRoles);
+    IAsyncEnumerable<CompanyUserNameData> GetUserDataByAssignedRoles(Guid userCompanyId, IDictionary<string, IEnumerable<string>> clientRoles);
 
     IAsyncEnumerable<(string ClientClientId, IEnumerable<(Guid UserRoleId, string UserRoleText)> UserRoles)> GetUserRolesByClientId(IEnumerable<string> iamClientIds);
 

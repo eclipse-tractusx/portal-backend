@@ -52,9 +52,9 @@ public interface IOfferSubscriptionsRepository
 
     Task<(Guid SubscriptionId, OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, string? AppName, bool IsUserOfProvider, RequesterData Requester)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, Guid userCompanyId);
 
-    Task<(OfferSubscription? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, string iamUserId);
+    Task<(OfferSubscription? companyAssignedApp, bool _)> GetCompanyAssignedAppDataForCompanyUserAsync(Guid appId, Guid userCompanyId);
 
-    Task<(Guid companyId, OfferSubscription? offerSubscription)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId);
+    Task<(Guid companyId, OfferSubscription? offerSubscription)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, Guid companyUserId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Gets the subscription detail data for the given id and user
@@ -83,7 +83,7 @@ public interface IOfferSubscriptionsRepository
     /// </summary>
     /// <param name="iamUserId">Id of the user to get the app data for.</param>
     /// <returns>Returns an IAsyncEnumerable of app data</returns>
-    IAsyncEnumerable<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(string iamUserId);
+    IAsyncEnumerable<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(Guid companyUserId);
 
     /// <summary>
     /// Gets the needed details for the offer subscription
@@ -117,11 +117,11 @@ public interface IOfferSubscriptionsRepository
     /// <summary>
     /// Gets the Service offer subscription statuses for the user
     /// </summary>
-    /// <param name="iamUserId">Id of user of the Providercompany</param>
+    /// <param name="userCompanyId">Id of users company</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <param name="documentTypeId">Id of the document type</param>
     /// <returns>Returns a func with skip, take and the pagination of the source</returns>
-    Func<int, int, Task<Pagination.Source<OfferSubscriptionStatusData>?>> GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(string iamUserId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
+    Func<int, int, Task<Pagination.Source<OfferSubscriptionStatusData>?>> GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
 
     /// <summary>
     /// 

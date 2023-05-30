@@ -125,7 +125,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetAllBusinessAppDataForUserIdAsync("502dabcf-01c7-47d9-a88e-0be4279097b5").ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllBusinessAppDataForUserIdAsync(new("ac1cf001-7fbc-1f2f-817f-bce058020006")).ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNullOrEmpty();
@@ -702,16 +702,16 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     #region  GetOwnCompanySubscribedOfferSubscriptionStatuse
 
     [Theory]
-    [InlineData("502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE)]
-    [InlineData("502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE)]
-    [InlineData("502dabcf-01c7-47d9-a88e-0be4279097b5", OfferTypeId.CORE_COMPONENT, DocumentTypeId.SERVICE_LEADIMAGE)]
-    public async Task GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpected(string iamUserId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    [InlineData("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE)]
+    [InlineData("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE)]
+    [InlineData("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", OfferTypeId.CORE_COMPONENT, DocumentTypeId.SERVICE_LEADIMAGE)]
+    public async Task GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpected(Guid companyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(iamUserId, offerTypeId, documentTypeId)(0, 15).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(companyId, offerTypeId, documentTypeId)(0, 15).ConfigureAwait(false);
 
         // Assert
         switch (offerTypeId)

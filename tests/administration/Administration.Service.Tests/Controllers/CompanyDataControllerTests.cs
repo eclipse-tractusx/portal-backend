@@ -146,14 +146,14 @@ public class CompanyDataControllerTests
     {
         // Arrange
         var companyRoleConsentDetails = _fixture.CreateMany<CompanyRoleConsentDetails>(2);
-        A.CallTo(() => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(IamUserId, companyRoleConsentDetails))
+        A.CallTo(() => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity, companyRoleConsentDetails))
             .Returns(Task.CompletedTask);
 
         // Act
         var result = await this._controller.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(IamUserId, companyRoleConsentDetails)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity, companyRoleConsentDetails)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 }

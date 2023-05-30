@@ -48,8 +48,8 @@ public static class ControllerExtensions
 
     public static T WithIdentityData<T>(this ControllerBase controller, Func<IdentityData, T> tokenConsumingFunction)
     {
-        var bearer = controller.GetIdentityData();
-        return tokenConsumingFunction(bearer);
+        var identity = controller.GetIdentityData();
+        return tokenConsumingFunction(identity);
     }
 
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction)
@@ -63,6 +63,13 @@ public static class ControllerExtensions
         var bearerToken = controller.GetBearerToken();
         var iamUserId = controller.User.Claims.GetStringFromClaim(PortalClaimTypes.Sub);
         return tokenConsumingFunction((iamUserId, bearerToken));
+    }
+
+    public static T WithIdentityAndBearerToken<T>(this ControllerBase controller, Func<(IdentityData identity, string bearerToken), T> tokenConsumingFunction)
+    {
+        var bearerToken = controller.GetBearerToken();
+        var identity = controller.GetIdentityData();
+        return tokenConsumingFunction((identity, bearerToken));
     }
 
     private static IdentityData GetIdentityData(this ControllerBase controller)

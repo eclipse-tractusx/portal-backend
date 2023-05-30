@@ -48,23 +48,24 @@ public interface IDocumentRepository
     /// <returns>Returns the document</returns>
     Task<Document?> GetDocumentByIdAsync(Guid documentId);
 
-    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> ConsentIds, bool IsSameUser)> GetDocumentDetailsForIdUntrackedAsync(Guid documentId, string iamUserId);
+    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> ConsentIds, bool IsSameUser)> GetDocumentDetailsForIdUntrackedAsync(Guid documentId, Guid companyUserId);
 
     /// <summary>
     /// Gets all documents for the given applicationId, documentId and userId
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
     /// <param name="documentTypeId">Id of the document type</param>
-    /// <param name="iamUserId">Id of the user</param>
+    /// <param name="companyUserId">Id of the user</param>
     /// <returns>A collection of documents</returns>
-    Task<(bool IsApplicationAssignedUser, IEnumerable<UploadDocuments> Documents)> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId);
+    Task<(bool IsApplicationAssignedUser, IEnumerable<UploadDocuments> Documents)> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, Guid companyUserId);
 
     /// <summary>
     /// Gets the documents userid by the document id
     /// </summary>
     /// <param name="documentId">id of the document the user id should be selected for</param>
+    /// <param name="companyUserId"></param>
     /// <returns>Returns the user id if a document is found for the given id, otherwise null</returns>
-    Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, string iamUserId);
+    Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, Guid companyUserId);
 
     /// <summary>
     /// Get the document data and checks if the user 

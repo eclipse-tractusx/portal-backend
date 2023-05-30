@@ -44,7 +44,7 @@ public interface ICompanyRepository
 
     void CreateUpdateDeleteIdentifiers(Guid companyId, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> initialItems, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> modifiedItems);
 
-    Task<(string CompanyName, Guid CompanyId)> GetCompanyNameIdUntrackedAsync(string iamUserId);
+    Task<(bool Exists, string CompanyName)> GetCompanyNameUntrackedAsync(Guid companyId);
 
     /// <summary>
     /// Checks the bpn for existence and returns the associated CompanyId
@@ -143,9 +143,9 @@ public interface ICompanyRepository
     /// <summary>
     /// Gets the the companyRole
     /// </summary>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="companyUserId">Id of the user</param>
     /// <returns>Returns the companyRole</returns>
-    Task<(bool IsCompanyActive, Guid CompanyId, IEnumerable<CompanyRoleId>? CompanyRoleIds, Guid CompanyUserId, IEnumerable<ConsentStatusDetails>? ConsentStatusDetails)> GetCompanyRolesDataAsync(string iamUserId, IEnumerable<CompanyRoleId> companyRoleIds);
+    Task<(bool IsCompanyActive, Guid CompanyId, IEnumerable<CompanyRoleId>? CompanyRoleIds, Guid CompanyUserId, IEnumerable<ConsentStatusDetails>? ConsentStatusDetails)> GetCompanyRolesDataAsync(Guid companyUserId, IEnumerable<CompanyRoleId> companyRoleIds);
 
     /// <summary>
     /// Gets the the AgreementAssignedCompanyRoles Data

@@ -44,7 +44,7 @@ public static class ControllerExtensions
         claimsIdentity.AddClaims(new[] { new Claim("sub", iamUserId) });
         if (identity != null)
         {
-            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityId, identity.IdentityId.ToString()) });
+            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityId, identity.Id.ToString()) });
             claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityType, Enum.GetName(identity.IdentityType)!) });
             claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.CompanyId, identity.CompanyId.ToString()) });
         }
@@ -75,7 +75,7 @@ public static class ControllerExtensions
         claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.Sub, iamUserId) });
         if (identity != null)
         {
-            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityId, identity.IdentityId.ToString()) });
+            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityId, identity.Id.ToString()) });
             claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityType, Enum.GetName(identity.IdentityType)!) });
             claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.CompanyId, identity.CompanyId.ToString()) });
         }

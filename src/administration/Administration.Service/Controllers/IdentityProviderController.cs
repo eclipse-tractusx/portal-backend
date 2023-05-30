@@ -61,7 +61,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(List<IdentityProviderDetails>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<List<IdentityProviderDetails>> GetOwnCompanyIdentityProviderDetails() =>
-        this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyIdentityProvidersAsync(iamUserId).ToListAsync());
+        this.WithIdentityData(identity => _businessLogic.GetOwnCompanyIdentityProvidersAsync(identity).ToListAsync());
 
     /// <summary>
     /// Create an identity provider
@@ -83,7 +83,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public async ValueTask<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery] IamIdentityProviderProtocol protocol, [FromQuery] string? displayName = null)
     {
-        var details = await this.WithIamUserId(iamUserId => _businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, displayName, iamUserId)).ConfigureAwait(false);
+        var details = await this.WithIdentityData(identityData => _businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, displayName, identityData)).ConfigureAwait(false);
         return (ActionResult<IdentityProviderDetails>)CreatedAtRoute(nameof(GetOwnCompanyIdentityProvider), new { identityProviderId = details.identityProviderId }, details);
     }
 
@@ -211,7 +211,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync([FromQuery] IEnumerable<Guid> identityProviderIds, [FromQuery] bool unlinkedUsersOnly = false) =>
-        this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUsersIdentityProviderDataAsync(identityProviderIds, iamUserId, unlinkedUsersOnly));
+        this.WithIdentityData(identity => _businessLogic.GetOwnCompanyUsersIdentityProviderDataAsync(identityProviderIds, identity, unlinkedUsersOnly));
 
     /// <summary>
     /// Gets the company users for the identity providers as a file
@@ -233,7 +233,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public IActionResult GetOwnCompanyUsersIdentityProviderFileAsync([FromQuery] IEnumerable<Guid> identityProviderIds, [FromQuery] bool unlinkedUsersOnly = false)
     {
-        var (stream, contentType, fileName, encoding) = this.WithIamUserId(iamUserId => _businessLogic.GetOwnCompanyUsersIdentityProviderLinkDataStream(identityProviderIds, iamUserId, unlinkedUsersOnly));
+        var (stream, contentType, fileName, encoding) = this.WithIdentityData(identity => _businessLogic.GetOwnCompanyUsersIdentityProviderLinkDataStream(identityProviderIds, identity, unlinkedUsersOnly));
         return File(stream, string.Join("; ", contentType, encoding.WebName), fileName);
     }
 

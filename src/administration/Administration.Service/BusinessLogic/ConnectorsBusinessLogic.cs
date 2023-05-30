@@ -64,9 +64,9 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<Pagination.Response<ConnectorData>> GetAllCompanyConnectorDatasForIamUserAsync(string iamUserId, int page, int size)
+    public Task<Pagination.Response<ConnectorData>> GetAllCompanyConnectorDatasForIamUserAsync(IdentityData identity, int page, int size)
     {
-        var connectors = _portalRepositories.GetInstance<IConnectorsRepository>().GetAllCompanyConnectorsForIamUser(iamUserId);
+        var connectors = _portalRepositories.GetInstance<IConnectorsRepository>().GetAllCompanyConnectorsForIamUser(identity.CompanyId);
 
         return Pagination.CreateResponseAsync(page, size, _settings.MaxPageSize, (skip, take) =>
             new Pagination.AsyncSource<ConnectorData>
@@ -141,7 +141,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         var (name, connectorUrl, location, certificate, technicalUserId) = connectorInputModel;
         await CheckLocationExists(location);
 
-        var (companyId, userId) = (identity.CompanyId, identity.IdentityId);
+        var (companyId, userId) = (identity.CompanyId, IdentityId: identity.Id);
         var result = await _portalRepositories
             .GetInstance<ICompanyRepository>()
             .GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(companyId)
@@ -195,7 +195,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             providerBpn,
             result.SelfDescriptionDocumentId!.Value,
             certificate,
-            identity.IdentityId,
+            identity.Id,
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -318,7 +318,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
         {
             con.StatusId = ConnectorStatusId.INACTIVE;
-            con.LastEditorId = identity.IdentityId;
+            con.LastEditorId = identity.Id;
             con.DateLastChanged = DateTimeOffset.UtcNow;
         });
         await _dapsService.DeleteDapsClient(result.DapsClientId, cancellationToken).ConfigureAwait(false);
@@ -375,7 +375,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             con.DapsRegistrationSuccessful = true;
             con.StatusId = ConnectorStatusId.ACTIVE;
             con.DateLastChanged = DateTimeOffset.UtcNow;
-            con.LastEditorId = identity.IdentityId;
+            con.LastEditorId = identity.Id;
         });
 
         connectorsRepository.CreateConnectorClientDetails(connectorId, response.ClientId);
@@ -401,7 +401,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ConflictException($"Connector {data.ExternalId} already has a document assigned");
         }
 
-        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, identity.IdentityId, cancellationToken).ConfigureAwait(false);
+        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, identity.Id, cancellationToken).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -448,7 +448,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         var bpn = connector.Type == ConnectorTypeId.CONNECTOR_AS_A_SERVICE
             ? connector.Bpn
             : await _portalRepositories.GetInstance<IUserRepository>()
-                .GetCompanyBpnForIamUserAsync(identity.UserEntityId)
+                .GetCompanyBpnForIamUserAsync(identity.Id)
                 .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(bpn))
         {

@@ -149,14 +149,14 @@ public class ServiceReleaseControllerTest
         var agreementId = Guid.NewGuid();
         var consentStatusData = new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
         var offerAgreementConsentData = new OfferAgreementConsent(new[] { new AgreementConsentStatus(agreementId, ConsentStatusId.ACTIVE) });
-        A.CallTo(() => _logic.SubmitOfferConsentAsync(serviceId, A<OfferAgreementConsent>._, A<string>._))
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(serviceId, A<OfferAgreementConsent>._, A<IdentityData>._))
             .ReturnsLazily(() => Enumerable.Repeat(consentStatusData, 1));
 
         //Act
         var result = await this._controller.SubmitOfferConsentToAgreementsAsync(serviceId, offerAgreementConsentData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.SubmitOfferConsentAsync(serviceId, offerAgreementConsentData, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(serviceId, offerAgreementConsentData, _identity)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(1);
     }
 
@@ -199,14 +199,14 @@ public class ServiceReleaseControllerTest
         //Arrange
         var id = new Guid("d90995fe-1241-4b8d-9f5c-f3909acc6383");
         var serviceOfferingData = _fixture.Create<ServiceOfferingData>();
-        A.CallTo(() => _logic.CreateServiceOfferingAsync(A<ServiceOfferingData>._, IamUserId))
+        A.CallTo(() => _logic.CreateServiceOfferingAsync(A<ServiceOfferingData>._, _identity))
             .Returns(id);
 
         //Act
         var result = await this._controller.CreateServiceOffering(serviceOfferingData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.CreateServiceOfferingAsync(serviceOfferingData, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateServiceOfferingAsync(serviceOfferingData, _identity)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(id);
     }

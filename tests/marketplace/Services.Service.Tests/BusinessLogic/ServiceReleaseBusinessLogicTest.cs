@@ -315,10 +315,10 @@ public class ServiceReleaseBusinessLogicTest
         var iamUserId = Guid.NewGuid().ToString();
         var data = new OfferAgreementConsent(new List<AgreementConsentStatus>());
 
-        A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, data, iamUserId, OfferTypeId.SERVICE))
+        A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, data, _identity, OfferTypeId.SERVICE))
             .ReturnsLazily(() => new[] { new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE) });
 
-        var result = await _sut.SubmitOfferConsentAsync(serviceId, data, iamUserId).ConfigureAwait(false);
+        var result = await _sut.SubmitOfferConsentAsync(serviceId, data, _identity).ConfigureAwait(false);
 
         result.Should().ContainSingle().Which.ConsentStatus.Should().Be(ConsentStatusId.ACTIVE);
     }
@@ -327,7 +327,7 @@ public class ServiceReleaseBusinessLogicTest
     public async Task SubmitOfferConsentAsync_WithEmptyGuid_ThrowsControllerArgumentException()
     {
         var data = new OfferAgreementConsent(new List<AgreementConsentStatus>());
-        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, data, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, data, _fixture.Create<IdentityData>()).ConfigureAwait(false);
 
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("ServiceId must not be empty");
@@ -363,11 +363,11 @@ public class ServiceReleaseBusinessLogicTest
         var serviceId = Guid.NewGuid();
         var offerService = A.Fake<IOfferService>();
         _fixture.Inject(offerService);
-        A.CallTo(() => offerService.CreateServiceOfferingAsync(A<ServiceOfferingData>._, A<string>._, A<OfferTypeId>._)).ReturnsLazily(() => serviceId);
+        A.CallTo(() => offerService.CreateServiceOfferingAsync(A<ServiceOfferingData>._, A<IdentityData>._, A<OfferTypeId>._)).ReturnsLazily(() => serviceId);
         var sut = _fixture.Create<ServiceReleaseBusinessLogic>();
 
         // Act
-        var result = await sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", CompanyUserId, new List<LocalizedDescription>(), new List<ServiceTypeId>(), null), IamUserId);
+        var result = await sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", CompanyUserId, new List<LocalizedDescription>(), new List<ServiceTypeId>(), null), _identity);
 
         // Assert
         result.Should().Be(serviceId);

@@ -85,10 +85,10 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<bool> DeleteDocumentAsync(Guid documentId, string iamUserId)
+    public async Task<bool> DeleteDocumentAsync(Guid documentId, IdentityData identity)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, iamUserId).ConfigureAwait(false);
+        var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, identity.Id).ConfigureAwait(false);
 
         if (details.DocumentId == Guid.Empty)
         {

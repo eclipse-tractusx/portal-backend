@@ -80,15 +80,15 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetUploadedDocuments
 
     [Theory]
-    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9e", DocumentTypeId.CX_FRAME_CONTRACT, "e756e57e-e236-4f6e-b410-92a16ff8be85", 1)]
-    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9e", DocumentTypeId.APP_CONTRACT, "e756e57e-e236-4f6e-b410-92a16ff8be85", 0)]
-    public async Task GetUploadedDocumentsAsync_ReturnsExpectedDocuments(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId, int count)
+    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9e", DocumentTypeId.CX_FRAME_CONTRACT, "ac1cf001-7fbc-1f2f-817f-bce058019994", 1)]
+    [InlineData("6b2d1263-c073-4a48-bfaf-704dc154ca9e", DocumentTypeId.APP_CONTRACT, "ac1cf001-7fbc-1f2f-817f-bce058019994", 0)]
+    public async Task GetUploadedDocumentsAsync_ReturnsExpectedDocuments(Guid applicationId, DocumentTypeId documentTypeId, Guid companyUserId, int count)
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetUploadedDocumentsAsync(applicationId, documentTypeId, iamUserId).ConfigureAwait(false);
+        var results = await sut.GetUploadedDocumentsAsync(applicationId, documentTypeId, companyUserId).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBe(default);
@@ -103,7 +103,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetUploadedDocumentsAsync(Guid.NewGuid(), DocumentTypeId.CX_FRAME_CONTRACT, "623770c5-cf38-4b9f-9a35-f8b9ae972e2e").ConfigureAwait(false);
+        var result = await sut.GetUploadedDocumentsAsync(Guid.NewGuid(), DocumentTypeId.CX_FRAME_CONTRACT, new("ac1cf001-7fbc-1f2f-817f-bce058019990")).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(default);
@@ -116,7 +116,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetUploadedDocumentsAsync(new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e"), DocumentTypeId.CX_FRAME_CONTRACT, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetUploadedDocumentsAsync(new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e"), DocumentTypeId.CX_FRAME_CONTRACT, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);

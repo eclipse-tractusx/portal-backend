@@ -145,7 +145,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> CreateCompanyRoleAndConsentAgreementDetailsAsync([FromBody] IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails)
     {
-        await this.WithIamUserId(iamUserId => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(iamUserId, companyRoleConsentDetails));
+        await this.WithIdentityData(identity => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(identity, companyRoleConsentDetails));
         return NoContent();
     }
 }

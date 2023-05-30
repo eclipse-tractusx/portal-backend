@@ -66,7 +66,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
                 return principal;
             }
 
-            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, result.IdentityId.ToString()));
+            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, result.Id.ToString()));
             claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityType, Enum.GetName(result.IdentityType) ?? throw new ConflictException($"IdentityType {(int)result.IdentityType} is out of range")));
             claimsIdentity.AddClaim(new Claim(PortalClaimTypes.CompanyId, result.CompanyId.ToString()));
             principal.AddIdentity(claimsIdentity);

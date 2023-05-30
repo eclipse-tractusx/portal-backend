@@ -178,8 +178,8 @@ public class UserController : ControllerBase
         [FromQuery] string? firstName = null,
         [FromQuery] string? lastName = null,
         [FromQuery] string? email = null) =>
-        this.WithIamUserId(adminUserId => _logic.GetOwnCompanyUserDatasAsync(
-            adminUserId,
+        this.WithIdentityData(identity => _logic.GetOwnCompanyUserDatasAsync(
+            identity,
             page,
             size,
             companyUserId,
@@ -261,7 +261,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<int> AddOwnCompanyUserBusinessPartnerNumbers(Guid companyUserId, IEnumerable<string> businessPartnerNumbers) =>
-        this.WithIamUserId(iamUserId => _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumbers, iamUserId));
+        this.WithIdentityData(identity => _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumbers, identity));
 
     /// <summary>
     /// Adds the given business partner number to the user for the given id.
@@ -284,7 +284,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task<int> AddOwnCompanyUserBusinessPartnerNumber(Guid companyUserId, string businessPartnerNumber) =>
-        this.WithIamUserId(iamUserId => _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(companyUserId, businessPartnerNumber, iamUserId));
+        this.WithIdentityData(identityData => _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(companyUserId, businessPartnerNumber, identityData));
 
     /// <summary>
     /// Deletes the users with the given ids.
@@ -300,7 +300,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public IAsyncEnumerable<Guid> DeleteOwnCompanyUsers([FromBody] IEnumerable<Guid> usersToDelete) =>
-        this.WithIamUserId(adminUserId => _logic.DeleteOwnCompanyUsersAsync(usersToDelete, adminUserId));
+        this.WithIdentityData(identity => _logic.DeleteOwnCompanyUsersAsync(usersToDelete, identity));
 
     /// <summary>
     /// Resets the password for the given user
@@ -391,7 +391,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(CompanyOwnUserDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<CompanyOwnUserDetails> GetOwnUserDetails() =>
-        this.WithIamUserId(iamUserId => _logic.GetOwnUserDetails(iamUserId));
+        this.WithIdentityData(identity => _logic.GetOwnUserDetails(identity));
 
     /// <summary>
     /// Updates the user details for the given companyUserId.
@@ -410,7 +410,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<CompanyUserDetails> UpdateOwnUserDetails([FromRoute] Guid companyUserId, [FromBody] OwnCompanyUserEditableDetails ownCompanyUserEditableDetails) =>
-        this.WithIamUserId(iamUserId => _logic.UpdateOwnUserDetails(companyUserId, ownCompanyUserEditableDetails, iamUserId));
+        this.WithIdentityData(identity => _logic.UpdateOwnUserDetails(companyUserId, ownCompanyUserEditableDetails, identity));
 
     /// <summary>
     /// Deletes the own user
@@ -428,7 +428,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<int> DeleteOwnUser([FromRoute] Guid companyUserId) =>
-        this.WithIamUserId(iamUserId => _logic.DeleteOwnUserAsync(companyUserId, iamUserId));
+        this.WithIdentityData(identity => _logic.DeleteOwnUserAsync(companyUserId, identity));
 
     [Obsolete("to be replaced by endpoint /user/owncompany/users/{companyUserId}/resetPassword. remove as soon frontend is adjusted")]
     [HttpPut]
@@ -464,9 +464,9 @@ public class UserController : ControllerBase
         [FromQuery] string? email = null,
         [FromQuery] string? roleName = null,
         [FromQuery] bool? hasRole = null) =>
-        this.WithIamUserId(iamUserId => _logic.GetOwnCompanyAppUsersAsync(
+        this.WithIdentityData(identity => _logic.GetOwnCompanyAppUsersAsync(
             appId,
-            iamUserId,
+            identity,
             page,
             size,
             new CompanyUserFilter(

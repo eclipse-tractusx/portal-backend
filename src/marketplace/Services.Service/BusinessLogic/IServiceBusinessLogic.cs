@@ -43,10 +43,10 @@ public interface IServiceBusinessLogic
     /// </summary>
     /// <param name="serviceId">Id of the service the users company should be subscribed to</param>
     /// <param name="offerAgreementConsentData">The agreement consent data</param>
-    /// <param name="iamUserId">Id of the user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <param name="accessToken">The access token of the user</param>
     /// <returns></returns>
-    Task<Guid> AddServiceSubscription(Guid serviceId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken);
+    Task<Guid> AddServiceSubscription(Guid serviceId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, IdentityData identity, string accessToken);
 
     /// <summary>
     /// Gets the service detail data for the given service
@@ -140,11 +140,11 @@ public interface IServiceBusinessLogic
     /// <summary>
     /// Retrieves subscription statuses of subscribed Service of the provided user's company.
     /// </summary>
-    /// <param name="iamUserId">IAM ID of the user to retrieve Service subscription statuses for.</param>
+    /// <param name="identity">Identity of the user to retrieve Service subscription statuses for.</param>
     /// <param name ="page">page</param>
     /// <param name ="size">size</param>
     /// <returns>Returns the details of the subscription status for Service user</returns>
-    Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId);
+    Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size, IdentityData identity);
 
     /// <summary>
     /// Starts the auto setup process.

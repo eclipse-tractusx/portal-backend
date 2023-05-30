@@ -90,7 +90,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation);
 
         // Act
-        var result = await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, ValidAdminId).ConfigureAwait(false);
+        var result = await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, _identity).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -101,17 +101,17 @@ public class ServiceAccountBusinessLogicTests
     public async Task CreateOwnCompanyServiceAccountAsync_WithInvalidUser_NotFoundException()
     {
         // Arrange
+        var identity = _fixture.Create<IdentityData>();
         SetupCreateOwnCompanyServiceAccount();
         var serviceAccountCreationInfos = new ServiceAccountCreationInfo("TheName", "Just a short description", IamClientAuthMethod.SECRET, Enumerable.Repeat(UserRoleId1, 1));
-        var invalidUserId = Guid.NewGuid().ToString();
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, invalidUserId).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, identity).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
-        exception.Message.Should().Be($"user {invalidUserId} is not associated with any company");
+        exception.Message.Should().Be($"user {identity.UserEntityId} is not associated with any company");
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, ValidAdminId).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, _identity).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -140,7 +140,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, ValidAdminId).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, _identity).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -158,7 +158,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, ValidAdminId).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, _identity).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -475,9 +475,9 @@ public class ServiceAccountBusinessLogicTests
 
     private void SetupCreateOwnCompanyServiceAccount()
     {
-        A.CallTo(() => _userRepository.GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(ValidAdminId, ClientId))
+        A.CallTo(() => _userRepository.GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(_identity.Id, ClientId))
             .Returns((ValidCompanyId, ValidBpn, new[] { UserRoleId1, UserRoleId2 }));
-        A.CallTo(() => _userRepository.GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(A<string>.That.Not.Matches(x => x == ValidAdminId), ClientId))
+        A.CallTo(() => _userRepository.GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _identity.Id), ClientId))
             .Returns(((Guid, string, IEnumerable<Guid>))default);
 
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>.That.Matches(x => x == ValidCompanyId), A<IEnumerable<string>>._, CompanyServiceAccountTypeId.OWN, A<bool>._, null))

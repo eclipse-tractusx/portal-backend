@@ -78,8 +78,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             _portalRepositories.GetInstance<IOfferRepository>().GetActiveServicesPaginationSource(sorting, serviceTypeId, Constants.DefaultLanguage));
 
     /// <inheritdoc />
-    public Task<Guid> AddServiceSubscription(Guid serviceId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, string accessToken) =>
-        _offerSubscriptionService.AddOfferSubscriptionAsync(serviceId, offerAgreementConsentData, iamUserId, OfferTypeId.SERVICE, _settings.BasePortalAddress);
+    public Task<Guid> AddServiceSubscription(Guid serviceId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, IdentityData identity, string accessToken) =>
+        _offerSubscriptionService.AddOfferSubscriptionAsync(serviceId, offerAgreementConsentData, identity, OfferTypeId.SERVICE, _settings.BasePortalAddress);
 
     /// <inheritdoc />
     public async Task<ServiceDetailResponse> GetServiceDetailsAsync(Guid serviceId, string lang, IdentityData identity)
@@ -198,8 +198,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService.GetSubscriptionDetailsForSubscriberAsync(serviceId, subscriptionId, identity, OfferTypeId.SERVICE, _settings.SalesManagerRoles);
 
     /// <inheritdoc />
-    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId) =>
-        _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, iamUserId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE);
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size, IdentityData identity) =>
+        _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, identity, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE);
 
     /// <inheritdoc />
     public Task StartAutoSetupAsync(OfferAutoSetupData data, string iamUserId) =>

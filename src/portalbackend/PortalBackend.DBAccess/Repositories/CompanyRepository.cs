@@ -91,12 +91,10 @@ public class CompanyRepository : ICompanyRepository
             (entity, initial) => entity.Value = initial.Value,
             (entity, modified) => entity.Value = modified.Value);
 
-    public Task<(string CompanyName, Guid CompanyId)> GetCompanyNameIdUntrackedAsync(string iamUserId) =>
-        _context.CompanyUsers
-            .AsNoTracking()
-            .Where(user => user.Identity!.UserEntityId == iamUserId)
-            .Select(user => user.Identity!.Company)
-            .Select(company => new ValueTuple<string, Guid>(company!.Name, company.Id))
+    public Task<(bool Exists, string CompanyName)> GetCompanyNameUntrackedAsync(Guid companyId) =>
+        _context.Companies
+            .Where(x => x.Id == companyId)
+            .Select(company => new ValueTuple<bool, string>(true, company.Name))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -232,11 +230,11 @@ public class CompanyRepository : ICompanyRepository
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(bool IsCompanyActive, Guid CompanyId, IEnumerable<CompanyRoleId>? CompanyRoleIds, Guid CompanyUserId, IEnumerable<ConsentStatusDetails>? ConsentStatusDetails)> GetCompanyRolesDataAsync(string iamUserId, IEnumerable<CompanyRoleId> companyRoleIds) =>
+    public Task<(bool IsCompanyActive, Guid CompanyId, IEnumerable<CompanyRoleId>? CompanyRoleIds, Guid CompanyUserId, IEnumerable<ConsentStatusDetails>? ConsentStatusDetails)> GetCompanyRolesDataAsync(Guid companyUserId, IEnumerable<CompanyRoleId> companyRoleIds) =>
         _context.CompanyUsers
             .AsNoTracking()
             .AsSplitQuery()
-            .Where(user => user.Identity!.UserEntityId == iamUserId)
+            .Where(user => user.Id == companyUserId)
             .Select(user => new
             {
                 User = user,

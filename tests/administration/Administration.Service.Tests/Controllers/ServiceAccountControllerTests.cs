@@ -59,7 +59,7 @@ public class ServiceAccountControllerTests
             .With(x => x.ServiceAccountId, serviceAccountId)
             .Create();
         var data = _fixture.Create<ServiceAccountCreationInfo>();
-        A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(data, IamUserId))
+        A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(data, _identity))
             .ReturnsLazily(() => responseData);
 
         // Act

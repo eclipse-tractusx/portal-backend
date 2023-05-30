@@ -72,8 +72,8 @@ public interface IServiceReleaseBusinessLogic
     /// </summary>
     /// <param name="serviceId">Id of the service</param>
     /// <param name="offerAgreementConsents">Data of the consents for the agreements</param>
-    /// <param name="userId">Id of th iam user</param>
-    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, string userId);
+    /// <param name="identity">Identity of the user</param>
+    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, IdentityData identity);
 
     /// <summary>
     /// Retrieves all in review status offer in the marketplace.
@@ -90,9 +90,9 @@ public interface IServiceReleaseBusinessLogic
     /// Creates a new service offering
     /// </summary>
     /// <param name="data">The data to create the service offering</param>
-    /// <param name="iamUserId">the iamUser id</param>
+    /// <param name="identity">the identity</param>
     /// <returns>The id of the newly created service</returns>
-    Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId);
+    Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, IdentityData identity);
 
     /// <summary>
     /// Updates the given service

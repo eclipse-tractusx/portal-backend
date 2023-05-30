@@ -32,24 +32,24 @@ public interface IUserBusinessLogic
 {
     IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, IdentityData identity);
     Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo, IdentityData identity);
-    Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(string adminUserId, int page, int size, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null);
+    Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(IdentityData identity, int page, int size, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null);
     [Obsolete("to be replaced by UserRolesBusinessLogic.GetAppRolesAsync. Remove as soon frontend is adjusted")]
     IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
     Task<CompanyUserDetails> GetOwnCompanyUserDetailsAsync(Guid companyUserId, IdentityData identity);
-    Task<int> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid companyUserId, IEnumerable<string> businessPartnerNumbers, string adminUserId);
-    Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId);
-    Task<CompanyOwnUserDetails> GetOwnUserDetails(string iamUserId);
-    Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, string iamUserId);
+    Task<int> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid companyUserId, IEnumerable<string> businessPartnerNumbers, IdentityData identity);
+    Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid companyUserId, string businessPartnerNumber, IdentityData identity);
+    Task<CompanyOwnUserDetails> GetOwnUserDetails(IdentityData identity);
+    Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, IdentityData identity);
 
     /// <summary>
     /// Delete User Own Account using userId
     /// </summary>
     /// <param name="companyUserId"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <returns></returns>
-    Task<int> DeleteOwnUserAsync(Guid companyUserId, string iamUserId);
-    IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, string iamUserId);
+    Task<int> DeleteOwnUserAsync(Guid companyUserId, IdentityData identity);
+    IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> companyUserIds, IdentityData identity);
     Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId, IdentityData identity);
-    Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, string iamUserId, int page, int size, CompanyUserFilter filter);
+    Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, IdentityData identity, int page, int size, CompanyUserFilter filter);
     Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string businessPartnerNumber, IdentityData identity);
 }

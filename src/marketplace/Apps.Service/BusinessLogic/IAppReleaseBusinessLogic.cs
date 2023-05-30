@@ -83,7 +83,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="offerAgreementConsents"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, string userId);
+    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, IdentityData identity);
 
     /// <summary>
     /// Return Offer with Consent Status
@@ -105,9 +105,9 @@ public interface IAppReleaseBusinessLogic
     /// <summary>
     /// Get Sales Manager Data
     /// </summary>
-    /// <param name="iamUserId"></param>
+    /// <param name="identity"></param>
     /// <returns></returns>
-    IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(string iamUserId);
+    IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(IdentityData identity);
 
     /// <summary>
     /// Creates an application and returns its generated ID.

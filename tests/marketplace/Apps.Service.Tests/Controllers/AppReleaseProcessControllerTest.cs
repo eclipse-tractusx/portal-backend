@@ -157,7 +157,7 @@ public class AppReleaseProcessControllerTest
         var appId = Guid.NewGuid();
         var data = _fixture.Create<OfferAgreementConsent>();
         var consentStatusData = new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE);
-        A.CallTo(() => _logic.SubmitOfferConsentAsync(A<Guid>._, A<OfferAgreementConsent>._, A<string>._))
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(A<Guid>._, A<OfferAgreementConsent>._, A<IdentityData>._))
             .ReturnsLazily(() => Enumerable.Repeat(consentStatusData, 1));
 
         //Act
@@ -165,7 +165,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert 
         result.Should().HaveCount(1);
-        A.CallTo(() => _logic.SubmitOfferConsentAsync(appId, data, IamUserId))
+        A.CallTo(() => _logic.SubmitOfferConsentAsync(appId, data, _identity))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -210,7 +210,7 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var data = _fixture.CreateMany<CompanyUserNameData>(5).ToAsyncEnumerable();
-        A.CallTo(() => _logic.GetAppProviderSalesManagersAsync(A<string>._))
+        A.CallTo(() => _logic.GetAppProviderSalesManagersAsync(A<IdentityData>._))
             .ReturnsLazily(() => data);
 
         //Act
@@ -218,7 +218,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert 
         result.Should().HaveCount(5);
-        A.CallTo(() => _logic.GetAppProviderSalesManagersAsync(IamUserId))
+        A.CallTo(() => _logic.GetAppProviderSalesManagersAsync(_identity))
             .MustHaveHappenedOnceExactly();
     }
 
