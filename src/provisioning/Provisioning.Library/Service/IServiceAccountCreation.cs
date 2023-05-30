@@ -37,7 +37,7 @@ public interface IServiceAccountCreation
     /// <param name="enhanceTechnicalUserName">If <c>true</c> the technicalUserName will get enhanced by the id of the clientID.</param>
     /// <param name="setOptionalParameter"></param>
     /// <returns>Returns information about the created technical user</returns>
-    Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, List<UserRoleData> userRoleData)> CreateServiceAccountAsync(
+    Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, IEnumerable<UserRoleData> userRoleData)> CreateServiceAccountAsync(
         ServiceAccountCreationInfo creationData,
         Guid companyId,
         IEnumerable<string> bpns,

@@ -87,7 +87,7 @@ public class ApplicationActivationTests
 
         var options = A.Fake<IOptions<ApplicationActivationSettings>>();
         
-        _settings.WelcomeNotificationTypeIds = new List<NotificationTypeId>
+        _settings.WelcomeNotificationTypeIds = new []
         {
             NotificationTypeId.WELCOME,
             NotificationTypeId.WELCOME_USE_CASES,
@@ -96,7 +96,7 @@ public class ApplicationActivationTests
             NotificationTypeId.WELCOME_CONNECTOR_REGISTRATION
         };
 
-        _settings.ClientToRemoveRolesOnActivation = new[]
+        _settings.ClientToRemoveRolesOnActivation = new []
         {
             "remove-id"
         };
@@ -120,7 +120,7 @@ public class ApplicationActivationTests
         A.CallTo(() => _dateTimeProvider.Now).Returns(new DateTime(2022, 01, 01, 12, 0, 0));
         _settings.StartTime = TimeSpan.FromHours(4);
         _settings.EndTime = TimeSpan.FromHours(8);
-        SetupFakes(new Dictionary<string, IEnumerable<string>>(), new List<UserRoleData>(), companyUserAssignedRole, companyUserAssignedBusinessPartner);
+        SetupFakes(new Dictionary<string, IEnumerable<string>>(), Enumerable.Empty<UserRoleData>(), companyUserAssignedRole, companyUserAssignedBusinessPartner);
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             Id,
             default,
@@ -128,7 +128,7 @@ public class ApplicationActivationTests
             {
                 {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
             }.ToImmutableDictionary(),
-            new List<ProcessStepTypeId>());
+            Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
         await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
@@ -150,12 +150,12 @@ public class ApplicationActivationTests
     [Fact]
     public async Task HandleApplicationActivation_WithNotAllStepsInDone_ThrowsConflictException()
     {
-        var roles = new List<string> { "Company Admin" };
+        var roles = new [] { "Company Admin" };
         var clientRoleNames = new Dictionary<string, IEnumerable<string>>
         {
             { ClientId, roles.AsEnumerable() }
         };
-        var userRoleData = new List<UserRoleData> { new(UserRoleId, ClientId, "Company Admin") };
+        var userRoleData = new UserRoleData [] { new(UserRoleId, ClientId, "Company Admin") };
 
         var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
         var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
@@ -186,12 +186,12 @@ public class ApplicationActivationTests
     public async Task HandleApplicationActivation_WithMidnightRun_ApprovesRequestAndCreatesNotifications()
     {
         //Arrange
-        var roles = new List<string> { "Company Admin" };
+        var roles = new [] { "Company Admin" };
         var clientRoleNames = new Dictionary<string, IEnumerable<string>>
         {
             { ClientId, roles.AsEnumerable() }
         };
-        var userRoleData = new List<UserRoleData> { new(UserRoleId, ClientId, "Company Admin") };
+        var userRoleData = new UserRoleData [] { new(UserRoleId, ClientId, "Company Admin") };
 
         var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
         var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
@@ -229,7 +229,7 @@ public class ApplicationActivationTests
                 {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
                 {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
             }.ToImmutableDictionary(),
-            new List<ProcessStepTypeId>());
+            Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
         var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
@@ -266,12 +266,12 @@ public class ApplicationActivationTests
     public async Task HandleApplicationActivation_WithCompanyAdminUser_ApprovesRequestAndCreatesNotifications()
     {
         //Arrange
-        var roles = new List<string> { "Company Admin" };
+        var roles = new [] { "Company Admin" };
         var clientRoleNames = new Dictionary<string, IEnumerable<string>>
         {
             { ClientId, roles.AsEnumerable() }
         };
-        var userRoleData = new List<UserRoleData> { new(UserRoleId, ClientId, "Company Admin") };
+        var userRoleData = new UserRoleData [] { new(UserRoleId, ClientId, "Company Admin") };
 
         var companyUserAssignedRole = _fixture.Create<CompanyUserAssignedRole>();
         var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
@@ -306,7 +306,7 @@ public class ApplicationActivationTests
                 {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
                 {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
             }.ToImmutableDictionary(),
-            new List<ProcessStepTypeId>());
+            Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
         var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
@@ -380,10 +380,10 @@ public class ApplicationActivationTests
                 {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
                 {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
             }.ToImmutableDictionary(),
-            new List<ProcessStepTypeId>());
+            Enumerable.Empty<ProcessStepTypeId>());
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(applicationId))
-            .Returns(((Guid,string?,IEnumerable<string>))default);
+            .Returns(((Guid,string,string?,IEnumerable<string>))default);
 
         //Act
         async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
@@ -409,7 +409,7 @@ public class ApplicationActivationTests
                 {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
                 {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
             }.ToImmutableDictionary(),
-            new List<ProcessStepTypeId>());
+            Enumerable.Empty<ProcessStepTypeId>());
 
         async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
 
@@ -618,47 +618,46 @@ public class ApplicationActivationTests
             .With(u => u.Name, CompanyName)
             .Create();
 
-        var companyInvitedUsers = new List<CompanyInvitedUserData>
+        var companyInvitedUsers = new CompanyInvitedUserData []
         {
             new(CompanyUserId1, CentralUserId1.ToString(), Enumerable.Empty<string>(), Enumerable.Empty<Guid>()),
             new(CompanyUserId2, CentralUserId2.ToString(), Enumerable.Repeat(BusinessPartnerNumber, 1), Enumerable.Repeat(UserRoleId, 1)),
             new(CompanyUserId3, CentralUserId3.ToString(), Enumerable.Empty<string>(), Enumerable.Empty<Guid>())
         }.ToAsyncEnumerable();
-        var businessPartnerNumbers = new List<string> { BusinessPartnerNumber }.AsEnumerable();
+        var businessPartnerNumbers = new string [] { BusinessPartnerNumber }.AsEnumerable();
 
         _settings.ApplicationApprovalInitialRoles = clientRoleNames;
         _settings.CompanyAdminRoles = new Dictionary<string, IEnumerable<string>>
         {
-            { ClientId, new List<string> { "Company Admin" }.AsEnumerable() }
+            { ClientId, new string [] { "Company Admin" }.AsEnumerable() }
         };
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == Id)))
-            .Returns((company.Id, company.BusinessPartnerNumber, new []{ IdpAlias }));
+            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new []{ IdpAlias }));
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
-            .Returns((IdWithoutBpn, null, Enumerable.Empty<string>()));
+            .Returns((IdWithoutBpn, null!, null, Enumerable.Empty<string>()));
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(A<Guid>.That.Matches(x => x == Id)))
             .Returns((company.Id, company.Name, company.BusinessPartnerNumber));
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
             .Returns((IdWithoutBpn, company.Name, null));
 
-        var welcomeEmailData = new List<WelcomeEmailData>();
-        welcomeEmailData.AddRange(new WelcomeEmailData[]
+        var welcomeEmailData = new EmailData []
         {
-            new (CompanyUserId1, "Stan", "Lee", "stan@lee.com", company.Name),
-            new (CompanyUserId2, "Tony", "Stark", "tony@stark.com", company.Name),
-            new (CompanyUserId3, "Peter", "Parker", "peter@parker.com", company.Name)
-        });
-        A.CallTo(() => _applicationRepository.GetWelcomeEmailDataUntrackedAsync(Id, A<IEnumerable<Guid>>._))
+            new (CompanyUserId1, "Stan", "Lee", "stan@lee.com"),
+            new (CompanyUserId2, "Tony", "Stark", "tony@stark.com"),
+            new (CompanyUserId3, "Peter", "Parker", "peter@parker.com")
+        };
+        A.CallTo(() => _applicationRepository.GetEmailDataUntrackedAsync(Id))
             .Returns(welcomeEmailData.ToAsyncEnumerable());
-        A.CallTo(() => _applicationRepository.GetWelcomeEmailDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == Id), A<IEnumerable<Guid>>._))
-            .Returns(new List<WelcomeEmailData>().ToAsyncEnumerable());
+        A.CallTo(() => _applicationRepository.GetEmailDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == Id)))
+            .Returns(Enumerable.Empty<EmailData>().ToAsyncEnumerable());
 
         A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames[ClientId].First())))
             .Returns(userRoleData.ToAsyncEnumerable());
 
         A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == _settings.CompanyAdminRoles[ClientId].First())))
-            .Returns(new List<UserRoleData>() { new(UserRoleId, ClientId, "Company Admin") }.ToAsyncEnumerable());
+            .Returns(new UserRoleData [] { new(UserRoleId, ClientId, "Company Admin") }.ToAsyncEnumerable());
 
         A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id))
             .Returns(companyInvitedUsers);
@@ -731,7 +730,7 @@ public class ApplicationActivationTests
 
     private void SetupForDelete()
     {
-        var userData = new List<(Guid CompanyUserId, string UserEntityId, IEnumerable<Guid> UserRoleIds)>
+        var userData = new (Guid CompanyUserId, string UserEntityId, IEnumerable<Guid> UserRoleIds) []
         {
             new (CompanyUserId1, "1", new [] {CompanyUserRoleId}),
             new (CompanyUserId2, "2", new [] {CompanyUserRoleId}),

@@ -19,18 +19,23 @@
  ********************************************************************************/
 
 using Laraue.EfCoreTriggers.PostgreSql.Extensions;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 
 public static class PortalRepositoriesStartupServiceExtensions
 {
-    public static IServiceCollection AddPortalRepositories(this IServiceCollection services, IConfiguration configuration) =>
+    public static IServiceCollection AddPortalRepositories(this IServiceCollection services, IConfiguration configuration)
+    {
         services.AddScoped<IPortalRepositories, PortalRepositories>()
             .AddDbContext<PortalDbContext>(o => o
                     .UseNpgsql(configuration.GetConnectionString("PortalDB"))
-                    .UsePostgreSqlTriggers());
+                    .UsePostgreSqlTriggers())
+            .AddHealthChecks()
+            .AddDbContextCheck<PortalDbContext>("PortalDbContext", tags: new [] { "portaldb" });
+        return services;
+    }
 }

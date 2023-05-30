@@ -350,7 +350,7 @@ public class SdFactoryBusinessLogicTests
         
         _documents.Should().HaveCount(1);
         var document = _documents.Single();
-        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connector.Id, A<Action<Connector>>._))
+        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connector.Id, null, A<Action<Connector>>._))
             .MustHaveHappenedOnceExactly();
         document.DocumentName.Should().Be("SelfDescription_Connector.json");
         connector.SelfDescriptionDocumentId.Should().Be(document.Id);
@@ -382,7 +382,7 @@ public class SdFactoryBusinessLogicTests
         await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CompanyUserId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connector.Id, A<Action<Connector>>._))
+        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connector.Id, null, A<Action<Connector>>._))
             .MustHaveHappenedOnceExactly();
         connector.SelfDescriptionMessage.Should().Be("test message");
         _documents.Should().BeEmpty();
@@ -489,9 +489,10 @@ public class SdFactoryBusinessLogicTests
     
     private void SetupForProcessFinishForConnector(Connector connector)
     {
-        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connector.Id, A<Action<Connector>>._))
-            .Invokes((Guid _, Action<Connector> modify) =>
+        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connector.Id, null, A<Action<Connector>>._))
+            .Invokes((Guid _, Action<Connector>? initialize, Action<Connector> modify) =>
             {
+                initialize?.Invoke(connector);
                 modify.Invoke(connector);
             });
         var documentId = Guid.NewGuid();

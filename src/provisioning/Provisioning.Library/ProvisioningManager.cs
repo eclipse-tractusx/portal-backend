@@ -62,8 +62,6 @@ public partial class ProvisioningManager : IProvisioningManager
 
         await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false);
 
-        await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false);
-
         await CreateSharedRealmIdentityProviderClientAsync(sharedKeycloak, idpName, new IdentityProviderClientConfig(
             await GetCentralBrokerEndpointOIDCAsync(idpName).ConfigureAwait(false)+"/*",
             await GetCentralRealmJwksUrlAsync().ConfigureAwait(false)
@@ -87,27 +85,7 @@ public partial class ProvisioningManager : IProvisioningManager
 
         await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false);
 
-        await CreateCentralIdentityProviderUsernameMapperAsync(idpName).ConfigureAwait(false);
-
         return idpName;
-    }
-
-    public async Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes)
-    {
-        var userIdShared = await CreateSharedRealmUserAsync(idpName, userProfile).ConfigureAwait(false);
-
-        var userIdCentral = await CreateCentralUserAsync(
-            new UserProfile(
-                idpName + "." + userIdShared,
-                userProfile.FirstName,
-                userProfile.LastName,
-                userProfile.Email),
-            attributes
-        ).ConfigureAwait(false);
-
-        await AddProviderUserLinkToCentralUserAsync(userIdCentral, new IdentityProviderLink(idpName, userIdShared, userProfile.UserName)).ConfigureAwait(false);
-
-        return userIdCentral;
     }
 
     public IEnumerable<(string AttributeName,IEnumerable<string> AttributeValues)> GetStandardAttributes(string? organisationName = null, string? businessPartnerNumber = null)
@@ -180,11 +158,7 @@ public partial class ProvisioningManager : IProvisioningManager
 
     public async Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId)
     {
-        var idOfClient = await GetCentralInternalClientIdFromClientIDAsync(clientId).ConfigureAwait(false);
-        if (idOfClient == null)
-        {
-            throw new KeycloakEntityNotFoundException($"clientId {clientId} not found in central keycloak");
-        }
+        var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(false);
         return (await _CentralIdp.GetClientRoleMappingsForUserAsync(_Settings.CentralRealm, userId, idOfClient).ConfigureAwait(false))
             .Where(r => r.Composite == true).Select(x => x.Name);
     }

@@ -1,4 +1,4 @@
-/********************************************************************************
+﻿/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,13 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Service.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Service.BusinessLogic
-
-{
-    public interface IClientBusinessLogic
-    {
-        Task<string> CreateClient(ClientSetupData clientSetupData);
-    }
-}
+/// <summary>
+/// Data to update the offer subscription url
+/// </summary>
+/// <param name="Url">The new url</param>
+public record UpdateTenantData(string Url);

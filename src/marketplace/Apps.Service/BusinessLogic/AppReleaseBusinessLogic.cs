@@ -61,6 +61,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     }
     
     /// <inheritdoc/>
+    [Obsolete("This Method is not used anymore,  Planning to delete it with release 3.1")]
     public  Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
         if (appId == Guid.Empty)
@@ -74,6 +75,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         return EditAppAsync(appId, updateModel, userId);
     }
 
+    [Obsolete("This Method is not used anymore,  Planning to delete it with release 3.1")]
     private async Task EditAppAsync(Guid appId, AppEditableDetail updateModel, string userId)
     {
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
@@ -188,7 +190,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             result.ContactNumber,
             result.Documents,
             result.SalesManagerId,
-            result.PrivacyPolicies);
+            result.PrivacyPolicies,
+            result.TechnicalUserProfile);
     }
 
     /// <inheritdoc/>
@@ -207,15 +210,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new NotFoundException($"role {roleId} does not exist");
         }
-        try
-        {
-            _portalRepositories.GetInstance<IUserRolesRepository>().DeleteUserRole(roleId);
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            throw new NotFoundException($"role {roleId} does not exist");
-        }
+        _portalRepositories.GetInstance<IUserRolesRepository>().DeleteUserRole(roleId);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -417,7 +413,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             .GetInReviewAppDataByIdAsync(appId, OfferTypeId.APP).ConfigureAwait(false);
         
         if(result == default)
+        {
             throw new NotFoundException($"App {appId} not found or Incorrect Status");
+        }
         
         return new InReviewAppDetails(
             result.id,
@@ -436,7 +434,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             result.LicenseTypeId,
             result.Price ?? Constants.ErrorString,
             result.Tags,
-            result.MatchingPrivacyPolicies);
+            result.MatchingPrivacyPolicies,
+            result.OfferStatusId,
+            result.TechnicalUserProfile.ToDictionary(g => g.TechnicalUserProfileId, g => g.UserRoles));
     }
 
     /// <inheritdoc />
@@ -593,4 +593,12 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         return appInstanceData.Single();
     }
+        
+    /// <inheritdoc />
+    public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId) =>
+        _offerService.GetTechnicalUserProfilesForOffer(offerId, iamUserId, OfferTypeId.APP);
+
+    /// <inheritdoc />
+    public Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data, string iamUserId) =>
+        _offerService.UpdateTechnicalUserProfiles(appId, OfferTypeId.APP, data, iamUserId, _settings.TechnicalUserProfileClient);
 }

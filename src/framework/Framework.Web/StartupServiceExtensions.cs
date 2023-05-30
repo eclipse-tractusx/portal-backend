@@ -65,6 +65,9 @@ public static class StartupServiceExtensions
             .Bind(configuration.GetSection("JwtBearerOptions"))
             .ValidateOnStart();
 
+        services.AddHealthChecks()
+            .AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: new [] { "keycloak" });
+
         return services;
     }
 }

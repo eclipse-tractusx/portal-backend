@@ -265,15 +265,12 @@ public class UserBusinessLogic : IUserBusinessLogic
             throw new NotFoundException($"app {appId} does not found");
         }
 
-        if (languageShortName != null)
+        if (languageShortName != null && !await _portalRepositories.GetInstance<ILanguageRepository>().IsValidLanguageCode(languageShortName))
         {
-            var language = await _portalRepositories.GetInstance<ILanguageRepository>().GetLanguageAsync(languageShortName);
-            if (language == null)
-            {
-                throw new ArgumentException($"language {languageShortName} does not exist");
-            }
+            throw new ArgumentException($"language {languageShortName} does not exist");
         }
-        await foreach (var roles in appRepository.GetClientRolesAsync(appId, languageShortName).ConfigureAwait(false))
+
+        await foreach (var roles in appRepository.GetClientRolesAsync(appId, languageShortName ?? Constants.DefaultLanguage).ConfigureAwait(false))
         {
             yield return new ClientRoles(roles.RoleId, roles.Role, roles.Description);
         }
@@ -314,9 +311,11 @@ public class UserBusinessLogic : IUserBusinessLogic
     public Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId) =>
         AddOwnCompanyUsersBusinessPartnerNumbersAsync(companyUserId, Enumerable.Repeat(businessPartnerNumber, 1), adminUserId);
 
-    public async Task<CompanyUserDetails> GetOwnUserDetails(string iamUserId)
+    public async Task<CompanyOwnUserDetails> GetOwnUserDetails(string iamUserId)
     {
-        var details = await _portalRepositories.GetInstance<IUserRepository>().GetUserDetailsUntrackedAsync(iamUserId).ConfigureAwait(false);
+        var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
+            .GetUserRoleIdsUntrackedAsync(_settings.UserAdminRoles).ToListAsync().ConfigureAwait(false);
+        var details = await _portalRepositories.GetInstance<IUserRepository>().GetUserDetailsUntrackedAsync(iamUserId, userRoleIds).ConfigureAwait(false);
         if (details == null)
         {
             throw new NotFoundException($"no company-user data found for user {iamUserId}");

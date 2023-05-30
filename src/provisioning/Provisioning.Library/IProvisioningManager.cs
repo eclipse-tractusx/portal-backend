@@ -27,7 +27,6 @@ public interface IProvisioningManager
 {
     ValueTask<string> GetNextCentralIdentityProviderNameAsync();
     Task SetupSharedIdpAsync(string idpName, string organisationName, string? loginTheme);
-    Task<string> CreateSharedUserLinkedToCentralAsync(string idpName, UserProfile userProfile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes);
     Task<string> CreateSharedRealmUserAsync(string realm, UserProfile profile);
     Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes);
     IAsyncEnumerable<(string Client, IEnumerable<string> Roles)> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames);
@@ -45,7 +44,7 @@ public interface IProvisioningManager
     Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config);
     Task UpdateCentralClientAsync(string internalClientId, ClientConfigData config);
     Task DeleteCentralClientAsync(string internalClientId);
-    Task UpdateClient(string internalClientId, string url, string redirectUrl);
+    Task UpdateClient(string clientId, string url, string redirectUrl);
     Task EnableClient(string internalClientId);
     Task<ClientAuthData> GetCentralClientAuthDataAsync(string internalClientId);
     Task<ClientAuthData> ResetCentralClientAuthDataAsync(string internalClientId);

@@ -38,6 +38,7 @@ public interface IAppReleaseBusinessLogic
     /// <param name="updateModel"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
+    [Obsolete("This Method is not used anymore,  Planning to delete it with release 3.1")]
     Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, string userId);
     
     /// <summary>
@@ -188,4 +189,20 @@ public interface IAppReleaseBusinessLogic
     /// <param name="data">the data for the app instance</param>
     /// <param name="iamUserId">the current user</param>
     Task SetInstanceType(Guid appId, AppInstanceSetupData data, string iamUserId);
+        
+    /// <summary>
+    /// Get technical user profiles for a specific offer
+    /// </summary>
+    /// <param name="offerId">Id of the offer</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>AsyncEnumerable with the technical user profile information</returns>
+    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId);
+
+    /// <summary>
+    /// Creates or updates the technical user profiles
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="data">The technical user profiles</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data, string iamUserId);
 }

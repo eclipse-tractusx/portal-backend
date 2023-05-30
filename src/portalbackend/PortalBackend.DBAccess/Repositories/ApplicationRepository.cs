@@ -149,13 +149,14 @@ public class ApplicationRepository : IApplicationRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid CompanyId, string? BusinessPartnerNumber, IEnumerable<string> IamIdpAliasse)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
+    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IamIdpAliasse)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
         _dbContext.CompanyApplications.Where(companyApplication =>
                 companyApplication.Id == applicationId &&
                 companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(ca => new ValueTuple<Guid, string?, IEnumerable<string>>(
+            .Select(ca => new ValueTuple<Guid, string, string?, IEnumerable<string>>(
                 ca.CompanyId,
-                ca.Company!.BusinessPartnerNumber,
+                ca.Company!.Name,
+                ca.Company.BusinessPartnerNumber,
                 ca.Company.IdentityProviders.Select(x => x.IamIdentityProvider!.IamIdpAlias)))
             .SingleOrDefaultAsync();
 
@@ -193,34 +194,18 @@ public class ApplicationRepository : IApplicationRepository
                 companyUser.CompanyUserAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)))
             .AsAsyncEnumerable();
 
-    public IAsyncEnumerable<WelcomeEmailData> GetWelcomeEmailDataUntrackedAsync(Guid applicationId, IEnumerable<Guid> roleIds) =>
+    public IAsyncEnumerable<EmailData> GetEmailDataUntrackedAsync(Guid applicationId) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId)
             .SelectMany(application =>
                 application.Company!.CompanyUsers
                     .Where(companyUser => companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE)
-                    .Select(companyUser => new WelcomeEmailData(
+                    .Select(companyUser => new EmailData(
                         companyUser.Id,
                         companyUser.Firstname,
                         companyUser.Lastname,
-                        companyUser.Email,
-                        companyUser.Company!.Name)))
-            .AsAsyncEnumerable();
-
-    public IAsyncEnumerable<WelcomeEmailData> GetRegistrationDeclineEmailDataUntrackedAsync(Guid applicationId, IEnumerable<Guid> roleIds) =>
-        _dbContext.CompanyApplications
-            .AsNoTracking()
-            .Where(application => application.Id == applicationId)
-            .SelectMany(application =>
-                application.Company!.CompanyUsers
-                    .Where(companyUser => companyUser.CompanyUserStatusId == CompanyUserStatusId.ACTIVE && companyUser.UserRoles.Any(userRole => roleIds.Contains(userRole.Id)))
-                    .Select(companyUser => new WelcomeEmailData(
-                        companyUser.Id,
-                        companyUser.Firstname,
-                        companyUser.Lastname,
-                        companyUser.Email,
-                        companyUser.Company!.Name)))
+                        companyUser.Email)))
             .AsAsyncEnumerable();
 
     public IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null) =>
@@ -409,9 +394,9 @@ public class ApplicationRepository : IApplicationRepository
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
     /// <returns>Returns the company id</returns>
-    public Task<Guid> GetCompanyIdForSubmittedApplication(Guid applicationId) =>
+    public Task<(Guid CompanyId, string CompanyName)> GetCompanyIdNameForSubmittedApplication(Guid applicationId) =>
         _dbContext.CompanyApplications
             .Where(x => x.Id == applicationId && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(x => x.CompanyId)
+            .Select(x => new ValueTuple<Guid,string>(x.CompanyId, x.Company!.Name))
             .SingleOrDefaultAsync();
 }

@@ -18,6 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.ComponentModel.DataAnnotations;
 
-public record WelcomeEmailData(Guid CompanyUserId, string? FirstName, string? LastName, string? Email, string CompanyName);
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+
+public class HealthCheckSettings
+{
+    [Required(AllowEmptyStrings = false)]
+    public string Path { get; set; } = null!;
+    public IEnumerable<string>? Tags { get; set; }
+}

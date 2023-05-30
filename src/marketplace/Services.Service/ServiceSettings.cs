@@ -113,6 +113,12 @@ public class ServiceSettings
     /// <value></value>
     [Required]
     public IDictionary<DocumentTypeId, IEnumerable<string>> UploadServiceDocumentTypeIds {get; set;} = null!;
+
+   /// <summary>
+   /// Company Admin Roles
+   /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
 }
 
 public static class ServiceSettingsExtension
