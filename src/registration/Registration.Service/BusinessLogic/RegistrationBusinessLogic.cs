@@ -630,14 +630,48 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new NotFoundException($"application {applicationId} does not exist");
         }
-        if (applicationUserData!.CompanyUserId == Guid.Empty)
+        if (!applicationUserData.IsApplicationCompanyUser)
         {
             throw new ForbiddenException($"iamUserId {iamUserId} is not assigned with CompanyApplication {applicationId}");
         }
-        GetAndValidateCompanyDataDetails(applicationUserData, _settings.SubmitDocumentTypeIds);
+        if (string.IsNullOrWhiteSpace(applicationUserData.Name))
+        {
+            throw new ControllerArgumentException($"Company Name must not be empty", nameof(applicationUserData.Name));
+        }
+        if (applicationUserData.AddressId == null)
+        {
+            throw new ControllerArgumentException($"Address must not be empty", nameof(applicationUserData.AddressId));
+        }
+        if (string.IsNullOrWhiteSpace(applicationUserData.Streetname))
+        {
+            throw new ControllerArgumentException($"Street Name must not be empty", nameof(applicationUserData.Streetname));
+        }
+        if (string.IsNullOrWhiteSpace(applicationUserData.City))
+        {
+            throw new ControllerArgumentException($"City must not be empty", nameof(applicationUserData.City));
+        }
+        if (string.IsNullOrWhiteSpace(applicationUserData.Country))
+        {
+            throw new ControllerArgumentException($"Country must not be empty", nameof(applicationUserData.Country));
+        }
+        if (!applicationUserData.UniqueIds.Any())
+        {
+            throw new ControllerArgumentException($"Company Identifiers [{string.Join(", ", applicationUserData.UniqueIds)}] must not be empty");
+        }
+        if (!applicationUserData.CompanyRoleIds.Any())
+        {
+            throw new ControllerArgumentException($"Company assigned role [{string.Join(", ", applicationUserData.CompanyRoleIds)}] must not be empty");
+        }
+        if (!applicationUserData.AgreementConsentStatuses.Any())
+        {
+            throw new ControllerArgumentException($"Agreement and Consent must not be empty");
+        }
         if (applicationUserData.DocumentDatas.Any())
         {
-            
+            if(!applicationUserData.DocumentDatas.Select(x=>x.TypeId).Contains(DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT))
+            {
+                throw new ControllerArgumentException($"At least one Document type Id must be COMMERCIAL_REGISTER_EXTRACT");
+            }
             var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
             foreach (var document in applicationUserData.DocumentDatas)
             {
