@@ -53,10 +53,9 @@ public class ServiceChangeBusinessLogicTests
         _documentRepository = A.Fake<IDocumentRepository>();
         _offerService = A.Fake<IOfferService>();
 
-
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
-        _sut = new ServiceChangeBusinessLogic(_portalRepositories, _offerService, Options.Create(new ServiceSettings()));
+        _sut = new ServiceChangeBusinessLogic(_offerService);
     }
 
     #region  DeactivateOfferbyServiceId

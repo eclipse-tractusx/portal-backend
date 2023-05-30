@@ -1306,6 +1306,27 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetOfferActiveStatusDataById
+
+    [Theory]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0572c0007", OfferTypeId.APP)]
+    [InlineData("ac1cf001-7fbc-1f2f-817f-bce0000c0001", OfferTypeId.SERVICE)]
+    public async Task GetOfferActiveStatusDataByIdAsync_ReturnsExpectedResult(Guid offerId, OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, "502dabcf-01c7-47d9-a88e-0be4279097b5").ConfigureAwait(false);
+        // Assert
+        result.Should().NotBeNull();
+        result.IsStatusActive.Should().BeTrue();
+        result.IsUserCompanyProvider.Should().BeTrue();
+
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<OfferRepository> CreateSut()

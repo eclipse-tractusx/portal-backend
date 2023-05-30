@@ -623,23 +623,23 @@ public class OfferService : IOfferService
         }
     }
 
-    public async Task DeactivateOfferIdAsync(Guid appId, string iamUserId, OfferTypeId offerTypeId)
+    public async Task DeactivateOfferIdAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId)
     {
-        var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var appdata = await appRepository.GetOfferActiveStatusDataByIdAsync(appId, offerTypeId, iamUserId).ConfigureAwait(false);
-        if (appdata == default)
+        var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
+        var offerdata = await offerRepository.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, iamUserId).ConfigureAwait(false);
+        if (offerdata == default)
         {
-            throw new NotFoundException($"App {appId} does not exist.");
+            throw new NotFoundException($"{offerTypeId} {offerId} does not exist.");
         }
-        if (!appdata.IsUserCompanyProvider)
+        if (!offerdata.IsUserCompanyProvider)
         {
             throw new ForbiddenException("Missing permission: The user's company does not provide the requested app so they cannot deactivate it.");
         }
-        if (!appdata.IsStatusActive)
+        if (!offerdata.IsStatusActive)
         {
             throw new ConflictException($"offerStatus is in Incorrect State");
         }
-        appRepository.AttachAndModifyOffer(appId, offer =>
+        offerRepository.AttachAndModifyOffer(offerId, offer =>
             offer.OfferStatusId = OfferStatusId.INACTIVE);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

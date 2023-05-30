@@ -18,9 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
@@ -31,24 +29,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
 public class ServiceChangeBusinessLogic : IServiceChangeBusinessLogic
 {
-    private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferService _offerService;
-    private readonly ServiceSettings _settings;
 
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerService">Access to the offer service</param>
-    /// <param name="settings">Access to the settings</param>
-    public ServiceChangeBusinessLogic(
-        IPortalRepositories portalRepositories,
-        IOfferService offerService,
-        IOptions<ServiceSettings> settings)
+    public ServiceChangeBusinessLogic(IOfferService offerService)
     {
-        _portalRepositories = portalRepositories;
         _offerService = offerService;
-        _settings = settings.Value;
     }
 
     /// <inheritdoc />
