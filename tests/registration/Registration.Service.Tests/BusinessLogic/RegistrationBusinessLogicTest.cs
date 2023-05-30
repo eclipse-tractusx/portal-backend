@@ -1694,7 +1694,7 @@ public class RegistrationBusinessLogicTest
             new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _iamUserId))
-            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), "test@mail.de", documents, "Test Company",Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), "test@mail.de", documents, "Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
 
         A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
             .Returns(checklist);
@@ -1809,7 +1809,7 @@ public class RegistrationBusinessLogicTest
             new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(statusId, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(statusId, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
@@ -1839,7 +1839,7 @@ public class RegistrationBusinessLogicTest
             new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(statusId, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(statusId, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
@@ -1866,7 +1866,7 @@ public class RegistrationBusinessLogicTest
             new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.Empty, null, null!, "Test Company",Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.Empty, null, null!, "Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
@@ -2045,7 +2045,7 @@ public class RegistrationBusinessLogicTest
         };
         var streetName = string.Empty;
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), streetName, "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company", Guid.NewGuid(), streetName, "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
@@ -2070,7 +2070,7 @@ public class RegistrationBusinessLogicTest
         };
         var companyName = string.Empty;
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), companyName,Guid.NewGuid(), "strabe street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), companyName, Guid.NewGuid(), "strabe street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
@@ -2094,7 +2094,7 @@ public class RegistrationBusinessLogicTest
             new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",null, "strabe street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company", null, "strabe street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
@@ -2119,7 +2119,7 @@ public class RegistrationBusinessLogicTest
         };
         var city = string.Empty;
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), "strabe street", city, "Germany", uniqueIds, companyRoleIds, agreementConsents));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company", Guid.NewGuid(), "strabe street", city, "Germany", uniqueIds, companyRoleIds, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
@@ -2144,7 +2144,7 @@ public class RegistrationBusinessLogicTest
         };
         var country = string.Empty;
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), "strabe street", "Munich", country, uniqueIds, companyRoleIds, agreementConsents));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company", Guid.NewGuid(), "strabe street", "Munich", country, uniqueIds, companyRoleIds, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
@@ -2168,7 +2168,7 @@ public class RegistrationBusinessLogicTest
         };
         var uniqueIdentifierData = Enumerable.Empty<UniqueIdentifierId>();
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), "strabe street", "Munich", "Germany", uniqueIdentifierData, companyRoleIds, agreementConsents));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company", Guid.NewGuid(), "strabe street", "Munich", "Germany", uniqueIdentifierData, companyRoleIds, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
@@ -2192,7 +2192,7 @@ public class RegistrationBusinessLogicTest
         };
         var companyRoleIdData = Enumerable.Empty<CompanyRoleId>();
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), "strabe street", "Munich", "Germany", uniqueIds, companyRoleIdData, agreementConsents));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company", Guid.NewGuid(), "strabe street", "Munich", "Germany", uniqueIds, companyRoleIdData, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
@@ -2214,7 +2214,7 @@ public class RegistrationBusinessLogicTest
         var agreementConsents = Enumerable.Empty<(Guid, ConsentStatusId)>();
 
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), "strabe street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company", Guid.NewGuid(), "strabe street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
@@ -2242,7 +2242,7 @@ public class RegistrationBusinessLogicTest
                 Guid.NewGuid(),DocumentStatusId.INACTIVE, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
             )};
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _iamUserId))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), "test@mail.de", document, "Test Company",Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), "test@mail.de", document, "Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, _checklistService);
 
         // Act
@@ -2273,7 +2273,7 @@ public class RegistrationBusinessLogicTest
                 Guid.NewGuid(),DocumentStatusId.PENDING, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
             )};
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _iamUserId))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), null, document, "Test Company",Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), null, document, "Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, A.Fake<ILogger<RegistrationBusinessLogic>>(), _portalRepositories, _checklistService);
 
         // Act
