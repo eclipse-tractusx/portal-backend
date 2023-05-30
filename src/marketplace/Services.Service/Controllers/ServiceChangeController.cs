@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
+using Microsoft.AspNetCore.Authorization;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Controllers;
 
