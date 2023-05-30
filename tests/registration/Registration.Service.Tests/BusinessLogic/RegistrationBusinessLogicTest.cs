@@ -1681,9 +1681,9 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var applicationId = _fixture.Create<Guid>();
-        var documents = new DocumentStatusData[] {
-            new(Guid.NewGuid(),DocumentStatusId.PENDING),
-            new(Guid.NewGuid(),DocumentStatusId.INACTIVE)
+        var documents = new DocumentStatusTypeData[] {
+            new(Guid.NewGuid(),DocumentStatusId.PENDING, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT),
+            new(Guid.NewGuid(),DocumentStatusId.INACTIVE, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT)
         };
         var checklist = _fixture.CreateMany<ApplicationChecklistEntryTypeId>(3).Select(x => (x, ApplicationChecklistEntryStatusId.TO_DO)).ToImmutableArray();
         var stepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(3).ToImmutableArray();
@@ -1693,24 +1693,8 @@ public class RegistrationBusinessLogicTest
         {
             new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
-        var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
-        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
-            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, "test@mail.de", documents, companyData, agreementConsents));
-
-        var modifiedDocuments = new List<(Document Initial, Document Modified)>();
-
-        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid DocumentId, Action<Document>?, Action<Document>)>>._))
-            .Invokes((IEnumerable<(Guid DocumentId, Action<Document>? Initialize, Action<Document> Modify)> documentKeyActions) =>
-            {
-                foreach (var x in documentKeyActions)
-                {
-                    var initial = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
-                    x.Initialize?.Invoke(initial);
-                    var modified = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
-                    x.Modify(modified);
-                    modifiedDocuments.Add((initial, modified));
-                }
-            });
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _iamUserId))
+            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), "test@mail.de", documents, "Test Company",Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
 
         A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
             .Returns(checklist);
@@ -1820,24 +1804,13 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var documents = new DocumentStatusData[] {
-            new(Guid.NewGuid(),DocumentStatusId.PENDING),
-            new(Guid.NewGuid(),DocumentStatusId.INACTIVE)
-        };
         var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
         {
             new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
-        var settings = new RegistrationSettings
-        {
-            SubmitDocumentTypeIds = new[]{
-                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
-            }
-        };
-        var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
-        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
-            .Returns(new CompanyApplicationUserEmailData(statusId, true, _fixture.Create<string>(), documents, companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(statusId, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId, userId)
@@ -1861,24 +1834,13 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
         var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
         var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var documents = new DocumentStatusData[] {
-            new(Guid.NewGuid(),DocumentStatusId.PENDING),
-            new(Guid.NewGuid(),DocumentStatusId.INACTIVE)
-        };
         var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
         {
             new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
-        var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
-        var settings = new RegistrationSettings
-        {
-            SubmitDocumentTypeIds = new[]{
-                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
-            }
-        };
-        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
-            .Returns(new CompanyApplicationUserEmailData(statusId, true, _fixture.Create<string>(), documents, companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(statusId, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId, userId)
@@ -1903,75 +1865,8 @@ public class RegistrationBusinessLogicTest
         {
             new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
-        var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
-        var settings = new RegistrationSettings
-        {
-            SubmitDocumentTypeIds = new[]{
-                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
-            }
-        };
-        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
-            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, false, null, null!, companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
-
-        // Act
-        async Task Act() => await sut.SubmitRegistrationAsync(applicationId, userId)
-            .ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"userId {userId} is not associated with CompanyApplication {applicationId}");
-        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
-            .MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task SubmitRegistrationAsync_WithNotExistingStreetName_ThrowsConflictException()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var applicationId = _fixture.Create<Guid>();
-        var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
-        var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
-        {
-            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
-        };
-        var companyData = new CompanyData("Test Company", Guid.NewGuid(), string.Empty, "Munich", "Germany", uniqueIds, companyRoleIds);
-        var settings = new RegistrationSettings
-        {
-            SubmitDocumentTypeIds = new[]{
-                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
-            }
-        };
-        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
-            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
-
-        // Act
-        async Task Act() => await sut.SubmitRegistrationAsync(applicationId, userId)
-            .ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Street Name must not be empty");
-    }
-
-    [Fact]
-    public async Task SubmitRegistrationAsync_WithNotExistingAddressId_ThrowsConflictException()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var applicationId = _fixture.Create<Guid>();
-        var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
-        var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
-        {
-            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
-        };
-        var companyData = new CompanyData("Test Company", null, "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
-        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
-            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.Empty, null, null!, "Test Company",Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
 
         // Act
@@ -2138,6 +2033,200 @@ public class RegistrationBusinessLogicTest
     }
 
     [Fact]
+    public async Task SubmitRegistrationAsync_WithNotExistingStreetName_ThrowsArgumentException()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
+        var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
+        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        {
+            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+        };
+        var streetName = string.Empty;
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), streetName, "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitRegistrationAsync(applicationId, Guid.Empty.ToString())
+            .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("Street Name must not be empty (Parameter 'Streetname')");
+    }
+
+    [Fact]
+    public async Task SubmitRegistrationAsync_WithNotExistingCompanyName_ThrowsArgumentException()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
+        var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
+        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        {
+            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+        };
+        var companyName = string.Empty;
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), companyName,Guid.NewGuid(), "strabe street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitRegistrationAsync(applicationId, Guid.Empty.ToString())
+            .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("Company Name must not be empty (Parameter 'Name')");
+    }
+
+    [Fact]
+    public async Task SubmitRegistrationAsync_WithNotExistingAddressId_ThrowsArgumentException()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
+        var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
+        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        {
+            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+        };
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",null, "strabe street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitRegistrationAsync(applicationId, Guid.Empty.ToString())
+            .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("Address must not be empty (Parameter 'AddressId')");
+    }
+
+    [Fact]
+    public async Task SubmitRegistrationAsync_WithNotExistingCity_ThrowsArgumentException()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
+        var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
+        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        {
+            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+        };
+        var city = string.Empty;
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), "strabe street", city, "Germany", uniqueIds, companyRoleIds, agreementConsents));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitRegistrationAsync(applicationId, Guid.Empty.ToString())
+            .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("City must not be empty (Parameter 'City')");
+    }
+
+    [Fact]
+    public async Task SubmitRegistrationAsync_WithNotExistingCountry_ThrowsArgumentException()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
+        var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
+        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        {
+            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+        };
+        var country = string.Empty;
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), "strabe street", "Munich", country, uniqueIds, companyRoleIds, agreementConsents));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitRegistrationAsync(applicationId, Guid.Empty.ToString())
+            .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("Country must not be empty (Parameter 'Country')");
+    }
+
+    [Fact]
+    public async Task SubmitRegistrationAsync_WithNotExistingUniqueId_ThrowsArgumentException()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
+        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        {
+            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+        };
+        var uniqueIdentifierData = Enumerable.Empty<UniqueIdentifierId>();
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), "strabe street", "Munich", "Germany", uniqueIdentifierData, companyRoleIds, agreementConsents));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitRegistrationAsync(applicationId, Guid.Empty.ToString())
+            .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"Company Identifiers [{string.Join(", ", uniqueIdentifierData)}] must not be empty");
+    }
+
+    [Fact]
+    public async Task SubmitRegistrationAsync_WithNotExistingCompanyRoleId_ThrowsArgumentException()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
+        var agreementConsents = new List<(Guid AgreementId, ConsentStatusId ConsentStatusId)>
+        {
+            new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
+        };
+        var companyRoleIdData = Enumerable.Empty<CompanyRoleId>();
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), "strabe street", "Munich", "Germany", uniqueIds, companyRoleIdData, agreementConsents));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitRegistrationAsync(applicationId, Guid.Empty.ToString())
+            .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"Company assigned role [{string.Join(", ", companyRoleIdData)}] must not be empty");
+    }
+
+    [Fact]
+    public async Task SubmitRegistrationAsync_WithNotExistingAgreementandConsent_ThrowsArgumentException()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
+        var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
+        var agreementConsents = Enumerable.Empty<(Guid, ConsentStatusId)>();
+
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, Guid.Empty.ToString()))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), _fixture.Create<string>(), Enumerable.Empty<DocumentStatusTypeData>(), "Test Company",Guid.NewGuid(), "strabe street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, null!);
+
+        // Act
+        async Task Act() => await sut.SubmitRegistrationAsync(applicationId, Guid.Empty.ToString())
+            .ConfigureAwait(false);
+
+        // Arrange
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"Agreement and Consent must not be empty");
+    }
+
+    [Fact]
     public async Task SubmitRegistrationAsync_WithUserEmail_SendsMail()
     {
         // Arrange
@@ -2148,20 +2237,13 @@ public class RegistrationBusinessLogicTest
         {
             new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
-        IEnumerable<DocumentStatusData> documents = new DocumentStatusData[]{
+        IEnumerable<DocumentStatusTypeData> document = new DocumentStatusTypeData[]{
             new(
-                Guid.NewGuid(),DocumentStatusId.INACTIVE
+                Guid.NewGuid(),DocumentStatusId.INACTIVE, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
             )};
-        var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
-        var settings = new RegistrationSettings
-        {
-            SubmitDocumentTypeIds = new[]{
-                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
-            }
-        };
-        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
-            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, "test@mail.de", documents, companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), _mailingService, null!, null!, null!, null!, _portalRepositories, _checklistService);
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _iamUserId))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), "test@mail.de", document, "Test Company",Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, null!, _portalRepositories, _checklistService);
 
         // Act
         var result = await sut.SubmitRegistrationAsync(applicationId, _identity.UserId)
@@ -2186,20 +2268,13 @@ public class RegistrationBusinessLogicTest
         {
             new ValueTuple<Guid, ConsentStatusId>(Guid.NewGuid(), ConsentStatusId.ACTIVE),
         };
-        IEnumerable<DocumentStatusData> documents = new DocumentStatusData[]{
+        IEnumerable<DocumentStatusTypeData> document = new DocumentStatusTypeData[]{
             new(
-                Guid.NewGuid(),DocumentStatusId.PENDING
+                Guid.NewGuid(),DocumentStatusId.PENDING, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
             )};
-        var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
-        var settings = new RegistrationSettings
-        {
-            SubmitDocumentTypeIds = new[]{
-                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
-            }
-        };
-        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
-            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, null, documents, companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), _mailingService, null!, null!, null!, A.Fake<ILogger<RegistrationBusinessLogic>>(), _portalRepositories, _checklistService);
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _iamUserId))
+            .ReturnsLazily(() => new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, Guid.NewGuid(), null, document, "Test Company",Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds, agreementConsents));
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), _mailingService, null!, null!, null!, A.Fake<ILogger<RegistrationBusinessLogic>>(), _portalRepositories, _checklistService);
 
         // Act
         var result = await sut.SubmitRegistrationAsync(applicationId, _identity.UserId)
