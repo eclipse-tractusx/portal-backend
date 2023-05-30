@@ -35,7 +35,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Bpn.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
