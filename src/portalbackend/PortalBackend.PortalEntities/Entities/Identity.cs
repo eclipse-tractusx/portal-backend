@@ -1,0 +1,47 @@
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+
+public class Identity : IBaseEntity
+{
+    public Identity()
+    {
+        IdentityAssignedRoles = new HashSet<IdentityAssignedRole>();
+    }
+
+    public Identity(Guid id, DateTimeOffset dateCreated, Guid companyId, UserStatusId userStatusId, IdentityTypeId identityTypeId)
+        : this()
+    {
+        Id = id;
+        DateCreated = dateCreated;
+        CompanyId = companyId;
+        UserStatusId = userStatusId;
+        IdentityTypeId = identityTypeId;
+    }
+
+    public Guid Id { get; set; }
+
+    public DateTimeOffset DateCreated { get; set; }
+
+    public Guid CompanyId { get; set; }
+
+    [JsonPropertyName("user_status_id")]
+    public UserStatusId UserStatusId { get; set; }
+
+    [StringLength(36)]
+    public string? UserEntityId { get; set; }
+
+    public IdentityTypeId IdentityTypeId { get; set; }
+
+    // Navigation properties
+    public virtual Company? Company { get; set; }
+
+    public virtual IdentityUserStatus? IdentityStatus { get; set; }
+
+    public virtual IdentityType? IdentityType { get; set; }
+
+    public virtual ICollection<IdentityAssignedRole> IdentityAssignedRoles { get; private set; }
+}

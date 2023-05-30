@@ -124,7 +124,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
             _validOfferId,
             ValidIamUserId,
             new[] { OfferSubscriptionStatusId.ACTIVE },
-            new[] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE },
+            new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE },
             new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
 
         // Assert
@@ -143,7 +143,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
             _validOfferId,
             ValidIamUserId,
             new[] { OfferSubscriptionStatusId.ACTIVE },
-            new[] { CompanyUserStatusId.INACTIVE },
+            new[] { UserStatusId.INACTIVE },
             new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
 
         // Assert
@@ -162,7 +162,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
             _validOfferId,
             ValidIamUserId,
             new[] { OfferSubscriptionStatusId.ACTIVE },
-            new[] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE, CompanyUserStatusId.DELETED },
+            new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.DELETED },
             new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
 
         // Assert
@@ -181,7 +181,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
             _validOfferId,
             Guid.NewGuid().ToString(),
             new[] { OfferSubscriptionStatusId.ACTIVE },
-            new[] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE },
+            new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE },
             new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
 
         // Assert
@@ -475,6 +475,8 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
+
+    // TODO (PS): GetAllFavouriteAppsForUserUntrackedAsync
 
     private async Task<UserRepository> CreateSut()
     {

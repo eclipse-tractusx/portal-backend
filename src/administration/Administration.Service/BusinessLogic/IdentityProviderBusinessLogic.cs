@@ -663,7 +663,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 await _provisioningManager.UpdateSharedRealmUserAsync(sharedIdpAlias, sharedIdpLink.UserId, firstName, lastName, email).ConfigureAwait(false);
             }
         }
-        userRepository.AttachAndModifyCompanyUser(companyUserId, companyUser =>
+        userRepository.AttachAndModifyCompanyUser(companyUserId, null, companyUser =>
             {
                 companyUser.Firstname = profile.FirstName;
                 companyUser.Lastname = profile.LastName;
@@ -845,7 +845,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     companyUser.Firstname,
                     companyUser.Lastname,
                     companyUser.Email,
-                    companyUser.IamUser!.UserEntityId))
+                    companyUser.UserEntityId))
             .ToAsyncEnumerable().ConfigureAwait(false))
         {
             if (userEntityId != null)

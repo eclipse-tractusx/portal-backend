@@ -120,7 +120,7 @@ public class OfferRepository : IOfferRepository
                     .Select(license => license.Licensetext)
                     .FirstOrDefault(),
                 offer.Tags.Select(t => t.Name),
-                offer.Companies.Where(c => c.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
+                offer.Companies.Where(c => c.CompanyUsers.Any(companyUser => companyUser.UserEntityId == iamUserId))
                     .SelectMany(company => company.OfferSubscriptions.Where(x => x.OfferId == offerId))
                     .Select(x => x.OfferSubscriptionStatusId)
                     .FirstOrDefault(),
@@ -205,7 +205,7 @@ public class OfferRepository : IOfferRepository
             .AsNoTracking()
             .Where(offer =>
                 offer.OfferTypeId == offerTypeId &&
-                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId))
+                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == iamUserId))
             .Select(offer => new AllOfferData(
                 offer.Id,
                 offer.Name,
@@ -225,7 +225,7 @@ public class OfferRepository : IOfferRepository
             .Select(a =>
                 new ValueTuple<bool, bool, string?, string?, string?, IEnumerable<LocalizedDescription>>(
                     a.OfferStatusId == OfferStatusId.CREATED,
-                    a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
+                    a.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == userId),
                     a.ContactEmail,
                     a.ContactNumber,
                     a.MarketingUrl,
@@ -288,7 +288,7 @@ public class OfferRepository : IOfferRepository
                 offer.ContactEmail,
                 offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
                 offer.OfferLicenses.FirstOrDefault()!.Licensetext,
-                offer.OfferSubscriptions.Where(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)).Select(x => new OfferSubscriptionStateDetailData(x.Id, x.OfferSubscriptionStatusId))
+                offer.OfferSubscriptions.Where(os => os.Company!.CompanyUsers.Any(cu => cu.UserEntityId == iamUserId)).Select(x => new OfferSubscriptionStateDetailData(x.Id, x.OfferSubscriptionStatusId))
             ))
             .SingleOrDefaultAsync();
 
@@ -306,7 +306,7 @@ public class OfferRepository : IOfferRepository
                 offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
                 offer.OfferLicenses.FirstOrDefault()!.Licensetext,
                 offer.OfferSubscriptions
-                    .Where(os => os.Company!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId))
+                    .Where(os => os.Company!.CompanyUsers.Any(cu => cu.UserEntityId == iamUserId))
                     .Select(x => new OfferSubscriptionStateDetailData(x.Id, x.OfferSubscriptionStatusId)),
                 offer.ServiceDetails.Select(x => x.ServiceTypeId),
                 offer.Documents
@@ -369,7 +369,7 @@ public class OfferRepository : IOfferRepository
             .Where(a => a.Id == offerId && a.OfferTypeId == offerTypeId)
             .Select(offer => new
             {
-                IsProviderCompany = offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
+                IsProviderCompany = offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == userId),
                 Offer = offer
             })
             .Select(x => new ValueTuple<OfferProviderData?, bool>(
@@ -416,7 +416,7 @@ public class OfferRepository : IOfferRepository
             .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
             .Select(offer => new ValueTuple<bool, bool>(
                 true,
-                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId)
+                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == userId)
             ))
             .SingleOrDefaultAsync();
 
@@ -427,7 +427,7 @@ public class OfferRepository : IOfferRepository
             .Select(offer => new ValueTuple<bool, bool, Guid>(
                 true,
                 offer.OfferStatusId == offerStatusId,
-                offer.ProviderCompany!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == userId).Select(cu => cu.Id).FirstOrDefault()
+                offer.ProviderCompany!.CompanyUsers.Where(companyUser => companyUser.UserEntityId == userId).Select(cu => cu.Id).FirstOrDefault()
             ))
             .SingleOrDefaultAsync();
 
@@ -437,7 +437,7 @@ public class OfferRepository : IOfferRepository
             .Where(offer => offer.Id == offerId)
             .Select(offer => new ValueTuple<bool, bool, bool>(
                 (offer.OfferStatusId == offerStatusId),
-                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
+                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == userId),
                 offer.UserRoles.Any(userRole => userRole.Id == roleId)
             ))
             .SingleOrDefaultAsync();
@@ -454,7 +454,7 @@ public class OfferRepository : IOfferRepository
             .Select(x => new AppUpdateData
             (
                 x.OfferStatusId,
-                x.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
+                x.ProviderCompany!.CompanyUsers.Any(cu => cu.UserEntityId == iamUserId),
                 x.OfferDescriptions.Select(description => new LocalizedDescription(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
                 x.SupportedLanguages.Select(sl => new ValueTuple<string, bool>(sl.ShortName, languageCodes.Any(lc => lc == sl.ShortName))),
                 x.UseCases.Select(uc => uc.Id),
@@ -477,7 +477,7 @@ public class OfferRepository : IOfferRepository
             .Select(x => new ServiceUpdateData
             (
                 x.OfferStatusId,
-                x.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
+                x.ProviderCompany!.CompanyUsers.Any(cu => cu.UserEntityId == iamUserId),
                 x.ServiceDetails.Select(st => new ValueTuple<ServiceTypeId, bool>(st.ServiceTypeId, serviceTypeIds.Contains(st.ServiceTypeId))),
                 x.OfferLicenses.Select(ol => new ValueTuple<Guid, string, bool>(ol.Id, ol.Licensetext, ol.Offers.Count > 1)).FirstOrDefault(),
                 x.OfferDescriptions.Select(description => new LocalizedDescription(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
@@ -492,7 +492,7 @@ public class OfferRepository : IOfferRepository
             .Select(offer => new ValueTuple<bool, string?, Guid, Guid?, IEnumerable<string>>(
                 true,
                 offer.Name,
-                offer.ProviderCompany!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == userId).Select(cu => cu.Id).SingleOrDefault(),
+                offer.ProviderCompany!.CompanyUsers.Where(companyUser => companyUser.UserEntityId == userId).Select(cu => cu.Id).SingleOrDefault(),
                 offer.ProviderCompanyId,
                 offer.AppInstances.Select(ai => ai.IamClient!.ClientClientId)
             ))
@@ -532,7 +532,7 @@ public class OfferRepository : IOfferRepository
             .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
             .Select(offer => new ValueTuple<bool, bool>(
                 offer.OfferStatusId == OfferStatusId.ACTIVE,
-                offer.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)))
+                offer.ProviderCompany!.CompanyUsers.Any(cu => cu.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -584,7 +584,7 @@ public class OfferRepository : IOfferRepository
             .Select(offer => new
             {
                 Offer = offer,
-                IsProviderCompanyUser = offer.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId)
+                IsProviderCompanyUser = offer.ProviderCompany!.CompanyUsers.Any(cu => cu.UserEntityId == iamUserId)
             })
             .Select(x => new ValueTuple<bool, bool, IEnumerable<LocalizedDescription>?>(
                 x.Offer.OfferStatusId == OfferStatusId.ACTIVE,
@@ -627,7 +627,7 @@ public class OfferRepository : IOfferRepository
                 Offer = offer,
                 IsOfferTypeId = offer.OfferTypeId == offerTypeId,
                 IsOfferStatusId = offer.OfferStatusId == offerStatusId,
-                IsProviderCompanyUser = offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId),
+                IsProviderCompanyUser = offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == userId),
             })
             .Select(x => new ValueTuple<bool, bool, bool, bool, AppDeleteData?>(
                 true,
@@ -682,7 +682,7 @@ public class OfferRepository : IOfferRepository
             .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
             .Select(offer => new ValueTuple<bool, Guid, IEnumerable<DocumentStatusData>>(
                 offer.OfferStatusId == OfferStatusId.ACTIVE,
-                offer.ProviderCompany!.CompanyUsers.Where(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+                offer.ProviderCompany!.CompanyUsers.Where(companyUser => companyUser.UserEntityId == iamUserId)
                     .Select(cu => cu.Id).FirstOrDefault(),
                 offer.Documents.Where(doc => doc.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE)
                     .Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId))))
@@ -719,7 +719,7 @@ public class OfferRepository : IOfferRepository
             take,
             _context.Offers.AsNoTracking()
                 .Where(offer => offer.OfferTypeId == offerTypeId &&
-                    offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == userId) &&
+                    offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == userId) &&
                     offerStatusIds.Contains(offer.OfferStatusId) && (offerName == null || EF.Functions.ILike(offer.Name!, $"%{offerName!.EscapeForILike()}%")))
                 .GroupBy(offer => offer.OfferTypeId),
             sorting switch
@@ -769,7 +769,7 @@ public class OfferRepository : IOfferRepository
             .Where(x => x.OfferTypeId == offerTypeId && x.Id == offerId)
             .Select(o => new ValueTuple<OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>>(
                 o.OfferStatusId,
-                o.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
+                o.ProviderCompany!.CompanyUsers.Any(cu => cu.UserEntityId == iamUserId),
                 o.AppInstanceSetup == null ?
                     null :
                     new AppInstanceSetupTransferData(o.AppInstanceSetup!.AppId, o.AppInstanceSetup!.IsSingleInstance, o.AppInstanceSetup!.InstanceUrl),

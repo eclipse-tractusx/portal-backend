@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyServiceAccountWithRoleDataClientId(
     Guid ServiceAccountId,
-    CompanyServiceAccountStatusId CompanyServiceAccountStatusId,
+    UserStatusId UserStatusId,
     string Name,
     string Description,
     CompanyServiceAccountTypeId CompanyServiceAccountTypeId,

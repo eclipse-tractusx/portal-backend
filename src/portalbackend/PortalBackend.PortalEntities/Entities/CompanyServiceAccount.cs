@@ -24,34 +24,30 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyServiceAccount : IBaseEntity
+public class CompanyServiceAccount : Identity
 {
     private CompanyServiceAccount()
+        : base()
     {
         Name = default!;
         Description = default!;
-        UserRoles = new HashSet<UserRole>();
-        CompanyServiceAccountAssignedRoles = new HashSet<CompanyServiceAccountAssignedRole>();
         AppInstances = new HashSet<AppInstanceAssignedCompanyServiceAccount>();
     }
 
-    public CompanyServiceAccount(Guid id, Guid serviceAccountOwnerId, CompanyServiceAccountStatusId companyServiceAccountStatusId, string name, string description, DateTimeOffset dateCreated, CompanyServiceAccountTypeId companyServiceAccountTypeId) : this()
+    public CompanyServiceAccount(Guid id, Guid companyId, UserStatusId userStatusId, string name, string description, DateTimeOffset dateCreated, CompanyServiceAccountTypeId companyServiceAccountTypeId)
+        : base(id, dateCreated, companyId, userStatusId, IdentityTypeId.COMPANY_SERVICE_ACCOUNT)
     {
-        Id = id;
-        DateCreated = dateCreated;
-        ServiceAccountOwnerId = serviceAccountOwnerId;
-        CompanyServiceAccountStatusId = companyServiceAccountStatusId;
         Name = name;
         Description = description;
         CompanyServiceAccountTypeId = companyServiceAccountTypeId;
+        AppInstances = new HashSet<AppInstanceAssignedCompanyServiceAccount>();
     }
 
-    [Key]
-    public Guid Id { get; private set; }
+    [StringLength(36)]
+    public string? ClientId { get; set; }
 
-    public DateTimeOffset DateCreated { get; private set; }
-
-    public Guid ServiceAccountOwnerId { get; private set; }
+    [StringLength(255)]
+    public string? ClientClientId { get; set; }
 
     [MaxLength(255)]
     public string Name { get; set; }
@@ -60,19 +56,11 @@ public class CompanyServiceAccount : IBaseEntity
 
     public CompanyServiceAccountTypeId CompanyServiceAccountTypeId { get; set; }
 
-    public CompanyServiceAccountStatusId CompanyServiceAccountStatusId { get; set; }
-
     public Guid? OfferSubscriptionId { get; set; }
 
     // Navigation properties
-    public virtual Company? ServiceAccountOwner { get; private set; }
-    public virtual IamServiceAccount? IamServiceAccount { get; set; }
-    public virtual CompanyServiceAccountStatus? CompanyServiceAccountStatus { get; set; }
     public virtual CompanyServiceAccountType? CompanyServiceAccountType { get; set; }
     public virtual OfferSubscription? OfferSubscription { get; set; }
     public virtual Connector? Connector { get; set; }
-    public virtual ICollection<UserRole> UserRoles { get; private set; }
-    public virtual ICollection<CompanyServiceAccountAssignedRole> CompanyServiceAccountAssignedRoles { get; private set; }
-
     public virtual ICollection<AppInstanceAssignedCompanyServiceAccount> AppInstances { get; private set; }
 }

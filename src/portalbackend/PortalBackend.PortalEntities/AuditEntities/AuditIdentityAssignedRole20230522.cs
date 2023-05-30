@@ -18,39 +18,34 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-public class IamServiceAccount
+/// <summary>
+/// Audit entity for <see cref="IdentityAssignedRole"/> only needed for configuration purposes
+/// </summary>
+public class AuditIdentityAssignedRole20230522 : IAuditEntityV1
 {
-    private IamServiceAccount()
-    {
-        ClientId = null!;
-        ClientClientId = null!;
-        UserEntityId = null!;
-    }
-
-    public IamServiceAccount(string clientId, string clientClientId, string userEntityId, Guid companyServiceAccountId)
-    {
-        ClientId = clientId;
-        ClientClientId = clientClientId;
-        UserEntityId = userEntityId;
-        CompanyServiceAccountId = companyServiceAccountId;
-    }
-
+    /// <inheritdoc />
     [Key]
-    [StringLength(36)]
-    public string ClientId { get; private set; }
+    public Guid AuditV1Id { get; set; }
 
-    [StringLength(255)]
-    public string ClientClientId { get; private set; }
+    public Guid IdentityId { get; set; }
 
-    [StringLength(36)]
-    public string UserEntityId { get; private set; }
+    public Guid UserRoleId { get; set; }
 
-    public Guid CompanyServiceAccountId { get; private set; }
+    public Guid? LastEditorId { get; set; }
 
-    // Navigation properties
-    public virtual CompanyServiceAccount? CompanyServiceAccount { get; private set; }
+    /// <inheritdoc />
+    public Guid? AuditV1LastEditorId { get; set; }
+
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
+
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

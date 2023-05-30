@@ -87,7 +87,7 @@ public class AgreementRepository : IAgreementRepository
                     offer.ConsentAssignedOffers.Select(consentAssignedOffer => new AgreementConsentStatus(
                     consentAssignedOffer.Consent!.AgreementId,
                     consentAssignedOffer.Consent.ConsentStatusId))),
-                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)
+                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == iamUserId)
             ))
             .SingleOrDefaultAsync();
 
@@ -108,7 +108,7 @@ public class AgreementRepository : IAgreementRepository
                         consentAssignedOffer.Consent.Id,
                         consentAssignedOffer.Consent.ConsentStatusId)),
                     offer.OfferType!.AgreementAssignedOfferTypes.Select(assigned => assigned.AgreementId)),
-                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUserId)))
+                offer.ProviderCompany!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == iamUserId)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

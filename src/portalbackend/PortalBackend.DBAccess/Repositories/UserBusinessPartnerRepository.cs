@@ -61,9 +61,9 @@ public class UserBusinessPartnerRepository : IUserBusinessPartnerRepository
             .AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new ValueTuple<string?, bool, bool>(
-                companyUser.IamUser!.UserEntityId,
+                companyUser.UserEntityId,
                 companyUser.CompanyUserAssignedBusinessPartners!.Any(assignedPartner => assignedPartner.BusinessPartnerNumber == businessPartnerNumber),
-                companyUser.Company!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId)
+                companyUser.Company!.CompanyUsers.Any(cu => cu.UserEntityId == adminUserId)
             ))
             .SingleOrDefaultAsync();
 }

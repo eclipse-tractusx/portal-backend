@@ -52,11 +52,6 @@ public static class SeedExtensions
         dbContext.CompanyUsers.AddRange(additionalUsers);
     };
 
-    public static Action<PortalDbContext> SeedIamUsers(params IamUser[] additionalUsers) => dbContext =>
-    {
-        dbContext.IamUsers.AddRange(additionalUsers);
-    };
-
     public static Action<PortalDbContext> SeedIamClients(params IamClient[] additionalIamClients) =>
         dbContext =>
         {
@@ -71,10 +66,10 @@ public static class SeedExtensions
         };
 
     public static Action<PortalDbContext> SeedCompanyUserAssignedRoles(
-        params CompanyUserAssignedRole[] additionalCompanyUserRoles) =>
+        params IdentityAssignedRole[] additionalIdentityRoles) =>
         dbContext =>
         {
-            dbContext.CompanyUserAssignedRoles.AddRange(additionalCompanyUserRoles);
+            dbContext.IdentityAssignedRoles.AddRange(additionalIdentityRoles);
         };
 
     public static Action<PortalDbContext> SeedNotification(params Notification[] notifications) => dbContext =>

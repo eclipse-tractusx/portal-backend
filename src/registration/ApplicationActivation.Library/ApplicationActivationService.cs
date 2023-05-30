@@ -168,7 +168,7 @@ public class ApplicationActivationService : IApplicationActivationService
             foreach (var roleData in initialRolesData.Where(roleData => !userData.RoleIds.Contains(roleData.UserRoleId) &&
                                                                         assignedRoles[roleData.ClientClientId].Contains(roleData.UserRoleText)))
             {
-                userRolesRepository.CreateCompanyUserAssignedRole(userData.CompanyUserId, roleData.UserRoleId);
+                userRolesRepository.CreateIdentityAssignedRole(userData.CompanyUserId, roleData.UserRoleId);
             }
 
             if (userData.BusinessPartnerNumbers.Contains(businessPartnerNumber))

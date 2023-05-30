@@ -211,7 +211,7 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
         var rolesAdded = rolesToAdd.IntersectBy(assignedRoles.Roles, role => role.CompanyUserRoleText).ToList();
         foreach (var roleWithId in rolesAdded)
         {
-            userRoleRepository.CreateCompanyUserAssignedRole(companyUserId, roleWithId.CompanyUserRoleId);
+            userRoleRepository.CreateIdentityAssignedRole(companyUserId, roleWithId.CompanyUserRoleId);
         }
         return rolesAdded;
     }
@@ -222,6 +222,6 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
         await _provisioningManager.DeleteClientRolesFromCentralUserAsync(iamUserId, roleNamesToDelete)
             .ConfigureAwait(false);
         _portalRepositories.RemoveRange(rolesToDelete.Select(x =>
-            new CompanyUserAssignedRole(companyUserId, x.CompanyUserRoleId)));
+            new IdentityAssignedRole(companyUserId, x.CompanyUserRoleId)));
     }
 }

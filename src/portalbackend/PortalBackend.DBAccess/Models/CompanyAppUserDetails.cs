@@ -25,10 +25,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public class CompanyAppUserDetails
 {
-    public CompanyAppUserDetails(Guid companyUserId, CompanyUserStatusId companyUserStatusId, IEnumerable<string> roles)
+    public CompanyAppUserDetails(Guid companyUserId, UserStatusId userStatusId, IEnumerable<string> roles)
     {
         CompanyUserId = companyUserId;
-        CompanyUserStatusId = companyUserStatusId;
+        UserStatusId = userStatusId;
         Roles = roles;
     }
 
@@ -36,7 +36,7 @@ public class CompanyAppUserDetails
     public Guid CompanyUserId { get; set; }
 
     [JsonPropertyName("status")]
-    public CompanyUserStatusId CompanyUserStatusId { get; set; }
+    public UserStatusId UserStatusId { get; set; }
 
     [JsonPropertyName("firstName")]
     public string? FirstName { get; set; }

@@ -18,31 +18,41 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
-
-public class CompanyServiceAccountStatus
+/// <summary>
+/// Audit entity for <see cref="CompanyUser"/> only needed for configuration purposes
+/// </summary>
+public class AuditCompanyUser20230522 : IAuditEntityV1
 {
-    private CompanyServiceAccountStatus()
-    {
-        Label = null!;
-        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
-    }
-
-    public CompanyServiceAccountStatus(CompanyServiceAccountStatusId companyServiceAccountStatusId) : this()
-    {
-        Id = companyServiceAccountStatusId;
-        Label = companyServiceAccountStatusId.ToString();
-    }
-
+    /// <inheritdoc />
     [Key]
-    public CompanyServiceAccountStatusId Id { get; private set; }
+    public Guid AuditV1Id { get; set; }
 
-    [MaxLength(255)]
-    public string Label { get; private set; }
+    public Guid Id { get; set; }
 
-    // Navigation properties
-    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
+    public string? Email { get; set; }
+
+    public string? Firstname { get; set; }
+
+    public byte[]? Lastlogin { get; set; }
+
+    public string? Lastname { get; set; }
+
+    public DateTimeOffset? DateLastChanged { get; set; }
+
+    public Guid? LastEditorId { get; set; }
+
+    /// <inheritdoc />
+    public Guid? AuditV1LastEditorId { get; set; }
+
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
+
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

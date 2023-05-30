@@ -74,15 +74,12 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<CompanyRoleDescription>("company_role_descriptions", x => new { x.CompanyRoleId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedTable<CompanyUserAssignedAppFavourite>("company_user_assigned_app_favourites", x => new { x.CompanyUserId, x.AppId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<CompanyUserAssignedBusinessPartner>("company_user_assigned_business_partners", x => new { x.CompanyUserId, x.BusinessPartnerNumber }, cancellationToken).ConfigureAwait(false);
-        await SeedTable<CompanyUserAssignedRole>("company_user_assigned_roles", x => new { x.CompanyUserId, x.UserRoleId }, cancellationToken).ConfigureAwait(false);
-        await SeedTable<CompanyServiceAccountAssignedRole>("company_service_account_assigned_roles", x => new { x.CompanyServiceAccountId, x.UserRoleId }, cancellationToken).ConfigureAwait(false);
+        await SeedTable<IdentityAssignedRole>("identity_assigned_roles", x => new { x.IdentityId, x.UserRoleId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<ConsentAssignedOffer>("consent_assigned_offers", x => new { x.OfferId, x.ConsentId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<ConsentAssignedOfferSubscription>("consent_assigned_offer_subscriptions", x => new { x.OfferSubscriptionId, x.ConsentId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<Country>("countries", x => x.Alpha2Code, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferAssignedDocument>("offer_assigned_documents", x => new { x.OfferId, x.DocumentId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<IamIdentityProvider>("iam_identity_providers", x => x.IamIdpAlias, cancellationToken).ConfigureAwait(false);
-        await SeedTable<IamServiceAccount>("iam_service_accounts", x => x.ClientId, cancellationToken).ConfigureAwait(false);
-        await SeedTable<IamUser>("iam_users", x => x.UserEntityId, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferAssignedLicense>("offer_assigned_licenses", x => new { x.OfferId, x.OfferLicenseId }, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferDescription>("offer_descriptions", x => new { AppId = x.OfferId, x.LanguageShortName }, cancellationToken).ConfigureAwait(false);
         await SeedTable<OfferTag>("offer_tags", x => new { AppId = x.OfferId, x.Name }, cancellationToken).ConfigureAwait(false);
@@ -129,7 +126,6 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<Process>("processes", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<AppInstanceSetup>("app_instance_setups", cancellationToken).ConfigureAwait(false);
         await SeedTableForBaseEntity<TechnicalUserProfile>("technical_user_profiles", cancellationToken).ConfigureAwait(false);
-
     }
 
     private async Task SeedTableForBaseEntity<T>(string fileName, CancellationToken cancellationToken) where T : class, IBaseEntity

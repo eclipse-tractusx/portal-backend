@@ -344,7 +344,7 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         SetupUpdateOwnCompanyServiceAccountDetails();
         var inactive = _fixture.Build<CompanyServiceAccountWithRoleDataClientId>()
-            .With(x => x.CompanyServiceAccountStatusId, CompanyServiceAccountStatusId.INACTIVE)
+            .With(x => x.UserStatusId, UserStatusId.INACTIVE)
             .Create();
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(InactiveServiceAccount, A<string>.That.Matches(x => x == ValidAdminId)))
             .Returns(inactive);
@@ -412,7 +412,7 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange
         var serviceAccount = _fixture.Build<CompanyServiceAccount>()
-            .With(x => x.CompanyServiceAccountStatusId, CompanyServiceAccountStatusId.ACTIVE)
+            .With(x => x.UserStatusId, UserStatusId.ACTIVE)
             .Create();
         var connector = _fixture.Build<Connector>()
             .With(x => x.CompanyServiceAccountId, ValidServiceAccountId)
@@ -427,7 +427,6 @@ public class ServiceAccountBusinessLogicTests
         if (withClient)
         {
             A.CallTo(() => _provisioningManager.DeleteCentralClientAsync(ClientId)).MustHaveHappenedOnceExactly();
-            A.CallTo(() => _serviceAccountRepository.RemoveIamServiceAccount(ClientId)).MustHaveHappenedOnceExactly();
         }
 
         if (withServiceAccount)
@@ -436,8 +435,8 @@ public class ServiceAccountBusinessLogicTests
             connector.CompanyServiceAccountId.Should().BeNull();
         }
 
-        serviceAccount.CompanyServiceAccountStatusId.Should().Be(CompanyServiceAccountStatusId.INACTIVE);
-        A.CallTo(() => _serviceAccountRepository.RemoveCompanyServiceAccountAssignedRoles(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(_userRoleIds.Select(userRoleId => new ValueTuple<Guid, Guid>(ValidServiceAccountId, userRoleId))))).MustHaveHappenedOnceExactly();
+        serviceAccount.UserStatusId.Should().Be(UserStatusId.INACTIVE);
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(_userRoleIds.Select(userRoleId => new ValueTuple<Guid, Guid>(ValidServiceAccountId, userRoleId))))).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -511,7 +510,7 @@ public class ServiceAccountBusinessLogicTests
     {
         var authData = new ClientAuthData(IamClientAuthMethod.SECRET) { Secret = "topsecret" };
         var data = _fixture.Build<CompanyServiceAccountWithRoleDataClientId>()
-            .With(x => x.CompanyServiceAccountStatusId, CompanyServiceAccountStatusId.ACTIVE)
+            .With(x => x.UserStatusId, UserStatusId.ACTIVE)
             .Create();
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(ValidServiceAccountId, A<string>.That.Matches(x => x == ValidAdminId)))
             .Returns(data);

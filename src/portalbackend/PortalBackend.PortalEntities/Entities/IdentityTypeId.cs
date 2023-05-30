@@ -20,20 +20,8 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyServiceAccountAssignedRole
+public enum IdentityTypeId
 {
-    private CompanyServiceAccountAssignedRole() { }
-
-    public CompanyServiceAccountAssignedRole(Guid companyServiceAccountId, Guid userRoleId)
-    {
-        CompanyServiceAccountId = companyServiceAccountId;
-        UserRoleId = userRoleId;
-    }
-
-    public Guid CompanyServiceAccountId { get; private set; }
-    public Guid UserRoleId { get; private set; }
-
-    // Navigation properties
-    public virtual CompanyServiceAccount? CompanyServiceAccount { get; private set; }
-    public virtual UserRole? UserRole { get; private set; }
+    COMPANY_USER = 1,
+    COMPANY_SERVICE_ACCOUNT = 2
 }

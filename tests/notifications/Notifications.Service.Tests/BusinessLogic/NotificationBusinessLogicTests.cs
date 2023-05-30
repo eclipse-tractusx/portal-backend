@@ -39,9 +39,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests.Busine
 
 public class NotificationBusinessLogicTests
 {
+    private const string IamUserId = "3e8343f7-4fe5-4296-8312-f33aa6dbde5d";
+
     private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
-    private readonly IamUser _iamUser;
     private readonly NotificationDetailData _notificationDetail;
     private readonly IEnumerable<NotificationDetailData> _notificationDetails;
     private readonly INotificationRepository _notificationRepository;
@@ -57,9 +58,9 @@ public class NotificationBusinessLogicTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        var (companyUser, iamUser) = CreateTestUserPair();
-        _companyUser = companyUser;
-        _iamUser = iamUser;
+        _companyUser = _fixture.Build<CompanyUser>()
+            .With(u => u.UserEntityId, IamUserId)
+            .Create();
         _notificationDetail = new NotificationDetailData(Guid.NewGuid(), DateTime.UtcNow, NotificationTypeId.INFO, NotificationTopicId.INFO, false, "Test Message", null, false);
 
         _portalRepositories = A.Fake<IPortalRepositories>();
@@ -71,7 +72,7 @@ public class NotificationBusinessLogicTests
         _unreadNotificationDetails = _fixture.Build<NotificationDetailData>()
             .CreateMany(3);
         _notificationDetails = _readNotificationDetails.Concat(_unreadNotificationDetails);
-        SetupRepositories(companyUser, iamUser);
+        SetupRepositories();
     }
 
     #region Create Notification
@@ -97,7 +98,7 @@ public class NotificationBusinessLogicTests
         const string content = "That's a title";
 
         // Act
-        var result = await sut.CreateNotificationAsync(_iamUser.UserEntityId,
+        var result = await sut.CreateNotificationAsync(IamUserId,
             new NotificationCreationData(
                 content,
                 NotificationTypeId.INFO,
@@ -121,7 +122,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        async Task Action() => await sut.CreateNotificationAsync(_iamUser.UserEntityId,
+        async Task Action() => await sut.CreateNotificationAsync(IamUserId,
                 new NotificationCreationData("That's a title",
                     NotificationTypeId.INFO, false), Guid.NewGuid())
             .ConfigureAwait(false);
@@ -147,7 +148,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, new NotificationFilters(status, null, null, false, null)).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, IamUserId, new NotificationFilters(status, null, null, false, null)).ConfigureAwait(false);
 
         // Assert
         var expectedCount = status ?
@@ -170,7 +171,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, _iamUser.UserEntityId, new NotificationFilters(null, null, null, false, sorting)).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, IamUserId, new NotificationFilters(null, null, null, false, sorting)).ConfigureAwait(false);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(_notificationDetails.Count());
@@ -190,7 +191,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var results = await sut.GetNotificationsAsync(1, 3, _iamUser.UserEntityId, new NotificationFilters(null, null, null, false, null)).ConfigureAwait(false);
+        var results = await sut.GetNotificationsAsync(1, 3, IamUserId, new NotificationFilters(null, null, null, false, null)).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -210,7 +211,7 @@ public class NotificationBusinessLogicTests
             MaxPageSize = 15
         }));
 
-        var Act = () => sut.GetNotificationsAsync(0, 20, _iamUser.UserEntityId, new NotificationFilters(null, null, null, false, null));
+        var Act = () => sut.GetNotificationsAsync(0, 20, IamUserId, new NotificationFilters(null, null, null, false, null));
 
         // Act & Assert
         await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -225,7 +226,7 @@ public class NotificationBusinessLogicTests
             MaxPageSize = 15
         }));
 
-        var Act = () => sut.GetNotificationsAsync(-1, 15, _iamUser.UserEntityId, new NotificationFilters(null, null, null, false, null));
+        var Act = () => sut.GetNotificationsAsync(-1, 15, IamUserId, new NotificationFilters(null, null, null, false, null));
 
         // Act & Assert
         await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -245,7 +246,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationDetailDataAsync(_iamUser.UserEntityId, _notificationDetail.Id).ConfigureAwait(false);
+        var result = await sut.GetNotificationDetailDataAsync(IamUserId, _notificationDetail.Id).ConfigureAwait(false);
 
         // Assert
         var notificationDetailData = _unreadNotificationDetails.First();
@@ -281,7 +282,7 @@ public class NotificationBusinessLogicTests
 
         // Act
         var notificationId = Guid.NewGuid();
-        async Task Act() => await sut.GetNotificationDetailDataAsync(_iamUser.UserEntityId, notificationId).ConfigureAwait(false);
+        async Task Act() => await sut.GetNotificationDetailDataAsync(IamUserId, notificationId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -302,7 +303,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationCountAsync(_iamUser.UserEntityId, false).ConfigureAwait(false);
+        var result = await sut.GetNotificationCountAsync(IamUserId, false).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(5);
@@ -345,14 +346,14 @@ public class NotificationBusinessLogicTests
             new (false, true, NotificationTopicId.ACTION, 3),
             new (false, false, NotificationTopicId.ACTION, 2),
         });
-        A.CallTo(() => _notificationRepository.GetCountDetailsForUserAsync(_iamUser.UserEntityId)).Returns(data.AsAsyncEnumerable());
+        A.CallTo(() => _notificationRepository.GetCountDetailsForUserAsync(IamUserId)).Returns(data.AsAsyncEnumerable());
         var sut = new NotificationBusinessLogic(_portalRepositories, Options.Create(new NotificationSettings
         {
             MaxPageSize = 15
         }));
 
         // Act
-        var result = await sut.GetNotificationCountDetailsAsync(_iamUser.UserEntityId).ConfigureAwait(false);
+        var result = await sut.GetNotificationCountDetailsAsync(IamUserId).ConfigureAwait(false);
 
         // Assert
         result.Read.Should().Be(9);
@@ -385,7 +386,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        await sut.SetNotificationStatusAsync(_iamUser.UserEntityId, _notificationDetail.Id, isRead).ConfigureAwait(false);
+        await sut.SetNotificationStatusAsync(IamUserId, _notificationDetail.Id, isRead).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -443,7 +444,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        await sut.DeleteNotificationAsync(_iamUser.UserEntityId, _notificationDetail.Id).ConfigureAwait(false);
+        await sut.DeleteNotificationAsync(IamUserId, _notificationDetail.Id).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -478,7 +479,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        async Task Act() => await sut.DeleteNotificationAsync(_iamUser.UserEntityId, randomNotificationId);
+        async Task Act() => await sut.DeleteNotificationAsync(IamUserId, randomNotificationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -489,18 +490,18 @@ public class NotificationBusinessLogicTests
 
     #region Setup
 
-    private void SetupRepositories(CompanyUser companyUser, IamUser iamUser)
+    private void SetupRepositories()
     {
         SetupNotifications();
 
-        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(iamUser.UserEntityId, companyUser.Id))
+        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(IamUserId, _companyUser.Id))
             .ReturnsLazily(() => new List<(Guid CompanyUserId, bool iamUser)> { new(_companyUser.Id, true), new(_companyUser.Id, false) }.ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(A<string>.That.Not.Matches(x => x == iamUser.UserEntityId), A<Guid>.That.Not.Matches(x => x == companyUser.Id)))
+        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(A<string>.That.Not.Matches(x => x == IamUserId), A<Guid>.That.Not.Matches(x => x == _companyUser.Id)))
             .ReturnsLazily(() => new List<(Guid CompanyUserId, bool iamUser)>().ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyIdForIamUserUntrackedAsync(iamUser.UserEntityId))
-            .ReturnsLazily(() => Task.FromResult(companyUser.Id));
+        A.CallTo(() => _userRepository.GetCompanyIdForIamUserUntrackedAsync(IamUserId))
+            .ReturnsLazily(() => Task.FromResult(_companyUser.Id));
         A.CallTo(() =>
-                _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(_notificationDetail.Id, _iamUser.UserEntityId))
+                _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(_notificationDetail.Id, IamUserId))
             .Returns((true, _notificationDetail));
         A.CallTo(() =>
                 _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(
@@ -508,7 +509,7 @@ public class NotificationBusinessLogicTests
             .Returns(((bool, NotificationDetailData))default);
 
         A.CallTo(() =>
-                _notificationRepository.CheckNotificationExistsByIdAndIamUserIdAsync(_notificationDetail.Id, _iamUser.UserEntityId))
+                _notificationRepository.CheckNotificationExistsByIdAndIamUserIdAsync(_notificationDetail.Id, IamUserId))
             .ReturnsLazily(() => (true, true));
         A.CallTo(() =>
                 _notificationRepository.CheckNotificationExistsByIdAndIamUserIdAsync(
@@ -516,18 +517,18 @@ public class NotificationBusinessLogicTests
             .ReturnsLazily(() => (false, false));
         A.CallTo(() =>
                 _notificationRepository.CheckNotificationExistsByIdAndIamUserIdAsync(_notificationDetail.Id,
-                    A<string>.That.Not.Matches(x => x == _iamUser.UserEntityId)))
+                    A<string>.That.Not.Matches(x => x == IamUserId)))
             .ReturnsLazily(() => (false, true));
-        A.CallTo(() => _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(_notificationDetail.Id, _iamUser.UserEntityId))
+        A.CallTo(() => _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(_notificationDetail.Id, IamUserId))
             .ReturnsLazily(() => (true, _unreadNotificationDetails.First()));
-        A.CallTo(() => _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(_notificationDetail.Id, A<string>.That.Not.Matches(x => x == _iamUser.UserEntityId)))
+        A.CallTo(() => _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(_notificationDetail.Id, A<string>.That.Not.Matches(x => x == IamUserId)))
             .ReturnsLazily(() => (false, _unreadNotificationDetails.First()));
-        A.CallTo(() => _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), _iamUser.UserEntityId))
+        A.CallTo(() => _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), IamUserId))
             .ReturnsLazily(() => default((bool IsUserReceiver, NotificationDetailData NotificationDetailData)));
 
-        A.CallTo(() => _notificationRepository.GetNotificationCountForIamUserAsync(_iamUser.UserEntityId, false))
+        A.CallTo(() => _notificationRepository.GetNotificationCountForIamUserAsync(IamUserId, false))
             .ReturnsLazily(() => (true, 5));
-        A.CallTo(() => _notificationRepository.GetNotificationCountForIamUserAsync(A<string>.That.Not.Matches(x => x == _iamUser.UserEntityId), false))
+        A.CallTo(() => _notificationRepository.GetNotificationCountForIamUserAsync(A<string>.That.Not.Matches(x => x == IamUserId), false))
             .ReturnsLazily(() => default((bool IsUserExisting, int Count)));
 
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
@@ -540,24 +541,12 @@ public class NotificationBusinessLogicTests
         var readPaging = (int skip, int take) => Task.FromResult(new Pagination.Source<NotificationDetailData>(_readNotificationDetails.Count(), _readNotificationDetails.Skip(skip).Take(take)));
         var notificationsPaging = (int skip, int take) => Task.FromResult(new Pagination.Source<NotificationDetailData>(_notificationDetails.Count(), _notificationDetails.Skip(skip).Take(take)));
 
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, false, null, null, false, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, false, null, null, false, A<NotificationSorting>._))
             .Returns(unreadPaging);
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, true, null, null, false, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, true, null, null, false, A<NotificationSorting>._))
             .Returns(readPaging);
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(_iamUser.UserEntityId, null, null, null, false, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByIamUserIdUntracked(IamUserId, null, null, null, false, A<NotificationSorting>._))
             .Returns(notificationsPaging);
-    }
-
-    private (CompanyUser, IamUser) CreateTestUserPair()
-    {
-        var companyUser = _fixture.Build<CompanyUser>()
-            .Without(u => u.IamUser)
-            .Create();
-        var iamUser = _fixture.Build<IamUser>()
-            .With(u => u.CompanyUser, companyUser)
-            .Create();
-        companyUser.IamUser = iamUser;
-        return (companyUser, iamUser);
     }
 
     #endregion

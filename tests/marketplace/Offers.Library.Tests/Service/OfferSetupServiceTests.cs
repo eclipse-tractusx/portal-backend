@@ -80,7 +80,7 @@ public class OfferSetupServiceTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _companyUser = _fixture.Build<CompanyUser>()
-            .Without(u => u.IamUser)
+            .With(u => u.UserEntityId, IamUserId)
             .With(u => u.CompanyId, _companyUserCompanyId)
             .Create();
         _portalRepositories = A.Fake<IPortalRepositories>();
@@ -121,7 +121,7 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, Guid.Empty);
-        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), Guid.Empty, CompanyServiceAccountStatusId.ACTIVE, "test", "test", DateTimeOffset.UtcNow, CompanyServiceAccountTypeId.OWN);
+        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), Guid.Empty, UserStatusId.ACTIVE, "test", "test", DateTimeOffset.UtcNow, CompanyServiceAccountTypeId.OWN);
         var createNotificationsEnumerator = SetupAutoSetup(offerSubscription, isSingleInstance, companyServiceAccount);
         var clientId = Guid.NewGuid();
         var appInstanceId = Guid.NewGuid();

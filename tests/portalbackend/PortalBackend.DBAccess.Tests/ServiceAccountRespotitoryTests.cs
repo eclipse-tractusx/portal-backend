@@ -62,9 +62,11 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var result = sut.CreateCompanyServiceAccount(
             _validCompanyId,
-            CompanyServiceAccountStatusId.ACTIVE,
+            UserStatusId.ACTIVE,
             "test",
             "Only a test service account",
+            "test-1",
+            "sa1",
             CompanyServiceAccountTypeId.MANAGED,
             sa =>
             {
@@ -76,85 +78,12 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changedEntries = changeTracker.Entries().ToList();
         result.OfferSubscriptionId.Should().Be(_validSubscriptionId);
         result.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
+        result.ClientId.Should().Be("test-1");
+        result.ClientClientId.Should().Be("sa1");
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);
         changedEntries.Single().Entity.Should().BeOfType<CompanyServiceAccount>().Which.OfferSubscriptionId.Should().Be(_validSubscriptionId);
-    }
-
-    #endregion
-
-    #region RemoveIamServiceAccount
-
-    [Fact]
-    public async Task RemoveIamServiceAccount_ReturnsExpectedResult()
-    {
-        // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        sut.RemoveIamServiceAccount(IamUserId);
-
-        // Assert
-        var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Should().AllSatisfy(x => x.State.Should().Be(EntityState.Deleted));
-        changedEntries.Single().Entity.Should().BeOfType<IamServiceAccount>().Which.ClientId.Should().Be(IamUserId);
-    }
-
-    #endregion
-
-    #region CreateCompanyServiceAccountAssignedRoles
-
-    [Fact]
-    public async Task CreateCompanyServiceAccountAssignedRole_ReturnsExpectedResult()
-    {
-        // Arrange
-        var companyServiceAccountAssignedRoleIds = _fixture.CreateMany<(Guid ServiceAccountId, Guid UserRoleId)>(3).ToImmutableArray();
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        sut.CreateCompanyServiceAccountAssignedRoles(companyServiceAccountAssignedRoleIds);
-
-        // Assert
-        var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().HaveCount(3).And.AllSatisfy(x => x.State.Should().Be(EntityState.Added));
-        changedEntries.Select(entry => entry.Entity).Should().AllBeOfType<CompanyServiceAccountAssignedRole>().Which.Should().Satisfy(
-            x => x.CompanyServiceAccountId == companyServiceAccountAssignedRoleIds[0].ServiceAccountId && x.UserRoleId == companyServiceAccountAssignedRoleIds[0].UserRoleId,
-            x => x.CompanyServiceAccountId == companyServiceAccountAssignedRoleIds[1].ServiceAccountId && x.UserRoleId == companyServiceAccountAssignedRoleIds[1].UserRoleId,
-            x => x.CompanyServiceAccountId == companyServiceAccountAssignedRoleIds[2].ServiceAccountId && x.UserRoleId == companyServiceAccountAssignedRoleIds[2].UserRoleId
-        );
-    }
-
-    #endregion
-
-    #region RemoveCompanyServiceAccountAssignedRoles
-
-    [Fact]
-    public async Task RemoveCompanyServiceAccountAssignedRole_ReturnsExpectedResult()
-    {
-        // Arrange
-        var companyServiceAccountAssignedRoleIds = _fixture.CreateMany<(Guid ServiceAccountId, Guid UserRoleId)>(3).ToImmutableArray();
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        sut.RemoveCompanyServiceAccountAssignedRoles(companyServiceAccountAssignedRoleIds);
-
-        // Assert
-        var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().HaveCount(3).And.AllSatisfy(x => x.State.Should().Be(EntityState.Deleted));
-        changedEntries.Select(entry => entry.Entity).Should().AllBeOfType<CompanyServiceAccountAssignedRole>().Which.Should().Satisfy(
-            x => x.CompanyServiceAccountId == companyServiceAccountAssignedRoleIds[0].ServiceAccountId && x.UserRoleId == companyServiceAccountAssignedRoleIds[0].UserRoleId,
-            x => x.CompanyServiceAccountId == companyServiceAccountAssignedRoleIds[1].ServiceAccountId && x.UserRoleId == companyServiceAccountAssignedRoleIds[1].UserRoleId,
-            x => x.CompanyServiceAccountId == companyServiceAccountAssignedRoleIds[2].ServiceAccountId && x.UserRoleId == companyServiceAccountAssignedRoleIds[2].UserRoleId
-        );
     }
 
     #endregion

@@ -81,14 +81,14 @@ public class AppBusinessLogicTests
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var (companyUser, iamUser) = CreateTestUserPair();
-        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
+        var companyUser = CreateTestUserPair();
+        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
             .Returns(companyUser.Id);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), null!);
 
         // Act
-        await sut.AddFavouriteAppForUserAsync(appId, iamUser.UserEntityId);
+        await sut.AddFavouriteAppForUserAsync(appId, IamUserId);
 
         // Assert
         A.CallTo(() => _offerRepository.CreateAppFavourite(A<Guid>.That.Matches(x => x == appId), A<Guid>.That.Matches(x => x == companyUser.Id))).MustHaveHappenedOnceExactly();
@@ -99,16 +99,16 @@ public class AppBusinessLogicTests
     public async Task RemoveFavouriteAppForUser_ExecutesSuccessfully()
     {
         // Arrange
-        var (companyUser, iamUser) = CreateTestUserPair();
+        var companyUser = CreateTestUserPair();
 
         var appId = _fixture.Create<Guid>();
-        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(iamUser.UserEntityId))
+        A.CallTo(() => _userRepository.GetCompanyUserIdForIamUserUntrackedAsync(IamUserId))
             .Returns(companyUser.Id);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), null!);
 
         // Act
-        await sut.RemoveFavouriteAppForUserAsync(appId, iamUser.UserEntityId);
+        await sut.RemoveFavouriteAppForUserAsync(appId, IamUserId);
 
         // Assert
         A.CallTo(() => _portalRepositories.Remove(A<CompanyUserAssignedAppFavourite>._)).MustHaveHappenedOnceExactly();
@@ -712,16 +712,12 @@ public class AppBusinessLogicTests
 
     #region Setup
 
-    private (CompanyUser, IamUser) CreateTestUserPair()
+    private CompanyUser CreateTestUserPair()
     {
         var companyUser = _fixture.Build<CompanyUser>()
-            .Without(u => u.IamUser)
+            .With(u => u.UserEntityId, IamUserId)
             .Create();
-        var iamUser = _fixture.Build<IamUser>()
-            .With(u => u.CompanyUser, companyUser)
-            .Create();
-        companyUser.IamUser = iamUser;
-        return (companyUser, iamUser);
+        return companyUser;
     }
 
     #endregion

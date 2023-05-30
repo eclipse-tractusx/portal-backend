@@ -106,17 +106,16 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
 
         serviceAccountRepository.AttachAndModifyCompanyServiceAccount(serviceAccountId, null, serviceAccount =>
         {
-            serviceAccount.CompanyServiceAccountStatusId = CompanyServiceAccountStatusId.INACTIVE;
+            serviceAccount.UserStatusId = UserStatusId.INACTIVE;
         });
 
         // serviceAccount
         if (!string.IsNullOrWhiteSpace(result.ClientId))
         {
             await _provisioningManager.DeleteCentralClientAsync(result.ClientId).ConfigureAwait(false);
-            serviceAccountRepository.RemoveIamServiceAccount(result.ClientId);
         }
 
-        serviceAccountRepository.RemoveCompanyServiceAccountAssignedRoles(result.UserRoleIds.Select(userRoleId => (serviceAccountId, userRoleId)));
+        _portalRepositories.GetInstance<IUserRolesRepository>().DeleteCompanyUserAssignedRoles(result.UserRoleIds.Select(userRoleId => (serviceAccountId, userRoleId)));
 
         if (result.ConnectorId != null)
         {
@@ -200,7 +199,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         {
             throw new NotFoundException($"serviceAccount {serviceAccountId} not found in company of {iamAdminId}");
         }
-        if (result.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.INACTIVE)
+        if (result.UserStatusId == UserStatusId.INACTIVE)
         {
             throw new ArgumentException($"serviceAccount {serviceAccountId} is already INACTIVE");
         }

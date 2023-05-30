@@ -50,7 +50,9 @@ public static class EntityTypeBuilderV1Extension
         {
             sourceProperties.AddRange(typeof(IBaseEntity).GetProperties());
         }
-        sourceProperties.AddRange(typeof(TEntity).GetProperties().Where(p => !(p.GetGetMethod()?.IsVirtual ?? false)));
+        sourceProperties.AddRange(typeof(TEntity).GetProperties(BindingFlags.Public |
+                                                                BindingFlags.Instance |
+                                                                BindingFlags.DeclaredOnly).Where(p => !(p.GetGetMethod()?.IsVirtual ?? false)));
         var auditProperties = typeof(IAuditEntityV1).GetProperties();
         var targetProperties = auditEntityType.GetProperties().ExceptBy(auditProperties.Select(x => x.Name), p => p.Name);
 

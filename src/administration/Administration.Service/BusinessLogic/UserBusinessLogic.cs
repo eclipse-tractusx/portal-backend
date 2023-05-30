@@ -244,10 +244,10 @@ public class UserBusinessLogic : IUserBusinessLogic
                 .Skip(skip)
                 .Take(take)
                 .Select(companyUser => new CompanyUserData(
-                    companyUser.IamUser!.UserEntityId,
+                    companyUser.UserEntityId!,
                     companyUser.Id,
-                    companyUser.CompanyUserStatusId,
-                    companyUser.UserRoles.Select(userRole => userRole.UserRoleText))
+                    companyUser.UserStatusId,
+                    companyUser.IdentityAssignedRoles.Select(x => x.UserRole!).Select(userRole => userRole.UserRoleText))
                 {
                     FirstName = companyUser.Firstname,
                     LastName = companyUser.Lastname,
@@ -336,10 +336,10 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
         var companyUser = userData.CompanyUser;
         var iamIdpAlias = userData.IamIdpAlias;
-        var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.IamUser!.UserEntityId).ConfigureAwait(false);
+        var userIdShared = await _provisioningManager.GetProviderUserIdForCentralUserIdAsync(iamIdpAlias, companyUser.UserEntityId).ConfigureAwait(false);
         if (userIdShared == null)
         {
-            throw new NotFoundException($"no shared realm userid found for {companyUser.IamUser!.UserEntityId} in realm {iamIdpAlias}");
+            throw new NotFoundException($"no shared realm userid found for {companyUser.UserEntityId} in realm {iamIdpAlias}");
         }
         await _provisioningManager.UpdateSharedRealmUserAsync(
             iamIdpAlias,
@@ -357,7 +357,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             companyUser.DateCreated,
             userData.BusinessPartnerNumbers,
             companyUser.Company!.Name,
-            companyUser.CompanyUserStatusId,
+            companyUser.UserStatusId,
             userData.AssignedRoles)
         {
             FirstName = companyUser.Firstname,
@@ -421,16 +421,20 @@ public class UserBusinessLogic : IUserBusinessLogic
     private async Task DeleteUserInternalAsync(string? sharedIdpAlias, CompanyUserAccountData accountData, Guid administratorId)
     {
         var (companyUserId, userEntityId, businessPartnerNumbers, roleIds, offerIds, invitationIds) = accountData;
-        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         if (userEntityId != null)
         {
-            await DeleteIamUserAsync(sharedIdpAlias, userEntityId, userRepository).ConfigureAwait(false);
+            await DeleteIamUserAsync(sharedIdpAlias, userEntityId).ConfigureAwait(false);
         }
-        userRepository.AttachAndModifyCompanyUser(companyUserId, companyUser =>
-        {
-            companyUser.CompanyUserStatusId = CompanyUserStatusId.DELETED;
-            companyUser.LastEditorId = administratorId;
-        });
+        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyCompanyUser(companyUserId, cu =>
+            {
+                cu.UserEntityId = userEntityId;
+            },
+            companyUser =>
+            {
+                companyUser.UserStatusId = UserStatusId.DELETED;
+                companyUser.LastEditorId = administratorId;
+                companyUser.UserEntityId = null;
+            });
 
         _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()
             .DeleteCompanyUserAssignedBusinessPartners(businessPartnerNumbers.Select(bpn => (companyUserId, bpn)));
@@ -445,7 +449,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             .DeleteInvitations(invitationIds);
     }
 
-    private async Task DeleteIamUserAsync(string? sharedIdpAlias, string userEntityId, IUserRepository userRepository)
+    private async Task DeleteIamUserAsync(string? sharedIdpAlias, string userEntityId)
     {
         if (sharedIdpAlias != null)
         {
@@ -456,7 +460,6 @@ public class UserBusinessLogic : IUserBusinessLogic
             }
         }
         await _provisioningManager.DeleteCentralRealmUserAsync(userEntityId).ConfigureAwait(false);
-        userRepository.DeleteIamUser(userEntityId);
     }
 
     private async Task<bool> CanResetPassword(string userId)
@@ -509,7 +512,7 @@ public class UserBusinessLogic : IUserBusinessLogic
                 appId,
                 iamUserId,
                 new[] { OfferSubscriptionStatusId.ACTIVE },
-                new[] { CompanyUserStatusId.ACTIVE, CompanyUserStatusId.INACTIVE },
+                new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE },
                 filter));
 
     public async Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid companyUserId, string businessPartnerNumber, string adminUserId)

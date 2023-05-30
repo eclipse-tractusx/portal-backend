@@ -43,9 +43,9 @@ public class ConnectorsRepository : IConnectorsRepository
 
     /// <inheritdoc/>
     public IQueryable<Connector> GetAllCompanyConnectorsForIamUser(string iamUserId) =>
-        _context.IamUsers.AsNoTracking()
+        _context.CompanyUsers.AsNoTracking()
             .Where(u => u.UserEntityId == iamUserId)
-            .SelectMany(u => u.CompanyUser!.Company!.ProvidedConnectors.Where(c => c.StatusId != ConnectorStatusId.INACTIVE));
+            .SelectMany(u => u.Company!.ProvidedConnectors.Where(c => c.StatusId != ConnectorStatusId.INACTIVE));
 
     /// <inheritdoc/>
     public Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForIamUser(string iamUserId) =>
@@ -53,7 +53,7 @@ public class ConnectorsRepository : IConnectorsRepository
             skip,
             take,
             _context.Connectors.AsNoTracking()
-                .Where(c => c.Host!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId) &&
+                .Where(c => c.Host!.CompanyUsers.Any(cu => cu.UserEntityId == iamUserId) &&
                             c.StatusId != ConnectorStatusId.INACTIVE &&
                             c.TypeId == ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
                 .GroupBy(c => c.HostId),
@@ -86,7 +86,7 @@ public class ConnectorsRepository : IConnectorsRepository
                     connector.SelfDescriptionDocumentId,
                     connector.SelfDescriptionDocument!.DocumentName
                 ),
-                connector.Provider!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUser)
+                connector.Provider!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == iamUser)
             ))
             .SingleOrDefaultAsync();
 
@@ -96,7 +96,7 @@ public class ConnectorsRepository : IConnectorsRepository
             .Where(connector => connector.Id == connectorId && connector.StatusId != ConnectorStatusId.INACTIVE)
             .Select(connector => new ValueTuple<ConnectorInformationData, bool>(
                 new ConnectorInformationData(connector.Name, connector.Provider!.BusinessPartnerNumber!, connector.Id, connector.ConnectorUrl),
-                connector.Provider!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUser)
+                connector.Provider!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == iamUser)
             ))
             .SingleOrDefaultAsync();
 
@@ -165,7 +165,7 @@ public class ConnectorsRepository : IConnectorsRepository
             .Select(c => new ConnectorUpdateInformation(
                 c.StatusId,
                 c.TypeId,
-                c.Host!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUser),
+                c.Host!.CompanyUsers.Any(cu => cu.UserEntityId == iamUser),
                 c.ConnectorUrl,
                 c.Provider!.BusinessPartnerNumber,
                 c.ClientDetails!.ClientId

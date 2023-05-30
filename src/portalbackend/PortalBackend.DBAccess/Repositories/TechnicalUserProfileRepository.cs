@@ -41,7 +41,7 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
         _context.Offers
             .Where(x => x.Id == offerId && x.OfferTypeId == offerTypeId)
             .Select(o => new OfferProfileData(
-                o.ProviderCompany!.CompanyUsers.Any(x => x.IamUser!.UserEntityId == iamUserId),
+                o.ProviderCompany!.CompanyUsers.Any(x => x.UserEntityId == iamUserId),
                 offerTypeId == OfferTypeId.SERVICE ? o.ServiceDetails.Select(sd => sd.ServiceTypeId) : null,
                 o.TechnicalUserProfiles.Select(tup => new ValueTuple<Guid, IEnumerable<Guid>>(tup.Id, tup.UserRoles.Select(ur => ur.Id)))))
             .SingleOrDefaultAsync();
@@ -74,7 +74,7 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
             _context.Offers
                 .Where(x => x.Id == offerId && x.OfferTypeId == offerTypeId)
                 .Select(x => new ValueTuple<bool, IEnumerable<TechnicalUserProfileInformation>>(
-                    x.ProviderCompany!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId),
+                    x.ProviderCompany!.CompanyUsers.Any(cu => cu.UserEntityId == iamUserId),
                     x.TechnicalUserProfiles.Select(tup => new TechnicalUserProfileInformation(
                         tup.Id,
                         tup.UserRoles.Select(ur => new UserRoleInformation(ur.Id, ur.UserRoleText))))))

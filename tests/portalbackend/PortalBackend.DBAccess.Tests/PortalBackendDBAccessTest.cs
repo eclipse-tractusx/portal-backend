@@ -49,25 +49,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests
                 new InvitationStatus
                 (
                     invitationStatusId: PortalEntities.Enums.InvitationStatusId.CREATED
-                )
-                );
+                ));
             mockContext.CompanyUsers.Add(
                 new CompanyUser
                 (
                     id: new Guid("ac1cf001-7fbc-1f2f-817f-bce0575a0011"),
                     companyId: new Guid("220330ac-170d-4e22-8d72-9467ed042149"),
-                    companyUserStatusId: PortalEntities.Enums.CompanyUserStatusId.ACTIVE,
+                    userStatusId: PortalEntities.Enums.UserStatusId.ACTIVE,
                     dateCreated: DateTime.UtcNow,
                     lastEditorId: new Guid("51F38065-7DB4-43C8-9217-127E88DE1E3C")
-                )
-                );
-            mockContext.IamUsers.Add(
-                new IamUser
-                (
-                    iamUserId: "ad56702b-5908-44eb-a668-9a11a0e100d6",
-                    companyUserId: new Guid("ac1cf001-7fbc-1f2f-817f-bce0575a0011")
-                )
-                );
+                ));
             mockContext.SaveChanges();
 
             var backendDBAccess = new InvitationRepository(mockContext);

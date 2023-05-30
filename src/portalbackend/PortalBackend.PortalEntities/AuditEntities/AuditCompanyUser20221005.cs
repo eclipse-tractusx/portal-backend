@@ -47,7 +47,7 @@ public class AuditCompanyUser20221005 : IAuditEntityV1
 
     public Guid CompanyId { get; set; }
 
-    public CompanyUserStatusId CompanyUserStatusId { get; set; }
+    public UserStatusId CompanyUserStatusId { get; set; }
 
     public DateTimeOffset? DateLastChanged { get; set; }
 

@@ -38,9 +38,11 @@ public class ServiceAccountRepository : IServiceAccountRepository
 
     public CompanyServiceAccount CreateCompanyServiceAccount(
         Guid companyId,
-        CompanyServiceAccountStatusId companyServiceAccountStatusId,
+        UserStatusId companyServiceAccountStatusId,
         string name,
         string description,
+        string clientId,
+        string clientClientId,
         CompanyServiceAccountTypeId companyServiceAccountTypeId,
         Action<CompanyServiceAccount>? setOptionalParameters = null)
     {
@@ -51,7 +53,11 @@ public class ServiceAccountRepository : IServiceAccountRepository
             name,
             description,
             DateTimeOffset.UtcNow,
-            companyServiceAccountTypeId);
+            companyServiceAccountTypeId)
+        {
+            ClientId = clientId,
+            ClientClientId = clientClientId
+        };
         setOptionalParameters?.Invoke(entity);
         return _dbContext.CompanyServiceAccounts.Add(entity).Entity;
     }
@@ -74,39 +80,22 @@ public class ServiceAccountRepository : IServiceAccountRepository
         modify(companyServiceAccount);
     }
 
-    public IamServiceAccount CreateIamServiceAccount(string clientId, string clientClientId, string userEntityId, Guid companyServiceAccountId) =>
-        _dbContext.IamServiceAccounts.Add(
-            new IamServiceAccount(
-                clientId,
-                clientClientId,
-                userEntityId,
-                companyServiceAccountId)).Entity;
-
-    public void RemoveIamServiceAccount(string clientId) =>
-        _dbContext.IamServiceAccounts.Remove(new IamServiceAccount(clientId, null!, null!, Guid.Empty));
-
-    public void CreateCompanyServiceAccountAssignedRoles(IEnumerable<(Guid CompanyServiceAccountId, Guid UserRoleId)> companyServiceAccountAssignedRoleIds) =>
-        _dbContext.CompanyServiceAccountAssignedRoles.AddRange(companyServiceAccountAssignedRoleIds.Select(x => new CompanyServiceAccountAssignedRole(x.CompanyServiceAccountId, x.UserRoleId)));
-
-    public void RemoveCompanyServiceAccountAssignedRoles(IEnumerable<(Guid CompanyServiceAccountId, Guid UserRoleId)> companyServiceAccountAssignedRoleIds) =>
-        _dbContext.CompanyServiceAccountAssignedRoles.RemoveRange(companyServiceAccountAssignedRoleIds.Select(x => new CompanyServiceAccountAssignedRole(x.CompanyServiceAccountId, x.UserRoleId)));
-
     public Task<CompanyServiceAccountWithRoleDataClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, string adminUserId) =>
         _dbContext.CompanyServiceAccounts
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
-                && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
-                && serviceAccount.ServiceAccountOwner!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                && serviceAccount.UserStatusId == UserStatusId.ACTIVE
+                && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == adminUserId))
             .Select(serviceAccount => new CompanyServiceAccountWithRoleDataClientId(
                     serviceAccount.Id,
-                    serviceAccount.CompanyServiceAccountStatusId,
+                    serviceAccount.UserStatusId,
                     serviceAccount.Name,
                     serviceAccount.Description,
                     serviceAccount.CompanyServiceAccountTypeId,
                     serviceAccount.OfferSubscriptionId,
-                    serviceAccount.IamServiceAccount!.ClientId,
-                    serviceAccount.IamServiceAccount.ClientClientId,
-                    serviceAccount.CompanyServiceAccountAssignedRoles
+                    serviceAccount.ClientId,
+                    serviceAccount.ClientClientId,
+                    serviceAccount.IdentityAssignedRoles
                         .Select(assignedRole => assignedRole.UserRole)
                         .Select(userRole => new UserRoleData(
                             userRole!.Id,
@@ -118,12 +107,12 @@ public class ServiceAccountRepository : IServiceAccountRepository
         _dbContext.CompanyServiceAccounts
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
-                && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
-                && serviceAccount.ServiceAccountOwner!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                && serviceAccount.UserStatusId == UserStatusId.ACTIVE
+                && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == adminUserId))
             .Select(sa => new ValueTuple<IEnumerable<Guid>, Guid?, string?>(
-                sa.CompanyServiceAccountAssignedRoles.Select(r => r.UserRoleId),
+                sa.IdentityAssignedRoles.Select(r => r.UserRoleId),
                 sa.Connector!.Id,
-                sa.IamServiceAccount!.ClientId))
+                sa.ClientId))
             .SingleOrDefaultAsync();
 
     public Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, string adminUserId) =>
@@ -131,16 +120,16 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .AsNoTracking()
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
-                && serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE
-                && serviceAccount.ServiceAccountOwner!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId))
+                && serviceAccount.UserStatusId == UserStatusId.ACTIVE
+                && serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == adminUserId))
             .Select(serviceAccount => new CompanyServiceAccountDetailedData(
                     serviceAccount.Id,
-                    serviceAccount.IamServiceAccount!.ClientId,
-                    serviceAccount.IamServiceAccount.ClientClientId,
-                    serviceAccount.IamServiceAccount.UserEntityId,
+                    serviceAccount.ClientId,
+                    serviceAccount.ClientClientId,
+                    serviceAccount.UserEntityId,
                     serviceAccount.Name,
                     serviceAccount.Description,
-                    serviceAccount.CompanyServiceAccountAssignedRoles
+                    serviceAccount.IdentityAssignedRoles
                         .Select(assignedRole => assignedRole.UserRole)
                         .Select(userRole => new UserRoleData(
                             userRole!.Id,
@@ -157,13 +146,13 @@ public class ServiceAccountRepository : IServiceAccountRepository
             _dbContext.CompanyServiceAccounts
                 .AsNoTracking()
                 .Where(serviceAccount =>
-                    serviceAccount.ServiceAccountOwner!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == adminUserId) &&
-                    serviceAccount.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE)
-                .GroupBy(serviceAccount => serviceAccount.ServiceAccountOwnerId),
+                    serviceAccount.Company!.CompanyUsers.Any(companyUser => companyUser.UserEntityId == adminUserId) &&
+                    serviceAccount.UserStatusId == UserStatusId.ACTIVE)
+                .GroupBy(serviceAccount => serviceAccount.CompanyId),
             serviceAccounts => serviceAccounts.OrderBy(serviceAccount => serviceAccount.Name),
             serviceAccount => new CompanyServiceAccountData(
                         serviceAccount.Id,
-                        serviceAccount.IamServiceAccount!.ClientClientId,
+                        serviceAccount.ClientClientId,
                         serviceAccount.Name,
                         serviceAccount.CompanyServiceAccountTypeId,
                         serviceAccount.OfferSubscriptionId)
@@ -174,7 +163,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
         _dbContext.CompanyServiceAccounts
             .Where(sa =>
                 sa.Id == technicalUserId &&
-                sa.CompanyServiceAccountStatusId == CompanyServiceAccountStatusId.ACTIVE &&
-                sa.ServiceAccountOwnerId == companyId)
+                sa.UserStatusId == UserStatusId.ACTIVE &&
+                sa.CompanyId == companyId)
             .AnyAsync();
 }
