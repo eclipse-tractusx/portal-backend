@@ -89,13 +89,32 @@ public class ApplicationRepository : IApplicationRepository
             {
                 Application = application,
                 CompanyUser = application.Company!.Identities.Select(x => x.CompanyUser!).SingleOrDefault(companyUser => companyUser.Id == companyUserId),
-                Documents = application.Company.Identities.Select(x => x.CompanyUser!).SelectMany(companyUser => companyUser.Documents).Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED)
+                Documents = application.Company.Identities.Select(x => x.CompanyUser!).SelectMany(companyUser => companyUser.Documents).Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED),
+                CompanyName = application.Company!.Name,
+                AddressId = application.Company.AddressId,
+                StreetName = application.Company!.Address!.Streetname,
+                City = application.Company!.Address!.City,
+                Country = application.Company!.Address!.Country,
+                CompanyIdentifiers = application.Company.CompanyIdentifiers.Select(x=>x.UniqueIdentifierId),
+                CompanyRoleIds = application.Company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
+                AgreementConsents = application.Company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
+                        .Select(consent => new ValueTuple<Guid, ConsentStatusId>(
+                            consent.AgreementId, consent.ConsentStatusId)),
+
             })
             .Select(data => new CompanyApplicationUserEmailData(
                 data.Application.ApplicationStatusId,
                 data.CompanyUser != null,
                 data.CompanyUser!.Email,
-                data.Documents.Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId))
+                data.Documents.Select(doc => new DocumentStatusTypeData(doc.Id, doc.DocumentStatusId, doc.DocumentTypeId)),
+                data.CompanyName, 
+                data.AddressId,
+                data.StreetName,
+                data.City,
+                data.Country!.CountryNameDe,
+                data.CompanyIdentifiers,
+                data.CompanyRoleIds,
+                data.AgreementConsents
                 ))
             .SingleOrDefaultAsync();
 
