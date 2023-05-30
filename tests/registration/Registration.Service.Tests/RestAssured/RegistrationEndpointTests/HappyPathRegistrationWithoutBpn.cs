@@ -24,10 +24,10 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     private readonly string _adminEndPoint = "/api/administration";
     private static string? _operatorToken;
     private readonly string _operatorCompanyName = "CX-Operator";
-    private static string _userCompanyName = "Test-Catena-X-29";
+    private static string _userCompanyName = "Test-Catena-X-35";
     private static string[] _userEmailAddress;
     private static RegistrationEndpointHelper _regEndpointHelper;
-    private TestDataHelper _testDataHelper = new TestDataHelper();
+    private static TestDataHelper _testDataHelper = new TestDataHelper();
     private readonly Secrets _secrets = new ();
     
     JsonSerializerOptions _options = new JsonSerializerOptions
@@ -37,15 +37,52 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     };
 
     #region Happy Path - new registration without BPN
+    
+    [Theory]
+    [MemberData(nameof(GetDataEntries))]
+    public async Task Scenario_HappyPathRegistrationWithoutBpn(TestDataModel testEntry)
+    //public void Scenario_HappyPathRegistrationWithoutBpn(TestDataModel testEntry)
+    {
+        _operatorToken = await new AuthFlow(_operatorCompanyName).GetAccessToken(_secrets.OperatorUserName, _secrets.OperatorUserPassword);
+
+        _userCompanyToken = "";
+         //await Test1_ExecuteInvitation_ReturnsExpectedResult(testEntry.companyDetailData.Name);
+         _regEndpointHelper = new RegistrationEndpointHelper(_userCompanyToken, _operatorToken);
+         _applicationId = _regEndpointHelper.GetFirstApplicationId();
+         Test2_SetCompanyDetailData_ReturnsExpectedResult(testEntry.companyDetailData);
+         Thread.Sleep(5000);
+         Test3_SubmitCompanyRoleConsentToAgreements_ReturnsExpectedResult(testEntry.companyRoles);
+         Thread.Sleep(5000);
+         Test4_UploadDocument_WithEmptyTitle_ReturnsExpectedResult();
+         Thread.Sleep(5000);
+         Test5_SubmitRegistration_ReturnsExpectedResult();
+         Thread.Sleep(5000);
+        Test6_GetApplicationDetails_ReturnsExpectedResult();
+        Thread.Sleep(5000);
+        Test7_GetCompanyWithAddress_ReturnsExpectedResult();
+    }
+    
+    public static IEnumerable<object> GetDataEntries()
+    {
+        List<TestDataModel> testDataEntries = _testDataHelper.GetTestData();
+        for (int i = 0; i < testDataEntries.Count; i++)
+        {
+            yield return new object[] { testDataEntries[i] };
+        }
+    }
 
     // POST api/administration/invitation
 
     [Fact]
-    public async Task Test1_ExecuteInvitation_ReturnsExpectedResult()
+    public async Task Test1_ExecuteInvitation_ReturnsExpectedResult(/*string userCompanyName*/)
     {
-        DevMailApiRequests devMailApiRequests = new DevMailApiRequests();
-        var devUser = devMailApiRequests.GenerateRandomEmailAddress();
-        var emailAddress = devUser.Result.Name + "@developermail.com";
+        //DevMailApiRequests devMailApiRequests = new DevMailApiRequests();
+        //var devUser = devMailApiRequests.GenerateRandomEmailAddress();
+        //var emailAddress = devUser.Result.Name + "@developermail.com";
+        
+        TempMailApiRequests tempMailApiRequests = new TempMailApiRequests();
+        var emailAddress = "apitestuser" + tempMailApiRequests.GetDomain();
+        
         CompanyInvitationData invitationData = new CompanyInvitationData("testuser", "myFirstName", "myLastName",
             emailAddress, _userCompanyName);
         
@@ -67,7 +104,8 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
 
         Thread.Sleep(20000);
 
-        var messageData = devMailApiRequests.FetchPassword();
+        //var messageData = devMailApiRequests.FetchPassword();
+        var messageData = tempMailApiRequests.FetchPassword();
         if (messageData is null)
         {
             throw new Exception("User password could not be fetched.");
@@ -83,15 +121,15 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
 
     // POST /api/registration/application/{applicationId}/companyDetailsWithAddress
 
-    [Fact]
-    public void Test2_SetCompanyDetailData_ReturnsExpectedResult()
+    //[Fact]
+    public void Test2_SetCompanyDetailData_ReturnsExpectedResult(CompanyDetailData testCompanyDetailData)
     {
         if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.CREATED.ToString())
         {
             _regEndpointHelper.SetApplicationStatus(CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString());
             var companyDetailData = _regEndpointHelper.GetCompanyDetailData();
 
-            var testCompanyDetailData = _testDataHelper.GetNewCompanyDetailDataFromTestData();
+            //var testCompanyDetailData = _testDataHelper.GetNewCompanyDetailDataFromTestData();
             var newCompanyDetailData = testCompanyDetailData with
             {
                 CompanyId = companyDetailData.CompanyId
@@ -120,12 +158,12 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
 
     // POST /api/registration/application/{applicationId}/companyRoleAgreementConsents
 
-    [Fact]
-    public void Test3_SubmitCompanyRoleConsentToAgreements_ReturnsExpectedResult()
+    //[Fact]
+    public void Test3_SubmitCompanyRoleConsentToAgreements_ReturnsExpectedResult(List<CompanyRoleId> companyRoles)
     {
         if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.INVITE_USER.ToString())
         {
-            var companyRoles = _testDataHelper.GetCompanyRolesFromTestData(3);
+            //var companyRoles = _testDataHelper.GetCompanyRolesFromTestData(3);
             if (companyRoles != null)
             {
                 var companyRoleAgreementConsents =
@@ -151,7 +189,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     
     // POST /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents
 
-    [Fact]
+    //[Fact]
     public void Test4_UploadDocument_WithEmptyTitle_ReturnsExpectedResult()
     {
         if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.UPLOAD_DOCUMENTS.ToString())
@@ -179,7 +217,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
 
     // POST /api/registration/application/{applicationId}/submitRegistration
 
-    [Fact]
+    //[Fact]
     public void Test5_SubmitRegistration_ReturnsExpectedResult()
     {
         if (_regEndpointHelper.GetApplicationStatus() == CompanyApplicationStatusId.VERIFY.ToString())
@@ -205,9 +243,10 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
 
     // GET: api/administration/registration/applications?companyName={companyName}
 
-    [Fact]
+    //[Fact]
     public void Test6_GetApplicationDetails_ReturnsExpectedResult()
     {
+        _userCompanyName = "Test-Catena-X";
         var response = Given()
             .RelaxedHttpsValidation()
             .Header(
@@ -229,7 +268,7 @@ public class RegistrationEndpointTestsHappyPathRegistrationWithoutBpn
     }
 
     // GET: api/administration/registration/application/{applicationId}/companyDetailsWithAddress
-    [Fact]
+    //[Fact]
     public void Test7_GetCompanyWithAddress_ReturnsExpectedResult()
     {
         // Given

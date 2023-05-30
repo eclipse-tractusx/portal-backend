@@ -1,8 +1,8 @@
 ﻿[
   {
     "companyDetailData": {
-    "companyId": "00000000-0000-0000-0000-000000000000",
-    "name": "Test-Catena-X-1",
+    "companyId": "00000000-0000-0000-0000-000000000001",
+    "name": "Test-Catena-X-33",
     "city": "Munich",
     "streetName": "Main street",
     "countryAlpha2Code": "DE",
@@ -26,8 +26,8 @@
   },
   {
     "companyDetailData": {
-    "companyId": "00000000-0000-0000-0000-000000000000",
-    "name": "Test-Catena-X-2",
+    "companyId": "00000000-0000-0000-0000-000000000002",
+    "name": "Test-Catena-X-34",
     "city": "Munich",
     "streetName": "Main street",
     "countryAlpha2Code": "DE",

@@ -80,7 +80,7 @@ public class TestDataHelper
         {
             CompanyDetailData? companyDetailData = null;
             CompanyDetailData? updateCompanyDetailData = null;
-            IEnumerable<CompanyRoleId>? companyRoles = null;
+            List<CompanyRoleId>? companyRoles = null;
             string? documentName = null, documentPath = null;
             DocumentTypeId? documentTypeId = null;
             foreach (var pair in obj)
@@ -94,7 +94,7 @@ public class TestDataHelper
                         updateCompanyDetailData = DeserializeData<CompanyDetailData>(pair.Value.ToString());
                         break;
                     case "companyRoles":
-                        companyRoles = DeserializeData<IEnumerable<CompanyRoleId>>(pair.Value.ToString());
+                        companyRoles = DeserializeData<List<CompanyRoleId>>(pair.Value.ToString());
                         break;
                     case "documentName":
                         documentName = JsonSerializer.Deserialize<string>(pair.Value.ToString());
