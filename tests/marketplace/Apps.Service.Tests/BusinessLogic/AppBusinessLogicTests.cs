@@ -48,7 +48,6 @@ public class AppBusinessLogicTests
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferRepository _offerRepository;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionRepository;
-    private readonly IUserRepository _userRepository;
     private readonly INotificationRepository _notificationRepository;
     private readonly IMailingService _mailingService;
     private readonly IOfferService _offerService;

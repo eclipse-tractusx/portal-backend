@@ -124,7 +124,7 @@ public class OfferServiceTests
             });
 
         // Act
-        var result = await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _companyUser.Id, Enumerable.Empty<LocalizedDescription>(),  new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com"), IamUserId, OfferTypeId.SERVICE);
+        var result = await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _companyUser.Id, Enumerable.Empty<LocalizedDescription>(), new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com"), IamUserId, OfferTypeId.SERVICE);
 
         // Assert
         result.Should().Be(serviceId);
@@ -221,7 +221,7 @@ public class OfferServiceTests
     public async Task CreateServiceOffering_WithoutCompanyUser_ThrowsException()
     {
         // Act
-        async Task Action() => await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", Guid.NewGuid(), Enumerable.Empty<LocalizedDescription>(),  new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com"), IamUserId, OfferTypeId.SERVICE);
+        async Task Action() => await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", Guid.NewGuid(), Enumerable.Empty<LocalizedDescription>(), new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com"), IamUserId, OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -650,27 +650,6 @@ public class OfferServiceTests
         {
             result.Message.Should().Be("The app has no roles assigned");
         }
-    }
-
-    [Fact]
-    public async Task SubmitOffer_WithInvalidRequester_ThrowsConflictException()
-    {
-        // Arrange
-        var data = _fixture.Build<OfferReleaseData>()
-            .With(x => x.IsDescriptionLongNotSet, false)
-            .With(x => x.IsDescriptionShortNotSet, false)
-            .With(x => x.HasTechnicalUserProfiles, true)
-            .With(x => x.HasPrivacyPolicies, true)
-            .With(x => x.DocumentDatas, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) })
-            .Create();
-        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(data);
-
-        // Act
-        async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _identity, _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.Create<IDictionary<string, IEnumerable<string>>>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS }).ConfigureAwait(false);
-
-        // Assert
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
-        result.Message.Should().StartWith($"keycloak user {IamUserId} is not associated with any portal user");
     }
 
     [Fact]
