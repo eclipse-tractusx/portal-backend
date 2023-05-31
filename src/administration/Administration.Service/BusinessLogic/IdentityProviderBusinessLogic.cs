@@ -53,7 +53,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     public async IAsyncEnumerable<IdentityProviderDetails> GetOwnCompanyIdentityProvidersAsync(IdentityData identity)
     {
-        await foreach (var identityProviderData in _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderCategoryDataUntracked(identity.Id).ConfigureAwait(false))
+        await foreach (var identityProviderData in _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyIdentityProviderCategoryDataUntracked(identity.CompanyId).ConfigureAwait(false))
         {
             switch (identityProviderData.CategoryId)
             {
@@ -315,9 +315,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         }
     }
 
-    public async ValueTask DeleteOwnCompanyIdentityProviderAsync(Guid identityProviderId, string iamUserId)
+    public async ValueTask DeleteCompanyIdentityProviderAsync(Guid identityProviderId, Guid companyId)
     {
-        var (companyId, companyCount, alias, category) = await ValidateDeleteOwnCompanyIdentityProviderArguments(identityProviderId, iamUserId).ConfigureAwait(false);
+        var (companyCount, alias, category) = await ValidateDeleteOwnCompanyIdentityProviderArguments(identityProviderId, companyId).ConfigureAwait(false);
 
         _portalRepositories.Remove(new CompanyIdentityProvider(companyId, identityProviderId));
         if (companyCount == 1)
@@ -336,17 +336,17 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private async ValueTask<(Guid CompanyId, int CompanyCount, string Alias, IdentityProviderCategoryId Category)> ValidateDeleteOwnCompanyIdentityProviderArguments(Guid identityProviderId, string iamUserId)
+    private async ValueTask<(int CompanyCount, string Alias, IdentityProviderCategoryId Category)> ValidateDeleteOwnCompanyIdentityProviderArguments(Guid identityProviderId, Guid companyId)
     {
-        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderDeletionDataUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyIdentityProviderDeletionDataUntrackedAsync(identityProviderId, companyId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
         }
-        var (companyId, companyCount, alias, category, aliase) = result;
-        if (result.CompanyId == Guid.Empty)
+        var (isValidCompanyId, companyCount, alias, category, aliase) = result;
+        if (!isValidCompanyId)
         {
-            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company of user {iamUserId}");
+            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company {companyId}");
         }
 
         if (await _provisioningManager.IsCentralIdentityProviderEnabled(alias).ConfigureAwait(false))
@@ -360,7 +360,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             () => throw new ControllerArgumentException($"cannot delete indentityProvider {identityProviderId} as no other active identityProvider exists for this company")
         ).ConfigureAwait(false);
 
-        return new ValueTuple<Guid, int, string, IdentityProviderCategoryId>(companyId, companyCount, alias, category);
+        return new ValueTuple<int, string, IdentityProviderCategoryId>(companyCount, alias, category);
     }
 
     private async ValueTask<IdentityProviderDetails> GetIdentityProviderDetailsOidc(Guid identityProviderId, string alias, IdentityProviderCategoryId categoryId)
@@ -542,7 +542,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 numIdps = ParseCSVFirstLineReturningNumIdps(line);
             },
             line => ParseCSVLine(line, numIdps, existingAliase),
-            lines => ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(lines, userRepository, identity.CompanyId, sharedIdpAlias, identity.Id, cancellationToken),
+            lines => ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(lines, userRepository, identity.CompanyId, sharedIdpAlias, identity.CompanyUserId, cancellationToken),
             cancellationToken
         ).ConfigureAwait(false);
 
@@ -820,7 +820,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             throw new ControllerArgumentException("at least one identityProviderId must be specified", nameof(identityProviderIds));
         }
-        var identityProviderData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasDataUntracked(identity.Id, identityProviderIds).ToListAsync().ConfigureAwait(false);
+        var identityProviderData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasDataUntracked(identity.CompanyUserId, identityProviderIds).ToListAsync().ConfigureAwait(false);
 
         var invalidIds = identityProviderIds.Except(identityProviderData.Select(data => data.IdentityProviderId));
         if (invalidIds.Any())
@@ -834,7 +834,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     private async IAsyncEnumerable<(Guid CompanyUserId, UserProfile UserProfile, IAsyncEnumerable<IdentityProviderLink> LinkDatas)> GetOwnCompanyIdentityProviderLinkDataInternalAsync(IdentityData identity)
     {
         await foreach (var (companyUserId, firstName, lastName, email, userEntityId) in _portalRepositories.GetInstance<IUserRepository>()
-            .GetOwnCompanyUserQuery(identity.Id)
+            .GetOwnCompanyUserQuery(identity.CompanyUserId)
             .Select(companyUser =>
                 new ValueTuple<Guid, string?, string?, string?, string?>(
                     companyUser.Id,

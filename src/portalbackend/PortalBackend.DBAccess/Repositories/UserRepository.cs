@@ -470,9 +470,9 @@ public class UserRepository : IUserRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<IdentityData?> GetUserDataByUserEntityId(string userEntityId) =>
+    public Task<IdentityData?> GetActiveUserDataByUserEntityId(string userEntityId) =>
         _dbContext.Identities
-            .Where(x => x.UserEntityId == userEntityId)
+            .Where(x => x.UserEntityId == userEntityId && x.UserStatusId == UserStatusId.ACTIVE)
             .Select(x => new IdentityData(x.UserEntityId!, x.Id, x.IdentityTypeId, x.CompanyId))
             .SingleOrDefaultAsync();
 

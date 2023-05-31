@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Framework.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -44,8 +44,8 @@ public static class ControllerExtensions
         claimsIdentity.AddClaims(new[] { new Claim("sub", iamUserId) });
         if (identity != null)
         {
-            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityId, identity.Id.ToString()) });
-            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityType, Enum.GetName(identity.IdentityType)!) });
+            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityId, identity.CompanyUserId.ToString()) });
+            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityType, Enum.GetName(identity.IdentityType) ?? throw new UnexpectedConditionException("itentityType should never be out of enum-values range here")) });
             claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.CompanyId, identity.CompanyId.ToString()) });
         }
 
@@ -75,8 +75,8 @@ public static class ControllerExtensions
         claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.Sub, iamUserId) });
         if (identity != null)
         {
-            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityId, identity.Id.ToString()) });
-            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityType, Enum.GetName(identity.IdentityType)!) });
+            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityId, identity.CompanyUserId.ToString()) });
+            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.IdentityType, Enum.GetName(identity.IdentityType) ?? throw new UnexpectedConditionException("itentityType should never be out of enum-values range here")) });
             claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.CompanyId, identity.CompanyId.ToString()) });
         }
 

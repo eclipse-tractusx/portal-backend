@@ -43,12 +43,12 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc/>
-    public async Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync(IdentityData identity)
+    public async Task<CompanyAddressDetailData> GetCompanyDetailsAsync(Guid companyId)
     {
-        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetOwnCompanyDetailsAsync(identity.CompanyId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyDetailsAsync(companyId).ConfigureAwait(false);
         if (result == null)
         {
-            throw new ConflictException($"user {identity.UserEntityId} is not associated with any company");
+            throw new ConflictException($"company {companyId} is not a valid company");
         }
         return result;
     }
@@ -135,7 +135,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             return;
         }
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
-        var result = await companyRepositories.GetCompanyRolesDataAsync(identity.Id, companyRoleConsentDetails.Select(x => x.CompanyRole)).ConfigureAwait(false);
+        var result = await companyRepositories.GetCompanyRolesDataAsync(identity.CompanyUserId, companyRoleConsentDetails.Select(x => x.CompanyRole)).ConfigureAwait(false);
         if (result == default)
         {
             throw new ForbiddenException($"user {identity.UserEntityId} is not associated with any company");

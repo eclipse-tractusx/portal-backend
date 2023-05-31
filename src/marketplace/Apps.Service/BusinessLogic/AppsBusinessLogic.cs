@@ -137,19 +137,19 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserAsync(IdentityData identity) =>
         _portalRepositories
             .GetInstance<IUserRepository>()
-            .GetAllFavouriteAppsForUserUntrackedAsync(identity.Id);
+            .GetAllFavouriteAppsForUserUntrackedAsync(identity.CompanyUserId);
 
     /// <inheritdoc/>
     public async Task RemoveFavouriteAppForUserAsync(Guid appId, IdentityData identity)
     {
-        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, identity.Id));
+        _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, identity.CompanyUserId));
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task AddFavouriteAppForUserAsync(Guid appId, IdentityData identity)
     {
-        _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, identity.Id);
+        _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, identity.CompanyUserId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -221,7 +221,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION, false,
             notification =>
             {
-                notification.CreatorUserId = identity.Id;
+                notification.CreatorUserId = identity.CompanyUserId;
                 notification.Content = JsonSerializer.Serialize(new
                 {
                     AppId = appId,

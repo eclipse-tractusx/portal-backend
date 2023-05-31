@@ -112,10 +112,10 @@ public class CompanyRepository : ICompanyRepository
             .Select(company => company.BusinessPartnerNumber)
             .AsAsyncEnumerable();
 
-    public Task<CompanyAddressDetailData?> GetOwnCompanyDetailsAsync(Guid userCompanyId) =>
+    public Task<CompanyAddressDetailData?> GetCompanyDetailsAsync(Guid companyId) =>
         _context.Companies
             .AsNoTracking()
-            .Where(company => company.Id == userCompanyId)
+            .Where(company => company.Id == companyId)
             .Select(company => new CompanyAddressDetailData(
                 company!.Id,
                 company.Name,

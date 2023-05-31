@@ -62,7 +62,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(CompanyAddressDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync() =>
-        this.WithIdentityData(identity => _logic.GetOwnCompanyDetailsAsync(identity));
+        this.WithIdentityData(identity => _logic.GetCompanyDetailsAsync(identity.CompanyId));
 
     /// <summary>
     /// Gets the CompanyAssigned UseCase details

@@ -188,7 +188,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public async Task<ActionResult> DeleteOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId)
     {
-        await this.WithIamUserId(iamUserId => _businessLogic.DeleteOwnCompanyIdentityProviderAsync(identityProviderId, iamUserId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _businessLogic.DeleteCompanyIdentityProviderAsync(identityProviderId, identity.CompanyId)).ConfigureAwait(false);
         return (ActionResult)NoContent();
     }
 

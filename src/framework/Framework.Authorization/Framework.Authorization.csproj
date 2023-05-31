@@ -17,20 +17,21 @@
 -
 - SPDX-License-Identifier: Apache-2.0
 -->
+
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.Web</AssemblyName>
+    <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.Authorization</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\keycloak\Keycloak.Authentication\Keycloak.Authentication.csproj" />
-    <ProjectReference Include="..\..\keycloak\Keycloak.ErrorHandling\Keycloak.ErrorHandling.csproj" />
-    <ProjectReference Include="..\..\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
-    <ProjectReference Include="..\Framework.Cors\Framework.Cors.csproj" />
-    <ProjectReference Include="..\Framework.ErrorHandling.Web\Framework.ErrorHandling.Web.csproj" />
-    <ProjectReference Include="..\Framework.Swagger\Framework.Swagger.csproj" />
-    <ProjectReference Include="..\Framework.Authorization\Framework.Authorization.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.9" />
+    <PackageReference Include="System.Json" Version="4.7.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\framework\Framework.ErrorHandling.Library\Framework.ErrorHandling.Library.csproj" />
+    <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
   </ItemGroup>
 </Project>

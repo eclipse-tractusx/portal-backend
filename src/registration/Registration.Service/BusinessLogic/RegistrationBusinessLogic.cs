@@ -199,7 +199,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             throw new ControllerArgumentException($"documentType must be either: {string.Join(",", _settings.DocumentTypeIds)}");
         }
-        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, identity.Id).ConfigureAwait(false);
+        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForUserApplicationUntrackedAsync(applicationId, identity.CompanyUserId).ConfigureAwait(false);
         if (companyUserId == Guid.Empty)
         {
             throw new ForbiddenException($"iamUserId {identity.UserEntityId} is not assigned with CompanyApplication {applicationId}");
@@ -227,7 +227,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId, IdentityData identity)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var documentDetails = await documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, identity.Id).ConfigureAwait(false);
+        var documentDetails = await documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, identity.CompanyUserId).ConfigureAwait(false);
         if (documentDetails.DocumentId == Guid.Empty)
         {
             throw new NotFoundException($"document {documentId} does not exist.");
@@ -456,7 +456,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private async Task<int> InviteNewUserInternalAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, IdentityData identity)
     {
-        if (await _portalRepositories.GetInstance<IUserRepository>().IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, identity.Id))
+        if (await _portalRepositories.GetInstance<IUserRepository>().IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, identity.CompanyUserId))
         {
             throw new ControllerArgumentException($"user with email {userCreationInfo.eMail} does already exist");
         }
@@ -597,7 +597,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             companyRolesRepository.CreateCompanyAssignedRole(identity.CompanyId, companyRoleId);
         }
 
-        HandleConsent(consents, agreementConsentsToSet, consentRepository, identity.CompanyId, identity.Id);
+        HandleConsent(consents, agreementConsentsToSet, consentRepository, identity.CompanyId, identity.CompanyUserId);
 
         UpdateApplicationStatus(applicationId, applicationStatusId, UpdateApplicationSteps.CompanyRoleAgreementConsents, _portalRepositories.GetInstance<IApplicationRepository>());
 
@@ -606,7 +606,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public async Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId, IdentityData identity)
     {
-        var result = await _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, identity.Id).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, identity.CompanyUserId).ConfigureAwait(false);
         if (result == null)
         {
             throw new ForbiddenException($"iamUserId {identity.UserEntityId} is not assigned with CompanyApplication {applicationId}");
@@ -623,7 +623,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public async Task<bool> SubmitRegistrationAsync(Guid applicationId, IdentityData identity)
     {
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, identity.Id).ConfigureAwait(false);
+        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, identity.CompanyUserId).ConfigureAwait(false);
         if (applicationUserData == null)
         {
             throw new NotFoundException($"application {applicationId} does not exist");
@@ -709,7 +709,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public async Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, IdentityData identity)
     {
-        var result = await _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId, documentTypeId, identity.Id).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId, documentTypeId, identity.CompanyUserId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"application {applicationId} not found");
@@ -723,7 +723,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public async Task<int> SetInvitationStatusAsync(IdentityData identity)
     {
-        var invitationData = await _portalRepositories.GetInstance<IInvitationRepository>().GetInvitationStatusAsync(identity.Id).ConfigureAwait(false);
+        var invitationData = await _portalRepositories.GetInstance<IInvitationRepository>().GetInvitationStatusAsync(identity.CompanyUserId).ConfigureAwait(false);
 
         if (invitationData == null)
         {

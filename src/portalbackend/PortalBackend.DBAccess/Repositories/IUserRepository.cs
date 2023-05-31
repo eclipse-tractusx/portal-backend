@@ -124,7 +124,7 @@ public interface IUserRepository
     /// <returns>The bpn of the company for the user</returns>
     Task<string?> GetCompanyBpnForIamUserAsync(Guid companyUserId);
 
-    Task<IdentityData?> GetUserDataByUserEntityId(string userEntityId);
+    Task<IdentityData?> GetActiveUserDataByUserEntityId(string userEntityId);
     Identity AttachAndModifyIdentity(Guid identityId, Action<Identity>? initialize, Action<Identity> modify);
 
     /// <summary>

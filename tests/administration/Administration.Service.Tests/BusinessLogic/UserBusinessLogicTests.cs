@@ -512,14 +512,14 @@ public class UserBusinessLogicTests
             _options
         );
 
-        var identity = new Identity(_identity.Id, DateTimeOffset.UtcNow, _identity.CompanyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
-        A.CallTo(() => _userRepository.AttachAndModifyIdentity(_identity.Id, A<Action<Identity>>._, A<Action<Identity>>._))
+        var identity = new Identity(_identity.CompanyUserId, DateTimeOffset.UtcNow, _identity.CompanyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _userRepository.AttachAndModifyIdentity(_identity.CompanyUserId, A<Action<Identity>>._, A<Action<Identity>>._))
             .Invokes((Guid _, Action<Identity>? init, Action<Identity> modify) =>
             {
                 init?.Invoke(identity);
                 modify.Invoke(identity);
             });
-        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(_identity.Id, null, A<Action<CompanyUser>>._))
+        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(_identity.CompanyUserId, null, A<Action<CompanyUser>>._))
             .Invokes((Guid _, Action<CompanyUser>? init, Action<CompanyUser> modify) =>
             {
                 init?.Invoke(_companyUser);
@@ -548,7 +548,7 @@ public class UserBusinessLogicTests
 
         var identity = _fixture.Create<IdentityData>();
 
-        A.CallTo(() => _userRepository.GetSharedIdentityProviderUserAccountDataUntrackedAsync(identity.Id))
+        A.CallTo(() => _userRepository.GetSharedIdentityProviderUserAccountDataUntrackedAsync(identity.CompanyUserId))
             .Returns(((string?, CompanyUserAccountData))default!);
 
         var sut = new UserBusinessLogic(
@@ -1334,7 +1334,7 @@ public class UserBusinessLogicTests
         // Assert
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>
             .That.IsSameSequenceAs(_options.Value.UserAdminRoles))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(identity.Id, A<IEnumerable<Guid>>.That.IsSameSequenceAs(userRoleIds))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(identity.CompanyUserId, A<IEnumerable<Guid>>.That.IsSameSequenceAs(userRoleIds))).MustHaveHappenedOnceExactly();
         result.Should().Be(companyOwnUserDetails);
     }
 
@@ -1344,7 +1344,7 @@ public class UserBusinessLogicTests
         // Arrange
         var identity = _fixture.Create<IdentityData>();
 
-        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(identity.Id, A<IEnumerable<Guid>>._))
+        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(identity.CompanyUserId, A<IEnumerable<Guid>>._))
             .Returns((CompanyOwnUserDetails)default!);
         var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, null!, _logger, _options);
 
@@ -1397,7 +1397,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
 
         A.CallTo(() => _userRepository.GetSharedIdentityProviderUserAccountDataUntrackedAsync(A<Guid>._)).Returns(_fixture.Create<(string? SharedIdpAlias, CompanyUserAccountData AccountData)>());
-        A.CallTo(() => _userRepository.GetSharedIdentityProviderUserAccountDataUntrackedAsync(_identity.Id)).Returns((
+        A.CallTo(() => _userRepository.GetSharedIdentityProviderUserAccountDataUntrackedAsync(_identity.CompanyUserId)).Returns((
                             SharedIdpAlias: (string?)_fixture.Create<string>(),
                             AccountData: _fixture.Build<CompanyUserAccountData>()
                                 .With(x => x.CompanyUserId, _companyUserId)
@@ -1405,7 +1405,7 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _identityProviderRepository.GetSharedIdentityProviderIamAliasDataUntrackedAsync(A<Guid>._))
             .Returns(_fixture.Create<(string? SharedIdpAlias, Guid CompanyUserId)>());
-        A.CallTo(() => _identityProviderRepository.GetSharedIdentityProviderIamAliasDataUntrackedAsync(_identity.Id))
+        A.CallTo(() => _identityProviderRepository.GetSharedIdentityProviderIamAliasDataUntrackedAsync(_identity.CompanyUserId))
             .Returns(_fixture.Build<(string? SharedIdpAlias, Guid CompanyUserId)>()
                 .With(x => x.CompanyUserId, _companyUserId)
                 .Create());

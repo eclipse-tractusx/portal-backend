@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Framework.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using System.Json;
@@ -45,38 +45,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
         {
             var claimsIdentity = new ClaimsIdentity();
             var rolesAdded = AddRoles(principal, claimsIdentity);
+            var identityAdded = await AddIdentity(principal, claimsIdentity).ConfigureAwait(false);
 
-            var sub = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
-            if (string.IsNullOrWhiteSpace(sub))
+            if (rolesAdded || identityAdded)
             {
-                if (rolesAdded)
-                {
-                    principal.AddIdentity(claimsIdentity);
-                }
-                return principal;
+                principal.AddIdentity(claimsIdentity);
             }
-
-            var result = await _portalDbRepositories.GetInstance<IUserRepository>().GetUserDataByUserEntityId(sub).ConfigureAwait(false);
-            if (result == null)
-            {
-                if (rolesAdded)
-                {
-                    principal.AddIdentity(claimsIdentity);
-                }
-                return principal;
-            }
-
-            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, result.Id.ToString()));
-            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityType, Enum.GetName(result.IdentityType) ?? throw new ConflictException($"IdentityType {(int)result.IdentityType} is out of range")));
-            claimsIdentity.AddClaim(new Claim(PortalClaimTypes.CompanyId, result.CompanyId.ToString()));
-            principal.AddIdentity(claimsIdentity);
             return principal;
         }
 
         private bool AddRoles(ClaimsPrincipal principal, ClaimsIdentity claimsIdentity)
         {
             var resource_access = principal.Claims
-                .FirstOrDefault(claim => claim.Type == "resource_access" && claim.ValueType == "JSON")?.Value;
+                .FirstOrDefault(claim => claim.Type == PortalClaimTypes.ResourceAccess && claim.ValueType == "JSON")?.Value;
             if (resource_access == null ||
                 !((JsonValue.Parse(resource_access) as JsonObject)?.TryGetValue(
                     _options.TokenValidationParameters.ValidAudience,
@@ -100,6 +81,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
             }
 
             return rolesAdded;
+        }
+
+        private async ValueTask<bool> AddIdentity(ClaimsPrincipal principal, ClaimsIdentity claimsIdentity)
+        {
+            var sub = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
+            var identityData = string.IsNullOrWhiteSpace(sub)
+                ? null
+                : await _portalDbRepositories.GetInstance<IUserRepository>().GetActiveUserDataByUserEntityId(sub).ConfigureAwait(false);
+
+            if (identityData != null)
+            {
+                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityId, identityData.CompanyUserId.ToString()));
+                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.IdentityType, Enum.GetName(identityData.IdentityType) ?? throw new ConflictException($"IdentityType {(int)identityData.IdentityType} is out of range")));
+                claimsIdentity.AddClaim(new Claim(PortalClaimTypes.CompanyId, identityData.CompanyId.ToString()));
+                return true;
+            }
+            return false;
         }
     }
 }

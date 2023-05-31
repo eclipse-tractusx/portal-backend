@@ -23,7 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
 
@@ -50,7 +50,7 @@ public class CompanyDataControllerTests
     {
         // Arrange
         var companyAddressDetailData = _fixture.Create<CompanyAddressDetailData>();
-        A.CallTo(() => _logic.GetOwnCompanyDetailsAsync(_identity))
+        A.CallTo(() => _logic.GetCompanyDetailsAsync(A<Guid>._))
             .Returns(companyAddressDetailData);
 
         // Act
@@ -58,6 +58,7 @@ public class CompanyDataControllerTests
 
         // Assert
         result.Should().BeOfType<CompanyAddressDetailData>();
+        A.CallTo(() => _logic.GetCompanyDetailsAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

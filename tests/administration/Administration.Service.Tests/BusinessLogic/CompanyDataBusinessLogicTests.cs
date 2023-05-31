@@ -67,11 +67,11 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var companyAddressDetailData = _fixture.Create<CompanyAddressDetailData>();
-        A.CallTo(() => _companyRepository.GetOwnCompanyDetailsAsync(_identity.CompanyId))
+        A.CallTo(() => _companyRepository.GetCompanyDetailsAsync(_identity.CompanyId))
             .ReturnsLazily(() => companyAddressDetailData);
 
         // Act
-        var result = await _sut.GetOwnCompanyDetailsAsync(_identity);
+        var result = await _sut.GetCompanyDetailsAsync(_identity.CompanyId);
 
         // Assert
         result.Should().NotBeNull();
@@ -82,15 +82,15 @@ public class CompanyDataBusinessLogicTests
     public async Task GetOwnCompanyDetailsAsync_ThrowsConflictException()
     {
         // Arrange
-        A.CallTo(() => _companyRepository.GetOwnCompanyDetailsAsync(_identity.CompanyId))
+        A.CallTo(() => _companyRepository.GetCompanyDetailsAsync(_identity.CompanyId))
             .ReturnsLazily(() => (CompanyAddressDetailData?)null);
 
         // Act
-        async Task Act() => await _sut.GetOwnCompanyDetailsAsync(_identity);
+        async Task Act() => await _sut.GetCompanyDetailsAsync(_identity.CompanyId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"user {_identity.UserEntityId} is not associated with any company");
+        ex.Message.Should().Be($"company {_identity.CompanyId} is not a valid company");
     }
 
     #endregion
@@ -249,7 +249,7 @@ public class CompanyDataBusinessLogicTests
             new (agreementId5, CompanyRoleId.APP_PROVIDER),
         }.ToAsyncEnumerable();
 
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyUserId, A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, companyId, Enumerable.Empty<CompanyRoleId>(), companyUserId, consentStatusDetails));
 
         A.CallTo(() => _companyRepository.GetAgreementAssignedRolesDataAsync(A<IEnumerable<CompanyRoleId>>._))
@@ -301,7 +301,7 @@ public class CompanyDataBusinessLogicTests
         var companyId = _fixture.Create<Guid>();
         var companyUserId = _fixture.Create<Guid>();
 
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyUserId, A<IEnumerable<CompanyRoleId>>._))
             .Returns((false, companyId, null, companyUserId, null));
 
         // Act
@@ -353,7 +353,7 @@ public class CompanyDataBusinessLogicTests
             new (agreementId5, CompanyRoleId.APP_PROVIDER),
         }.ToAsyncEnumerable();
 
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyUserId, A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, companyId, Enumerable.Empty<CompanyRoleId>(), companyUserId, consentStatusDetails));
 
         A.CallTo(() => _companyRepository.GetAgreementAssignedRolesDataAsync(A<IEnumerable<CompanyRoleId>>._))
@@ -413,7 +413,7 @@ public class CompanyDataBusinessLogicTests
             new (agreementId5, CompanyRoleId.APP_PROVIDER),
         }.ToAsyncEnumerable();
 
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyUserId, A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, companyId, Enumerable.Empty<CompanyRoleId>(), companyUserId, consentStatusDetails));
 
         A.CallTo(() => _companyRepository.GetAgreementAssignedRolesDataAsync(A<IEnumerable<CompanyRoleId>>._))
@@ -439,7 +439,7 @@ public class CompanyDataBusinessLogicTests
         var consentStatusDetails = _fixture.CreateMany<ConsentStatusDetails>();
         var companyRoles = new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.ACTIVE_PARTICIPANT };
 
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyUserId, A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, companyId, companyRoles, companyUserId, consentStatusDetails));
 
         // Act
@@ -455,7 +455,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var companyRoleConsentDetails = _fixture.CreateMany<CompanyRoleConsentDetails>(2);
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyUserId, A<IEnumerable<CompanyRoleId>>._))
             .Returns(((bool, Guid, IEnumerable<CompanyRoleId>?, Guid, IEnumerable<ConsentStatusDetails>?))default);
 
         // Act
@@ -471,7 +471,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var companyRoleConsentDetails = _fixture.CreateMany<CompanyRoleConsentDetails>(2);
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyUserId, A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, Guid.NewGuid(), null!, Guid.NewGuid(), null!));
 
         // Act
@@ -487,7 +487,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var companyRoleConsentDetails = _fixture.CreateMany<CompanyRoleConsentDetails>(2);
-        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.Id, A<IEnumerable<CompanyRoleId>>._))
+        A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyUserId, A<IEnumerable<CompanyRoleId>>._))
             .Returns((true, Guid.NewGuid(), Enumerable.Empty<CompanyRoleId>(), Guid.NewGuid(), null!));
 
         // Act

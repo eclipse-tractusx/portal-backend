@@ -83,7 +83,7 @@ public class AppBusinessLogicTests
         await sut.AddFavouriteAppForUserAsync(appId, _identity);
 
         // Assert
-        A.CallTo(() => _offerRepository.CreateAppFavourite(A<Guid>.That.Matches(x => x == appId), A<Guid>.That.Matches(x => x == _identity.Id))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.CreateAppFavourite(A<Guid>.That.Matches(x => x == appId), A<Guid>.That.Matches(x => x == _identity.CompanyUserId))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 

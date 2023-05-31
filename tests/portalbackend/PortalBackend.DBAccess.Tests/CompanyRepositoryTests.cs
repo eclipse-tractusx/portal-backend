@@ -421,14 +421,14 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetOwnCompanyDetailsAsync
+    #region GetCompanyDetailsAsync
 
     [Fact]
-    public async Task GetOwnCompanyDetailsAsync_ReturnsExpected()
+    public async Task GetCompanyDetailsAsync_ReturnsExpected()
     {
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
-        var result = await sut.GetOwnCompanyDetailsAsync(new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
+        var result = await sut.GetCompanyDetailsAsync(new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
 
         result.Should().NotBeNull();
 

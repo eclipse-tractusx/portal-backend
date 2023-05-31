@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Framework.Models;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
@@ -46,10 +46,10 @@ public static class ControllerExtensions
         return idConsumingFunction(iamUserId);
     }
 
-    public static T WithIdentityData<T>(this ControllerBase controller, Func<IdentityData, T> tokenConsumingFunction)
+    public static T WithIdentityData<T>(this ControllerBase controller, Func<IdentityData, T> identityConsumingFunction)
     {
         var identity = controller.GetIdentityData();
-        return tokenConsumingFunction(identity);
+        return identityConsumingFunction(identity);
     }
 
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction)
@@ -101,42 +101,42 @@ public static class ControllerExtensions
 
     private static string GetStringFromClaim(this IEnumerable<Claim> claims, string claimType)
     {
-        var sub = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
-        if (string.IsNullOrWhiteSpace(sub))
-        {
-            throw new ControllerArgumentException("Claim 'sub' must not be null or empty.", nameof(sub));
-        }
-
-        return sub;
-    }
-
-    private static Guid GetGuidFromClaim(this IEnumerable<Claim> claims, string type)
-    {
-        var claimValue = claims.SingleOrDefault(x => x.Type == type)?.Value;
+        var claimValue = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
         if (string.IsNullOrWhiteSpace(claimValue))
         {
-            throw new ControllerArgumentException($"Claim '{type} must not be null or empty.");
+            throw new ControllerArgumentException($"Claim {claimType} must not be null or empty.", nameof(claims));
+        }
+
+        return claimValue;
+    }
+
+    private static Guid GetGuidFromClaim(this IEnumerable<Claim> claims, string claimType)
+    {
+        var claimValue = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
+        if (string.IsNullOrWhiteSpace(claimValue))
+        {
+            throw new ControllerArgumentException($"Claim '{claimType} must not be null or empty.");
         }
 
         if (!Guid.TryParse(claimValue, out var result) || Guid.Empty == result)
         {
-            throw new ControllerArgumentException($"Claim {type} must contain a Guid");
+            throw new ControllerArgumentException($"Claim {claimType} must contain a Guid");
         }
 
         return result;
     }
 
-    private static T GetEnumFromClaim<T>(this IEnumerable<Claim> claims, string type) where T : struct, Enum
+    private static T GetEnumFromClaim<T>(this IEnumerable<Claim> claims, string claimType) where T : struct, Enum
     {
-        var claimValue = claims.SingleOrDefault(x => x.Type == type)?.Value;
+        var claimValue = claims.SingleOrDefault(x => x.Type == claimType)?.Value;
         if (string.IsNullOrWhiteSpace(claimValue))
         {
-            throw new ControllerArgumentException($"Claim '{type} must not be null or empty.");
+            throw new ControllerArgumentException($"Claim '{claimType} must not be null or empty.");
         }
 
         if (!Enum.TryParse(claimValue, true, out T result))
         {
-            throw new ControllerArgumentException($"Claim {type} must contain a {typeof(T)}");
+            throw new ControllerArgumentException($"Claim {claimType} must contain a {typeof(T)}");
         }
 
         return result;
