@@ -211,7 +211,7 @@ public class OfferService : IOfferService
         }
 
         var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyNameUntrackedAsync(identity.CompanyId).ConfigureAwait(false);
-        if (!result.Exists)
+        if (!result.IsValidCompany)
         {
             throw new ControllerArgumentException($"No company {identity.CompanyId} found");
         }

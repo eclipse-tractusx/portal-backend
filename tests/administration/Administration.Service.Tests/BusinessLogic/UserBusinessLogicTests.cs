@@ -1371,7 +1371,7 @@ public class UserBusinessLogicTests
             A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
             A.CallTo(() => _userRepository.GetSharedIdentityProviderUserAccountDataUntrackedAsync(A<Guid>._)).Returns(_fixture.Create<(string? SharedIdpAlias, CompanyUserAccountData AccountData)>());
 
-            A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>._, A<string>._)).Returns((_fixture.Create<CompanyNameIdpAliasData>(), _fixture.Create<string>()));
+            A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>._, A<Guid>._)).Returns((_fixture.Create<CompanyNameIdpAliasData>(), _fixture.Create<string>()));
         }
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))

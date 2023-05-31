@@ -168,6 +168,7 @@ public class UserController : ControllerBase
     /// <response code="200">Result as a Company User Data</response>
     [HttpGet]
     [Authorize(Roles = "view_user_management")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/users")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyUserData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(
@@ -179,14 +180,10 @@ public class UserController : ControllerBase
         [FromQuery] string? lastName = null,
         [FromQuery] string? email = null) =>
         this.WithIdentityData(identity => _logic.GetOwnCompanyUserDatasAsync(
-            identity,
+            identity.CompanyId,
             page,
             size,
-            companyUserId,
-            userEntityId,
-            firstName,
-            lastName,
-            email));
+            new(companyUserId, userEntityId, firstName, lastName, email)));
 
     /// <summary>
     /// Gets the user details for the given user Id

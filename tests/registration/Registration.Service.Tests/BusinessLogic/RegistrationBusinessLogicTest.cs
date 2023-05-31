@@ -1252,7 +1252,7 @@ public class RegistrationBusinessLogicTest
             _portalRepositories,
             null!);
 
-        await sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _identity).ConfigureAwait(false);
+        await sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _identity.CompanyUserId).ConfigureAwait(false);
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId), A<Guid>._)).MustHaveHappened();
@@ -1281,7 +1281,7 @@ public class RegistrationBusinessLogicTest
             _portalRepositories,
             null!);
 
-        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _identity);
+        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _identity.CompanyUserId);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().Be("email must not be empty");
@@ -1309,7 +1309,7 @@ public class RegistrationBusinessLogicTest
             _portalRepositories,
             null!);
 
-        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _identity);
+        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _identity.CompanyUserId);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"user with email {userCreationInfo.eMail} does already exist");
@@ -1341,7 +1341,7 @@ public class RegistrationBusinessLogicTest
             _portalRepositories,
             null!);
 
-        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _identity);
+        Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo, _identity.CompanyUserId);
 
         var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
         error.Message.Should().Be(_error.Message);
@@ -2227,7 +2227,7 @@ public class RegistrationBusinessLogicTest
 
         A.CallTo(() => _userProvisioningService.GetIdentityProviderDisplayName(A<string>._)).Returns(_displayName);
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<string>._, A<Guid?>._)).Returns(
+        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<Guid>._, A<Guid?>._)).Returns(
             (
                 _fixture.Create<CompanyNameIdpAliasData>(),
                 _fixture.Create<string>()

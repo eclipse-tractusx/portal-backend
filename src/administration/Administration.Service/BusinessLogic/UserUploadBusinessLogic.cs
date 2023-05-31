@@ -63,7 +63,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, identity.UserEntityId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, identity.CompanyUserId).ConfigureAwait(false);
 
         var validRoleData = new List<UserRoleData>();
 
@@ -82,7 +82,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     parsed.FirstName,
                     parsed.LastName,
                     parsed.Email,
-                    await GetUserRoleDatas(parsed.Roles, validRoleData, identity).ConfigureAwait(false),
+                    await GetUserRoleDatas(parsed.Roles, validRoleData, identity.CompanyId).ConfigureAwait(false),
                     parsed.ProviderUserName,
                     parsed.ProviderUserId);
             },
@@ -190,7 +190,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(identity.UserEntityId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(identity.CompanyUserId).ConfigureAwait(false);
 
         var validRoleData = new List<UserRoleData>();
 
@@ -209,7 +209,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     parsed.FirstName,
                     parsed.LastName,
                     parsed.Email,
-                    await GetUserRoleDatas(parsed.Roles, validRoleData, identity).ConfigureAwait(false),
+                    await GetUserRoleDatas(parsed.Roles, validRoleData, identity.CompanyId).ConfigureAwait(false),
                     parsed.Email,
                     "");
             },
@@ -225,12 +225,12 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         return new UserCreationStats(numCreated, errors.Count(), numLines, errors.Select(x => $"line: {x.Line}, message: {x.Error.Message}"));
     }
 
-    private async ValueTask<IEnumerable<UserRoleData>> GetUserRoleDatas(IEnumerable<string> roles, List<UserRoleData> validRoleData, IdentityData identity)
+    private async ValueTask<IEnumerable<UserRoleData>> GetUserRoleDatas(IEnumerable<string> roles, List<UserRoleData> validRoleData, Guid companyId)
     {
         var unknownRoles = roles.Except(validRoleData.Select(r => r.UserRoleText));
         if (unknownRoles.Any())
         {
-            var roleData = await _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, unknownRoles, identity)
+            var roleData = await _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, unknownRoles, companyId)
                 .ConfigureAwait(false);
 
             if (roleData != null)

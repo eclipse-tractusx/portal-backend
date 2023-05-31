@@ -32,7 +32,7 @@ public interface IUserBusinessLogic
 {
     IAsyncEnumerable<string> CreateOwnCompanyUsersAsync(IEnumerable<UserCreationInfo> userList, IdentityData identity);
     Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo, IdentityData identity);
-    Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(IdentityData identity, int page, int size, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null);
+    Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(Guid companyId, int page, int size, GetOwnCompanyUsersFilter filter);
     [Obsolete("to be replaced by UserRolesBusinessLogic.GetAppRolesAsync. Remove as soon frontend is adjusted")]
     IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string? languageShortName = null);
     Task<CompanyUserDetails> GetOwnCompanyUserDetailsAsync(Guid companyUserId, IdentityData identity);

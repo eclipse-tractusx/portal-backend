@@ -450,7 +450,7 @@ public class CompanyDataBusinessLogicTests
     }
 
     [Fact]
-    public async Task CreateCompanyRoleAndConsentAgreementDetailsAsync_ThrowsForbiddenException()
+    public async Task CreateCompanyRoleAndConsentAgreementDetailsAsync_ThrowsConflictException()
     {
         // Arrange
         var companyRoleConsentDetails = _fixture.CreateMany<CompanyRoleConsentDetails>(2);
@@ -461,7 +461,7 @@ public class CompanyDataBusinessLogicTests
         async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity, companyRoleConsentDetails).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"company {_identity.CompanyId} does not exist");
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }

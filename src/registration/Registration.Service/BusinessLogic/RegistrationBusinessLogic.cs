@@ -445,23 +445,23 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 c.AddressId = addressId;
             });
 
-    public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, IdentityData identity)
+    public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, Guid companyUserId)
     {
         if (string.IsNullOrEmpty(userCreationInfo.eMail))
         {
             throw new ControllerArgumentException($"email must not be empty");
         }
-        return InviteNewUserInternalAsync(applicationId, userCreationInfo, identity);
+        return InviteNewUserInternalAsync(applicationId, userCreationInfo, companyUserId);
     }
 
-    private async Task<int> InviteNewUserInternalAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, IdentityData identity)
+    private async Task<int> InviteNewUserInternalAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, Guid companyUserId)
     {
-        if (await _portalRepositories.GetInstance<IUserRepository>().IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, identity.CompanyUserId))
+        if (await _portalRepositories.GetInstance<IUserRepository>().IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, companyUserId))
         {
             throw new ControllerArgumentException($"user with email {userCreationInfo.eMail} does already exist");
         }
 
-        var (companyNameIdpAliasData, createdByName) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(identity.UserEntityId, applicationId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, createdByName) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(companyUserId, applicationId).ConfigureAwait(false);
 
         IEnumerable<UserRoleData>? userRoleDatas = null;
 
@@ -482,14 +482,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             ""
         )}.ToAsyncEnumerable();
 
-        var (companyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
+        var (newCompanyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps).SingleAsync().ConfigureAwait(false);
 
         if (error != null)
         {
             throw error;
         }
 
-        _portalRepositories.GetInstance<IApplicationRepository>().CreateInvitation(applicationId, companyUserId);
+        _portalRepositories.GetInstance<IApplicationRepository>().CreateInvitation(applicationId, newCompanyUserId);
 
         var modified = await _portalRepositories.SaveAsync().ConfigureAwait(false);
 

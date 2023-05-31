@@ -622,7 +622,7 @@ public class AppBusinessLogicTests
             .With(x => x.Documents, documentData)
             .With(x => x.TechnicalUserProfile, technicalUserProfiles)
             .Create();
-        A.CallTo(() => _offerRepository.GetOfferDetailsByIdAsync(A<Guid>._, A<Guid>._, A<string?>._, A<string>._, A<OfferTypeId>._))
+        A.CallTo(() => _offerRepository.GetOfferDetailsByIdAsync(A<Guid>._, A<Guid>._, A<string?>._, A<string>._!, A<OfferTypeId>._))
             .Returns(data);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, Options.Create(new AppsSettings()), null!);
@@ -680,7 +680,7 @@ public class AppBusinessLogicTests
             .With(x => x.Price, (string?)null)
             .With(x => x.IsSubscribed, (OfferSubscriptionStatusId)default)
             .Create();
-        A.CallTo(() => _offerRepository.GetOfferDetailsByIdAsync(A<Guid>._, A<Guid>._, A<string?>._, A<string>._, A<OfferTypeId>._))
+        A.CallTo(() => _offerRepository.GetOfferDetailsByIdAsync(A<Guid>._, A<Guid>._, A<string?>._, A<string>._!, A<OfferTypeId>._))
             .Returns(data);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, Options.Create(new AppsSettings()), null!);

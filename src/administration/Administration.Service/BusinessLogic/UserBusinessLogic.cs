@@ -93,11 +93,11 @@ public class UserBusinessLogic : IUserBusinessLogic
 
     private async IAsyncEnumerable<string> CreateOwnCompanyUsersInternalAsync(IEnumerable<UserCreationInfo> userList, IdentityData identity)
     {
-        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(identity.UserEntityId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(identity.CompanyUserId).ConfigureAwait(false);
 
         var distinctRoles = userList.SelectMany(user => user.Roles).Distinct().ToList();
 
-        var roleDatas = await GetOwnCompanyUserRoleData(distinctRoles, identity).ConfigureAwait(false);
+        var roleDatas = await GetOwnCompanyUserRoleData(distinctRoles, identity.CompanyId).ConfigureAwait(false);
 
         var userCreationInfoIdps = userList.Select(user =>
             new UserCreationRoleDataIdpInfo(
@@ -146,18 +146,18 @@ public class UserBusinessLogic : IUserBusinessLogic
         }
     }
 
-    private Task<IEnumerable<UserRoleData>> GetOwnCompanyUserRoleData(IEnumerable<string> roles, IdentityData identity)
+    private Task<IEnumerable<UserRoleData>> GetOwnCompanyUserRoleData(IEnumerable<string> roles, Guid companyId)
     {
         if (!roles.Any())
         {
             Task.FromResult(Enumerable.Empty<UserRoleData>());
         }
-        return _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, roles, identity);
+        return _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, roles, companyId);
     }
 
     public async Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo, IdentityData identity)
     {
-        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, identity.UserEntityId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, identity.CompanyUserId).ConfigureAwait(false);
         var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
 
         if (!userCreationInfo.Roles.Any())
@@ -165,7 +165,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             throw new ControllerArgumentException($"at least one role must be specified", nameof(userCreationInfo.Roles));
         }
 
-        var roleDatas = await GetOwnCompanyUserRoleData(userCreationInfo.Roles, identity).ConfigureAwait(false);
+        var roleDatas = await GetOwnCompanyUserRoleData(userCreationInfo.Roles, identity.CompanyId).ConfigureAwait(false);
 
         var result = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
                 companyNameIdpAliasData,
@@ -213,25 +213,16 @@ public class UserBusinessLogic : IUserBusinessLogic
         return result.CompanyUserId;
     }
 
-    public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(
-        IdentityData identity,
-        int page,
-        int size,
-        Guid? companyUserId = null,
-        string? userEntityId = null,
-        string? firstName = null,
-        string? lastName = null,
-        string? email = null
-        )
+    public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(Guid companyId, int page, int size, GetOwnCompanyUsersFilter filter)
     {
 
         var companyUsers = _portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserQuery(
-            identity.CompanyUserId,
-            companyUserId,
-            userEntityId,
-            firstName,
-            lastName,
-            email,
+            companyId,
+            filter.CompanyUserId,
+            filter.UserEntityId,
+            filter.FirstName,
+            filter.LastName,
+            filter.Email,
             _settings.CompanyUserStatusIds
         );
         return Pagination.CreateResponseAsync<CompanyUserData>(

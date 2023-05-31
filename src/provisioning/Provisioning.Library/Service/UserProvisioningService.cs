@@ -172,17 +172,17 @@ public class UserProvisioningService : IUserProvisioningService
                     password))
             : Task.FromResult(user.UserId);
 
-    public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameIdpAliasData(Guid identityProviderId, string iamUserId)
+    public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameIdpAliasData(Guid identityProviderId, Guid companyUserId)
     {
-        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliasUntrackedAsync(identityProviderId, iamUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliasUntrackedAsync(identityProviderId, companyUserId).ConfigureAwait(false);
         if (result == default)
         {
-            throw new ControllerArgumentException($"user {iamUserId} is not associated with any company");
+            throw new ControllerArgumentException($"user {companyUserId} does not exist");
         }
         var (company, companyUser, identityProvider) = result;
         if (identityProvider.IdpAlias == null)
         {
-            throw new ControllerArgumentException($"user {iamUserId} is not associated with own idp {identityProviderId}");
+            throw new ControllerArgumentException($"user {companyUserId} is not associated with own idp {identityProviderId}");
         }
 
         if (company.CompanyName == null)
@@ -195,14 +195,14 @@ public class UserProvisioningService : IUserProvisioningService
         return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, companyUser.CompanyUserId, identityProvider.IdpAlias, identityProvider.IsSharedIdp), createdByName);
     }
 
-    public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameSharedIdpAliasData(string iamUserId, Guid? applicationId = null)
+    public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameSharedIdpAliasData(Guid companyUserId, Guid? applicationId = null)
     {
-        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliaseUntrackedAsync(iamUserId, applicationId, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliaseUntrackedAsync(companyUserId, applicationId, IdentityProviderCategoryId.KEYCLOAK_SHARED).ConfigureAwait(false);
         if (result == default)
         {
             throw applicationId == null
-                ? new ControllerArgumentException($"user {iamUserId} is not associated with any company")
-                : new ControllerArgumentException($"user {iamUserId} is not associated with application {applicationId}");
+                ? new ControllerArgumentException($"user {companyUserId} does not exist")
+                : new ControllerArgumentException($"user {companyUserId} is not associated with application {applicationId}");
         }
         var (company, companyUser, idpAliase) = result;
         if (company.CompanyName == null)
@@ -211,11 +211,11 @@ public class UserProvisioningService : IUserProvisioningService
         }
         if (!idpAliase.Any())
         {
-            throw new ConflictException($"user {iamUserId} is not associated with any shared idp");
+            throw new ConflictException($"user {companyUserId} is not associated with any shared idp");
         }
         if (idpAliase.Count() > 1)
         {
-            throw new ConflictException($"user {iamUserId} is associated with more than one shared idp");
+            throw new ConflictException($"user {companyUserId} is associated with more than one shared idp");
         }
 
         var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email, companyUser.CompanyUserId);
@@ -315,10 +315,10 @@ public class UserProvisioningService : IUserProvisioningService
         }
     }
 
-    public async Task<IEnumerable<UserRoleData>> GetOwnCompanyPortalRoleDatas(string clientId, IEnumerable<string> roles, IdentityData identity)
+    public async Task<IEnumerable<UserRoleData>> GetOwnCompanyPortalRoleDatas(string clientId, IEnumerable<string> roles, Guid companyId)
     {
         var roleDatas = await _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetOwnCompanyPortalUserRoleDataUntrackedAsync(clientId, roles, identity.CompanyId).ToListAsync().ConfigureAwait(false);
+            .GetOwnCompanyPortalUserRoleDataUntrackedAsync(clientId, roles, companyId).ToListAsync().ConfigureAwait(false);
         ValidateRoleData(roleDatas, clientId, roles);
         return roleDatas;
     }

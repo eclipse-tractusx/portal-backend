@@ -366,11 +366,11 @@ public class UserProvisioningServiceCreateUsersTests
     {
         var client = _fixture.Create<string>();
         var roles = _fixture.CreateMany<string>();
-        var identity = _fixture.Create<IdentityData>();
+        var companyId = Guid.NewGuid();
 
         var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
 
-        var result = await sut.GetOwnCompanyPortalRoleDatas(client, roles, identity).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyPortalRoleDatas(client, roles, companyId).ConfigureAwait(false);
 
         result.Should().HaveSameCount(roles);
     }
@@ -380,7 +380,7 @@ public class UserProvisioningServiceCreateUsersTests
     {
         var client = _fixture.Create<string>();
         var roles = _fixture.CreateMany<string>();
-        var identity = _fixture.Create<IdentityData>();
+        var companyId = Guid.NewGuid();
 
         A.CallTo(() => _userRolesRepository.GetOwnCompanyPortalUserRoleDataUntrackedAsync(A<string>._, A<IEnumerable<string>>._, A<Guid>._))
             .ReturnsLazily((string clientId, IEnumerable<string> roles, Guid _) =>
@@ -390,7 +390,7 @@ public class UserProvisioningServiceCreateUsersTests
 
         var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
 
-        async Task Act() => await sut.GetOwnCompanyPortalRoleDatas(client, roles, identity).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyPortalRoleDatas(client, roles, companyId).ConfigureAwait(false);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().StartWith("invalid roles: clientId:");

@@ -21,6 +21,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -276,6 +277,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="502">Service Unavailable.</response>
         [HttpPost]
         [Authorize(Roles = "invite_user")]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
         [Route("application/{applicationId}/inviteNewUser")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -283,7 +285,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
         public Task<int> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserCreationInfoWithMessage userCreationInfo) =>
             this.WithIdentityData(identity =>
-                _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, identity));
+                _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, identity.CompanyId));
 
         /// <summary>
         /// Post the agreement consent status for the given application.

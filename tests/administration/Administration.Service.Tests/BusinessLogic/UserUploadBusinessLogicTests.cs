@@ -85,7 +85,7 @@ public class UserUploadBusinessLogicTests
 
         var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, _identity, CancellationToken.None).ConfigureAwait(false);
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), A<string>.That.IsEqualTo(_iamUserId))).MustHaveHappened();
+        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), _identity.CompanyUserId)).MustHaveHappened();
         result.Should().NotBeNull();
         result.Created.Should().Be(0);
         result.Error.Should().Be(0);
@@ -311,7 +311,7 @@ public class UserUploadBusinessLogicTests
 
         var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _identity, CancellationToken.None).ConfigureAwait(false);
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<string>.That.IsEqualTo(_iamUserId), A<Guid?>._)).MustHaveHappened();
+        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identity.CompanyUserId, A<Guid?>._)).MustHaveHappened();
         result.Should().NotBeNull();
         result.Created.Should().Be(0);
         result.Error.Should().Be(0);
@@ -498,14 +498,14 @@ public class UserUploadBusinessLogicTests
 
         A.CallTo(() => _options.Value).Returns(_settings);
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), A<string>.That.IsEqualTo(_iamUserId)))
+        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), _identity.CompanyUserId))
             .Returns((_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, false).Create(), _fixture.Create<string>()));
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<string>.That.IsEqualTo(_iamUserId), A<Guid?>._))
+        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identity.CompanyUserId, A<Guid?>._))
             .Returns((_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, true).Create(), _fixture.Create<string>()));
 
-        A.CallTo(() => _userProvisioningService.GetOwnCompanyPortalRoleDatas(A<string>._, A<IEnumerable<string>>._, A<IdentityData>._))
-            .ReturnsLazily((string clientId, IEnumerable<string> roles, IdentityData _) =>
+        A.CallTo(() => _userProvisioningService.GetOwnCompanyPortalRoleDatas(A<string>._, A<IEnumerable<string>>._, A<Guid>._))
+            .ReturnsLazily((string clientId, IEnumerable<string> roles, Guid _) =>
                 roles.Select(role => _fixture.Build<UserRoleData>().With(x => x.ClientClientId, clientId).With(x => x.UserRoleText, role).Create()));
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))

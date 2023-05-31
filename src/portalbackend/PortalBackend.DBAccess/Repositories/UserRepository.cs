@@ -82,7 +82,7 @@ public class UserRepository : IUserRepository
     }
 
     public IQueryable<CompanyUser> GetOwnCompanyUserQuery(
-        Guid userId,
+        Guid companyId,
         Guid? companyUserId = null,
         string? userEntityId = null,
         string? firstName = null,
@@ -90,10 +90,9 @@ public class UserRepository : IUserRepository
         string? email = null,
         IEnumerable<UserStatusId>? statusIds = null)
     {
-        return _dbContext.CompanyUsers.AsNoTracking()
-            .Where(companyUser => companyUserId == userId)
-            .SelectMany(companyUser => companyUser.Identity!.Company!.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!))
-            .Where(companyUser =>
+        return _dbContext.CompanyUsers
+            .AsNoTracking()
+            .Where(companyUser => companyUser.Identity!.CompanyId == companyId &&
                 (userEntityId == null || companyUser.Identity!.UserEntityId == userEntityId) &&
                 (!companyUserId.HasValue || companyUser.Id == companyUserId.Value) &&
                 (firstName == null || companyUser.Firstname == firstName) &&

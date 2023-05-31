@@ -91,7 +91,7 @@ public class CompanyRepository : ICompanyRepository
             (entity, initial) => entity.Value = initial.Value,
             (entity, modified) => entity.Value = modified.Value);
 
-    public Task<(bool Exists, string CompanyName)> GetCompanyNameUntrackedAsync(Guid companyId) =>
+    public Task<(bool IsValidCompany, string CompanyName)> GetCompanyNameUntrackedAsync(Guid companyId) =>
         _context.Companies
             .Where(x => x.Id == companyId)
             .Select(company => new ValueTuple<bool, string>(true, company.Name))

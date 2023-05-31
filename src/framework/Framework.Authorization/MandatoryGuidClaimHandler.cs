@@ -37,19 +37,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Authorization
             if (!string.IsNullOrWhiteSpace(claimValue) && Guid.TryParse(claimValue, out var guidValue))
             {
                 return guidValue != Guid.Empty;
-            };
+            }
             return false;
         }
     }
 
     public class MandatoryClaimHandler : AuthorizationHandler<MandatoryGuidClaimRequirement>
     {
-        private readonly IHttpContextAccessor _contextAccessor;
-
-        public MandatoryClaimHandler(IHttpContextAccessor contextAccessor)
-        {
-            _contextAccessor = contextAccessor;
-        }
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, MandatoryGuidClaimRequirement requirement)
         {
             if (requirement.IsSuccess(context.User.Claims))
