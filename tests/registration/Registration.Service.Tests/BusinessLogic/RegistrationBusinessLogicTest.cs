@@ -471,7 +471,7 @@ public class RegistrationBusinessLogicTest
         var companyData = new CompanyDetailData(Guid.NewGuid(), name!, city!, streetName!, countryCode!, null, null, null, null, null, null, null, uniqueIdData);
 
         // Act
-        async Task Act() => await sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, default).ConfigureAwait(false);
+        async Task Act() => await sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, _fixture.Create<IdentityData>()).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -893,7 +893,7 @@ public class RegistrationBusinessLogicTest
             .Returns((true, new[] { identifiers.First() }));
 
         // Act
-        var Act = () => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, default);
+        var Act = () => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData, _fixture.Create<IdentityData>());
 
         //Assert
         var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);

@@ -819,7 +819,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         (bool Exists, CompanyApplicationStatusId StatusId) applicationData,
         IApplicationRepository applicationRepository)
     {
-        var allowedCombination = new List<(CompanyApplicationStatusId applicationStatus, CompanyApplicationStatusId status)>
+        var allowedCombination = new (CompanyApplicationStatusId applicationStatus, CompanyApplicationStatusId status)[]
         {
             new(CompanyApplicationStatusId.CREATED, CompanyApplicationStatusId.ADD_COMPANY_DATA),
             new(CompanyApplicationStatusId.ADD_COMPANY_DATA, CompanyApplicationStatusId.INVITE_USER),
@@ -829,9 +829,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             new(CompanyApplicationStatusId.VERIFY, CompanyApplicationStatusId.SUBMITTED),
         };
 
-        if (!allowedCombination.Any(x =>
-                x.applicationStatus == applicationData.StatusId &&
-                x.status == status))
+        if (!Array.Exists(
+                allowedCombination,
+                x => x.applicationStatus == applicationData.StatusId && x.status == status))
         {
             throw new ArgumentException(
                 $"invalid status update requested {status}, current status is {applicationData.StatusId}, possible values are: {CompanyApplicationStatusId.SUBMITTED}");

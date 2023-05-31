@@ -52,7 +52,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     {
         var users = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithIamUserCheck(identity.CompanyUserId, receiverId).ToListAsync().ConfigureAwait(false);
 
-        if (users.All(x => x.CompanyUserId != receiverId))
+        if (!users.Exists(x => x.CompanyUserId == receiverId))
             throw new ArgumentException("User does not exist", nameof(receiverId));
 
         var (content, notificationTypeId, notificationStatusId, dueDate) =

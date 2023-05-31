@@ -492,8 +492,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         await foreach (var (companyUserId, userProfile, links) in GetOwnCompanyIdentityProviderLinkDataInternalAsync(companyId).ConfigureAwait(false))
         {
             var identityProviderLinks = await links.ToListAsync().ConfigureAwait(false);
-            if (!unlinkedUsersOnly
-                || aliase.Any(alias => identityProviderLinks.All(identityProviderLink => identityProviderLink.Alias != alias)))
+            if (!unlinkedUsersOnly || aliase.Except(identityProviderLinks.Select(link => link.Alias)).Any())
             {
                 yield return new UserIdentityProviderData(
                     companyUserId,
@@ -501,7 +500,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     userProfile.LastName,
                     userProfile.Email,
                     identityProviderLinks
-                        .Where(identityProviderLink => aliase.Contains(identityProviderLink.Alias))
+                        .IntersectBy(aliase, link => link.Alias)
                         .Select(linkData => new UserIdentityProviderLinkData(
                             idPerAlias[linkData.Alias],
                             linkData.UserId,
@@ -796,8 +795,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 yield return string.Join(csvSettings.Separator, CSVHeaders().Concat(idpAliasDatas.SelectMany(data => CSVIdpHeaders())));
             }
             var identityProviderLinks = await identityProviderLinksAsync.ToListAsync().ConfigureAwait(false);
-            if (!unlinkedUsersOnly
-                || aliase.Any(alias => identityProviderLinks.All(identityProviderLink => identityProviderLink.Alias != alias)))
+            if (!unlinkedUsersOnly || aliase.Except(identityProviderLinks.Select(link => link.Alias)).Any())
             {
                 yield return string.Join(
                     csvSettings.Separator,
@@ -807,7 +805,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     userProfile.Email,
                     string.Join(csvSettings.Separator, aliase.SelectMany(alias =>
                         {
-                            var identityProviderLink = identityProviderLinks.FirstOrDefault(linkData => linkData.Alias == alias);
+                            var identityProviderLink = identityProviderLinks.Find(linkData => linkData.Alias == alias);
                             return new[] { alias, identityProviderLink?.UserId, identityProviderLink?.UserName };
                         })));
             }

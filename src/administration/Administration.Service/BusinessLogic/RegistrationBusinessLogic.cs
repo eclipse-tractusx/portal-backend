@@ -204,12 +204,12 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         var result = await _portalRepositories.GetInstance<IUserRepository>()
             .GetBpnForIamUserUntrackedAsync(applicationId, bpn).ToListAsync().ConfigureAwait(false);
-        if (!result.Any(item => item.IsApplicationCompany))
+        if (!result.Exists(item => item.IsApplicationCompany))
         {
             throw new NotFoundException($"application {applicationId} not found");
         }
 
-        if (result.Any(item => !item.IsApplicationCompany))
+        if (result.Exists(item => !item.IsApplicationCompany))
         {
             throw new ConflictException("BusinessPartnerNumber is already assigned to a different company");
         }
