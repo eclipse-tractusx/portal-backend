@@ -523,7 +523,7 @@ public class OfferSetupService : IOfferSetupService
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> ActivateSubscription(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> itAdminRoles, string basePortalAddress)
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> ActivateSubscription(Guid offerSubscriptionId, IDictionary<string, IEnumerable<string>> itAdminRoles, IDictionary<string, IEnumerable<string>> serviceManagerRoles, string basePortalAddress)
     {
         var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerDetails = await offerSubscriptionRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId).ConfigureAwait(false);
@@ -537,12 +537,7 @@ public class OfferSetupService : IOfferSetupService
             case true when offerDetails.AppInstanceIds.Count() != 1:
                 throw new ConflictException("There must only be one app instance for single instance apps");
             case true:
-                _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()
-                    .CreateAppSubscriptionDetail(offerSubscriptionId, appSubscriptionDetail =>
-                    {
-                        appSubscriptionDetail.AppInstanceId = offerDetails.AppInstanceIds.Single();
-                        appSubscriptionDetail.AppSubscriptionUrl = offerDetails.InstanceData.InstanceUrl;
-                    });
+                await SetNotificationsToDone(serviceManagerRoles, offerDetails.OfferTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(false);
                 break;
         }
 

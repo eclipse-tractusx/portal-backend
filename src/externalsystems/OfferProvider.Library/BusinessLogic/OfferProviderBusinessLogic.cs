@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
@@ -181,22 +182,28 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             throw new ConflictException("Callback Url should be set here");
         }
 
-        if (data.ServiceAccounts.Count() != 1)
+        if (data.ServiceAccounts.Count() > 1)
         {
-            throw new ConflictException("There should be exactly one service account for the offer subscription");
+            throw new ConflictException("There should be not more than one service account for the offer subscription");
         }
 
-        var serviceAccount = data.ServiceAccounts.First();
-        if (serviceAccount.TechnicalClientId == null)
+        CallbackTechnicalUserInfoData? technicalUserInfoData = null;
+        if (data.ServiceAccounts.Count() == 1)
         {
-            throw new ConflictException($"ClientId of serviceAccount {serviceAccount.TechnicalUserId} should be set");
-        }
-        var authData = await _provisioningManager.GetCentralClientAuthDataAsync(serviceAccount.TechnicalClientId).ConfigureAwait(false);
-        var callbackData = new OfferProviderCallbackData(
-            new CallbackTechnicalUserInfoData(
+            var serviceAccount = data.ServiceAccounts.FirstOrDefault();
+            if (serviceAccount != default && serviceAccount.TechnicalClientId == null)
+            {
+                throw new ConflictException($"ClientId of serviceAccount {serviceAccount.TechnicalUserId} should be set");
+            }
+            var authData = await _provisioningManager.GetCentralClientAuthDataAsync(serviceAccount.TechnicalClientId).ConfigureAwait(false);
+            technicalUserInfoData = new CallbackTechnicalUserInfoData(
                 serviceAccount.TechnicalUserId,
                 authData.Secret,
-                serviceAccount.TechnicalClientId),
+                serviceAccount.TechnicalClientId);
+        }
+
+        var callbackData = new OfferProviderCallbackData(
+            technicalUserInfoData,
             new CallbackClientInfoData(data.ClientId)
         );
         await _offerProviderService

@@ -244,19 +244,23 @@ public class OfferProviderBusinessLogicTests
     }
 
     [Fact]
-    public async Task TriggerProviderCallback_WithNoServiceAccountSet_Throws()
+    public async Task TriggerProviderCallback_WithNoServiceAccountSet_CallsExpected()
     {
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
             .Returns((Enumerable.Empty<(Guid, string?)>(), "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
-        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        ex.Message.Should().Be("There should be exactly one service account for the offer subscription");
+        result.nextStepTypeIds.Should().BeNull();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.modified.Should().BeTrue();
+        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUserInfo == null), A<string>._, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+
     }
 
     [Fact]
@@ -277,7 +281,7 @@ public class OfferProviderBusinessLogicTests
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
 
         // Assert
-        ex.Message.Should().Be("There should be exactly one service account for the offer subscription");
+        ex.Message.Should().Be("There should be not more than one service account for the offer subscription");
     }
 
     [Fact]

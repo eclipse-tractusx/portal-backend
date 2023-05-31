@@ -116,7 +116,7 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
                     .CreateTechnicalUser(_offerSubscriptionId, _settings.ItAdminRoles)
                     .ConfigureAwait(false),
                 ProcessStepTypeId.ACTIVATE_SUBSCRIPTION => await _offerSetupService
-                    .ActivateSubscription(_offerSubscriptionId, _settings.ItAdminRoles, _settings.BasePortalAddress)
+                    .ActivateSubscription(_offerSubscriptionId, _settings.ItAdminRoles, _settings.ServiceManagerRoles, _settings.BasePortalAddress)
                     .ConfigureAwait(false),
                 ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK => await _offerProviderBusinessLogic
                     .TriggerProviderCallback(_offerSubscriptionId, cancellationToken)

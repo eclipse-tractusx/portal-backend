@@ -1065,7 +1065,7 @@ public class OfferSetupServiceTests
             .Returns((SubscriptionActivationData?)null);
 
         // Act
-        async Task Act() => await _sut.ActivateSubscription(offerSubscriptionId, null!, null!).ConfigureAwait(false);
+        async Task Act() => await _sut.ActivateSubscription(offerSubscriptionId, null!, null!, null!).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1090,7 +1090,7 @@ public class OfferSetupServiceTests
             new(offerSubscription.Id, "https://www.test.de")
         };
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, offerTypeId, "Test App", "Stark Industries", _companyUserCompanyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(isSingleInstance, null), new[] { Guid.NewGuid() }, true));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, offerTypeId, "Test App", "Stark Industries", _companyUserCompanyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(isSingleInstance, null), new[] { Guid.NewGuid() }, true, Guid.NewGuid()));
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(offerSubscription.Id, A<Action<OfferSubscription>>._))
             .Invokes((Guid _, Action<OfferSubscription> setOptionalParameter) =>
             {
@@ -1102,9 +1102,10 @@ public class OfferSetupServiceTests
                 subscriptionProcessData.Remove(subscriptionProcessData.Single(x => x.OfferSubscriptionId == id));
             });
         var itAdminRoles = new Dictionary<string, IEnumerable<string>> { { "Test", new[] { "AdminRoles" } } };
+        var serviceManagerRoles = new Dictionary<string, IEnumerable<string>> { { "Test", new[] { "ServiceManagerRoles" } } };
 
         // Act
-        var result = await _sut.ActivateSubscription(offerSubscription.Id, itAdminRoles, "https://portal-backend.dev.demo.catena-x.net/").ConfigureAwait(false);
+        var result = await _sut.ActivateSubscription(offerSubscription.Id, itAdminRoles, serviceManagerRoles, "https://portal-backend.dev.demo.catena-x.net/").ConfigureAwait(false);
 
         // Assert
         var notificationTypeId = offerTypeId == OfferTypeId.APP

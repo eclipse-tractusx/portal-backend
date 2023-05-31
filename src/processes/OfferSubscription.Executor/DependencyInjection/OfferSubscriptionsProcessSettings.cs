@@ -27,9 +27,14 @@ public class OfferSubscriptionsProcessSettings
     /// <summary>
     /// IT Admin Roles
     /// </summary>
-    /// <value></value>
     [Required]
     public IDictionary<string, IEnumerable<string>> ItAdminRoles { get; set; } = null!;
+
+    /// <summary>
+    /// Service Manager Roles
+    /// </summary>
+    [Required]
+    public IDictionary<string, IEnumerable<string>> ServiceManagerRoles { get; set; } = null!;
 
     /// <summary>
     /// BasePortalAddress url required for subscription email 
