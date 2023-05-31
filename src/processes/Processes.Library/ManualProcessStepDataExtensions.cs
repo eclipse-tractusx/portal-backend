@@ -83,24 +83,20 @@ public static class ManualProcessStepDataExtensions
         }
     }
 
-    public static void SkipProcessSteps(this ManualProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds)
-    {
+    public static void SkipProcessSteps(this ManualProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         context.PortalRepositories.GetInstance<IProcessStepRepository>()
             .AttachAndModifyProcessSteps(
                 context.ProcessSteps
                     .GroupBy(step => step.ProcessStepTypeId)
                     .IntersectBy(processStepTypeIds, step => step.Key)
                     .SelectMany(group => ModifyStepStatusRange(group, ProcessStepStatusId.SKIPPED)));
-    }
 
-    public static void ScheduleProcessSteps(this ManualProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds)
-    {
+    public static void ScheduleProcessSteps(this ManualProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         context.PortalRepositories.GetInstance<IProcessStepRepository>()
             .CreateProcessStepRange(
                 processStepTypeIds
                     .Except(context.ProcessSteps.Select(step => step.ProcessStepTypeId))
                     .Select(stepTypeId => (stepTypeId, ProcessStepStatusId.TODO, context.Process.Id)));
-    }
 
     public static void FinalizeProcessStep(this ManualProcessStepData context)
     {
@@ -125,7 +121,7 @@ public static class ManualProcessStepDataExtensions
                 step.Id,
                 null,
                 step => step.ProcessStepStatusId = firstModified
-                    ? ProcessStepStatusId.SKIPPED
+                    ? ProcessStepStatusId.DUPLICATE
                     : processStepStatusId);
             firstModified = true;
         }
