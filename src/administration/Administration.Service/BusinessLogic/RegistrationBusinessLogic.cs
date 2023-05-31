@@ -92,7 +92,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             companyWithAddress.Streetadditional ?? "",
             companyWithAddress.Streetnumber ?? "",
             companyWithAddress.Zipcode ?? "",
-            companyWithAddress.CountryDe ?? "",
             companyWithAddress.AgreementsData
                 .GroupBy(x => x.CompanyRoleId)
                 .Select(g => new AgreementsRoleData(

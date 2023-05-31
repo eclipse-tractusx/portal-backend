@@ -144,7 +144,6 @@ public class ApplicationRepository : IApplicationRepository
                 application.Company.Address.City,
                 application.Company.Address.Region,
                 application.Company.Address.CountryAlpha2Code,
-                application.Company.Address.Country!.CountryNameDe,
                 application.CompanyId == userCompanyId,
                 application.Company.CompanyIdentifiers
                     .Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value))))
@@ -285,7 +284,6 @@ public class ApplicationRepository : IApplicationRepository
                     x.Company.Address.Streetnumber,
                     x.Company.Address.Zipcode,
                     x.Company.Address.CountryAlpha2Code,
-                    x.Company.Address.Country!.CountryNameDe,
                     x.Company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
                     x.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)
                         .Select(consent => new ValueTuple<Guid, ConsentStatusId>(

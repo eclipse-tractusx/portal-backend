@@ -35,7 +35,6 @@ public record CompanyRegistrationData(
     string? StreetNumber,
     string? ZipCode,
     [property: JsonPropertyName("countryAlpha2Code")] string? CountryAlpha2Code,
-    string? CountryDe,
     [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleId> CompanyRoleIds,
     [property: JsonPropertyName("agreements")] IEnumerable<AgreementConsentStatusForRegistrationData> AgreementConsentStatuses,
     IEnumerable<RegistrationDocumentNames> Documents,

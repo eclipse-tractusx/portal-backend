@@ -187,8 +187,7 @@ public class RegistrationBusinessLogicTest
             r.Region == data.Region &&
             r.StreetAdditional == data.Streetadditional &&
             r.StreetNumber == data.Streetnumber &&
-            r.ZipCode == data.Zipcode &&
-            r.CountryDe == data.CountryDe
+            r.ZipCode == data.Zipcode
         );
         result.AgreementsRoleData.Should().HaveSameCount(data.AgreementsData.DistinctBy(ad => ad.CompanyRoleId));
         result.InvitedUserData.Should().HaveSameCount(data.InvitedCompanyUserData);
@@ -233,8 +232,7 @@ public class RegistrationBusinessLogicTest
             r.Region == "" &&
             r.StreetAdditional == "" &&
             r.StreetNumber == "" &&
-            r.ZipCode == "" &&
-            r.CountryDe == ""
+            r.ZipCode == ""
         );
         result.InvitedUserData.Should().HaveSameCount(data.InvitedCompanyUserData);
         result.InvitedUserData.Should().AllSatisfy(u => u.Should().Match<InvitedUserData>(u => u.FirstName == "" && u.LastName == "" && u.Email == ""));
