@@ -117,7 +117,7 @@ public class RegistrationBusinessLogicTest
         _alpha2code = "XY";
         _identity = _fixture.Build<IdentityData>()
             .With(x => x.UserEntityId, _iamUserId)
-            .With(x => x.Id, _companyUserId)
+            .With(x => x.CompanyUserId, _companyUserId)
             .Create();
         _error = _fixture.Create<TestException>();
 

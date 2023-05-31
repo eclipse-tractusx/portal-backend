@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.Net;
@@ -58,6 +59,7 @@ public class CompanyDataController : ControllerBase
     /// <response code="409">user is not associated with  company.</response>
     [HttpGet]
     [Authorize(Roles = "view_company_data")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("ownCompanyDetails")]
     [ProducesResponseType(typeof(CompanyAddressDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
@@ -72,10 +74,11 @@ public class CompanyDataController : ControllerBase
     /// <response code="200">Returns the CompanyAssigned UseCase details.</response>
     [HttpGet]
     [Authorize(Roles = "view_use_cases")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("preferredUseCases")]
     [ProducesResponseType(typeof(CompanyAssignedUseCaseData), StatusCodes.Status200OK)]
     public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync() =>
-       this.WithIdentityData(identity => _logic.GetCompanyAssigendUseCaseDetailsAsync(identity));
+       this.WithIdentityData(identity => _logic.GetCompanyAssigendUseCaseDetailsAsync(identity.CompanyId));
 
     /// <summary>
     /// Create the CompanyAssigned UseCase details
@@ -86,12 +89,13 @@ public class CompanyDataController : ControllerBase
     /// <response code="409">Company Status is Incorrect</response>
     [HttpPost]
     [Authorize(Roles = "set_company_use_cases")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("preferredUseCases")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<StatusCodeResult> CreateCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data) =>
-        await this.WithIdentityData(identity => _logic.CreateCompanyAssignedUseCaseDetailsAsync(identity, data.useCaseId)).ConfigureAwait(false)
+        await this.WithIdentityData(identity => _logic.CreateCompanyAssignedUseCaseDetailsAsync(identity.CompanyId, data.useCaseId)).ConfigureAwait(false)
             ? StatusCode((int)HttpStatusCode.Created)
             : NoContent();
 
@@ -104,12 +108,13 @@ public class CompanyDataController : ControllerBase
     /// <response code="409">UseCaseId is not available</response>
     [HttpDelete]
     [Authorize(Roles = "set_company_use_cases")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("preferredUseCases")]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> RemoveCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data)
     {
-        await this.WithIdentityData(identity => _logic.RemoveCompanyAssignedUseCaseDetailsAsync(identity, data.useCaseId)).ConfigureAwait(false);
+        await this.WithIdentityData(identity => _logic.RemoveCompanyAssignedUseCaseDetailsAsync(identity.CompanyId, data.useCaseId)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -122,12 +127,13 @@ public class CompanyDataController : ControllerBase
     /// <response code="409">No Companyrole or Incorrect Status</response>
     [HttpGet]
     [Authorize(Roles = "view_company_data")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("companyRolesAndConsents")]
     [ProducesResponseType(typeof(CompanyRoleConsentViewData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync([FromQuery] string? languageShortName = null) =>
-        this.WithIdentityData(identity => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(identity, languageShortName));
+        this.WithIdentityData(identity => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(identity.CompanyId, languageShortName));
 
     /// <summary>
     /// Post the companyrole and Consent Details
@@ -139,6 +145,8 @@ public class CompanyDataController : ControllerBase
     /// <response code="409">All agreement need to get signed</response>
     [HttpPost]
     [Authorize(Roles = "view_company_data")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("companyRolesAndConsents")]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

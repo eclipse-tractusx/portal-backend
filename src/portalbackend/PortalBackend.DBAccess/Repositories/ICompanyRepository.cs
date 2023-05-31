@@ -113,10 +113,10 @@ public interface ICompanyRepository
     /// <summary>
     /// Gets the CompanyActive Status and companyAssigendUeseCase Id
     /// </summary>
-    /// <param name="userCompanyId">Id of the users company</param>
+    /// <param name="companyId">Id of the users company</param>
     /// <param name="useCaseId">Id of the UseCase</param>
     /// <returns>Returns the CompanyActive Status, companyAssigendUeseCase Id and CompanyId</returns>
-    Task<(bool IsUseCaseIdExists, bool IsActiveCompanyStatus, Guid CompanyId)> GetCompanyStatusAndUseCaseIdAsync(Guid userCompanyId, Guid useCaseId);
+    Task<(bool IsUseCaseIdExists, bool IsActiveCompanyStatus, bool IsValidCompany)> GetCompanyStatusAndUseCaseIdAsync(Guid companyId, Guid useCaseId);
 
     /// <summary>
     /// creates the companyAssigendUeseCase record
@@ -143,9 +143,9 @@ public interface ICompanyRepository
     /// <summary>
     /// Gets the the companyRole
     /// </summary>
-    /// <param name="companyUserId">Id of the user</param>
+    /// <param name="companyId">Id of the companyr</param>
     /// <returns>Returns the companyRole</returns>
-    Task<(bool IsCompanyActive, Guid CompanyId, IEnumerable<CompanyRoleId>? CompanyRoleIds, Guid CompanyUserId, IEnumerable<ConsentStatusDetails>? ConsentStatusDetails)> GetCompanyRolesDataAsync(Guid companyUserId, IEnumerable<CompanyRoleId> companyRoleIds);
+    Task<(bool IsValidCompany, bool IsCompanyActive, IEnumerable<CompanyRoleId>? CompanyRoleIds, IEnumerable<ConsentStatusDetails>? ConsentStatusDetails)> GetCompanyRolesDataAsync(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds);
 
     /// <summary>
     /// Gets the the AgreementAssignedCompanyRoles Data
@@ -157,7 +157,7 @@ public interface ICompanyRepository
     /// <summary>
     /// Gets the the CompanyStatus Data
     /// </summary>
-    /// <param name="userCompanyId">Id of the users company</param>
+    /// <param name="companyId">Id of the users company</param>
     /// <returns>Returns the CompanyStatus Data</returns>
-    Task<(bool IsActive, Guid CompanyId)> GetCompanyStatusDataAsync(Guid userCompanyId);
+    Task<(bool IsActive, bool IsValid)> GetCompanyStatusDataAsync(Guid companyId);
 }

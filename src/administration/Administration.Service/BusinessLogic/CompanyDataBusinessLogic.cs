@@ -54,14 +54,14 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(IdentityData identity) =>
-        _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyAssigendUseCaseDetailsAsync(identity.CompanyId);
+    public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(Guid companyId) =>
+        _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyAssigendUseCaseDetailsAsync(companyId);
 
     /// <inheritdoc/>
-    public async Task<bool> CreateCompanyAssignedUseCaseDetailsAsync(IdentityData identity, Guid useCaseId)
+    public async Task<bool> CreateCompanyAssignedUseCaseDetailsAsync(Guid companyId, Guid useCaseId)
     {
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
-        var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(identity.CompanyId, useCaseId).ConfigureAwait(false);
+        var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId).ConfigureAwait(false);
         if (!useCaseDetails.IsActiveCompanyStatus)
         {
             throw new ConflictException("Company Status is Incorrect");
@@ -70,16 +70,16 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         {
             return false;
         }
-        companyRepositories.CreateCompanyAssignedUseCase(useCaseDetails.CompanyId, useCaseId);
+        companyRepositories.CreateCompanyAssignedUseCase(companyId, useCaseId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return true;
     }
 
     /// <inheritdoc/>
-    public async Task RemoveCompanyAssignedUseCaseDetailsAsync(IdentityData identity, Guid useCaseId)
+    public async Task RemoveCompanyAssignedUseCaseDetailsAsync(Guid companyId, Guid useCaseId)
     {
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
-        var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(identity.CompanyId, useCaseId).ConfigureAwait(false);
+        var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId).ConfigureAwait(false);
         if (!useCaseDetails.IsActiveCompanyStatus)
         {
             throw new ConflictException("Company Status is Incorrect");
@@ -88,11 +88,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         {
             throw new ConflictException($"UseCaseId {useCaseId} is not available");
         }
-        companyRepositories.RemoveCompanyAssignedUseCase(useCaseDetails.CompanyId, useCaseId);
+        companyRepositories.RemoveCompanyAssignedUseCase(companyId, useCaseId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(IdentityData identity, string? languageShortName)
+    public async IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(Guid companyId, string? languageShortName)
     {
         if (languageShortName != null && !await _portalRepositories.GetInstance<ILanguageRepository>().IsValidLanguageCode(languageShortName).ConfigureAwait(false))
         {
@@ -100,16 +100,16 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         }
 
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
-        var companyData = await companyRepositories.GetCompanyStatusDataAsync(identity.CompanyId).ConfigureAwait(false);
-        if (companyData == default)
+        var statusData = await companyRepositories.GetCompanyStatusDataAsync(companyId).ConfigureAwait(false);
+        if (statusData == default)
         {
-            throw new NotFoundException($"User {identity.UserEntityId} is not associated with any company");
+            throw new NotFoundException($"company {companyId} does not exist");
         }
-        if (!companyData.IsActive)
+        if (!statusData.IsActive)
         {
             throw new ConflictException("Company Status is Incorrect");
         }
-        await foreach (var data in companyRepositories.GetCompanyRoleAndConsentAgreementDataAsync(companyData.CompanyId, languageShortName ?? Constants.DefaultLanguage).ConfigureAwait(false))
+        await foreach (var data in companyRepositories.GetCompanyRoleAndConsentAgreementDataAsync(companyId, languageShortName ?? Constants.DefaultLanguage).ConfigureAwait(false))
         {
             yield return new CompanyRoleConsentViewData(
                 data.CompanyRoleId,
@@ -135,10 +135,10 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             return;
         }
         var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
-        var result = await companyRepositories.GetCompanyRolesDataAsync(identity.CompanyUserId, companyRoleConsentDetails.Select(x => x.CompanyRole)).ConfigureAwait(false);
-        if (result == default)
+        var result = await companyRepositories.GetCompanyRolesDataAsync(identity.CompanyId, companyRoleConsentDetails.Select(x => x.CompanyRole)).ConfigureAwait(false);
+        if (!result.IsValidCompany)
         {
-            throw new ForbiddenException($"user {identity.UserEntityId} is not associated with any company");
+            throw new ConflictException($"company {identity.CompanyId} does not exist");
         }
         if (!result.IsCompanyActive)
         {
@@ -150,7 +150,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         }
         if (result.CompanyRoleIds.Any())
         {
-            throw new ConflictException($"companyRoles [{string.Join(", ", result.CompanyRoleIds)}] are already assigned to company {result.CompanyId}");
+            throw new ConflictException($"companyRoles [{string.Join(", ", result.CompanyRoleIds)}] are already assigned to company {identity.CompanyId}");
         }
 
         var agreementAssignedRoleData = await companyRepositories.GetAgreementAssignedRolesDataAsync(companyRoleConsentDetails.Select(x => x.CompanyRole))
@@ -182,11 +182,11 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         _portalRepositories.GetInstance<IConsentRepository>().AddAttachAndModifyConsents(
             result.ConsentStatusDetails,
             joined.SelectMany(x => x.ActiveAgreements).DistinctBy(active => active.AgreementId).Select(active => (active.AgreementId, active.ConsentStatus)).ToList(),
-            result.CompanyId,
-            result.CompanyUserId,
+            identity.CompanyId,
+            identity.CompanyUserId,
             DateTimeOffset.UtcNow);
 
-        _portalRepositories.GetInstance<ICompanyRolesRepository>().CreateCompanyAssignedRoles(result.CompanyId, joined.Select(x => x.CompanyRoleId));
+        _portalRepositories.GetInstance<ICompanyRolesRepository>().CreateCompanyAssignedRoles(identity.CompanyId, joined.Select(x => x.CompanyRoleId));
 
         await _portalRepositories.SaveAsync();
     }

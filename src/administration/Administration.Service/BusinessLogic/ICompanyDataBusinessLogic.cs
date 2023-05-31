@@ -29,13 +29,13 @@ public interface ICompanyDataBusinessLogic
 {
     Task<CompanyAddressDetailData> GetCompanyDetailsAsync(Guid companyId);
 
-    IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(IdentityData identity);
+    IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(Guid companyId);
 
-    Task<bool> CreateCompanyAssignedUseCaseDetailsAsync(IdentityData identity, Guid useCaseId);
+    Task<bool> CreateCompanyAssignedUseCaseDetailsAsync(Guid companyId, Guid useCaseId);
 
-    Task RemoveCompanyAssignedUseCaseDetailsAsync(IdentityData identity, Guid useCaseId);
+    Task RemoveCompanyAssignedUseCaseDetailsAsync(Guid companyId, Guid useCaseId);
 
-    IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(IdentityData identity, string? languageShortName);
+    IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(Guid companyId, string? languageShortName);
 
     Task CreateCompanyRoleAndConsentAgreementDetailsAsync(IdentityData identity, IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails);
 }

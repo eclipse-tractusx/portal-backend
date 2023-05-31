@@ -269,7 +269,7 @@ public class OfferSubscriptionServiceTests
     {
         // Arrange
         var identity = _fixture.Build<IdentityData>()
-            .With(x => x.Id, _notAssignedCompanyIdUser)
+            .With(x => x.CompanyUserId, _notAssignedCompanyIdUser)
             .Create();
 
         // Act
@@ -389,7 +389,7 @@ public class OfferSubscriptionServiceTests
     {
         // Act
         var identity = _fixture.Build<IdentityData>()
-            .With(x => x.Id, _noBpnSetUserId)
+            .With(x => x.CompanyUserId, _noBpnSetUserId)
             .Create();
         async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), identity, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
@@ -407,7 +407,7 @@ public class OfferSubscriptionServiceTests
     {
         // Arrange 
         var identity = _fixture.Build<IdentityData>()
-            .With(x => x.Id, _existingActiveSubscriptionUserId)
+            .With(x => x.CompanyUserId, _existingActiveSubscriptionUserId)
             .Create();
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionStateForCompanyAsync(_existingOfferId, _existingActiveSubscriptionCompanyId, A<OfferTypeId>._))
             .Returns(new ValueTuple<Guid, OfferSubscriptionStatusId, Process?, IEnumerable<ProcessStepTypeId>?>(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE, null, null));
@@ -425,7 +425,7 @@ public class OfferSubscriptionServiceTests
     {
         // Arrange
         var identity = _fixture.Build<IdentityData>()
-            .With(x => x.Id, _existingInactiveSubscriptionUserId)
+            .With(x => x.CompanyUserId, _existingInactiveSubscriptionUserId)
             .Create();
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), _existingOfferId, _companyId, OfferSubscriptionStatusId.INACTIVE, Guid.NewGuid(), Guid.NewGuid());
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionStateForCompanyAsync(_existingOfferId, _existingInactiveSubscriptionCompanyId, A<OfferTypeId>._))

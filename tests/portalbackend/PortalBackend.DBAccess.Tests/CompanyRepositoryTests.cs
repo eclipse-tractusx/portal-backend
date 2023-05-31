@@ -477,7 +477,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result.IsActiveCompanyStatus.Should().BeFalse();
         result.IsUseCaseIdExists.Should().BeTrue();
-        result.CompanyId.Should().Be(new Guid("0dcd8209-85e2-4073-b130-ac094fb47106"));
+        result.IsValidCompany.Should().BeTrue();
     }
 
     [Fact]
@@ -563,15 +563,13 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetCompanyRolesDataAsync(new("ac1cf001-7fbc-1f2f-817f-bce058020005"), companyRoleIds).ConfigureAwait(false);
+        var result = await sut.GetCompanyRolesDataAsync(new("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"), companyRoleIds).ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull();
-        result.CompanyId.Should().Be(new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
+        result.IsValidCompany.Should().BeTrue();
+        result.IsCompanyActive.Should().BeTrue();
         result.CompanyRoleIds.Should().NotBeNull()
             .And.Contain(CompanyRoleId.SERVICE_PROVIDER);
-        result.CompanyUserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020005"));
-        result.IsCompanyActive.Should().BeTrue();
         result.ConsentStatusDetails.Should().NotBeNull()
             .And.Contain(x => x.ConsentStatusId == ConsentStatusId.ACTIVE);
     }
@@ -623,7 +621,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     [Fact]
-    public async Task GetCompanyStatusDataAsync()
+    public async Task IsCompanyStatusActive()
     {
         // Arrange
         var (sut, _) = await CreateSut().ConfigureAwait(false);
@@ -632,8 +630,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetCompanyStatusDataAsync(new("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd")).ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull();
-        result.CompanyId.Should().Be(new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
+        result.IsValid.Should().BeTrue();
         result.IsActive.Should().BeTrue();
     }
 
