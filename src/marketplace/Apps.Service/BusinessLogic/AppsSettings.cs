@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
@@ -43,6 +44,7 @@ public class AppsSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
     public IEnumerable<NotificationTypeId> SubmitAppNotificationTypeIds { get; set; } = null!;
 
     /// <summary>
@@ -74,6 +76,7 @@ public class AppsSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
     public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
 
     /// <summary>
@@ -88,12 +91,14 @@ public class AppsSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
     public IEnumerable<NotificationTypeId> ActiveAppNotificationTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Approve App Notification Type Id
     /// </summary>
     /// <value></value>
+    [EnumEnumeration]
     public IEnumerable<NotificationTypeId> ApproveAppNotificationTypeIds { get; set; } = null!;
 
     /// <summary>
@@ -112,6 +117,7 @@ public class AppsSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
     public IEnumerable<DocumentTypeId> AppImageDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
@@ -130,12 +136,14 @@ public class AppsSettings
     /// Document Type Id to be deleted
     /// </summary>
     [Required]
+    [EnumEnumeration]
     public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
     /// Document Type Id to be deleted
     /// </summary>
     [Required]
+    [EnumEnumeration]
     public IEnumerable<DocumentTypeId> SubmitAppDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
@@ -183,6 +191,7 @@ public static class AppsSettingsExtension
             .Bind(section)
             .ValidateDataAnnotations()
             .Validate(AppsSettings.Validate)
+            .ValidateEnumEnumeration(section)
             .ValidateOnStart();
         return services;
     }

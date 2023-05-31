@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -33,6 +34,7 @@ public class DocumentSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
     public IEnumerable<DocumentTypeId> FrameDocumentTypeIds { get; set; } = null!;
 }
 
@@ -45,6 +47,7 @@ public static class DocumentSettingsExtension
         services.AddOptions<DocumentSettings>()
             .Bind(section)
             .ValidateDataAnnotations()
+            .ValidateEnumEnumeration(section)
             .ValidateOnStart();
         return services;
     }

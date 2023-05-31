@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Framework.Models.Validation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider.DependencyInjection;
@@ -31,9 +32,11 @@ public static class ApplicationActivationExtensions
 {
     public static IServiceCollection AddApplicationActivation(this IServiceCollection services, IConfiguration config)
     {
+        var section = config.GetSection("ApplicationActivation");
         services.AddOptions<ApplicationActivationSettings>()
-            .Bind(config.GetSection("ApplicationActivation"))
+            .Bind(section)
             .Validate(ApplicationActivationSettings.Validate)
+            .ValidateEnumEnumeration(section)
             .ValidateOnStart();
 
         return services

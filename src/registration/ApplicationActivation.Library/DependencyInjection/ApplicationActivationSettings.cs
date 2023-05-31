@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
@@ -36,6 +37,7 @@ public class ApplicationActivationSettings
     /// IDs of the notification types that should be created as welcome notifications
     /// </summary>
     [Required]
+    [EnumEnumeration]
     public IEnumerable<NotificationTypeId> WelcomeNotificationTypeIds { get; set; } = null!;
 
     /// <summary>

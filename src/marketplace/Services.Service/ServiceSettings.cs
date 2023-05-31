@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
@@ -48,6 +49,7 @@ public class ServiceSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
     public IEnumerable<NotificationTypeId> SubmitServiceNotificationTypeIds { get; init; } = null!;
 
     /// <summary>
@@ -67,6 +69,7 @@ public class ServiceSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
     public IEnumerable<NotificationTypeId> ApproveServiceNotificationTypeIds { get; init; } = null!;
 
     /// <summary>
@@ -89,6 +92,7 @@ public class ServiceSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
     public IEnumerable<DocumentTypeId> ServiceImageDocumentTypeIds { get; init; } = null!;
 
     /// <summary>
@@ -96,6 +100,7 @@ public class ServiceSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
     public IEnumerable<OfferStatusId> OfferStatusIds { get; set; } = null!;
 
     /// <summary>
@@ -103,6 +108,7 @@ public class ServiceSettings
     /// </summary>
     /// <value></value>
     [Required]
+    [EnumEnumeration]
     public IEnumerable<DocumentTypeId> DeleteDocumentTypeIds { get; init; } = null!;
 
     /// <summary>
@@ -144,6 +150,7 @@ public static class ServiceSettingsExtension
         services.AddOptions<ServiceSettings>()
             .Bind(section)
             .ValidateDataAnnotations()
+            .ValidateEnumEnumeration(section)
             .Validate(ServiceSettings.Validate)
             .ValidateOnStart();
         return services;
