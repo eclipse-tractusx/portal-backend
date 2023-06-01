@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -32,9 +31,9 @@ public interface IDocumentsBusinessLogic
     /// Gets the document with the given id
     /// </summary>
     /// <param name="documentId">Id of the document to get</param>
-    /// <param name="identity">Identity of the user</param>
+    /// <param name="companyId">Company of the user</param>
     /// <returns>Returns the filename and content of the file</returns>
-    Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId, IdentityData identity);
+    Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId, Guid companyId);
 
     /// <summary>
     /// Gets the selfdescription document with the given id
@@ -47,9 +46,9 @@ public interface IDocumentsBusinessLogic
     /// Deletes the document and the corresponding consent from the persistence layer.
     /// </summary>
     /// <param name="documentId">Id of the document that should be deleted</param>
-    /// <param name="identity"></param>
+    /// <param name="companyUserId"></param>
     /// <returns>Returns <c>true</c> if the document and corresponding consent were deleted successfully. Otherwise a specific error is thrown.</returns>
-    Task<bool> DeleteDocumentAsync(Guid documentId, IdentityData identity);
+    Task<bool> DeleteDocumentAsync(Guid documentId, Guid companyUserId);
 
     /// <summary>
     /// Gets the document as json for the seeding data

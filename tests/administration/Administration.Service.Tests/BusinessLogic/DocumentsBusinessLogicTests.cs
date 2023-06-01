@@ -24,7 +24,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -117,7 +116,7 @@ public class DocumentsBusinessLogicTests
         SetupFakesForGetDocument();
 
         // Act
-        var result = await _sut.GetDocumentAsync(ValidDocumentId, _identity).ConfigureAwait(false);
+        var result = await _sut.GetDocumentAsync(ValidDocumentId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -133,7 +132,7 @@ public class DocumentsBusinessLogicTests
         SetupFakesForGetDocument();
 
         // Act
-        async Task Act() => await _sut.GetDocumentAsync(documentId, _identity).ConfigureAwait(false);
+        async Task Act() => await _sut.GetDocumentAsync(documentId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -148,7 +147,7 @@ public class DocumentsBusinessLogicTests
         SetupFakesForGetDocument();
 
         // Act
-        async Task Act() => await _sut.GetDocumentAsync(ValidDocumentId, identity).ConfigureAwait(false);
+        async Task Act() => await _sut.GetDocumentAsync(ValidDocumentId, identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
