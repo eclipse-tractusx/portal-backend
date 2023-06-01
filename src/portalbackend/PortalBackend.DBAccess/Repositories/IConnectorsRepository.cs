@@ -42,7 +42,7 @@ public interface IConnectorsRepository
     /// </summary>
     /// <param name="userCompanyId">users company id.</param>
     /// <returns>Pagination.Source of connectors that allows transformation.</returns>
-    Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForCompany(Guid userCompanyId);
+    Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForCompany(Guid companyId);
 
     Task<(ConnectorData ConnectorData, bool IsProviderCompany)> GetConnectorByIdForCompany(Guid connectorId, Guid companyId);
 
