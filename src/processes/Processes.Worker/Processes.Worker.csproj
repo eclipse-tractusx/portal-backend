@@ -46,6 +46,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\OfferSubscription.Executor\OfferSubscription.Executor.csproj" />
         <ProjectReference Include="..\Processes.Worker.Library\Processes.Worker.Library.csproj" />
         <ProjectReference Include="..\ApplicationChecklist.Executor\ApplicationChecklist.Executor.csproj" />
     </ItemGroup>

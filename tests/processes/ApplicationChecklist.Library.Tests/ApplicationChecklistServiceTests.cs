@@ -335,7 +335,7 @@ public class ChecklistServiceTests
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
 
         // Assert
-        result.Message.Should().Be($"processSteps should never have other status then TODO here");
+        result.Message.Should().Be($"processSteps should never have other status than TODO here");
     }
 
     #endregion

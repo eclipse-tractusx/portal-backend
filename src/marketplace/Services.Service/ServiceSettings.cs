@@ -120,17 +120,3 @@ public class ServiceSettings
     [Required]
     public IDictionary<string, IEnumerable<string>> CompanyAdminRoles { get; set; } = null!;
 }
-
-public static class ServiceSettingsExtension
-{
-    public static IServiceCollection ConfigureServiceSettings(
-        this IServiceCollection services,
-        IConfigurationSection section)
-    {
-        services.AddOptions<ServiceSettings>()
-            .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-        return services;
-    }
-}

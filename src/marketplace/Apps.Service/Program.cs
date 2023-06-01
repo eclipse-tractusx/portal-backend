@@ -45,7 +45,8 @@ builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
                 .AddTechnicalUserProfile()
                 .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
 
-builder.Services.AddOfferSetupService();
+builder.Services
+    .AddOfferServices();
 
 builder.Build()
     .CreateApp<Program>("apps", VERSION, builder.Environment)
