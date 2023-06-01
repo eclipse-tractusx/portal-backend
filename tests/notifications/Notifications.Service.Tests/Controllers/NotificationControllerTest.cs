@@ -33,7 +33,7 @@ using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests.Controllers;
 
-public class ServiceControllerTest
+public class NotificationControllerTest
 {
     private static readonly string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private readonly string _accessToken = "THISISTHEACCESSTOKEN";
@@ -41,7 +41,7 @@ public class ServiceControllerTest
     private readonly INotificationBusinessLogic _logic;
     private readonly NotificationController _controller;
 
-    public ServiceControllerTest()
+    public NotificationControllerTest()
     {
         _fixture = new Fixture();
         _logic = A.Fake<INotificationBusinessLogic>();

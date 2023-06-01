@@ -74,9 +74,9 @@ public interface IOfferSubscriptionsRepository
     /// <returns>Returns the offer details.</returns>
     Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId, OfferTypeId offerTypeId);
 
-    public Task<(Guid offerSubscriptionId, OfferSubscriptionStatusId offerSubscriptionStatusId)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
+    public Task<(Guid OfferSubscriptionId, OfferSubscriptionStatusId OfferSubscriptionStatusId, Process? Process, IEnumerable<ProcessStepTypeId>? ProcessStepTypeIds)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
 
-    void AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters);
+    OfferSubscription AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters);
 
     /// <summary>
     /// Gets all business app data for the given userId
@@ -122,4 +122,22 @@ public interface IOfferSubscriptionsRepository
     /// <param name="documentTypeId">Id of the document type</param>
     /// <returns>Returns a func with skip, take and the pagination of the source</returns>
     Func<int, int, Task<Pagination.Source<OfferSubscriptionStatusData>?>> GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(string iamUserId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="processId">Id of the process</param>
+    /// <returns>Returns offer subscription process data</returns>
+    Task<Guid> GetOfferSubscriptionDataForProcessIdAsync(Guid processId);
+
+    Task<TriggerProviderInformation?> GetTriggerProviderInformation(Guid offerSubscriptionId);
+    Task<SubscriptionActivationData?> GetSubscriptionActivationDataByIdAsync(Guid offerSubscriptionId);
+    Task<(bool IsValidSubscriptionId, bool IsActive)> IsActiveOfferSubscription(Guid offerSubscriptionId);
+    Task<VerifyProcessData?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+    Task<OfferSubscriptionClientCreationData?> GetClientCreationData(Guid offerSubscriptionId);
+    Task<OfferSubscriptionTechnicalUserCreationData?> GetTechnicalUserCreationData(Guid offerSubscriptionId);
+    Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId)> ServiceAccounts, string? ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId);
+    OfferSubscriptionProcessData CreateOfferSubscriptionProcessData(Guid offerSubscriptionId, string offerUrl);
+    void RemoveOfferSubscriptionProcessData(Guid offerSubscriptionId);
+    IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId);
 }

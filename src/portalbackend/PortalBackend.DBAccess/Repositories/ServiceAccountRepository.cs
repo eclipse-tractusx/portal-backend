@@ -44,17 +44,16 @@ public class ServiceAccountRepository : IServiceAccountRepository
         CompanyServiceAccountTypeId companyServiceAccountTypeId,
         Action<CompanyServiceAccount>? setOptionalParameters = null)
     {
-        var serviceAccount = _dbContext.CompanyServiceAccounts.Add(
-            new CompanyServiceAccount(
-                Guid.NewGuid(),
-                companyId,
-                companyServiceAccountStatusId,
-                name,
-                description,
-                DateTimeOffset.UtcNow,
-                companyServiceAccountTypeId)).Entity;
-        setOptionalParameters?.Invoke(serviceAccount);
-        return serviceAccount;
+        var entity = new CompanyServiceAccount(
+            Guid.NewGuid(),
+            companyId,
+            companyServiceAccountStatusId,
+            name,
+            description,
+            DateTimeOffset.UtcNow,
+            companyServiceAccountTypeId);
+        setOptionalParameters?.Invoke(entity);
+        return _dbContext.CompanyServiceAccounts.Add(entity).Entity;
     }
 
     public void AttachAndModifyCompanyServiceAccount(

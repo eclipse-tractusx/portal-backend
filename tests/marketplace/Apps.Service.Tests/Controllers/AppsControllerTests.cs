@@ -297,6 +297,21 @@ public class AppsControllerTests
     }
 
     [Fact]
+    public async Task StartAutoSetupProcess_ReturnsExpected()
+    {
+        //Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
+
+        //Act
+        var result = await this._controller.StartAutoSetupAppProcess(data).ConfigureAwait(false);
+
+        //Assert
+        A.CallTo(() => _logic.StartAutoSetupAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
     public async Task GetAppImageDocumentContentAsync_ReturnsExpected()
     {
         //Arrange

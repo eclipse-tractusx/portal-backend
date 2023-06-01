@@ -20,7 +20,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Models;
 
 public record OfferThirdPartyAutoSetupData(
     [property: JsonPropertyName("customer")] OfferThirdPartyAutoSetupCustomerData OfferThirdPartyAutoSetupCustomer,

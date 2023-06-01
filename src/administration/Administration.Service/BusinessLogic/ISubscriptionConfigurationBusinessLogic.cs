@@ -22,22 +22,50 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-/// <summary>
-/// Service to handle communication with the service provider details
-/// </summary>
-public interface IServiceProviderBusinessLogic
+public interface ISubscriptionConfigurationBusinessLogic
 {
+    /// <summary>
+    /// Retriggers the process step
+    /// </summary>
+    /// <param name="offerSubscriptionId">Id of the offer subscription</param>
+    Task RetriggerProvider(Guid offerSubscriptionId);
+
+    /// <summary>
+    /// Retriggers the process step
+    /// </summary>
+    /// <param name="offerSubscriptionId">Id of the offer subscription</param>
+    Task RetriggerCreateClient(Guid offerSubscriptionId);
+
+    /// <summary>
+    /// Retriggers the process step
+    /// </summary>
+    /// <param name="offerSubscriptionId">Id of the offer subscription</param>
+    Task RetriggerCreateTechnicalUser(Guid offerSubscriptionId);
+
+    /// <summary>
+    /// Retriggers the process step
+    /// </summary>
+    /// <param name="offerSubscriptionId">Id of the offer subscription</param>
+    Task RetriggerProviderCallback(Guid offerSubscriptionId);
+
+    /// <summary>
+    /// Gets the process steps for the given offer subscription id
+    /// </summary>
+    /// <param name="offerSubscriptionId">Id of the offer subscription</param>
+    /// <returns>Returns the process steps with their status</returns>
+    IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId);
+
     /// <summary>
     /// Gets the service provider company details
     /// </summary>
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>The detail data</returns>
-    Task<ProviderDetailReturnData> GetServiceProviderCompanyDetailsAsync(string iamUserId);
+    Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync(string iamUserId);
 
     /// <summary>
     /// Sets service provider company details
     /// </summary>
     /// <param name="data">Detail data for the service provider</param>
     /// <param name="iamUserId">Id of the iam user</param>
-    Task SetServiceProviderCompanyDetailsAsync(ServiceProviderDetailData data, string iamUserId);
+    Task SetProviderCompanyDetailsAsync(ProviderDetailData data, string iamUserId);
 }

@@ -64,6 +64,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditOffer20230119> AuditOffer20230119 { get; set; } = default!;
     public virtual DbSet<AuditOffer20230406> AuditOffer20230406 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20221005 { get; set; } = default!;
+    public virtual DbSet<AuditOfferSubscription20230317> AuditOfferSubscription20230317 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20230214> AuditCompanyApplication20230214 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
@@ -130,6 +131,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferType> OfferTypes { get; set; } = default!;
     public virtual DbSet<OfferSubscription> OfferSubscriptions { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
+    public virtual DbSet<OfferSubscriptionProcessData> OfferSubscriptionsProcessDatas { get; set; } = default!;
     public virtual DbSet<Process> Processes { get; set; } = default!;
     public virtual DbSet<ProcessStep> ProcessSteps { get; set; } = default!;
     public virtual DbSet<ProcessStepStatus> ProcessStepStatuses { get; set; } = default!;
@@ -278,7 +280,8 @@ public class PortalDbContext : DbContext
                             .OnDelete(DeleteBehavior.ClientSetNull);
                         j.Property(e => e.OfferSubscriptionStatusId)
                             .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
-                        j.HasAuditV1Triggers<OfferSubscription, AuditOfferSubscription20221005>();
+
+                        j.HasAuditV1Triggers<OfferSubscription, AuditOfferSubscription20230317>();
                     }
                 );
 
@@ -361,6 +364,15 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasAuditV1Triggers<Offer, AuditOffer20230406>();
+        });
+
+        modelBuilder.Entity<OfferSubscriptionProcessData>(entity =>
+        {
+            entity.HasKey(x => x.OfferSubscriptionId);
+
+            entity.HasOne(x => x.OfferSubscription)
+                .WithOne(x => x.OfferSubscriptionProcessData)
+                .HasForeignKey<OfferSubscriptionProcessData>(x => x.OfferSubscriptionId);
         });
 
         modelBuilder.Entity<AppSubscriptionDetail>(entity =>

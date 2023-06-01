@@ -34,8 +34,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
-using PortalBackend.DBAccess.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Immutable;
 using Xunit;
 
@@ -823,7 +821,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("InstanceUrl must be set for a single instance app (Parameter 'InstanceUrl')");
+        ex.Message.Should().Be("InstanceUrl must be set (Parameter 'InstanceUrl')");
     }
 
     [Fact]

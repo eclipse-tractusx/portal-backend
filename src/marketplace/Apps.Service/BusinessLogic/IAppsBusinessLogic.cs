@@ -137,6 +137,14 @@ public interface IAppsBusinessLogic
     Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId);
 
     /// <summary>
+    /// Starts the auto setup process.
+    /// </summary>
+    /// <param name="data">The offer subscription id and url for the service</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the response data</returns>
+    Task StartAutoSetupAsync(OfferAutoSetupData data, string iamUserId);
+
+    /// <summary>
     /// Gets the app agreement data
     /// </summary>
     /// <param name="appId">Id of the app to get the agreements for</param>

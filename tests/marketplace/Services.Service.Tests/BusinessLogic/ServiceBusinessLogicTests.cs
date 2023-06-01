@@ -146,8 +146,8 @@ public class ServiceBusinessLogicTests
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
-        A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._, A<OfferTypeId>._, A<string>._))
-            .ReturnsLazily(() => offerSubscriptionId);
+        A.CallTo(() => _offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<string>._, A<OfferTypeId>._, A<string>._))
+            .Returns(offerSubscriptionId);
         var serviceSettings = new ServiceSettings
         {
             ServiceManagerRoles = new Dictionary<string, IEnumerable<string>>
@@ -167,8 +167,6 @@ public class ServiceBusinessLogicTests
             A<Guid>._,
             A<IEnumerable<OfferAgreementConsentData>>._,
             A<string>._,
-            A<string>._,
-            A<IDictionary<string, IEnumerable<string>>>._,
             A<OfferTypeId>.That.Matches(x => x == OfferTypeId.SERVICE),
             A<string>._))
             .MustHaveHappenedOnceExactly();
@@ -374,7 +372,7 @@ public class ServiceBusinessLogicTests
         var data = new ConsentDetailData(_validConsentId, "The Company", Guid.NewGuid(), ConsentStatusId.ACTIVE, "Agreed");
         var offerService = A.Fake<IOfferService>();
         A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Matches(x => x == _validConsentId), A<OfferTypeId>._))
-            .ReturnsLazily(() => data);
+            .Returns(data);
         var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, Options.Create(new ServiceSettings()));
 
         // Act
@@ -430,6 +428,26 @@ public class ServiceBusinessLogicTests
         result.Should().Be(responseData);
         A.CallTo(() => offerSetupService.AutoSetupOfferAsync(data, settings.ITAdminRoles, _iamUser.UserEntityId, OfferTypeId.SERVICE, settings.UserManagementAddress, settings.ServiceManagerRoles))
             .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region Start Auto setup
+
+    [Fact]
+    public async Task StartAutoSetupAsync_ReturnsExcepted()
+    {
+        // Arrange
+        var offerSetupService = A.Fake<IOfferSetupService>();
+        _fixture.Inject(offerSetupService);
+        var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
+        var sut = _fixture.Create<ServiceBusinessLogic>();
+
+        // Act
+        await sut.StartAutoSetupAsync(data, _iamUser.UserEntityId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => offerSetupService.StartAutoSetupAsync(A<OfferAutoSetupData>._, A<string>._, OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

@@ -22,7 +22,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -294,7 +293,7 @@ public interface IOfferRepository
     /// <summary>
     /// Retireve and Validate Offer Status for App
     /// </summary>
-    /// <param name="appId"></param>
+    /// <param name="offerId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
     Task<(bool IsStatusInReview, string? OfferName, Guid? ProviderCompanyId, bool IsSingleInstance, IEnumerable<(Guid InstanceId, string ClientId)> Instances)> GetOfferStatusDataByIdAsync(Guid offerId, OfferTypeId offerTypeId);
@@ -450,6 +449,7 @@ public interface IOfferRepository
     /// <param name="languageShortName"></param>
     Func<int, int, Task<Pagination.Source<InReviewServiceData>?>> GetAllInReviewStatusServiceAsync(IEnumerable<OfferStatusId> offerStatusIds, OfferTypeId offerTypeId, OfferSorting? sorting, string? offerName, string languageShortName, string defaultLanguageShortName);
 
+    /// <summary>
     /// Gets the data for the app including the instance type information
     /// </summary>
     /// <param name="offerId"></param>
@@ -461,11 +461,10 @@ public interface IOfferRepository
     /// <summary>
     /// Creates a new instance of <see cref="AppInstanceSetup"/>
     /// </summary>
-    /// <param name="appId">id of the app</param>
-    /// <param name="isSingleInstance">defines whether the app is a single instance</param>
+    /// <param name="offerId">id of the app</param>
     /// <param name="setOptionalParameter">Action to set optional parameters for the app instance setup</param>
     /// <returns>The created entity</returns>
-    AppInstanceSetup CreateAppInstanceSetup(Guid appId, Action<AppInstanceSetup>? setOptionalParameter);
+    AppInstanceSetup CreateAppInstanceSetup(Guid offerId, Action<AppInstanceSetup>? setOptionalParameter);
 
     /// <summary>
     /// Gets the single instance offer data
