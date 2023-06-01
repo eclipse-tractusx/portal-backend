@@ -64,7 +64,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             throw new ControllerArgumentException("name must not be empty", "name");
         }
 
-        var result = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(identity.IdentityId, _settings.ClientId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(identity.UserId, _settings.ClientId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"user {identity.UserEntityId} is not associated with any company");

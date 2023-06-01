@@ -31,15 +31,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogi
 public interface INotificationBusinessLogic
 {
     /// <summary>
-    ///     Creates a new Notification with the given data
-    /// </summary>
-    /// <param name="identity">Identity of the User</param>
-    /// <param name="creationData">The data for the creation of the notification.</param>
-    /// <param name="receiverId">Id of the company user the notification is intended for.</param>
-    Task<Guid> CreateNotificationAsync(IdentityData identity, NotificationCreationData creationData,
-        Guid receiverId);
-
-    /// <summary>
     ///     Gets all unread notification for the given user.
     /// </summary>
     /// <param name="page">the requested page</param>
@@ -52,38 +43,38 @@ public interface INotificationBusinessLogic
     /// <summary>
     ///     Gets a specific notification for the given user.
     /// </summary>
-    /// <param name="identity">The identity of the current user</param>
+    /// <param name="identityId">The identity of the current user</param>
     /// <param name="notificationId">The id of the notification</param>
     /// <returns>Returns a notification</returns>
-    Task<NotificationDetailData> GetNotificationDetailDataAsync(IdentityData identity, Guid notificationId);
+    Task<NotificationDetailData> GetNotificationDetailDataAsync(Guid identityId, Guid notificationId);
 
     /// <summary>
     /// Gets the notification account for the given user
     /// </summary>
-    /// <param name="identity">Identity of the current user</param>
+    /// <param name="identityId">Id of the current identity</param>
     /// <param name="isRead">OPTIONAL: filter for read or unread notifications</param>
     /// <returns>Returns the count of the notifications</returns>
-    Task<int> GetNotificationCountAsync(IdentityData identity, bool? isRead);
+    Task<int> GetNotificationCountAsync(Guid identityId, bool? isRead);
 
     /// <summary>
     /// Gets the count details of the notifications for the given user
     /// </summary>
-    /// <param name="identity">Identity of the current user</param>
+    /// <param name="identityId">Id of the current identity</param>
     /// <returns>Returns the count details of the notifications</returns>
-    Task<NotificationCountDetails> GetNotificationCountDetailsAsync(IdentityData identity);
+    Task<NotificationCountDetails> GetNotificationCountDetailsAsync(Guid identityId);
 
     /// <summary>
     /// Sets the status of the notification with the given id to read
     /// </summary>
-    /// <param name="identity">Identity of the notification receiver</param>
+    /// <param name="identityId">Id of the notification receiver</param>
     /// <param name="notificationId">Id of the notification</param>
     /// <param name="isRead">Read or unread</param>
-    Task SetNotificationStatusAsync(IdentityData identity, Guid notificationId, bool isRead);
+    Task SetNotificationStatusAsync(Guid identityId, Guid notificationId, bool isRead);
 
     /// <summary>
     /// Deletes the given notification
     /// </summary>
-    /// <param name="identity">Identity of the notification receiver</param>
+    /// <param name="identityId">Id of the notification receiver</param>
     /// <param name="notificationId">Id of the notification that should be deleted</param>
-    Task DeleteNotificationAsync(IdentityData identity, Guid notificationId);
+    Task DeleteNotificationAsync(Guid identityId, Guid notificationId);
 }

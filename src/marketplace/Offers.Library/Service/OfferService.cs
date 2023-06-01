@@ -114,7 +114,7 @@ public class OfferService : IOfferService
     private async Task<(Guid CompanyId, OfferSubscription OfferSubscription, Guid CompanyUserId)> GetOfferSubscriptionCompanyAndUserAsync(Guid subscriptionId, IdentityData identity, OfferTypeId offerTypeId)
     {
         var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(subscriptionId, identity.IdentityId, offerTypeId)
+            .GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(subscriptionId, identity.UserId, offerTypeId)
             .ConfigureAwait(false);
         if (result == default)
         {
@@ -125,7 +125,7 @@ public class OfferService : IOfferService
         {
             throw new NotFoundException($"Invalid OfferSubscription {subscriptionId} for OfferType {offerTypeId}");
         }
-        return (companyId, offerSubscription, identity.IdentityId);
+        return (companyId, offerSubscription, identity.UserId);
     }
 
     /// <inheritdoc />
@@ -216,7 +216,7 @@ public class OfferService : IOfferService
             throw new ControllerArgumentException($"No company {identity.CompanyId} found");
         }
 
-        if (data.SalesManager.HasValue && identity.IdentityId != data.SalesManager.Value)
+        if (data.SalesManager.HasValue && identity.UserId != data.SalesManager.Value)
             throw new ControllerArgumentException("SalesManager does not exist", nameof(data.SalesManager));
 
         await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode)).ConfigureAwait(false);
@@ -409,7 +409,7 @@ public class OfferService : IOfferService
 
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(catenaAdminRoles, identity.IdentityId, content, false).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(catenaAdminRoles, identity.UserId, content, false).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -499,7 +499,7 @@ public class OfferService : IOfferService
 
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = approveOfferNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(approveOfferRoles, identity.IdentityId, content, offerDetails.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
+        await _notificationService.CreateNotifications(approveOfferRoles, identity.UserId, content, offerDetails.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _notificationService.SetNotificationsForOfferToDone(catenaAdminRoles, submitOfferNotificationTypeIds, offerId).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -555,7 +555,7 @@ public class OfferService : IOfferService
 
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = Enumerable.Repeat(notificationTypeId, 1).Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(notificationRecipients, identity.IdentityId, content, declineData.CompanyId.Value).AwaitAll().ConfigureAwait(false);
+        await _notificationService.CreateNotifications(notificationRecipients, identity.UserId, content, declineData.CompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _notificationService.SetNotificationsForOfferToDone(catenaAdminRoles, submitOfferNotificationTypeIds, offerId).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

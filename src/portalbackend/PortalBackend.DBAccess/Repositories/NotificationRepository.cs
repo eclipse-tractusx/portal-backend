@@ -120,14 +120,11 @@ public class NotificationRepository : INotificationRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsUserExisting, int Count)> GetNotificationCountForUserAsync(Guid companyUserId, bool? isRead) =>
+    public Task<int> GetNotificationCountForUserAsync(Guid companyUserId, bool? isRead) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
-            .Select(companyUser => new ValueTuple<bool, int>(
-                true,
-                companyUser.Notifications
-                    .Count(notification => !isRead.HasValue || notification.IsRead == isRead.Value)))
+            .Select(companyUser => companyUser.Notifications.Count(notification => !isRead.HasValue || notification.IsRead == isRead.Value))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

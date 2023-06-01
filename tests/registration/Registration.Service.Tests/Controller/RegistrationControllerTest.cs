@@ -98,14 +98,14 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
 
         var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3);
-        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _identity.IdentityId))
+        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _identity.UserId))
             .Returns(uploadDocuments);
 
         //Act
         var result = await _controller.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _identity.IdentityId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _identity.UserId)).MustHaveHappenedOnceExactly();
 
         result.Should().HaveSameCount(uploadDocuments);
         result.Should().ContainInOrder(uploadDocuments);
@@ -117,14 +117,14 @@ public class RegistrationControllerTest
         // Arrange
         var applicationId = _fixture.Create<Guid>();
         var data = _fixture.Create<CompanyRoleAgreementConsents>();
-        A.CallTo(() => _registrationBusinessLogicFake.SubmitRoleConsentAsync(applicationId, data, _identity.IdentityId, _identity.CompanyId))
+        A.CallTo(() => _registrationBusinessLogicFake.SubmitRoleConsentAsync(applicationId, data, _identity.UserId, _identity.CompanyId))
             .ReturnsLazily(() => 1);
 
         //Act
         var result = await this._controller.SubmitCompanyRoleConsentToAgreementsAsync(applicationId, data).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _registrationBusinessLogicFake.SubmitRoleConsentAsync(applicationId, data, _identity.IdentityId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _registrationBusinessLogicFake.SubmitRoleConsentAsync(applicationId, data, _identity.UserId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
         result.Should().Be(1);
     }
 
@@ -157,14 +157,14 @@ public class RegistrationControllerTest
         const string contentType = "application/pdf";
         var id = Guid.NewGuid();
         var content = Encoding.UTF8.GetBytes("This is just test content");
-        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _identity.IdentityId))
+        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _identity.UserId))
             .ReturnsLazily(() => (fileName, content, contentType));
 
         //Act
         var result = await this._controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _identity.IdentityId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _identity.UserId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<FileContentResult>();
         ((FileContentResult)result).ContentType.Should().Be(contentType);
     }

@@ -46,13 +46,13 @@ public static class ControllerExtensions
     public static T WithIdentityData<T>(this ControllerBase controller, Func<IdentityData, T> consumingFunction) =>
         consumingFunction(controller.GetIdentityData());
 
-    public static T WithIdentityId<T>(this ControllerBase controller, Func<Guid, T> consumingFunction) =>
+    public static T WithUserId<T>(this ControllerBase controller, Func<Guid, T> consumingFunction) =>
         consumingFunction(controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId));
 
     public static T WithCompanyId<T>(this ControllerBase controller, Func<Guid, T> consumingFunction) =>
         consumingFunction(controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId));
 
-    public static T WithIdentityIdAndCompanyId<T>(this ControllerBase controller, Func<(Guid IdentityId, Guid CompanyId), T> consumingFunction) =>
+    public static T WithIdentityIdAndCompanyId<T>(this ControllerBase controller, Func<(Guid UserId, Guid CompanyId), T> consumingFunction) =>
         consumingFunction((controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId), controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId)));
 
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction) =>

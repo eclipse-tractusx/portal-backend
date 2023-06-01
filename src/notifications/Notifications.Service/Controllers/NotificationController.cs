@@ -65,6 +65,7 @@ public class NotificationController : ControllerBase
     /// <response code="400">NotificationType or NotificationStatus don't exist.</response>
     [HttpGet]
     [Authorize(Roles = "view_notifications")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Route("", Name = nameof(GetNotifications))]
     [ProducesResponseType(typeof(IEnumerable<NotificationDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -76,7 +77,7 @@ public class NotificationController : ControllerBase
         [FromQuery] NotificationTopicId? notificationTopicId = null,
         [FromQuery] bool onlyDueDate = false,
         [FromQuery] NotificationSorting? sorting = null) =>
-        this.WithIdentityData(identity => _logic.GetNotificationsAsync(page, size, identity.IdentityId, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting)));
+        this.WithUserId(identityId => _logic.GetNotificationsAsync(page, size, identityId, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting)));
 
     /// <summary>
     ///     Gets a notification for the logged in user
@@ -88,12 +89,13 @@ public class NotificationController : ControllerBase
     /// <response code="403">User is not assigned.</response>
     [HttpGet]
     [Authorize(Roles = "view_notifications")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Route("{notificationId}", Name = nameof(GetNotification))]
     [ProducesResponseType(typeof(NotificationDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<NotificationDetailData> GetNotification([FromRoute] Guid notificationId) =>
-        this.WithIdentityData(identity => _logic.GetNotificationDetailDataAsync(identity, notificationId));
+        this.WithUserId(identityId => _logic.GetNotificationDetailDataAsync(identityId, notificationId));
 
     /// <summary>
     /// Gets the notification count for the current logged in user
@@ -108,11 +110,12 @@ public class NotificationController : ControllerBase
     [HttpGet]
     [Route("count")]
     [Authorize(Roles = "view_notifications")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<int> NotificationCount([FromQuery] bool? isRead) =>
-        this.WithIdentityData(identity => _logic.GetNotificationCountAsync(identity, isRead));
+        this.WithUserId(identityId => _logic.GetNotificationCountAsync(identityId, isRead));
 
     /// <summary>
     /// Gets the notification count for the current logged in user
@@ -123,9 +126,10 @@ public class NotificationController : ControllerBase
     [HttpGet]
     [Route("count-details")]
     [Authorize(Roles = "view_notifications")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(NotificationCountDetails), StatusCodes.Status200OK)]
     public Task<NotificationCountDetails> NotificationCountDetails() =>
-        this.WithIdentityData(identity => _logic.GetNotificationCountDetailsAsync(identity));
+        this.WithUserId(identityId => _logic.GetNotificationCountDetailsAsync(identityId));
 
     /// <summary>
     /// Changes the read status of a notification
@@ -141,12 +145,13 @@ public class NotificationController : ControllerBase
     [HttpPut]
     [Route("{notificationId:guid}/read")]
     [Authorize(Roles = "view_notifications")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> SetNotificationToRead([FromRoute] Guid notificationId, [FromQuery] bool isRead = true)
     {
-        await this.WithIdentityData(identity => _logic.SetNotificationStatusAsync(identity, notificationId, isRead)).ConfigureAwait(false);
+        await this.WithUserId(identityId => _logic.SetNotificationStatusAsync(identityId, notificationId, isRead)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -162,12 +167,13 @@ public class NotificationController : ControllerBase
     [HttpDelete]
     [Route("{notificationId:guid}")]
     [Authorize(Roles = "view_notifications")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> DeleteNotification([FromRoute] Guid notificationId)
     {
-        await this.WithIdentityData(identity => _logic.DeleteNotificationAsync(identity, notificationId)).ConfigureAwait(false);
+        await this.WithUserId(identityId => _logic.DeleteNotificationAsync(identityId, notificationId)).ConfigureAwait(false);
         return NoContent();
     }
 }

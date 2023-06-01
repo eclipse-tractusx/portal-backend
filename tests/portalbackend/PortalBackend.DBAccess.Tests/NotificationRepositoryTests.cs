@@ -349,7 +349,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
             .ConfigureAwait(false);
 
         // Assert
-        results.Count.Should().Be(3);
+        results.Should().Be(3);
     }
 
     [Fact]
@@ -364,7 +364,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
             .ConfigureAwait(false);
 
         // Assert
-        results.Count.Should().Be(6);
+        results.Should().Be(6);
     }
 
     #endregion

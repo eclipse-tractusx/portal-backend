@@ -56,10 +56,10 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerSubscriptionId = offerTypeId == OfferTypeId.APP
-            ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, identity.IdentityId).ConfigureAwait(false)
-            : offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, identity.IdentityId, identity.IdentityId).Id;
+            ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, identity.UserId).ConfigureAwait(false)
+            : offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, identity.UserId, identity.UserId).Id;
 
-        CreateConsentsForSubscription(offerSubscriptionId, offerAgreementConsentData, companyInformation.CompanyId, identity.IdentityId);
+        CreateConsentsForSubscription(offerSubscriptionId, offerAgreementConsentData, companyInformation.CompanyId, identity.UserId);
 
         var autoSetupResult = await AutoSetupOfferSubscription(offerId, accessToken, offerProviderDetails, companyInformation, userEmail, offerSubscriptionId, offerProviderDetails.IsSingleInstance).ConfigureAwait(false);
         var notificationContent = JsonSerializer.Serialize(new
@@ -71,7 +71,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             AutoSetupExecuted = !string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl),
             AutoSetupError = autoSetupResult ?? string.Empty
         });
-        await SendNotifications(offerId, offerTypeId, offerProviderDetails, identity.IdentityId, notificationContent, serviceManagerRoles).ConfigureAwait(false);
+        await SendNotifications(offerId, offerTypeId, offerProviderDetails, identity.UserId, notificationContent, serviceManagerRoles).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(offerProviderDetails.ProviderContactEmail))
@@ -135,7 +135,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     private async Task<(CompanyInformationData companyInformation, Guid companyUserId)> ValidateCompanyInformationAsync(string iamUserId)
     {
         var (companyInformation, userEmail) = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(identity.IdentityId).ConfigureAwait(false);
+            .GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(identity.UserId).ConfigureAwait(false);
         if (companyInformation.CompanyId == Guid.Empty)
         {
             throw new ControllerArgumentException($"User {identity.UserEntityId} has no company assigned", nameof(identity.UserEntityId));

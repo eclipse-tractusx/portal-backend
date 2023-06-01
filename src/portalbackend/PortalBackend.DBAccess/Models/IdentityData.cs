@@ -22,4 +22,4 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 
-public record IdentityData(string UserEntityId, Guid IdentityId, IdentityTypeId IdentityType, Guid CompanyId);
+public record IdentityData(string UserEntityId, Guid UserId, IdentityTypeId IdentityType, Guid CompanyId);

@@ -88,7 +88,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     public async Task<bool> DeleteDocumentAsync(Guid documentId, IdentityData identity)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, identity.IdentityId).ConfigureAwait(false);
+        var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, identity.UserId).ConfigureAwait(false);
 
         if (details.DocumentId == Guid.Empty)
         {

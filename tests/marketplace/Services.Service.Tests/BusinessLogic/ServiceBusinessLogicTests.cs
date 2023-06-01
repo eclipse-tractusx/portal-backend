@@ -662,14 +662,14 @@ public class ServiceBusinessLogicTests
                 A<OfferTypeId>._))
             .Returns((SubscriptionDetailData?)null);
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Matches(x => x == _existingServiceId), _identity.IdentityId, A<OfferTypeId>._))
+                A<Guid>.That.Matches(x => x == _existingServiceId), _identity.UserId, A<OfferTypeId>._))
             .Returns((_identity.CompanyId, offerSubscription));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Not.Matches(x => x == _existingServiceId), _identity.IdentityId,
+                A<Guid>.That.Not.Matches(x => x == _existingServiceId), _identity.UserId,
                 A<OfferTypeId>._))
             .Returns((_identity.CompanyId, (OfferSubscription?)null));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Matches(x => x == _existingServiceId), A<Guid>.That.Not.Matches(x => x == _identity.IdentityId),
+                A<Guid>.That.Matches(x => x == _existingServiceId), A<Guid>.That.Not.Matches(x => x == _identity.UserId),
                 A<OfferTypeId>._))
             .Returns(((Guid companyId, OfferSubscription? offerSubscription))default);
 

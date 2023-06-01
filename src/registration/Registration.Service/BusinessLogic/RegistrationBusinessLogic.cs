@@ -624,7 +624,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public async Task<bool> SubmitRegistrationAsync(Guid applicationId, IdentityData identity)
     {
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, identity.IdentityId).ConfigureAwait(false);
+        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, identity.UserId).ConfigureAwait(false);
         if (applicationUserData == null)
         {
             throw new NotFoundException($"application {applicationId} does not exist");

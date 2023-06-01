@@ -269,7 +269,7 @@ public class OfferSubscriptionServiceTests
     {
         // Arrange
         var identity = _fixture.Build<IdentityData>()
-            .With(x => x.IdentityId, _notAssignedCompanyIdUser)
+            .With(x => x.UserId, _notAssignedCompanyIdUser)
             .Create();
 
         // Act
@@ -389,7 +389,7 @@ public class OfferSubscriptionServiceTests
     {
         // Act
         var identity = _fixture.Build<IdentityData>()
-            .With(x => x.IdentityId, _noBpnSetUserId)
+            .With(x => x.UserId, _noBpnSetUserId)
             .Create();
         async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), identity, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
@@ -407,7 +407,7 @@ public class OfferSubscriptionServiceTests
     {
         // Arrange 
         var identity = _fixture.Build<IdentityData>()
-            .With(x => x.IdentityId, _existingActiveSubscriptionUserId)
+            .With(x => x.UserId, _existingActiveSubscriptionUserId)
             .Create();
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionStateForCompanyAsync(_existingOfferId, _existingActiveSubscriptionCompanyId, A<OfferTypeId>._))
             .Returns(new ValueTuple<Guid, OfferSubscriptionStatusId, Process?, IEnumerable<ProcessStepTypeId>?>(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE, null, null));
@@ -425,7 +425,7 @@ public class OfferSubscriptionServiceTests
     {
         // Arrange
         var identity = _fixture.Build<IdentityData>()
-            .With(x => x.IdentityId, _existingInactiveSubscriptionUserId)
+            .With(x => x.UserId, _existingInactiveSubscriptionUserId)
             .Create();
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), _existingOfferId, _companyId, OfferSubscriptionStatusId.INACTIVE, Guid.NewGuid(), Guid.NewGuid());
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionStateForCompanyAsync(_existingOfferId, _existingInactiveSubscriptionCompanyId, A<OfferTypeId>._))
@@ -457,7 +457,7 @@ public class OfferSubscriptionServiceTests
             .With(x => x.Id, _existingOfferId)
             .Create();
 
-        A.CallTo(() => _userRepository.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(_identity.IdentityId))
+        A.CallTo(() => _userRepository.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(_identity.UserId))
             .Returns((
                 new CompanyInformationData(_companyId, "The Company", "DE", "BPM00000001"),
                 "test@mail.de"));
@@ -520,14 +520,14 @@ public class OfferSubscriptionServiceTests
                 A<OfferTypeId>._))
             .Returns((SubscriptionDetailData?)null);
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Matches(x => x == _existingOfferId), A<Guid>.That.Matches(x => x == _identity.IdentityId), A<OfferTypeId>._))
+                A<Guid>.That.Matches(x => x == _existingOfferId), A<Guid>.That.Matches(x => x == _identity.UserId), A<OfferTypeId>._))
             .Returns((_companyId, offerSubscription));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Not.Matches(x => x == _existingOfferId), A<Guid>.That.Matches(x => x == _identity.IdentityId),
+                A<Guid>.That.Not.Matches(x => x == _existingOfferId), A<Guid>.That.Matches(x => x == _identity.UserId),
                 A<OfferTypeId>._))
             .Returns((_companyId, null));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
-                A<Guid>.That.Matches(x => x == _existingOfferId), A<Guid>.That.Not.Matches(x => x == _identity.IdentityId),
+                A<Guid>.That.Matches(x => x == _existingOfferId), A<Guid>.That.Not.Matches(x => x == _identity.UserId),
                 A<OfferTypeId>._))
             .Returns(((Guid companyId, OfferSubscription? offerSubscription))default);
 

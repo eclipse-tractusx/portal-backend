@@ -80,7 +80,7 @@ public interface INotificationRepository
     /// <param name="companyUserId">Id of the User</param>
     /// <param name="isRead">OPTIONAL: filter read or unread notifications</param>
     /// <returns>Returns the count of the notifications</returns>
-    Task<(bool IsUserExisting, int Count)> GetNotificationCountForUserAsync(Guid companyUserId, bool? isRead);
+    Task<int> GetNotificationCountForUserAsync(Guid companyUserId, bool? isRead);
 
     /// <summary>
     /// Gets the count details of the notifications for the given user

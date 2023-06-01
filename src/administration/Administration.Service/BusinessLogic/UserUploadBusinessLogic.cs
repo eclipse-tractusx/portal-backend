@@ -63,7 +63,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, identity.IdentityId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, identity.UserId).ConfigureAwait(false);
 
         var validRoleData = new List<UserRoleData>();
 
@@ -190,7 +190,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(identity.IdentityId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(identity.UserId).ConfigureAwait(false);
 
         var validRoleData = new List<UserRoleData>();
 
