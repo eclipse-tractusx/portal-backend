@@ -178,19 +178,19 @@ public class AppBusinessLogicTests
         var offerSubscriptionId = Guid.NewGuid();
         var offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
-        A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<IdentityData>._, A<OfferTypeId>._, A<string>._))
+        A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, A<Guid>._, A<OfferTypeId>._, A<string>._))
             .Returns(offerSubscriptionId);
         var sut = new AppsBusinessLogic(null!, offerSubscriptionService, null!, null!, Options.Create(new AppsSettings()), null!);
 
         // Act
-        var result = await sut.AddOwnCompanyAppSubscriptionAsync(Guid.NewGuid(), consentData, identity, "THISISAACCESSTOKEN").ConfigureAwait(false);
+        var result = await sut.AddOwnCompanyAppSubscriptionAsync(Guid.NewGuid(), consentData, identity.UserId).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(offerSubscriptionId);
         A.CallTo(() => offerSubscriptionService.AddOfferSubscriptionAsync(
                 A<Guid>._,
                 A<IEnumerable<OfferAgreementConsentData>>._,
-                A<IdentityData>._,
+                A<Guid>._,
                 A<OfferTypeId>.That.Matches(x => x == OfferTypeId.APP),
                 A<string>._))
             .MustHaveHappenedOnceExactly();

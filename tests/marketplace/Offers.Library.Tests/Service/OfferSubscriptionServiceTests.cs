@@ -130,7 +130,7 @@ public class OfferSubscriptionServiceTests
             });
 
         // Act
-        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _identity, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _identity.UserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
@@ -159,7 +159,7 @@ public class OfferSubscriptionServiceTests
             });
 
         // Act
-        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _identity, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _identity.UserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
@@ -183,7 +183,7 @@ public class OfferSubscriptionServiceTests
             });
 
         // Act
-        await _sut.AddOfferSubscriptionAsync(_existingOfferIdWithoutProviderEmail, _validConsentData, _identity, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferIdWithoutProviderEmail, _validConsentData, _identity.UserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
@@ -208,7 +208,7 @@ public class OfferSubscriptionServiceTests
             });
 
         // Act
-        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _iamUserId, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _identity.UserId, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionStateForCompanyAsync(_existingOfferId, _companyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
@@ -228,7 +228,7 @@ public class OfferSubscriptionServiceTests
             .Returns((subscriptionId, OfferSubscriptionStatusId.INACTIVE, new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()), new[] { ProcessStepTypeId.TRIGGER_PROVIDER }));
 
         // Act
-        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _iamUserId, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _identity.UserId, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionStateForCompanyAsync(_existingOfferId, _companyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
@@ -248,7 +248,7 @@ public class OfferSubscriptionServiceTests
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionStateForCompanyAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
             .Returns((subscriptionId, subscriptionStatusId, new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()), new[] { ProcessStepTypeId.TRIGGER_PROVIDER }));
 
-        var Act = () => _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _iamUserId, OfferTypeId.APP, BasePortalUrl);
+        var Act = () => _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, _identity.UserId, OfferTypeId.APP, BasePortalUrl);
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -273,7 +273,7 @@ public class OfferSubscriptionServiceTests
             .Create();
 
         // Act
-        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), _identity, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), _identity.UserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -290,7 +290,7 @@ public class OfferSubscriptionServiceTests
         var notExistingServiceId = Guid.NewGuid();
 
         // Act
-        async Task Action() => await _sut.AddOfferSubscriptionAsync(notExistingServiceId, new List<OfferAgreementConsentData>(), _identity, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        async Task Action() => await _sut.AddOfferSubscriptionAsync(notExistingServiceId, new List<OfferAgreementConsentData>(), _identity.UserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -306,7 +306,7 @@ public class OfferSubscriptionServiceTests
         var invalidUser = _fixture.Create<IdentityData>();
 
         // Act
-        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), invalidUser, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), invalidUser.UserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -320,7 +320,7 @@ public class OfferSubscriptionServiceTests
     public async Task AddOfferSubscription_WithoutOfferProviderDetails_ThrowsException(OfferTypeId offerTypeId)
     {
         // Act
-        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferWithoutDetailsFilled, new List<OfferAgreementConsentData>(), _identity, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferWithoutDetailsFilled, new List<OfferAgreementConsentData>(), _identity.UserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -336,7 +336,7 @@ public class OfferSubscriptionServiceTests
         var consentData = Enumerable.Empty<OfferAgreementConsentData>();
 
         // Act
-        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, consentData, _identity, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, consentData, _identity.UserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -355,7 +355,7 @@ public class OfferSubscriptionServiceTests
         var consentData = _validConsentData.Concat(additional).ToImmutableArray();
 
         // Act
-        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, consentData, _identity, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, consentData, _identity.UserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -373,7 +373,7 @@ public class OfferSubscriptionServiceTests
         var consentData = _offerAgreementIds.Select(id => new OfferAgreementConsentData(id, ConsentStatusId.INACTIVE)).ToImmutableArray();
 
         // Act
-        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, consentData, _identity, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, consentData, _identity.UserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -391,7 +391,7 @@ public class OfferSubscriptionServiceTests
         var identity = _fixture.Build<IdentityData>()
             .With(x => x.UserId, _noBpnSetUserId)
             .Create();
-        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), identity, offerTypeId, BasePortalUrl).ConfigureAwait(false);
+        async Task Action() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, new List<OfferAgreementConsentData>(), identity.UserId, offerTypeId, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -413,7 +413,7 @@ public class OfferSubscriptionServiceTests
             .Returns(new ValueTuple<Guid, OfferSubscriptionStatusId, Process?, IEnumerable<ProcessStepTypeId>?>(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE, null, null));
 
         // Act
-        async Task Act() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, identity, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
+        async Task Act() => await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, identity.UserId, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -437,7 +437,7 @@ public class OfferSubscriptionServiceTests
             });
 
         // Act
-        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, identity, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
+        await _sut.AddOfferSubscriptionAsync(_existingOfferId, _validConsentData, identity.UserId, OfferTypeId.APP, BasePortalUrl).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedOnceExactly();

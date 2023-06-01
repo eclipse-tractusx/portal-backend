@@ -45,7 +45,7 @@ public interface ICompanyRepository
     void CreateUpdateDeleteIdentifiers(Guid companyId, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> initialItems, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> modifiedItems);
 
     Task<(bool IsValidCompany, string CompanyName)> GetCompanyNameUntrackedAsync(Guid companyId);
-    
+
     Task<(string? Bpn, IEnumerable<Guid> TechnicalUserRoleIds)> GetBpnAndTechnicalUserRoleIds(Guid companyId, string technicalUserClientId);
 
     /// <summary>
@@ -65,12 +65,12 @@ public interface ICompanyRepository
     /// <summary>
     /// Checks whether the iamUser is assigned to the company and the company exists
     /// </summary>
-    /// <param name="userCompanyId">Id of the users company</param>
+    /// <param name="companyId">Id of the users company</param>
     /// <param name="companyRoleIds">The company Roles</param>
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
-    Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(Guid userCompanyId, IEnumerable<CompanyRoleId> companyRoleIds);
+    Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds);
 
-    Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(Guid userCompanyId);
+    Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(Guid companyId);
 
     /// <summary>
     /// Creates service provider company details
@@ -85,9 +85,9 @@ public interface ICompanyRepository
     /// Gets the service provider company details data
     /// </summary>
     /// <param name="companyRoleId">Id of the details</param>
-    /// <param name="userCompanyId">Id of the users company</param>
+    /// <param name="companyId">Id of the users company</param>
     /// <returns>Returns the details data</returns>
-    Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, Guid userCompanyId);
+    Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, Guid companyId);
 
     /// <summary>
     /// Updates the service provider company details

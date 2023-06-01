@@ -321,6 +321,8 @@ public class ServiceReleaseController : ControllerBase
     [HttpPut]
     [Route("updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents")]
     [Authorize(Roles = "add_service_offering")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Consumes("multipart/form-data")]
     [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
@@ -331,7 +333,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<NoContentResult> UpdateServiceDocumentAsync([FromRoute] Guid serviceId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {
-        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.CreateServiceDocumentAsync(serviceId, documentTypeId, document, identity, cancellationToken));
+        await this.WithUserIdAndCompanyId(identity => _serviceReleaseBusinessLogic.CreateServiceDocumentAsync(serviceId, documentTypeId, document, identity, cancellationToken));
         return NoContent();
     }
 

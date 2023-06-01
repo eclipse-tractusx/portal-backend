@@ -80,12 +80,13 @@ public class ServicesController : ControllerBase
     [HttpPost]
     [Route("{serviceId}/subscribe")]
     [Authorize(Roles = "subscribe_service")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<CreatedAtRouteResult> AddServiceSubscription([FromRoute] Guid serviceId, [FromBody] IEnumerable<OfferAgreementConsentData> offerAgreementConsentData)
     {
-        var serviceSubscriptionId = await this.WithIdentityAndBearerToken(auth => _serviceBusinessLogic.AddServiceSubscription(serviceId, offerAgreementConsentData, auth.Identity, auth.BearerToken)).ConfigureAwait(false);
+        var serviceSubscriptionId = await this.WithUserId(userId => _serviceBusinessLogic.AddServiceSubscription(serviceId, offerAgreementConsentData, userId)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(GetSubscriptionDetail), new { subscriptionId = serviceSubscriptionId }, serviceSubscriptionId);
     }
 

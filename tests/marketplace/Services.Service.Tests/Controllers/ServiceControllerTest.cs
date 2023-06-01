@@ -79,7 +79,7 @@ public class ServiceControllerTest
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
-        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, _identity, AccessToken))
+        A.CallTo(() => _logic.AddServiceSubscription(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, _identity.UserId))
             .Returns(offerSubscriptionId);
 
         //Act
@@ -87,7 +87,7 @@ public class ServiceControllerTest
         var result = await this._controller.AddServiceSubscription(serviceId, consentData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddServiceSubscription(serviceId, consentData, _identity, AccessToken)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AddServiceSubscription(serviceId, consentData, _identity.UserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<CreatedAtRouteResult>(result);
         result.Value.Should().Be(offerSubscriptionId);
     }

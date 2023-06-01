@@ -487,10 +487,10 @@ public class AppReleaseBusinessLogicTest
                 { DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" }}};
 
         // Act
-        await _sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, (_identity.IdentityId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        await _sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerDocumentService.UploadDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _identity, OfferTypeId.APP, _settings.UploadAppDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerDocumentService.UploadDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), OfferTypeId.APP, _settings.UploadAppDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

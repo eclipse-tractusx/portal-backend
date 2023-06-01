@@ -280,7 +280,7 @@ public class ServiceReleaseControllerTest
         var serviceId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         A.CallTo(() => _logic.CreateServiceDocumentAsync(A<Guid>._,
-            A<DocumentTypeId>._, A<IFormFile>._, A<IdentityData>._, CancellationToken.None))
+            A<DocumentTypeId>._, A<IFormFile>._, A<ValueTuple<Guid, Guid>>._, CancellationToken.None))
             .ReturnsLazily(() => Task.CompletedTask);
 
         // Act
@@ -288,7 +288,7 @@ public class ServiceReleaseControllerTest
 
         // Assert
         A.CallTo(() => _logic.CreateServiceDocumentAsync(serviceId,
-            DocumentTypeId.ADDITIONAL_DETAILS, file, _identity, CancellationToken.None)).MustHaveHappened();
+            DocumentTypeId.ADDITIONAL_DETAILS, file, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), CancellationToken.None)).MustHaveHappened();
     }
 
     [Fact]

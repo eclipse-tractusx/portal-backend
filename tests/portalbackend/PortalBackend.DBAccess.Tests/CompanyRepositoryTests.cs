@@ -151,7 +151,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(new("0dcd8209-85e2-4073-b130-ac094fb47106"), Enumerable.Repeat(CompanyRoleId.SERVICE_PROVIDER, 1);
+        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(new("0dcd8209-85e2-4073-b130-ac094fb47106"), Enumerable.Repeat(CompanyRoleId.SERVICE_PROVIDER, 1));
 
         // Assert
         results.Should().NotBe(default);

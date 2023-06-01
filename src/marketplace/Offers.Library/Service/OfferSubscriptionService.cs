@@ -48,30 +48,19 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     }
 
     /// <inheritdoc />
-    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress)
+    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, Guid userId, OfferTypeId offerTypeId, string basePortalAddress)
     {
-        var (companyInformation, companyUserId) = await ValidateCompanyInformationAsync(iamUserId).ConfigureAwait(false);
+        var (companyInformation, companyUserId) = await ValidateCompanyInformationAsync(userId).ConfigureAwait(false);
         var offerProviderDetails = await ValidateOfferProviderDetailDataAsync(offerId, offerTypeId).ConfigureAwait(false);
         await ValidateConsent(offerAgreementConsentData, offerId).ConfigureAwait(false);
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var offerSubscriptionId = offerTypeId == OfferTypeId.APP
-            ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, identity.UserId).ConfigureAwait(false)
-            : offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, identity.UserId, identity.UserId).Id;
+        var (offerSubscription, process, processSteps) = offerTypeId == OfferTypeId.APP
+            ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, companyUserId).ConfigureAwait(false)
+            : (offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId), null, null);
 
-        CreateConsentsForSubscription(offerSubscriptionId, offerAgreementConsentData, companyInformation.CompanyId, identity.UserId);
-
-        var autoSetupResult = await AutoSetupOfferSubscription(offerId, accessToken, offerProviderDetails, companyInformation, userEmail, offerSubscriptionId, offerProviderDetails.IsSingleInstance).ConfigureAwait(false);
-        var notificationContent = JsonSerializer.Serialize(new
-        {
-            AppName = offerProviderDetails.OfferName,
-            OfferId = offerId,
-            RequestorCompanyName = companyInformation.OrganizationName,
-            UserEmail = userEmail,
-            AutoSetupExecuted = !string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl),
-            AutoSetupError = autoSetupResult ?? string.Empty
-        });
-        await SendNotifications(offerId, offerTypeId, offerProviderDetails, identity.UserId, notificationContent, serviceManagerRoles).ConfigureAwait(false);
+        CreateProcessSteps(offerSubscription, process, processSteps);
+        CreateConsentsForSubscription(offerSubscription.Id, offerAgreementConsentData, companyInformation.CompanyId, companyUserId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(offerProviderDetails.ProviderContactEmail))
@@ -132,14 +121,10 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         }
     }
 
-    private async Task<(CompanyInformationData companyInformation, Guid companyUserId)> ValidateCompanyInformationAsync(string iamUserId)
+    private async Task<(CompanyInformationData companyInformation, Guid companyUserId)> ValidateCompanyInformationAsync(Guid userId)
     {
-        var (companyInformation, userEmail) = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(identity.UserId).ConfigureAwait(false);
-        if (companyInformation.CompanyId == Guid.Empty)
-        {
-            throw new ControllerArgumentException($"User {identity.UserEntityId} has no company assigned", nameof(identity.UserEntityId));
-        }
+        var (companyInformation, _) = await _portalRepositories.GetInstance<IUserRepository>()
+            .GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(userId).ConfigureAwait(false);
 
         if (companyInformation.BusinessPartnerNumber == null)
         {
@@ -147,7 +132,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                 $"company {companyInformation.OrganizationName} has no BusinessPartnerNumber assigned");
         }
 
-        return (companyInformation, companyUserId);
+        return (companyInformation, userId);
     }
 
     private static async Task<(OfferSubscription, Process?, IEnumerable<ProcessStepTypeId>?)> HandleAppSubscriptionAsync(

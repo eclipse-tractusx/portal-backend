@@ -39,7 +39,6 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferService _offerService;
-    private readonly IOfferDocumentService _offerDocumentService;
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly IOfferSetupService _offerSetupService;
     private readonly ServiceSettings _settings;
@@ -49,21 +48,18 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerService">Access to the offer service</param>
-    /// <param name="offerDocumentService">Access to the offer document service</param>
     /// <param name="offerSubscriptionService">Service for Company to manage offer subscriptions</param>
     /// <param name="offerSetupService">Offer Setup Service</param>
     /// <param name="settings">Access to the settings</param>
     public ServiceBusinessLogic(
         IPortalRepositories portalRepositories,
         IOfferService offerService,
-        IOfferDocumentService offerDocumentService,
         IOfferSubscriptionService offerSubscriptionService,
         IOfferSetupService offerSetupService,
         IOptions<ServiceSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _offerService = offerService;
-        _offerDocumentService = offerDocumentService;
         _offerSubscriptionService = offerSubscriptionService;
         _offerSetupService = offerSetupService;
         _settings = settings.Value;
@@ -78,8 +74,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             _portalRepositories.GetInstance<IOfferRepository>().GetActiveServicesPaginationSource(sorting, serviceTypeId, Constants.DefaultLanguage));
 
     /// <inheritdoc />
-    public Task<Guid> AddServiceSubscription(Guid serviceId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, IdentityData identity, string accessToken) =>
-        _offerSubscriptionService.AddOfferSubscriptionAsync(serviceId, offerAgreementConsentData, identity, OfferTypeId.SERVICE, _settings.BasePortalAddress);
+    public Task<Guid> AddServiceSubscription(Guid serviceId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, Guid userId) =>
+        _offerSubscriptionService.AddOfferSubscriptionAsync(serviceId, offerAgreementConsentData, userId, OfferTypeId.SERVICE, _settings.BasePortalAddress);
 
     /// <inheritdoc />
     public async Task<ServiceDetailResponse> GetServiceDetailsAsync(Guid serviceId, string lang, IdentityData identity)

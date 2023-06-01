@@ -40,7 +40,7 @@ public interface IUserRepository
     Task<(CompanyInformationData companyInformation, string? userEmail)> GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(Guid companyUserId);
     Task<bool> IsOwnCompanyUserWithEmailExisting(string email, Guid companyUserId);
     Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, Guid userCompanyId);
-    Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, Guid userId);
+    Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, Guid companyId);
     Task<CompanyOwnUserDetails?> GetUserDetailsUntrackedAsync(Guid companyUserId, IEnumerable<Guid> userRoleIds);
     Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(Guid companyUserId);
 
@@ -95,7 +95,7 @@ public interface IUserRepository
     /// <param name="companyUserIds"></param>
     /// <param name="companyUserId"></param>
     /// <returns>CompanyUserId, UserEntityId, BusinessPartnerNumbers, RoleIds, OfferIds, InvitationIds</returns>
-    IAsyncEnumerable<CompanyUserAccountData> GetCompanyUserAccountDataUntrackedAsync(IEnumerable<Guid> companyUserIds, Guid companyUserId);
+    IAsyncEnumerable<CompanyUserAccountData> GetCompanyUserAccountDataUntrackedAsync(IEnumerable<Guid> companyUserIds, Guid companyId);
 
     /// <summary>
     /// Validate CompanyUser is Member of all roleIds and belongs to same company as executing user 

@@ -94,6 +94,8 @@ public class AppReleaseProcessController : ControllerBase
     [HttpPut]
     [Route("updateappdoc/{appId}/documentType/{documentTypeId}/documents")]
     [Authorize(Roles = "app_management")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Consumes("multipart/form-data")]
     [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
@@ -104,7 +106,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<NoContentResult> UpdateAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {
-        await this.WithIdentityData(identity => _appReleaseBusinessLogic.CreateAppDocumentAsync(appId, documentTypeId, document, identity, cancellationToken));
+        await this.WithUserIdAndCompanyId(identity => _appReleaseBusinessLogic.CreateAppDocumentAsync(appId, documentTypeId, document, identity, cancellationToken));
         return NoContent();
     }
 

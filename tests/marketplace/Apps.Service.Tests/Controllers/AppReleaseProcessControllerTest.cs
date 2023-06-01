@@ -85,14 +85,14 @@ public class AppReleaseProcessControllerTest
         var documentTypeId = DocumentTypeId.ADDITIONAL_DETAILS;
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
-        A.CallTo(() => _logic.CreateAppDocumentAsync(A<Guid>._, A<DocumentTypeId>._, A<FormFile>._, A<IdentityData>._, A<CancellationToken>._))
+        A.CallTo(() => _logic.CreateAppDocumentAsync(A<Guid>._, A<DocumentTypeId>._, A<FormFile>._, A<ValueTuple<Guid, Guid>>._, A<CancellationToken>._))
             .ReturnsLazily(() => Task.CompletedTask);
 
         //Act
         await this._controller.UpdateAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None).ConfigureAwait(false);
 
         // Assert 
-        A.CallTo(() => _logic.CreateAppDocumentAsync(appId, documentTypeId, file, _identity, CancellationToken.None))
+        A.CallTo(() => _logic.CreateAppDocumentAsync(appId, documentTypeId, file, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), CancellationToken.None))
             .MustHaveHappenedOnceExactly();
     }
 

@@ -140,9 +140,9 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(Guid userCompanyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
+    public Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
         _context.Companies.AsNoTracking()
-            .Where(company => company.Id == userCompanyId)
+            .Where(company => company.Id == companyId)
             .Select(company => new ValueTuple<Guid, bool>(
                 company.Id,
                 company.CompanyAssignedRoles.Any(companyRole => companyRoleIds.Contains(companyRole.CompanyRoleId))
@@ -150,9 +150,9 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(Guid userCompanyId) =>
+    public Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(Guid companyId) =>
         _context.ProviderCompanyDetails.AsNoTracking()
-            .Where(details => details.CompanyId == userCompanyId)
+            .Where(details => details.CompanyId == companyId)
             .Select(details => new ValueTuple<Guid, string>(details.Id, details.AutoSetupUrl))
             .SingleOrDefaultAsync();
 
@@ -165,9 +165,9 @@ public class CompanyRepository : ICompanyRepository
     }
 
     /// <inheritdoc />
-    public Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, Guid userCompanyId) =>
+    public Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, Guid companyId) =>
         _context.Companies
-            .Where(company => company.Id == userCompanyId)
+            .Where(company => company.Id == companyId)
             .Select(company => new ValueTuple<ProviderDetailReturnData, bool>(
                 new ProviderDetailReturnData(
                     company.ProviderCompanyDetail!.Id,

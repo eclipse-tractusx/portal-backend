@@ -545,10 +545,10 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, Options.Create(settings));
 
         // Act
-        await sut.CreateServiceDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, (_identity.IdentityId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
+        await sut.CreateServiceDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerDocumentService.UploadDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.IdentityId && x.Item2 == _identity.CompanyId), OfferTypeId.SERVICE, settings.UploadServiceDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerDocumentService.UploadDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), OfferTypeId.SERVICE, settings.UploadServiceDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

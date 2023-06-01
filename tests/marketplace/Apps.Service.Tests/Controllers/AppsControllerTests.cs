@@ -200,7 +200,7 @@ public class AppsControllerTests
         //Arrange
         var offerSubscriptionId = Guid.NewGuid();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
-        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, _identity, _accessToken))
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(A<Guid>._, A<IEnumerable<OfferAgreementConsentData>>._, _identity.UserId))
             .Returns(offerSubscriptionId);
 
         //Act
@@ -208,7 +208,7 @@ public class AppsControllerTests
         var result = await this._controller.AddCompanyAppSubscriptionAsync(serviceId, consentData).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(serviceId, consentData, _identity, _accessToken)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AddOwnCompanyAppSubscriptionAsync(serviceId, consentData, _identity.UserId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 

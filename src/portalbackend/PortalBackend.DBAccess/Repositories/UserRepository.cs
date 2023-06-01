@@ -151,13 +151,13 @@ public class UserRepository : IUserRepository
             .SelectMany(user => user.Identity!.Company!.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!))
             .AnyAsync(companyUser => companyUser!.Email == email);
 
-    public Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, Guid userCompanyId) =>
+    public Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, Guid companyId) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
             .Where(companyUser =>
                 companyUser.Id == companyUserId &&
                 companyUser.Identity!.UserStatusId == UserStatusId.ACTIVE &&
-                companyUser.Identity!.CompanyId == userCompanyId)
+                companyUser.Identity!.CompanyId == companyId)
             .Select(companyUser => new CompanyUserDetails(
                 companyUser.Id,
                 companyUser.Identity!.DateCreated,
@@ -178,14 +178,14 @@ public class UserRepository : IUserRepository
             })
             .SingleOrDefaultAsync();
 
-    public Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, Guid userId) =>
+    public Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, Guid companyId) =>
         _dbContext.CompanyUsers
             .AsNoTracking()
-            .Where(user => user.Id == userId)
-            .SelectMany(user => user.Identity!.Company!.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!))
-            .Where(companyUser => companyUser.Id == companyUserId)
+            .Where(companyUser =>
+                companyUser.Id == companyUserId &&
+                companyUser.Identity!.CompanyId == companyId)
             .Select(companyUser => new CompanyUserBusinessPartners(
-                companyUser.Identity!.UserEntityId!,
+                companyUser.Identity!.UserEntityId,
                 companyUser.CompanyUserAssignedBusinessPartners.Select(assignedPartner =>
                     assignedPartner.BusinessPartnerNumber)
             ))
@@ -400,10 +400,10 @@ public class UserRepository : IUserRepository
             ))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<CompanyUserAccountData> GetCompanyUserAccountDataUntrackedAsync(IEnumerable<Guid> companyUserIds, Guid companyUserId) =>
+    public IAsyncEnumerable<CompanyUserAccountData> GetCompanyUserAccountDataUntrackedAsync(IEnumerable<Guid> companyUserIds, Guid companyId) =>
        _dbContext.CompanyUsers.AsNoTracking().AsSplitQuery()
            .Where(companyUser => companyUserIds.Contains(companyUser.Id) &&
-               companyUser.Identity!.Company!.Identities.Any(user => user.Id == companyUserId))
+               companyUser.Identity!.Company!.Id == companyId)
            .Select(companyUser => new CompanyUserAccountData(
                companyUser.Id,
                companyUser.Identity!.UserEntityId,

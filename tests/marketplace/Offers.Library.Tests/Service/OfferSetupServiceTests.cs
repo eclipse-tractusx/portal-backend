@@ -250,7 +250,7 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, Guid.Empty);
-        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), Guid.Empty, CompanyServiceAccountStatusId.ACTIVE, "test", "test", DateTimeOffset.UtcNow, CompanyServiceAccountTypeId.OWN);
+        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), "test", "test", CompanyServiceAccountTypeId.OWN);
         SetupAutoSetup(offerSubscription, false, companyServiceAccount);
         var clientId = Guid.NewGuid();
         var appInstanceId = Guid.NewGuid();
@@ -696,7 +696,6 @@ public class OfferSetupServiceTests
         // Arrange
         var transferData = _fixture.Build<OfferSubscriptionTransferData>()
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
-            .With(x => x.CompanyUserId, _companyUser.CompanyId)
             .With(x => x.InstanceData, new ValueTuple<bool, string?>(true, null))
             .With(x => x.AppInstanceIds, new[] { Guid.NewGuid(), Guid.NewGuid() })
             .Create();
@@ -721,7 +720,6 @@ public class OfferSetupServiceTests
         // Arrange
         var transferData = _fixture.Build<OfferSubscriptionTransferData>()
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
-            .With(x => x.CompanyUserId, _companyUser.CompanyId)
             .With(x => x.InstanceData, new ValueTuple<bool, string?>(true, "https://www.test.de"))
             .With(x => x.AppInstanceIds, new[] { Guid.NewGuid() })
             .Create();
@@ -758,7 +756,6 @@ public class OfferSetupServiceTests
         // Arrange
         var transferData = _fixture.Build<OfferSubscriptionTransferData>()
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
-            .With(x => x.CompanyUserId, _companyUser.CompanyId)
             .With(x => x.InstanceData, new ValueTuple<bool, string?>(false, null))
             .With(x => x.AppInstanceIds, new[] { Guid.NewGuid(), Guid.NewGuid() })
             .Create();

@@ -21,7 +21,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
@@ -31,6 +33,7 @@ public class SubscriptionConfigurationControllerTests
     private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
     private static readonly Guid OfferSubscriptionId = new("4C1A6851-D4E7-4E10-A011-3732CD049999");
     private static readonly Guid CompanyId = new("4C1A6851-D4E7-4E10-A011-3732CD049999");
+    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private readonly ISubscriptionConfigurationBusinessLogic _logic;
     private readonly SubscriptionConfigurationController _controller;
     private readonly Fixture _fixture;
@@ -40,7 +43,7 @@ public class SubscriptionConfigurationControllerTests
         _fixture = new Fixture();
         _logic = A.Fake<ISubscriptionConfigurationBusinessLogic>();
         _controller = new SubscriptionConfigurationController(_logic);
-        _controller.AddControllerContextWithClaim(IamUserId);
+        _controller.AddControllerContextWithClaim(IamUserId, _identity);
     }
 
     [Fact]
@@ -111,7 +114,7 @@ public class SubscriptionConfigurationControllerTests
         var result = await this._controller.SetProviderCompanyDetail(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.SetProviderCompanyDetailsAsync(data, IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.SetProviderCompanyDetailsAsync(data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 
@@ -121,14 +124,14 @@ public class SubscriptionConfigurationControllerTests
         //Arrange
         var id = Guid.NewGuid();
         var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de");
-        A.CallTo(() => _logic.GetProviderCompanyDetailsAsync(IamUserId))
+        A.CallTo(() => _logic.GetProviderCompanyDetailsAsync(_identity.CompanyId))
             .Returns(data);
 
         //Act
         var result = await this._controller.GetServiceProviderCompanyDetail().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetProviderCompanyDetailsAsync(IamUserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetProviderCompanyDetailsAsync(_identity.CompanyId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<ProviderDetailReturnData>();
         result.Id.Should().Be(id);
         result.CompanyId.Should().Be(CompanyId);

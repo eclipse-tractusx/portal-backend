@@ -38,8 +38,6 @@ public class ServiceAccountRepository : IServiceAccountRepository
 
     public CompanyServiceAccount CreateCompanyServiceAccount(
         Guid identityId,
-        Guid companyId,
-        UserStatusId companyServiceAccountStatusId,
         string name,
         string description,
         string clientId,
@@ -49,11 +47,8 @@ public class ServiceAccountRepository : IServiceAccountRepository
     {
         var entity = new CompanyServiceAccount(
             identityId,
-            companyId,
-            companyServiceAccountStatusId,
             name,
             description,
-            DateTimeOffset.UtcNow,
             companyServiceAccountTypeId)
         {
             ClientId = clientId,

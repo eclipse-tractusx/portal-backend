@@ -72,8 +72,8 @@ public class OfferDocumentService : IOfferDocumentService
             throw new NotFoundException($"{offerTypeId} {id} does not exist");
         }
 
-        if (!result.IsStatusCreated)
-            throw new ConflictException($"offerStatus is in Incorrect State");
+        if (!result.IsStatusMatching)
+            throw new ConflictException("offerStatus is in Incorrect State");
 
         if (!result.IsUserOfProvider)
         {

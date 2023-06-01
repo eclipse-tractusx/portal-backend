@@ -186,6 +186,7 @@ public class AppsController : ControllerBase
     [HttpPost]
     [Route("{appId}/subscribe")]
     [Authorize(Roles = "subscribe_apps")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -193,7 +194,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> AddCompanyAppSubscriptionAsync([FromRoute] Guid appId, [FromBody] IEnumerable<OfferAgreementConsentData> offerAgreementConsentData)
     {
-        await this.WithIdentityAndBearerToken(auth => _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, offerAgreementConsentData, auth.Identity, auth.BearerToken));
+        await this.WithUserId(userId => _appsBusinessLogic.AddOwnCompanyAppSubscriptionAsync(appId, offerAgreementConsentData, userId));
         return NoContent();
     }
 

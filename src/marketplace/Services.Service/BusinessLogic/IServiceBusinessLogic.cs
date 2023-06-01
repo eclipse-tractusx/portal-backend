@@ -43,10 +43,9 @@ public interface IServiceBusinessLogic
     /// </summary>
     /// <param name="serviceId">Id of the service the users company should be subscribed to</param>
     /// <param name="offerAgreementConsentData">The agreement consent data</param>
-    /// <param name="identity">Identity of the user</param>
-    /// <param name="accessToken">The access token of the user</param>
+    /// <param name="userId">Id of the user</param>
     /// <returns></returns>
-    Task<Guid> AddServiceSubscription(Guid serviceId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, IdentityData identity, string accessToken);
+    Task<Guid> AddServiceSubscription(Guid serviceId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, Guid userId);
 
     /// <summary>
     /// Gets the service detail data for the given service
