@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -64,6 +65,7 @@ public class AppReleaseBusinessLogicTest
     private static readonly string IamUserId = Guid.NewGuid().ToString();
     private readonly IOfferSetupService _offerSetupService;
     private readonly AppReleaseBusinessLogic _sut;
+    private readonly IOfferDocumentService _offerDocumentService;
 
     public AppReleaseBusinessLogicTest()
     {
@@ -79,6 +81,7 @@ public class AppReleaseBusinessLogicTest
         _documentRepository = A.Fake<IDocumentRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
         _offerService = A.Fake<IOfferService>();
+        _offerDocumentService = A.Fake<IOfferDocumentService>();
         _offerSetupService = A.Fake<IOfferSetupService>();
         _options = A.Fake<IOptions<AppsSettings>>();
         _companyUser = _fixture.Build<CompanyUser>()
@@ -124,7 +127,7 @@ public class AppReleaseBusinessLogicTest
             .With(x => x.Languages, _languageCodes.Select(x => (x, true)))
             .Create();
 
-        _sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, _offerSetupService);
+        _sut = new AppReleaseBusinessLogic(_portalRepositories, _options, _offerService, _offerDocumentService, _offerSetupService);
     }
 
     [Fact]
@@ -490,7 +493,7 @@ public class AppReleaseBusinessLogicTest
         await _sut.CreateAppDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.UploadDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, OfferTypeId.APP, _settings.UploadAppDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerDocumentService.UploadDocumentAsync(appId, DocumentTypeId.APP_CONTRACT, file, _iamUser.UserEntityId, OfferTypeId.APP, _settings.UploadAppDocumentTypeIds, CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -1126,7 +1129,7 @@ public class AppReleaseBusinessLogicTest
         const string clientProfile = "cl";
         var appId = Guid.NewGuid();
         var data = _fixture.CreateMany<TechnicalUserProfileData>(5);
-        var sut = new AppReleaseBusinessLogic(null!, Options.Create(new AppsSettings { TechnicalUserProfileClient = clientProfile }), _offerService, null!);
+        var sut = new AppReleaseBusinessLogic(null!, Options.Create(new AppsSettings { TechnicalUserProfileClient = clientProfile }), _offerService, _offerDocumentService, null!);
 
         // Act
         await sut
@@ -1149,7 +1152,7 @@ public class AppReleaseBusinessLogicTest
         var appId = Guid.NewGuid();
         A.CallTo(() => _offerService.GetTechnicalUserProfilesForOffer(appId, IamUserId, OfferTypeId.APP))
             .Returns(_fixture.CreateMany<TechnicalUserProfileInformation>(5));
-        var sut = new AppReleaseBusinessLogic(null!, Options.Create(new AppsSettings()), _offerService, null!);
+        var sut = new AppReleaseBusinessLogic(null!, Options.Create(new AppsSettings()), _offerService, _offerDocumentService, null!);
 
         // Act
         var result = await sut.GetTechnicalUserProfilesForOffer(appId, IamUserId)
