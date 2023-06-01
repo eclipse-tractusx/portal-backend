@@ -48,12 +48,12 @@ public class ConnectorsRepository : IConnectorsRepository
             .Where(x => x.ProviderId == companyId && x.StatusId != ConnectorStatusId.INACTIVE);
 
     /// <inheritdoc/>
-    public Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForIamUser(Guid userCompanyId) =>
+    public Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForCompany(Guid companyId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
             _context.Connectors.AsNoTracking()
-                .Where(c => c.HostId == userCompanyId &&
+                .Where(c => c.HostId == companyId &&
                             c.StatusId != ConnectorStatusId.INACTIVE &&
                             c.TypeId == ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
                 .GroupBy(c => c.HostId),
@@ -69,7 +69,7 @@ public class ConnectorsRepository : IConnectorsRepository
                     c.SelfDescriptionDocumentId)
         ).SingleOrDefaultAsync();
 
-    public Task<(ConnectorData ConnectorData, bool IsProviderUser)> GetConnectorByIdForIamUser(Guid connectorId, Guid userCompanyId) =>
+    public Task<(ConnectorData ConnectorData, bool IsProviderCompany)> GetConnectorByIdForCompany(Guid connectorId, Guid companyId) =>
         _context.Connectors
             .AsNoTracking()
             .Where(connector => connector.Id == connectorId && connector.StatusId != ConnectorStatusId.INACTIVE)
@@ -86,7 +86,7 @@ public class ConnectorsRepository : IConnectorsRepository
                     connector.SelfDescriptionDocumentId,
                     connector.SelfDescriptionDocument!.DocumentName
                 ),
-                connector.ProviderId == userCompanyId
+                connector.ProviderId == companyId
             ))
             .SingleOrDefaultAsync();
 
@@ -159,13 +159,13 @@ public class ConnectorsRepository : IConnectorsRepository
         _context.ConnectorClientDetails.Remove(new ConnectorClientDetail(connectorId, null!));
 
     /// <inheritdoc />
-    public Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, Guid userCompanyId) =>
+    public Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, Guid companyId) =>
         _context.Connectors
             .Where(c => c.Id == connectorId)
             .Select(c => new ConnectorUpdateInformation(
                 c.StatusId,
                 c.TypeId,
-                c.HostId == userCompanyId,
+                c.HostId == companyId,
                 c.ConnectorUrl,
                 c.Provider!.BusinessPartnerNumber,
                 c.ClientDetails!.ClientId

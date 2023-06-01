@@ -150,7 +150,7 @@ public class CompanyDataControllerTests
         var result = await this._controller.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(_identity, companyRoleConsentDetails)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(new(_identity.UserId, _identity.CompanyId), companyRoleConsentDetails)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 }

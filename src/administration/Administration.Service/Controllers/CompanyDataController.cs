@@ -64,7 +64,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(CompanyAddressDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync() =>
-        this.WithIdentityData(identity => _logic.GetCompanyDetailsAsync(identity.CompanyId));
+        this.WithCompanyId(companyId => _logic.GetCompanyDetailsAsync(companyId));
 
     /// <summary>
     /// Gets the CompanyAssigned UseCase details
@@ -78,7 +78,7 @@ public class CompanyDataController : ControllerBase
     [Route("preferredUseCases")]
     [ProducesResponseType(typeof(CompanyAssignedUseCaseData), StatusCodes.Status200OK)]
     public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync() =>
-       this.WithIdentityData(identity => _logic.GetCompanyAssigendUseCaseDetailsAsync(identity.CompanyId));
+       this.WithCompanyId(companyId => _logic.GetCompanyAssigendUseCaseDetailsAsync(companyId));
 
     /// <summary>
     /// Create the CompanyAssigned UseCase details
@@ -95,7 +95,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<StatusCodeResult> CreateCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data) =>
-        await this.WithIdentityData(identity => _logic.CreateCompanyAssignedUseCaseDetailsAsync(identity.CompanyId, data.useCaseId)).ConfigureAwait(false)
+        await this.WithCompanyId(companyId => _logic.CreateCompanyAssignedUseCaseDetailsAsync(companyId, data.useCaseId)).ConfigureAwait(false)
             ? StatusCode((int)HttpStatusCode.Created)
             : NoContent();
 
@@ -114,7 +114,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> RemoveCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data)
     {
-        await this.WithIdentityData(identity => _logic.RemoveCompanyAssignedUseCaseDetailsAsync(identity.CompanyId, data.useCaseId)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _logic.RemoveCompanyAssignedUseCaseDetailsAsync(companyId, data.useCaseId)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -133,7 +133,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync([FromQuery] string? languageShortName = null) =>
-        this.WithIdentityData(identity => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(identity.CompanyId, languageShortName));
+        this.WithCompanyId(companyId => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(companyId, languageShortName));
 
     /// <summary>
     /// Post the companyrole and Consent Details
@@ -153,7 +153,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> CreateCompanyRoleAndConsentAgreementDetailsAsync([FromBody] IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails)
     {
-        await this.WithIdentityData(identity => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(identity, companyRoleConsentDetails));
+        await this.WithUserIdAndCompanyId(identity => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(identity, companyRoleConsentDetails));
         return NoContent();
     }
 }

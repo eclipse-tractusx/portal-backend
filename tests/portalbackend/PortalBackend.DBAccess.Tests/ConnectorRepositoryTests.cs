@@ -110,11 +110,11 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetConnectorByIdForIamUser(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833"), _userCompanyId).ConfigureAwait(false);
+        var result = await sut.GetConnectorByIdForCompany(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833"), _userCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result.IsProviderUser.Should().BeTrue();
+        result.IsProviderCompany.Should().BeTrue();
     }
 
     [Fact]
@@ -124,7 +124,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetConnectorByIdForIamUser(Guid.NewGuid(), _userCompanyId).ConfigureAwait(false);
+        var result = await sut.GetConnectorByIdForCompany(Guid.NewGuid(), _userCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(default);
@@ -137,11 +137,11 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetConnectorByIdForIamUser(new Guid("5aea3711-cc54-47b4-b7eb-ba9f3bf1cb15"), Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.GetConnectorByIdForCompany(new Guid("5aea3711-cc54-47b4-b7eb-ba9f3bf1cb15"), Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result.IsProviderUser.Should().BeFalse();
+        result.IsProviderCompany.Should().BeFalse();
     }
 
     #endregion
@@ -330,7 +330,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetManagedConnectorsForIamUser(_userCompanyId).Invoke(0, 10).ConfigureAwait(false);
+        var result = await sut.GetManagedConnectorsForCompany(_userCompanyId).Invoke(0, 10).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -345,7 +345,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetManagedConnectorsForIamUser(Guid.NewGuid()).Invoke(0, 10).ConfigureAwait(false);
+        var result = await sut.GetManagedConnectorsForCompany(Guid.NewGuid()).Invoke(0, 10).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
