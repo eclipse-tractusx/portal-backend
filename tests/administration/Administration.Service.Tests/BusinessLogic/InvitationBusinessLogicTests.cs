@@ -104,7 +104,7 @@ public class InvitationBusinessLogicTests
             _mailingService,
             _options);
 
-        await sut.ExecuteInvitation(invitationData, _identity).ConfigureAwait(false);
+        await sut.ExecuteInvitation(invitationData, _identity.UserId).ConfigureAwait(false);
 
         A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
         A.CallTo(() => _provisioningManager.SetupSharedIdpAsync(A<string>.That.IsEqualTo(_idpName), A<string>.That.IsEqualTo(invitationData.organisationName), A<string?>._)).MustHaveHappened();
@@ -146,7 +146,7 @@ public class InvitationBusinessLogicTests
             _mailingService,
             _options);
 
-        Task Act() => sut.ExecuteInvitation(invitationData, _identity);
+        Task Act() => sut.ExecuteInvitation(invitationData, _identity.UserId);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().Be("email must not be empty (Parameter 'email')");
@@ -175,7 +175,7 @@ public class InvitationBusinessLogicTests
             _mailingService,
             _options);
 
-        Task Act() => sut.ExecuteInvitation(invitationData, _identity);
+        Task Act() => sut.ExecuteInvitation(invitationData, _identity.UserId);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
         error.Message.Should().Be("organisationName must not be empty (Parameter 'organisationName')");
@@ -210,7 +210,7 @@ public class InvitationBusinessLogicTests
             _mailingService,
             _options);
 
-        Task Act() => sut.ExecuteInvitation(invitationData, _identity);
+        Task Act() => sut.ExecuteInvitation(invitationData, _identity.UserId);
 
         var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
         error.Message.Should().Be(_error.Message);
@@ -241,7 +241,7 @@ public class InvitationBusinessLogicTests
             _mailingService,
             _options);
 
-        Task Act() => sut.ExecuteInvitation(invitationData, _identity);
+        Task Act() => sut.ExecuteInvitation(invitationData, _identity.UserId);
 
         var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
         error.Message.Should().Be(_error.Message);

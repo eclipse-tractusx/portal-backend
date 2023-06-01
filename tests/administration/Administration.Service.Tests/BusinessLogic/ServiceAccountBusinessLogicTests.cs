@@ -49,6 +49,7 @@ public class ServiceAccountBusinessLogicTests
     private readonly IdentityData _identity = new(ValidAdminId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, ValidCompanyId);
     private readonly IEnumerable<Guid> _userRoleIds = Enumerable.Repeat(Guid.NewGuid(), 1);
     private readonly IServiceAccountCreation _serviceAccountCreation;
+    private readonly ICompanyRepository _companyRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IServiceAccountRepository _serviceAccountRepository;
@@ -65,6 +66,7 @@ public class ServiceAccountBusinessLogicTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
+        _companyRepository = A.Fake<ICompanyRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
@@ -90,7 +92,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation);
 
         // Act
-        var result = await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, _identity).ConfigureAwait(false);
+        var result = await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -107,11 +109,11 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, identity).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, identity.CompanyId).ConfigureAwait(false);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
-        exception.Message.Should().Be($"user {identity.UserEntityId} is not associated with any company");
+        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
+        exception.Message.Should().Be($"company {identity.CompanyId} does not exist");
     }
 
     [Fact]
@@ -123,7 +125,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, _identity).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -140,7 +142,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, _identity).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -158,7 +160,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, _identity).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -178,7 +180,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, _identity).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -190,15 +192,15 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange
         SetupGetOwnCompanyServiceAccountDetails();
-        var invalidUser = _fixture.Create<IdentityData>();
+        var invalidCompanyId = Guid.NewGuid();
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, invalidUser).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, invalidCompanyId).ConfigureAwait(false);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
-        exception.Message.Should().Be($"serviceAccount {ValidServiceAccountId} not found in company of {invalidUser.UserEntityId}");
+        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
+        exception.Message.Should().Be($"serviceAccount {ValidServiceAccountId} not found for company {invalidCompanyId}");
     }
 
     [Fact]
@@ -210,11 +212,11 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.GetOwnCompanyServiceAccountDetailsAsync(invalidServiceAccountId, _identity).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyServiceAccountDetailsAsync(invalidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
-        exception.Message.Should().Be($"serviceAccount {invalidServiceAccountId} not found in company of {ValidAdminId}");
+        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
+        exception.Message.Should().Be($"serviceAccount {invalidServiceAccountId} not found for company {_identity.CompanyId}");
     }
 
     #endregion
@@ -229,7 +231,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        var result = await sut.ResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId, _identity).ConfigureAwait(false);
+        var result = await sut.ResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -245,11 +247,11 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.ResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId, invalidUser).ConfigureAwait(false);
+        async Task Act() => await sut.ResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId, invalidUser.CompanyId).ConfigureAwait(false);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
-        exception.Message.Should().Be($"serviceAccount {ValidServiceAccountId} not found in company of {invalidUser.UserEntityId}");
+        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
+        exception.Message.Should().Be($"serviceAccount {ValidServiceAccountId} not found for company {invalidUser.CompanyId}");
     }
 
     [Fact]
@@ -261,11 +263,11 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.ResetOwnCompanyServiceAccountSecretAsync(invalidServiceAccountId, _identity).ConfigureAwait(false);
+        async Task Act() => await sut.ResetOwnCompanyServiceAccountSecretAsync(invalidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
-        exception.Message.Should().Be($"serviceAccount {invalidServiceAccountId} not found in company of {ValidAdminId}");
+        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
+        exception.Message.Should().Be($"serviceAccount {invalidServiceAccountId} not found for company {_identity.CompanyId}");
     }
 
     #endregion
@@ -281,7 +283,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        var result = await sut.UpdateOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, data, _identity).ConfigureAwait(false);
+        var result = await sut.UpdateOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, data, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -297,7 +299,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, data, _identity).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, data, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ArgumentException>(Act);
@@ -313,7 +315,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(Guid.NewGuid(), data, _identity).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(Guid.NewGuid(), data, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ArgumentException>(Act);
@@ -332,11 +334,11 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(invalidServiceAccountId, data, _identity).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(invalidServiceAccountId, data, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
-        exception.Message.Should().Be($"serviceAccount {invalidServiceAccountId} not found in company of {ValidAdminId}");
+        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
+        exception.Message.Should().Be($"serviceAccount {invalidServiceAccountId} not found for company {_identity.CompanyId}");
     }
 
     [Fact]
@@ -353,10 +355,10 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(InactiveServiceAccount, data, _identity).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(InactiveServiceAccount, data, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(Act);
+        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
         exception.Message.Should().Be($"serviceAccount {InactiveServiceAccount} is already INACTIVE");
     }
 
@@ -376,7 +378,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, _identity).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -397,11 +399,11 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(serviceAccountId, _identity).ConfigureAwait(false);
+        async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(serviceAccountId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"serviceAccount {serviceAccountId} not found in company of user {ValidAdminId}");
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"serviceAccount {serviceAccountId} not found for company {_identity.CompanyId}");
     }
 
     [Theory]
@@ -423,7 +425,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId, _identity).ConfigureAwait(false);
+        await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         if (withClient)
@@ -450,16 +452,20 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange
         var data = _fixture.CreateMany<UserRoleWithDescription>(15);
-        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(_identity.CompanyId, ClientId, A<string>._))
+
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(A<Guid>._, A<string>._, A<string>._))
             .Returns(data.ToAsyncEnumerable());
 
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
+
         IServiceAccountBusinessLogic sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
-        var result = await sut.GetServiceAccountRolesAsync(_identity, null).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetServiceAccountRolesAsync(_identity.CompanyId, null).ToListAsync().ConfigureAwait(false);
 
         // Assert
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(_identity.CompanyId, ClientId, A<string>._)).MustHaveHappenedOnceExactly();
+
         result.Should().NotBeNull();
         result.Should().HaveCount(15);
         // Sonar fix -> Return value of pure method is not used
@@ -475,15 +481,15 @@ public class ServiceAccountBusinessLogicTests
 
     private void SetupCreateOwnCompanyServiceAccount()
     {
-        A.CallTo(() => _userRepository.GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(_identity.UserId, ClientId))
-            .Returns((ValidCompanyId, ValidBpn, new[] { UserRoleId1, UserRoleId2 }));
-        A.CallTo(() => _userRepository.GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _identity.UserId), ClientId))
-            .Returns(((Guid, string, IEnumerable<Guid>))default);
+        A.CallTo(() => _companyRepository.GetBpnAndTechnicalUserRoleIds(_identity.CompanyId, ClientId))
+            .Returns((ValidBpn, new[] { UserRoleId1, UserRoleId2 }));
+        A.CallTo(() => _companyRepository.GetBpnAndTechnicalUserRoleIds(A<Guid>.That.Not.Matches(x => x == _identity.CompanyId), ClientId))
+            .Returns(((string?, IEnumerable<Guid>))default);
 
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>.That.Matches(x => x == ValidCompanyId), A<IEnumerable<string>>._, CompanyServiceAccountTypeId.OWN, A<bool>._, null))
             .Returns((ClientId, new ServiceAccountData(ClientId, Guid.NewGuid().ToString(), new ClientAuthData(IamClientAuthMethod.SECRET)), Guid.NewGuid(), Enumerable.Empty<UserRoleData>()));
 
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
     }
 
     private void SetupGetOwnCompanyServiceAccountDetails()

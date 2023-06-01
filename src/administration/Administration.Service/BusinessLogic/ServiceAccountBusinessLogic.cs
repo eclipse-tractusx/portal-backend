@@ -25,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
@@ -53,7 +52,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         _settings = options.Value;
     }
 
-    public async Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos, IdentityData identity)
+    public async Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos, Guid companyId)
     {
         if (serviceAccountCreationInfos.IamClientAuthMethod != IamClientAuthMethod.SECRET)
         {
@@ -64,14 +63,14 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             throw new ControllerArgumentException("name must not be empty", "name");
         }
 
-        var result = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(identity.UserId, _settings.ClientId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpnAndTechnicalUserRoleIds(companyId, _settings.ClientId).ConfigureAwait(false);
         if (result == default)
         {
-            throw new NotFoundException($"user {identity.UserEntityId} is not associated with any company");
+            throw new ConflictException($"company {companyId} does not exist");
         }
         if (string.IsNullOrEmpty(result.Bpn))
         {
-            throw new ConflictException($"bpn not set for company {result.CompanyId}");
+            throw new ConflictException($"bpn not set for company {companyId}");
         }
 
         var unassignable = serviceAccountCreationInfos.UserRoleIds.Except(result.TechnicalUserRoleIds);
@@ -81,7 +80,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         }
 
         var companyServiceAccountTypeId = CompanyServiceAccountTypeId.OWN;
-        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, result.CompanyId, new[] { result.Bpn }, companyServiceAccountTypeId, false).ConfigureAwait(false);
+        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, companyId, new[] { result.Bpn }, companyServiceAccountTypeId, false).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return new ServiceAccountDetails(
@@ -95,13 +94,13 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             serviceAccountData.AuthData.Secret);
     }
 
-    public async Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId, IdentityData identity)
+    public async Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId, Guid companyId)
     {
         var serviceAccountRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
-        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, identity.CompanyId).ConfigureAwait(false);
+        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, companyId).ConfigureAwait(false);
         if (result == default)
         {
-            throw new NotFoundException($"serviceAccount {serviceAccountId} not found in company of user {identity.UserEntityId}");
+            throw new ConflictException($"serviceAccount {serviceAccountId} not found for company {companyId}");
         }
 
         _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(serviceAccountId, null, i =>
@@ -133,13 +132,13 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<ServiceAccountDetails> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, IdentityData identity)
+    public async Task<ServiceAccountDetails> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, Guid companyId)
     {
-        var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, identity.CompanyId);
+        var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, companyId);
 
         if (result == null)
         {
-            throw new NotFoundException($"serviceAccount {serviceAccountId} not found in company of {identity.UserEntityId}");
+            throw new ConflictException($"serviceAccount {serviceAccountId} not found for company {companyId}");
         }
         if (result.ClientId == null || result.ClientClientId == null)
         {
@@ -158,13 +157,13 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.SubscriptionId);
     }
 
-    public async Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, IdentityData identity)
+    public async Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, Guid companyId)
     {
-        var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, identity.CompanyId);
+        var result = await _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, companyId);
 
         if (result == null)
         {
-            throw new NotFoundException($"serviceAccount {serviceAccountId} not found in company of {identity.UserEntityId}");
+            throw new ConflictException($"serviceAccount {serviceAccountId} not found for company {companyId}");
         }
         if (result.ClientId == null || result.ClientClientId == null)
         {
@@ -183,7 +182,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.SubscriptionId);
     }
 
-    public async Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountDetails, IdentityData identity)
+    public async Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountDetails, Guid companyId)
     {
         if (serviceAccountDetails.IamClientAuthMethod != IamClientAuthMethod.SECRET)
         {
@@ -194,14 +193,14 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             throw new ArgumentException($"serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountDetails.ServiceAccountId}", nameof(serviceAccountId));
         }
         var serviceAccountRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
-        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(serviceAccountId, identity.CompanyId).ConfigureAwait(false);
+        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(serviceAccountId, companyId).ConfigureAwait(false);
         if (result == null)
         {
-            throw new NotFoundException($"serviceAccount {serviceAccountId} not found in company of {identity.UserEntityId}");
+            throw new ConflictException($"serviceAccount {serviceAccountId} not found for company {companyId}");
         }
         if (result.UserStatusId == UserStatusId.INACTIVE)
         {
-            throw new ArgumentException($"serviceAccount {serviceAccountId} is already INACTIVE");
+            throw new ConflictException($"serviceAccount {serviceAccountId} is already INACTIVE");
         }
         if (result.ClientId == null)
         {
@@ -248,13 +247,13 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             result.OfferSubscriptionId);
     }
 
-    public Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, IdentityData identity) =>
+    public Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, Guid companyId) =>
         Pagination.CreateResponseAsync(
             page,
             size,
             15,
-            _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountsUntracked(identity.CompanyId));
+            _portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountsUntracked(companyId));
 
-    IAsyncEnumerable<UserRoleWithDescription> IServiceAccountBusinessLogic.GetServiceAccountRolesAsync(IdentityData identity, string? languageShortName) =>
-        _portalRepositories.GetInstance<IUserRolesRepository>().GetServiceAccountRolesAsync(identity.CompanyId, _settings.ClientId, languageShortName ?? Constants.DefaultLanguage);
+    IAsyncEnumerable<UserRoleWithDescription> IServiceAccountBusinessLogic.GetServiceAccountRolesAsync(Guid companyId, string? languageShortName) =>
+        _portalRepositories.GetInstance<IUserRolesRepository>().GetServiceAccountRolesAsync(companyId, _settings.ClientId, languageShortName ?? Constants.DefaultLanguage);
 }

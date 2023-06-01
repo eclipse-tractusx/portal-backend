@@ -636,6 +636,26 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetBpnAndTechnicalUserRoleIds
+
+    [Fact]
+    public async Task GetCompanyIdAndBpnForIamUserUntrackedAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetBpnAndTechnicalUserRoleIds(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), "technical_roles_management").ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.Bpn.Should().Be("BPNL00000003CRHK");
+        result.TechnicalUserRoleIds.Should().HaveCount(9);
+        result.TechnicalUserRoleIds.Should().OnlyHaveUniqueItems();
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(ICompanyRepository, PortalDbContext)> CreateSut()

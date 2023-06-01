@@ -191,16 +191,6 @@ public class UserRepository : IUserRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(Guid CompanyId, string? Bpn, IEnumerable<Guid> TechnicalUserRoleIds)> GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(Guid companyUserId, string technicalUserClientId) =>
-        _dbContext.CompanyUsers
-            .AsNoTracking()
-            .Where(user => user.Id == companyUserId)
-            .Select(user => new ValueTuple<Guid, string?, IEnumerable<Guid>>(
-                user.Identity!.Company!.Id,
-                user.Identity!.Company!.BusinessPartnerNumber,
-                user.Identity!.Company!.CompanyAssignedRoles.SelectMany(car => car.CompanyRole!.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(ur => ur.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == technicalUserClientId)).Select(ur => ur.Id)).Distinct()))
-            .SingleOrDefaultAsync();
-
     public Task<CompanyOwnUserDetails?> GetUserDetailsUntrackedAsync(Guid companyUserId, IEnumerable<Guid> userRoleIds) =>
         _dbContext.CompanyUsers
             .AsNoTracking()

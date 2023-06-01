@@ -19,12 +19,11 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic
 {
     public interface IInvitationBusinessLogic
     {
-        Task ExecuteInvitation(CompanyInvitationData invitationData, IdentityData identity);
+        Task ExecuteInvitation(CompanyInvitationData invitationData, Guid userId);
     }
 }

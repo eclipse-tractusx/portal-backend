@@ -28,11 +28,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public interface IServiceAccountBusinessLogic
 {
-    Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos, IdentityData identity);
-    Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId, IdentityData identity);
-    Task<ServiceAccountDetails> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, IdentityData identity);
-    Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountDetails, IdentityData identity);
-    Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, IdentityData identity);
-    Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, IdentityData identity);
-    IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(IdentityData identity, string? languageShortName);
+    Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos, Guid companyId);
+    Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId, Guid companyId);
+    Task<ServiceAccountDetails> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, Guid companyId);
+    Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountDetails, Guid companyId);
+    Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId, Guid companyId);
+    Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, Guid companyId);
+    IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(Guid companyId, string? languageShortName);
 }

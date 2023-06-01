@@ -32,7 +32,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
-    private const string ClientId = "technical_roles_management";
     private const string ValidCompanyUserTxt = "ac1cf001-7fbc-1f2f-817f-bce058020006";
     private const string ValidUserCompanyId = "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87";
     private readonly Guid _validCompanyUser = new(ValidCompanyUserTxt);
@@ -270,27 +269,6 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result.Should().Be("BPNL00000003CRHK");
-    }
-
-    #endregion
-
-    #region GetCompanyIdAndBpnForIamUserUntrackedAsync
-
-    [Fact]
-    public async Task GetCompanyIdAndBpnForIamUserUntrackedAsync_WithValidData_ReturnsExpected()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(_validCompanyUser, ClientId).ConfigureAwait(false);
-
-        // Assert
-        result.Should().NotBe(default);
-        result.Bpn.Should().Be("BPNL00000003CRHK");
-        result.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
-        result.TechnicalUserRoleIds.Should().HaveCount(9);
-        result.TechnicalUserRoleIds.Should().OnlyHaveUniqueItems();
     }
 
     #endregion
