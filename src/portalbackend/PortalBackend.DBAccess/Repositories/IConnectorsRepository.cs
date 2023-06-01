@@ -105,7 +105,7 @@ public interface IConnectorsRepository
     /// Gets the data required for the connector update
     /// </summary>
     /// <param name="connectorId">Id of the connector</param>
-    /// <param name="userCompanyId">Id of the Users company</param>
+    /// <param name="companyId">Id of the Users company</param>
     /// <returns>Returns the update information</returns>
-    Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, Guid userCompanyId);
+    Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, Guid companyId);
 }
