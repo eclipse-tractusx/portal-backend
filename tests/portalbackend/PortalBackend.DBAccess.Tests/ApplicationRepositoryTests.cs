@@ -97,7 +97,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result.IsValidApplicationId.Should().BeTrue();
-        result.IsSameCompanyUser.Should().BeTrue();
+        result.IsValidCompany.Should().BeTrue();
         result.Data.Should().NotBeNull();
         result.Data!.DocumentNames.Should().NotBeNull();
     }
@@ -115,7 +115,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result.IsValidApplicationId.Should().BeFalse();
-        result.IsSameCompanyUser.Should().BeFalse();
+        result.IsValidCompany.Should().BeFalse();
         result.Data.Should().BeNull();
     }
 
@@ -131,7 +131,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result.IsValidApplicationId.Should().BeTrue();
-        result.IsSameCompanyUser.Should().BeFalse();
+        result.IsValidCompany.Should().BeFalse();
         result.Data.Should().BeNull();
     }
 

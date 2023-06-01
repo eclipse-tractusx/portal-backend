@@ -118,7 +118,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
         public Task<int> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
-            this.WithIdentityData(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, user, cancellationToken));
+            this.WithIdentityIdAndCompanyId(user => _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId, user.CompanyId, user.IdentityId, cancellationToken));
 
         /// <summary>
         /// Gets a specific document by its id
@@ -139,7 +139,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
         {
-            var (fileName, content, mediaType) = await this.WithIdentityData(user => _registrationBusinessLogic.GetDocumentContentAsync(documentId, user.IdentityId));
+            var (fileName, content, mediaType) = await this.WithIdentityId(identityId => _registrationBusinessLogic.GetDocumentContentAsync(documentId, identityId));
             return File(content, mediaType, fileName);
         }
 
@@ -161,7 +161,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId) =>
-           this.WithIdentityData(user => _registrationBusinessLogic.GetUploadedDocumentsAsync(applicationId, documentTypeId, user.IdentityId));
+           this.WithIdentityId(identityId => _registrationBusinessLogic.GetUploadedDocumentsAsync(applicationId, documentTypeId, identityId));
 
         /// <summary>
         /// Get all composite client roles
@@ -188,7 +188,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [Route("applications")]
         [ProducesResponseType(typeof(IAsyncEnumerable<CompanyApplicationData>), StatusCodes.Status200OK)]
         public IAsyncEnumerable<CompanyApplicationData> GetApplicationsWithStatusAsync() =>
-            this.WithIdentityData(user => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(user.CompanyId));
+            this.WithCompanyId(companyId => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(companyId));
 
         /// <summary>
         /// Sets the status of a specific application.
@@ -203,13 +203,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="403">User Not associated wit application</response>
         [HttpPut]
         [Authorize(Roles = "submit_registration")]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
         [Route("application/{applicationId}/status")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task<int> SetApplicationStatusAsync([FromRoute] Guid applicationId, [FromQuery] CompanyApplicationStatusId status) =>
-            this.WithIdentityData(user => _registrationBusinessLogic.SetOwnCompanyApplicationStatusAsync(applicationId, status, user));
+            this.WithCompanyId(companyId => _registrationBusinessLogic.SetOwnCompanyApplicationStatusAsync(applicationId, status, companyId));
 
         /// <summary>
         /// Gets the status of an application for the given id
@@ -222,12 +223,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="403">User is not associated with  application.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
         [Route("application/{applicationId}/status")]
         [ProducesResponseType(typeof(CompanyApplicationStatusId), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task<CompanyApplicationStatusId> GetApplicationStatusAsync([FromRoute] Guid applicationId) =>
-            this.WithIdentityData(user => _registrationBusinessLogic.GetOwnCompanyApplicationStatusAsync(applicationId, user));
+            this.WithCompanyId(companyId => _registrationBusinessLogic.GetOwnCompanyApplicationStatusAsync(applicationId, companyId));
 
         /// <summary>
         /// Gets the company of a specific application with its address
@@ -240,13 +242,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="403">User is not associated with company application.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
         [Route("application/{applicationId}/companyDetailsWithAddress")]
         [ProducesResponseType(typeof(CompanyDetailData), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task<CompanyDetailData> GetCompanyDetailDataAsync([FromRoute] Guid applicationId) =>
-            this.WithIdentityData(identity =>
-                _registrationBusinessLogic.GetCompanyDetailData(applicationId, identity));
+            this.WithCompanyId(companyId =>
+                _registrationBusinessLogic.GetCompanyDetailData(applicationId, companyId));
 
         /// <summary>
         /// Sets the company with its address for the given application id
@@ -260,14 +263,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="403">User is not associated with company application or application status is invalid</response>
         [HttpPost]
         [Authorize(Roles = "add_company_data")]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
         [Route("application/{applicationId}/companyDetailsWithAddress")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task SetCompanyDetailDataAsync([FromRoute] Guid applicationId, [FromBody] CompanyDetailData companyDetailData) =>
-            this.WithIdentityData(identity =>
-                _registrationBusinessLogic.SetCompanyDetailDataAsync(applicationId, companyDetailData, identity));
+            this.WithCompanyId(companyId =>
+                _registrationBusinessLogic.SetCompanyDetailDataAsync(applicationId, companyDetailData, companyId));
 
         /// <summary>
         /// Invites the given user to the given application
@@ -289,8 +293,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
         public Task<int> InviteNewUserAsync([FromRoute] Guid applicationId, [FromBody] UserCreationInfoWithMessage userCreationInfo) =>
-            this.WithIdentityData(identity =>
-                _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, identity.CompanyId));
+            this.WithCompanyId(companyId =>
+                _registrationBusinessLogic.InviteNewUserAsync(applicationId, userCreationInfo, companyId));
 
         /// <summary>
         /// Post the agreement consent status for the given application.
@@ -305,13 +309,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="400">Input is incorrect.</response>
         [HttpPost]
         [Authorize(Roles = "sign_consent")]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
+        [Authorize(Policy = PolicyTypes.ValidIdentity)]
         [Route("application/{applicationId}/companyRoleAgreementConsents")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public Task<int> SubmitCompanyRoleConsentToAgreementsAsync([FromRoute] Guid applicationId, [FromBody] CompanyRoleAgreementConsents companyRolesAgreementConsents) =>
-            this.WithIdentityData(identity => _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, companyRolesAgreementConsents, identity));
+            this.WithIdentityIdAndCompanyId(identity => _registrationBusinessLogic.SubmitRoleConsentAsync(applicationId, companyRolesAgreementConsents, identity.IdentityId, identity.CompanyId));
 
         /// <summary>
         /// Gets the agreement consent statuses for the given application
@@ -323,12 +329,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="403">The user is not assignable to the given application.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
+        [Authorize(Policy = PolicyTypes.ValidIdentity)]
         [Route("application/{applicationId}/companyRoleAgreementConsents")]
         [ProducesResponseType(typeof(CompanyRoleAgreementConsents), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task<CompanyRoleAgreementConsents> GetAgreementConsentStatusesAsync([FromRoute] Guid applicationId) =>
-            this.WithIdentityData(identity =>
-                _registrationBusinessLogic.GetRoleAgreementConsentsAsync(applicationId, identity));
+            this.WithIdentityId(identityId => _registrationBusinessLogic.GetRoleAgreementConsentsAsync(applicationId, identityId));
 
         /// <summary>
         /// Gets the company role agreement data
@@ -355,14 +361,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="500">Internal Server Error.</response>
         [HttpPost]
         [Authorize(Roles = "submit_registration")]
+        [Authorize(Policy = PolicyTypes.CompanyUser)]
+        [Authorize(Policy = PolicyTypes.ValidIdentity)]
         [Route("application/{applicationId}/submitRegistration")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public Task<bool> SubmitRegistrationAsync([FromRoute] Guid applicationId) =>
-            this.WithIdentityData(identity =>
-                _registrationBusinessLogic.SubmitRegistrationAsync(applicationId, identity));
+            this.WithIdentityData(identity => _registrationBusinessLogic.SubmitRegistrationAsync(applicationId, identity));
 
         /// <summary>
         /// Gets all invited users for a given application
@@ -387,12 +394,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="403">The user id is not associated with invitation.</response>
         [HttpPut]
         [Authorize(Roles = "view_registration")]
+        [Authorize(Policy = PolicyTypes.ValidIdentity)]
         [Route("invitation/status")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public Task<int> SetInvitationStatusAsync() =>
-           this.WithIdentityData(identity =>
-                _registrationBusinessLogic.SetInvitationStatusAsync(identity));
+           this.WithIdentityId(identityId => _registrationBusinessLogic.SetInvitationStatusAsync(identityId));
 
         /// <summary>
         /// Gets the registration data for the given application id
@@ -406,14 +413,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="503">Registration data null.</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
         [Route("application/{applicationId}/registrationData")]
         [ProducesResponseType(typeof(CompanyRegistrationData), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
         public Task<CompanyRegistrationData> GetRegistrationDataAsync([FromRoute] Guid applicationId) =>
-            this.WithIdentityData(identity =>
-                _registrationBusinessLogic.GetRegistrationDataAsync(applicationId, identity));
+            this.WithCompanyId(companyId =>
+                _registrationBusinessLogic.GetRegistrationDataAsync(applicationId, companyId));
 
         /// <summary>
         /// Gets the company roles and roles description
@@ -443,6 +451,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [HttpDelete]
         [Route("documents/{documentId}")]
         [Authorize(Roles = "delete_documents")]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -450,7 +459,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
         public async Task<IActionResult> DeleteRegistrationDocument([FromRoute] Guid documentId)
         {
-            await this.WithIdentityData(identity => _registrationBusinessLogic.DeleteRegistrationDocumentAsync(documentId, identity));
+            await this.WithCompanyId(companyId => _registrationBusinessLogic.DeleteRegistrationDocumentAsync(documentId, companyId));
             return NoContent();
         }
 
