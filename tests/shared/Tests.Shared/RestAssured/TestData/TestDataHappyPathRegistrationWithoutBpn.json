@@ -2,7 +2,7 @@
   {
     "companyDetailData": {
     "companyId": "00000000-0000-0000-0000-000000000001",
-    "name": "Test-Catena-X-33",
+    "name": "Test-Catena-X",
     "city": "Munich",
     "streetName": "Main street",
     "countryAlpha2Code": "DE",
@@ -22,12 +22,14 @@
   },
     "companyRoles": [
       "ACTIVE_PARTICIPANT", "APP_PROVIDER"
-    ]
+    ],
+    "documentTypeId": "COMMERCIAL_REGISTER_EXTRACT",
+    "documentPath": ""
   },
   {
     "companyDetailData": {
     "companyId": "00000000-0000-0000-0000-000000000002",
-    "name": "Test-Catena-X-34",
+    "name": "Test-Catena-X",
     "city": "Munich",
     "streetName": "Main street",
     "countryAlpha2Code": "DE",
@@ -47,5 +49,8 @@
   },
     "companyRoles": [
       "ACTIVE_PARTICIPANT", "APP_PROVIDER", "SERVICE_PROVIDER"
-    ]}
+    ],
+    "documentTypeId": "CX_FRAME_CONTRACT",
+    "documentPath": ""
+  }
 ]
