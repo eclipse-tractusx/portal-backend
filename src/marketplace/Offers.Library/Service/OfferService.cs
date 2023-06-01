@@ -562,7 +562,7 @@ public class OfferService : IOfferService
                     declineData.ActiveDocumentStatusDatas.Select(x => new ValueTuple<Guid, Action<Document>?, Action<Document>>(
                         x.DocumentId,
                         document => document.DocumentStatusId = x.StatusId,
-                        document => document.DocumentStatusId = DocumentStatusId.INACTIVE)));
+                        document => document.DocumentStatusId = DocumentStatusId.PENDING)));
         }
         var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
