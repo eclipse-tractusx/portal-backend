@@ -44,14 +44,6 @@ public class AppsSettings
     public IEnumerable<NotificationTypeId> SubmitAppNotificationTypeIds { get; set; } = null!;
 
     /// <summary>
-    /// Document Type Id
-    /// </summary>
-    /// <value></value>
-    [Required]
-    [ValidateEnumValues]
-    public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; } = null!;
-
-    /// <summary>
     /// BasePortalAddress url required for subscription email 
     /// </summary>
     [Required(AllowEmptyStrings = false)]
