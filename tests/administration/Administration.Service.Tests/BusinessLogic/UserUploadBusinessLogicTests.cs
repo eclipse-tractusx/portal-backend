@@ -85,7 +85,7 @@ public class UserUploadBusinessLogicTests
 
         var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, _identity, CancellationToken.None).ConfigureAwait(false);
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), _identity.CompanyUserId)).MustHaveHappened();
+        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), _identity.IdentityId)).MustHaveHappened();
         result.Should().NotBeNull();
         result.Created.Should().Be(0);
         result.Error.Should().Be(0);
@@ -311,7 +311,7 @@ public class UserUploadBusinessLogicTests
 
         var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, _identity, CancellationToken.None).ConfigureAwait(false);
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identity.CompanyUserId, A<Guid?>._)).MustHaveHappened();
+        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identity.IdentityId, A<Guid?>._)).MustHaveHappened();
         result.Should().NotBeNull();
         result.Created.Should().Be(0);
         result.Error.Should().Be(0);
@@ -498,10 +498,10 @@ public class UserUploadBusinessLogicTests
 
         A.CallTo(() => _options.Value).Returns(_settings);
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), _identity.CompanyUserId))
+        A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>.That.IsEqualTo(_identityProviderId), _identity.IdentityId))
             .Returns((_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, false).Create(), _fixture.Create<string>()));
 
-        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identity.CompanyUserId, A<Guid?>._))
+        A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identity.IdentityId, A<Guid?>._))
             .Returns((_fixture.Build<CompanyNameIdpAliasData>().With(x => x.IsSharedIdp, true).Create(), _fixture.Create<string>()));
 
         A.CallTo(() => _userProvisioningService.GetOwnCompanyPortalRoleDatas(A<string>._, A<IEnumerable<string>>._, A<Guid>._))

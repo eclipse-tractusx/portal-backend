@@ -183,7 +183,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             result.ConsentStatusDetails,
             joined.SelectMany(x => x.ActiveAgreements).DistinctBy(active => active.AgreementId).Select(active => (active.AgreementId, active.ConsentStatus)).ToList(),
             identity.CompanyId,
-            identity.CompanyUserId,
+            identity.IdentityId,
             DateTimeOffset.UtcNow);
 
         _portalRepositories.GetInstance<ICompanyRolesRepository>().CreateCompanyAssignedRoles(identity.CompanyId, joined.Select(x => x.CompanyRoleId));

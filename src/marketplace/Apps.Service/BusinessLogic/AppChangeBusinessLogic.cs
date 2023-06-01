@@ -104,7 +104,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         };
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = _settings.ActiveAppNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(_settings.ActiveAppCompanyAdminRoles, identity.CompanyUserId, content, result.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
+        await _notificationService.CreateNotifications(_settings.ActiveAppCompanyAdminRoles, identity.IdentityId, content, result.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return roleData;
     }
@@ -184,7 +184,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
         var doc = documentRepository.CreateDocument(document.FileName, documentContent, hash, documentContentType, DocumentTypeId.APP_LEADIMAGE, x =>
         {
-            x.CompanyUserId = identity.CompanyUserId;
+            x.CompanyUserId = identity.IdentityId;
             x.DocumentStatusId = DocumentStatusId.LOCKED;
         });
         offerRepository.CreateOfferAssignedDocument(appId, doc.Id);

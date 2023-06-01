@@ -217,7 +217,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var companyId = _identity.CompanyId;
-        var companyUserId = _identity.CompanyUserId;
+        var companyUserId = _identity.IdentityId;
         var agreementId1 = _fixture.Create<Guid>();
         var agreementId2 = _fixture.Create<Guid>();
         var agreementId3 = _fixture.Create<Guid>();

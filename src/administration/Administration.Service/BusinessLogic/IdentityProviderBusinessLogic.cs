@@ -541,7 +541,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 numIdps = ParseCSVFirstLineReturningNumIdps(line);
             },
             line => ParseCSVLine(line, numIdps, existingAliase),
-            lines => ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(lines, userRepository, identity.CompanyId, sharedIdpAlias, identity.CompanyUserId, cancellationToken),
+            lines => ProcessOwnCompanyUsersIdentityProviderLinkDataInternalAsync(lines, userRepository, identity.CompanyId, sharedIdpAlias, identity.IdentityId, cancellationToken),
             cancellationToken
         ).ConfigureAwait(false);
 

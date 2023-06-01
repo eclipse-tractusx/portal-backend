@@ -141,7 +141,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         var (name, connectorUrl, location, certificate, technicalUserId) = connectorInputModel;
         await CheckLocationExists(location);
 
-        var (companyId, userId) = (identity.CompanyId, identity.CompanyUserId);
+        var (companyId, userId) = (identity.CompanyId, CompanyUserId: identity.IdentityId);
         var result = await _portalRepositories
             .GetInstance<ICompanyRepository>()
             .GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(companyId)
@@ -195,7 +195,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             providerBpn,
             result.SelfDescriptionDocumentId!.Value,
             certificate,
-            identity.CompanyUserId,
+            identity.IdentityId,
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -318,7 +318,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
         {
             con.StatusId = ConnectorStatusId.INACTIVE;
-            con.LastEditorId = identity.CompanyUserId;
+            con.LastEditorId = identity.IdentityId;
             con.DateLastChanged = DateTimeOffset.UtcNow;
         });
         await _dapsService.DeleteDapsClient(result.DapsClientId, cancellationToken).ConfigureAwait(false);
@@ -375,7 +375,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             con.DapsRegistrationSuccessful = true;
             con.StatusId = ConnectorStatusId.ACTIVE;
             con.DateLastChanged = DateTimeOffset.UtcNow;
-            con.LastEditorId = identity.CompanyUserId;
+            con.LastEditorId = identity.IdentityId;
         });
 
         connectorsRepository.CreateConnectorClientDetails(connectorId, response.ClientId);
@@ -401,7 +401,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw new ConflictException($"Connector {data.ExternalId} already has a document assigned");
         }
 
-        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, identity.CompanyUserId, cancellationToken).ConfigureAwait(false);
+        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, identity.IdentityId, cancellationToken).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -448,7 +448,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         var bpn = connector.Type == ConnectorTypeId.CONNECTOR_AS_A_SERVICE
             ? connector.Bpn
             : await _portalRepositories.GetInstance<IUserRepository>()
-                .GetCompanyBpnForIamUserAsync(identity.CompanyUserId)
+                .GetCompanyBpnForIamUserAsync(identity.IdentityId)
                 .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(bpn))
         {

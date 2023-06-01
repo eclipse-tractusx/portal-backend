@@ -393,4 +393,8 @@ public class ApplicationRepository : IApplicationRepository
             .Where(x => x.Id == applicationId && x.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
             .Select(x => new ValueTuple<Guid, string>(x.CompanyId, x.Company!.Name))
             .SingleOrDefaultAsync();
+
+    public Task<bool> IsValidApplicationForCompany(Guid applicationId, Guid companyId) =>
+        _dbContext.CompanyApplications
+            .AnyAsync(application => application.Id == applicationId && application.CompanyId == companyId);
 }

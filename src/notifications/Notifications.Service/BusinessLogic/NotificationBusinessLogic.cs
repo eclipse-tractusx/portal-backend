@@ -50,7 +50,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     public async Task<Guid> CreateNotificationAsync(IdentityData identity,
         NotificationCreationData creationData, Guid receiverId)
     {
-        var users = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithIamUserCheck(identity.CompanyUserId, receiverId).ToListAsync().ConfigureAwait(false);
+        var users = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserWithIamUserCheck(identity.IdentityId, receiverId).ToListAsync().ConfigureAwait(false);
 
         if (!users.Exists(x => x.CompanyUserId == receiverId))
             throw new ArgumentException("User does not exist", nameof(receiverId));
@@ -81,7 +81,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     /// <inheritdoc />
     public async Task<NotificationDetailData> GetNotificationDetailDataAsync(IdentityData identity, Guid notificationId)
     {
-        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationByIdAndIamUserIdUntrackedAsync(notificationId, identity.CompanyUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationByIdAndIamUserIdUntrackedAsync(notificationId, identity.IdentityId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"Notification {notificationId} does not exist.");
@@ -96,7 +96,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     /// <inheritdoc />
     public async Task<int> GetNotificationCountAsync(IdentityData identity, bool? isRead)
     {
-        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationCountForUserAsync(identity.CompanyUserId, isRead).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationCountForUserAsync(identity.IdentityId, isRead).ConfigureAwait(false);
         if (result == default)
         {
             throw new ForbiddenException($"iamUserId {identity.UserEntityId} is not assigned");
@@ -107,7 +107,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     /// <inheritdoc />
     public async Task<NotificationCountDetails> GetNotificationCountDetailsAsync(IdentityData identity)
     {
-        var details = await _portalRepositories.GetInstance<INotificationRepository>().GetCountDetailsForUserAsync(identity.CompanyUserId).ToListAsync().ConfigureAwait(false);
+        var details = await _portalRepositories.GetInstance<INotificationRepository>().GetCountDetailsForUserAsync(identity.IdentityId).ToListAsync().ConfigureAwait(false);
         var unreadNotifications = details.Where(x => !x.IsRead);
         return new NotificationCountDetails(
             details.Where(x => x.IsRead).Sum(x => x.Count),
@@ -141,7 +141,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
 
     private async Task CheckNotificationExistsAndIamUserIsReceiver(Guid notificationId, IdentityData identity)
     {
-        var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndIamUserIdAsync(notificationId, identity.CompanyUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndIamUserIdAsync(notificationId, identity.IdentityId).ConfigureAwait(false);
         if (result == default || !result.IsNotificationExisting)
         {
             throw new NotFoundException($"Notification {notificationId} does not exist.");

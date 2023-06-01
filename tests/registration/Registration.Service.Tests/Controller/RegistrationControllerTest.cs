@@ -98,14 +98,14 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
 
         var uploadDocuments = _fixture.CreateMany<UploadDocuments>(3);
-        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _identity))
+        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _identity.IdentityId))
             .Returns(uploadDocuments);
 
         //Act
         var result = await _controller.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _identity)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _registrationBusinessLogicFake.GetUploadedDocumentsAsync(applicationId, DocumentTypeId.APP_CONTRACT, _identity.IdentityId)).MustHaveHappenedOnceExactly();
 
         result.Should().HaveSameCount(uploadDocuments);
         result.Should().ContainInOrder(uploadDocuments);
@@ -157,14 +157,14 @@ public class RegistrationControllerTest
         const string contentType = "application/pdf";
         var id = Guid.NewGuid();
         var content = Encoding.UTF8.GetBytes("This is just test content");
-        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _identity))
+        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _identity.IdentityId))
             .ReturnsLazily(() => (fileName, content, contentType));
 
         //Act
         var result = await this._controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _identity)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _registrationBusinessLogicFake.GetDocumentContentAsync(id, _identity.IdentityId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<FileContentResult>();
         ((FileContentResult)result).ContentType.Should().Be(contentType);
     }

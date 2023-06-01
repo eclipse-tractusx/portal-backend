@@ -266,18 +266,6 @@ public class UserRepository : IUserRepository
                     ))))
             .SingleOrDefaultAsync();
 
-    public Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, Guid companyUserId) =>
-        _dbContext.CompanyUsers
-            .AsNoTracking()
-            .Where(user =>
-                user.Id == companyUserId
-                && user.Identity!.Company!.CompanyApplications.Any(application =>
-                    application.Id == applicationId))
-            .Select(iamUser =>
-                iamUser.Id
-            )
-            .SingleOrDefaultAsync();
-
     /// <inheritdoc />
     public IAsyncEnumerable<Guid> GetAllFavouriteAppsForUserUntrackedAsync(Guid companyUserId) =>
         _dbContext.CompanyUsers.AsNoTracking()

@@ -108,6 +108,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="400">Input is incorrect.</response>
         [HttpPost]
         [Authorize(Roles = "upload_documents")]
+        [Authorize(Policy = PolicyTypes.ValidIdentity)]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
         [Consumes("multipart/form-data")]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
         [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
@@ -129,6 +131,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="404">No document with the given id was found.</response>
         [HttpGet]
         [Authorize(Roles = "view_documents")]
+        [Authorize(Policy = PolicyTypes.ValidIdentity)]
         [Route("documents/{documentId}")]
         [Produces("application/pdf", "application/json")]
         [ProducesResponseType(typeof(File), StatusCodes.Status200OK)]
@@ -136,7 +139,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
         {
-            var (fileName, content, mediaType) = await this.WithIdentityData(user => _registrationBusinessLogic.GetDocumentContentAsync(documentId, user));
+            var (fileName, content, mediaType) = await this.WithIdentityData(user => _registrationBusinessLogic.GetDocumentContentAsync(documentId, user.IdentityId));
             return File(content, mediaType, fileName);
         }
 
@@ -152,12 +155,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="404">Application not found</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
+        [Authorize(Policy = PolicyTypes.ValidIdentity)]
         [Route("application/{applicationId}/documentType/{documentTypeId}/documents")]
         [ProducesResponseType(typeof(IAsyncEnumerable<UploadDocuments>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId) =>
-           this.WithIdentityData(user => _registrationBusinessLogic.GetUploadedDocumentsAsync(applicationId, documentTypeId, user));
+           this.WithIdentityData(user => _registrationBusinessLogic.GetUploadedDocumentsAsync(applicationId, documentTypeId, user.IdentityId));
 
         /// <summary>
         /// Get all composite client roles
@@ -180,10 +184,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="200">Returns a list of company applications</response>
         [HttpGet]
         [Authorize(Roles = "view_registration")]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
         [Route("applications")]
         [ProducesResponseType(typeof(IAsyncEnumerable<CompanyApplicationData>), StatusCodes.Status200OK)]
         public IAsyncEnumerable<CompanyApplicationData> GetApplicationsWithStatusAsync() =>
-            this.WithIdentityData(user => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(user));
+            this.WithIdentityData(user => _registrationBusinessLogic.GetAllApplicationsForUserWithStatus(user.CompanyId));
 
         /// <summary>
         /// Sets the status of a specific application.

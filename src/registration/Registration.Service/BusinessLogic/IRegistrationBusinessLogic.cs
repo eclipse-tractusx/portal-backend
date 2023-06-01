@@ -39,11 +39,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         /// Gets the file content from the persistence store for the given user
         /// </summary>
         /// <param name="documentId">The Id of the document that should be get</param>
-        /// <param name="identity">The Identity of the current user</param>
+        /// <param name="companyUserId">The Identity of the current user</param>
         /// <returns></returns>
-        Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId, IdentityData identity);
+        Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId, Guid companyUserId);
 
-        IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(IdentityData identity);
+        IAsyncEnumerable<CompanyApplicationData> GetAllApplicationsForUserWithStatus(Guid companyId);
         Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId, IdentityData identity);
         Task SetCompanyDetailDataAsync(Guid applicationId, CompanyDetailData companyDetails, IdentityData identity);
         Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, Guid companyUserId);
@@ -54,7 +54,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync();
         Task<bool> SubmitRegistrationAsync(Guid applicationId, IdentityData identity);
         IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId);
-        Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, IdentityData identity);
+        Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, Guid companyUserId);
         Task<int> SetInvitationStatusAsync(IdentityData identity);
         Task<CompanyRegistrationData> GetRegistrationDataAsync(Guid applicationId, IdentityData identity);
         Task<bool> DeleteRegistrationDocumentAsync(Guid documentId, IdentityData identity);

@@ -475,9 +475,9 @@ public class ServiceAccountBusinessLogicTests
 
     private void SetupCreateOwnCompanyServiceAccount()
     {
-        A.CallTo(() => _userRepository.GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(_identity.CompanyUserId, ClientId))
+        A.CallTo(() => _userRepository.GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(_identity.IdentityId, ClientId))
             .Returns((ValidCompanyId, ValidBpn, new[] { UserRoleId1, UserRoleId2 }));
-        A.CallTo(() => _userRepository.GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _identity.CompanyUserId), ClientId))
+        A.CallTo(() => _userRepository.GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _identity.IdentityId), ClientId))
             .Returns(((Guid, string, IEnumerable<Guid>))default);
 
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>.That.Matches(x => x == ValidCompanyId), A<IEnumerable<string>>._, CompanyServiceAccountTypeId.OWN, A<bool>._, null))

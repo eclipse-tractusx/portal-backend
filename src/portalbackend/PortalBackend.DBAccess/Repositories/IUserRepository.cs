@@ -45,7 +45,6 @@ public interface IUserRepository
 
     Task<CompanyOwnUserDetails?> GetUserDetailsUntrackedAsync(Guid companyUserId, IEnumerable<Guid> userRoleIds);
     Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(Guid companyUserId);
-    Task<Guid> GetCompanyUserIdForUserApplicationUntrackedAsync(Guid applicationId, Guid companyUserId);
 
     /// <summary>
     /// GGets all apps for the give user from the persistence layer.

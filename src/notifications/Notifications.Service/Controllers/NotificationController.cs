@@ -76,7 +76,7 @@ public class NotificationController : ControllerBase
         [FromQuery] NotificationTopicId? notificationTopicId = null,
         [FromQuery] bool onlyDueDate = false,
         [FromQuery] NotificationSorting? sorting = null) =>
-        this.WithIdentityData(identity => _logic.GetNotificationsAsync(page, size, identity.CompanyUserId, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting)));
+        this.WithIdentityData(identity => _logic.GetNotificationsAsync(page, size, identity.IdentityId, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting)));
 
     /// <summary>
     ///     Gets a notification for the logged in user
