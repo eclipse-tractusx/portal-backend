@@ -516,7 +516,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return (new AsyncEnumerableStringStream(GetOwnCompanyUsersIdentityProviderDataLines(identityProviderIds, unlinkedUsersOnly, companyId), csvSettings.Encoding), csvSettings.ContentType, csvSettings.FileName, csvSettings.Encoding);
     }
 
-    public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, IdentityData identity, CancellationToken cancellationToken)
+    public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataAsync(IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
     {
         if (!document.ContentType.Equals(_settings.CsvSettings.ContentType, StringComparison.OrdinalIgnoreCase))
         {
@@ -525,7 +525,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         return UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(document, identity, cancellationToken);
     }
 
-    private async ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IFormFile document, IdentityData identity, CancellationToken cancellationToken)
+    private async ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var (sharedIdpAlias, existingAliase) = await GetCompanyAliasDataAsync(identity.CompanyId).ConfigureAwait(false);

@@ -109,7 +109,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers);
@@ -143,7 +143,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         var error = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"Only contentType {_csvSettings.ContentType} files are allowed.");
@@ -202,7 +202,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(1);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -258,7 +258,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -310,7 +310,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(1);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -361,7 +361,7 @@ public class IdentityProviderBusinessLogicTests
             _provisioningManager,
             _options);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, _identity, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, (_identity.UserId, _identity.CompanyId), CancellationToken.None).ConfigureAwait(false);
 
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers - 1);
