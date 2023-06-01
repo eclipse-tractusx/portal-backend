@@ -36,6 +36,7 @@
       <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
       <ProjectReference Include="..\..\framework\Framework.Web\Framework.Web.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+      <ProjectReference Include="..\Offers.Library.Web\Offers.Library.Web.csproj" />
       <ProjectReference Include="..\Offers.Library\Offers.Library.csproj" />
       <ProjectReference Include="..\..\framework\Framework.BaseDependencies\Framework.BaseDependencies.csproj" />
     </ItemGroup>

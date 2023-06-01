@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -38,6 +39,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferService _offerService;
+    private readonly IOfferDocumentService _offerDocumentService;
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly IOfferSetupService _offerSetupService;
     private readonly ServiceSettings _settings;
@@ -47,18 +49,21 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerService">Access to the offer service</param>
+    /// <param name="offerDocumentService">Access to the offer document service</param>
     /// <param name="offerSubscriptionService">Service for Company to manage offer subscriptions</param>
     /// <param name="offerSetupService">Offer Setup Service</param>
     /// <param name="settings">Access to the settings</param>
     public ServiceBusinessLogic(
         IPortalRepositories portalRepositories,
         IOfferService offerService,
+        IOfferDocumentService offerDocumentService,
         IOfferSubscriptionService offerSubscriptionService,
         IOfferSetupService offerSetupService,
         IOptions<ServiceSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _offerService = offerService;
+        _offerDocumentService = offerDocumentService;
         _offerSubscriptionService = offerSubscriptionService;
         _offerSetupService = offerSetupService;
         _settings = settings.Value;
@@ -164,7 +169,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         UploadServiceDoc(serviceId, documentTypeId, document, iamUserId, OfferTypeId.SERVICE, cancellationToken);
 
     private Task UploadServiceDoc(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
-        _offerService.UploadDocumentAsync(serviceId, documentTypeId, document, iamUserId, offerTypeId, _settings.UploadServiceDocumentTypeIds, cancellationToken);
+        _offerDocumentService.UploadDocumentAsync(serviceId, documentTypeId, document, iamUserId, offerTypeId, _settings.UploadServiceDocumentTypeIds, cancellationToken);
 
     /// <inheritdoc />
     public Task<(byte[] Content, string ContentType, string FileName)> GetServiceDocumentContentAsync(Guid serviceId, Guid documentId, CancellationToken cancellationToken) =>

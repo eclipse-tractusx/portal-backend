@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
@@ -43,7 +44,8 @@ builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
                 .AddTransient<IOfferService, OfferService>()
                 .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
                 .AddTechnicalUserProfile()
-                .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"));
+                .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"))
+                .AddOfferDocumentServices();
 
 builder.Services
     .AddOfferServices();

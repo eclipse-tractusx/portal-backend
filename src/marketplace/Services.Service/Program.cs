@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
@@ -41,7 +42,8 @@ builder.Services
     .AddServiceBusinessLogic(builder.Configuration)
     .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
     .AddTransient<IServiceChangeBusinessLogic, ServiceChangeBusinessLogic>()
-    .AddTechnicalUserProfile();
+    .AddTechnicalUserProfile()
+    .AddOfferDocumentServices();
 
 builder.Services.AddOfferServices();
 
