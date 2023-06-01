@@ -37,40 +37,32 @@ public static class ControllerExtensions
     /// </summary>
     /// <typeparam name="T">Return type of the controller function.</typeparam>
     /// <param name="controller">Controller to extend.</param>
-    /// <param name="idConsumingFunction">Function that is called with iamUserId parameter.</param>
+    /// <param name="consumingFunction">Function that is called with iamUserId parameter.</param>
     /// <returns>Result of inner function.</returns>
     /// <exception cref="ArgumentException">If expected claim value is not provided.</exception>
-    public static T WithIamUserId<T>(this ControllerBase controller, Func<string, T> idConsumingFunction)
-    {
-        var iamUserId = controller.User.Claims.GetStringFromClaim(PortalClaimTypes.Sub);
-        return idConsumingFunction(iamUserId);
-    }
+    public static T WithIamUserId<T>(this ControllerBase controller, Func<string, T> consumingFunction) =>
+        consumingFunction(controller.User.Claims.GetStringFromClaim(PortalClaimTypes.Sub));
 
-    public static T WithIdentityData<T>(this ControllerBase controller, Func<IdentityData, T> identityConsumingFunction)
-    {
-        var identity = controller.GetIdentityData();
-        return identityConsumingFunction(identity);
-    }
+    public static T WithIdentityData<T>(this ControllerBase controller, Func<IdentityData, T> consumingFunction) =>
+        consumingFunction(controller.GetIdentityData());
 
-    public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction)
-    {
-        var bearer = controller.GetBearerToken();
-        return tokenConsumingFunction(bearer);
-    }
+    public static T WithIdentityId<T>(this ControllerBase controller, Func<Guid, T> consumingFunction) =>
+        consumingFunction(controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId));
 
-    public static T WithIamUserAndBearerToken<T>(this ControllerBase controller, Func<(string iamUserId, string bearerToken), T> tokenConsumingFunction)
-    {
-        var bearerToken = controller.GetBearerToken();
-        var iamUserId = controller.User.Claims.GetStringFromClaim(PortalClaimTypes.Sub);
-        return tokenConsumingFunction((iamUserId, bearerToken));
-    }
+    public static T WithCompanyId<T>(this ControllerBase controller, Func<Guid, T> consumingFunction) =>
+        consumingFunction(controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId));
 
-    public static T WithIdentityAndBearerToken<T>(this ControllerBase controller, Func<(IdentityData identity, string bearerToken), T> tokenConsumingFunction)
-    {
-        var bearerToken = controller.GetBearerToken();
-        var identity = controller.GetIdentityData();
-        return tokenConsumingFunction((identity, bearerToken));
-    }
+    public static T WithIdentityIdAndCompanyId<T>(this ControllerBase controller, Func<(Guid IdentityId, Guid CompanyId), T> consumingFunction) =>
+        consumingFunction((controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId), controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.CompanyId)));
+
+    public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction) =>
+        tokenConsumingFunction(controller.GetBearerToken());
+
+    public static T WithIamUserAndBearerToken<T>(this ControllerBase controller, Func<(string IamUserId, string BearerToken), T> tokenConsumingFunction) =>
+        tokenConsumingFunction((controller.User.Claims.GetStringFromClaim(PortalClaimTypes.Sub), controller.GetBearerToken()));
+
+    public static T WithIdentityAndBearerToken<T>(this ControllerBase controller, Func<(IdentityData Identity, string BearerToken), T> tokenConsumingFunction) =>
+        tokenConsumingFunction((controller.GetIdentityData(), controller.GetBearerToken()));
 
     private static IdentityData GetIdentityData(this ControllerBase controller)
     {

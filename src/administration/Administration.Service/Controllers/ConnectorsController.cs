@@ -63,9 +63,10 @@ public class ConnectorsController : ControllerBase
     [HttpGet]
     [Route("")]
     [Authorize(Roles = "view_connectors")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<ConnectorData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<ConnectorData>> GetCompanyConnectorsForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
-        this.WithIdentityData(identity => _businessLogic.GetAllCompanyConnectorDatasForIamUserAsync(identity, page, size));
+        this.WithCompanyId(companyId => _businessLogic.GetAllCompanyConnectorDatasForIamUserAsync(companyId, page, size));
 
     /// <summary>
     /// Retrieves all company connectors for currently logged in user.

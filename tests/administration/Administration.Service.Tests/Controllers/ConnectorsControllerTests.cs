@@ -118,8 +118,8 @@ public class ConnectorsControllerTests
         //Arrange
         var connectorId = Guid.NewGuid();
         var file = FormFileHelper.GetFormFile("this is just random content", "cert.pem", "application/x-pem-file");
-        A.CallTo(() => _logic.TriggerDapsAsync(connectorId, file, _identity, A<CancellationToken>._))
-            .ReturnsLazily(() => true);
+        A.CallTo(() => _logic.TriggerDapsAsync(A<Guid>._, A<Microsoft.AspNetCore.Http.IFormFile>._, A<IdentityData>._, A<CancellationToken>._))
+            .Returns(true);
 
         //Act
         var result = await this._controller.TriggerDapsAuth(connectorId, file, CancellationToken.None).ConfigureAwait(false);
@@ -134,14 +134,14 @@ public class ConnectorsControllerTests
     {
         //Arrange
         var paginationResponse = new Pagination.Response<ConnectorData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<ConnectorData>(5));
-        A.CallTo(() => _logic.GetAllCompanyConnectorDatasForIamUserAsync(_identity, 0, 15))
+        A.CallTo(() => _logic.GetAllCompanyConnectorDatasForIamUserAsync(A<Guid>._, A<int>._, A<int>._))
             .Returns(paginationResponse);
 
         //Act
         var result = await this._controller.GetCompanyConnectorsForCurrentUserAsync().ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.GetAllCompanyConnectorDatasForIamUserAsync(_identity, 0, 15)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetAllCompanyConnectorDatasForIamUserAsync(_identity.CompanyId, 0, 15)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(5);
     }
 
