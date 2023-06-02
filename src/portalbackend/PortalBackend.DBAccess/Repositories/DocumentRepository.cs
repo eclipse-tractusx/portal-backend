@@ -91,7 +91,7 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, Guid companyUserId) =>
+    public Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdWithCompanyUserCheckAsync(Guid documentId, Guid companyUserId) =>
         this._dbContext.Documents
             .Where(x => x.Id == documentId)
             .Select(x => new ValueTuple<Guid, bool>(x.Id, x.CompanyUserId == companyUserId))

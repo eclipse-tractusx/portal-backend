@@ -67,13 +67,13 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, IdentityData identity)
+    public Task<IEnumerable<AppRoleData>> AddActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> appUserRolesDescription, (Guid UserId, Guid CompanyId) identity)
     {
         AppExtensions.ValidateAppUserRole(appId, appUserRolesDescription);
         return InsertActiveAppUserRoleAsync(appId, appUserRolesDescription, identity);
     }
 
-    private async Task<IEnumerable<AppRoleData>> InsertActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles, IdentityData identity)
+    private async Task<IEnumerable<AppRoleData>> InsertActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles, (Guid UserId, Guid CompanyId) identity)
     {
         var result = await _portalRepositories.GetInstance<IOfferRepository>().GetInsertActiveAppUserRoleDataAsync(appId, OfferTypeId.APP).ConfigureAwait(false);
         if (result == default)
@@ -88,7 +88,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         if (result.ProviderCompanyId.Value != identity.CompanyId)
         {
-            throw new ForbiddenException($"user {identity.UserEntityId} is not a member of the provider company of app {appId}");
+            throw new ForbiddenException($"Company {identity.CompanyId} is not the provider company of app {appId}");
         }
 
         var roleData = AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
@@ -110,27 +110,27 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, IdentityData identity)
+    public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, Guid companyId)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        return await ValidateAndGetAppDescription(appId, identity, offerRepository);
+        return await ValidateAndGetAppDescription(appId, companyId, offerRepository);
     }
 
     /// <inheritdoc />
-    public async Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, IdentityData identity, IEnumerable<LocalizedDescription> offerDescriptionDatas)
+    public async Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, Guid companyId, IEnumerable<LocalizedDescription> offerDescriptionDatas)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
 
         offerRepository.CreateUpdateDeleteOfferDescriptions(appId,
-            await ValidateAndGetAppDescription(appId, identity, offerRepository),
+            await ValidateAndGetAppDescription(appId, companyId, offerRepository),
             offerDescriptionDatas.Select(od => new ValueTuple<string, string, string>(od.LanguageCode, od.LongDescription, od.ShortDescription)));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    private static async Task<IEnumerable<LocalizedDescription>> ValidateAndGetAppDescription(Guid appId, IdentityData identity, IOfferRepository offerRepository)
+    private static async Task<IEnumerable<LocalizedDescription>> ValidateAndGetAppDescription(Guid appId, Guid companyId, IOfferRepository offerRepository)
     {
-        var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, identity.CompanyId).ConfigureAwait(false);
+        var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, companyId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"App {appId} does not exist.");
@@ -143,7 +143,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         if (!result.IsProviderCompanyUser)
         {
-            throw new ForbiddenException($"user {identity.UserEntityId} is not a member of the providercompany of App {appId}");
+            throw new ForbiddenException($"Company {companyId} is not the provider company of App {appId}");
         }
 
         if (result.OfferDescriptionDatas == null)
@@ -155,7 +155,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, IdentityData identity, IFormFile document, CancellationToken cancellationToken)
+    public async Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, (Guid UserId, Guid CompanyId) identity, IFormFile document, CancellationToken cancellationToken)
     {
         var appLeadImageContentTypes = new[] { MediaTypeId.JPEG, MediaTypeId.PNG };
         var documentContentType = ContentTypeMapperExtensions.ParseMediaTypeId(document.ContentType);
@@ -177,7 +177,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         }
         if (!result.IsUserOfProvider)
         {
-            throw new ForbiddenException($"user {identity.UserEntityId} is not a member of the provider company of App {appId}");
+            throw new ForbiddenException($"Company {identity.CompanyId} is not the provider company of App {appId}");
         }
 
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
@@ -196,20 +196,20 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task DeactivateOfferByAppIdAsync(Guid appId, IdentityData identity) =>
-        _offerService.DeactivateOfferIdAsync(appId, identity, OfferTypeId.APP);
+    public Task DeactivateOfferByAppIdAsync(Guid appId, Guid companyId) =>
+        _offerService.DeactivateOfferIdAsync(appId, companyId, OfferTypeId.APP);
 
     /// <inheritdoc />
-    public Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, IdentityData identity)
+    public Task UpdateTenantUrlAsync(Guid offerId, Guid subscriptionId, UpdateTenantData data, Guid companyId)
     {
         data.Url.EnsureValidHttpUrl(() => nameof(data.Url));
-        return UpdateTenantUrlAsyncInternal(offerId, subscriptionId, data.Url, identity);
+        return UpdateTenantUrlAsyncInternal(offerId, subscriptionId, data.Url, companyId);
     }
 
-    private async Task UpdateTenantUrlAsyncInternal(Guid offerId, Guid subscriptionId, string url, IdentityData identity)
+    private async Task UpdateTenantUrlAsyncInternal(Guid offerId, Guid subscriptionId, string url, Guid companyId)
     {
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var result = await offerSubscriptionsRepository.GetUpdateUrlDataAsync(offerId, subscriptionId, identity.CompanyId).ConfigureAwait(false);
+        var result = await offerSubscriptionsRepository.GetUpdateUrlDataAsync(offerId, subscriptionId, companyId).ConfigureAwait(false);
         if (result == null)
         {
             throw new NotFoundException($"Offer {offerId} or subscription {subscriptionId} do not exists");
@@ -223,7 +223,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         if (!isUserOfCompany)
         {
-            throw new ForbiddenException($"User {identity.UserEntityId} is not part of the app's providing company");
+            throw new ForbiddenException($"Company {companyId} is not the app's providing company");
         }
 
         if (offerSubscriptionStatusId != OfferSubscriptionStatusId.ACTIVE)

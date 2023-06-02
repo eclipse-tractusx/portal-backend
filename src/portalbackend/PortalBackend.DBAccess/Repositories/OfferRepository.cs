@@ -218,14 +218,14 @@ public class OfferRepository : IOfferRepository
 
     /// <inheritdoc />
     [Obsolete("only referenced by code that is marked as obsolte")]
-    public Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<LocalizedDescription> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, Guid userCompanyId, OfferTypeId offerTypeId) =>
+    public Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<LocalizedDescription> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, Guid companyId, OfferTypeId offerTypeId) =>
         _context.Offers
             .AsNoTracking()
             .Where(a => a.Id == appId && a.OfferTypeId == offerTypeId)
             .Select(a =>
                 new ValueTuple<bool, bool, string?, string?, string?, IEnumerable<LocalizedDescription>>(
                     a.OfferStatusId == OfferStatusId.CREATED,
-                    a.ProviderCompanyId == userCompanyId,
+                    a.ProviderCompanyId == companyId,
                     a.ContactEmail,
                     a.ContactNumber,
                     a.MarketingUrl,
@@ -411,12 +411,12 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
 
     ///<inheritdoc/>
-    public Task<(bool OfferExists, bool IsProviderCompanyUser)> IsProviderCompanyUserAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId) =>
+    public Task<(bool OfferExists, bool IsProviderCompanyUser)> IsProviderCompanyUserAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId) =>
         _context.Offers
             .Where(offer => offer.Id == offerId && offer.OfferTypeId == offerTypeId)
             .Select(offer => new ValueTuple<bool, bool>(
                 true,
-                offer.ProviderCompanyId == userCompanyId
+                offer.ProviderCompanyId == companyId
             ))
             .SingleOrDefaultAsync();
 

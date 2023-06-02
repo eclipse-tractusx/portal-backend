@@ -93,7 +93,7 @@ public class AgreementRepository : IAgreementRepository
             .SingleOrDefaultAsync();
 
     ///<inheritdoc/>
-    public Task<(OfferAgreementConsentUpdate OfferAgreementConsentUpdate, bool IsProviderCompany)> GetOfferAgreementConsent(Guid appId, Guid userCompanyId, OfferStatusId statusId, OfferTypeId offerTypeId) =>
+    public Task<(OfferAgreementConsentUpdate OfferAgreementConsentUpdate, bool IsProviderCompany)> GetOfferAgreementConsent(Guid appId, Guid companyId, OfferStatusId statusId, OfferTypeId offerTypeId) =>
         _context.Offers
             .AsNoTracking()
             .AsSplitQuery()
@@ -103,13 +103,12 @@ public class AgreementRepository : IAgreementRepository
             .Select(offer => new ValueTuple<OfferAgreementConsentUpdate, bool>(
                 new OfferAgreementConsentUpdate(
                     offer.ProviderCompany!.Identities.Select(companyUser => companyUser.Id).SingleOrDefault(),
-                    offer.ProviderCompany.Id,
                     offer.ConsentAssignedOffers.Select(consentAssignedOffer => new AppAgreementConsentStatus(
                         consentAssignedOffer.Consent!.AgreementId,
                         consentAssignedOffer.Consent.Id,
                         consentAssignedOffer.Consent.ConsentStatusId)),
                     offer.OfferType!.AgreementAssignedOfferTypes.Select(assigned => assigned.AgreementId)),
-                offer.ProviderCompanyId == userCompanyId))
+                offer.ProviderCompanyId == companyId))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

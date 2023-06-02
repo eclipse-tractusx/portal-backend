@@ -25,6 +25,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public interface IUserUploadBusinessLogic
 {
-    ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, IdentityData identity, CancellationToken cancellationToken);
-    ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, IdentityData identity, CancellationToken cancellationToken);
+    ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken);
+    ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken);
 }

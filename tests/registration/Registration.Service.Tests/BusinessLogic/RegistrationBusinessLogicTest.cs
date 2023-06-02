@@ -2107,7 +2107,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var documentId = Guid.NewGuid();
         var content = new byte[7];
-        A.CallTo(() => _documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, _identity.UserId))
+        A.CallTo(() => _documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identity.UserId))
             .ReturnsLazily(() => new ValueTuple<Guid, bool>(documentId, true));
         A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
             .ReturnsLazily(() => new Document(documentId, content, content, "test.pdf", MediaTypeId.PDF, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT));
@@ -2128,7 +2128,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var documentId = Guid.NewGuid();
         var content = new byte[7];
-        A.CallTo(() => _documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, _identity.UserId))
+        A.CallTo(() => _documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identity.UserId))
             .ReturnsLazily(() => new ValueTuple<Guid, bool>(Guid.Empty, false));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!);
 
@@ -2145,7 +2145,7 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var documentId = Guid.NewGuid();
-        A.CallTo(() => _documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, _identity.UserId))
+        A.CallTo(() => _documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identity.UserId))
             .ReturnsLazily(() => new ValueTuple<Guid, bool>(documentId, false));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, null!, _portalRepositories, null!);
 

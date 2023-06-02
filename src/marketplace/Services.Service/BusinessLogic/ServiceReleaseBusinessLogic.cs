@@ -95,12 +95,12 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         _portalRepositories.GetInstance<IStaticDataRepository>().GetServiceTypeData();
 
     /// <inheritdoc/>
-    public Task<OfferAgreementConsent> GetServiceAgreementConsentAsync(Guid serviceId, IdentityData identity) =>
-        _offerService.GetProviderOfferAgreementConsentById(serviceId, identity, OfferTypeId.SERVICE);
+    public Task<OfferAgreementConsent> GetServiceAgreementConsentAsync(Guid serviceId, Guid companyId) =>
+        _offerService.GetProviderOfferAgreementConsentById(serviceId, companyId, OfferTypeId.SERVICE);
 
-    public async Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, IdentityData identity)
+    public async Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, Guid companyId)
     {
-        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, identity, OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, companyId, OfferTypeId.SERVICE).ConfigureAwait(false);
         if (result.ServiceTypeIds == null)
         {
             throw new UnexpectedConditionException("serviceTypeIds should never be null here");
@@ -123,18 +123,18 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, IdentityData identity)
+    public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, Guid companyId)
     {
         if (serviceId == Guid.Empty)
         {
             throw new ControllerArgumentException("ServiceId must not be empty");
         }
 
-        return SubmitOfferConsentInternalAsync(serviceId, offerAgreementConsents, identity);
+        return SubmitOfferConsentInternalAsync(serviceId, offerAgreementConsents, companyId);
     }
 
-    private Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentInternalAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, IdentityData identity) =>
-        _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, offerAgreementConsents, identity, OfferTypeId.SERVICE);
+    private Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentInternalAsync(Guid serviceId, OfferAgreementConsent offerAgreementConsents, Guid companyId) =>
+        _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, offerAgreementConsents, companyId, OfferTypeId.SERVICE);
 
     /// <inheritdoc/>
     public Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync(int page, int size, OfferSorting? sorting, string? serviceName, string? languageShortName, ServiceReleaseStatusIdFilter? statusId) =>
@@ -159,15 +159,15 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, IdentityData identity) =>
+    public Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, (Guid UserId, Guid CompanyId) identity) =>
         _offerService.CreateServiceOfferingAsync(data, identity, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public async Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, IdentityData identity)
+    public async Task UpdateServiceAsync(Guid serviceId, ServiceUpdateRequestData data, Guid companyId)
     {
         var serviceData = await _portalRepositories
             .GetInstance<IOfferRepository>()
-            .GetServiceUpdateData(serviceId, data.ServiceTypeIds, identity.CompanyId)
+            .GetServiceUpdateData(serviceId, data.ServiceTypeIds, companyId)
             .ConfigureAwait(false);
         if (serviceData is null)
         {
@@ -181,12 +181,12 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 
         if (!serviceData.IsUserOfProvider)
         {
-            throw new ForbiddenException($"User {identity.UserEntityId} is not allowed to change the service.");
+            throw new ForbiddenException($"Company {companyId} is not the service provider.");
         }
 
         if (data.SalesManager.HasValue)
         {
-            await _offerService.ValidateSalesManager(data.SalesManager.Value, identity, _settings.SalesManagerRoles).ConfigureAwait(false);
+            await _offerService.ValidateSalesManager(data.SalesManager.Value, companyId, _settings.SalesManagerRoles).ConfigureAwait(false);
         }
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
@@ -232,30 +232,30 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     }
 
     /// <inheritdoc/>
-    public Task SubmitServiceAsync(Guid serviceId, IdentityData identity) =>
-        _offerService.SubmitServiceAsync(serviceId, identity, OfferTypeId.SERVICE, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
+    public Task SubmitServiceAsync(Guid serviceId, Guid userId) =>
+        _offerService.SubmitServiceAsync(serviceId, userId, OfferTypeId.SERVICE, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
 
     /// <inheritdoc/>
-    public Task ApproveServiceRequestAsync(Guid appId, IdentityData identity) =>
-        _offerService.ApproveOfferRequestAsync(appId, identity, OfferTypeId.SERVICE, _settings.ApproveServiceNotificationTypeIds, _settings.ApproveServiceUserRoles, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
+    public Task ApproveServiceRequestAsync(Guid appId, Guid userId) =>
+        _offerService.ApproveOfferRequestAsync(appId, userId, OfferTypeId.SERVICE, _settings.ApproveServiceNotificationTypeIds, _settings.ApproveServiceUserRoles, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
 
     /// <inheritdoc />
-    public Task DeclineServiceRequestAsync(Guid serviceId, IdentityData identity, OfferDeclineRequest data) =>
-        _offerService.DeclineOfferAsync(serviceId, identity, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.ServiceMarketplaceAddress, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
+    public Task DeclineServiceRequestAsync(Guid serviceId, Guid userId, OfferDeclineRequest data) =>
+        _offerService.DeclineOfferAsync(serviceId, userId, data, OfferTypeId.SERVICE, NotificationTypeId.SERVICE_RELEASE_REJECTION, _settings.ServiceManagerRoles, _settings.ServiceMarketplaceAddress, _settings.SubmitServiceNotificationTypeIds, _settings.CatenaAdminRoles);
 
     /// <inheritdoc />
     public Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken) =>
         _offerDocumentService.UploadDocumentAsync(serviceId, documentTypeId, document, identity, OfferTypeId.SERVICE, _settings.UploadServiceDocumentTypeIds, cancellationToken);
 
     /// <inheritdoc/>
-    public Task DeleteServiceDocumentsAsync(Guid documentId, IdentityData identity) =>
-        _offerService.DeleteDocumentsAsync(documentId, identity, _settings.DeleteDocumentTypeIds, OfferTypeId.SERVICE);
+    public Task DeleteServiceDocumentsAsync(Guid documentId, Guid companyId) =>
+        _offerService.DeleteDocumentsAsync(documentId, companyId, _settings.DeleteDocumentTypeIds, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, IdentityData identity) =>
-        _offerService.GetTechnicalUserProfilesForOffer(offerId, identity, OfferTypeId.SERVICE);
+    public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, Guid companyId) =>
+        _offerService.GetTechnicalUserProfilesForOffer(offerId, companyId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public Task UpdateTechnicalUserProfiles(Guid serviceId, IEnumerable<TechnicalUserProfileData> data, IdentityData identity) =>
-        _offerService.UpdateTechnicalUserProfiles(serviceId, OfferTypeId.SERVICE, data, identity, _settings.TechnicalUserProfileClient);
+    public Task UpdateTechnicalUserProfiles(Guid serviceId, IEnumerable<TechnicalUserProfileData> data, Guid companyId) =>
+        _offerService.UpdateTechnicalUserProfiles(serviceId, OfferTypeId.SERVICE, data, companyId, _settings.TechnicalUserProfileClient);
 }

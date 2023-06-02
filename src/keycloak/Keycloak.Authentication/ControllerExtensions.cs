@@ -32,17 +32,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 /// </summary>
 public static class ControllerExtensions
 {
-    /// <summary>
-    /// Determines IamUserId from request claims and subsequently calls a provided function with iamUserId as parameter.
-    /// </summary>
-    /// <typeparam name="T">Return type of the controller function.</typeparam>
-    /// <param name="controller">Controller to extend.</param>
-    /// <param name="consumingFunction">Function that is called with iamUserId parameter.</param>
-    /// <returns>Result of inner function.</returns>
-    /// <exception cref="ArgumentException">If expected claim value is not provided.</exception>
-    public static T WithIamUserId<T>(this ControllerBase controller, Func<string, T> consumingFunction) =>
-        consumingFunction(controller.User.Claims.GetStringFromClaim(PortalClaimTypes.Sub));
-
     public static T WithIdentityData<T>(this ControllerBase controller, Func<IdentityData, T> consumingFunction) =>
         consumingFunction(controller.GetIdentityData());
 
@@ -58,11 +47,8 @@ public static class ControllerExtensions
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction) =>
         tokenConsumingFunction(controller.GetBearerToken());
 
-    public static T WithIamUserAndBearerToken<T>(this ControllerBase controller, Func<(string IamUserId, string BearerToken), T> tokenConsumingFunction) =>
-        tokenConsumingFunction((controller.User.Claims.GetStringFromClaim(PortalClaimTypes.Sub), controller.GetBearerToken()));
-
-    public static T WithIdentityAndBearerToken<T>(this ControllerBase controller, Func<(IdentityData Identity, string BearerToken), T> tokenConsumingFunction) =>
-        tokenConsumingFunction((controller.GetIdentityData(), controller.GetBearerToken()));
+    public static T WithIdentityIdAndBearerToken<T>(this ControllerBase controller, Func<(Guid UserId, string BearerToken), T> tokenConsumingFunction) =>
+        tokenConsumingFunction((controller.User.Claims.GetGuidFromClaim(PortalClaimTypes.IdentityId), controller.GetBearerToken()));
 
     private static IdentityData GetIdentityData(this ControllerBase controller)
     {

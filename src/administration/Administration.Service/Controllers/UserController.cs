@@ -90,6 +90,8 @@ public class UserController : ControllerBase
     /// <response code="502">Bad Gateway Service Error.</response>
     [HttpPost]
     [Authorize(Roles = "add_user_account")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Consumes("multipart/form-data")]
     [Route("owncompany/usersfile")]
     [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
@@ -98,7 +100,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersFileAsync([FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
-        this.WithIdentityData(identity => _uploadLogic.UploadOwnCompanySharedIdpUsersAsync(document, identity, cancellationToken));
+        this.WithUserIdAndCompanyId(identity => _uploadLogic.UploadOwnCompanySharedIdpUsersAsync(document, identity, cancellationToken));
 
     /// <summary>
     /// Create a new user for a specific identityprovider
@@ -146,6 +148,8 @@ public class UserController : ControllerBase
     /// <response code="502">Bad Gateway Service Error.</response>
     [HttpPost]
     [Authorize(Roles = "add_user_account")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Consumes("multipart/form-data")]
     [Route("owncompany/identityprovider/{identityProviderId}/usersfile")]
     [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
@@ -154,7 +158,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<UserCreationStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromRoute] Guid identityProviderId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
-            this.WithIdentityData(identity => _uploadLogic.UploadOwnCompanyIdpUsersAsync(identityProviderId, document, identity, cancellationToken));
+            this.WithUserIdAndCompanyId(identity => _uploadLogic.UploadOwnCompanyIdpUsersAsync(identityProviderId, document, identity, cancellationToken));
 
     /// <summary>
     /// Get Company User Data
@@ -183,8 +187,8 @@ public class UserController : ControllerBase
         [FromQuery] string? firstName = null,
         [FromQuery] string? lastName = null,
         [FromQuery] string? email = null) =>
-        this.WithIdentityData(identity => _logic.GetOwnCompanyUserDatasAsync(
-            identity.CompanyId,
+        this.WithCompanyId(companyId => _logic.GetOwnCompanyUserDatasAsync(
+            companyId,
             page,
             size,
             new(companyUserId, userEntityId, firstName, lastName, email)));
@@ -300,6 +304,8 @@ public class UserController : ControllerBase
     /// <response code="404">Record was not found. User is either not existing or not connected to the respective company.</response>
     [HttpDelete]
     [Authorize(Roles = "delete_user_account")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/users")]
     [ProducesResponseType(typeof(IAsyncEnumerable<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -340,10 +346,11 @@ public class UserController : ControllerBase
     /// <response code="200">A list of OfferRoleInfos.</response>
     [HttpGet]
     [Authorize(Roles = "view_client_roles")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/roles/coreoffers")]
     [ProducesResponseType(typeof(IEnumerable<OfferRoleInfos>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles([FromQuery] string? languageShortName = null) =>
-        this.WithIdentityData(identity => _rolesLogic.GetCoreOfferRoles(identity, languageShortName));
+        this.WithCompanyId(companyId => _rolesLogic.GetCoreOfferRoles(companyId, languageShortName));
 
     /// <summary>
     /// Gets the client roles for the given app.
@@ -357,10 +364,11 @@ public class UserController : ControllerBase
     /// <response code="404">The app was not found.</response>
     [HttpGet]
     [Authorize(Roles = "view_client_roles")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/roles/apps/{appId}")]
     [ProducesResponseType(typeof(OfferRoleInfos), StatusCodes.Status200OK)]
     public IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync([FromRoute] Guid appId, [FromQuery] string? languageShortName = null) =>
-        this.WithIdentityData(identity => _rolesLogic.GetAppRolesAsync(appId, identity, languageShortName));
+        this.WithCompanyId(companyId => _rolesLogic.GetAppRolesAsync(appId, companyId, languageShortName));
 
     /// <summary>
     /// Gets the client roles for the given app.
@@ -395,7 +403,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(CompanyOwnUserDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<CompanyOwnUserDetails> GetOwnUserDetails() =>
-        this.WithIdentityData(identity => _logic.GetOwnUserDetails(identity));
+        this.WithUserId(userId => _logic.GetOwnUserDetails(userId));
 
     /// <summary>
     /// Updates the user details for the given companyUserId.

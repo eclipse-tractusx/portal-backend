@@ -66,6 +66,7 @@ public class AppReleaseProcessController : ControllerBase
     [HttpPut]
     [Route("updateapp/{appId}")]
     [Authorize(Roles = "app_management")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -73,7 +74,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateApp([FromRoute] Guid appId, [FromBody] AppEditableDetail updateModel)
     {
-        await this.WithIdentityData(identity => _appReleaseBusinessLogic.UpdateAppAsync(appId, updateModel, identity)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _appReleaseBusinessLogic.UpdateAppAsync(appId, updateModel, companyId)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -123,12 +124,13 @@ public class AppReleaseProcessController : ControllerBase
     [HttpPost]
     [Route("{appId}/role")]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(IEnumerable<AppRoleData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<IEnumerable<AppRoleData>> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> userRoles) =>
-         await this.WithIdentityData(identity => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, userRoles, identity)).ConfigureAwait(false);
+         await this.WithCompanyId(companyId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, userRoles, companyId)).ConfigureAwait(false);
 
     /// <summary>
     /// Return Agreement Data for offer_type_id App
@@ -153,11 +155,12 @@ public class AppReleaseProcessController : ControllerBase
     [HttpGet]
     [Route("consent/{appId}")]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(OfferAgreementConsent), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<OfferAgreementConsent> GetOfferAgreementConsentById([FromRoute] Guid appId) =>
-        this.WithIdentityData(identity => _appReleaseBusinessLogic.GetOfferAgreementConsentById(appId, identity));
+        this.WithCompanyId(companyId => _appReleaseBusinessLogic.GetOfferAgreementConsentById(appId, companyId));
 
     /// <summary>
     /// Update or Insert Consent
@@ -171,13 +174,14 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="400">App Id is incorrect.</response>
     [HttpPost]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("consent/{appId}/agreementConsents")]
     [ProducesResponseType(typeof(IEnumerable<ConsentStatusData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid appId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
-        this.WithIdentityData(identity => _appReleaseBusinessLogic.SubmitOfferConsentAsync(appId, offerAgreementConsents, identity));
+        this.WithCompanyId(companyId => _appReleaseBusinessLogic.SubmitOfferConsentAsync(appId, offerAgreementConsents, companyId));
 
     /// <summary>
     /// Return app detail with status
@@ -190,11 +194,12 @@ public class AppReleaseProcessController : ControllerBase
     [HttpGet]
     [Route("{appId}/appStatus")]
     [Authorize(Roles = "app_management")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(AppProviderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<AppProviderResponse> GetAppDetailsForStatusAsync([FromRoute] Guid appId) =>
-        this.WithIdentityData(identity => _appReleaseBusinessLogic.GetAppDetailsForStatusAsync(appId, identity));
+        this.WithCompanyId(companyId => _appReleaseBusinessLogic.GetAppDetailsForStatusAsync(appId, companyId));
 
     /// <summary>
     /// Removes a role from persistence layer by appId and roleId.
@@ -209,13 +214,14 @@ public class AppReleaseProcessController : ControllerBase
     [HttpDelete]
     [Route("{appId}/role/{roleId}")]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<NoContentResult> DeleteAppRoleAsync([FromRoute] Guid appId, [FromRoute] Guid roleId)
     {
-        await this.WithIdentityData(identity => _appReleaseBusinessLogic.DeleteAppRoleAsync(appId, roleId, identity));
+        await this.WithCompanyId(companyId => _appReleaseBusinessLogic.DeleteAppRoleAsync(appId, roleId, companyId));
         return NoContent();
     }
 
@@ -227,9 +233,10 @@ public class AppReleaseProcessController : ControllerBase
     [HttpGet]
     [Route("ownCompany/salesManager")]
     [Authorize(Roles = "add_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(IAsyncEnumerable<CompanyUserNameData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagerAsync() =>
-        this.WithIdentityData(identity => _appReleaseBusinessLogic.GetAppProviderSalesManagersAsync(identity));
+        this.WithCompanyId(companyId => _appReleaseBusinessLogic.GetAppProviderSalesManagersAsync(companyId));
 
     /// <summary>
     /// Creates an app according to request model
@@ -243,12 +250,14 @@ public class AppReleaseProcessController : ControllerBase
     [HttpPost]
     [Route("createapp")]
     [Authorize(Roles = "add_apps")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<CreatedAtRouteResult> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
     {
-        var appId = await this.WithIdentityData(identity => _appReleaseBusinessLogic.AddAppAsync(appRequestModel, identity).ConfigureAwait(false));
+        var appId = await this.WithCompanyId(companyId => _appReleaseBusinessLogic.AddAppAsync(appRequestModel, companyId).ConfigureAwait(false));
         return CreatedAtRoute(nameof(AppsController.GetAppDetailsByIdAsync), new { controller = "Apps", appId = appId }, appId);
     }
 
@@ -267,6 +276,8 @@ public class AppReleaseProcessController : ControllerBase
     [HttpPut]
     [Route("{appId}")]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -274,7 +285,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateAppRelease([FromRoute] Guid appId, [FromBody] AppRequestModel appRequestModel)
     {
-        await this.WithIdentityData(identity => _appReleaseBusinessLogic.UpdateAppReleaseAsync(appId, appRequestModel, identity).ConfigureAwait(false));
+        await this.WithCompanyId(companyId => _appReleaseBusinessLogic.UpdateAppReleaseAsync(appId, appRequestModel, companyId).ConfigureAwait(false));
         return NoContent();
     }
 
@@ -307,13 +318,14 @@ public class AppReleaseProcessController : ControllerBase
     [HttpPut]
     [Route("{appId}/submit")]
     [Authorize(Roles = "add_apps")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> SubmitAppReleaseRequest([FromRoute] Guid appId)
     {
-        await this.WithIdentityData(identity => _appReleaseBusinessLogic.SubmitAppReleaseRequestAsync(appId, identity)).ConfigureAwait(false);
+        await this.WithUserId(userId => _appReleaseBusinessLogic.SubmitAppReleaseRequestAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -329,13 +341,14 @@ public class AppReleaseProcessController : ControllerBase
     [HttpPut]
     [Route("{appId}/approveApp")]
     [Authorize(Roles = "approve_app_release")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> ApproveAppRequest([FromRoute] Guid appId)
     {
-        await this.WithIdentityData(identity => _appReleaseBusinessLogic.ApproveAppRequestAsync(appId, identity)).ConfigureAwait(false);
+        await this.WithUserId(userId => _appReleaseBusinessLogic.ApproveAppRequestAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -367,6 +380,7 @@ public class AppReleaseProcessController : ControllerBase
     [HttpPut]
     [Route("{appId:guid}/declineApp")]
     [Authorize(Roles = "decline_app_release")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -375,7 +389,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<NoContentResult> DeclineAppRequest([FromRoute] Guid appId, [FromBody] OfferDeclineRequest data)
     {
-        await this.WithIdentityData(identity => _appReleaseBusinessLogic.DeclineAppRequestAsync(appId, identity, data)).ConfigureAwait(false);
+        await this.WithUserId(userId => _appReleaseBusinessLogic.DeclineAppRequestAsync(appId, userId, data)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -410,6 +424,7 @@ public class AppReleaseProcessController : ControllerBase
     [HttpDelete]
     [Route("documents/{documentId}")]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -417,7 +432,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<NoContentResult> DeleteAppDocumentsAsync([FromRoute] Guid documentId)
     {
-        await this.WithIdentityData(identity => _appReleaseBusinessLogic.DeleteAppDocumentsAsync(documentId, identity));
+        await this.WithCompanyId(companyId => _appReleaseBusinessLogic.DeleteAppDocumentsAsync(documentId, companyId));
         return NoContent();
     }
 
@@ -433,13 +448,14 @@ public class AppReleaseProcessController : ControllerBase
     [HttpDelete]
     [Route("{appId}")]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> DeleteAppAsync([FromRoute] Guid appId)
     {
-        await this.WithIdentityData(identity => _appReleaseBusinessLogic.DeleteAppAsync(appId, identity)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _appReleaseBusinessLogic.DeleteAppAsync(appId, companyId)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -456,13 +472,14 @@ public class AppReleaseProcessController : ControllerBase
     [HttpPost]
     [Route("instance-type/{appId}")]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> SetInstanceType([FromRoute] Guid appId, [FromBody] AppInstanceSetupData data)
     {
-        await this.WithIdentityData(identity => _appReleaseBusinessLogic.SetInstanceType(appId, data, identity)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _appReleaseBusinessLogic.SetInstanceType(appId, data, companyId)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -476,10 +493,11 @@ public class AppReleaseProcessController : ControllerBase
     [HttpGet]
     [Route("{appId}/technical-user-profiles")]
     [Authorize(Roles = "add_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfiles([FromRoute] Guid appId) =>
-        this.WithIdentityData(identity => _appReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(appId, identity));
+        this.WithCompanyId(companyId => _appReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(appId, companyId));
 
     /// <summary>
     /// Creates and updates the technical user profiles
@@ -492,13 +510,14 @@ public class AppReleaseProcessController : ControllerBase
     [HttpPut]
     [Route("{appId}/technical-user-profiles")]
     [Authorize(Roles = "add_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<NoContentResult> CreateAndUpdateTechnicalUserProfiles([FromRoute] Guid appId, [FromBody] IEnumerable<TechnicalUserProfileData> data)
     {
-        await this.WithIdentityData(identity => _appReleaseBusinessLogic.UpdateTechnicalUserProfiles(appId, data, identity)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _appReleaseBusinessLogic.UpdateTechnicalUserProfiles(appId, data, companyId)).ConfigureAwait(false);
         return NoContent();
     }
 }

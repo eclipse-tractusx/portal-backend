@@ -47,14 +47,14 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
         _settings = options.Value;
     }
 
-    public IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles(IdentityData identity, string? languageShortName) =>
-        _portalRepositories.GetInstance<IUserRolesRepository>().GetCoreOfferRolesAsync(identity.CompanyId, languageShortName ?? Constants.DefaultLanguage, _settings.Portal.KeycloakClientID)
+    public IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles(Guid companyId, string? languageShortName) =>
+        _portalRepositories.GetInstance<IUserRolesRepository>().GetCoreOfferRolesAsync(companyId, languageShortName ?? Constants.DefaultLanguage, _settings.Portal.KeycloakClientID)
             .PreSortedGroupBy(x => x.OfferId)
             .Select(x => new OfferRoleInfos(x.Key, x.Select(s => new OfferRoleInfo(s.RoleId, s.RoleText, s.Description))));
 
-    public IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid appId, IdentityData identity, string? languageShortName) =>
+    public IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid appId, Guid companyId, string? languageShortName) =>
         _portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetAppRolesAsync(appId, identity.CompanyId, languageShortName ?? Constants.DefaultLanguage);
+            .GetAppRolesAsync(appId, companyId, languageShortName ?? Constants.DefaultLanguage);
 
     public Task<IEnumerable<UserRoleWithId>> ModifyCoreOfferUserRolesAsync(Guid offerId, Guid companyUserId, IEnumerable<string> roles, IdentityData identity)
     {

@@ -63,7 +63,7 @@ public class ServiceChangeControllerTest
         var result = await this._controller.DeactivateService(serviceId).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.DeactivateOfferByServiceIdAsync(serviceId, _identity)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeactivateOfferByServiceIdAsync(serviceId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 }

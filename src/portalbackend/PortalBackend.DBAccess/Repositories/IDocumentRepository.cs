@@ -65,7 +65,7 @@ public interface IDocumentRepository
     /// <param name="documentId">id of the document the user id should be selected for</param>
     /// <param name="companyUserId"></param>
     /// <returns>Returns the user id if a document is found for the given id, otherwise null</returns>
-    Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, Guid companyUserId);
+    Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdWithCompanyUserCheckAsync(Guid documentId, Guid companyUserId);
 
     /// <summary>
     /// Get the document data and checks if the user 

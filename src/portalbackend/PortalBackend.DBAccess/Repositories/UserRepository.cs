@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -130,20 +131,6 @@ public class UserRepository : IUserRepository
                     ? companyUser.Id
                     : Guid.Empty))
             .AsAsyncEnumerable();
-
-    public Task<(CompanyInformationData companyInformation, string? userEmail)> GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(Guid companyUserId) =>
-        _dbContext.CompanyUsers
-            .AsNoTracking()
-            .Where(user => user.Id == companyUserId)
-            .Select(user => new ValueTuple<CompanyInformationData, string?>(
-                new CompanyInformationData(
-                    user.Identity!.CompanyId,
-                    user.Identity!.Company!.Name,
-                    user.Identity!.Company!.Address!.CountryAlpha2Code,
-                    user.Identity!.Company!.BusinessPartnerNumber
-                ),
-                user.Email))
-            .SingleOrDefaultAsync();
 
     public Task<bool> IsOwnCompanyUserWithEmailExisting(string email, Guid companyUserId) =>
         _dbContext.CompanyUsers
@@ -417,13 +404,12 @@ public class UserRepository : IUserRepository
            .AsAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany, Guid UserCompanyId)> GetRolesAndCompanyMembershipUntrackedAsync(Guid userCompanyId, IEnumerable<Guid> roleIds, Guid companyUserId) =>
-        _dbContext.CompanyUsers.AsNoTracking()
-            .Where(companyUser => companyUser.Id == companyUserId)
-            .Select(companyUser => new ValueTuple<IEnumerable<Guid>, bool, Guid>(
-                companyUser.Identity!.IdentityAssignedRoles.Where(assignedRole => roleIds.Contains(assignedRole.UserRoleId)).Select(assignedRole => assignedRole.UserRoleId),
-                companyUser.Identity!.CompanyId == userCompanyId,
-                companyUser.Identity!.CompanyId))
+    public Task<(bool IsSameCompany, IEnumerable<Guid> RoleIds)> GetRolesForCompanyUser(Guid companyId, IEnumerable<Guid> roleIds, Guid companyUserId) =>
+        _dbContext.Identities.AsNoTracking()
+            .Where(i => i.Id == companyUserId)
+            .Select(i => new ValueTuple<bool, IEnumerable<Guid>>(
+                i.CompanyId == companyId,
+                i.IdentityAssignedRoles.Select(x => x.UserRoleId).Where(x => roleIds.Contains(x))))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -462,10 +448,4 @@ public class UserRepository : IUserRepository
         modify.Invoke(updatedEntity);
         return updatedEntity;
     }
-
-    /// <inheritdoc />
-    public IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser)> GetCompanyUserWithIamUserCheck(Guid userId, Guid companyUserId) =>
-        _dbContext.CompanyUsers.Where(x => x.Id == userId || x.Id == companyUserId)
-            .Select(companyUser => new ValueTuple<Guid, bool>(companyUser.Id, companyUser.Id == userId))
-            .ToAsyncEnumerable();
 }

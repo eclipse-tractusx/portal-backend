@@ -1298,7 +1298,7 @@ public class UserBusinessLogicTests
         var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, null!, _logger, _options);
 
         // Act
-        var result = await sut.GetOwnUserDetails(identity).ConfigureAwait(false);
+        var result = await sut.GetOwnUserDetails(identity.UserId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>
@@ -1318,11 +1318,11 @@ public class UserBusinessLogicTests
         var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, null!, _logger, _options);
 
         // Act
-        async Task Act() => await sut.GetOwnUserDetails(identity).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnUserDetails(identity.UserId).ConfigureAwait(false);
 
         // Assert
         var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be($"no company-user data found for user {identity.UserEntityId}");
+        error.Message.Should().Be($"no company-user data found for user {identity.UserId}");
     }
 
     #endregion

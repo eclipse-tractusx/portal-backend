@@ -56,7 +56,7 @@ public interface INotificationRepository
     /// <param name="onlyDueDate">OPTIONAL: If true only notifications with a due date will be returned</param>
     /// <param name="sorting"></param>
     /// <returns>Returns a collection of NotificationDetailData</returns>
-    Func<int, int, Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByCompanyUserIdUntracked(Guid receiverUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, bool onlyDueDate, NotificationSorting? sorting);
+    Func<int, int, Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByReceiver(Guid receiverUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, bool onlyDueDate, NotificationSorting? sorting);
 
     /// <summary>
     ///     Returns a notification for the given id and given user if it exists in the persistence layer, otherwise null
@@ -64,7 +64,7 @@ public interface INotificationRepository
     /// <param name="notificationId">Id of the notification</param>
     /// <param name="companyUserId">Id of the receiver</param>
     /// <returns>Returns a notification for the given id and given user if it exists in the persistence layer, otherwise null</returns>
-    Task<(bool IsUserReceiver, NotificationDetailData NotificationDetailData)> GetNotificationByIdAndIamUserIdUntrackedAsync(Guid notificationId, Guid companyUserId);
+    Task<(bool IsUserReceiver, NotificationDetailData NotificationDetailData)> GetNotificationByIdAndValidateReceiverAsync(Guid notificationId, Guid companyUserId);
 
     /// <summary>
     /// Checks if a notification exists for the given id and companyUserId
@@ -72,7 +72,7 @@ public interface INotificationRepository
     /// <param name="notificationId">Id of the notification</param>
     /// <param name="companyUserId">Id of the receiver</param>
     /// <returns><c>true</c> if the notification exists, <c>false</c> if it doesn't exist</returns>
-    Task<(bool IsUserReceiver, bool IsNotificationExisting)> CheckNotificationExistsByIdAndIamUserIdAsync(Guid notificationId, Guid companyUserId);
+    Task<(bool IsUserReceiver, bool IsNotificationExisting)> CheckNotificationExistsByIdAndValidateReceiverAsync(Guid notificationId, Guid companyUserId);
 
     /// <summary>
     /// Gets the count of the notifications for the given user and optional status

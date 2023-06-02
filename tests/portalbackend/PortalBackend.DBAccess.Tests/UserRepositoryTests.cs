@@ -47,37 +47,6 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
-    #region GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync
-
-    [Fact]
-    public async Task GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync_WithValidIamUser_ReturnsExpectedResult()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(_validCompanyUser).ConfigureAwait(false);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.companyInformation.OrganizationName.Should().Be("Catena-X");
-    }
-
-    [Fact]
-    public async Task GetOwnCompanAndCompanyUseryIdWithCompanyNameAndUserEmailAsync_WithNotExistingIamUser_ReturnsDefault()
-    {
-        // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        var result = await sut.GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(Guid.NewGuid()).ConfigureAwait(false);
-
-        // Assert
-        (result == default).Should().BeTrue();
-    }
-
-    #endregion
-
     #region Get own company app users
 
     [Fact]

@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -62,13 +63,15 @@ public class AppChangeController : ControllerBase
     [HttpPost]
     [Route("{appId}/role/activeapp")]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(IEnumerable<AppRoleData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<IEnumerable<AppRoleData>> AddActiveAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> userRoles) =>
-        await this.WithIdentityData(identity => _businessLogic.AddActiveAppUserRoleAsync(appId, userRoles, identity)).ConfigureAwait(false);
+        await this.WithUserIdAndCompanyId(identity => _businessLogic.AddActiveAppUserRoleAsync(appId, userRoles, identity)).ConfigureAwait(false);
 
     /// <summary>
     /// Get description of the app by Id.
@@ -80,12 +83,13 @@ public class AppChangeController : ControllerBase
     [HttpGet]
     [Route("{appId}/appupdate/description")]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(IEnumerable<LocalizedDescription>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionsAsync([FromRoute] Guid appId) =>
-        await this.WithIdentityData(identity => _businessLogic.GetAppUpdateDescriptionByIdAsync(appId, identity)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _businessLogic.GetAppUpdateDescriptionByIdAsync(appId, companyId)).ConfigureAwait(false);
 
     /// <summary>
     /// Create or Update description of the app by Id.
@@ -97,13 +101,14 @@ public class AppChangeController : ControllerBase
     [HttpPut]
     [Route("{appId}/appupdate/description")]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> CreateOrUpdateAppDescriptionsByIdAsync([FromRoute] Guid appId, [FromBody] IEnumerable<LocalizedDescription> offerDescriptionDatas)
     {
-        await this.WithIdentityData(identity => _businessLogic.CreateOrUpdateAppDescriptionByIdAsync(appId, identity, offerDescriptionDatas)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _businessLogic.CreateOrUpdateAppDescriptionByIdAsync(appId, companyId, offerDescriptionDatas)).ConfigureAwait(false);
         return NoContent();
     }
     /// <summary>
@@ -120,6 +125,8 @@ public class AppChangeController : ControllerBase
     [HttpPost]
     [Route("{appId}/appLeadImage")]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Consumes("multipart/form-data")]
     [RequestFormLimits(ValueLengthLimit = 819200, MultipartBodyLengthLimit = 819200)]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
@@ -128,7 +135,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<NoContentResult> UploadOfferAssignedAppLeadImageDocumentByIdAsync([FromRoute] Guid appId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {
-        await this.WithIdentityData(identity => _businessLogic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, identity, document, cancellationToken));
+        await this.WithUserIdAndCompanyId(identity => _businessLogic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, identity, document, cancellationToken));
         return NoContent();
     }
 
@@ -145,6 +152,7 @@ public class AppChangeController : ControllerBase
     [HttpPut]
     [Route("{appId:guid}/deactivateApp")]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -152,7 +160,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
     {
-        await this.WithIdentityData(identity => _businessLogic.DeactivateOfferByAppIdAsync(appId, identity)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _businessLogic.DeactivateOfferByAppIdAsync(appId, companyId)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -167,13 +175,14 @@ public class AppChangeController : ControllerBase
     [HttpPut]
     [Route("{appId}/subscription/{subscriptionId}/tenantUrl")]
     [Authorize(Roles = "edit_apps")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateTenantUrl([FromRoute] Guid appId, [FromRoute] Guid subscriptionId, [FromBody] UpdateTenantData data)
     {
-        await this.WithIdentityData(identity => _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data, identity)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data, companyId)).ConfigureAwait(false);
         return NoContent();
     }
 }

@@ -53,13 +53,13 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         _settings = settings.Value;
     }
 
-    public ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, IdentityData identity, CancellationToken cancellationToken)
+    public ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
     {
         CsvParser.ValidateContentTypeTextCSV(document.ContentType);
         return UploadOwnCompanyIdpUsersInternalAsync(identityProviderId, document, identity, cancellationToken);
     }
 
-    private async ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersInternalAsync(Guid identityProviderId, IFormFile document, IdentityData identity, CancellationToken cancellationToken)
+    private async ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersInternalAsync(Guid identityProviderId, IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
     {
         using var stream = document.OpenReadStream();
 
@@ -180,13 +180,14 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         return (firstName, lastName, email, providerUserName, providerUserId, roles);
     }
 
-    public ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, IdentityData identity, CancellationToken cancellationToken)
+    public ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersAsync(IFormFile document, (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
     {
         CsvParser.ValidateContentTypeTextCSV(document.ContentType);
         return UploadOwnCompanySharedIdpUsersInternalAsync(document, identity, cancellationToken);
     }
 
-    private async ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersInternalAsync(IFormFile document, IdentityData identity, CancellationToken cancellationToken)
+    private async ValueTask<UserCreationStats> UploadOwnCompanySharedIdpUsersInternalAsync(IFormFile document,
+        (Guid UserId, Guid CompanyId) identity, CancellationToken cancellationToken)
     {
         using var stream = document.OpenReadStream();
 

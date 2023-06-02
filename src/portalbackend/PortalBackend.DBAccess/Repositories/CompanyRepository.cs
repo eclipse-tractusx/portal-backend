@@ -283,4 +283,17 @@ public class CompanyRepository : ICompanyRepository
             company.CompanyStatusId == CompanyStatusId.ACTIVE,
             true
         )).SingleOrDefaultAsync();
+
+    public Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId) =>
+        _context.Companies
+            .AsNoTracking()
+            .Where(c => c.Id == companyId)
+            .Select(user => new CompanyInformationData(
+                user.Id,
+                user.Name,
+                user.Address!.CountryAlpha2Code,
+                user.BusinessPartnerNumber
+            ))
+            .SingleOrDefaultAsync();
+
 }

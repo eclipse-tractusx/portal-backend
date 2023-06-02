@@ -263,7 +263,7 @@ public class SubscriptionConfigurationBusinessLogicTests
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
-        ex.Message.Should().Be($"users {_noServiceProviderIdentity.CompanyId} company is not a service-provider");
+        ex.Message.Should().Be($"Company {_noServiceProviderIdentity.CompanyId} is not a service-provider");
         _serviceProviderDetails.Should().BeEmpty();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }

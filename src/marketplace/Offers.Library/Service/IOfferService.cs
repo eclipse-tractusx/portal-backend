@@ -81,20 +81,20 @@ public interface IOfferService
     /// Return Offer Agreement Consent
     /// </summary>
     /// <param name="offerId"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <param name="offerTypeId">OfferTypeId the agreements are associated with</param>
     /// <returns></returns>
-    Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, IdentityData identity, OfferTypeId offerTypeId);
+    Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Create or Update consent to agreements associated with an offer
     /// </summary>
     /// <param name="offerId"></param>
     /// <param name="offerAgreementConsent"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <param name="offerTypeId">OfferTypeId the agreements are associated with</param>
     /// <returns></returns>
-    Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, IdentityData identity, OfferTypeId offerTypeId);
+    Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, Guid companyId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Creates a new service offering
@@ -103,25 +103,25 @@ public interface IOfferService
     /// <param name="identity">the User</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>The id of the newly created service</returns>
-    Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, IdentityData identity, OfferTypeId offerTypeId);
+    Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId);
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="offerId"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, IdentityData identity, OfferTypeId offerTypeId);
+    Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Checks whether the sales manager has the a sales manager role assigned and is in the same company as the user
     /// </summary>
     /// <param name="salesManagerId">Id of the sales manager</param>
-    /// <param name="identity">identity of current user</param>
+    /// <param name="companyId">id of current users company</param>
     /// <param name="salesManagerRoles">the sales manager roles</param>
     /// <returns>Returns the company id of the user</returns>
-    Task<Guid> ValidateSalesManager(Guid salesManagerId, IdentityData identity, IDictionary<string, IEnumerable<string>> salesManagerRoles);
+    Task ValidateSalesManager(Guid salesManagerId, Guid companyId, IDictionary<string, IEnumerable<string>> salesManagerRoles);
 
     void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<LocalizedDescription> updateDescriptions, IEnumerable<LocalizedDescription> existingDescriptions);
 
@@ -131,32 +131,32 @@ public interface IOfferService
     /// Approve App Status from IN_Review to Active
     /// </summary>
     /// <param name="offerId"></param>
-    /// <param name="identity"></param>
+    /// <param name="userId"></param>
     /// <param name="offerTypeId"></param>
     /// <param name="approveOfferNotificationTypeIds"></param>
     /// <param name="approveOfferRoles"></param>
     /// <param name="submitOfferNotificationTypeIds"></param>
     /// <param name="catenaAdminRoles"></param>
     /// <returns></returns>
-    Task ApproveOfferRequestAsync(Guid offerId, IdentityData identity, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
+    Task ApproveOfferRequestAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
 
     /// <summary>
     /// Update offer status and create notification for App 
     /// </summary>
     /// <param name="offerId">Id of the offer that should be submitted</param>
-    /// <param name="identity">Identity of the user</param>
+    /// <param name="userId">Id of the user</param>
     /// <param name="offerTypeId">Type of the offer</param>
     /// <param name="notificationTypeIds">Ids for the notifications that are created</param>
     /// <param name="catenaAdminRoles">Company Admin Roles</param>
     /// <param name="submitAppDocumentTypeIds">Document Type Id</param>
     /// <returns></returns>
-    Task SubmitOfferAsync(Guid offerId, IdentityData identity, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds);
+    Task SubmitOfferAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds);
 
     /// <summary>
     /// Declines the given offer
     /// </summary>
     /// <param name="offerId">Id of the offer that should be declined</param>
-    /// <param name="identity">Identity of the User</param>
+    /// <param name="userId">Id of the User</param>
     /// <param name="data">The offer decline data</param>
     /// <param name="offerType">The offer type</param>
     /// <param name="notificationTypeId">Id of the notification that should be send</param>
@@ -164,26 +164,26 @@ public interface IOfferService
     /// <param name="basePortalAddress">the base portal address</param>
     /// <param name="submitOfferNotificationTypeIds">the submit notification notification type ids</param>
     /// <param name="catenaAdminRoles">The catena x admin roles</param>
-    Task DeclineOfferAsync(Guid offerId, IdentityData identity, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string, IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
+    Task DeclineOfferAsync(Guid offerId, Guid userId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string, IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
 
     /// <summary>
     /// Deactivate the given offerStatus by offerId and offerType
     /// </summary>
     /// <param name="offerId">Id of the offer that should be Deactivate</param>
-    /// <param name="identity">Identity of the user</param>
+    /// <param name="companyId">Id of the users company</param>
     /// <param name="offerTypeId">Type of the offer</param>
-    Task DeactivateOfferIdAsync(Guid offerId, IdentityData identity, OfferTypeId offerTypeId);
+    Task DeactivateOfferIdAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Update offer status and create notification for Service
     /// </summary>
     /// <param name="offerId"></param>
-    /// <param name="identity"></param>
+    /// <param name="userId"></param>
     /// <param name="offerTypeId"></param>
     /// <param name="notificationTypeIds"></param>
     /// <param name="catenaAdminRoles"></param>
     /// <returns></returns>
-    Task SubmitServiceAsync(Guid offerId, IdentityData identity, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
+    Task SubmitServiceAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles);
 
     /// <summary>
     /// Get offer Document Content for given offertypeId by Id
@@ -200,20 +200,20 @@ public interface IOfferService
     /// Get offer Document Content for given offertypeId by Id
     /// </summary>
     /// <param name="documentId"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <param name="documentTypeIdSettings"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task DeleteDocumentsAsync(Guid documentId, IdentityData identity, IEnumerable<DocumentTypeId> documentTypeIdSettings, OfferTypeId offerTypeId);
+    Task DeleteDocumentsAsync(Guid documentId, Guid companyId, IEnumerable<DocumentTypeId> documentTypeIdSettings, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Get technical user profiles for a specific offer
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
-    /// <param name="identity">Identity of the User</param>
+    /// <param name="companyId">Id of the Users company</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>IEnumerable with the technical user profile information</returns>
-    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, IdentityData identity, OfferTypeId offerTypeId);
+    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Creates or updates the technical user profiles
@@ -221,40 +221,40 @@ public interface IOfferService
     /// <param name="offerId">Id of the offer</param>
     /// <param name="offerTypeId">The OfferTypeId of the offer</param>
     /// <param name="data">The technical user profiles</param>
-    /// <param name="identity">identity of the user</param>
+    /// <param name="companyId">id of the users company</param>
     /// <param name="technicalUserProfileClient">Client to get the technicalUserProfiles</param>
-    Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, IdentityData identity, string technicalUserProfileClient);
+    Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, Guid companyId, string technicalUserProfileClient);
 
     /// <summary>
     /// Gets the information for the subscription for the provider
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
     /// <param name="subscriptionId">Id of the subscription</param>
-    /// <param name="identity">Identity of the user</param>
+    /// <param name="companyId">Identity of the user</param>
     /// <param name="offerTypeId">Offer type</param>
     /// <param name="contactUserRoles">The roles of the users that will be listed as contact</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, IdentityData identity, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles);
+    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles);
 
     /// <summary>
     /// Gets the information for the subscription for the subscriber
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
     /// <param name="subscriptionId">Id of the subscription</param>
-    /// <param name="identity">Identity of the user</param>
+    /// <param name="companyId">Id of the users company</param>
     /// <param name="offerTypeId">Offer type</param>
     /// <param name="contactUserRoles">The roles of the users that will be listed as contact</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, IdentityData identity, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles);
+    Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles);
 
     /// <summary>
     /// Gets the information of company Subscribed, Subscription Status for user by OfferType
     /// </summary>
     /// <param name="page"></param>
     /// <param name="size"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <param name="offerTypeId"></param>
     /// <param name="documentTypeId"></param>
     /// <returns>Returns the details of the subscription status for user by OfferType</returns>
-    Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(int page, int size, IdentityData identity, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
+    Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(int page, int size, Guid companyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
 }

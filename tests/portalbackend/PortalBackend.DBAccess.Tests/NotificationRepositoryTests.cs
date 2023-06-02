@@ -164,7 +164,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByCompanyUserIdUntracked(_companyUserId, null, null, null, false, null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, null)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -180,7 +180,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByCompanyUserIdUntracked(_companyUserId, null, null, null, false, NotificationSorting.DateAsc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, NotificationSorting.DateAsc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -195,7 +195,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByCompanyUserIdUntracked(_companyUserId, null, null, null, false, NotificationSorting.DateDesc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, NotificationSorting.DateDesc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -210,7 +210,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByCompanyUserIdUntracked(_companyUserId, null, null, null, false, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -225,7 +225,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByCompanyUserIdUntracked(_companyUserId, null, null, null, false, NotificationSorting.ReadStatusDesc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, null, false, NotificationSorting.ReadStatusDesc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -241,7 +241,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByCompanyUserIdUntracked(_companyUserId, false, null, null, false, null)(0, 15)
+            .GetAllNotificationDetailsByReceiver(_companyUserId, false, null, null, false, null)(0, 15)
             .ConfigureAwait(false);
 
         // Assert
@@ -258,7 +258,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .GetAllNotificationDetailsByCompanyUserIdUntracked(_companyUserId, true, null, null, false, null)(0, 15)
+            .GetAllNotificationDetailsByReceiver(_companyUserId, true, null, null, false, null)(0, 15)
             .ConfigureAwait(false);
 
         // Assert
@@ -274,7 +274,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByCompanyUserIdUntracked(_companyUserId, true, NotificationTypeId.INFO, null, false, NotificationSorting.ReadStatusDesc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, true, NotificationTypeId.INFO, null, false, NotificationSorting.ReadStatusDesc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -289,7 +289,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByCompanyUserIdUntracked(_companyUserId, true, NotificationTypeId.ACTION, null, false, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, true, NotificationTypeId.ACTION, null, false, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -304,7 +304,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByCompanyUserIdUntracked(_companyUserId, null, null, NotificationTopicId.INFO, false, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, null, null, NotificationTopicId.INFO, false, NotificationSorting.ReadStatusAsc)(0, 15).ConfigureAwait(false);
 
         // Assert
         results.Should().NotBeNull();
@@ -324,7 +324,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut
-            .GetNotificationByIdAndIamUserIdUntrackedAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), _companyUserId)
+            .GetNotificationByIdAndValidateReceiverAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), _companyUserId)
             .ConfigureAwait(false);
 
         // Assert
@@ -398,7 +398,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .CheckNotificationExistsByIdAndIamUserIdAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), _companyUserId)
+            .CheckNotificationExistsByIdAndValidateReceiverAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), _companyUserId)
             .ConfigureAwait(false);
 
         // Assert

@@ -42,7 +42,6 @@ public class NotificationBusinessLogicTests
     private const string IamUserId = "3e8343f7-4fe5-4296-8312-f33aa6dbde5d";
     private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
 
-    private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
     private readonly NotificationDetailData _notificationDetail;
     private readonly IEnumerable<NotificationDetailData> _notificationDetails;
@@ -59,14 +58,6 @@ public class NotificationBusinessLogicTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        var identity = new Identity(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), UserStatusId.ACTIVE, IdentityTypeId.COMPANY_USER)
-        {
-            UserEntityId = IamUserId
-        };
-
-        _companyUser = _fixture.Build<CompanyUser>()
-            .With(u => u.Identity, identity)
-            .Create();
         _notificationDetail = new NotificationDetailData(Guid.NewGuid(), DateTime.UtcNow, NotificationTypeId.INFO, NotificationTopicId.INFO, false, "Test Message", null, false);
 
         _portalRepositories = A.Fake<IPortalRepositories>();
@@ -423,33 +414,29 @@ public class NotificationBusinessLogicTests
     {
         SetupNotifications();
 
-        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(_identity.UserId, _companyUser.Id))
-            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool iamUser)> { new(_companyUser.Id, true), new(_companyUser.Id, false) }.ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyUserWithIamUserCheck(A<Guid>.That.Not.Matches(x => x == _identity.UserId), A<Guid>.That.Not.Matches(x => x == _companyUser.Id)))
-            .ReturnsLazily(() => new List<(Guid CompanyUserId, bool iamUser)>().ToAsyncEnumerable());
-        A.CallTo(() => _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(_notificationDetail.Id, _identity.UserId))
+        A.CallTo(() => _notificationRepository.GetNotificationByIdAndValidateReceiverAsync(_notificationDetail.Id, _identity.UserId))
             .Returns((true, _notificationDetail));
         A.CallTo(() =>
-                _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(
+                _notificationRepository.GetNotificationByIdAndValidateReceiverAsync(
                     A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), A<Guid>._))
             .Returns(((bool, NotificationDetailData))default);
 
         A.CallTo(() =>
-                _notificationRepository.CheckNotificationExistsByIdAndIamUserIdAsync(_notificationDetail.Id, _identity.UserId))
+                _notificationRepository.CheckNotificationExistsByIdAndValidateReceiverAsync(_notificationDetail.Id, _identity.UserId))
             .ReturnsLazily(() => (true, true));
         A.CallTo(() =>
-                _notificationRepository.CheckNotificationExistsByIdAndIamUserIdAsync(
+                _notificationRepository.CheckNotificationExistsByIdAndValidateReceiverAsync(
                     A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), A<Guid>._))
             .Returns((false, false));
         A.CallTo(() =>
-                _notificationRepository.CheckNotificationExistsByIdAndIamUserIdAsync(_notificationDetail.Id,
+                _notificationRepository.CheckNotificationExistsByIdAndValidateReceiverAsync(_notificationDetail.Id,
                     A<Guid>.That.Not.Matches(x => x == _identity.UserId)))
             .Returns((false, true));
-        A.CallTo(() => _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(_notificationDetail.Id, _identity.UserId))
+        A.CallTo(() => _notificationRepository.GetNotificationByIdAndValidateReceiverAsync(_notificationDetail.Id, _identity.UserId))
             .Returns((true, _unreadNotificationDetails.First()));
-        A.CallTo(() => _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(_notificationDetail.Id, A<Guid>.That.Not.Matches(x => x == _identity.UserId)))
+        A.CallTo(() => _notificationRepository.GetNotificationByIdAndValidateReceiverAsync(_notificationDetail.Id, A<Guid>.That.Not.Matches(x => x == _identity.UserId)))
             .Returns((false, _unreadNotificationDetails.First()));
-        A.CallTo(() => _notificationRepository.GetNotificationByIdAndIamUserIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), _identity.UserId))
+        A.CallTo(() => _notificationRepository.GetNotificationByIdAndValidateReceiverAsync(A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), _identity.UserId))
             .Returns(default((bool IsUserReceiver, NotificationDetailData NotificationDetailData)));
 
         A.CallTo(() => _notificationRepository.GetNotificationCountForUserAsync(_identity.UserId, false))
@@ -465,11 +452,11 @@ public class NotificationBusinessLogicTests
         var readPaging = (int skip, int take) => Task.FromResult(new Pagination.Source<NotificationDetailData>(_readNotificationDetails.Count(), _readNotificationDetails.Skip(skip).Take(take)));
         var notificationsPaging = (int skip, int take) => Task.FromResult(new Pagination.Source<NotificationDetailData>(_notificationDetails.Count(), _notificationDetails.Skip(skip).Take(take)));
 
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByCompanyUserIdUntracked(_identity.UserId, false, null, null, false, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identity.UserId, false, null, null, false, A<NotificationSorting>._))
             .Returns(unreadPaging);
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByCompanyUserIdUntracked(_identity.UserId, true, null, null, false, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identity.UserId, true, null, null, false, A<NotificationSorting>._))
             .Returns(readPaging);
-        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByCompanyUserIdUntracked(_identity.UserId, null, null, null, false, A<NotificationSorting>._))
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(_identity.UserId, null, null, null, false, A<NotificationSorting>._))
             .Returns(notificationsPaging);
     }
 

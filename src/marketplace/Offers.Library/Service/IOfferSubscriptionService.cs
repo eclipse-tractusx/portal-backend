@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -27,6 +26,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 public interface IOfferSubscriptionService
 {
     Task<Guid> AddOfferSubscriptionAsync(Guid offerId,
-        IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, Guid userId,
+        IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, (Guid UserId, Guid CompanyId) identity,
         OfferTypeId offerTypeId, string basePortalAddress);
 }

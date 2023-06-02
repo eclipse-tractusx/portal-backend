@@ -225,10 +225,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId, Guid companyUserId)
+    public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentContentAsync(Guid documentId, Guid userId)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var documentDetails = await documentRepository.GetDocumentIdCompanyUserSameAsIamUserAsync(documentId, companyUserId).ConfigureAwait(false);
+        var documentDetails = await documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, userId).ConfigureAwait(false);
         if (documentDetails.DocumentId == Guid.Empty)
         {
             throw new NotFoundException($"document {documentId} does not exist.");
@@ -446,13 +446,13 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 c.AddressId = addressId;
             });
 
-    public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, Guid companyUserId)
+    public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, Guid userId)
     {
         if (string.IsNullOrEmpty(userCreationInfo.eMail))
         {
             throw new ControllerArgumentException($"email must not be empty");
         }
-        return InviteNewUserInternalAsync(applicationId, userCreationInfo, companyUserId);
+        return InviteNewUserInternalAsync(applicationId, userCreationInfo, userId);
     }
 
     private async Task<int> InviteNewUserInternalAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo, Guid companyUserId)
@@ -621,10 +621,10 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             (await _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementsForCompanyRolesUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable()
         );
 
-    public async Task<bool> SubmitRegistrationAsync(Guid applicationId, IdentityData identity)
+    public async Task<bool> SubmitRegistrationAsync(Guid applicationId, IdentityData user)
     {
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, identity.UserId).ConfigureAwait(false);
+        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, user.UserId).ConfigureAwait(false);
         if (applicationUserData == null)
         {
             throw new NotFoundException($"application {applicationId} does not exist");
@@ -632,7 +632,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         if (applicationUserData.CompanyUserId == Guid.Empty)
         {
-            throw new ForbiddenException($"iamUserId {identity.UserEntityId} is not assigned with CompanyApplication {applicationId}");
+            throw new ForbiddenException($"iamUserId {user.UserEntityId} is not assigned with CompanyApplication {applicationId}");
         }
 
         if (applicationUserData.DocumentDatas.Any())
@@ -684,7 +684,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         else
         {
-            _logger.LogInformation("user {IamUserId} has no email-address", identity.UserEntityId);
+            _logger.LogInformation("user {IamUserId} has no email-address", user.UserEntityId);
         }
 
         return true;
@@ -708,9 +708,9 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
     }
 
-    public async Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, Guid companyUserId)
+    public async Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, Guid userId)
     {
-        var result = await _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId, documentTypeId, companyUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId, documentTypeId, userId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"application {applicationId} not found");

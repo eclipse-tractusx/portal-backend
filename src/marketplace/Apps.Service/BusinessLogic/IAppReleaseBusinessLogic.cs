@@ -37,10 +37,10 @@ public interface IAppReleaseBusinessLogic
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="updateModel"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <returns></returns>
     [Obsolete("This Method is not used anymore,  Planning to delete it with release 3.1")]
-    Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, IdentityData identity);
+    Task UpdateAppAsync(Guid appId, AppEditableDetail updateModel, Guid companyId);
 
     /// <summary>
     /// Upload document for given company user for appId
@@ -58,9 +58,9 @@ public interface IAppReleaseBusinessLogic
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="userRoles"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <returns></returns>
-    Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles, IdentityData identity);
+    Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles, Guid companyId);
 
     /// <summary>
     /// Return Agreements for App_Contract Category
@@ -72,59 +72,59 @@ public interface IAppReleaseBusinessLogic
     /// Return Offer Agreement Consent
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <returns></returns>
-    Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, IdentityData identity);
+    Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId, Guid companyId);
 
     /// <summary>
     /// Update Agreement Consent
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="offerAgreementConsents"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <returns></returns>
-    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, IdentityData identity);
+    Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentAsync(Guid appId, OfferAgreementConsent offerAgreementConsents, Guid companyId);
 
     /// <summary>
     /// Return Offer with Consent Status
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <returns></returns>
-    Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId, IdentityData identity);
+    Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId, Guid companyId);
 
     /// <summary>
     /// Delete User Role by appId and roleId
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="roleId"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <returns></returns>
-    Task DeleteAppRoleAsync(Guid appId, Guid roleId, IdentityData identity);
+    Task DeleteAppRoleAsync(Guid appId, Guid roleId, Guid companyId);
 
     /// <summary>
     /// Get Sales Manager Data
     /// </summary>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <returns></returns>
-    IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(IdentityData identity);
+    IAsyncEnumerable<CompanyUserNameData> GetAppProviderSalesManagersAsync(Guid companyId);
 
     /// <summary>
     /// Creates an application and returns its generated ID.
     /// </summary>
     /// <param name="appRequestModel"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <returns>Guid of the created app.</returns>
-    Task<Guid> AddAppAsync(AppRequestModel appRequestModel, IdentityData identity);
+    Task<Guid> AddAppAsync(AppRequestModel appRequestModel, Guid companyId);
 
     /// <summary>
     /// Creates an application and returns its generated ID.
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="appRequestModel"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <returns>Guid of the created app.</returns>
-    Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, IdentityData identity);
+    Task UpdateAppReleaseAsync(Guid appId, AppRequestModel appRequestModel, Guid companyId);
 
     /// <summary>
     /// Retrieves all in review status apps in the marketplace.
@@ -135,17 +135,17 @@ public interface IAppReleaseBusinessLogic
     /// Update app status and create notification
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="identity"></param>
+    /// <param name="userId"></param>
     /// <returns></returns>
-    Task SubmitAppReleaseRequestAsync(Guid appId, IdentityData identity);
+    Task SubmitAppReleaseRequestAsync(Guid appId, Guid userId);
 
     /// <summary>
     /// Approve App Status from IN_Review to Active
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="identity"></param>
+    /// <param name="userId"></param>
     /// <returns></returns>
-    Task ApproveAppRequestAsync(Guid appId, IdentityData identity);
+    Task ApproveAppRequestAsync(Guid appId, Guid userId);
 
     /// <summary>
     /// Get All Privacy Policy
@@ -157,9 +157,9 @@ public interface IAppReleaseBusinessLogic
     /// Declines the app request
     /// </summary>
     /// <param name="appId">Id of the app</param>
-    /// <param name="identity">Identity of the User</param>
+    /// <param name="userId">Id of the User</param>
     /// <param name="data">The decline request data</param>
-    Task DeclineAppRequestAsync(Guid appId, IdentityData identity, OfferDeclineRequest data);
+    Task DeclineAppRequestAsync(Guid appId, Guid userId, OfferDeclineRequest data);
 
     /// <summary>
     /// Gets InReview App Details Data by Id
@@ -171,39 +171,39 @@ public interface IAppReleaseBusinessLogic
     /// Delete the App Document
     /// </summary>
     /// <param name="documentId"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <returns></returns>
-    Task DeleteAppDocumentsAsync(Guid documentId, IdentityData identity);
+    Task DeleteAppDocumentsAsync(Guid documentId, Guid companyId);
 
     ///<summary>
     /// Delete App
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="identity"></param>
+    /// <param name="companyId"></param>
     /// <returns></returns>
-    Task DeleteAppAsync(Guid appId, IdentityData identity);
+    Task DeleteAppAsync(Guid appId, Guid companyId);
 
     /// <summary>
     /// Sets the instance type and all related data for the app
     /// </summary>
     /// <param name="appId">Id of the app</param>
     /// <param name="data">the data for the app instance</param>
-    /// <param name="identity">the current user</param>
-    Task SetInstanceType(Guid appId, AppInstanceSetupData data, IdentityData identity);
+    /// <param name="companyId">id of the current user</param>
+    Task SetInstanceType(Guid appId, AppInstanceSetupData data, Guid companyId);
 
     /// <summary>
     /// Get technical user profiles for a specific offer
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
-    /// <param name="identity">Identity of the user</param>
+    /// <param name="companyId">Id of the users company</param>
     /// <returns>AsyncEnumerable with the technical user profile information</returns>
-    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, IdentityData identity);
+    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, Guid companyId);
 
     /// <summary>
     /// Creates or updates the technical user profiles
     /// </summary>
     /// <param name="appId">Id of the app</param>
     /// <param name="data">The technical user profiles</param>
-    /// <param name="identity">Identity of the user</param>
-    Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data, IdentityData identity);
+    /// <param name="companyId">Id of the users company</param>
+    Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data, Guid companyId);
 }

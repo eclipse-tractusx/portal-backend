@@ -45,7 +45,7 @@ public class OfferDocumentService : IOfferDocumentService
     {
         if (id == Guid.Empty)
         {
-            throw new ControllerArgumentException($"{offerTypeId}id should not be null");
+            throw new ControllerArgumentException($"{offerTypeId} id should not be null");
         }
 
         if (string.IsNullOrEmpty(document.FileName))
@@ -65,7 +65,7 @@ public class OfferDocumentService : IOfferDocumentService
         }
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, identity.UserId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
+        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, identity.CompanyId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
 
         if (result == default)
         {

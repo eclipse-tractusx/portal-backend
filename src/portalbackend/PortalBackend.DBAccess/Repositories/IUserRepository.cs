@@ -37,7 +37,6 @@ public interface IUserRepository
     IQueryable<CompanyUser> GetOwnCompanyUserQuery(Guid companyId, Guid? companyUserId = null, string? userEntityId = null, string? firstName = null, string? lastName = null, string? email = null, IEnumerable<UserStatusId>? statusIds = null);
     Task<(string UserEntityId, string? FirstName, string? LastName, string? Email)> GetUserEntityDataAsync(Guid companyUserId, Guid companyId);
     IAsyncEnumerable<(string? UserEntityId, Guid CompanyUserId)> GetMatchingCompanyIamUsersByNameEmail(string firstName, string lastName, string email, Guid companyId, IEnumerable<UserStatusId> companyUserStatusIds);
-    Task<(CompanyInformationData companyInformation, string? userEmail)> GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(Guid companyUserId);
     Task<bool> IsOwnCompanyUserWithEmailExisting(string email, Guid companyUserId);
     Task<CompanyUserDetails?> GetOwnCompanyUserDetailsUntrackedAsync(Guid companyUserId, Guid userCompanyId);
     Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, Guid companyId);
@@ -98,13 +97,13 @@ public interface IUserRepository
     IAsyncEnumerable<CompanyUserAccountData> GetCompanyUserAccountDataUntrackedAsync(IEnumerable<Guid> companyUserIds, Guid companyId);
 
     /// <summary>
-    /// Validate CompanyUser is Member of all roleIds and belongs to same company as executing user 
+    /// Get all roleIds for the matching user 
     /// </summary>
-    /// <param name="userCompanyId"></param>
+    /// <param name="companyId"></param>
     /// <param name="roleIds"></param>
     /// <param name="companyUserId"></param>
     /// <returns></returns>
-    Task<(IEnumerable<Guid> RoleIds, bool IsSameCompany, Guid UserCompanyId)> GetRolesAndCompanyMembershipUntrackedAsync(Guid userCompanyId, IEnumerable<Guid> roleIds, Guid companyUserId);
+    Task<(bool IsSameCompany, IEnumerable<Guid> RoleIds)> GetRolesForCompanyUser(Guid companyId, IEnumerable<Guid> roleIds, Guid companyUserId);
 
     /// <summary>
     /// Retrieve BPN for applicationId and Logged In User Company
@@ -123,12 +122,4 @@ public interface IUserRepository
 
     Task<IdentityData?> GetActiveUserDataByUserEntityId(string userEntityId);
     Identity AttachAndModifyIdentity(Guid identityId, Action<Identity>? initialize, Action<Identity> modify);
-
-    /// <summary>
-    /// Gets the company user ids and checks if its the given iamUser
-    /// </summary>
-    /// <param name="userId">Id of the user</param>
-    /// <param name="companyUserId">The id of the company user to check in the persistence layer.</param>
-    /// <returns><c>true</c> if the user exists, otherwise <c>false</c></returns>
-    IAsyncEnumerable<(Guid CompanyUserId, bool IsIamUser)> GetCompanyUserWithIamUserCheck(Guid userId, Guid companyUserId);
 }

@@ -26,8 +26,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public interface IUserRolesBusinessLogic
 {
-    IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles(IdentityData identity, string? languageShortName);
-    IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid appId, IdentityData identity, string? languageShortName);
+    IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles(Guid companyId, string? languageShortName);
+    IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid appId, Guid companyId, string? languageShortName);
 
     /// <summary>
     /// Update Role to User

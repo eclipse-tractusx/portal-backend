@@ -73,14 +73,14 @@ public class UserControllerTest
     {
         // Arrange
         var data = _fixture.Create<CompanyOwnUserDetails>();
-        A.CallTo(() => _logic.GetOwnUserDetails(_identity))
+        A.CallTo(() => _logic.GetOwnUserDetails(_identity.UserId))
             .Returns(data);
 
         // Act
         var result = await this._controller.GetOwnUserDetails().ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _logic.GetOwnUserDetails(_identity)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetOwnUserDetails(_identity.UserId)).MustHaveHappenedOnceExactly();
         result.Should().Be(data);
     }
 }

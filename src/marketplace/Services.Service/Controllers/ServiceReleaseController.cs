@@ -105,11 +105,12 @@ public class ServiceReleaseController : ControllerBase
     [HttpGet]
     [Route("consent/{serviceId}")]
     [Authorize(Roles = "add_service_offering")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(OfferAgreementConsent), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<OfferAgreementConsent> GetServiceAgreementConsentByIdAsync([FromRoute] Guid serviceId) =>
-       this.WithIdentityData(identity => _serviceReleaseBusinessLogic.GetServiceAgreementConsentAsync(serviceId, identity));
+       this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.GetServiceAgreementConsentAsync(serviceId, companyId));
 
     /// <summary>
     /// Return app detail with status
@@ -122,11 +123,12 @@ public class ServiceReleaseController : ControllerBase
     [HttpGet]
     [Route("{serviceId}/serviceStatus", Name = nameof(GetServiceDetailsForStatusAsync))]
     [Authorize(Roles = "add_service_offering")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(ServiceProviderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync([FromRoute] Guid serviceId) =>
-        this.WithIdentityData(identity => _serviceReleaseBusinessLogic.GetServiceDetailsForStatusAsync(serviceId, identity));
+        this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.GetServiceDetailsForStatusAsync(serviceId, companyId));
 
     /// <summary>
     /// Update or Insert Consent
@@ -139,14 +141,15 @@ public class ServiceReleaseController : ControllerBase
     /// <response code="404">Service does not exist.</response>
     /// <response code="400">Service Id is incorrect.</response>
     [HttpPost]
-    [Authorize(Roles = "add_service_offering")]
     [Route("consent/{serviceId}/agreementConsents")]
+    [Authorize(Roles = "add_service_offering")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(IEnumerable<ConsentStatusData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid serviceId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
-        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.SubmitOfferConsentAsync(serviceId, offerAgreementConsents, identity));
+        await this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.SubmitOfferConsentAsync(serviceId, offerAgreementConsents, companyId));
 
     /// <summary>
     /// Retrieves all in review status service in the marketplace .
@@ -180,6 +183,7 @@ public class ServiceReleaseController : ControllerBase
     [HttpDelete]
     [Route("documents/{documentId}")]
     [Authorize(Roles = "add_service_offering")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -187,7 +191,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<NoContentResult> DeleteServiceDocumentsAsync([FromRoute] Guid documentId)
     {
-        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.DeleteServiceDocumentsAsync(documentId, identity));
+        await this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.DeleteServiceDocumentsAsync(documentId, companyId));
         return NoContent();
     }
 
@@ -201,11 +205,13 @@ public class ServiceReleaseController : ControllerBase
     [HttpPost]
     [Route("addservice")]
     [Authorize(Roles = "add_service_offering")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(OfferProviderResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<CreatedAtRouteResult> CreateServiceOffering([FromBody] ServiceOfferingData data)
     {
-        var id = await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.CreateServiceOfferingAsync(data, identity)).ConfigureAwait(false);
+        var id = await this.WithUserIdAndCompanyId(identity => _serviceReleaseBusinessLogic.CreateServiceOfferingAsync(data, identity)).ConfigureAwait(false);
         return CreatedAtRoute(nameof(ServiceReleaseController.GetServiceDetailsForStatusAsync), new { controller = "ServiceRelease", serviceId = id }, id);
     }
 
@@ -223,6 +229,7 @@ public class ServiceReleaseController : ControllerBase
     [HttpPut]
     [Route("{serviceId:guid}")]
     [Authorize(Roles = "update_service_offering")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -230,7 +237,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateService([FromRoute] Guid serviceId, [FromBody] ServiceUpdateRequestData data)
     {
-        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.UpdateServiceAsync(serviceId, data, identity));
+        await this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.UpdateServiceAsync(serviceId, data, companyId));
         return NoContent();
     }
 
@@ -245,13 +252,14 @@ public class ServiceReleaseController : ControllerBase
     [HttpPut]
     [Route("{serviceId:guid}/submit")]
     [Authorize(Roles = "add_service_offering")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> SubmitService([FromRoute] Guid serviceId)
     {
-        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.SubmitServiceAsync(serviceId, identity)).ConfigureAwait(false);
+        await this.WithUserId(userId => _serviceReleaseBusinessLogic.SubmitServiceAsync(serviceId, userId)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -267,13 +275,14 @@ public class ServiceReleaseController : ControllerBase
     [HttpPut]
     [Route("{serviceId}/approveService")]
     [Authorize(Roles = "approve_service_release")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<NoContentResult> ApproveServiceRequest([FromRoute] Guid serviceId)
     {
-        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.ApproveServiceRequestAsync(serviceId, identity)).ConfigureAwait(false);
+        await this.WithUserId(userId => _serviceReleaseBusinessLogic.ApproveServiceRequestAsync(serviceId, userId)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -292,6 +301,7 @@ public class ServiceReleaseController : ControllerBase
     [HttpPut]
     [Route("{serviceId:guid}/declineService")]
     [Authorize(Roles = "decline_service_release")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -300,7 +310,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<NoContentResult> DeclineServiceRequest([FromRoute] Guid serviceId, [FromBody] OfferDeclineRequest data)
     {
-        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.DeclineServiceRequestAsync(serviceId, identity, data)).ConfigureAwait(false);
+        await this.WithUserId(userId => _serviceReleaseBusinessLogic.DeclineServiceRequestAsync(serviceId, userId, data)).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -347,10 +357,11 @@ public class ServiceReleaseController : ControllerBase
     [HttpGet]
     [Route("{serviceId}/technical-user-profiles")]
     [Authorize(Roles = "add_service_offering")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfiles([FromRoute] Guid serviceId) =>
-        this.WithIdentityData(identity => _serviceReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(serviceId, identity));
+        this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(serviceId, companyId));
 
     /// <summary>
     /// Creates and updates the technical user profiles
@@ -363,13 +374,14 @@ public class ServiceReleaseController : ControllerBase
     [HttpPut]
     [Route("{serviceId}/technical-user-profiles")]
     [Authorize(Roles = "add_service_offering")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<NoContentResult> CreateAndUpdateTechnicalUserProfiles([FromRoute] Guid serviceId, [FromBody] IEnumerable<TechnicalUserProfileData> data)
     {
-        await this.WithIdentityData(identity => _serviceReleaseBusinessLogic.UpdateTechnicalUserProfiles(serviceId, data, identity)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.UpdateTechnicalUserProfiles(serviceId, data, companyId)).ConfigureAwait(false);
         return NoContent();
     }
 }

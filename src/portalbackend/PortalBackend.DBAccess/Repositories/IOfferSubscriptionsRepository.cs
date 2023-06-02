@@ -69,10 +69,10 @@ public interface IOfferSubscriptionsRepository
     /// Gets the offer details for the given id.
     /// </summary>
     /// <param name="offerSubscriptionId">Id of the offer subscription.</param>
-    /// <param name="iamUserId">Id of the iamUser.</param>
+    /// <param name="userId">Id of the user.</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <returns>Returns the offer details.</returns>
-    Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, string iamUserId, OfferTypeId offerTypeId);
+    Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, Guid userId, OfferTypeId offerTypeId);
 
     public Task<(Guid OfferSubscriptionId, OfferSubscriptionStatusId OfferSubscriptionStatusId, Process? Process, IEnumerable<ProcessStepTypeId>? ProcessStepTypeIds)> GetOfferSubscriptionStateForCompanyAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
 

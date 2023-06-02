@@ -149,12 +149,12 @@ public interface IOfferRepository
     /// loggedin user belongs to the apps provider company
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="userCompanyId"></param>
-    /// <param name="userCompanyId"></param>
+    /// <param name="companyId"></param>
+    /// <param name="companyId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns>ValueTuple, first item is true if the app is in status CREATED,
     /// second item is true if the user is eligible to edit it</returns>
-    Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<LocalizedDescription> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, Guid userCompanyId, OfferTypeId offerTypeId);
+    Task<(bool IsAppCreated, bool IsProviderUser, string? ContactEmail, string? ContactNumber, string? MarketingUrl, IEnumerable<LocalizedDescription> Descriptions)> GetOfferDetailsForUpdateAsync(Guid appId, Guid companyId, OfferTypeId offerTypeId);
 
     /// Get Offer Release data by Offer Id
     /// </summary>
@@ -210,10 +210,10 @@ public interface IOfferRepository
     /// Verify that user is linked to the appId
     /// </summary>
     /// <param name="offerId"></param>
-    /// <param name="userCompanyId"></param>
+    /// <param name="companyId"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(bool OfferExists, bool IsProviderCompanyUser)> IsProviderCompanyUserAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId);
+    Task<(bool OfferExists, bool IsProviderCompanyUser)> IsProviderCompanyUserAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Return the Company User Id

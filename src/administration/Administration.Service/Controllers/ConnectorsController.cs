@@ -290,6 +290,8 @@ public class ConnectorsController : ControllerBase
     [HttpPut]
     [Route("{connectorId:guid}/connectorUrl")]
     [Authorize(Roles = "modify_connectors")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
