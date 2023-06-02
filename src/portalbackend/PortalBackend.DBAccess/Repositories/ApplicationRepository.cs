@@ -82,7 +82,7 @@ public class ApplicationRepository : IApplicationRepository
             .Select(application => new ValueTuple<bool, bool, CompanyApplicationStatusId>(true, application.CompanyId == companyId, application.ApplicationStatusId))
             .SingleOrDefaultAsync();
 
-    public Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> submitDocumentTypeIds) =>
+    public Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, Guid companyUserId, IEnumerable<DocumentTypeId> submitDocumentTypeIds) =>
         _dbContext.CompanyApplications
             .AsSplitQuery()
             .Where(application => application.Id == applicationId)
@@ -90,31 +90,17 @@ public class ApplicationRepository : IApplicationRepository
             {
                 Application = application,
                 CompanyUser = application.Company!.Identities.Select(x => x.CompanyUser!).SingleOrDefault(companyUser => companyUser.Id == companyUserId),
-                Documents = application.Company.Identities.Select(x => x.CompanyUser!).SelectMany(companyUser => companyUser.Documents).Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED),
-                CompanyName = application.Company!.Name,
-                AddressId = application.Company.AddressId,
-                StreetName = application.Company!.Address!.Streetname,
-                City = application.Company!.Address!.City,
-                Country = application.Company!.Address!.Country,
-                CompanyIdentifiers = application.Company.CompanyIdentifiers.Select(x => x.UniqueIdentifierId),
-                CompanyRoleIds = application.Company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId),
-                AgreementConsents = application.Company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
+                Documents = application.Company.Identities.Select(x => x.CompanyUser!).SelectMany(companyUser => companyUser.Documents).Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED && submitDocumentTypeIds.Contains(Doc.DocumentTypeId))
+            })
+            .Select(companyApplication => new CompanyApplicationUserEmailData(
+                companyApplication.Application.ApplicationStatusId,
+                companyApplication.CompanyUser!.Id,
+                companyApplication.CompanyUser.Email,
+                companyApplication.Documents.Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId)),
+                new CompanyData(companyApplication.Application.Company!.Name,companyApplication.Application.Company!.AddressId,companyApplication.Application.Company!.Address!.Streetname,companyApplication.Application.Company!.Address!.City,companyApplication.Application.Company!.Address!.Country!.CountryNameDe,companyApplication.Application.Company!.CompanyIdentifiers.Select(x => x.UniqueIdentifierId),companyApplication.Application.Company!.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId)),
+                companyApplication.Application.Company.Consents.Where(consent => consent.ConsentStatusId == PortalBackend.PortalEntities.Enums.ConsentStatusId.ACTIVE)
                         .Select(consent => new ValueTuple<Guid, ConsentStatusId>(
                             consent.AgreementId, consent.ConsentStatusId))
-            })
-            .Select(data => new CompanyApplicationUserEmailData(
-                data.Application.ApplicationStatusId,
-                data.CompanyUser != null,
-                data.CompanyUser!.Email,
-                data.Documents.Select(doc => new DocumentStatusTypeData(doc.Id, doc.DocumentStatusId, doc.DocumentTypeId)),
-                data.CompanyName,
-                data.AddressId,
-                data.StreetName,
-                data.City,
-                data.Country!.CountryNameDe,
-                data.CompanyIdentifiers,
-                data.CompanyRoleIds,
-                data.AgreementConsents
                 ))
             .AsNoTracking()
             .SingleOrDefaultAsync();

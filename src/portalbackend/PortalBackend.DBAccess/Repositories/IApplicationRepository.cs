@@ -30,9 +30,9 @@ public interface IApplicationRepository
     void AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication> setOptionalParameters);
     Invitation CreateInvitation(Guid applicationId, Guid companyUserId);
     void DeleteInvitations(IEnumerable<Guid> invitationIds);
-    Task<CompanyApplicationUserData?> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId);
-    Task<CompanyApplicationStatusUserData?> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, string iamUserId);
-    Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> submitDocumentTypeIds);
+    Task<(bool Exists, CompanyApplicationStatusId StatusId)> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, Guid userCompanyId);
+    Task<(bool Exists, bool IsUserOfCompany, CompanyApplicationStatusId ApplicationStatus)> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, Guid companyId);
+    Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, Guid companyUserId, IEnumerable<DocumentTypeId> submitDocumentTypeIds);
     IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null, IEnumerable<CompanyApplicationStatusId>? applicationStatusIds = null);
     Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, Guid userCompanyId, Guid? companyId = null);
     Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdSubmissionStatusForApplication(Guid applicationId);
