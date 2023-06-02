@@ -624,22 +624,19 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public async Task<bool> SubmitRegistrationAsync(Guid applicationId, Guid userId)
     {
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId).ConfigureAwait(false);
+        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, _settings.SubmitDocumentTypeIds).ConfigureAwait(false);
         if (applicationUserData == null)
         {
             throw new NotFoundException($"application {applicationId} does not exist");
         }
-        if (!applicationUserData.IsApplicationCompanyUser)
+        if (!applicationUserData!.IsApplicationCompanyUser)
         {
             throw new ForbiddenException($"userId {userId} is not associated with CompanyApplication {applicationId}");
         }
         GetAndValidateCompanyDataDetails(applicationUserData);
         if (applicationUserData.DocumentDatas.Any())
         {
-            if (!applicationUserData.DocumentDatas.Select(x => x.TypeId).Contains(DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT))
-            {
-                throw new ControllerArgumentException($"At least one Document type Id must be COMMERCIAL_REGISTER_EXTRACT");
-            }
+            
             var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
             foreach (var document in applicationUserData.DocumentDatas)
             {
@@ -695,49 +692,54 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private static void GetAndValidateCompanyDataDetails(CompanyApplicationUserEmailData companyApplicationDetails)
     {
-        if (companyApplicationDetails.Name is not null &&
-           companyApplicationDetails.AddressId is not null &&
-           companyApplicationDetails.Streetname is not null &&
-           companyApplicationDetails.City is not null &&
-           companyApplicationDetails.Country is not null &&
-           companyApplicationDetails.UniqueIds.Any() &&
-           companyApplicationDetails.CompanyRoleIds.Any() &&
+        if (companyApplicationDetails.CompanyData.Name is not null &&
+           companyApplicationDetails.CompanyData.AddressId is not null &&
+           companyApplicationDetails.CompanyData.Streetname is not null &&
+           companyApplicationDetails.CompanyData.City is not null &&
+           companyApplicationDetails.CompanyData.Country is not null &&
+           companyApplicationDetails.CompanyData.UniqueIds.Any() &&
+           companyApplicationDetails.CompanyData.CompanyRoleIds.Any() &&
+           companyApplicationDetails.DocumentDatas.Any() &&
            companyApplicationDetails.AgreementConsentStatuses.Any())
         {
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(companyApplicationDetails.Name))
+        if (string.IsNullOrWhiteSpace(companyApplicationDetails.CompanyData.Name))
         {
-            throw new ControllerArgumentException($"Company Name must not be empty", nameof(companyApplicationDetails.Name));
+            throw new ControllerArgumentException($"Company Name must not be empty", nameof(companyApplicationDetails.CompanyData.Name));
         }
-        if (companyApplicationDetails.AddressId == null)
+        if (companyApplicationDetails.CompanyData.AddressId == null)
         {
-            throw new ControllerArgumentException($"Address must not be empty", nameof(companyApplicationDetails.AddressId));
+            throw new ControllerArgumentException($"Address must not be empty", nameof(companyApplicationDetails.CompanyData.AddressId));
         }
-        if (string.IsNullOrWhiteSpace(companyApplicationDetails.Streetname))
+        if (string.IsNullOrWhiteSpace(companyApplicationDetails.CompanyData.Streetname))
         {
-            throw new ControllerArgumentException($"Street Name must not be empty", nameof(companyApplicationDetails.Streetname));
+            throw new ControllerArgumentException($"Street Name must not be empty", nameof(companyApplicationDetails.CompanyData.Streetname));
         }
-        if (string.IsNullOrWhiteSpace(companyApplicationDetails.City))
+        if (string.IsNullOrWhiteSpace(companyApplicationDetails.CompanyData.City))
         {
-            throw new ControllerArgumentException($"City must not be empty", nameof(companyApplicationDetails.City));
+            throw new ControllerArgumentException($"City must not be empty", nameof(companyApplicationDetails.CompanyData.City));
         }
-        if (string.IsNullOrWhiteSpace(companyApplicationDetails.Country))
+        if (string.IsNullOrWhiteSpace(companyApplicationDetails.CompanyData.Country))
         {
-            throw new ControllerArgumentException($"Country must not be empty", nameof(companyApplicationDetails.Country));
+            throw new ControllerArgumentException($"Country must not be empty", nameof(companyApplicationDetails.CompanyData.Country));
         }
-        if (!companyApplicationDetails.UniqueIds.Any())
+        if (!companyApplicationDetails.CompanyData.UniqueIds.Any())
         {
-            throw new ControllerArgumentException($"Company Identifiers [{string.Join(", ", companyApplicationDetails.UniqueIds)}] must not be empty");
+            throw new ControllerArgumentException($"Company Identifiers [{string.Join(", ", companyApplicationDetails.CompanyData.UniqueIds)}] must not be empty");
         }
-        if (!companyApplicationDetails.CompanyRoleIds.Any())
+        if (!companyApplicationDetails.CompanyData.CompanyRoleIds.Any())
         {
-            throw new ControllerArgumentException($"Company assigned role [{string.Join(", ", companyApplicationDetails.CompanyRoleIds)}] must not be empty");
+            throw new ControllerArgumentException($"Company assigned role [{string.Join(", ", companyApplicationDetails.CompanyData.CompanyRoleIds)}] must not be empty");
         }
         if (!companyApplicationDetails.AgreementConsentStatuses.Any())
         {
             throw new ControllerArgumentException($"Agreement and Consent must not be empty");
+        }
+        if (!companyApplicationDetails.DocumentDatas.Any())
+        {
+                throw new ControllerArgumentException($"At least one Document type Id must be COMMERCIAL_REGISTER_EXTRACT");
         }
     }
     public async IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId)
