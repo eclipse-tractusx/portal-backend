@@ -7,6 +7,7 @@ using Xunit;
 using static RestAssured.Dsl;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Castle.Core.Internal;
 using Microsoft.OpenApi.Expressions;
 using Registration.Service.Tests.RestAssured;
 
@@ -28,8 +29,97 @@ public class NotificationEndpointTests
     private const string _offerId = "9b957704-3505-4445-822c-d7ef80f27fcd";
     private static readonly Secrets _secrets = new ();
     private static string _techUserToken; 
-    private const string _testDataDirectory = "..\\..\\..\\..\\..\\shared\\Tests.Shared\\RestAssured\\TestData";
+    
+    private static TestDataHelper _testDataHelper = new TestDataHelper();
+    
+    //public record TestDataModel(List<string> rolesToAssign, List<string> rolesToUnAssign);
 
+    [Theory]
+    [MemberData(nameof(GetDataEntries))]
+    public async Task Scenario_HappyPathAssignUnAssignCoreUserRoles(TestDataModel testEntry)
+    {
+        await GetTechUserToken();
+        _companyUserId = GetCompanyUserId();
+
+        ModifyCoreUserRoles_AssignRole(testEntry.rolesToAssign);
+        ModifyCoreUserRoles_UnAssignRole(testEntry.rolesToUnAssign);
+    }
+
+    public async Task GetTechUserToken()
+    {
+        _techUserToken = await new AuthFlow(_techCompanyName).GetAccessToken(_secrets.TechUserName, _secrets.TechUserPassword);
+    }
+
+    public static IEnumerable<object> GetDataEntries()
+    {
+        var testDataEntries = _testDataHelper.GetTestData();
+        if (testDataEntries == null) throw new Exception("No test data was found");
+        foreach (var t in testDataEntries)
+        {
+            yield return new object[] { t };
+        }
+    }
+    
+    //PUT: api/administration/user/owncompany/users/{companyUserId}/coreoffers/{offerId}/roles
+    public void ModifyCoreUserRoles_AssignRole(List<string> RolesToAssign)
+    {
+        //string newRole = "App Manager";
+        List<string> assignedRoles = GetUserAssignedRoles();
+        List<string> newRoles = new List<string>();
+        foreach (var role in RolesToAssign.Where(role => !assignedRoles.Contains(role)))
+        {
+            assignedRoles.Add(role);
+            newRoles.Add(role);
+        }
+        //assignedRoles.Add("App Manager");
+        var body = JsonSerializer.Serialize(assignedRoles);
+        // Given
+        var data = Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_techUserToken}")
+            .When()
+            .Body(body)
+            .Put($"{_baseUrl}{_adminEndPoint}/user/owncompany/users/{_companyUserId}/coreoffers/{_offerId}/roles")
+            .Then()
+            .StatusCode(200)
+            .And()
+            .Extract()
+            .Response();
+
+        Assert.True(CheckNotificationCreated(_username, "ROLE_UPDATE_CORE_OFFER", newRoles.ToString(), ""));
+    }
+
+    public void ModifyCoreUserRoles_UnAssignRole(List<string> rolesToUnAssign)
+    {
+        List<string> assignedRoles = GetUserAssignedRoles();
+        foreach (var role in rolesToUnAssign.Where(role => assignedRoles.Contains(role)))
+        {
+            assignedRoles.Remove(role);
+        }
+        //string removedRole = "App Manager";
+        //List<string> assignedRoles = GetUserAssignedRoles();
+        //assignedRoles.Remove("App Manager");
+        var body = JsonSerializer.Serialize(assignedRoles);
+        // Given
+        var data = Given()
+            .RelaxedHttpsValidation()
+            .Header(
+                "authorization",
+                $"Bearer {_techUserToken}")
+            .When()
+            .Body(body)
+            .Put($"{_baseUrl}{_adminEndPoint}/user/owncompany/users/{_companyUserId}/coreoffers/{_offerId}/roles")
+            .Then()
+            .StatusCode(200)
+            .And()
+            .Extract()
+            .Response();
+        
+        Assert.True(CheckNotificationCreated(_username, "ROLE_UPDATE_CORE_OFFER", "", rolesToUnAssign.ToString()));
+    }
+    
     //PUT: api/administration/user/owncompany/users/{companyUserId}/coreoffers/{offerId}/roles
     [Fact]
     public async Task ModifyCoreUserRoles_AssignRole_ReturnsExpectedResult()
@@ -305,14 +395,7 @@ public class NotificationEndpointTests
             return false;
     }
     
-    [Fact]
-    public List<string> GetTestData()
-    {
-        var filePath = Path.Combine(_testDataDirectory, "HappyPathModifyCoreUserRoles.json");
-        var jsonData = File.ReadAllText(filePath);
-        var testData = JsonSerializer.Deserialize<List<string>>(jsonData);
-
-        return testData;
-    }
+    //[Fact]
+    
     
 }
