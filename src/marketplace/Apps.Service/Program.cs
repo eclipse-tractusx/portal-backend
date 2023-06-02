@@ -44,18 +44,18 @@ try
         .AddPortalRepositories(builder.Configuration)
         .AddProvisioningManager(builder.Configuration);
 
-builder.Services.AddTransient<INotificationService, NotificationService>();
-builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
-                .AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>()
-                .AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()
-                .AddTransient<IOfferService, OfferService>()
-                .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
-                .AddTechnicalUserProfile()
-                .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"))
-                .AddOfferDocumentServices();
+    builder.Services.AddTransient<INotificationService, NotificationService>();
+    builder.Services.AddTransient<IAppsBusinessLogic, AppsBusinessLogic>()
+                    .AddTransient<IAppReleaseBusinessLogic, AppReleaseBusinessLogic>()
+                    .AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()
+                    .AddTransient<IOfferService, OfferService>()
+                    .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
+                    .AddTechnicalUserProfile()
+                    .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"))
+                    .AddOfferDocumentServices();
 
-builder.Services
-    .AddOfferServices();
+    builder.Services
+        .AddOfferServices();
 
     builder.Build()
         .CreateApp<Program>("apps", VERSION, builder.Environment)

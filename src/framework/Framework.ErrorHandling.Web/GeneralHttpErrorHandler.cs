@@ -61,7 +61,7 @@ public class GeneralHttpErrorHandler
         {
             var errorId = Guid.NewGuid().ToString();
             LogErrorInformation(errorId, error);
-            var (statusCode, messageFunc, logLevel) = GetErrorInformation(error, errorId);
+            var (statusCode, messageFunc, logLevel) = GetErrorInformation(error);
 
             _logger.Log(logLevel, error, "GeneralErrorHandler caught {Error} with errorId: {ErrorId} resulting in response status code {StatusCode}, message '{Message}'", error.GetType().Name, errorId, (int)statusCode, error.Message);
             context.Response.ContentType = "application/json";
@@ -70,7 +70,7 @@ public class GeneralHttpErrorHandler
         }
     }
 
-    private static (HttpStatusCode StatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel) GetErrorInformation(Exception error, string errorId)
+    private static (HttpStatusCode StatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel) GetErrorInformation(Exception error)
     {
         HttpStatusCode statusCode;
         var logLevel = LogLevel.Information;

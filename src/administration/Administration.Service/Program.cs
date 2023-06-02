@@ -73,14 +73,14 @@ try
     builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
         .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
-builder.Services.AddDapsService(builder.Configuration)
-                .AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"))
-                .AddOfferSubscriptionProcess();
+    builder.Services.AddDapsService(builder.Configuration)
+                    .AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"))
+                    .AddOfferSubscriptionProcess();
 
     builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
         .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
-builder.Services.AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>();
+    builder.Services.AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>();
 
     builder.Services.AddProvisioningDBAccess(builder.Configuration);
 

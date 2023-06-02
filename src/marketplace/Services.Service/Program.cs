@@ -44,15 +44,15 @@ try
         .AddPortalRepositories(builder.Configuration)
         .AddProvisioningManager(builder.Configuration);
 
-builder.Services.AddTransient<INotificationService, NotificationService>();
-builder.Services
-    .AddServiceBusinessLogic(builder.Configuration)
-    .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
-    .AddTransient<IServiceChangeBusinessLogic, ServiceChangeBusinessLogic>()
-    .AddTechnicalUserProfile()
-    .AddOfferDocumentServices();
+    builder.Services.AddTransient<INotificationService, NotificationService>();
+    builder.Services
+        .AddServiceBusinessLogic(builder.Configuration)
+        .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
+        .AddTransient<IServiceChangeBusinessLogic, ServiceChangeBusinessLogic>()
+        .AddTechnicalUserProfile()
+        .AddOfferDocumentServices();
 
-builder.Services.AddOfferServices();
+    builder.Services.AddOfferServices();
 
     builder.Build()
         .CreateApp<Program>("services", VERSION, builder.Environment)
