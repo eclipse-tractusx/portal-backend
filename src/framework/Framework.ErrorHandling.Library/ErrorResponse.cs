@@ -45,6 +45,6 @@ public class ErrorResponse
     [JsonPropertyName("errors")]
     public IDictionary<string, IEnumerable<string>> Errors { get; set; }
 
-    [JsonPropertyName("errors")]
+    [JsonPropertyName("errorId")]
     public string ErrorId { get; set; }
 }

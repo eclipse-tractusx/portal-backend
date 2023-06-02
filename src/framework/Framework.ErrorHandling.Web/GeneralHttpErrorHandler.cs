@@ -60,6 +60,7 @@ public class GeneralHttpErrorHandler
         catch (Exception error)
         {
             var errorId = Guid.NewGuid().ToString();
+            LogErrorInformation(errorId, error);
             var (statusCode, messageFunc, logLevel) = GetErrorInformation(error, errorId);
 
             _logger.Log(logLevel, error, "GeneralErrorHandler caught {Error} with errorId: {ErrorId} resulting in response status code {StatusCode}, message '{Message}'", error.GetType().Name, errorId, (int)statusCode, error.Message);
@@ -123,7 +124,6 @@ public class GeneralHttpErrorHandler
             statusCode = HttpStatusCode.InternalServerError;
             logLevel = LogLevel.Error;
         }
-        LogErrorInformation(errorId, error);
 
         return (statusCode, messageFunc, logLevel);
     }
