@@ -39,7 +39,7 @@ public static class StartupServiceWebApplicationExtensions
         if (environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
-            var urlsToTrust = app.Configuration.GetSection("Keycloak").Get<KeycloakSettings>().SettingMap.Select(x => x.Settings)
+            var urlsToTrust = app.Configuration.GetSection("Keycloak").Get<KeycloakSettingsMap>().Values
                 .Where(config => config.ConnectionString.StartsWith("https://"))
                 .Select(config => config.ConnectionString)
                 .Distinct();
