@@ -43,10 +43,10 @@ public class UserRepository : IUserRepository
         _dbContext = portalDbContext;
     }
 
-    public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(Guid userCompanyId) =>
+    public IAsyncEnumerable<CompanyApplicationWithStatus> GetApplicationsWithStatusUntrackedAsync(Guid companyId) =>
         _dbContext.CompanyApplications
             .AsNoTracking()
-            .Where(app => app.CompanyId == userCompanyId)
+            .Where(app => app.CompanyId == companyId)
             .Select(companyApplication => new CompanyApplicationWithStatus
             {
                 ApplicationId = companyApplication.Id,
@@ -281,7 +281,7 @@ public class UserRepository : IUserRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, Guid userCompanyId) =>
+    public Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, Guid companyId) =>
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new
@@ -293,14 +293,14 @@ public class UserRepository : IUserRepository
                 x.Subscriptions.Any(),
                 x.Subscriptions.Select(subscription => subscription.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId).Distinct(),
                 x.User.Identity!.UserEntityId,
-                x.User.Identity!.CompanyId == userCompanyId,
+                x.User.Identity!.CompanyId == companyId,
                 x.Subscriptions.Select(s => s.Offer!.Name).FirstOrDefault(),
                 x.User.Firstname,
                 x.User.Lastname))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<CoreOfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, Guid userCompanyId) =>
+    public Task<CoreOfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, Guid companyId) =>
         _dbContext.CompanyUsers.AsNoTracking()
             .Where(companyUser => companyUser.Id == companyUserId)
             .Select(companyUser => new
@@ -315,7 +315,7 @@ public class UserRepository : IUserRepository
                 x.Offer != null,
                 x.Offer!.AppInstances.Select(instance => instance.IamClient!.ClientClientId),
                 x.User.Identity!.UserEntityId,
-                x.User.Identity!.CompanyId == userCompanyId,
+                x.User.Identity!.CompanyId == companyId,
                 x.User.Firstname,
                 x.User.Lastname))
             .SingleOrDefaultAsync();

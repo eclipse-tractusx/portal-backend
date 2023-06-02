@@ -119,9 +119,9 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(Guid companyId, OfferSubscription? offerSubscription)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, Guid companyUserId, OfferTypeId offerTypeId) =>
+    public Task<(Guid companyId, OfferSubscription? offerSubscription)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, Guid userId, OfferTypeId offerTypeId) =>
         _context.CompanyUsers
-            .Where(user => user.Id == companyUserId)
+            .Where(user => user.Id == userId)
             .Select(user => user.Identity!.Company)
             .Select(company => new ValueTuple<Guid, OfferSubscription?>(
                 company!.Id,
@@ -137,13 +137,13 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, Guid companyUserId, OfferTypeId offerTypeId) =>
+    public Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, Guid userId, OfferTypeId offerTypeId) =>
         _context.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId && x.Offer!.OfferTypeId == offerTypeId)
             .Select(x => new OfferSubscriptionTransferData(
                 x.OfferSubscriptionStatusId,
                 x.Offer!.ProviderCompany!.Identities
-                    .Where(i => i.Id == companyUserId)
+                    .Where(i => i.Id == userId)
                     .Select(i => new ValueTuple<bool, Guid, IdentityTypeId>(true, i.Id, i.IdentityTypeId))
                     .SingleOrDefault(),
                 x.Company!.Name,
@@ -177,9 +177,9 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(Guid companyUserId) =>
+    public IAsyncEnumerable<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(Guid userId) =>
         _context.CompanyUsers.AsNoTracking()
-            .Where(user => user.Id == companyUserId)
+            .Where(user => user.Id == userId)
             .SelectMany(user => user.Identity!.Company!.OfferSubscriptions.Where(subscription =>
                 subscription.Offer!.UserRoles.Any(ur => ur.IdentityAssignedRoles.Any(cu => cu.IdentityId == user.Id && cu.Identity!.IdentityTypeId == IdentityTypeId.COMPANY_USER)) &&
                 subscription.AppSubscriptionDetail!.AppInstance != null &&
