@@ -2,6 +2,43 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.5.0-RC1
+
+### Change
+* Services Service
+  * added technical user profile information with userRoles in endpoint GET /services/{serviceId}
+  * endpoint validation of POST /api/services/servicerelease/addservice enhanced ('serviceType' and 'title' set to mandatory)
+  * endpoint logic of PUT: /api/services/servicerelease/{serviceId}/declineService enhanced by setting documents in status "ACTIVE" to "PENDING" when declining a service
+  * endpoint response of POST: /api/services/autoSetup enhanced to include 'endpoint URL' (if applicable), as well as 'technicalUserProfile'
+  * endpoint response of GET: /api/services/provided/subscription-status enhanced by including a true/false flag for 'technicalUser'
+* Apps Service
+  * added technical user profile information with userRoles in endpoint GET /apps/{appId}
+  * endpoint logic of PUT: /api/apps/appreleaseprocess/{appId}/declineApp enhanced by setting documents in status "ACTIVE" to "PENDING" when declining an app
+  * endpoint response of POST: /api/apps/autoSetup enhanced to include 'endpoint URL' (if applicable), as well as 'technicalUserProfile'
+  * endpoint response of GET: /api/apps/provided/subscription-status enhanced by including a true/false flag for 'technicalUser'
+  * endpoint logic of PUT: /api/apps/appReleaseProcess/{appId}/submit enhanced by setting 'technical user profile' and 'privacy policy' configured to mandatory - exception code added
+
+### Feature
+* Services Service
+  * released GET: /api/services/subscribed/subscription-status endpoint to retrieve subscribed service offerings for the acting user assigned company
+  * released PUT: /api/services/servicechanges/{serviceId}/deactivateService endpoint to enable serviceProviders to deactivate owned services offered on the CX marketplace
+* Services Service
+  * new extended /start-autosetup endpoint released to provide multi service type autosetup logics depending on tech-user-setup need
+* Apps Service
+  * new extended /start-autosetup endpoint released to provide multi app type autosetup logics depending on tech-user-setup and app instance configuration
+
+### Technical Support
+* Apps Service clean-up(s) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * endpoint GET: /api/apps/provided/subscription-status attribute key name change from 'serviceName' to 'offerName'
+  * endpoint PUT: /api/apps/{appId}/subscription/company/{companyId}/activate updated to 'obsolete'
+* Administration Service clean-up(s) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * exchanged controller name from ../serviceprovider/.. too ../subscriptionconfiguration/.. controller
+* added sonarcloud.properties file to manage duplications for automatic analysis
+
+### Bugfix
+* Registration Service
+  * exception handling of Post: /api/registration/application/{applicationId}/submitRegistration updated in case of registration has an incorrect status
+
 ## 1.4.0
 
 ### Change
