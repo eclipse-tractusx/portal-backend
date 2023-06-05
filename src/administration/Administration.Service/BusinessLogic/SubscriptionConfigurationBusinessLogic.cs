@@ -105,7 +105,12 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
             companyRepository.AttachAndModifyProviderCompanyDetails(
                 providerDetailData.ProviderCompanyDetailId,
                 details => { details.AutoSetupUrl = providerDetailData.Url; },
-                details => { details.AutoSetupUrl = data.Url; });
+                details =>
+                {
+                    details.AutoSetupUrl = data.Url;
+                    details.DateLastChanged = DateTimeOffset.UtcNow;
+                    details.LastEditorId = result.UserId;
+                });
         }
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }

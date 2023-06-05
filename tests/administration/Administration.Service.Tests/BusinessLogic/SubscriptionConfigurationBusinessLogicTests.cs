@@ -233,6 +233,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         initialDetail!.AutoSetupUrl.Should().Be(existingUrl);
         modifyDetail.Should().NotBeNull();
         modifyDetail!.AutoSetupUrl.Should().Be(changedUrl);
+        modifyDetail!.LastEditorId.Should().Be(companyUserId);
     }
 
     [Fact]

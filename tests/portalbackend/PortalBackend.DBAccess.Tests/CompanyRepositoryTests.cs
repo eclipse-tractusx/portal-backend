@@ -142,6 +142,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.Should().NotBe(default);
         results.CompanyId.Should().NotBe(Guid.Empty);
         results.IsServiceProviderCompany.Should().BeTrue();
+        results.UserId.Should().NotBe(Guid.Empty);
     }
 
     [Fact]
@@ -157,6 +158,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.Should().NotBe(default);
         results.CompanyId.Should().NotBe(Guid.Empty);
         results.IsServiceProviderCompany.Should().BeFalse();
+        results.UserId.Should().NotBe(Guid.Empty);
     }
 
     #endregion

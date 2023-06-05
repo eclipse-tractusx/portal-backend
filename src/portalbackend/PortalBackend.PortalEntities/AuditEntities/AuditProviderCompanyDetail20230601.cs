@@ -18,28 +18,27 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-[AuditEntityV1(typeof(AuditProviderCompanyDetail20230601))]
-public class ProviderCompanyDetail : IAuditableV1, IBaseEntity
+/// <summary>
+/// Audit entity for <see cref="ProviderCompanyDetail"/> relationship between companies and apps.
+/// </summary>
+
+public class AuditProviderCompanyDetail20230601 : IAuditEntityV1
 {
-    private ProviderCompanyDetail()
+    public AuditProviderCompanyDetail20230601()
     {
         AutoSetupUrl = null!;
     }
 
-    public ProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, DateTimeOffset dateCreated)
-        : this()
-    {
-        Id = id;
-        CompanyId = companyId;
-        AutoSetupUrl = autoSetupUrl;
-        DateCreated = dateCreated;
-    }
+    /// <inheritdoc />
+    [Key]
+    public Guid AuditV1Id { get; set; }
 
     public Guid Id { get; private set; }
 
@@ -56,6 +55,12 @@ public class ProviderCompanyDetail : IAuditableV1, IBaseEntity
     [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
 
-    // Navigation properties
-    public virtual Company? Company { get; private set; }
+    /// <inheritdoc />
+    public Guid? AuditV1LastEditorId { get; set; }
+
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
+
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
 }
