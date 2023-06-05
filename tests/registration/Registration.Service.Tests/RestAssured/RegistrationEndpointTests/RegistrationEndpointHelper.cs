@@ -19,8 +19,8 @@ public class RegistrationEndpointHelper
     private readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
     private readonly string _endPoint = "/api/registration";
     private readonly string _adminEndPoint = "/api/administration";
-    private static string _userCompanyToken;
-    private static string _operatorToken;
+    private static string? _userCompanyToken;
+    private static string? _operatorToken;
     private static string? _applicationId;
     
     readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
