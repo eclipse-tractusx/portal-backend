@@ -22,15 +22,15 @@ public class RegistrationEndpointHelper
     private static string? _userCompanyToken;
     private static string? _operatorToken;
     private static string? _applicationId;
-    
-    readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+
+    readonly JsonSerializerOptions _jsonSerializerOptions = new ()
     {
         PropertyNameCaseInsensitive = true,
         Converters = { new JsonStringEnumConverter() }
     };
-    
+
     private readonly string _operatorCompanyName = "CX-Operator";
-    
+
     private readonly Secrets _secrets = new ();
 
     public CompanyDetailData GetCompanyDetailData()
@@ -58,17 +58,19 @@ public class RegistrationEndpointHelper
         return companyDetailData;
     }
 
-    
     public CompanyRoleAgreementConsents GetCompanyRolesAndConsentsForSelectedRoles(List<CompanyRoleId> companyRoleIds)
     {
         var availableRolesAndConsents = GetCompanyRolesAndConsents();
         var selectedCompanyRoleIds = new List<CompanyRoleId>();
         var agreementConsentStatusList = new List<AgreementConsentStatus>();
-        foreach (var role in availableRolesAndConsents.Where(role => role.CompanyRolesActive && companyRoleIds.Contains(role.CompanyRoleId)))
+        foreach (var role in availableRolesAndConsents.Where(role =>
+                     role.CompanyRolesActive && companyRoleIds.Contains(role.CompanyRoleId)))
         {
             selectedCompanyRoleIds.Add(role.CompanyRoleId);
-            agreementConsentStatusList.AddRange(role.Agreements.Select(agreementId => new AgreementConsentStatus(agreementId.AgreementId, ConsentStatusId.ACTIVE)));
+            agreementConsentStatusList.AddRange(role.Agreements.Select(agreementId =>
+                new AgreementConsentStatus(agreementId.AgreementId, ConsentStatusId.ACTIVE)));
         }
+
         return new CompanyRoleAgreementConsents(selectedCompanyRoleIds, agreementConsentStatusList);
     }
 
@@ -124,7 +126,7 @@ public class RegistrationEndpointHelper
 
         return invitedUsers;
     }
-    
+
     public async Task ExecuteInvitation(string userCompanyName)
     {
         string? emailAddress = "", currentPassword = "";
@@ -153,8 +155,10 @@ public class RegistrationEndpointHelper
 
             Thread.Sleep(20000);
 
-            currentPassword = emailAddress.Contains("developermail.com") ? devMailApiRequests.FetchPassword() : tempMailApiRequests.FetchPassword();
-            
+            currentPassword = emailAddress.Contains("developermail.com")
+                ? devMailApiRequests.FetchPassword()
+                : tempMailApiRequests.FetchPassword();
+
             if (currentPassword is null)
             {
                 throw new Exception("User password could not be fetched.");
@@ -164,7 +168,6 @@ public class RegistrationEndpointHelper
 
             await SetCompanyTokenAndApplicationId(userCompanyName, emailAddress, currentPassword, newPassword);
         }
-
     }
 
     // POST /api/registration/application/{applicationId}/companyDetailsWithAddress
@@ -182,9 +185,9 @@ public class RegistrationEndpointHelper
                 CompanyId = companyDetailData.CompanyId,
                 Name = companyDetailData.Name
             };
-            
+
             var body = JsonSerializer.Serialize(newCompanyDetailData, _jsonSerializerOptions);
-            
+
             Given()
                 .RelaxedHttpsValidation()
                 .Header(
@@ -196,17 +199,18 @@ public class RegistrationEndpointHelper
                 .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
                 .Then()
                 .StatusCode(200);
-            CompanyDetailData storedCompanyDetailData = GetCompanyDetailData();
+            var storedCompanyDetailData = GetCompanyDetailData();
             if (!VerifyCompanyDetailDataStorage(storedCompanyDetailData, newCompanyDetailData))
                 throw new Exception($"Company detail data was not stored correctly");
         }
         else throw new Exception($"Application status is not fitting to the pre-requisite");
     }
-    
+
     public void UpdateCompanyDetailData(CompanyDetailData updateCompanyDetailData)
     {
         var actualStatus = GetApplicationStatus();
-        if (actualStatus != CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString() && actualStatus != CompanyApplicationStatusId.SUBMITTED.ToString())
+        if (actualStatus != CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString() &&
+            actualStatus != CompanyApplicationStatusId.SUBMITTED.ToString())
         {
             var companyDetailData = GetCompanyDetailData();
 
@@ -215,7 +219,7 @@ public class RegistrationEndpointHelper
                 CompanyId = companyDetailData.CompanyId
             };
             var body = JsonSerializer.Serialize(newCompanyDetailData, _jsonSerializerOptions);
-            
+
             Given()
                 .RelaxedHttpsValidation()
                 .Header(
@@ -240,37 +244,38 @@ public class RegistrationEndpointHelper
     {
         if (GetApplicationStatus() == CompanyApplicationStatusId.INVITE_USER.ToString())
         {
-           if (companyRoles.IsNullOrEmpty()) throw new Exception($"No company roles were found");
-           var companyRoleAgreementConsents = GetCompanyRolesAndConsentsForSelectedRoles(companyRoles);
-           var body = JsonSerializer.Serialize(companyRoleAgreementConsents, _jsonSerializerOptions);
-                
-           SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString());
-           Given()
-               .RelaxedHttpsValidation()
-               .Header(
-                   "authorization",
-                   $"Bearer {_userCompanyToken}")
-               .ContentType("application/json")
-               .Body(body)                
-               .When()
-               .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyRoleAgreementConsents")
-               .Then()
-               .StatusCode(200);
+            if (companyRoles.IsNullOrEmpty()) throw new Exception($"No company roles were found");
+            var companyRoleAgreementConsents = GetCompanyRolesAndConsentsForSelectedRoles(companyRoles);
+            var body = JsonSerializer.Serialize(companyRoleAgreementConsents, _jsonSerializerOptions);
+
+            SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString());
+            Given()
+                .RelaxedHttpsValidation()
+                .Header(
+                    "authorization",
+                    $"Bearer {_userCompanyToken}")
+                .ContentType("application/json")
+                .Body(body)
+                .When()
+                .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyRoleAgreementConsents")
+                .Then()
+                .StatusCode(200);
         }
         else throw new Exception($"Application status is not fitting to the pre-requisite");
     }
-    
+
     // POST /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents
 
     public void UploadDocument_WithEmptyTitle(string userCompanyName, string? documentTypeId, string? documentPath)
     {
-        if (documentTypeId == null || !Enum.IsDefined(typeof(DocumentTypeId), documentTypeId)) documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
+        if (documentTypeId == null || !Enum.IsDefined(typeof(DocumentTypeId), documentTypeId))
+            documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
         if (documentPath.IsNullOrEmpty())
         {
             documentPath = userCompanyName + "testfile.pdf";
             File.WriteAllText(documentPath, "Some Text");
         }
-        
+
         if (GetApplicationStatus() == CompanyApplicationStatusId.UPLOAD_DOCUMENTS.ToString())
         {
             var result = (int)Given()
@@ -287,7 +292,7 @@ public class RegistrationEndpointHelper
                 .Extract()
                 .As(typeof(int));
             Assert.Equal(1, result);
-            
+
             if (result == 1) SetApplicationStatus(CompanyApplicationStatusId.VERIFY.ToString());
         }
         else throw new Exception($"Application status is not fitting to the pre-requisite");
@@ -340,7 +345,6 @@ public class RegistrationEndpointHelper
             .Result);
         Assert.Contains("SUBMITTED", data.Content.First().CompanyApplicationStatusId.ToString());
         Assert.Equal(_applicationId.ToString(), data.Content.First().ApplicationId.ToString());
-        
     }
 
     // GET: api/administration/registration/application/{applicationId}/companyDetailsWithAddress
@@ -360,7 +364,7 @@ public class RegistrationEndpointHelper
             .As(typeof(CompanyDetailData));
         Assert.NotNull(data);
     }
-    
+
     public void InviteNewUser()
     {
         DevMailApiRequests devMailApiRequests = new DevMailApiRequests();
@@ -399,7 +403,7 @@ public class RegistrationEndpointHelper
         Assert.NotNull(messageData);
         Assert.NotEmpty(messageData);
     }
-    
+
     // POST api/administration/invitation
     private async Task ExecuteInvitation(string emailAddress, string userCompanyName)
     {
@@ -408,8 +412,10 @@ public class RegistrationEndpointHelper
 
         try
         {
-            _operatorToken = await new AuthFlow(_operatorCompanyName).GetAccessToken(_secrets.OperatorUserName, _secrets.OperatorUserPassword);
-        
+            _operatorToken =
+                await new AuthFlow(_operatorCompanyName).GetAccessToken(_secrets.OperatorUserName,
+                    _secrets.OperatorUserPassword);
+
             Given()
                 .RelaxedHttpsValidation()
                 .Header(
@@ -427,10 +433,10 @@ public class RegistrationEndpointHelper
             Console.WriteLine(e);
             throw;
         }
-        
     }
 
-    private async Task SetCompanyTokenAndApplicationId(string userCompanyName, string emailAddress, string currentPassword, string newPassword)
+    private async Task SetCompanyTokenAndApplicationId(string userCompanyName, string emailAddress,
+        string currentPassword, string newPassword)
     {
         _userCompanyToken =
             await new AuthFlow(userCompanyName).UpdatePasswordAndGetAccessToken(emailAddress, currentPassword,
@@ -446,11 +452,13 @@ public class RegistrationEndpointHelper
                storedData.CountryAlpha2Code == postedData.CountryAlpha2Code &&
                storedData.BusinessPartnerNumber == postedData.BusinessPartnerNumber &&
                storedData.ShortName == postedData.ShortName &&
-               storedData.Region == postedData.Region && storedData.StreetAdditional == postedData.StreetAdditional &&
+               storedData.Region == postedData.Region &&
+               storedData.StreetAdditional == postedData.StreetAdditional &&
                storedData.StreetNumber == postedData.StreetNumber &&
-               storedData.ZipCode == postedData.ZipCode && storedData.CountryDe == postedData.CountryDe;
+               storedData.ZipCode == postedData.ZipCode &&
+               storedData.CountryDe == postedData.CountryDe;
     }
-    
+
     private string GetFirstApplicationId()
     {
         var applicationIDs = (List<CompanyApplicationData>)Given()
@@ -480,7 +488,7 @@ public class RegistrationEndpointHelper
         var deserializedData = JsonSerializer.Deserialize<T>(jsonString, _jsonSerializerOptions);
         return deserializedData;
     }
-    
+
     private List<CompanyRoleConsentViewData> GetCompanyRolesAndConsents()
     {
         var response = Given()
