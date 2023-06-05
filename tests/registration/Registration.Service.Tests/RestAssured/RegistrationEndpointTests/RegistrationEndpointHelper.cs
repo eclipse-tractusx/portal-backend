@@ -14,26 +14,26 @@ using static RestAssured.Dsl;
 
 namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
 
-public class RegistrationEndpointHelper
+public static class RegistrationEndpointHelper
 {
-    private readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
-    private readonly string _endPoint = "/api/registration";
-    private readonly string _adminEndPoint = "/api/administration";
+    private static readonly string BaseUrl = "https://portal-backend.dev.demo.catena-x.net";
+    private static readonly string EndPoint = "/api/registration";
+    private static readonly string AdminEndPoint = "/api/administration";
     private static string? _userCompanyToken;
     private static string? _operatorToken;
     private static string? _applicationId;
 
-    readonly JsonSerializerOptions _jsonSerializerOptions = new ()
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new ()
     {
         PropertyNameCaseInsensitive = true,
         Converters = { new JsonStringEnumConverter() }
     };
 
-    private readonly string _operatorCompanyName = "CX-Operator";
+    private static readonly string OperatorCompanyName = "CX-Operator";
 
-    private readonly Secrets _secrets = new ();
+    private static readonly Secrets Secrets = new ();
 
-    public CompanyDetailData GetCompanyDetailData()
+    public static CompanyDetailData GetCompanyDetailData()
     {
         // Given
         var response = Given()
@@ -42,7 +42,7 @@ public class RegistrationEndpointHelper
                 "authorization",
                 $"Bearer {_userCompanyToken}")
             .When()
-            .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
+            .Get($"{BaseUrl}{EndPoint}/application/{_applicationId}/companyDetailsWithAddress")
             .Then()
             .And()
             .StatusCode(200)
@@ -58,13 +58,14 @@ public class RegistrationEndpointHelper
         return companyDetailData;
     }
 
-    public CompanyRoleAgreementConsents GetCompanyRolesAndConsentsForSelectedRoles(List<CompanyRoleId> companyRoleIds)
+    private static CompanyRoleAgreementConsents GetCompanyRolesAndConsentsForSelectedRoles(
+        List<CompanyRoleId> companyRoleIds)
     {
         var availableRolesAndConsents = GetCompanyRolesAndConsents();
         var selectedCompanyRoleIds = new List<CompanyRoleId>();
         var agreementConsentStatusList = new List<AgreementConsentStatus>();
-        foreach (var role in availableRolesAndConsents.Where(role =>
-                     role.CompanyRolesActive && companyRoleIds.Contains(role.CompanyRoleId)))
+        foreach (var role in availableRolesAndConsents.Where(availableRole =>
+                     availableRole.CompanyRolesActive && companyRoleIds.Contains(availableRole.CompanyRoleId)))
         {
             selectedCompanyRoleIds.Add(role.CompanyRoleId);
             agreementConsentStatusList.AddRange(role.Agreements.Select(agreementId =>
@@ -74,7 +75,7 @@ public class RegistrationEndpointHelper
         return new CompanyRoleAgreementConsents(selectedCompanyRoleIds, agreementConsentStatusList);
     }
 
-    public void SetApplicationStatus(string applicationStatus)
+    public static void SetApplicationStatus(string applicationStatus)
     {
         var status = (int)Given()
             .RelaxedHttpsValidation()
@@ -84,7 +85,7 @@ public class RegistrationEndpointHelper
             .ContentType("application/json")
             .When()
             .Put(
-                $"{_baseUrl}{_endPoint}/application/{_applicationId}/status?status={applicationStatus}")
+                $"{BaseUrl}{EndPoint}/application/{_applicationId}/status?status={applicationStatus}")
             .Then()
             .StatusCode(200)
             .Extract()
@@ -92,7 +93,7 @@ public class RegistrationEndpointHelper
         Assert.Equal(1, status);
     }
 
-    public string GetApplicationStatus()
+    public static string GetApplicationStatus()
     {
         var applicationStatus = (string)Given()
             .RelaxedHttpsValidation()
@@ -102,7 +103,7 @@ public class RegistrationEndpointHelper
             .ContentType("application/json")
             .When()
             .Get(
-                $"{_baseUrl}{_endPoint}/application/{_applicationId}/status")
+                $"{BaseUrl}{EndPoint}/application/{_applicationId}/status")
             .Then()
             .StatusCode(200)
             .Extract()
@@ -110,7 +111,7 @@ public class RegistrationEndpointHelper
         return applicationStatus;
     }
 
-    public List<InvitedUser> GetInvitedUsers()
+    private static List<InvitedUser> GetInvitedUsers()
     {
         var invitedUsers = (List<InvitedUser>)Given()
             .RelaxedHttpsValidation()
@@ -118,7 +119,7 @@ public class RegistrationEndpointHelper
                 "authorization",
                 $"Bearer {_userCompanyToken}")
             .When()
-            .Get($"{_baseUrl}{_endPoint}/application/{_applicationId}/invitedusers")
+            .Get($"{BaseUrl}{EndPoint}/application/{_applicationId}/invitedusers")
             .Then()
             .StatusCode(200)
             .Extract()
@@ -127,9 +128,9 @@ public class RegistrationEndpointHelper
         return invitedUsers;
     }
 
-    public async Task ExecuteInvitation(string userCompanyName)
+    public static async Task ExecuteInvitation(string userCompanyName)
     {
-        string? emailAddress = "", currentPassword = "";
+        string emailAddress = "";
         var devMailApiRequests = new DevMailApiRequests();
         var tempMailApiRequests = new TempMailApiRequests();
         try
@@ -137,13 +138,13 @@ public class RegistrationEndpointHelper
             var devUser = devMailApiRequests.GenerateRandomEmailAddress();
             emailAddress = devUser.Result.Name + "@developermail.com";
         }
-        catch (Exception e)
+        catch (Exception)
         {
             try
             {
                 emailAddress = "apitestuser" + tempMailApiRequests.GetDomain();
             }
-            catch (Exception exception)
+            catch (Exception)
             {
                 throw new Exception("MailApi for sending invitation is not available");
             }
@@ -155,7 +156,7 @@ public class RegistrationEndpointHelper
 
             Thread.Sleep(20000);
 
-            currentPassword = emailAddress.Contains("developermail.com")
+            var currentPassword = emailAddress.Contains("developermail.com")
                 ? devMailApiRequests.FetchPassword()
                 : tempMailApiRequests.FetchPassword();
 
@@ -172,7 +173,7 @@ public class RegistrationEndpointHelper
 
     // POST /api/registration/application/{applicationId}/companyDetailsWithAddress
 
-    public void SetCompanyDetailData(CompanyDetailData testCompanyDetailData)
+    public static void SetCompanyDetailData(CompanyDetailData testCompanyDetailData)
     {
         var applicationStatus = GetApplicationStatus();
         if (applicationStatus == CompanyApplicationStatusId.CREATED.ToString())
@@ -186,7 +187,7 @@ public class RegistrationEndpointHelper
                 Name = companyDetailData.Name
             };
 
-            var body = JsonSerializer.Serialize(newCompanyDetailData, _jsonSerializerOptions);
+            var body = JsonSerializer.Serialize(newCompanyDetailData, JsonSerializerOptions);
 
             Given()
                 .RelaxedHttpsValidation()
@@ -196,7 +197,7 @@ public class RegistrationEndpointHelper
                 .ContentType("application/json")
                 .When()
                 .Body(body)
-                .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
+                .Post($"{BaseUrl}{EndPoint}/application/{_applicationId}/companyDetailsWithAddress")
                 .Then()
                 .StatusCode(200);
             var storedCompanyDetailData = GetCompanyDetailData();
@@ -206,7 +207,7 @@ public class RegistrationEndpointHelper
         else throw new Exception($"Application status is not fitting to the pre-requisite");
     }
 
-    public void UpdateCompanyDetailData(CompanyDetailData updateCompanyDetailData)
+    public static void UpdateCompanyDetailData(CompanyDetailData updateCompanyDetailData)
     {
         var actualStatus = GetApplicationStatus();
         if (actualStatus != CompanyApplicationStatusId.ADD_COMPANY_DATA.ToString() &&
@@ -218,7 +219,7 @@ public class RegistrationEndpointHelper
             {
                 CompanyId = companyDetailData.CompanyId
             };
-            var body = JsonSerializer.Serialize(newCompanyDetailData, _jsonSerializerOptions);
+            var body = JsonSerializer.Serialize(newCompanyDetailData, JsonSerializerOptions);
 
             Given()
                 .RelaxedHttpsValidation()
@@ -228,7 +229,7 @@ public class RegistrationEndpointHelper
                 .ContentType("application/json")
                 .When()
                 .Body(body)
-                .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyDetailsWithAddress")
+                .Post($"{BaseUrl}{EndPoint}/application/{_applicationId}/companyDetailsWithAddress")
                 .Then()
                 .StatusCode(200);
             CompanyDetailData storedCompanyDetailData = GetCompanyDetailData();
@@ -240,13 +241,13 @@ public class RegistrationEndpointHelper
 
     // POST /api/registration/application/{applicationId}/companyRoleAgreementConsents
 
-    public void SubmitCompanyRoleConsentToAgreements(List<CompanyRoleId> companyRoles)
+    public static void SubmitCompanyRoleConsentToAgreements(List<CompanyRoleId> companyRoles)
     {
         if (GetApplicationStatus() == CompanyApplicationStatusId.INVITE_USER.ToString())
         {
             if (companyRoles.IsNullOrEmpty()) throw new Exception($"No company roles were found");
             var companyRoleAgreementConsents = GetCompanyRolesAndConsentsForSelectedRoles(companyRoles);
-            var body = JsonSerializer.Serialize(companyRoleAgreementConsents, _jsonSerializerOptions);
+            var body = JsonSerializer.Serialize(companyRoleAgreementConsents, JsonSerializerOptions);
 
             SetApplicationStatus(CompanyApplicationStatusId.SELECT_COMPANY_ROLE.ToString());
             Given()
@@ -257,7 +258,7 @@ public class RegistrationEndpointHelper
                 .ContentType("application/json")
                 .Body(body)
                 .When()
-                .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/companyRoleAgreementConsents")
+                .Post($"{BaseUrl}{EndPoint}/application/{_applicationId}/companyRoleAgreementConsents")
                 .Then()
                 .StatusCode(200);
         }
@@ -266,7 +267,8 @@ public class RegistrationEndpointHelper
 
     // POST /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents
 
-    public void UploadDocument_WithEmptyTitle(string userCompanyName, string? documentTypeId, string? documentPath)
+    public static void UploadDocument_WithEmptyTitle(string userCompanyName, string? documentTypeId,
+        string? documentPath)
     {
         if (documentTypeId == null || !Enum.IsDefined(typeof(DocumentTypeId), documentTypeId))
             documentTypeId = "COMMERCIAL_REGISTER_EXTRACT";
@@ -286,7 +288,7 @@ public class RegistrationEndpointHelper
                 .ContentType("multipart/form-data")
                 .MultiPart(new FileInfo(documentPath), "document")
                 .When()
-                .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
+                .Post($"{BaseUrl}{EndPoint}/application/{_applicationId}/documentType/{documentTypeId}/documents")
                 .Then()
                 .StatusCode(200)
                 .Extract()
@@ -301,7 +303,7 @@ public class RegistrationEndpointHelper
     // POST /api/registration/application/{applicationId}/submitRegistration
 
     //[Fact]
-    public void SubmitRegistration()
+    public static void SubmitRegistration()
     {
         if (GetApplicationStatus() == CompanyApplicationStatusId.VERIFY.ToString())
         {
@@ -314,7 +316,7 @@ public class RegistrationEndpointHelper
                 //.Body("")
                 .When()
                 .Post(
-                    $"{_baseUrl}{_endPoint}/application/{_applicationId}/submitRegistration")
+                    $"{BaseUrl}{EndPoint}/application/{_applicationId}/submitRegistration")
                 .Then()
                 .StatusCode(200)
                 .Extract()
@@ -326,7 +328,7 @@ public class RegistrationEndpointHelper
 
     // GET: api/administration/registration/applications?companyName={companyName}
 
-    public void GetApplicationDetails(string userCompanyName)
+    public static void GetApplicationDetails(string userCompanyName)
     {
         var response = Given()
             .RelaxedHttpsValidation()
@@ -335,7 +337,7 @@ public class RegistrationEndpointHelper
                 $"Bearer {_operatorToken}")
             .When()
             .Get(
-                $"{_baseUrl}{_adminEndPoint}/registration/applications?companyName={userCompanyName}&page=0&size=4&companyApplicationStatus=Closed")
+                $"{BaseUrl}{AdminEndPoint}/registration/applications?companyName={userCompanyName}&page=0&size=4&companyApplicationStatus=Closed")
             .Then()
             .StatusCode(200)
             .Extract()
@@ -348,7 +350,7 @@ public class RegistrationEndpointHelper
     }
 
     // GET: api/administration/registration/application/{applicationId}/companyDetailsWithAddress
-    public void GetCompanyWithAddress()
+    public static void GetCompanyWithAddress()
     {
         // Given
         var data = (CompanyDetailData)Given()
@@ -357,7 +359,7 @@ public class RegistrationEndpointHelper
                 "authorization",
                 $"Bearer {_operatorToken}")
             .When()
-            .Get($"{_baseUrl}{_adminEndPoint}/registration/application/{_applicationId}/companyDetailsWithAddress")
+            .Get($"{BaseUrl}{AdminEndPoint}/registration/application/{_applicationId}/companyDetailsWithAddress")
             .Then()
             .StatusCode(200)
             .Extract()
@@ -365,7 +367,7 @@ public class RegistrationEndpointHelper
         Assert.NotNull(data);
     }
 
-    public void InviteNewUser()
+    public static void InviteNewUser()
     {
         DevMailApiRequests devMailApiRequests = new DevMailApiRequests();
         var devUser = devMailApiRequests.GenerateRandomEmailAddress();
@@ -383,7 +385,7 @@ public class RegistrationEndpointHelper
             .ContentType("application/json")
             .Body(userCreationInfoWithMessage)
             .When()
-            .Post($"{_baseUrl}{_endPoint}/application/{_applicationId}/inviteNewUser")
+            .Post($"{BaseUrl}{EndPoint}/application/{_applicationId}/inviteNewUser")
             .Then()
             .StatusCode(200);
 
@@ -405,7 +407,7 @@ public class RegistrationEndpointHelper
     }
 
     // POST api/administration/invitation
-    private async Task ExecuteInvitation(string emailAddress, string userCompanyName)
+    private static async Task ExecuteInvitation(string emailAddress, string userCompanyName)
     {
         CompanyInvitationData invitationData = new CompanyInvitationData("testuser", "myFirstName", "myLastName",
             emailAddress, userCompanyName);
@@ -413,8 +415,8 @@ public class RegistrationEndpointHelper
         try
         {
             _operatorToken =
-                await new AuthFlow(_operatorCompanyName).GetAccessToken(_secrets.OperatorUserName,
-                    _secrets.OperatorUserPassword);
+                await new AuthFlow(OperatorCompanyName).GetAccessToken(Secrets.OperatorUserName,
+                    Secrets.OperatorUserPassword);
 
             Given()
                 .RelaxedHttpsValidation()
@@ -424,7 +426,7 @@ public class RegistrationEndpointHelper
                 .ContentType("application/json")
                 .Body(invitationData)
                 .When()
-                .Post($"{_baseUrl}{_adminEndPoint}/invitation")
+                .Post($"{BaseUrl}{AdminEndPoint}/invitation")
                 .Then()
                 .StatusCode(200);
         }
@@ -435,7 +437,7 @@ public class RegistrationEndpointHelper
         }
     }
 
-    private async Task SetCompanyTokenAndApplicationId(string userCompanyName, string emailAddress,
+    private static async Task SetCompanyTokenAndApplicationId(string userCompanyName, string emailAddress,
         string currentPassword, string newPassword)
     {
         _userCompanyToken =
@@ -444,7 +446,7 @@ public class RegistrationEndpointHelper
         _applicationId = GetFirstApplicationId();
     }
 
-    private bool VerifyCompanyDetailDataStorage(CompanyDetailData storedData, CompanyDetailData postedData)
+    private static bool VerifyCompanyDetailDataStorage(CompanyDetailData storedData, CompanyDetailData postedData)
     {
         var isEqual = storedData.UniqueIds.SequenceEqual(postedData.UniqueIds);
         return storedData.CompanyId == postedData.CompanyId && isEqual && storedData.Name == postedData.Name &&
@@ -459,7 +461,7 @@ public class RegistrationEndpointHelper
                storedData.CountryDe == postedData.CountryDe;
     }
 
-    private string GetFirstApplicationId()
+    private static string GetFirstApplicationId()
     {
         var applicationIDs = (List<CompanyApplicationData>)Given()
             .RelaxedHttpsValidation()
@@ -467,7 +469,7 @@ public class RegistrationEndpointHelper
                 "authorization",
                 $"Bearer {_userCompanyToken}")
             .When()
-            .Get($"{_baseUrl}{_endPoint}/applications")
+            .Get($"{BaseUrl}{EndPoint}/applications")
             .Then()
             .StatusCode(200)
             .Extract()
@@ -478,18 +480,13 @@ public class RegistrationEndpointHelper
         return _applicationId;
     }
 
-    private T? DeserializeData<T>(string jsonString)
+    private static T? DeserializeData<T>(string jsonString)
     {
-        // var options = new JsonSerializerOptions
-        // {
-        //     PropertyNameCaseInsensitive = true,
-        //     Converters = { new JsonStringEnumConverter() }
-        // };
-        var deserializedData = JsonSerializer.Deserialize<T>(jsonString, _jsonSerializerOptions);
+        var deserializedData = JsonSerializer.Deserialize<T>(jsonString, JsonSerializerOptions);
         return deserializedData;
     }
 
-    private List<CompanyRoleConsentViewData> GetCompanyRolesAndConsents()
+    private static List<CompanyRoleConsentViewData> GetCompanyRolesAndConsents()
     {
         var response = Given()
             .RelaxedHttpsValidation()
@@ -499,7 +496,7 @@ public class RegistrationEndpointHelper
             .ContentType("application/json")
             .When()
             .Get(
-                $"{_baseUrl}{_adminEndPoint}/companydata/companyRolesAndConsents")
+                $"{BaseUrl}{AdminEndPoint}/companydata/companyRolesAndConsents")
             .Then()
             .StatusCode(200)
             .And()
