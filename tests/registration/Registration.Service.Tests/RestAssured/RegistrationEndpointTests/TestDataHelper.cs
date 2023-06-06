@@ -2,18 +2,22 @@
 using System.Text.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using Xunit;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
 
-public class TestDataHelper
+public static class TestDataHelper
 {
-    private const string TestDataDirectory = "..\\..\\..\\..\\..\\shared\\Tests.Shared\\RestAssured\\TestData";
-    
-    public List<TestDataModel> GetTestData(string fileName)
+    // private const string TestDataDirectory = "..\\..\\..\\..\\..\\shared\\Tests.Shared\\RestAssured\\TestData";
+    private static readonly string TestDataDirectory = ".." + Path.DirectorySeparatorChar + ".." +
+                                                       Path.DirectorySeparatorChar + ".." +
+                                                       Path.DirectorySeparatorChar + ".." +
+                                                       Path.DirectorySeparatorChar + ".." +
+                                                       Path.DirectorySeparatorChar + "shared" +
+                                                       Path.DirectorySeparatorChar + "Tests.Shared" +
+                                                       Path.DirectorySeparatorChar + "RestAssured" +
+                                                       Path.DirectorySeparatorChar + "TestData";
+
+    public static List<TestDataModel> GetTestData(string fileName)
     {
         var filePath = Path.Combine(TestDataDirectory, fileName);
 
@@ -23,20 +27,20 @@ public class TestDataHelper
         var testDataSet = FetchTestData(testData);
         return testDataSet;
     }
-    
-    private T? DeserializeData<T>(string jsonString)
+
+    private static T? DeserializeData<T>(string jsonString)
     {
         var options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
-            Converters = { new JsonStringEnumConverter()},
+            Converters = { new JsonStringEnumConverter() },
             DictionaryKeyPolicy = JsonNamingPolicy.CamelCase
         };
         var deserializedData = JsonSerializer.Deserialize<T>(jsonString, options);
         return deserializedData;
     }
 
-    private List<TestDataModel> FetchTestData(List<Dictionary<string, Object>> testData)
+    private static List<TestDataModel> FetchTestData(List<Dictionary<string, Object>> testData)
     {
         List<TestDataModel> testDataSet = new List<TestDataModel>();
         foreach (var obj in testData)
@@ -66,8 +70,9 @@ public class TestDataHelper
                         break;
                 }
             }
-            
-            testDataSet.Add(new TestDataModel(companyDetailData, updateCompanyDetailData, companyRoles, documentTypeId, documentPath));
+
+            testDataSet.Add(new TestDataModel(companyDetailData, updateCompanyDetailData, companyRoles, documentTypeId,
+                documentPath));
         }
 
         return testDataSet;
