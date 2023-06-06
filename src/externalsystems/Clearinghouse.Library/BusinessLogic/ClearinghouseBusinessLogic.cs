@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -65,13 +65,13 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
         {
             throw new ConflictException($"Decentralized Identifier for application {context.ApplicationId} is not set");
         }
-        
+
         await TriggerCompanyDataPost(context.ApplicationId, walletData.Did, overwrite, cancellationToken).ConfigureAwait(false);
 
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
-            new [] { ProcessStepTypeId.END_CLEARING_HOUSE },
+            new[] { ProcessStepTypeId.END_CLEARING_HOUSE },
             null,
             true,
             null);
@@ -111,9 +111,9 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
-                new [] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
+                new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
                 ProcessStepTypeId.END_CLEARING_HOUSE,
-                processStepTypeIds: new [] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP })
+                processStepTypeIds: new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP })
             .ConfigureAwait(false);
 
         var declined = data.Status == ClearinghouseResponseStatus.DECLINE;
@@ -128,7 +128,7 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
                 item.Comment = data.Message;
             },
             declined
-                ? new [] { ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE }
-                : new [] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP });
+                ? new[] { ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE }
+                : new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP });
     }
 }

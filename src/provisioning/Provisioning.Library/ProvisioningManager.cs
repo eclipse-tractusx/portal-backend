@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
-using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
@@ -63,7 +63,7 @@ public partial class ProvisioningManager : IProvisioningManager
         await CreateCentralIdentityProviderOrganisationMapperAsync(idpName, organisationName).ConfigureAwait(false);
 
         await CreateSharedRealmIdentityProviderClientAsync(sharedKeycloak, idpName, new IdentityProviderClientConfig(
-            await GetCentralBrokerEndpointOIDCAsync(idpName).ConfigureAwait(false)+"/*",
+            await GetCentralBrokerEndpointOIDCAsync(idpName).ConfigureAwait(false) + "/*",
             await GetCentralRealmJwksUrlAsync().ConfigureAwait(false)
         )).ConfigureAwait(false);
 
@@ -88,16 +88,16 @@ public partial class ProvisioningManager : IProvisioningManager
         return idpName;
     }
 
-    public IEnumerable<(string AttributeName,IEnumerable<string> AttributeValues)> GetStandardAttributes(string? organisationName = null, string? businessPartnerNumber = null)
+    public IEnumerable<(string AttributeName, IEnumerable<string> AttributeValues)> GetStandardAttributes(string? organisationName = null, string? businessPartnerNumber = null)
     {
-        var attributes = new List<(string,IEnumerable<string>)>();
+        var attributes = new List<(string, IEnumerable<string>)>();
         if (organisationName != null)
         {
-            attributes.Add(new (_Settings.MappedCompanyAttribute, Enumerable.Repeat<string>(organisationName,1)));
+            attributes.Add(new(_Settings.MappedCompanyAttribute, Enumerable.Repeat<string>(organisationName, 1)));
         }
         if (businessPartnerNumber != null)
         {
-            attributes.Add(new (_Settings.MappedBpnAttribute, Enumerable.Repeat<string>(businessPartnerNumber,1)));
+            attributes.Add(new(_Settings.MappedBpnAttribute, Enumerable.Repeat<string>(businessPartnerNumber, 1)));
         }
         return attributes;
     }
@@ -125,16 +125,16 @@ public partial class ProvisioningManager : IProvisioningManager
         await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId.ToString(), user).ConfigureAwait(false);
     }
 
-    public Task AddProtocolMapperAsync(string clientId) => 
+    public Task AddProtocolMapperAsync(string clientId) =>
         _CentralIdp.CreateClientProtocolMapperAsync(
-            _Settings.CentralRealm, 
+            _Settings.CentralRealm,
             clientId,
             Clone(_Settings.ClientProtocolMapper));
 
     public async Task DeleteCentralUserBusinessPartnerNumberAsync(string userId, string businessPartnerNumber)
     {
         var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(false);
-        
+
         if (user.Attributes == null || !user.Attributes.TryGetValue(_Settings.MappedBpnAttribute, out var existingBpns))
         {
             throw new KeycloakEntityNotFoundException($"attribute {_Settings.MappedBpnAttribute} not found in the mappers of user {userId}");
@@ -217,13 +217,13 @@ public partial class ProvisioningManager : IProvisioningManager
         identityProvider.Enabled = enabled;
         identityProvider.Config.HideOnLoginPage = enabled ? "false" : "true";
         await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(false);
-    }        
+    }
 
     public ValueTask UpdateCentralIdentityProviderDataOIDCAsync(IdentityProviderEditableConfigOidc identityProviderConfigOidc)
     {
-        if(identityProviderConfigOidc.Secret == null)
+        if (identityProviderConfigOidc.Secret == null)
         {
-            switch(identityProviderConfigOidc.ClientAuthMethod)
+            switch (identityProviderConfigOidc.ClientAuthMethod)
             {
                 case IamIdentityProviderClientAuthMethod.SECRET_BASIC:
                 case IamIdentityProviderClientAuthMethod.SECRET_POST:
@@ -233,9 +233,9 @@ public partial class ProvisioningManager : IProvisioningManager
                     break;
             }
         }
-        if(!identityProviderConfigOidc.SignatureAlgorithm.HasValue)
+        if (!identityProviderConfigOidc.SignatureAlgorithm.HasValue)
         {
-            switch(identityProviderConfigOidc.ClientAuthMethod)
+            switch (identityProviderConfigOidc.ClientAuthMethod)
             {
                 case IamIdentityProviderClientAuthMethod.SECRET_JWT:
                 case IamIdentityProviderClientAuthMethod.JWT:
@@ -288,7 +288,7 @@ public partial class ProvisioningManager : IProvisioningManager
         return _Factory.CreateKeycloakClient("shared", clientId, secret);
     }
 
-    private static T Clone<T>(T cloneObject) 
+    private static T Clone<T>(T cloneObject)
         where T : class =>
         JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(cloneObject))!;
 }

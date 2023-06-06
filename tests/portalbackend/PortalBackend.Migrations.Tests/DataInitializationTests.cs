@@ -39,10 +39,10 @@ public class DataInitializationTests : IClassFixture<ConsortiaDataDbFixture>
     {
         // Arrange
         var context = _dbTestDbFixture.GetPortalDbContext();
-        
+
         // Act
         var pendingMigrations = await context.Database.GetPendingMigrationsAsync().ConfigureAwait(false);
-        
+
         // Assert
         pendingMigrations.Should().BeEmpty();
     }

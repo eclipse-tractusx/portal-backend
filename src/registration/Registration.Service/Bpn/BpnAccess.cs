@@ -81,7 +81,7 @@ public class BpnAccess : IBpnAccess
             }
             return legalEntityResponse;
         }
-        catch(JsonException je)
+        catch (JsonException je)
         {
             throw new ServiceException($"Access to external system bpdm did not return a valid json response: {je.Message}");
         }
@@ -94,7 +94,7 @@ public class BpnAccess : IBpnAccess
         {
             Path = "api/catena/legal-entities/legal-addresses/search"
         }.Uri;
-        var json = new [] { businessPartnerNumber };
+        var json = new[] { businessPartnerNumber };
         var result = await _httpClient.PostAsJsonAsync(uri.PathAndQuery, json, cancellationToken).ConfigureAwait(false);
         if (result.IsSuccessStatusCode)
         {
@@ -106,7 +106,8 @@ public class BpnAccess : IBpnAccess
                         new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
                         cancellationToken: cancellationToken)
                     .CatchingAsync(
-                        ex => {
+                        ex =>
+                        {
                             throw new ServiceException($"Access to external system bpdm did not return a valid json response: {ex.Message}");
                         },
                         cancellationToken)

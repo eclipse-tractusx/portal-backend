@@ -19,10 +19,10 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -62,7 +62,7 @@ public class ServiceAccountBusinessLogicTests
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());  
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _userRepository = A.Fake<IUserRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
@@ -79,7 +79,7 @@ public class ServiceAccountBusinessLogicTests
     }
 
     #region CreateOwnCompanyServiceAccountAsync
-    
+
     [Fact]
     public async Task CreateOwnCompanyServiceAccountAsync_WithValidInput_ReturnsCreatedConnectorData()
     {
@@ -95,7 +95,7 @@ public class ServiceAccountBusinessLogicTests
         result.Should().NotBeNull();
         result.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
     }
-    
+
     [Fact]
     public async Task CreateOwnCompanyServiceAccountAsync_WithInvalidUser_NotFoundException()
     {
@@ -112,7 +112,7 @@ public class ServiceAccountBusinessLogicTests
         var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
         exception.Message.Should().Be($"user {invalidUserId} is not associated with any company");
     }
-    
+
     [Fact]
     public async Task CreateOwnCompanyServiceAccountAsync_WithEmptyName_ThrowsControllerArgumentException()
     {
@@ -129,7 +129,7 @@ public class ServiceAccountBusinessLogicTests
         exception.Message.Should().Be("name must not be empty (Parameter 'name')");
         exception.ParamName.Should().Be("name");
     }
-    
+
     [Fact]
     public async Task CreateOwnCompanyServiceAccountAsync_WithInvalidIamClientAuthMethod_ThrowsControllerArgumentException()
     {
@@ -153,7 +153,7 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         var wrongUserRoleId = Guid.NewGuid();
         SetupCreateOwnCompanyServiceAccount();
-        var serviceAccountCreationInfos = new ServiceAccountCreationInfo("TheName", "Just a short description", IamClientAuthMethod.SECRET, new []{ UserRoleId1, wrongUserRoleId });
+        var serviceAccountCreationInfos = new ServiceAccountCreationInfo("TheName", "Just a short description", IamClientAuthMethod.SECRET, new[] { UserRoleId1, wrongUserRoleId });
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation);
 
         // Act
@@ -168,7 +168,7 @@ public class ServiceAccountBusinessLogicTests
     #endregion
 
     #region GetOwnCompanyServiceAccountDetailsAsync
-    
+
     [Fact]
     public async Task GetOwnCompanyServiceAccountDetailsAsync_WithValidInput_GetsAllData()
     {
@@ -183,7 +183,7 @@ public class ServiceAccountBusinessLogicTests
         result.Should().NotBeNull();
         result.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
     }
-    
+
     [Fact]
     public async Task GetOwnCompanyServiceAccountDetailsAsync_WithInvalidUser_NotFoundException()
     {
@@ -217,9 +217,9 @@ public class ServiceAccountBusinessLogicTests
     }
 
     #endregion
-    
+
     #region ResetOwnCompanyServiceAccountSecretAsync
-    
+
     [Fact]
     public async Task ResetOwnCompanyServiceAccountSecretAsync_WithValidInput_GetsAllData()
     {
@@ -234,7 +234,7 @@ public class ServiceAccountBusinessLogicTests
         result.Should().NotBeNull();
         result.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
     }
-    
+
     [Fact]
     public async Task ResetOwnCompanyServiceAccountSecretAsync_WithInvalidUser_NotFoundException()
     {
@@ -268,15 +268,15 @@ public class ServiceAccountBusinessLogicTests
     }
 
     #endregion
-    
+
     #region UpdateOwnCompanyServiceAccountDetailsAsync
-    
+
     [Fact]
     public async Task UpdateOwnCompanyServiceAccountDetailsAsync_WithValidData_ReturnsExpected()
     {
         // Arrange
         SetupUpdateOwnCompanyServiceAccountDetails();
-        var data = new ServiceAccountEditableDetails(ValidServiceAccountId, "new name", "changed description", IamClientAuthMethod.SECRET); 
+        var data = new ServiceAccountEditableDetails(ValidServiceAccountId, "new name", "changed description", IamClientAuthMethod.SECRET);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
@@ -286,13 +286,13 @@ public class ServiceAccountBusinessLogicTests
         result.Should().NotBeNull();
         result.Name.Should().Be("new name");
     }
-    
+
     [Fact]
     public async Task UpdateOwnCompanyServiceAccountDetailsAsync_WithInvalidAuthMethod_ThrowsArgumentException()
     {
         // Arrange
         SetupUpdateOwnCompanyServiceAccountDetails();
-        var data = new ServiceAccountEditableDetails(ValidServiceAccountId, "new name", "changed description", IamClientAuthMethod.JWT); 
+        var data = new ServiceAccountEditableDetails(ValidServiceAccountId, "new name", "changed description", IamClientAuthMethod.JWT);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
@@ -308,7 +308,7 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange
         SetupUpdateOwnCompanyServiceAccountDetails();
-        var data = new ServiceAccountEditableDetails(ValidServiceAccountId, "new name", "changed description", IamClientAuthMethod.SECRET); 
+        var data = new ServiceAccountEditableDetails(ValidServiceAccountId, "new name", "changed description", IamClientAuthMethod.SECRET);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
@@ -327,7 +327,7 @@ public class ServiceAccountBusinessLogicTests
         var invalidServiceAccountId = Guid.NewGuid();
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(invalidServiceAccountId, A<string>.That.Matches(x => x == ValidAdminId)))
             .Returns((CompanyServiceAccountWithRoleDataClientId?)null);
-        var data = new ServiceAccountEditableDetails(invalidServiceAccountId, "new name", "changed description", IamClientAuthMethod.SECRET); 
+        var data = new ServiceAccountEditableDetails(invalidServiceAccountId, "new name", "changed description", IamClientAuthMethod.SECRET);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
@@ -348,7 +348,7 @@ public class ServiceAccountBusinessLogicTests
             .Create();
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(InactiveServiceAccount, A<string>.That.Matches(x => x == ValidAdminId)))
             .Returns(inactive);
-        var data = new ServiceAccountEditableDetails(InactiveServiceAccount, "new name", "changed description", IamClientAuthMethod.SECRET); 
+        var data = new ServiceAccountEditableDetails(InactiveServiceAccount, "new name", "changed description", IamClientAuthMethod.SECRET);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
         // Act
@@ -362,7 +362,7 @@ public class ServiceAccountBusinessLogicTests
     #endregion
 
     #region GetOwnCompanyServiceAccountsDataAsync
-    
+
     [Fact]
     public async Task GetOwnCompanyServiceAccountsDataAsync_GetsExpectedData()
     {
@@ -370,7 +370,7 @@ public class ServiceAccountBusinessLogicTests
         var data = _fixture.CreateMany<CompanyServiceAccountData>(15);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(A<string>.That.Matches(x => x == ValidAdminId)))
             .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyServiceAccountData>?)new Pagination.Source<CompanyServiceAccountData>(data.Count(), data.Skip(skip).Take(take))));
-        
+
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
@@ -381,7 +381,7 @@ public class ServiceAccountBusinessLogicTests
         result.Should().NotBeNull();
         result.Content.Should().HaveCount(5);
     }
-    
+
     #endregion
 
     #region DeleteOwnCompanyServiceAccountAsync
@@ -394,10 +394,10 @@ public class ServiceAccountBusinessLogicTests
         SetupDeleteOwnCompanyServiceAccount(false, false);
 
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
-        
+
         // Act
         async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(serviceAccountId, ValidAdminId).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"serviceAccount {serviceAccountId} not found in company of user {ValidAdminId}");
@@ -422,11 +422,11 @@ public class ServiceAccountBusinessLogicTests
 
         // Act
         await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId, ValidAdminId).ConfigureAwait(false);
-        
+
         // Assert
         if (withClient)
         {
-            A.CallTo(() => _provisioningManager.DeleteCentralClientAsync(ClientId)).MustHaveHappenedOnceExactly(); 
+            A.CallTo(() => _provisioningManager.DeleteCentralClientAsync(ClientId)).MustHaveHappenedOnceExactly();
             A.CallTo(() => _serviceAccountRepository.RemoveIamServiceAccount(ClientId)).MustHaveHappenedOnceExactly();
         }
 
@@ -437,13 +437,13 @@ public class ServiceAccountBusinessLogicTests
         }
 
         serviceAccount.CompanyServiceAccountStatusId.Should().Be(CompanyServiceAccountStatusId.INACTIVE);
-        A.CallTo(() => _serviceAccountRepository.RemoveCompanyServiceAccountAssignedRoles(A<IEnumerable<(Guid,Guid)>>.That.IsSameSequenceAs(_userRoleIds.Select(userRoleId => new ValueTuple<Guid,Guid>(ValidServiceAccountId, userRoleId))))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _serviceAccountRepository.RemoveCompanyServiceAccountAssignedRoles(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(_userRoleIds.Select(userRoleId => new ValueTuple<Guid, Guid>(ValidServiceAccountId, userRoleId))))).MustHaveHappenedOnceExactly();
     }
 
     #endregion
 
     #region GetServiceAccountRolesAsync
-    
+
     [Fact]
     public async Task GetServiceAccountRolesAsync_GetsExpectedData()
     {
@@ -451,7 +451,7 @@ public class ServiceAccountBusinessLogicTests
         var data = _fixture.CreateMany<UserRoleWithDescription>(15);
         A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(ValidAdminId, ClientId, A<string>._))
             .Returns(data.ToAsyncEnumerable());
-        
+
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         IServiceAccountBusinessLogic sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
 
@@ -467,18 +467,18 @@ public class ServiceAccountBusinessLogicTests
             data.Contains(ur).Should().BeTrue();
         });
     }
-    
+
     #endregion
-    
+
     #region Setup
 
     private void SetupCreateOwnCompanyServiceAccount()
     {
         A.CallTo(() => _userRepository.GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(ValidAdminId, ClientId))
-            .Returns((ValidCompanyId, ValidBpn, new []{ UserRoleId1, UserRoleId2 }));
+            .Returns((ValidCompanyId, ValidBpn, new[] { UserRoleId1, UserRoleId2 }));
         A.CallTo(() => _userRepository.GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(A<string>.That.Not.Matches(x => x == ValidAdminId), ClientId))
             .Returns(((Guid, string, IEnumerable<Guid>))default);
-        
+
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>.That.Matches(x => x == ValidCompanyId), A<IEnumerable<string>>._, CompanyServiceAccountTypeId.OWN, A<bool>._, null))
             .Returns((ClientId, new ServiceAccountData(ClientId, Guid.NewGuid().ToString(), new ClientAuthData(IamClientAuthMethod.SECRET)), Guid.NewGuid(), Enumerable.Empty<UserRoleData>()));
 
@@ -532,10 +532,10 @@ public class ServiceAccountBusinessLogicTests
             .Returns(data);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(
                 A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), A<string>.That.Matches(x => x == ValidAdminId)))
-            .Returns((CompanyServiceAccountDetailedData?) null);
+            .Returns((CompanyServiceAccountDetailedData?)null);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(
                 A<Guid>.That.Matches(x => x == ValidServiceAccountId), A<string>.That.Not.Matches(x => x == ValidAdminId)))
-            .Returns((CompanyServiceAccountDetailedData?) null);
+            .Returns((CompanyServiceAccountDetailedData?)null);
     }
 
     private void SetupDeleteOwnCompanyServiceAccount(bool withServiceAccount, bool withClient, Connector? connector = null, CompanyServiceAccount? companyServiceAccount = null)
@@ -563,7 +563,7 @@ public class ServiceAccountBusinessLogicTests
                     modify.Invoke(connector);
                 });
         }
-        
+
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorsRepository);
     }

@@ -25,9 +25,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 
 var VERSION = "v2";
 
@@ -65,12 +66,13 @@ builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBu
                 .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
 builder.Services.AddDapsService(builder.Configuration)
-                .AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"));
+                .AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"))
+                .AddOfferSubscriptionProcess();
 
 builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
                 .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
-builder.Services.AddTransient<IServiceProviderBusinessLogic, ServiceProviderBusinessLogic>();
+builder.Services.AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>();
 
 builder.Services.AddProvisioningDBAccess(builder.Configuration);
 

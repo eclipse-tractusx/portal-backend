@@ -43,18 +43,17 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
-
     #region GetCoreOfferRolesAsync
-    
+
     [Fact]
     public async Task GetCoreOfferRolesAsync_WithValidData_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        
+
         // Act
         var data = await sut.GetCoreOfferRolesAsync(ValidIamUserId, "en", ClientId).ToListAsync().ConfigureAwait(false);
-        
+
         // Assert
         data.Should().HaveCount(9);
     }
@@ -66,36 +65,36 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task GetUserWithUserRolesForApplicationId_WithValidData_ReturnsExpected()
     {
-        var userRoleIds = new [] { 
+        var userRoleIds = new[] {
             new Guid("7410693c-c893-409e-852f-9ee886ce94a6"),
             new Guid("7410693c-c893-409e-852f-9ee886ce94a7"),
             new Guid("ceec23fd-6b26-485c-a4bb-90571a29e148"),
-        };        
+        };
 
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        
+
         // Act
         var data = await sut.GetUserWithUserRolesForApplicationId(ApplicationWithBpn, userRoleIds).ToListAsync().ConfigureAwait(false);
-        
+
         // Assert
         data.Should().HaveCount(2);
-        data.Should().AllSatisfy(((Guid,string,IEnumerable<Guid> UserRoleIds) userData) => userData.UserRoleIds.Should().NotBeEmpty().And.AllSatisfy(userRoleId => userRoleIds.Should().Contain(userRoleId)));
+        data.Should().AllSatisfy(((Guid, string, IEnumerable<Guid> UserRoleIds) userData) => userData.UserRoleIds.Should().NotBeEmpty().And.AllSatisfy(userRoleId => userRoleIds.Should().Contain(userRoleId)));
     }
-    
+
     #endregion
 
     #region GetUserRolesByClientId
-    
+
     [Fact]
     public async Task GetUserRolesByClientId_WithValidData_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        
+
         // Act
         var data = await sut.GetUserRolesByClientId(Enumerable.Repeat("Cl1-CX-Registration", 1)).ToListAsync().ConfigureAwait(false);
-        
+
         // Assert
         data.Should().HaveCount(1);
         var clientData = data.Single();
@@ -106,16 +105,16 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region GetRolesForClient
-    
+
     [Fact]
     public async Task GetRolesForClient_WithValidData_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        
+
         // Act
         var data = await sut.GetRolesForClient("Cl1-CX-Registration").ToListAsync().ConfigureAwait(false);
-        
+
         // Assert
         data.Should().HaveCount(3);
     }
@@ -123,23 +122,23 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region GetServiceAccountRolesAsync
-    
+
     [Fact]
     public async Task GetServiceAccountRolesAsync_WithValidData_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut().ConfigureAwait(false);
-        
+
         // Act
         var data = await sut.GetServiceAccountRolesAsync(ValidIamUserId, ClientId, Constants.DefaultLanguage).ToListAsync().ConfigureAwait(false);
-        
+
         // Assert
         data.Should().HaveCount(9);
         data.Should().OnlyHaveUniqueItems();
     }
 
     #endregion
-    
+
     private async Task<IUserRolesRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

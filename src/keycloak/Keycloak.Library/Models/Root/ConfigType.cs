@@ -24,14 +24,14 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
 using Newtonsoft.Json;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 [JsonConverter(typeof(ConfigTypeConverter))]
 public enum ConfigType
 {
-    Int, 
+    Int,
     String
 }

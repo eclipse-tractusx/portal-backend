@@ -42,9 +42,9 @@ public static class CorsExtensions
         {
             corsOption.AddPolicy(AllowSpecificOrigins, policy =>
             {
-                    policy.WithOrigins(corsConfig.Cors.AllowedOrigins)
-                                    .AllowAnyHeader()
-                                    .AllowAnyMethod();
+                policy.WithOrigins(corsConfig.Cors.AllowedOrigins)
+                                .AllowAnyHeader()
+                                .AllowAnyMethod();
             });
         }
     }

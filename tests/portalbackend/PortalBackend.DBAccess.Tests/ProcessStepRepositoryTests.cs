@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -139,14 +139,125 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region AttachAndModifyProcessSteps
+
+    [Fact]
+    public async Task AttachAndModifyProcessSteps_UpdatesStatus()
+    {
+        // Arrange
+        var stepData = _fixture.CreateMany<(Guid ProcessStepId, ProcessStep InitialStep, ProcessStep ModifiedStep)>(5).ToImmutableArray();
+
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyProcessSteps(stepData.Select(data => new ValueTuple<Guid, Action<ProcessStep>?, Action<ProcessStep>>(
+            data.ProcessStepId,
+            step =>
+                {
+                    step.ProcessStepStatusId = data.InitialStep.ProcessStepStatusId;
+                    step.DateLastChanged = data.InitialStep.DateLastChanged;
+                    step.Message = data.InitialStep.Message;
+                },
+            step =>
+                {
+                    step.ProcessStepStatusId = data.ModifiedStep.ProcessStepStatusId;
+                    step.DateLastChanged = data.ModifiedStep.DateLastChanged;
+                    step.Message = data.ModifiedStep.Message;
+                })));
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().HaveCount(5).And.AllSatisfy(entry => entry.State.Should().Be(EntityState.Modified));
+        changedEntries.Select(entry => entry.Entity).Should().AllBeOfType<ProcessStep>().Which.Should().Satisfy(
+            step => step.Id == stepData[0].ProcessStepId && step.ProcessStepStatusId == stepData[0].ModifiedStep.ProcessStepStatusId && step.DateLastChanged == stepData[0].ModifiedStep.DateLastChanged && step.Message == stepData[0].ModifiedStep.Message,
+            step => step.Id == stepData[1].ProcessStepId && step.ProcessStepStatusId == stepData[1].ModifiedStep.ProcessStepStatusId && step.DateLastChanged == stepData[1].ModifiedStep.DateLastChanged && step.Message == stepData[1].ModifiedStep.Message,
+            step => step.Id == stepData[2].ProcessStepId && step.ProcessStepStatusId == stepData[2].ModifiedStep.ProcessStepStatusId && step.DateLastChanged == stepData[2].ModifiedStep.DateLastChanged && step.Message == stepData[2].ModifiedStep.Message,
+            step => step.Id == stepData[3].ProcessStepId && step.ProcessStepStatusId == stepData[3].ModifiedStep.ProcessStepStatusId && step.DateLastChanged == stepData[3].ModifiedStep.DateLastChanged && step.Message == stepData[3].ModifiedStep.Message,
+            step => step.Id == stepData[4].ProcessStepId && step.ProcessStepStatusId == stepData[4].ModifiedStep.ProcessStepStatusId && step.DateLastChanged == stepData[4].ModifiedStep.DateLastChanged && step.Message == stepData[4].ModifiedStep.Message
+        );
+    }
+
+    [Fact]
+    public async Task AttachAndModifyProcessSteps_WithUnmodifiedData_SkipsUpdateStatus()
+    {
+        // Arrange
+        var stepData = _fixture.CreateMany<(Guid ProcessStepId, ProcessStep InitialStep)>(5).ToImmutableArray();
+
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyProcessSteps(stepData.Select(data => new ValueTuple<Guid, Action<ProcessStep>?, Action<ProcessStep>>(
+            data.ProcessStepId,
+            step =>
+                {
+                    step.ProcessStepStatusId = data.InitialStep.ProcessStepStatusId;
+                    step.DateLastChanged = data.InitialStep.DateLastChanged;
+                    step.Message = data.InitialStep.Message;
+                },
+            step =>
+                {
+                    step.DateLastChanged = data.InitialStep.DateLastChanged;
+                })));
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeFalse();
+        changedEntries.Should().HaveCount(5).And.AllSatisfy(entry => entry.State.Should().Be(EntityState.Unchanged));
+        changedEntries.Select(entry => entry.Entity).Should().AllBeOfType<ProcessStep>().Which.Should().Satisfy(
+            step => step.Id == stepData[0].ProcessStepId && step.ProcessStepStatusId == stepData[0].InitialStep.ProcessStepStatusId && step.DateLastChanged == stepData[0].InitialStep.DateLastChanged && step.Message == stepData[0].InitialStep.Message,
+            step => step.Id == stepData[1].ProcessStepId && step.ProcessStepStatusId == stepData[1].InitialStep.ProcessStepStatusId && step.DateLastChanged == stepData[1].InitialStep.DateLastChanged && step.Message == stepData[1].InitialStep.Message,
+            step => step.Id == stepData[2].ProcessStepId && step.ProcessStepStatusId == stepData[2].InitialStep.ProcessStepStatusId && step.DateLastChanged == stepData[2].InitialStep.DateLastChanged && step.Message == stepData[2].InitialStep.Message,
+            step => step.Id == stepData[3].ProcessStepId && step.ProcessStepStatusId == stepData[3].InitialStep.ProcessStepStatusId && step.DateLastChanged == stepData[3].InitialStep.DateLastChanged && step.Message == stepData[3].InitialStep.Message,
+            step => step.Id == stepData[4].ProcessStepId && step.ProcessStepStatusId == stepData[4].InitialStep.ProcessStepStatusId && step.DateLastChanged == stepData[4].InitialStep.DateLastChanged && step.Message == stepData[4].InitialStep.Message
+        );
+    }
+
+    [Fact]
+    public async Task AttachAndModifyProcessSteps_WithUnmodifiedData_UpdatesLastChanged()
+    {
+        // Arrange
+        var stepData = _fixture.CreateMany<(Guid ProcessStepId, ProcessStep InitialStep)>(5).ToImmutableArray();
+
+        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyProcessSteps(stepData.Select(data => new ValueTuple<Guid, Action<ProcessStep>?, Action<ProcessStep>>(
+            data.ProcessStepId,
+            step =>
+                {
+                    step.ProcessStepStatusId = data.InitialStep.ProcessStepStatusId;
+                    step.DateLastChanged = data.InitialStep.DateLastChanged;
+                    step.Message = data.InitialStep.Message;
+                },
+            step => { })));
+
+        // Assert
+        var changeTracker = dbContext.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().HaveCount(5).And.AllSatisfy(entry => entry.State.Should().Be(EntityState.Modified));
+        changedEntries.Select(entry => entry.Entity).Should().AllBeOfType<ProcessStep>().Which.Should().Satisfy(
+            step => step.Id == stepData[0].ProcessStepId && step.ProcessStepStatusId == stepData[0].InitialStep.ProcessStepStatusId && step.DateLastChanged != stepData[0].InitialStep.DateLastChanged && step.Message == stepData[0].InitialStep.Message,
+            step => step.Id == stepData[1].ProcessStepId && step.ProcessStepStatusId == stepData[1].InitialStep.ProcessStepStatusId && step.DateLastChanged != stepData[1].InitialStep.DateLastChanged && step.Message == stepData[1].InitialStep.Message,
+            step => step.Id == stepData[2].ProcessStepId && step.ProcessStepStatusId == stepData[2].InitialStep.ProcessStepStatusId && step.DateLastChanged != stepData[2].InitialStep.DateLastChanged && step.Message == stepData[2].InitialStep.Message,
+            step => step.Id == stepData[3].ProcessStepId && step.ProcessStepStatusId == stepData[3].InitialStep.ProcessStepStatusId && step.DateLastChanged != stepData[3].InitialStep.DateLastChanged && step.Message == stepData[3].InitialStep.Message,
+            step => step.Id == stepData[4].ProcessStepId && step.ProcessStepStatusId == stepData[4].InitialStep.ProcessStepStatusId && step.DateLastChanged != stepData[4].InitialStep.DateLastChanged && step.Message == stepData[4].InitialStep.Message
+        );
+    }
+
+    #endregion
+
     #region GetActiveProcesses
 
     [Fact]
     public async Task GetActiveProcess_LockExpired_ReturnsExpected()
     {
         // Arrange
-        var processTypeIds = new [] { ProcessTypeId.APPLICATION_CHECKLIST };
-        var processStepTypeIds = new [] {
+        var processTypeIds = new[] { ProcessTypeId.APPLICATION_CHECKLIST };
+        var processStepTypeIds = new[] {
             ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
             ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
             ProcessStepTypeId.CREATE_IDENTITY_WALLET,
@@ -170,8 +281,8 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetActiveProcess_Locked_ReturnsExpected()
     {
         // Arrange
-        var processTypeIds = new [] { ProcessTypeId.APPLICATION_CHECKLIST };
-        var processStepTypeIds = new [] {
+        var processTypeIds = new[] { ProcessTypeId.APPLICATION_CHECKLIST };
+        var processStepTypeIds = new[] {
             ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
             ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
             ProcessStepTypeId.CREATE_IDENTITY_WALLET,

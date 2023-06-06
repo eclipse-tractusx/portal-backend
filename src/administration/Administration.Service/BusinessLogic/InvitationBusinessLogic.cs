@@ -112,12 +112,12 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         {
             roleDatas = await _userProvisioningService.GetRoleDatas(_settings.InvitedUserInitialRoles).ToListAsync().ConfigureAwait(false);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             throw new ConfigurationException($"{nameof(_settings.InvitedUserInitialRoles)}: {e.Message}");
         }
 
-        var userCreationInfoIdps = new [] { new UserCreationRoleDataIdpInfo(
+        var userCreationInfoIdps = new[] { new UserCreationRoleDataIdpInfo(
             invitationData.firstName,
             invitationData.lastName,
             invitationData.email,

@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -38,22 +38,20 @@ public class ApplicationChecklistProcessTypeExecutorTests
     private readonly IApplicationChecklistCreationService _checklistCreationService;
     private readonly IApplicationChecklistHandlerService.ProcessStepExecution _firstExecution;
     private readonly IApplicationChecklistHandlerService.ProcessStepExecution _secondExecution;
-    private readonly Func<IApplicationChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>> _firstProcessFunc;
-    private readonly Func<IApplicationChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>> _secondProcessFunc;
-    private readonly Func<Exception,IApplicationChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>> _errorFunc;
+    private readonly Func<IApplicationChecklistService.WorkerChecklistProcessStepData, CancellationToken, Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>> _firstProcessFunc;
+    private readonly Func<IApplicationChecklistService.WorkerChecklistProcessStepData, CancellationToken, Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>> _secondProcessFunc;
+    private readonly Func<Exception, IApplicationChecklistService.WorkerChecklistProcessStepData, CancellationToken, Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>> _errorFunc;
     private readonly ProcessStepTypeId _firstStepTypeId;
     private readonly ProcessStepTypeId _secondStepTypeId;
-    private readonly IMockLogger<ApplicationChecklistProcessTypeExecutor> _mockLogger;
-    private readonly ILogger<ApplicationChecklistProcessTypeExecutor> _logger;
     private readonly ApplicationChecklistProcessTypeExecutor _executor;
     private readonly IFixture _fixture;
     private readonly IEnumerable<ProcessStepTypeId> _executableSteps;
 
     public ApplicationChecklistProcessTypeExecutorTests()
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization {ConfigureMembers = true});
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b =>_fixture.Behaviors.Remove(b));
+            .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _portalRepositories = A.Fake<IPortalRepositories>();
@@ -63,16 +61,13 @@ public class ApplicationChecklistProcessTypeExecutorTests
         _checklistCreationService = A.Fake<IApplicationChecklistCreationService>();
 
         _firstStepTypeId = ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH;
-        _firstProcessFunc = A.Fake<Func<IApplicationChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>>>();
-        _errorFunc = A.Fake<Func<Exception,IApplicationChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>>>();
+        _firstProcessFunc = A.Fake<Func<IApplicationChecklistService.WorkerChecklistProcessStepData, CancellationToken, Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>>>();
+        _errorFunc = A.Fake<Func<Exception, IApplicationChecklistService.WorkerChecklistProcessStepData, CancellationToken, Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>>>();
         _firstExecution = new IApplicationChecklistHandlerService.ProcessStepExecution(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, true, _firstProcessFunc, _errorFunc);
 
         _secondStepTypeId = ProcessStepTypeId.ACTIVATE_APPLICATION;
-        _secondProcessFunc = A.Fake<Func<IApplicationChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>>>();
+        _secondProcessFunc = A.Fake<Func<IApplicationChecklistService.WorkerChecklistProcessStepData, CancellationToken, Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>>>();
         _secondExecution = new IApplicationChecklistHandlerService.ProcessStepExecution(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, false, _secondProcessFunc, null);
-
-        _mockLogger = A.Fake<IMockLogger<ApplicationChecklistProcessTypeExecutor>>();
-        _logger = new MockLogger<ApplicationChecklistProcessTypeExecutor>(_mockLogger);
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>())
             .Returns(_checklistRepository);
@@ -81,9 +76,8 @@ public class ApplicationChecklistProcessTypeExecutorTests
             _checklistHandlerService,
             _checklistCreationService,
             _portalRepositories);
-            //_logger);
 
-        _executableSteps = new [] { _firstStepTypeId, _secondStepTypeId };
+        _executableSteps = new[] { _firstStepTypeId, _secondStepTypeId };
 
         SetupFakes();
     }
@@ -144,7 +138,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
                 return createdItems;
             });
 
-        A.CallTo(() => _checklistCreationService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId)>>._))
+        A.CallTo(() => _checklistCreationService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>._))
             .Returns(stepTypeIds);
 
         // Act
@@ -159,7 +153,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .MustHaveHappenedOnceExactly();
         createdItems.Should().NotBeNull();
         createdItems.Should().HaveSameCount(missingEntryTypeIds).And.Contain(missingEntryTypeIds.Select(typeId => (typeId, ApplicationChecklistEntryStatusId.TO_DO)));
-        A.CallTo(() => _checklistCreationService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId)>>.That.IsSameSequenceAs(createdItems!)))
+        A.CallTo(() => _checklistCreationService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>.That.IsSameSequenceAs(createdItems!)))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -220,7 +214,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         A.CallTo(() => _checklistRepository.GetChecklistData(processId))
             .Returns((true, applicationId, CompanyApplicationStatusId.CREATED, checklist));
 
-        var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);;
+        var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -253,7 +247,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
     public async Task ExecuteProcessStep_InvalidChecklist_Throws()
     {
         // Arrange initialize
-        var checklist = Enumerable.Empty<(ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId)>();
+        var checklist = Enumerable.Empty<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>();
 
         var processId = Guid.NewGuid();
         var applicationId = Guid.NewGuid();
@@ -261,11 +255,11 @@ public class ApplicationChecklistProcessTypeExecutorTests
         A.CallTo(() => _checklistRepository.GetChecklistData(processId))
             .Returns((true, applicationId, CompanyApplicationStatusId.SUBMITTED, checklist));
 
-        A.CallTo(() => _checklistCreationService.CreateMissingChecklistItems(A<Guid>._,A<IEnumerable<ApplicationChecklistEntryTypeId>>._))
-            .Returns(Enumerable.Empty<(ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId)>());
+        A.CallTo(() => _checklistCreationService.CreateMissingChecklistItems(A<Guid>._, A<IEnumerable<ApplicationChecklistEntryTypeId>>._))
+            .Returns(Enumerable.Empty<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>());
 
         // Act initialize
-        var initializationResult =await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -276,7 +270,6 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var executeProcessStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
 
         var Act = async () => await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
-
 
         // Act
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
@@ -300,7 +293,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns((true, applicationId, CompanyApplicationStatusId.SUBMITTED, checklist));
 
         // Act initialize
-        var initializationResult =await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -311,7 +304,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var executeProcessStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
         var followupStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
 
-        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .Returns(new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
                 ProcessStepStatusId.DONE,
                 (ApplicationChecklistEntry entry) => { entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS; },
@@ -322,7 +315,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
 
         ApplicationChecklistEntry? checklistEntry = null;
 
-        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._,A<ApplicationChecklistEntryTypeId>._,A<Action<ApplicationChecklistEntry>>._))
+        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._))
             .ReturnsLazily((Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, Action<ApplicationChecklistEntry> setFields) =>
             {
                 checklistEntry = new ApplicationChecklistEntry(applicationId, entryTypeId, default, default);
@@ -334,11 +327,11 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var executionResult = await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
 
         // Assert execute
-        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _errorFunc(A<Exception>._,A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _errorFunc(A<Exception>._, A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
 
         executionResult.Modified.Should().BeTrue();
@@ -348,7 +341,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
 
         A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._))
             .MustHaveHappenedOnceExactly();
-        
+
         checklistEntry.Should().NotBeNull();
         checklistEntry!.ApplicationId.Should().Be(applicationId);
         checklistEntry.ApplicationChecklistEntryTypeId.Should().Be(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER);
@@ -370,7 +363,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns((true, applicationId, CompanyApplicationStatusId.SUBMITTED, checklist));
 
         // Act initialize
-        var initializationResult =await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -383,11 +376,11 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var followupStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
         var error = _fixture.Create<TestException>();
 
-        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .Throws(error);
 
-        A.CallTo(() => _errorFunc(A<Exception>._,A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
-            .ReturnsLazily((Exception ex, IApplicationChecklistService.WorkerChecklistProcessStepData _, CancellationToken _) => 
+        A.CallTo(() => _errorFunc(A<Exception>._, A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
+            .ReturnsLazily((Exception ex, IApplicationChecklistService.WorkerChecklistProcessStepData _, CancellationToken _) =>
                 new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
                     ProcessStepStatusId.FAILED,
                     (ApplicationChecklistEntry entry) =>
@@ -402,7 +395,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
 
         ApplicationChecklistEntry? checklistEntry = null;
 
-        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._,A<ApplicationChecklistEntryTypeId>._,A<Action<ApplicationChecklistEntry>>._))
+        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._))
             .ReturnsLazily((Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, Action<ApplicationChecklistEntry> setFields) =>
             {
                 checklistEntry = new ApplicationChecklistEntry(applicationId, entryTypeId, default, default);
@@ -414,11 +407,11 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var executionResult = await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
 
         // Assert execute
-        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _errorFunc(error,A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _errorFunc(error, A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
 
         executionResult.Modified.Should().BeTrue();
@@ -429,7 +422,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
 
         A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<Action<ApplicationChecklistEntry>>._))
             .MustHaveHappenedOnceExactly();
-        
+
         checklistEntry.Should().NotBeNull();
         checklistEntry!.ApplicationId.Should().Be(applicationId);
         checklistEntry.ApplicationChecklistEntryTypeId.Should().Be(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER);
@@ -452,7 +445,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns((true, applicationId, CompanyApplicationStatusId.SUBMITTED, checklist));
 
         // Act initialize
-        var initializationResult =await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -465,10 +458,10 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var followupStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
         var error = _fixture.Create<TestException>();
 
-        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .Throws(error);
 
-        A.CallTo(() => _errorFunc(A<Exception>._,A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _errorFunc(A<Exception>._, A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .ReturnsLazily((Exception ex, IApplicationChecklistService.WorkerChecklistProcessStepData _, CancellationToken _) =>
                 new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
                     ProcessStepStatusId.FAILED,
@@ -482,11 +475,11 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var executionResult = await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
 
         // Assert execute
-        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _errorFunc(error,A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _errorFunc(error, A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
 
         executionResult.Modified.Should().BeFalse();
@@ -514,7 +507,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns((true, applicationId, CompanyApplicationStatusId.SUBMITTED, checklist));
 
         // Act initialize
-        var initializationResult =await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -526,12 +519,12 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var followupStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
         var error = _fixture.Create<TestException>();
 
-        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .Throws(error);
 
         ApplicationChecklistEntry? checklistEntry = null;
 
-        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._,A<ApplicationChecklistEntryTypeId>._,A<Action<ApplicationChecklistEntry>>._))
+        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._))
             .ReturnsLazily((Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, Action<ApplicationChecklistEntry> setFields) =>
             {
                 checklistEntry = new ApplicationChecklistEntry(applicationId, entryTypeId, default, default);
@@ -543,11 +536,11 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var executionResult = await _executor.ExecuteProcessStep(_secondStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
 
         // Assert execute
-        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _errorFunc(A<Exception>._,A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _errorFunc(A<Exception>._, A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
 
         executionResult.Modified.Should().BeTrue();
@@ -580,7 +573,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns((true, applicationId, CompanyApplicationStatusId.SUBMITTED, checklist));
 
         // Act initialize
-        var initializationResult =await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -592,12 +585,12 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var followupStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
         var error = new ServiceException(_fixture.Create<string>(), true);
 
-        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .Throws(error);
 
         ApplicationChecklistEntry? checklistEntry = null;
 
-        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._,A<ApplicationChecklistEntryTypeId>._,A<Action<ApplicationChecklistEntry>>._))
+        A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._))
             .ReturnsLazily((Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, Action<ApplicationChecklistEntry> setFields) =>
             {
                 checklistEntry = new ApplicationChecklistEntry(applicationId, entryTypeId, default, default);
@@ -609,11 +602,11 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var executionResult = await _executor.ExecuteProcessStep(_secondStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
 
         // Assert execute
-        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _errorFunc(A<Exception>._,A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _errorFunc(A<Exception>._, A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
 
         executionResult.Modified.Should().BeTrue();
@@ -646,7 +639,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns((true, applicationId, CompanyApplicationStatusId.SUBMITTED, checklist));
 
         // Act initialize
-        var initializationResult =await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -657,7 +650,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var executeProcessStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
         var error = new SystemException(_fixture.Create<string>());
 
-        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .Throws(error);
 
         var Act = async () => await _executor.ExecuteProcessStep(_secondStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
@@ -666,11 +659,11 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var executionResult = await Assert.ThrowsAsync<SystemException>(Act).ConfigureAwait(false);
 
         // Assert execute
-        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _errorFunc(A<Exception>._,A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _errorFunc(A<Exception>._, A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._,A<CancellationToken>._))
+        A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
 
         A.CallTo(() => _checklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._))
@@ -713,7 +706,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         // Assert
         A.CallTo(() => _checklistHandlerService.IsExecutableProcessStep(processStepTypeId))
             .MustHaveHappenedOnceExactly();
-        
+
         result.Should().Be(checklistHanderReturnValue);
     }
 

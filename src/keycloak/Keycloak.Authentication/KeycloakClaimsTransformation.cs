@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
 {
     public class KeycloakClaimsTransformation : IClaimsTransformation
     {
-        readonly JwtBearerOptions _Options;
+        private readonly JwtBearerOptions _Options;
         public KeycloakClaimsTransformation(IOptions<JwtBearerOptions> options)
         {
             _Options = options.Value;
@@ -38,17 +38,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
         {
             var resource_access = principal.Claims.FirstOrDefault(claim => claim.Type == "resource_access" && claim.ValueType == "JSON")?.Value;
             if ((resource_access != null) &&
-                ((JsonValue.Parse(resource_access) as JsonObject)?.TryGetValue(_Options.TokenValidationParameters.ValidAudience, out JsonValue audience) ?? false) &&
-                ((audience as JsonObject)?.TryGetValue("roles", out JsonValue roles) ?? false) &&
+                ((JsonValue.Parse(resource_access) as JsonObject)?.TryGetValue(_Options.TokenValidationParameters.ValidAudience, out var audience) ?? false) &&
+                ((audience as JsonObject)?.TryGetValue("roles", out var roles) ?? false) &&
                 roles is JsonArray)
             {
-                ClaimsIdentity claimsIdentity = new ClaimsIdentity();
-                bool rolesAdded = false;
-                foreach(JsonValue role in roles)
+                var claimsIdentity = new ClaimsIdentity();
+                var rolesAdded = false;
+                foreach (JsonValue role in roles)
                 {
                     if (role.JsonType == JsonType.String)
                     {
-                        claimsIdentity.AddClaim(new Claim(ClaimTypes.Role,role));
+                        claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, role));
                         rolesAdded = true;
                     }
                 }

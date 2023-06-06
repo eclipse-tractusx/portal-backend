@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -38,7 +38,7 @@ public class ClientRepository : IClientRepository
     }
 
     /// <inheritdoc />
-    public IamClient CreateClient(string clientId) => 
+    public IamClient CreateClient(string clientId) =>
         _dbContext.IamClients.Add(new IamClient(Guid.NewGuid(), clientId)).Entity;
 
     /// <inheritdoc />

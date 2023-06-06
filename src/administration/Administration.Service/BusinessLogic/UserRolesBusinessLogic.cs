@@ -33,9 +33,9 @@ using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-public class UserRolesBusinessLogic: IUserRolesBusinessLogic
+public class UserRolesBusinessLogic : IUserRolesBusinessLogic
 {
-    private static readonly JsonSerializerOptions _options = new (){ PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private static readonly JsonSerializerOptions _options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningManager _provisioningManager;
     private readonly UserSettings _settings;
@@ -50,7 +50,7 @@ public class UserRolesBusinessLogic: IUserRolesBusinessLogic
     public IAsyncEnumerable<OfferRoleInfos> GetCoreOfferRoles(string iamUserId, string? languageShortName) =>
         _portalRepositories.GetInstance<IUserRolesRepository>().GetCoreOfferRolesAsync(iamUserId, languageShortName ?? Constants.DefaultLanguage, _settings.Portal.KeycloakClientID)
             .PreSortedGroupBy(x => x.OfferId)
-            .Select(x => new OfferRoleInfos(x.Key, x.Select(s => new OfferRoleInfo(s.RoleId,s.RoleText,s.Description))));
+            .Select(x => new OfferRoleInfos(x.Key, x.Select(s => new OfferRoleInfo(s.RoleId, s.RoleText, s.Description))));
 
     public IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid appId, string iamUserId, string? languageShortName) =>
         _portalRepositories.GetInstance<IUserRolesRepository>()
@@ -98,7 +98,7 @@ public class UserRolesBusinessLogic: IUserRolesBusinessLogic
                 .GetAppAssignedIamClientUserDataUntrackedAsync(appId, companyUserId, iamUserId),
             (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
                 .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId),
-            appId, companyUserId, roles, iamUserId, 
+            appId, companyUserId, roles, iamUserId,
             data =>
             {
                 var userName = $"{data.firstname} {data.lastname}";
@@ -132,7 +132,7 @@ public class UserRolesBusinessLogic: IUserRolesBusinessLogic
         {
             throw new NotFoundException($"iamUserId for user {companyUserId} not found");
         }
-        
+
         if (!result.IsSameCompany)
         {
             throw new ForbiddenException(
@@ -167,7 +167,7 @@ public class UserRolesBusinessLogic: IUserRolesBusinessLogic
             throw new ControllerArgumentException($"Invalid roles {string.Join(",", nonExistingRoles)}", nameof(roles));
         }
         var rolesToAdd = existingRoles.Where(role => !role.IsAssignedToUser);
-        var rolesToDelete =  existingRoles.Where(x => x.IsAssignedToUser).ExceptBy(distinctRoles, role => role.CompanyUserRoleText);
+        var rolesToDelete = existingRoles.Where(x => x.IsAssignedToUser).ExceptBy(distinctRoles, role => role.CompanyUserRoleText);
 
         var rolesNotAdded = rolesToAdd.Any()
             ? rolesToAdd.Except(await AddRoles(companyUserId, result.IamClientIds, rolesToAdd, result.IamUserId).ConfigureAwait(false))
@@ -198,7 +198,7 @@ public class UserRolesBusinessLogic: IUserRolesBusinessLogic
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        
+
         return rolesNotAdded.Select(x => new UserRoleWithId(x.CompanyUserRoleText, x.CompanyUserRoleId));
     }
 

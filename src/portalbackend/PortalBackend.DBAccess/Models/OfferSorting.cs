@@ -29,17 +29,17 @@ public enum OfferSorting
     /// Ascending by date
     /// </summary>
     DateAsc = 1,
-    
+
     /// <summary>
     /// Descending by date
     /// </summary>
     DateDesc = 2,
-    
+
     /// <summary>
     /// Ascending by the read status
     /// </summary>
     NameAsc = 3,
-    
+
     /// <summary>
     /// Descending by read status
     /// </summary>

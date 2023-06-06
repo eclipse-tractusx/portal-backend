@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
-using Microsoft.Extensions.Options;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Mail
 {
@@ -33,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Mail
         private readonly ITemplateManager _TemplateManager;
         private readonly ISendMail _SendMail;
 
-        public UserEmail( ITemplateManager templateManager, ISendMail sendMail, IOptions<UserEmailSettings> settings)
+        public UserEmail(ITemplateManager templateManager, ISendMail sendMail, IOptions<UserEmailSettings> settings)
         {
             _TemplateManager = templateManager;
             _SendMail = sendMail;

@@ -30,7 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 public class UserControllerTest
 {
     private const string IamUserId = "4C1A6851-D4E7-4E10-A011-3732CD045E8A";
-    private static readonly Guid CompanyUserId = new ("05455d3a-fc86-4f5a-a89a-ba964ead163d");
+    private static readonly Guid CompanyUserId = new("05455d3a-fc86-4f5a-a89a-ba964ead163d");
     private readonly IUserBusinessLogic _logic;
     private readonly IUserRolesBusinessLogic _rolesLogic;
     private readonly UserController _controller;

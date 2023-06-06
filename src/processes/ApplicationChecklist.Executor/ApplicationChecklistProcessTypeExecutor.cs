@@ -36,7 +36,7 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
     private readonly IApplicationChecklistRepository _checklistRepository;
 
     private Guid applicationId;
-    private IDictionary<ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId>? checklist = null;
+    private IDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>? checklist = null;
 
     public ApplicationChecklistProcessTypeExecutor(
         IApplicationChecklistHandlerService checklistHandlerService,
@@ -156,11 +156,11 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
         return true;
     }
 
-    private static (ProcessStepStatusId,Action<ApplicationChecklistEntry>?, string? processMessage) ProcessError(Exception ex)
+    private static (ProcessStepStatusId, Action<ApplicationChecklistEntry>?, string? processMessage) ProcessError(Exception ex)
     {
         var itemMessage = string.IsNullOrWhiteSpace(ex.Message) ? ex.GetType().ToString() : ex.Message;
         var stepMessage = $"{ex.GetType()}: {ex.Message}";
-        return ex is ServiceException {IsRecoverable: true}
+        return ex is ServiceException { IsRecoverable: true }
             ? (ProcessStepStatusId.TODO,
                 item => { item.Comment = itemMessage; },
                 stepMessage)

@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyAssignedUseCase
 {
-    private CompanyAssignedUseCase() {}
+    private CompanyAssignedUseCase() { }
 
     public CompanyAssignedUseCase(Guid companyId, Guid useCaseId)
     {

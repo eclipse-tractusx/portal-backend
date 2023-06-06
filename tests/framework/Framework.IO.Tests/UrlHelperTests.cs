@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -33,11 +33,11 @@ public class UrlHelperTests
     {
         // Act
         url.EnsureValidHttpUrl(() => nameof(url));
-        
+
         // Assert
         url.Should().Be(url); // One assert is needed
     }
-    
+
     [Fact]
     public void EnsureValidHttpUrl_WithNotValidUri_ThrowsControllerArgumentException()
     {
@@ -51,7 +51,7 @@ public class UrlHelperTests
         var ex = Assert.Throws<ControllerArgumentException>(Act);
         ex.Message.Should().Contain($"url {url} cannot be parsed: Invalid URI: The format of the URI could not be determined. (Parameter 'test')");
     }
-    
+
     [Theory]
     [InlineData("ftp://www.test.de")]
     [InlineData("c:/path/to/glory")]
@@ -60,18 +60,18 @@ public class UrlHelperTests
     {
         // Act
         void Act() => url.EnsureValidHttpUrl(() => nameof(url));
-        
+
         // Assert
         var ex = Assert.Throws<ControllerArgumentException>(Act);
         ex.Message.Should().Contain($"url {url} must either start with http:// or https://");
     }
-    
+
     [Fact]
     public void EnsureValidHttpUrl_WithNotWellFormattedUri_ThrowsControllerArgumentException()
     {
         // Arrange
         const string url = "http://www.test.com/path???/file name";
-        
+
         // Act
         void Act() => url.EnsureValidHttpUrl(() => "test");
 

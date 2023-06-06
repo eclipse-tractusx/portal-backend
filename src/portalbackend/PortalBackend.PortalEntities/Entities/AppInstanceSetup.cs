@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -37,7 +37,7 @@ public class AppInstanceSetup : IBaseEntity
     public Guid Id { get; private set; }
     public Guid AppId { get; private set; }
     public bool IsSingleInstance { get; set; }
-    
+
     public string? InstanceUrl { get; set; }
 
     // Navigation properties

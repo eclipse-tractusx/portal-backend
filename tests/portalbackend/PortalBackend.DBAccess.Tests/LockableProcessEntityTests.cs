@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -55,7 +55,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task IsLocked_ReturnsExpected()
     {
-        var (processId, version, context) = await CreateProcessAndContext().ConfigureAwait(false);
+        var (processId, _, context) = await CreateProcessAndContext().ConfigureAwait(false);
 
         var process = await context.FindAsync<Process>(processId).ConfigureAwait(false);
         process.Should().NotBeNull();
@@ -67,7 +67,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task ReleaseLock_ReturnsExpected()
     {
-        var (processId, version, context) = await CreateProcessAndContext().ConfigureAwait(false);
+        var (processId, _, context) = await CreateProcessAndContext().ConfigureAwait(false);
 
         var process = await context.FindAsync<Process>(processId).ConfigureAwait(false);
         process.Should().NotBeNull();
@@ -124,10 +124,10 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     }
 
     [Theory]
-    [InlineData(TimeFrame.NOW,false)]
-    [InlineData(TimeFrame.WITHIN,false)]
-    [InlineData(TimeFrame.SOON,false)]
-    [InlineData(TimeFrame.EXPIRED,false)]
+    [InlineData(TimeFrame.NOW, false)]
+    [InlineData(TimeFrame.WITHIN, false)]
+    [InlineData(TimeFrame.SOON, false)]
+    [InlineData(TimeFrame.EXPIRED, false)]
     public async Task IsLockExpired_ReturnsExpected(TimeFrame timeFrame, bool expected)
     {
         var (processId, version, context) = await CreateProcessAndContext().ConfigureAwait(false);
@@ -141,9 +141,9 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     }
 
     [Theory]
-    [InlineData(TimeFrame.NOW,false)]
-    [InlineData(TimeFrame.WITHIN,false)]
-    [InlineData(TimeFrame.EXPIRED,true)]
+    [InlineData(TimeFrame.NOW, false)]
+    [InlineData(TimeFrame.WITHIN, false)]
+    [InlineData(TimeFrame.EXPIRED, true)]
     public async Task TryLock_IsLockExpired_ReturnsExpected(TimeFrame timeFrame, bool expected)
     {
         var (processId, version, context) = await CreateProcessAndContext().ConfigureAwait(false);
@@ -307,7 +307,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
         EXPIRED
     }
 
-    DateTimeOffset? GetDateTimeOffset(TimeFrame timeFrame) =>
+    private DateTimeOffset? GetDateTimeOffset(TimeFrame timeFrame) =>
         timeFrame switch
         {
             TimeFrame.NULL => null,
@@ -318,7 +318,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
             _ => default
         };
 
-    async Task<(Guid Id, Guid Version, DbContext Context)> CreateProcessAndContext()
+    private async Task<(Guid Id, Guid Version, DbContext Context)> CreateProcessAndContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var process = context.Add(new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid())).Entity;

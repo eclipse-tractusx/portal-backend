@@ -46,7 +46,7 @@ public interface IUserRepository
     Task<CompanyUserBusinessPartners?> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(Guid companyUserId, string adminUserId);
     Task<Guid> GetCompanyIdForIamUserUntrackedAsync(string iamUserId);
     Task<(Guid CompanyId, string? Bpn, IEnumerable<Guid> TechnicalUserRoleIds)> GetCompanyIdAndBpnRolesForIamUserUntrackedAsync(string iamUserId, string technicalUserClientId);
-    
+
     /// <summary>
     /// Gets the CompanyUser Id for the given IamUser Id
     /// </summary>
@@ -108,10 +108,10 @@ public interface IUserRepository
     Task<OfferIamUserData?> GetAppAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
 
     Task<CoreOfferIamUserData?> GetCoreOfferAssignedIamClientUserDataUntrackedAsync(Guid offerId, Guid companyUserId, string iamUserId);
-    
+
     IAsyncEnumerable<Guid> GetServiceProviderCompanyUserWithRoleIdAsync(Guid offerId, List<Guid> userRoleIds);
 
-    Func<int,int,Task<Pagination.Source<CompanyAppUserDetails>?>> GetOwnCompanyAppUsersPaginationSourceAsync(Guid appId, string iamUserId, IEnumerable<OfferSubscriptionStatusId> subscriptionStatusIds, IEnumerable<CompanyUserStatusId> companyUserStatusIds, CompanyUserFilter filter);
+    Func<int, int, Task<Pagination.Source<CompanyAppUserDetails>?>> GetOwnCompanyAppUsersPaginationSourceAsync(Guid appId, string iamUserId, IEnumerable<OfferSubscriptionStatusId> subscriptionStatusIds, IEnumerable<CompanyUserStatusId> companyUserStatusIds, CompanyUserFilter filter);
 
     /// <summary>
     /// User account data for deletion of own userId
@@ -143,7 +143,7 @@ public interface IUserRepository
     /// <param name="businessPartnerNumber"></param>
     /// <returns></returns>
     IAsyncEnumerable<(bool IsApplicationCompany, bool IsApplicationPending, string? BusinessPartnerNumber, Guid CompanyId)> GetBpnForIamUserUntrackedAsync(Guid applicationId, string businessPartnerNumber);
-    
+
     /// <summary>
     /// Gets the users company bpn for the iam user
     /// </summary>

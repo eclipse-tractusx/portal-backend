@@ -32,10 +32,10 @@ public class AccessTokenCategoriesConverter : JsonEnumConverter<AccessTokenCateg
 {
     private static readonly Dictionary<AccessTokenCategories, string> s_pairs = new Dictionary<AccessTokenCategories, string>
     {
-        [AccessTokenCategories.Internal] = "INTERNAL", 
-        [AccessTokenCategories.Access] = "ACCESS", 
-        [AccessTokenCategories.Id] = "ID", 
-        [AccessTokenCategories.Admin] = "ADMIN", 
+        [AccessTokenCategories.Internal] = "INTERNAL",
+        [AccessTokenCategories.Access] = "ACCESS",
+        [AccessTokenCategories.Id] = "ID",
+        [AccessTokenCategories.Admin] = "ADMIN",
         [AccessTokenCategories.Userinfo] = "USERINFO"
     };
 

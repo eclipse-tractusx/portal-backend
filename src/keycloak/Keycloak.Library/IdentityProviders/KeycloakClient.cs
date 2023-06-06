@@ -24,9 +24,9 @@
  * SOFTWARE.
  ********************************************************************************/
 
+using Flurl.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
-using Flurl.Http;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
@@ -46,7 +46,8 @@ public partial class KeycloakClient
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/identity-provider/import-config")
-            .PostJsonAsync(new Dictionary<string,string> {
+            .PostJsonAsync(new Dictionary<string, string>
+            {
                 ["fromUrl"] = url,
                 ["providerId"] = "oidc"
             })
@@ -121,7 +122,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/export")
             .GetAsync()
             .ConfigureAwait(false);
-    
+
     public async Task<ManagementPermission> GetIdentityProviderAuthorizationPermissionsInitializedAsync(string realm, string identityProviderAlias) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
@@ -132,7 +133,7 @@ public partial class KeycloakClient
             .GetJsonAsync<ManagementPermission>()
             .ConfigureAwait(false);
 
-    public async Task<ManagementPermission> SetIdentityProviderAuthorizationPermissionsInitializedAsync(string realm, string identityProviderAlias, ManagementPermission managementPermission) => 
+    public async Task<ManagementPermission> SetIdentityProviderAuthorizationPermissionsInitializedAsync(string realm, string identityProviderAlias, ManagementPermission managementPermission) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
@@ -142,7 +143,7 @@ public partial class KeycloakClient
             .PutJsonAsync(managementPermission)
             .ReceiveJson<ManagementPermission>()
             .ConfigureAwait(false);
-    
+
     public async Task<IDictionary<string, object>> GetIdentityProviderMapperTypesAsync(string realm, string identityProviderAlias) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
@@ -162,7 +163,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/mappers")
             .PostJsonAsync(identityProviderMapper)
             .ConfigureAwait(false);
-    
+
     public async Task<IEnumerable<IdentityProviderMapper>> GetIdentityProviderMappersAsync(string realm, string identityProviderAlias) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")
@@ -172,7 +173,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/mappers")
             .GetJsonAsync<IEnumerable<IdentityProviderMapper>>()
             .ConfigureAwait(false);
-    
+
     public async Task<IdentityProviderMapper> GetIdentityProviderMapperByIdAsync(string realm, string identityProviderAlias, string mapperId) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
             .AppendPathSegment("/admin/realms/")

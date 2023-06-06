@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
@@ -69,13 +70,13 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Pagination.Response<NotificationDetailData>> GetNotifications(
         [FromQuery] int page = 0,
-        [FromQuery] int size = 15, 
+        [FromQuery] int size = 15,
         [FromQuery] bool? isRead = null,
         [FromQuery] NotificationTypeId? notificationTypeId = null,
         [FromQuery] NotificationTopicId? notificationTopicId = null,
         [FromQuery] bool onlyDueDate = false,
         [FromQuery] NotificationSorting? sorting = null) =>
-        this.WithIamUserId(userId => _logic.GetNotificationsAsync(page, size, userId, isRead, notificationTypeId, notificationTopicId, sorting));
+        this.WithIamUserId(userId => _logic.GetNotificationsAsync(page, size, userId, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting)));
 
     /// <summary>
     ///     Gets a notification for the logged in user
@@ -93,7 +94,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<NotificationDetailData> GetNotification([FromRoute] Guid notificationId) =>
         this.WithIamUserId(userId => _logic.GetNotificationDetailDataAsync(userId, notificationId));
-    
+
     /// <summary>
     /// Gets the notification count for the current logged in user
     /// </summary>

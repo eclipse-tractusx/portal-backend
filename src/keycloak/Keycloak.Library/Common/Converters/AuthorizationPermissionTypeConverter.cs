@@ -28,7 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationP
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
 
-public class AuthorizationPermissionTypeConverter: JsonEnumConverter<AuthorizationPermissionType>
+public class AuthorizationPermissionTypeConverter : JsonEnumConverter<AuthorizationPermissionType>
 {
     private static readonly Dictionary<AuthorizationPermissionType, string> SPairs = new Dictionary<AuthorizationPermissionType, string>
     {

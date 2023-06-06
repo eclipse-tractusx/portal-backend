@@ -1,4 +1,4 @@
-﻿using Flurl.Http.Testing;
+using Flurl.Http.Testing;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.OpenIDConfiguration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
@@ -10,10 +10,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests.FlurlSe
 
 public static class FlurlSetupExtensions
 {
-    public static HttpTest WithAuthorization(this HttpTest testClient, string realm)
+    public static HttpTest WithAuthorization(this HttpTest testClient)
     {
         testClient.ForCallsTo("*/auth/realms/*/protocol/openid-connect/token")
-            .RespondWithJson(new {access_token = "123"});
+            .RespondWithJson(new { access_token = "123" });
         return testClient;
     }
 
@@ -22,7 +22,7 @@ public static class FlurlSetupExtensions
         testClient.ForCallsTo("*/admin/realms/*/clients")
             .WithVerb(HttpMethod.Post)
             .RespondWith("Ok", 200,
-                new[] {new ValueTuple<string, object>("Location", new Uri($"https://www.test.de/{newClientId}"))});
+                new[] { new ValueTuple<string, object>("Location", new Uri($"https://www.test.de/{newClientId}")) });
         return testClient;
     }
 
@@ -65,7 +65,7 @@ public static class FlurlSetupExtensions
             .RespondWithJson(idp);
         return testClient;
     }
-    
+
     public static HttpTest WithGetClientsAsync(this HttpTest testClient, string alias, IEnumerable<Client> clients)
     {
         testClient.ForCallsTo($"*/admin/realms/{alias}/clients")

@@ -29,7 +29,7 @@ public class IdentityProviderSettings
 
     public bool Validate()
     {
-        new ConfigurationValidation<IdentityProviderSettings>().NotNull(CsvSettings,()=>nameof(CsvSettings));
+        new ConfigurationValidation<IdentityProviderSettings>().NotNull(CsvSettings, () => nameof(CsvSettings));
         return CsvSettings.Validate();
     }
 }
@@ -52,22 +52,22 @@ public class IdentityProviderCsvSettings
     public bool Validate()
     {
         new ConfigurationValidation<IdentityProviderCsvSettings>()
-            .NotNull(Charset,()=>nameof(Charset))
-            .NotNullOrWhiteSpace(FileName,()=>nameof(FileName))
-            .NotNullOrWhiteSpace(ContentType,()=>nameof(ContentType))
-            .NotNullOrWhiteSpace(Separator,()=>nameof(Separator))
-            .NotNullOrWhiteSpace(HeaderUserId,()=>nameof(HeaderUserId))
-            .NotNullOrWhiteSpace(HeaderFirstName,()=>nameof(HeaderFirstName))
-            .NotNullOrWhiteSpace(HeaderLastName,()=>nameof(HeaderLastName))
-            .NotNullOrWhiteSpace(HeaderEmail,()=>nameof(HeaderEmail))
-            .NotNullOrWhiteSpace(HeaderProviderAlias,()=>nameof(HeaderProviderAlias))
-            .NotNullOrWhiteSpace(HeaderProviderUserId,()=>nameof(HeaderProviderUserId))
-            .NotNullOrWhiteSpace(HeaderProviderUserName,()=>nameof(HeaderProviderUserName));
+            .NotNull(Charset, () => nameof(Charset))
+            .NotNullOrWhiteSpace(FileName, () => nameof(FileName))
+            .NotNullOrWhiteSpace(ContentType, () => nameof(ContentType))
+            .NotNullOrWhiteSpace(Separator, () => nameof(Separator))
+            .NotNullOrWhiteSpace(HeaderUserId, () => nameof(HeaderUserId))
+            .NotNullOrWhiteSpace(HeaderFirstName, () => nameof(HeaderFirstName))
+            .NotNullOrWhiteSpace(HeaderLastName, () => nameof(HeaderLastName))
+            .NotNullOrWhiteSpace(HeaderEmail, () => nameof(HeaderEmail))
+            .NotNullOrWhiteSpace(HeaderProviderAlias, () => nameof(HeaderProviderAlias))
+            .NotNullOrWhiteSpace(HeaderProviderUserId, () => nameof(HeaderProviderUserId))
+            .NotNullOrWhiteSpace(HeaderProviderUserName, () => nameof(HeaderProviderUserName));
         try
         {
             Encoding = Encoding.GetEncoding(Charset);
         }
-        catch(ArgumentException ae)
+        catch (ArgumentException ae)
         {
             throw new ConfigurationException($"'{nameof(IdentityProviderCsvSettings)}': {nameof(Charset)} '{Charset}' is not a valid Encoding", ae);
         }

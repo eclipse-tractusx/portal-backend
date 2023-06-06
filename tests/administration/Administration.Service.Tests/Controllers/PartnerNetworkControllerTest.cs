@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 
 public class PartnerNetworkControllerTest
 {
-   
+
     private readonly IPartnerNetworkBusinessLogic _logic;
     private readonly PartnerNetworkController _controller;
 
@@ -41,9 +41,9 @@ public class PartnerNetworkControllerTest
     public async Task GetAllMemberCompaniesBPN_Test()
     {
         //Arrange
-          
+
         A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync());
-    
+
         //Act
         var result = this._controller.GetAllMemberCompaniesBPNAsync();
 

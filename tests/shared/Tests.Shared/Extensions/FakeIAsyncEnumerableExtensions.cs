@@ -33,7 +33,8 @@ public static class FakeIAsyncEnumerableExtensions
         A.CallTo(() => fakeEnumerable.GetAsyncEnumerator(A<CancellationToken>._))
             .ReturnsLazily((CancellationToken _) =>
             {
-                if (enumerator != null) throw new InvalidOperationException();
+                if (enumerator != null)
+                    throw new InvalidOperationException();
                 enumerator = enumerable.GetEnumerator();
                 return fakeEnumerator;
             });
@@ -57,7 +58,8 @@ public static class FakeIAsyncEnumerableExtensions
         A.CallTo(() => fakeEnumerable.GetEnumerator())
             .ReturnsLazily(() =>
             {
-                if (enumerator != null) throw new InvalidOperationException();
+                if (enumerator != null)
+                    throw new InvalidOperationException();
                 enumerator = enumerable.GetEnumerator();
                 return fakeEnumerator;
             });

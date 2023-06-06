@@ -37,8 +37,8 @@ public interface IApplicationChecklistHandlerService
     record ProcessStepExecution(
         ApplicationChecklistEntryTypeId EntryTypeId,
         bool RequiresLock,
-        Func<IApplicationChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>> ProcessFunc,
-        Func<Exception,IApplicationChecklistService.WorkerChecklistProcessStepData,CancellationToken,Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>>? ErrorFunc
+        Func<IApplicationChecklistService.WorkerChecklistProcessStepData, CancellationToken, Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>> ProcessFunc,
+        Func<Exception, IApplicationChecklistService.WorkerChecklistProcessStepData, CancellationToken, Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>>? ErrorFunc
     );
 
     /// <summary>

@@ -18,16 +18,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using MailKit.Net.Proxy;
+using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using MailKit.Net.Smtp;
-using MailKit.Net.Proxy;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
 {
     public class SendMail : ISendMail
     {
-        private MailSettings _MailSettings;
+        private readonly MailSettings _MailSettings;
 
         public SendMail(IOptions<MailSettings> mailSettings)
         {
@@ -40,7 +40,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
             message.From.Add(MailboxAddress.Parse(sender));
             message.To.Add(MailboxAddress.Parse(recipient));
             message.Subject = subject;
-            if(useHtml)
+            if (useHtml)
             {
                 message.Body = new TextPart("html") { Text = body };
             }
@@ -53,8 +53,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
 
         private async Task _send(MimeMessage message)
         {
-            using (var client = new SmtpClient()) {
-                if (_MailSettings.HttpProxy != null) {
+            using (var client = new SmtpClient())
+            {
+                if (_MailSettings.HttpProxy != null)
+                {
                     client.ProxyClient = new HttpProxyClient(_MailSettings.HttpProxy, _MailSettings.HttpProxyPort);
                 }
                 await client.ConnectAsync(_MailSettings.SmtpHost, _MailSettings.SmtpPort);

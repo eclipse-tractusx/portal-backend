@@ -61,7 +61,6 @@ public class IdpSsoDescriptorType : SsoDescriptorType
 
     [XmlElement(DataType = "anyURI")]
     public string AttributeProfile { get; set; }
-
 }
 
 public class KeyDescriptorType

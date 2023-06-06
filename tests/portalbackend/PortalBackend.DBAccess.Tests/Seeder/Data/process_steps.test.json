@@ -126,5 +126,13 @@
     "process_id": "dd371565-9489-4907-a2e4-b8cbfe7a8cd2",
     "date_created": "2023-02-21 08:15:20.479000 +00:00",
     "date_last_changed": null
+  },
+  {
+    "id": "7a98e88f-57b8-4ff8-a1aa-5fa02cdb74b8",
+    "process_step_type_id": 101,
+    "process_step_status_id": 1,
+    "process_id": "0cc208c3-bdf6-456c-af81-6c3ebe14fe06",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
   }
 ]

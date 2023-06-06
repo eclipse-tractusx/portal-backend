@@ -41,7 +41,7 @@ public interface IDocumentsBusinessLogic
     /// <param name="documentId">Id of the document to get</param>
     /// <returns>Returns the filename and content of the file</returns>
     Task<(string FileName, byte[] Content, string MediaType)> GetSelfDescriptionDocumentAsync(Guid documentId);
-    
+
     /// <summary>
     /// Deletes the document and the corresponding consent from the persistence layer.
     /// </summary>
@@ -56,7 +56,7 @@ public interface IDocumentsBusinessLogic
     /// <param name="documentId">Id of the document</param>
     /// <returns>The document as json</returns>
     Task<DocumentSeedData> GetSeedData(Guid documentId);
-    
+
     /// <summary>
     /// Retrieve Frame Document
     /// </summary>

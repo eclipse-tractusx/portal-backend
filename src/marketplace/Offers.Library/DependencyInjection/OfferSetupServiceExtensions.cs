@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -21,16 +21,21 @@
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.DependencyInjection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 
 public static class OfferSetupServiceCollectionExtension
 {
-    public static IServiceCollection AddOfferSetupService(this IServiceCollection services)
+    public static IServiceCollection AddOfferServices(this IServiceCollection services)
     {
         services
             .AddTransient<LoggingHandler<OfferSetupService>>()
             .AddHttpClient(nameof(OfferSetupService)).AddHttpMessageHandler<LoggingHandler<OfferSetupService>>();
-        return services.AddTransient<IOfferSetupService, OfferSetupService>();
+        return services
+            .AddTransient<IOfferService, OfferService>()
+            .AddTransient<IOfferSetupService, OfferSetupService>()
+            .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
+            .AddOfferSubscriptionProcess();
     }
 }

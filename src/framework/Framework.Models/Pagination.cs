@@ -111,7 +111,7 @@ public class Pagination
 
         var source = await getSource(size * page, size).ConfigureAwait(false);
         return source == null
-            ? new Response<T>(new Metadata(0,0,0,0),Enumerable.Empty<T>())
+            ? new Response<T>(new Metadata(0, 0, 0, 0), Enumerable.Empty<T>())
             : new Response<T>(
                 new Metadata(
                     source.Count,
@@ -121,12 +121,12 @@ public class Pagination
                 source.Data);
     }
 
-    public static IQueryable<Pagination.Source<T>?> CreateSourceQueryAsync<TEntity,TKey,T>(int skip, int take, IQueryable<IGrouping<TKey,TEntity>> query, Expression<Func<IEnumerable<TEntity>, IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity,T>> select) where TEntity : class
+    public static IQueryable<Pagination.Source<T>?> CreateSourceQueryAsync<TEntity, TKey, T>(int skip, int take, IQueryable<IGrouping<TKey, TEntity>> query, Expression<Func<IEnumerable<TEntity>, IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity, T>> select) where TEntity : class
     {
-        var paramGroup = Expression.Parameter(typeof(IGrouping<TKey,TEntity>), "group");
+        var paramGroup = Expression.Parameter(typeof(IGrouping<TKey, TEntity>), "group");
 
-        var selector = Expression.Lambda<Func<IGrouping<TKey,TEntity>,Pagination.Source<T>>>(
-            Expression.New(typeof(Pagination.Source<T>).GetConstructor(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, new [] { typeof(int), typeof(IEnumerable<T>) })!,
+        var selector = Expression.Lambda<Func<IGrouping<TKey, TEntity>, Pagination.Source<T>>>(
+            Expression.New(typeof(Pagination.Source<T>).GetConstructor(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, new[] { typeof(int), typeof(IEnumerable<T>) })!,
                 new Expression[] {
                     Expression.Call(typeof(Enumerable), "Count", new Type[] { typeof(TEntity) }, paramGroup),
                     Expression.Call(typeof(Enumerable), "Select", new Type[] { typeof(TEntity), typeof(T) }, new Expression[] {

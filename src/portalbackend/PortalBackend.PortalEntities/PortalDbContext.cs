@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -51,7 +51,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AgreementAssignedOfferType> AgreementAssignedOfferTypes { get; set; } = default!;
     public virtual DbSet<AgreementCategory> AgreementCategories { get; set; } = default!;
     public virtual DbSet<AppInstance> AppInstances { get; set; } = default!;
-    
+
     public virtual DbSet<AppInstanceAssignedCompanyServiceAccount> AppInstanceAssignedServiceAccounts { get; set; } = default!;
     public virtual DbSet<AppInstanceSetup> AppInstanceSetups { get; set; } = default!;
     public virtual DbSet<AppAssignedUseCase> AppAssignedUseCases { get; set; } = default!;
@@ -64,6 +64,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditOffer20230119> AuditOffer20230119 { get; set; } = default!;
     public virtual DbSet<AuditOffer20230406> AuditOffer20230406 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20221005 { get; set; } = default!;
+    public virtual DbSet<AuditOfferSubscription20230317> AuditOfferSubscription20230317 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20221005> AuditCompanyApplication20221005 { get; set; } = default!;
     public virtual DbSet<AuditCompanyApplication20230214> AuditCompanyApplication20230214 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUser20221005> AuditCompanyUser20221005 { get; set; } = default!;
@@ -73,7 +74,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditCompanyUserAssignedRole20221018> AuditCompanyUserAssignedRole20221018 { get; set; } = default!;
     public virtual DbSet<AuditCompanyAssignedRole2023316> AuditCompanyAssignedRole2023316 { get; set; } = default!;
     public virtual DbSet<AuditConsent20230412> AuditConsent20230412 { get; set; } = default!;
-    public virtual DbSet<BpdmIdentifier> BpdmIdentifiers { get; set; } = default!;    
+    public virtual DbSet<BpdmIdentifier> BpdmIdentifiers { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
@@ -130,6 +131,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferType> OfferTypes { get; set; } = default!;
     public virtual DbSet<OfferSubscription> OfferSubscriptions { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
+    public virtual DbSet<OfferSubscriptionProcessData> OfferSubscriptionsProcessDatas { get; set; } = default!;
     public virtual DbSet<Process> Processes { get; set; } = default!;
     public virtual DbSet<ProcessStep> ProcessSteps { get; set; } = default!;
     public virtual DbSet<ProcessStepStatus> ProcessStepStatuses { get; set; } = default!;
@@ -278,7 +280,8 @@ public class PortalDbContext : DbContext
                             .OnDelete(DeleteBehavior.ClientSetNull);
                         j.Property(e => e.OfferSubscriptionStatusId)
                             .HasDefaultValue(OfferSubscriptionStatusId.PENDING);
-                        j.HasAuditV1Triggers<OfferSubscription,AuditOfferSubscription20221005>();
+
+                        j.HasAuditV1Triggers<OfferSubscription, AuditOfferSubscription20230317>();
                     }
                 );
 
@@ -300,7 +303,7 @@ public class PortalDbContext : DbContext
                         j.HasKey(e => new { e.AppId, e.LanguageShortName });
                     }
                 );
-            
+
             entity.HasMany(p => p.OfferLicenses)
                 .WithMany(p => p.Offers)
                 .UsingEntity<OfferAssignedLicense>(
@@ -316,9 +319,9 @@ public class PortalDbContext : DbContext
                         .OnDelete(DeleteBehavior.ClientSetNull),
                     j =>
                     {
-                        j.HasKey(e => new {AppId = e.OfferId, AppLicenseId = e.OfferLicenseId });
+                        j.HasKey(e => new { AppId = e.OfferId, AppLicenseId = e.OfferLicenseId });
                     });
-            
+
             entity.HasMany(p => p.UseCases)
                 .WithMany(p => p.Apps)
                 .UsingEntity<AppAssignedUseCase>(
@@ -336,7 +339,7 @@ public class PortalDbContext : DbContext
                     {
                         j.HasKey(e => new { e.AppId, e.UseCaseId });
                     });
-            
+
             entity.HasMany(p => p.Documents)
                 .WithMany(p => p.Offers)
                 .UsingEntity<OfferAssignedDocument>(
@@ -363,6 +366,15 @@ public class PortalDbContext : DbContext
             entity.HasAuditV1Triggers<Offer, AuditOffer20230406>();
         });
 
+        modelBuilder.Entity<OfferSubscriptionProcessData>(entity =>
+        {
+            entity.HasKey(x => x.OfferSubscriptionId);
+
+            entity.HasOne(x => x.OfferSubscription)
+                .WithOne(x => x.OfferSubscriptionProcessData)
+                .HasForeignKey<OfferSubscriptionProcessData>(x => x.OfferSubscriptionId);
+        });
+
         modelBuilder.Entity<AppSubscriptionDetail>(entity =>
         {
             entity.HasOne(e => e.AppInstance)
@@ -372,10 +384,10 @@ public class PortalDbContext : DbContext
             entity.HasOne(e => e.OfferSubscription)
                 .WithOne(e => e.AppSubscriptionDetail)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-            
+
             entity.HasAuditV1Triggers<AppSubscriptionDetail, AuditAppSubscriptionDetail20221118>();
         });
-        
+
         modelBuilder.Entity<OfferType>()
             .HasData(
                 Enum.GetValues(typeof(OfferTypeId))
@@ -405,7 +417,7 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<AppInstanceAssignedCompanyServiceAccount>(entity =>
         {
-            entity.HasKey(x => new {x.AppInstanceId, x.CompanyServiceAccountId});
+            entity.HasKey(x => new { x.AppInstanceId, x.CompanyServiceAccountId });
             entity.HasOne(x => x.AppInstance)
                 .WithMany(x => x.ServiceAccounts)
                 .HasForeignKey(x => x.AppInstanceId)
@@ -423,10 +435,10 @@ public class PortalDbContext : DbContext
                 .HasForeignKey<AppInstanceSetup>(x => x.AppId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
-        
+
         modelBuilder.Entity<OfferDescription>(entity =>
         {
-            entity.HasKey(e => new {AppId = e.OfferId, e.LanguageShortName });
+            entity.HasKey(e => new { AppId = e.OfferId, e.LanguageShortName });
 
             entity.HasOne(d => d.Offer)
                 .WithMany(p => p!.OfferDescriptions)
@@ -448,7 +460,7 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<OfferTag>(entity =>
         {
-            entity.HasKey(e => new {AppId = e.OfferId, e.Name });
+            entity.HasKey(e => new { AppId = e.OfferId, e.Name });
 
             entity.HasOne(d => d.Offer)
                 .WithMany(p => p!.Tags)
@@ -488,21 +500,22 @@ public class PortalDbContext : DbContext
                         .WithMany()
                         .OnDelete(DeleteBehavior.ClientSetNull)
                         .HasForeignKey(pt => pt.CompanyId),
-                    j => 
+                    j =>
                     {
                         j.HasKey(e => new { e.CompanyId, e.IdentityProviderId });
                     }
                 );
         });
 
-        modelBuilder.Entity<CompanyAssignedUseCase>(entity => {
+        modelBuilder.Entity<CompanyAssignedUseCase>(entity =>
+        {
             entity.HasKey(e => new { e.CompanyId, e.UseCaseId });
 
             entity.HasOne(d => d.Company)
                 .WithMany(p => p.CompanyAssignedUseCase)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-            
+
             entity.HasOne(d => d.UseCase)
                 .WithMany(p => p.CompanyAssignedUseCase)
                 .HasForeignKey(d => d.UseCaseId)
@@ -523,7 +536,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<CompanyApplication,AuditCompanyApplication20230214>();
+            entity.HasAuditV1Triggers<CompanyApplication, AuditCompanyApplication20230214>();
         });
 
         modelBuilder.Entity<CompanyApplicationStatus>()
@@ -536,7 +549,7 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<ApplicationChecklistEntry>(entity =>
         {
             entity.HasKey(x => new { x.ApplicationId, ChecklistEntryTypeId = x.ApplicationChecklistEntryTypeId });
-                
+
             entity.HasOne(ace => ace.Application)
                 .WithMany(a => a.ApplicationChecklistEntries)
                 .HasForeignKey(ace => ace.ApplicationId)
@@ -578,7 +591,8 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<CompanyRoleRegistrationData>();
 
-        modelBuilder.Entity<CompanyAssignedRole>(entity => {
+        modelBuilder.Entity<CompanyAssignedRole>(entity =>
+        {
             entity.HasKey(e => new { e.CompanyId, e.CompanyRoleId });
             entity.HasAuditV1Triggers<CompanyAssignedRole, AuditCompanyAssignedRole2023316>();
 
@@ -586,7 +600,7 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p.CompanyAssignedRoles)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-            
+
             entity.HasOne(d => d.CompanyRole!)
                 .WithMany(p => p.CompanyAssignedRoles)
                 .HasForeignKey(d => d.CompanyRoleId)
@@ -603,7 +617,7 @@ public class PortalDbContext : DbContext
             entity.HasOne(d => d.CompanyServiceAccountStatus)
                 .WithMany(p => p.CompanyServiceAccounts)
                 .HasForeignKey(d => d.CompanyServiceAccountStatusId);
-                
+
             entity.HasOne(d => d.CompanyServiceAccountType)
                 .WithMany(p => p.CompanyServiceAccounts)
                 .HasForeignKey(d => d.CompanyServiceAccountTypeId);
@@ -693,7 +707,7 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p!.CompanyUsers)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-                
+
             entity.HasMany(p => p.Offers)
                 .WithMany(p => p.CompanyUsers)
                 .UsingEntity<CompanyUserAssignedAppFavourite>(
@@ -736,10 +750,10 @@ public class PortalDbContext : DbContext
 
             entity.HasMany(p => p.CompanyUserAssignedBusinessPartners)
                 .WithOne(d => d.CompanyUser);
-            
-            entity.HasAuditV1Triggers<CompanyUser,AuditCompanyUser20221005>();
+
+            entity.HasAuditV1Triggers<CompanyUser, AuditCompanyUser20221005>();
         });
-        
+
         modelBuilder.Entity<CompanyUserAssignedBusinessPartner>()
             .HasKey(e => new { e.CompanyUserId, e.BusinessPartnerNumber });
 
@@ -771,10 +785,10 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p!.Consents)
                 .HasForeignKey(d => d.ConsentStatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-            
+
             entity.HasAuditV1Triggers<Consent, AuditConsent20230412>();
         });
-        
+
         modelBuilder.Entity<ConsentAssignedOfferSubscription>(entity =>
         {
             entity.HasKey(e => new { e.ConsentId, e.OfferSubscriptionId });
@@ -805,7 +819,7 @@ public class PortalDbContext : DbContext
             entity.Property(e => e.Alpha3Code)
                 .IsFixedLength();
         });
-        
+
         modelBuilder.Entity<CountryAssignedIdentifier>(entity =>
         {
             entity.HasKey(e => new { e.CountryAlpha2Code, e.UniqueIdentifierId });
@@ -820,7 +834,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.UniqueIdentifierId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
-        
+
         modelBuilder.Entity<DocumentType>()
             .HasData(
                 Enum.GetValues(typeof(DocumentTypeId))
@@ -909,7 +923,7 @@ public class PortalDbContext : DbContext
                 .WithOne(p => p!.Connector!)
                 .HasForeignKey<Connector>(d => d.SelfDescriptionDocumentId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-            
+
             entity.HasOne(d => d.Status)
                 .WithMany(p => p.Connectors)
                 .HasForeignKey(d => d.StatusId)
@@ -937,7 +951,7 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<ConnectorClientDetail>(entity =>
         {
             entity.HasKey(x => x.ConnectorId);
-            
+
             entity.HasOne(c => c.Connector)
                 .WithOne(c => c.ClientDetails)
                 .HasForeignKey<ConnectorClientDetail>(c => c.ConnectorId)
@@ -1001,7 +1015,7 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<NotificationTypeAssignedTopic>(entity =>
         {
-            entity.HasKey(e => new {e.NotificationTypeId, e.NotificationTopicId});
+            entity.HasKey(e => new { e.NotificationTypeId, e.NotificationTopicId });
 
             entity.HasOne(d => d.NotificationTopic)
                 .WithMany(x => x.NotificationTypeAssignedTopics)
@@ -1029,7 +1043,7 @@ public class PortalDbContext : DbContext
                     .Cast<OfferSubscriptionStatusId>()
                     .Select(e => new OfferSubscriptionStatus(e))
             );
-        
+
         modelBuilder.Entity<CompanyIdentifier>(entity =>
         {
             entity.HasKey(e => new { e.CompanyId, e.UniqueIdentifierId });
@@ -1091,7 +1105,7 @@ public class PortalDbContext : DbContext
                     .Cast<PrivacyPolicyId>()
                     .Select(e => new PrivacyPolicy(e))
             );
-        
+
         modelBuilder.Entity<OfferAssignedPrivacyPolicy>(entity =>
         {
             entity.HasKey(e => new { e.OfferId, e.PrivacyPolicyId });
@@ -1106,7 +1120,7 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.PrivacyPolicyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
-        
+
         modelBuilder.Entity<LicenseType>()
             .HasData(
                 Enum.GetValues(typeof(LicenseTypeId))
@@ -1116,7 +1130,7 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<ServiceDetail>(entity =>
         {
-            entity.HasKey(e => new {e.ServiceId, e.ServiceTypeId});
+            entity.HasKey(e => new { e.ServiceId, e.ServiceTypeId });
 
             entity.HasOne(e => e.ServiceType)
                 .WithMany(e => e.ServiceDetails)

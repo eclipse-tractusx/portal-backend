@@ -64,8 +64,8 @@ public class UserBusinessLogicTests
     private readonly string _createdCentralUserId;
     private readonly string _displayName;
     private readonly ICollection<CompanyUserAssignedRole> _companyUserAssignedRole = new HashSet<CompanyUserAssignedRole>();
-    private readonly Func<UserCreationRoleDataIdpInfo,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
-    private readonly Func<CompanyUserAccountData,CompanyUserAccountData> _companyUserSelectFunction;
+    private readonly Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
+    private readonly Func<CompanyUserAccountData, CompanyUserAccountData> _companyUserSelectFunction;
     private readonly Exception _error;
     private readonly UserSettings _settings;
 
@@ -102,8 +102,8 @@ public class UserBusinessLogicTests
         _createdCentralUserId = _fixture.Create<string>();
         _displayName = _fixture.Create<string>();
 
-        _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo,(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
-        _companyUserSelectFunction = A.Fake<Func<CompanyUserAccountData,CompanyUserAccountData>>();
+        _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
+        _companyUserSelectFunction = A.Fake<Func<CompanyUserAccountData, CompanyUserAccountData>>();
 
         _settings = new UserSettings
         {
@@ -126,7 +126,7 @@ public class UserBusinessLogicTests
     {
         SetupFakesForUserCreation(true);
 
-        var userList = new [] {
+        var userList = new[] {
             CreateUserCreationInfo(),
             CreateUserCreationInfo(),
             CreateUserCreationInfo(),
@@ -146,7 +146,7 @@ public class UserBusinessLogicTests
         var result = await sut.CreateOwnCompanyUsersAsync(userList, _iamUserId).ToListAsync().ConfigureAwait(false);
 
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._,A<IDictionary<string,string>>._,A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == userList.Count());
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == userList.Count());
 
         result.Should().NotBeNull();
         result.Should().HaveSameCount(userList);
@@ -162,7 +162,7 @@ public class UserBusinessLogicTests
         var nullEmail = _fixture.Build<UserCreationInfo>().With(x => x.eMail, (string?)null).Create();
         var nullUserNameEmail = _fixture.Build<UserCreationInfo>().With(x => x.eMail, (string?)null).With(x => x.userName, (string?)null).Create();
 
-        var userList = new [] {
+        var userList = new[] {
             CreateUserCreationInfo(),
             nullUserName,
             CreateUserCreationInfo(),
@@ -196,7 +196,7 @@ public class UserBusinessLogicTests
         var noRoles = _fixture.Build<UserCreationInfo>().With(x => x.Roles, Enumerable.Empty<string>()).Create();
         var noRolesNoUserName = _fixture.Build<UserCreationInfo>().With(x => x.Roles, Enumerable.Empty<string>()).With(x => x.userName, (string?)null).Create();
 
-        var userList = new [] {
+        var userList = new[] {
             CreateUserCreationInfo(),
             noRoles,
             CreateUserCreationInfo(),
@@ -229,7 +229,7 @@ public class UserBusinessLogicTests
 
         var error = _fixture.Create<TestException>();
 
-        var userList = new [] {
+        var userList = new[] {
             CreateUserCreationInfo(),
             CreateUserCreationInfo(),
             userCreationInfo,
@@ -240,7 +240,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
             u.FirstName == userCreationInfo.firstName &&
             u.LastName == userCreationInfo.lastName &&
-            u.Email == userCreationInfo.eMail            
+            u.Email == userCreationInfo.eMail
         ))).ReturnsLazily(
             (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
                 .With(x => x.UserName, creationInfo.UserName)
@@ -261,11 +261,11 @@ public class UserBusinessLogicTests
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
             u.FirstName == userCreationInfo.firstName &&
             u.LastName == userCreationInfo.lastName &&
-            u.Email == userCreationInfo.eMail            
+            u.Email == userCreationInfo.eMail
         ))).MustHaveHappenedOnceExactly();
 
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>._,A<IDictionary<string,string>>._,A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == 4);
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == 4);
 
         result.Should().NotBeNull();
         result.Should().HaveCount(4);
@@ -279,7 +279,7 @@ public class UserBusinessLogicTests
         var userCreationInfo = CreateUserCreationInfo();
         var expected = _fixture.Create<TestException>();
 
-        var userList = new [] {
+        var userList = new[] {
             CreateUserCreationInfo(),
             CreateUserCreationInfo(),
             userCreationInfo,
@@ -290,7 +290,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
             u.FirstName == userCreationInfo.firstName &&
             u.LastName == userCreationInfo.lastName &&
-            u.Email == userCreationInfo.eMail            
+            u.Email == userCreationInfo.eMail
         ))).Throws(() => expected);
 
         var sut = new UserBusinessLogic(
@@ -309,11 +309,11 @@ public class UserBusinessLogicTests
         A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
             u.FirstName == userCreationInfo.firstName &&
             u.LastName == userCreationInfo.lastName &&
-            u.Email == userCreationInfo.eMail            
+            u.Email == userCreationInfo.eMail
         ))).MustHaveHappenedOnceExactly();
 
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._,A<IDictionary<string,string>>._,A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == 2);
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == 2);
 
         error.Should().BeSameAs(expected);
     }
@@ -326,7 +326,7 @@ public class UserBusinessLogicTests
         var userCreationInfo = CreateUserCreationInfo();
         var error = _fixture.Create<TestException>();
 
-        var userList = new [] {
+        var userList = new[] {
             CreateUserCreationInfo(),
             CreateUserCreationInfo(),
             userCreationInfo,
@@ -334,7 +334,7 @@ public class UserBusinessLogicTests
             CreateUserCreationInfo()
         };
 
-        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail),A<IDictionary<string,string>>._,A<List<string>>._))
+        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<IDictionary<string, string>>._, A<List<string>>._))
             .Throws(error);
 
         var sut = new UserBusinessLogic(
@@ -349,7 +349,7 @@ public class UserBusinessLogicTests
         var result = await sut.CreateOwnCompanyUsersAsync(userList, _iamUserId).ToListAsync().ConfigureAwait(false);
 
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>._,A<IDictionary<string,string>>._,A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == 5);
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<List<string>>._)).MustHaveHappenedANumberOfTimesMatching(times => times == 5);
 
         result.Should().NotBeNull();
         result.Should().HaveCount(5);
@@ -377,7 +377,7 @@ public class UserBusinessLogicTests
 
         var result = await sut.CreateOwnCompanyIdpUserAsync(_identityProviderId, userCreationInfoIdp, _iamUserId).ConfigureAwait(false);
         result.Should().NotBe(Guid.Empty);
-        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfoIdp.Email),A<IDictionary<string,string>>.That.Matches(x => x["companyName"] == _displayName),A<IEnumerable<string>>._)).MustHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(userCreationInfoIdp.Email), A<IDictionary<string, string>>.That.Matches(x => x["companyName"] == _displayName), A<IEnumerable<string>>._)).MustHaveHappened();
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();
     }
 
@@ -435,7 +435,7 @@ public class UserBusinessLogicTests
 
         var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
         error.Message.Should().Be(_error.Message);
-        A.CallTo(() => _mailingService.SendMails(A<string>._,A<IDictionary<string,string>>._,A<IEnumerable<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -460,7 +460,7 @@ public class UserBusinessLogicTests
 
         var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
         error.Message.Should().Be(_error.Message);
-        A.CallTo(() => _mailingService.SendMails(A<string>._,A<IDictionary<string,string>>._,A<IEnumerable<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -470,7 +470,7 @@ public class UserBusinessLogicTests
 
         var userCreationInfoIdp = CreateUserCreationInfoIdp();
 
-        A.CallTo(() => _mailingService.SendMails(A<string>._,A<IDictionary<string,string>>._,A<IEnumerable<string>>._)).Throws(_error);
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).Throws(_error);
 
         var sut = new UserBusinessLogic(
             null!,
@@ -483,7 +483,7 @@ public class UserBusinessLogicTests
 
         var result = await sut.CreateOwnCompanyIdpUserAsync(_identityProviderId, userCreationInfoIdp, _iamUserId).ConfigureAwait(false);
         result.Should().NotBe(Guid.Empty);
-        A.CallTo(() => _mailingService.SendMails(A<string>._,A<IDictionary<string,string>>._,A<IEnumerable<string>>._)).MustHaveHappened();
+        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened();
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappened();
     }
 
@@ -508,12 +508,12 @@ public class UserBusinessLogicTests
 
         await sut.DeleteOwnUserAsync(_companyUserId, _iamUserId).ConfigureAwait(false);
 
-        A.CallTo(() => _provisioningManager.GetProviderUserIdForCentralUserIdAsync(A<string>._,A<string>._)).MustHaveHappened();
-        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.GetProviderUserIdForCentralUserIdAsync(A<string>._, A<string>._)).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._, A<string>._)).MustHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappened();
-        A.CallTo(() => _userBusinessPartnerRepository.DeleteCompanyUserAssignedBusinessPartners(A<IEnumerable<(Guid,string)>>._)).MustHaveHappened();
-        A.CallTo(() => _offerRepository.DeleteAppFavourites(A<IEnumerable<(Guid,Guid)>>._)).MustHaveHappened();
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustHaveHappened();
+        A.CallTo(() => _userBusinessPartnerRepository.DeleteCompanyUserAssignedBusinessPartners(A<IEnumerable<(Guid, string)>>._)).MustHaveHappened();
+        A.CallTo(() => _offerRepository.DeleteAppFavourites(A<IEnumerable<(Guid, Guid)>>._)).MustHaveHappened();
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.DeleteInvitations(A<IEnumerable<Guid>>._)).MustHaveHappened();
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
@@ -529,8 +529,8 @@ public class UserBusinessLogicTests
 
         var iamUserId = _fixture.Create<string>();
 
-        A.CallTo(() => _userRepository.GetSharedIdentityProviderUserAccountDataUntrackedAsync(A<string>.That.IsEqualTo(iamUserId))).Returns(((string?,CompanyUserAccountData))default!);
-        
+        A.CallTo(() => _userRepository.GetSharedIdentityProviderUserAccountDataUntrackedAsync(A<string>.That.IsEqualTo(iamUserId))).Returns(((string?, CompanyUserAccountData))default!);
+
         var sut = new UserBusinessLogic(
             _provisioningManager,
             null!,
@@ -546,9 +546,9 @@ public class UserBusinessLogicTests
         var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"iamUser {iamUserId} is not associated with any companyUser");
 
-        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustNotHaveHappened();
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -575,9 +575,9 @@ public class UserBusinessLogicTests
         var error = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"invalid companyUserId {_companyUserId} for user {iamUserId}");
 
-        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustNotHaveHappened();        
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustNotHaveHappened();
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -586,7 +586,7 @@ public class UserBusinessLogicTests
     public async Task TestDeleteOwnUserErrorDeletingThrows()
     {
         SetupFakesForUserDeletion();
-        
+
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).Throws(_error);
 
         var sut = new UserBusinessLogic(
@@ -604,9 +604,9 @@ public class UserBusinessLogicTests
         var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
         error.Message.Should().Be(_error.Message);
 
-        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._, A<string>._)).MustHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappened();
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustNotHaveHappened();        
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustNotHaveHappened();
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -628,7 +628,7 @@ public class UserBusinessLogicTests
         );
 
         // Act
-        var userRoleInfo = new UserRoleInfo(_companyUserId, new []
+        var userRoleInfo = new UserRoleInfo(_companyUserId, new[]
         {
             "Existing Role",
             "Company Admin",
@@ -654,7 +654,7 @@ public class UserBusinessLogicTests
         );
 
         // Act
-        var userRoleInfo = new UserRoleInfo(_companyUserId, new []
+        var userRoleInfo = new UserRoleInfo(_companyUserId, new[]
         {
             "Company Admin"
         });
@@ -677,7 +677,7 @@ public class UserBusinessLogicTests
         );
 
         // Act
-        var userRoleInfo = new UserRoleInfo(_companyUserId, new []
+        var userRoleInfo = new UserRoleInfo(_companyUserId, new[]
         {
             "NotExisting",
             "Buyer"
@@ -702,14 +702,14 @@ public class UserBusinessLogicTests
         );
 
         // Act
-        var userRoleInfo = new UserRoleInfo(Guid.NewGuid(), new []
+        var userRoleInfo = new UserRoleInfo(Guid.NewGuid(), new[]
         {
             "Company Admin",
             "Buyer",
             "Supplier"
         });
         async Task Action() => await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, _adminIamUser).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
         ex.Message.Should().Be($"CompanyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {_adminIamUser}");
@@ -729,14 +729,14 @@ public class UserBusinessLogicTests
         var invalidAppId = Guid.NewGuid();
 
         // Act
-        var userRoleInfo = new UserRoleInfo(_companyUserId, new []
+        var userRoleInfo = new UserRoleInfo(_companyUserId, new[]
         {
             "Company Admin",
             "Buyer",
             "Supplier"
         });
         async Task Action() => await sut.ModifyUserRoleAsync(invalidAppId, userRoleInfo, _adminIamUser).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
         ex.Message.Should().StartWith("offerId");
@@ -760,7 +760,7 @@ public class UserBusinessLogicTests
         );
 
         // Act
-        var userRoles = new []
+        var userRoles = new[]
         {
             "Existing Role",
             "Company Admin",
@@ -777,7 +777,7 @@ public class UserBusinessLogicTests
     }
 
     #endregion
-    
+
     #region ModifyAppUserRolesAsync
 
     [Fact]
@@ -794,7 +794,7 @@ public class UserBusinessLogicTests
         );
 
         // Act
-        var userRoles = new []
+        var userRoles = new[]
         {
             "Existing Role",
             "Company Admin",
@@ -824,7 +824,7 @@ public class UserBusinessLogicTests
         );
 
         // Act
-        var userRoles = new []
+        var userRoles = new[]
         {
             "Company Admin"
         };
@@ -850,7 +850,7 @@ public class UserBusinessLogicTests
         );
 
         // Act
-        var userRoles = new []
+        var userRoles = new[]
         {
             "NotExisting",
             "Buyer"
@@ -878,14 +878,14 @@ public class UserBusinessLogicTests
 
         var companyUserId = _fixture.Create<Guid>();
         // Act
-        var userRoles = new []
+        var userRoles = new[]
         {
             "Company Admin",
             "Buyer",
             "Supplier"
         };
         async Task Action() => await sut.ModifyAppUserRolesAsync(_validOfferId, companyUserId, userRoles, _adminIamUser).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
         ex.Message.Should().Be($"CompanyUserId {companyUserId} is not associated with the same company as adminUserId {_adminIamUser}");
@@ -907,14 +907,14 @@ public class UserBusinessLogicTests
         var invalidAppId = Guid.NewGuid();
 
         // Act
-        var userRoles = new []
+        var userRoles = new[]
         {
             "Company Admin",
             "Buyer",
             "Supplier"
         };
         async Task Action() => await sut.ModifyAppUserRolesAsync(invalidAppId, _companyUserId, userRoles, _adminIamUser).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
         ex.Message.Should().StartWith("offerId");
@@ -935,14 +935,14 @@ public class UserBusinessLogicTests
         );
 
         // Act
-        var userRoles = new []
+        var userRoles = new[]
         {
             "Company Admin",
             "Buyer",
             "Supplier"
         };
         async Task Action() => await sut.ModifyAppUserRolesAsync(_offerWithoutNameId, _companyUserId, userRoles, _adminIamUser).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
         ex.Message.Should().Be("OfferName must be set here.");
@@ -971,15 +971,15 @@ public class UserBusinessLogicTests
             _options
         );
 
-        var result = await sut.DeleteOwnCompanyUsersAsync(companyUserIds,_iamUserId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.DeleteOwnCompanyUsersAsync(companyUserIds, _iamUserId).ToListAsync().ConfigureAwait(false);
 
         var expectedCount = companyUserIds.Count();
         result.Should().HaveCount(expectedCount);
-        result.Should().Match(r => Enumerable.SequenceEqual(r,companyUserIds));
+        result.Should().Match(r => Enumerable.SequenceEqual(r, companyUserIds));
 
-        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
+        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._, A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
     }
@@ -990,7 +990,7 @@ public class UserBusinessLogicTests
         SetupFakesForUserDeletion();
 
         A.CallTo(() => _identityProviderRepository.GetSharedIdentityProviderIamAliasDataUntrackedAsync(A<string>._))
-            .Returns((null,_companyUserId));
+            .Returns((null, _companyUserId));
 
         var companyUserIds = _fixture.CreateMany<Guid>(5);
 
@@ -1004,17 +1004,17 @@ public class UserBusinessLogicTests
             _options
         );
 
-        var result = await sut.DeleteOwnCompanyUsersAsync(companyUserIds,_iamUserId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.DeleteOwnCompanyUsersAsync(companyUserIds, _iamUserId).ToListAsync().ConfigureAwait(false);
 
         var expectedCount = companyUserIds.Count();
         result.Should().HaveCount(expectedCount);
-        result.Should().Match(r => Enumerable.SequenceEqual(r,companyUserIds));
+        result.Should().Match(r => Enumerable.SequenceEqual(r, companyUserIds));
 
-        A.CallTo(() => _provisioningManager.GetProviderUserIdForCentralUserIdAsync(A<string>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.GetProviderUserIdForCentralUserIdAsync(A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._, A<string>._)).MustNotHaveHappened();
 
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == expectedCount);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
     }
@@ -1025,7 +1025,7 @@ public class UserBusinessLogicTests
         SetupFakesForUserDeletion();
 
         A.CallTo(() => _identityProviderRepository.GetSharedIdentityProviderIamAliasDataUntrackedAsync(A<string>._))
-            .Returns(((string?,Guid))default);
+            .Returns(((string?, Guid))default);
 
         var companyUserIds = _fixture.CreateMany<Guid>(5);
 
@@ -1039,14 +1039,14 @@ public class UserBusinessLogicTests
             _options
         );
 
-        async Task Act() => await sut.DeleteOwnCompanyUsersAsync(companyUserIds,_iamUserId).ToListAsync().ConfigureAwait(false);
+        async Task Act() => await sut.DeleteOwnCompanyUsersAsync(companyUserIds, _iamUserId).ToListAsync().ConfigureAwait(false);
 
         var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
         error.Message.Should().Be($"iamUser {_iamUserId} is not associated with any companyUser");
 
-        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustNotHaveHappened();
         A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1059,12 +1059,12 @@ public class UserBusinessLogicTests
         var sharedIdpAlias = _fixture.Create<string>();
 
         A.CallTo(() => _identityProviderRepository.GetSharedIdentityProviderIamAliasDataUntrackedAsync(A<string>._))
-            .Returns((sharedIdpAlias,_companyUserId));
+            .Returns((sharedIdpAlias, _companyUserId));
 
         var invalidUserId = _fixture.Create<Guid>();
         var invalidUserEntityId = _fixture.Create<string>();
 
-        var companyUserIds = new [] {
+        var companyUserIds = new[] {
             _fixture.Create<Guid>(),
             _fixture.Create<Guid>(),
             invalidUserId,
@@ -1095,15 +1095,15 @@ public class UserBusinessLogicTests
             _options
         );
 
-        var result = await sut.DeleteOwnCompanyUsersAsync(companyUserIds,_iamUserId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.DeleteOwnCompanyUsersAsync(companyUserIds, _iamUserId).ToListAsync().ConfigureAwait(false);
 
-        result.Should().HaveCount(companyUserIds.Length-1);
-        result.Should().Match(r => Enumerable.SequenceEqual(r,companyUserIds.Take(2).Concat(companyUserIds.Skip(3))));
+        result.Should().HaveCount(companyUserIds.Length - 1);
+        result.Should().Match(r => Enumerable.SequenceEqual(r, companyUserIds.Take(2).Concat(companyUserIds.Skip(3))));
 
-        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length);
+        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._, A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length);
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length);
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length-1);
-        A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length-1);
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length - 1);
+        A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length - 1);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
 
         A.CallTo(() => _mockLogger.Log(LogLevel.Error, _error, $"Error while deleting companyUser {invalidUserId} from shared idp {sharedIdpAlias}")).MustHaveHappened();
@@ -1115,12 +1115,12 @@ public class UserBusinessLogicTests
         SetupFakesForUserDeletion();
 
         A.CallTo(() => _identityProviderRepository.GetSharedIdentityProviderIamAliasDataUntrackedAsync(A<string>._))
-            .Returns((null,_companyUserId));
+            .Returns((null, _companyUserId));
 
         var invalidUserId = _fixture.Create<Guid>();
         var invalidUserEntityId = _fixture.Create<string>();
 
-        var companyUserIds = new [] {
+        var companyUserIds = new[] {
             _fixture.Create<Guid>(),
             _fixture.Create<Guid>(),
             invalidUserId,
@@ -1150,17 +1150,17 @@ public class UserBusinessLogicTests
             _options
         );
 
-        var result = await sut.DeleteOwnCompanyUsersAsync(companyUserIds,_iamUserId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.DeleteOwnCompanyUsersAsync(companyUserIds, _iamUserId).ToListAsync().ConfigureAwait(false);
 
-        result.Should().HaveCount(companyUserIds.Length-1);
-        result.Should().Match(r => Enumerable.SequenceEqual(r,companyUserIds.Take(2).Concat(companyUserIds.Skip(3))));
+        result.Should().HaveCount(companyUserIds.Length - 1);
+        result.Should().Match(r => Enumerable.SequenceEqual(r, companyUserIds.Take(2).Concat(companyUserIds.Skip(3))));
 
-        A.CallTo(() => _provisioningManager.GetProviderUserIdForCentralUserIdAsync(A<string>._,A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._,A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.GetProviderUserIdForCentralUserIdAsync(A<string>._, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.DeleteSharedRealmUserAsync(A<string>._, A<string>._)).MustNotHaveHappened();
 
         A.CallTo(() => _provisioningManager.DeleteCentralRealmUserAsync(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length);
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid,Guid)>>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length-1);
-        A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length-1);
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length - 1);
+        A.CallTo(() => _userRepository.DeleteIamUser(A<string>._)).MustHaveHappenedANumberOfTimesMatching(n => n == companyUserIds.Length - 1);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
 
         A.CallTo(() => _mockLogger.Log(LogLevel.Error, _error, $"Error while deleting companyUser {invalidUserId}")).MustHaveHappened();
@@ -1182,15 +1182,15 @@ public class UserBusinessLogicTests
             .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyAppUserDetails>?)new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
-        
+
         // Act
         var results = await sut.GetOwnCompanyAppUsersAsync(
             appId,
-            iamUserId, 
+            iamUserId,
             0,
             10,
             new CompanyUserFilter(null, null, null, null, null)).ConfigureAwait(false);
-        
+
         // Assert
         results.Should().NotBeNull();
         results.Content.Should().HaveCount(5);
@@ -1208,24 +1208,24 @@ public class UserBusinessLogicTests
             .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyAppUserDetails>?)new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
-        
+
         // Act
         var results = await sut.GetOwnCompanyAppUsersAsync(
             appId,
-            iamUserId, 
+            iamUserId,
             1,
             3,
             new CompanyUserFilter(null, null, null, null, null)).ConfigureAwait(false);
-        
+
         // Assert
         results.Should().NotBeNull();
         results.Content.Should().HaveCount(2);
     }
 
     #endregion
-    
+
     #region DeleteOwnUserBusinessPartnerNumbers
-    
+
     [Fact]
     public async Task GetOwnCompanyAppUsersAsync_WithNonExistingCompanyUser_ThrowsNotFoundException()
     {
@@ -1237,10 +1237,10 @@ public class UserBusinessLogicTests
             .Returns(((string?, bool, bool))default);
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
-        
+
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Contain("does not exist");
@@ -1257,10 +1257,10 @@ public class UserBusinessLogicTests
             .Returns((string.Empty, false, false));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
-        
+
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Contain("is not assigned to user");
@@ -1277,15 +1277,15 @@ public class UserBusinessLogicTests
             .Returns(((string?)null, true, false));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
-        
+
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Contain("is not associated with a user in keycloak");
     }
-    
+
     [Fact]
     public async Task GetOwnCompanyAppUsersAsync_WithInvalidUser_ThrowsForbiddenException()
     {
@@ -1297,10 +1297,10 @@ public class UserBusinessLogicTests
             .Returns((Guid.NewGuid().ToString(), true, false));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
-        
+
         // Act
         async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId).ConfigureAwait(false);
-        
+
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Contain("do not belong to same company");
@@ -1317,10 +1317,10 @@ public class UserBusinessLogicTests
             .Returns((Guid.NewGuid().ToString(), true, true));
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
         var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, null!, null!, A.Fake<IOptions<UserSettings>>());
-        
+
         // Act
         await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber, adminUserId).ConfigureAwait(false);
-        
+
         // Assert
         A.CallTo(() => _provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -1336,7 +1336,7 @@ public class UserBusinessLogicTests
         // Arrange
         var companyOwnUserDetails = _fixture.Create<CompanyOwnUserDetails>();
         var iamUserId = _fixture.Create<Guid>().ToString();
-        var userRoleIds = new [] { _fixture.Create<Guid>(), _fixture.Create<Guid>()};
+        var userRoleIds = new[] { _fixture.Create<Guid>(), _fixture.Create<Guid>() };
 
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IDictionary<string, IEnumerable<string>>>._))
             .Returns(userRoleIds.ToAsyncEnumerable());
@@ -1359,9 +1359,9 @@ public class UserBusinessLogicTests
     {
         // Arrange
         var iamUserId = _fixture.Create<Guid>().ToString();
-        
-        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamUserId,A<IEnumerable<Guid>>._))
-            .Returns((CompanyOwnUserDetails) default!);
+
+        A.CallTo(() => _userRepository.GetUserDetailsUntrackedAsync(iamUserId, A<IEnumerable<Guid>>._))
+            .Returns((CompanyOwnUserDetails)default!);
         var sut = new UserBusinessLogic(_provisioningManager, null!, null!, _portalRepositories, null!, _logger, _options);
 
         // Act
@@ -1387,10 +1387,10 @@ public class UserBusinessLogicTests
             A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
             A.CallTo(() => _userRepository.GetSharedIdentityProviderUserAccountDataUntrackedAsync(A<string>._)).Returns(_fixture.Create<(string? SharedIdpAlias, CompanyUserAccountData AccountData)>());
 
-            A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>._,A<string>._)).Returns((_fixture.Create<CompanyNameIdpAliasData>(),_fixture.Create<string>()));
+            A.CallTo(() => _userProvisioningService.GetCompanyNameIdpAliasData(A<Guid>._, A<string>._)).Returns((_fixture.Create<CompanyNameIdpAliasData>(), _fixture.Create<string>()));
         }
 
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._,A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._,A<CancellationToken>._))
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
             .ReturnsLazily((CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken cancellationToken) =>
                 userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
 
@@ -1426,16 +1426,16 @@ public class UserBusinessLogicTests
                 .With(x => x.CompanyUserId, _companyUserId)
                 .Create());
 
-        A.CallTo(() => _userRepository.GetCompanyUserAccountDataUntrackedAsync(A<IEnumerable<Guid>>._,A<Guid>._))
+        A.CallTo(() => _userRepository.GetCompanyUserAccountDataUntrackedAsync(A<IEnumerable<Guid>>._, A<Guid>._))
             .Returns(Enumerable.Empty<CompanyUserAccountData>().ToAsyncEnumerable());
-        A.CallTo(() => _userRepository.GetCompanyUserAccountDataUntrackedAsync(A<IEnumerable<Guid>>._,A<Guid>.That.IsEqualTo(_companyUserId)))
+        A.CallTo(() => _userRepository.GetCompanyUserAccountDataUntrackedAsync(A<IEnumerable<Guid>>._, A<Guid>.That.IsEqualTo(_companyUserId)))
             .ReturnsLazily((IEnumerable<Guid> companyUserIds, Guid adminId) =>
                 companyUserIds.Select(id => _fixture.Build<CompanyUserAccountData>().With(x => x.CompanyUserId, id).Create())
                     .Select(u => _companyUserSelectFunction(u))
                     .ToAsyncEnumerable());
 
-        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._,A<Action<CompanyUser>>._))
-            .Invokes(x => 
+        A.CallTo(() => _userRepository.AttachAndModifyCompanyUser(A<Guid>._, A<Action<CompanyUser>>._))
+            .Invokes(x =>
             {
                 var setOptionalParameters = x.Arguments.Get<Action<CompanyUser>>("setOptionalParameters");
                 setOptionalParameters!.Invoke(_companyUser);
@@ -1443,7 +1443,7 @@ public class UserBusinessLogicTests
 
         A.CallTo(() => _companyUserSelectFunction(A<CompanyUserAccountData>._)).ReturnsLazily((CompanyUserAccountData u) => u);
 
-        A.CallTo(() => _provisioningManager.GetProviderUserIdForCentralUserIdAsync(A<string>._,A<string>._)).Returns(_fixture.Create<string>());
+        A.CallTo(() => _provisioningManager.GetProviderUserIdForCentralUserIdAsync(A<string>._, A<string>._)).Returns(_fixture.Create<string>());
     }
 
     private void SetupFakesForUserRoleModification(List<Notification>? notifications = null)
@@ -1453,34 +1453,34 @@ public class UserBusinessLogicTests
         var buyerRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47662");
         var supplierRoleId = new Guid("9aae7a3b-b188-4a42-b46b-fb2ea5f47663");
         A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_validOfferId, _companyUserId, A<string>.That.Matches(x => x == _adminIamUser || x == _createdCentralUserId)))
-            .Returns(new OfferIamUserData(true, new [] { iamClientId }, _iamUserId, true, "The offer", "Tony", "Stark"));
+            .Returns(new OfferIamUserData(true, new[] { iamClientId }, _iamUserId, true, "The offer", "Tony", "Stark"));
         A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_offerWithoutNameId, _companyUserId, A<string>.That.Matches(x => x == _adminIamUser || x == _createdCentralUserId)))
-            .Returns(new OfferIamUserData(true, new [] { iamClientId }, _iamUserId, true, null, "Tony", "Stark"));
+            .Returns(new OfferIamUserData(true, new[] { iamClientId }, _iamUserId, true, null, "Tony", "Stark"));
         A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _validOfferId || x == _offerWithoutNameId), _companyUserId, _adminIamUser))
             .Returns(new OfferIamUserData(false, Enumerable.Empty<string>(), _iamUserId, true, null, "Tony", "Stark"));
         A.CallTo(() => _userRepository.GetAppAssignedIamClientUserDataUntrackedAsync(_validOfferId, A<Guid>.That.Not.Matches(x => x == _companyUserId), _adminIamUser))
-            .Returns(new OfferIamUserData(true, new [] { iamClientId }, _iamUserId, false, "The offer", "Tony", "Stark"));
+            .Returns(new OfferIamUserData(true, new[] { iamClientId }, _iamUserId, false, "The offer", "Tony", "Stark"));
 
         A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingAppRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
-            .Returns(new UserRoleModificationData []
+            .Returns(new UserRoleModificationData[]
             {
-                new("Existing Role", Guid.NewGuid(), false), 
-                new("Buyer", buyerRoleId, true), 
+                new("Existing Role", Guid.NewGuid(), false),
+                new("Buyer", buyerRoleId, true),
                 new("Company Admin", adminRoleId, true),
                 new("Supplier", supplierRoleId, false),
             }.ToAsyncEnumerable());
 
         A.CallTo(() => _userRolesRepository.GetAssignedAndMatchingCoreOfferRoles(A<Guid>._, A<IEnumerable<string>>._, A<Guid>._))
-            .Returns(new UserRoleModificationData []
+            .Returns(new UserRoleModificationData[]
             {
-                new("Existing Role", Guid.NewGuid(), false), 
-                new("Buyer", buyerRoleId, true), 
+                new("Existing Role", Guid.NewGuid(), false),
+                new("Buyer", buyerRoleId, true),
                 new("Company Admin", adminRoleId, true),
                 new("Supplier", supplierRoleId, false),
             }.ToAsyncEnumerable());
 
         A.CallTo(() => _userRepository.GetCoreOfferAssignedIamClientUserDataUntrackedAsync(A<Guid>.That.Matches(x => x == _validOfferId), A<Guid>.That.Matches(x => x == _companyUserId), A<string>.That.Matches(x => x == _adminIamUser || x == _createdCentralUserId)))
-            .Returns(new CoreOfferIamUserData(true, new [] { iamClientId }, _iamUserId, true, "Tony", "Stark"));
+            .Returns(new CoreOfferIamUserData(true, new[] { iamClientId }, _iamUserId, true, "Tony", "Stark"));
 
         A.CallTo(() => _userRolesRepository.CreateCompanyUserAssignedRole(A<Guid>._, A<Guid>._))
             .Invokes(x =>
@@ -1493,14 +1493,14 @@ public class UserBusinessLogicTests
             });
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
-            .Returns(new [] { (Client: iamClientId, Roles: new [] { "Existing Role", "Supplier" }.AsEnumerable()) }.ToAsyncEnumerable());
+            .Returns(new[] { (Client: iamClientId, Roles: new[] { "Existing Role", "Supplier" }.AsEnumerable()) }.ToAsyncEnumerable());
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>.That.Matches(x => x == _createdCentralUserId), A<IDictionary<string, IEnumerable<string>>>._))
-            .Returns(new [] { (Client: iamClientId, Roles: new [] { "Company Admin" }.AsEnumerable()) }.ToAsyncEnumerable());
+            .Returns(new[] { (Client: iamClientId, Roles: new[] { "Company Admin" }.AsEnumerable()) }.ToAsyncEnumerable());
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(
                 A<string>.That.Not.Matches(x => x == _createdCentralUserId || x == _iamUserId), A<IDictionary<string, IEnumerable<string>>>._))
-            .Returns(new [] { (Client: iamClientId, Roles: Enumerable.Empty<string>()) }.ToAsyncEnumerable());
+            .Returns(new[] { (Client: iamClientId, Roles: Enumerable.Empty<string>()) }.ToAsyncEnumerable());
 
         if (notifications != null)
         {
@@ -1517,14 +1517,14 @@ public class UserBusinessLogicTests
         _fixture.Inject(_provisioningManager);
     }
 
-    private UserCreationInfo CreateUserCreationInfo() => 
+    private UserCreationInfo CreateUserCreationInfo() =>
         _fixture.Build<UserCreationInfo>()
             .With(x => x.firstName, _fixture.CreateName())
             .With(x => x.lastName, _fixture.CreateName())
             .With(x => x.eMail, _fixture.CreateEmail())
             .Create();
 
-    private UserCreationInfoIdp CreateUserCreationInfoIdp() => 
+    private UserCreationInfoIdp CreateUserCreationInfoIdp() =>
         _fixture.Build<UserCreationInfoIdp>()
             .With(x => x.FirstName, _fixture.CreateName())
             .With(x => x.LastName, _fixture.CreateName())

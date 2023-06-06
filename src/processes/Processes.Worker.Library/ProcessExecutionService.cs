@@ -130,7 +130,7 @@ public class ProcessExecutionService
                     }
                     _logger.LogInformation("finished processing process {processId}", process.Id);
                 }
-                catch(Exception ex) when (ex is not SystemException)
+                catch (Exception ex) when (ex is not SystemException)
                 {
                     _logger.LogInformation(ex, "error processing process {processId} type {processType}: {message}", process.Id, process.ProcessTypeId, ex.Message);
                     executorRepositories.Clear();

@@ -29,4 +29,4 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="NotificationTypeId">The notifications type</param>
 /// <param name="IsRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
 /// <param name="DueDate">OPTIONAL: The notifications due date</param>
-public record NotificationCreationData(string? Content, NotificationTypeId  NotificationTypeId, bool IsRead, DateTimeOffset? DueDate = null);
+public record NotificationCreationData(string? Content, NotificationTypeId NotificationTypeId, bool IsRead, DateTimeOffset? DueDate = null);

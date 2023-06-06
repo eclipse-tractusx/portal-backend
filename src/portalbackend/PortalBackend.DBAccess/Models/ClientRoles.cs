@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
 {
     [Obsolete("only referenced by code that is marked as obsolte")]

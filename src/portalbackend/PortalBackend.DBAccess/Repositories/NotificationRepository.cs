@@ -70,7 +70,7 @@ public class NotificationRepository : INotificationRepository
         _dbContext.Remove(new Notification(notificationId, Guid.Empty, default, default, default)).Entity;
 
     /// <inheritdoc />
-    public Func<int,int,Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, NotificationSorting? sorting) =>
+    public Func<int, int, Task<Pagination.Source<NotificationDetailData>?>> GetAllNotificationDetailsByIamUserIdUntracked(string iamUserId, bool? isRead, NotificationTypeId? typeId, NotificationTopicId? topicId, bool onlyDueDate, NotificationSorting? sorting) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
@@ -79,7 +79,8 @@ public class NotificationRepository : INotificationRepository
                     notification.Receiver!.IamUser!.UserEntityId == iamUserId &&
                     (!isRead.HasValue || notification.IsRead == isRead.Value) &&
                     (!typeId.HasValue || notification.NotificationTypeId == typeId.Value) &&
-                    (!topicId.HasValue || notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId == topicId.Value))
+                    (!topicId.HasValue || notification.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId == topicId.Value) &&
+                    (!onlyDueDate || notification.DueDate.HasValue))
                 .GroupBy(notification => notification.ReceiverUserId),
             sorting switch
             {
@@ -87,7 +88,7 @@ public class NotificationRepository : INotificationRepository
                 NotificationSorting.DateDesc => (IEnumerable<Notification> notifications) => notifications.OrderByDescending(notification => notification.DateCreated),
                 NotificationSorting.ReadStatusAsc => (IEnumerable<Notification> notifications) => notifications.OrderBy(notification => notification.IsRead),
                 NotificationSorting.ReadStatusDesc => (IEnumerable<Notification> notifications) => notifications.OrderByDescending(notification => notification.IsRead),
-                _ => (Expression<Func<IEnumerable<Notification>,IOrderedEnumerable<Notification>>>?)null
+                _ => (Expression<Func<IEnumerable<Notification>, IOrderedEnumerable<Notification>>>?)null
             },
             notification => new NotificationDetailData(
                 notification.Id,
@@ -135,13 +136,13 @@ public class NotificationRepository : INotificationRepository
             .AsNoTracking()
             .Where(not => not.Receiver!.IamUser!.UserEntityId == iamUserId)
             .GroupBy(not => new { not.IsRead, not.Done, not.NotificationType!.NotificationTypeAssignedTopic!.NotificationTopicId },
-                (key, element) => new ValueTuple<bool, bool?, NotificationTopicId,int>(key.IsRead, key.Done, key.NotificationTopicId, element.Count()))
+                (key, element) => new ValueTuple<bool, bool?, NotificationTopicId, int>(key.IsRead, key.Done, key.NotificationTopicId, element.Count()))
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
     public IAsyncEnumerable<Guid> GetNotificationUpdateIds(IEnumerable<Guid> userRoleIds, IEnumerable<Guid>? companyUserIds, IEnumerable<NotificationTypeId> notificationTypeIds, Guid offerId) =>
         _dbContext.CompanyUsers
-            .Where(x => 
+            .Where(x =>
                 x.CompanyUserStatusId == CompanyUserStatusId.ACTIVE &&
                 (companyUserIds != null && companyUserIds.Any(cu => cu == x.Id)) || x.UserRoles.Any(ur => userRoleIds.Contains(ur.Id)))
             .SelectMany(x => x.Notifications

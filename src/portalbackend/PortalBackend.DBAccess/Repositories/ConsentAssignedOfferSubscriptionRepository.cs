@@ -35,7 +35,7 @@ public class ConsentAssignedOfferSubscriptionRepository : IConsentAssignedOfferS
     {
         _portalDbContext = portalDbContext;
     }
-    
+
     /// <summary>
     /// Creates a consent with the given data in the database.
     /// </summary>
@@ -52,6 +52,6 @@ public class ConsentAssignedOfferSubscriptionRepository : IConsentAssignedOfferS
             .Where(x =>
                 x.OfferSubscriptionId == offerSubscriptionId &&
                 agreementIds.Any(a => a == x.Consent!.AgreementId))
-            .Select(x => new ValueTuple<Guid,Guid,ConsentStatusId>(x.ConsentId, x.Consent!.AgreementId, x.Consent.ConsentStatusId))
+            .Select(x => new ValueTuple<Guid, Guid, ConsentStatusId>(x.ConsentId, x.Consent!.AgreementId, x.Consent.ConsentStatusId))
             .ToAsyncEnumerable();
 }

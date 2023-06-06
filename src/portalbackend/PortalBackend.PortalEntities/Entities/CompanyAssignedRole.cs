@@ -27,7 +27,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 [AuditEntityV1(typeof(AuditCompanyAssignedRole2023316))]
 public class CompanyAssignedRole : IAuditableV1
 {
-    private CompanyAssignedRole() {}
+    private CompanyAssignedRole() { }
 
     public CompanyAssignedRole(Guid companyId, CompanyRoleId companyRoleId)
     {

@@ -24,9 +24,9 @@
  * SOFTWARE.
  ********************************************************************************/
 
+using Newtonsoft.Json;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationPermissions;
-using Newtonsoft.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
@@ -45,7 +45,7 @@ public class Policy
     public PolicyType Type { get; set; }
 
     [JsonConverter(typeof(PolicyDecisionLogicConverter))]
-    public PolicyDecisionLogic Logic { get; set; } 
+    public PolicyDecisionLogic Logic { get; set; }
 
     [JsonConverter(typeof(DecisionStrategiesConverter))]
     public DecisionStrategy DecisionStrategy { get; set; }
@@ -69,7 +69,7 @@ public class RolePolicy
     public PolicyType Type { get; set; } = PolicyType.Role;
 
     [JsonConverter(typeof(PolicyDecisionLogicConverter))]
-    public PolicyDecisionLogic Logic { get; set; } 
+    public PolicyDecisionLogic Logic { get; set; }
 
     [JsonConverter(typeof(DecisionStrategiesConverter))]
     public DecisionStrategy DecisionStrategy { get; set; }

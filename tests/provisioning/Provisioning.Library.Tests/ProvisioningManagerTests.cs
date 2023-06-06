@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -108,12 +108,12 @@ public class ProvisioningManagerTests
         const string newClientId = "cl1";
         using var httpTest = new HttpTest();
         A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync()).ReturnsLazily(() => 1);
-        httpTest.WithAuthorization(CentralRealm)
+        httpTest.WithAuthorization()
             .WithCreateClient(newClientId)
-            .WithGetClientSecretAsync(newClientId, new Credentials {Value = "super-secret"});
-        
+            .WithGetClientSecretAsync(newClientId, new Credentials { Value = "super-secret" });
+
         // Act
-        await _sut.SetupClientAsync($"{url}/*", url, new []{ "adminRole" }).ConfigureAwait(false);
+        await _sut.SetupClientAsync($"{url}/*", url, new[] { "adminRole" }).ConfigureAwait(false);
 
         // Assert
         httpTest.ShouldHaveCalled($"{CentralUrl}/auth/admin/realms/test/clients/{newClientId}/protocol-mappers/models")
@@ -131,9 +131,9 @@ public class ProvisioningManagerTests
         const string userId = "userid";
         const string newClientId = "client1";
         using var httpTest = new HttpTest();
-        httpTest.WithAuthorization(CentralRealm)
+        httpTest.WithAuthorization()
             .WithCreateClient(newClientId)
-            .WithGetUserForServiceAccount(newClientId, new User{ Id = userId })
+            .WithGetUserForServiceAccount(newClientId, new User { Id = userId })
             .WithGetRoleByNameAsync(newClientId, "create-realm", new Role())
             .WithGetClientSecretAsync(newClientId, new Credentials { Value = "super-secret" })
             .WithGetOpenIdConfigurationAsync(new OpenIDConfiguration
@@ -145,7 +145,7 @@ public class ProvisioningManagerTests
                 Issuer = new Uri("https://test.com/issuer")
             })
             .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider { Config = new Config() });
-        
+
         // Act
         await _sut.SetupSharedIdpAsync(ValidClientName, OrgName, LoginTheme).ConfigureAwait(false);
 
@@ -176,15 +176,15 @@ public class ProvisioningManagerTests
         // Arrange
         const string id = "123";
         using var httpTest = new HttpTest();
-        httpTest.WithAuthorization(CentralRealm)
+        httpTest.WithAuthorization()
             .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider { DisplayName = "test", Config = new Config() })
-            .WithGetClientsAsync("master", new []{new Client{ Id = id ,ClientId = "savalid" }})
+            .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = "savalid" } })
             .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
-        
+
         // Act
         await _sut.UpdateSharedIdentityProviderAsync(ValidClientName, "displayName").ConfigureAwait(false);
-        
+
         // Arrange
         httpTest.ShouldHaveCalled($"{SharedUrl}/auth/admin/realms/{ValidClientName}")
             .WithVerb(HttpMethod.Put)
@@ -193,22 +193,22 @@ public class ProvisioningManagerTests
             .WithVerb(HttpMethod.Put)
             .Times(1);
     }
-    
+
     [Fact]
     public async Task UpdateSharedRealmTheme_CallsExpected()
     {
         // Arrange
         const string id = "123";
         using var httpTest = new HttpTest();
-        httpTest.WithAuthorization(CentralRealm)
+        httpTest.WithAuthorization()
             .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider { DisplayName = "test", Config = new Config() })
-            .WithGetClientsAsync("master", new []{new Client{ Id = id ,ClientId = "savalid" }})
+            .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = "savalid" } })
             .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
-        
+
         // Act
         await _sut.UpdateSharedRealmTheme(ValidClientName, "new-theme").ConfigureAwait(false);
-        
+
         // Arrange
         httpTest.ShouldHaveCalled($"{SharedUrl}/auth/admin/realms/{ValidClientName}")
             .WithVerb(HttpMethod.Put)

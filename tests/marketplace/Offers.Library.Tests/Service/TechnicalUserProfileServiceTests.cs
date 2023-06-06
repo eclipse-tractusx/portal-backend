@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -55,8 +55,8 @@ public class TechnicalUserProfileServiceTests
     {
         // Arrange
         A.CallTo(() => _offerRepository.GetServiceAccountProfileData(_offerId, A<OfferTypeId>._))
-            .Returns(((bool,IEnumerable<IEnumerable<UserRoleData>>,string?))default);
-        
+            .Returns(((bool, IEnumerable<IEnumerable<UserRoleData>>, string?))default);
+
         // Act
         async Task Act() => await _sut.GetTechnicalUserProfilesForOffer(_offerId, OfferTypeId.APP).ConfigureAwait(false);
 
@@ -64,14 +64,14 @@ public class TechnicalUserProfileServiceTests
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"Offer APP {_offerId} does not exists");
     }
-    
+
     [Fact]
     public async Task GetTechnicalUserProfilesForOffer_WithoutOfferName_ThrowsException()
     {
         // Arrange
         A.CallTo(() => _offerRepository.GetServiceAccountProfileData(_offerId, A<OfferTypeId>._))
             .Returns((true, Enumerable.Empty<IEnumerable<UserRoleData>>(), null));
-        
+
         // Act
         async Task Act() => await _sut.GetTechnicalUserProfilesForOffer(_offerId, OfferTypeId.APP).ConfigureAwait(false);
 
@@ -79,26 +79,26 @@ public class TechnicalUserProfileServiceTests
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("Offer name needs to be set here");
     }
-    
+
     [Fact]
     public async Task GetTechnicalUserProfilesForOffer_WithWithoutTechnicalUserNeededAndSingleInstance_ReturnsExpected()
     {
         // Arrange
         A.CallTo(() => _offerRepository.GetServiceAccountProfileData(_offerId, A<OfferTypeId>._))
             .Returns((false, Enumerable.Empty<IEnumerable<UserRoleData>>(), OfferName));
-        
+
         // Act
         var result = await _sut.GetTechnicalUserProfilesForOffer(_offerId, OfferTypeId.APP).ConfigureAwait(false);
-        
+
         // Assert
         result.Should().BeEmpty();
     }
-    
+
     [Fact]
     public async Task GetTechnicalUserProfilesForOffer_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var serviceProfiles = new IEnumerable<UserRoleData> [] {
+        var serviceProfiles = new IEnumerable<UserRoleData>[] {
             new UserRoleData [] { new (Guid.NewGuid(), "cl1", "test role") }
         };
         A.CallTo(() => _offerRepository.GetServiceAccountProfileData(_offerId, A<OfferTypeId>._))
@@ -106,7 +106,7 @@ public class TechnicalUserProfileServiceTests
 
         // Act
         var result = await _sut.GetTechnicalUserProfilesForOffer(_offerId, OfferTypeId.APP).ConfigureAwait(false);
-        
+
         // Assert
         result.Should().HaveCount(1);
     }
@@ -117,7 +117,7 @@ public class TechnicalUserProfileServiceTests
         // Arrange
         A.CallTo(() => _offerRepository.GetServiceAccountProfileDataForSubscription(_offerSubscriptionId))
             .Returns((true, Enumerable.Empty<IEnumerable<UserRoleData>>(), (string?)null));
-        
+
         // Act
         async Task Act() => await _sut.GetTechnicalUserProfilesForOfferSubscription(_offerSubscriptionId).ConfigureAwait(false);
 
@@ -125,26 +125,26 @@ public class TechnicalUserProfileServiceTests
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("Offer name needs to be set here");
     }
-    
+
     [Fact]
     public async Task GetTechnicalUserProfilesForOfferSubscription_WithWithoutTechnicalUserNeededAndSingleInstance_ReturnsExpected()
     {
         // Arrange
         A.CallTo(() => _offerRepository.GetServiceAccountProfileDataForSubscription(_offerSubscriptionId))
             .Returns((false, Enumerable.Empty<IEnumerable<UserRoleData>>(), OfferName));
-        
+
         // Act
         var result = await _sut.GetTechnicalUserProfilesForOfferSubscription(_offerSubscriptionId).ConfigureAwait(false);
-        
+
         // Assert
         result.Should().BeEmpty();
     }
-    
+
     [Fact]
     public async Task GetTechnicalUserProfilesForOfferSubscription_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var serviceProfiles = new IEnumerable<UserRoleData> [] {
+        var serviceProfiles = new IEnumerable<UserRoleData>[] {
             new UserRoleData [] { new (Guid.NewGuid(), "cl1", "test role") }
         };
         A.CallTo(() => _offerRepository.GetServiceAccountProfileDataForSubscription(_offerSubscriptionId))
@@ -152,7 +152,7 @@ public class TechnicalUserProfileServiceTests
 
         // Act
         var result = await _sut.GetTechnicalUserProfilesForOfferSubscription(_offerSubscriptionId).ConfigureAwait(false);
-        
+
         // Assert
         result.Should().HaveCount(1);
     }

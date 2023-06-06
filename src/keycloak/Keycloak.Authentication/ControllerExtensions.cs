@@ -47,7 +47,7 @@ public static class ControllerExtensions
         var bearer = controller.GetBearerToken();
         return tokenConsumingFunction(bearer);
     }
-    
+
     public static T WithIamUserAndBearerToken<T>(this ControllerBase controller, Func<(string iamUserId, string bearerToken), T> tokenConsumingFunction)
     {
         var bearerToken = controller.GetBearerToken();

@@ -24,12 +24,12 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Extensions;
 using Flurl;
 using Flurl.Http;
 using Flurl.Http.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 

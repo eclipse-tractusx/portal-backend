@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -31,7 +31,7 @@ public class ApplicationChecklistEntry
         ApplicationChecklistEntryStatusId = applicationChecklistEntryStatusId;
         DateCreated = dateCreated;
     }
-    
+
     public Guid ApplicationId { get; private set; }
 
     public DateTimeOffset DateCreated { get; private set; }

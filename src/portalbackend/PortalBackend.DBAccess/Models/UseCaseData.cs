@@ -35,9 +35,9 @@ public class UseCaseData
     /// <param name="shortName">ShortName</param>
     public UseCaseData(Guid id, string name, string shortName)
     {
-         Id = id;
-         Name = name;
-         ShortName = shortName;
+        Id = id;
+        Name = name;
+        ShortName = shortName;
     }
 
     /// <summary>
@@ -46,19 +46,18 @@ public class UseCaseData
     /// <value></value>
     [JsonPropertyName("useCaseId")]
     public Guid Id { get; private set; }
-    
+
     /// <summary>
     /// Name of Use Case
     /// </summary>
     /// <value></value>
     [JsonPropertyName("name")]
     public string Name { get; set; }
-    
+
     /// <summary>
     /// ShortName of Use Case
     /// </summary>
     /// <value></value>
     [JsonPropertyName("shortname")]
     public string ShortName { get; set; }
-    
 }

@@ -19,10 +19,10 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
@@ -43,7 +43,7 @@ public interface IServiceReleaseBusinessLogic
     /// <param name="serviceId"></param>
     /// <returns></returns>
     Task<ServiceData> GetServiceDetailsByIdAsync(Guid serviceId);
-    
+
     /// <summary>
     /// Retrieve Service Type Data
     /// </summary>
@@ -84,7 +84,7 @@ public interface IServiceReleaseBusinessLogic
     /// <param name="languageShortName"></param>
     /// <param name="statusId"></param>
     Task<Pagination.Response<InReviewServiceData>> GetAllInReviewStatusServiceAsync(int page, int size, OfferSorting? sorting, string? serviceName, string? languageShortName, ServiceReleaseStatusIdFilter? statusId);
-    
+
     /// <summary>
     /// Creates a new service offering
     /// </summary>
@@ -150,7 +150,7 @@ public interface IServiceReleaseBusinessLogic
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>AsyncEnumerable with the technical user profile information</returns>
     Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId);
-    
+
     /// <summary>
     /// Creates or updates the technical user profiles
     /// </summary>

@@ -24,11 +24,11 @@
  * SOFTWARE.
  ********************************************************************************/
 
+using Flurl.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Groups;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
-using Flurl.Http;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
@@ -138,7 +138,7 @@ public partial class KeycloakClient
             .ReceiveJson<ManagementPermission>()
             .ConfigureAwait(false);
 
-    public async Task<IEnumerable<User>> GetGroupUsersAsync(string realm, string groupId, int? first = null, int? max = null) 
+    public async Task<IEnumerable<User>> GetGroupUsersAsync(string realm, string groupId, int? first = null, int? max = null)
     {
         var queryParams = new Dictionary<string, object?>
         {

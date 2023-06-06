@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class OfferAssignedDocument
 {
-    private OfferAssignedDocument() {}
+    private OfferAssignedDocument() { }
 
     public OfferAssignedDocument(Guid offerId, Guid documentId)
     {

@@ -101,7 +101,7 @@ public class BPNAccessTest
 
         var json = "{\"bankAccounts\": [{\"currency\": {\"name\": \"string\", \"technicalKey\": \"UNDEFINED\"}, \"internationalBankAccountIdentifier\": \"string\", \"internationalBankIdentifier\": \"string\", \"nationalBankAccountIdentifier\": \"string\", \"nationalBankIdentifier\": \"string\", \"trustScores\": [0]}], \"bpn\": \"string\", \"currentness\": \"2023-01-18T12:52:41.710Z\", \"identifiers\": [{\"issuingBody\": {\"name\": \"string\", \"technicalKey\": \"string\", \"url\": \"string\"}, \"status\": {\"name\": \"string\", \"technicalKey\": \"string\"}, \"type\": {\"name\": \"string\", \"technicalKey\": \"string\", \"url\": \"string\"}, \"value\": \"string\"}], \"legalForm\": {\"categories\": [{\"name\": \"string\", \"url\": \"string\"}], \"language\": {\"name\": \"string\", \"technicalKey\": \"undefined\"}, \"mainAbbreviation\": \"string\", \"name\": \"string\", \"technicalKey\": \"string\", \"url\": \"string\"}, \"names\": [{\"language\": {\"name\": \"string\", \"technicalKey\": \"undefined\"}, \"shortName\": \"string\", \"type\": {\"name\": \"string\", \"technicalKey\": \"ACRONYM\", \"url\": \"string\"}, \"value\": \"string\"}], \"profileClassifications\": [{\"code\": \"string\", \"type\": {\"name\": \"string\", \"url\": \"string\"}, \"value\": \"string\"}], \"relations\": [{\"endedAt\": \"2023-01-18T12:52:41.710Z\", \"endNode\": \"string\", \"relationClass\": {\"name\": \"string\", \"technicalKey\": \"CDQ_HIERARCHY\"}, \"startedAt\": \"2023-01-18T12:52:41.710Z\", \"startNode\": \"string\", \"type\": {\"name\": \"string\", \"technicalKey\": \"CX_LEGAL_SUCCESSOR_OF\"}}], \"roles\": [{\"name\": \"string\", \"technicalKey\": \"string\"}], \"status\": {\"officialDenotation\": \"string\", \"type\": {\"name\": \"string\", \"technicalKey\": \"ACTIVE\", \"url\": \"string\"}, \"validFrom\": \"2023-01-18T12:52:41.709Z\", \"validUntil\": \"2023-01-18T12:52:41.709Z\"}, \"types\": [{\"name\": \"string\", \"technicalKey\": \"BRAND\", \"url\": \"string\"}]}";
 
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage 
+        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
@@ -110,7 +110,7 @@ public class BPNAccessTest
         var businessPartnerNumber = _fixture.Create<string>();
         var httpClient = _fixture.Create<HttpClient>();
         var sut = _fixture.Create<BpnAccess>();
-        
+
         //Act
         var result = await sut.FetchLegalEntityByBpn(businessPartnerNumber, _fixture.Create<string>(), CancellationToken.None);
 
@@ -135,7 +135,7 @@ public class BPNAccessTest
     {
         //Arrange
         var json = _fixture.Create<string>();
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage 
+        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
@@ -159,7 +159,7 @@ public class BPNAccessTest
     {
         //Arrange
         var json = "";
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage 
+        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
@@ -182,7 +182,7 @@ public class BPNAccessTest
     public async Task FetchLegalEntityByBpn_NoContentResponse_Throws()
     {
         //Arrange
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage 
+        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
         });
@@ -205,7 +205,7 @@ public class BPNAccessTest
     {
         //Arrange
         var json = "{\"some\": [{\"other\": \"json\"}]}";
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage 
+        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
@@ -229,7 +229,7 @@ public class BPNAccessTest
     {
         //Arrange
         var json = _fixture.Create<string>();
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage 
+        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.BadRequest,
             Content = new StringContent(json)
@@ -247,7 +247,7 @@ public class BPNAccessTest
         result.Message.Should().Be($"Access to external system bpdm failed with Status Code {HttpStatusCode.BadRequest}");
     }
 
-    #endregion        
+    #endregion
 
     #region FetchLegalEntityAddressByBpn
 
@@ -259,7 +259,7 @@ public class BPNAccessTest
 
         var json = "[{\"legalAddress\": {\"administrativeAreas\": [], \"careOf\": null, \"contexts\": [], \"country\": {\"name\": \"Germany\", \"technicalKey\": \"DE\"}, \"geographicCoordinates\": null, \"localities\": [{\"language\": {\"name\": \"English\", \"technicalKey\": \"en\"}, \"shortName\": null, \"type\": {\"name\": \"Other\", \"technicalKey\": \"OTHER\", \"url\": \"\"}, \"value\": \"Bremen\"}], \"postalDeliveryPoints\": [], \"postCodes\": [{\"type\": {\"name\": \"Other type\", \"technicalKey\": \"OTHER\", \"url\": \"\"}, \"value\": \"28777\"}], \"premises\": [], \"thoroughfares\": [{\"direction\": null, \"language\": {\"name\": \"English\", \"technicalKey\": \"en\"}, \"name\": null, \"number\": \"30\", \"shortName\": null, \"type\": {\"name\": \"Other type\", \"technicalKey\": \"OTHER\", \"url\": \"\"}, \"value\": \"Heidlerchenstr.\"}], \"types\": [], \"version\": {\"characterSet\": {\"name\": \"Latin\", \"technicalKey\": \"LATIN\"}, \"language\": {\"name\": \"English\", \"technicalKey\": \"en\"}}}, \"legalEntity\": \"BPNL000000055EPN\"}]";
 
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage 
+        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
@@ -268,7 +268,7 @@ public class BPNAccessTest
         var businessPartnerNumber = "BPNL000000055EPN";
         var httpClient = _fixture.Create<HttpClient>();
         var sut = _fixture.Create<BpnAccess>();
-        
+
         //Act
         var result = await sut.FetchLegalEntityAddressByBpn(businessPartnerNumber, _fixture.Create<string>(), CancellationToken.None).ToListAsync().ConfigureAwait(false);
 
@@ -306,7 +306,7 @@ public class BPNAccessTest
     {
         //Arrange
         var json = _fixture.Create<string>();
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage 
+        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
@@ -330,7 +330,7 @@ public class BPNAccessTest
     {
         //Arrange
         var json = "[{\"some\": [{\"other\": \"json\"}]}]";
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage 
+        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
@@ -354,7 +354,7 @@ public class BPNAccessTest
     {
         //Arrange
         var json = _fixture.Create<string>();
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage 
+        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.BadRequest,
             Content = new StringContent(json)

@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -42,7 +42,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 /// </summary>
 public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 {
-    private static readonly JsonSerializerOptions Options = new (){ PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly IPortalRepositories _portalRepositories;
     private readonly AppsSettings _settings;
     private readonly INotificationService _notificationService;
@@ -80,7 +80,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         {
             throw new NotFoundException($"app {appId} does not exist");
         }
-       
+
         if (result.CompanyUserId == Guid.Empty)
         {
             throw new ForbiddenException($"user {iamUserId} is not a member of the provider company of app {appId}");
@@ -111,11 +111,11 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
     /// <inheritdoc />
     public async Task<IEnumerable<LocalizedDescription>> GetAppUpdateDescriptionByIdAsync(Guid appId, string iamUserId)
-    {        
+    {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        return await ValidateAndGetAppDescription(appId, iamUserId, offerRepository);        
+        return await ValidateAndGetAppDescription(appId, iamUserId, offerRepository);
     }
-    
+
     /// <inheritdoc />
     public async Task CreateOrUpdateAppDescriptionByIdAsync(Guid appId, string iamUserId, IEnumerable<LocalizedDescription> offerDescriptionDatas)
     {
@@ -123,7 +123,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         offerRepository.CreateUpdateDeleteOfferDescriptions(appId,
             await ValidateAndGetAppDescription(appId, iamUserId, offerRepository),
-            offerDescriptionDatas.Select(od => new ValueTuple<string,string, string>(od.LanguageCode,od.LongDescription,od.ShortDescription)));
+            offerDescriptionDatas.Select(od => new ValueTuple<string, string, string>(od.LanguageCode, od.LongDescription, od.ShortDescription)));
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
@@ -154,10 +154,10 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         return result.OfferDescriptionDatas;
     }
 
-  /// <inheritdoc />
+    /// <inheritdoc />
     public async Task UploadOfferAssignedAppLeadImageDocumentByIdAsync(Guid appId, string iamUserId, IFormFile document, CancellationToken cancellationToken)
     {
-        var appLeadImageContentTypes = new []{ MediaTypeId.JPEG, MediaTypeId.PNG };
+        var appLeadImageContentTypes = new[] { MediaTypeId.JPEG, MediaTypeId.PNG };
         var documentContentType = ContentTypeMapperExtensions.ParseMediaTypeId(document.ContentType);
         if (!appLeadImageContentTypes.Contains(documentContentType))
         {
@@ -167,7 +167,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var result = await offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP).ConfigureAwait(false);
 
-        if(result == default)
+        if (result == default)
         {
             throw new NotFoundException($"App {appId} does not exist.");
         }
@@ -239,7 +239,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         if (url == detailData.SubscriptionUrl)
             return;
-        
+
         offerSubscriptionsRepository.AttachAndModifyAppSubscriptionDetail(detailData.DetailId, subscriptionId,
             os =>
             {
@@ -272,7 +272,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         }
         else
         {
-            await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, new (string?,NotificationTypeId)[] {(notificationContent, NotificationTypeId.SUBSCRIPTION_URL_UPDATE)}, subscribingCompanyId).AwaitAll().ConfigureAwait(false);
+            await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, new (string?, NotificationTypeId)[] { (notificationContent, NotificationTypeId.SUBSCRIPTION_URL_UPDATE) }, subscribingCompanyId).AwaitAll().ConfigureAwait(false);
         }
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

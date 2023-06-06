@@ -34,7 +34,7 @@ public interface IAppInstanceRepository
     /// <param name="iamClientId">Id of the iam client</param>
     /// <returns>The created App Instance</returns>
     AppInstance CreateAppInstance(Guid appId, Guid iamClientId);
-    
+
     /// <summary>
     /// Removes the app instance
     /// </summary>
@@ -42,7 +42,7 @@ public interface IAppInstanceRepository
     void RemoveAppInstance(Guid appInstanceId);
 
     void CreateAppInstanceAssignedServiceAccounts(IEnumerable<(Guid AppInstanceId, Guid CompanyServiceAccountId)> instanceAccounts);
-    
+
     /// <summary>
     /// Checks whether there is already an app instance for the given offer
     /// </summary>

@@ -19,9 +19,9 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
@@ -41,7 +41,7 @@ public partial class ProvisioningManager
         var unassignedClientRoles = config.ClientRoles
             .Select(clientRoles => (client: clientRoles.Key, roles: clientRoles.Value.Except(assignedRoles[clientRoles.Key])))
             .Where(clientRoles => clientRoles.roles.Any());
- 
+
         if (unassignedClientRoles.Any())
         {
             throw new KeycloakNoSuccessException($"inconsistend data. roles were not assigned in keycloak: {string.Join(", ", unassignedClientRoles.Select(clientRoles => $"client: {clientRoles.client}, roles: [{string.Join(", ", clientRoles.roles)}]"))}");
@@ -64,7 +64,7 @@ public partial class ProvisioningManager
         await sharedIdp.AddRealmRoleMappingsToUserAsync("master", serviceAccountUser.Id, Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(false);
 
         var credentials = await sharedIdp.GetClientSecretAsync("master", internalClientId).ConfigureAwait(false);
-        return new ValueTuple<string,string>(clientId, credentials.Value);
+        return new ValueTuple<string, string>(clientId, credentials.Value);
     }
 
     private async Task<(string ClientId, string Secret)> GetSharedIdpServiceAccountSecretAsync(string realm)
@@ -73,7 +73,7 @@ public partial class ProvisioningManager
         var sharedIdp = _Factory.CreateKeycloakClient("shared");
         var internalClientId = await GetInternalClientIdOfSharedIdpServiceAccount(sharedIdp, clientId).ConfigureAwait(false);
         var credentials = await sharedIdp.GetClientSecretAsync("master", internalClientId).ConfigureAwait(false);
-        return new ValueTuple<string,string>(clientId, credentials.Value);
+        return new ValueTuple<string, string>(clientId, credentials.Value);
     }
 
     private async Task DeleteSharedIdpServiceAccountAsync(KeycloakClient keycloak, string realm)

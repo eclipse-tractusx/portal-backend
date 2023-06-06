@@ -18,8 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
@@ -28,6 +26,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.TestSeeds;
 using Xunit;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -46,7 +46,7 @@ public class TestDbFixture : IAsyncLifetime
                 Database = "test_db",
                 Username = "postgres",
                 Password = "postgres",
-                Environments = { {"Include Error Detail", "true"} }
+                Environments = { { "Include Error Detail", "true" } }
             })
             .WithImage("postgres")
             .WithCleanUp(true)
@@ -66,7 +66,7 @@ public class TestDbFixture : IAsyncLifetime
     public async Task<PortalDbContext> GetPortalDbContext(params Action<PortalDbContext>[] seedActions)
     {
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
-        
+
         optionsBuilder.UseNpgsql(
             _container.ConnectionString,
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)
@@ -90,9 +90,9 @@ public class TestDbFixture : IAsyncLifetime
     {
         await _container.StartAsync()
             .ConfigureAwait(false);
-        
+
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
-        
+
         optionsBuilder.UseNpgsql(
             _container.ConnectionString,
             x => x.MigrationsAssembly(typeof(BatchInsertSeeder).Assembly.GetName().Name)

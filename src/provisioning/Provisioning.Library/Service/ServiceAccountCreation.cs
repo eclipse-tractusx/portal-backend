@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -95,13 +95,13 @@ public class ServiceAccountCreation : IServiceAccountCreation
                     .ToDictionary(group =>
                             group.Key,
                         group => group.Select(userRole => userRole.UserRoleText)))).ConfigureAwait(false);
-        
+
         if (bpns.Any())
         {
             await _provisioningManager.AddBpnAttributetoUserAsync(serviceAccountData.UserEntityId, bpns).ConfigureAwait(false);
             await _provisioningManager.AddProtocolMapperAsync(serviceAccountData.InternalClientId).ConfigureAwait(false);
         }
-        
+
         var serviceAccount = serviceAccountsRepository.CreateCompanyServiceAccount(
             companyId,
             CompanyServiceAccountStatusId.ACTIVE,
@@ -120,7 +120,7 @@ public class ServiceAccountCreation : IServiceAccountCreation
 
         return (clientId, serviceAccountData, serviceAccount.Id, userRoleData);
     }
-    
+
     private async Task<string> GetNextServiceAccountClientIdWithIdAsync()
     {
         var id = await _provisioningDbAccess.GetNextClientSequenceAsync().ConfigureAwait(false);
