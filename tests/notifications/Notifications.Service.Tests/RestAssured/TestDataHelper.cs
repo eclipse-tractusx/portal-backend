@@ -4,20 +4,27 @@ using Castle.Core.Internal;
 
 namespace Notifications.Service.Tests.RestAssured;
 
-public class TestDataHelper
+public static class TestDataHelper
 {
-    private const string _testDataDirectory = "..\\..\\..\\..\\..\\shared\\Tests.Shared\\RestAssured\\TestData";
-    
-    
-    public List<TestDataModel>? GetTestData()
+    private static readonly string TestDataDirectory = ".." + Path.DirectorySeparatorChar + ".." +
+                                              Path.DirectorySeparatorChar + ".." +
+                                              Path.DirectorySeparatorChar + ".." +
+                                              Path.DirectorySeparatorChar + ".." +
+                                              Path.DirectorySeparatorChar + "shared" +
+                                              Path.DirectorySeparatorChar + "Tests.Shared" +
+                                              Path.DirectorySeparatorChar + "RestAssured" +
+                                              Path.DirectorySeparatorChar + "TestData";
+
+
+    public static List<TestDataModel>? GetTestData()
     {
-        var filePath = Path.Combine(_testDataDirectory, "HappyPathModifyCoreUserRoles.json");
+        var filePath = Path.Combine(TestDataDirectory, "HappyPathModifyCoreUserRoles.json");
         var jsonData = File.ReadAllText(filePath);
         var testData = JsonSerializer.Deserialize<List<Dictionary<string, Object>>>(jsonData);
         return testData.IsNullOrEmpty() ? null : FetchTestData(testData);
     }
-    
-    private List<TestDataModel> FetchTestData(List<Dictionary<string, Object>> testData)
+
+    private static List<TestDataModel> FetchTestData(List<Dictionary<string, Object>> testData)
     {
         var testDataSet = new List<TestDataModel>();
         foreach (var obj in testData)
@@ -35,11 +42,14 @@ public class TestDataHelper
                         break;
                 }
             }
+
             testDataSet.Add(new TestDataModel(rolesToAssign, rolesToUnassign));
         }
+
         return testDataSet;
     }
-    private T? DeserializeData<T>(string jsonString)
+
+    private static T? DeserializeData<T>(string jsonString)
     {
         var options = new JsonSerializerOptions
         {

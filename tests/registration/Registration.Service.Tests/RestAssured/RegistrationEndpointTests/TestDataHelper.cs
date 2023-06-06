@@ -7,7 +7,6 @@ namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
 
 public static class TestDataHelper
 {
-    // private const string TestDataDirectory = "..\\..\\..\\..\\..\\shared\\Tests.Shared\\RestAssured\\TestData";
     private static readonly string TestDataDirectory = ".." + Path.DirectorySeparatorChar + ".." +
                                                        Path.DirectorySeparatorChar + ".." +
                                                        Path.DirectorySeparatorChar + ".." +
