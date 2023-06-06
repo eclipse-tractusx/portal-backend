@@ -24,8 +24,8 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.UserStorageProvider;
 using Flurl.Http;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.UserStorageProvider;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 

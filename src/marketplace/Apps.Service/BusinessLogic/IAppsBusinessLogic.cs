@@ -79,8 +79,10 @@ public interface IAppsBusinessLogic
     /// Retrieves subscription statuses of subscribed apps of the provided user's company.
     /// </summary>
     /// <param name="iamUserId">IAM ID of the user to retrieve app subscription statuses for.</param>
-    /// <returns>Async enumerable of user's company's subscribed apps' statuses.</returns>
-    public IAsyncEnumerable<AppWithSubscriptionStatus> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(string iamUserId);
+    /// <param name ="page">page</param>
+    /// <param name ="size">size</param>
+    /// <returns>Returns the details of the subscription status for App user</returns>
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync(int page, int size, string iamUserId);
 
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the provided user's company.
@@ -109,6 +111,7 @@ public interface IAppsBusinessLogic
     /// <param name="appId">ID of the pending app to be activated.</param>
     /// <param name="subscribingCompanyId">ID of the company subscribing the app.</param>
     /// <param name="iamUserId">IAM ID of the user requesting the activation.</param>
+    [Obsolete("This Method is not used anymore")]
     public Task ActivateOwnCompanyProvidedAppSubscriptionAsync(Guid appId, Guid subscribingCompanyId, string iamUserId);
 
     /// <summary>
@@ -134,6 +137,14 @@ public interface IAppsBusinessLogic
     Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, string iamUserId);
 
     /// <summary>
+    /// Starts the auto setup process.
+    /// </summary>
+    /// <param name="data">The offer subscription id and url for the service</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the response data</returns>
+    Task StartAutoSetupAsync(OfferAutoSetupData data, string iamUserId);
+
+    /// <summary>
     /// Gets the app agreement data
     /// </summary>
     /// <param name="appId">Id of the app to get the agreements for</param>
@@ -157,7 +168,7 @@ public interface IAppsBusinessLogic
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the details of the subscription</returns>
     Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid appId, Guid subscriptionId, string iamUserId);
-    
+
     /// <summary>
     /// Gets the information for the subscription
     /// </summary>

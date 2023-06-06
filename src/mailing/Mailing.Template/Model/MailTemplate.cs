@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Model
             Subject = subject;
             Body = body;
         }
-        
+
         public string Id { get; }
         public string Subject { get; }
         public string Body { get; }

@@ -18,11 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests;
 
@@ -37,7 +37,7 @@ public class FakePolicyEvaluator : IPolicyEvaluator
             new Claim(ClaimTypes.Role, "Administrator"),
             new Claim(ClaimTypes.NameIdentifier, "John")
         }, testScheme));
-        
+
         return await Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal,
             new AuthenticationProperties(), testScheme)));
     }

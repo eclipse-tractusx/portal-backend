@@ -33,7 +33,7 @@ public static class ProvisioningDBAccessStartupServiceExtensions
             .AddDbContext<ProvisioningDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("ProvisioningDB")))
             .AddHealthChecks()
-            .AddDbContextCheck<ProvisioningDbContext>("ProvisioningDbContext", tags: new [] { "provisioningdb" });
+            .AddDbContextCheck<ProvisioningDbContext>("ProvisioningDbContext", tags: new[] { "provisioningdb" });
         return services;
     }
 }

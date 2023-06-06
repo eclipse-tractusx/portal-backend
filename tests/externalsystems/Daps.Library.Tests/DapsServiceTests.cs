@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -18,18 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Daps.Library.Tests;
 
 public class DapsServiceTests
 {
     #region Initialization
-    
+
     private readonly ITokenService _tokenService;
     private readonly IOptions<DapsSettings> _options;
 
@@ -55,9 +55,9 @@ public class DapsServiceTests
     }
 
     #endregion
-    
+
     #region EnableDapsAuth
-    
+
     [Fact]
     public async Task EnableDapsAuthAsync_WithValidCall_ReturnsExpected()
     {
@@ -118,7 +118,7 @@ public class DapsServiceTests
         var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
 
         var httpMessageHandlerMock =
-            new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex:  new HttpRequestException ("DNS Error"));
+            new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException("DNS Error"));
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
@@ -144,7 +144,7 @@ public class DapsServiceTests
         var file = FormFileHelper.GetFormFile("Content of the super secure certificate", "test.pem", "application/x-pem-file");
 
         var httpMessageHandlerMock =
-            new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex:  new HttpRequestException ("DNS Error"));
+            new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException("DNS Error"));
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
@@ -164,9 +164,9 @@ public class DapsServiceTests
     }
 
     #endregion
-    
+
     #region DeleteDapsAuth
-    
+
     [Fact]
     public async Task DeleteDapsAuth_WithValidCall_ReturnsExpected()
     {
@@ -211,7 +211,7 @@ public class DapsServiceTests
     public async Task DeleteDapsClient_WithException_ThrowsException()
     {
         // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex:  new HttpRequestException ("DNS Error"));
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException("DNS Error"));
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
@@ -228,9 +228,9 @@ public class DapsServiceTests
     }
 
     #endregion
-    
+
     #region UpdateDapsConnectorUrl
-    
+
     [Fact]
     public async Task UpdateDapsConnectorUrl_WithValidCall_ReturnsExpected()
     {
@@ -275,7 +275,7 @@ public class DapsServiceTests
     public async Task UpdateDapsConnectorUrl_WithException_ThrowsException()
     {
         // Arrange
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex:  new HttpRequestException ("DNS Error"));
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException("DNS Error"));
         var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")

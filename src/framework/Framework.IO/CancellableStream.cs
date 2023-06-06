@@ -41,13 +41,13 @@ public sealed class CancellableStream : Stream
         get { throw new NotSupportedException(); }
         set { throw new NotSupportedException(); }
     }
-    public override long Seek (long offset, System.IO.SeekOrigin origin) => throw new NotSupportedException();
+    public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotSupportedException();
     public override void Flush() => throw new NotSupportedException();
-    public override int Read(byte [] buffer, int offset, int count) => throw new NotSupportedException();
-    public override void Write(byte [] buffer, int offset, int count) => throw new NotSupportedException();
+    public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     public override void SetLength(long value) => throw new NotSupportedException();
 
-    public override ValueTask<int> ReadAsync (Memory<byte> buffer, CancellationToken cancellationToken = default) =>
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
         _stream.ReadAsync(buffer, cancellationToken == default ? _cancellationToken : cancellationToken);
 
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) =>

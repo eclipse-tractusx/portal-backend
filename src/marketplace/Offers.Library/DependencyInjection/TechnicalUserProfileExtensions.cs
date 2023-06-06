@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -26,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection
 
 public static class TechnicalUserProfileExtensions
 {
-    public static IServiceCollection AddTechnicalUserProfile(this IServiceCollection services, IConfigurationSection section)
+    public static IServiceCollection AddTechnicalUserProfile(this IServiceCollection services)
     {
         return services.AddTransient<ITechnicalUserProfileService, TechnicalUserProfileService>();
     }

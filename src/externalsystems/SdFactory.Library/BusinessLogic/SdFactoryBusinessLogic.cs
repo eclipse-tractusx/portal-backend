@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -45,7 +45,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 
     /// <inheritdoc />
     public Task RegisterConnectorAsync(
-        Guid connectorId, 
+        Guid connectorId,
         string selfDescriptionDocumentUrl,
         string businessPartnerNumber,
         CancellationToken cancellationToken) =>
@@ -60,7 +60,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
-            new [] { ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP },
+            new[] { ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP },
             null,
             true,
             null
@@ -99,9 +99,9 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 data.ExternalId,
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
-                new[] {ApplicationChecklistEntryStatusId.IN_PROGRESS},
+                new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
                 ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP,
-                processStepTypeIds: new[] {ProcessStepTypeId.START_SELF_DESCRIPTION_LP})
+                processStepTypeIds: new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP })
             .ConfigureAwait(false);
 
         if (confirm)
@@ -121,14 +121,14 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
                         : ApplicationChecklistEntryStatusId.FAILED;
                 item.Comment = data.Message;
             },
-            confirm ? new[] {ProcessStepTypeId.ACTIVATE_APPLICATION} : null);
+            confirm ? new[] { ProcessStepTypeId.ACTIVATE_APPLICATION } : null);
     }
 
     /// <inheritdoc />
     public async Task ProcessFinishSelfDescriptionLpForConnector(SelfDescriptionResponseData data, Guid companyUserId, CancellationToken cancellationToken)
     {
         var confirm = ValidateData(data);
-        Guid? documentId = null; 
+        Guid? documentId = null;
         if (confirm)
         {
             documentId = await ProcessDocument(SdFactoryResponseModelTitle.Connector, data, cancellationToken).ConfigureAwait(false);
@@ -168,7 +168,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
     {
         using var sha512Hash = SHA512.Create();
         using var ms = new MemoryStream();
-        using var writer = new Utf8JsonWriter(ms, new JsonWriterOptions {Indented = true});
+        using var writer = new Utf8JsonWriter(ms, new JsonWriterOptions { Indented = true });
         var jsonDocument = JsonDocument.Parse(data.Content!);
         jsonDocument.WriteTo(writer);
 

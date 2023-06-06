@@ -26,9 +26,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Lib
 
 public class ChecklistCreationServiceTests
 {
-    private static readonly Guid ApplicationWithoutBpnId = new ("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
-    private static readonly Guid ApplicationWithBpnId = new ("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
-    private static readonly Guid ApplicationWithChecklist = new ("e100db0b-9ccd-4020-971c-7e05c0ef5780");
+    private static readonly Guid ApplicationWithoutBpnId = new("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
+    private static readonly Guid ApplicationWithBpnId = new("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
+    private static readonly Guid ApplicationWithChecklist = new("e100db0b-9ccd-4020-971c-7e05c0ef5780");
     private readonly IPortalRepositories _portalRepositories;
     private readonly IApplicationRepository _applicationRepository;
     private readonly IApplicationChecklistRepository _applicationChecklistRepository;
@@ -36,19 +36,19 @@ public class ChecklistCreationServiceTests
 
     public ChecklistCreationServiceTests()
     {
-        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization {ConfigureMembers = true});
+        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => fixture.Behaviors.Remove(b));
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _portalRepositories = A.Fake<IPortalRepositories>();
-        
+
         _applicationRepository = A.Fake<IApplicationRepository>();
         _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
 
         _service = new ApplicationChecklistCreationService(_portalRepositories);
     }
-    
+
     #region CreateInitialChecklistAsync
 
     [Fact]
@@ -70,7 +70,7 @@ public class ChecklistCreationServiceTests
                     x.Count(y => y.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.DONE) == 1 &&
                     x.Count(y => y.TypeId != ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.TO_DO) == 5)))
             .MustHaveHappenedOnceExactly();
-        
+
         result.Should().HaveCount(Enum.GetValues<ApplicationChecklistEntryTypeId>().Length)
             .And.Satisfy(
                 x => x.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
@@ -100,7 +100,7 @@ public class ChecklistCreationServiceTests
                     x.Count() == Enum.GetValues<ApplicationChecklistEntryTypeId>().Length &&
                     x.All(y => y.StatusId == ApplicationChecklistEntryStatusId.TO_DO))))
             .MustHaveHappenedOnceExactly();
-        
+
         result.Should().HaveSameCount(Enum.GetValues<ApplicationChecklistEntryTypeId>())
             .And.Satisfy(
                 x => x.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
@@ -117,7 +117,7 @@ public class ChecklistCreationServiceTests
     {
         // Arrange
         SetupFakesForCreate();
-        
+
         // Act
         await _service.CreateInitialChecklistAsync(ApplicationWithChecklist).ConfigureAwait(false);
 
@@ -129,7 +129,7 @@ public class ChecklistCreationServiceTests
     }
 
     #endregion
-    
+
     #region CreateMissingChecklistItems
 
     [Fact]
@@ -146,7 +146,7 @@ public class ChecklistCreationServiceTests
             ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION
         };
         SetupFakesForCreate();
-        
+
         // Act
         await _service.CreateMissingChecklistItems(ApplicationWithBpnId, existingItems).ConfigureAwait(false);
 
@@ -169,7 +169,7 @@ public class ChecklistCreationServiceTests
             ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP
         };
         SetupFakesForCreate();
-        
+
         // Act
         await _service.CreateMissingChecklistItems(ApplicationWithBpnId, existingItems).ConfigureAwait(false);
 
@@ -178,7 +178,7 @@ public class ChecklistCreationServiceTests
             ApplicationWithBpnId,
             A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>
                 .That
-                .Matches(x => 
+                .Matches(x =>
                     x.Count(y => y.TypeId == ApplicationChecklistEntryTypeId.IDENTITY_WALLET && y.StatusId == ApplicationChecklistEntryStatusId.TO_DO) == 1)))
             .MustHaveHappenedOnceExactly();
     }
@@ -196,7 +196,7 @@ public class ChecklistCreationServiceTests
             ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP
         };
         SetupFakesForCreate();
-        
+
         // Act
         await _service.CreateMissingChecklistItems(ApplicationWithChecklist, existingItems).ConfigureAwait(false);
 
@@ -214,21 +214,21 @@ public class ChecklistCreationServiceTests
     #region GetInitialProcessStepTypeIds
 
     [Theory]
-    [InlineData(new [] { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION }, new [] { ApplicationChecklistEntryStatusId.TO_DO }, new [] {
+    [InlineData(new[] { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION }, new[] { ApplicationChecklistEntryStatusId.TO_DO }, new[] {
             ProcessStepTypeId.VERIFY_REGISTRATION,
             ProcessStepTypeId.DECLINE_APPLICATION,
         })]
-    [InlineData(new [] { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER }, new [] { ApplicationChecklistEntryStatusId.TO_DO }, new [] {
+    [InlineData(new[] { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER }, new[] { ApplicationChecklistEntryStatusId.TO_DO }, new[] {
             ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
             ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL,
         })]
-    [InlineData(new [] { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER }, new [] { ApplicationChecklistEntryStatusId.IN_PROGRESS }, new ProcessStepTypeId[] { })]
-    [InlineData(new [] {
+    [InlineData(new[] { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER }, new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS }, new ProcessStepTypeId[] { })]
+    [InlineData(new[] {
             ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION,
             ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
             ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
             ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
-        }, new [] { ApplicationChecklistEntryStatusId.TO_DO }, new ProcessStepTypeId[] { })]
+        }, new[] { ApplicationChecklistEntryStatusId.TO_DO }, new ProcessStepTypeId[] { })]
     public void GetInitialProcessStepsTypeIds_ReturnsExcpected(IEnumerable<ApplicationChecklistEntryTypeId> entryTypes, IEnumerable<ApplicationChecklistEntryStatusId> entryStatus, IEnumerable<ProcessStepTypeId> stepTypeIds)
     {
         // Arrange
@@ -240,13 +240,14 @@ public class ChecklistCreationServiceTests
         {
             result.Should().HaveSameCount(stepTypeIds).And.Contain(stepTypeIds);
         }
-        else{
+        else
+        {
             result.Should().BeEmpty();
         }
     }
 
     #endregion
-    
+
     #region Setup
 
     private void SetupFakesForCreate()

@@ -18,12 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
-using System.ComponentModel.DataAnnotations;
-using System.Security.Cryptography;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -59,7 +58,7 @@ public class Offer : IAuditableV1, IBaseEntity
         DateCreated = dateCreated;
         OfferTypeId = offerTypeId;
     }
-    
+
     public Guid Id { get; private set; }
 
     [MaxLength(255)]
@@ -92,18 +91,18 @@ public class Offer : IAuditableV1, IBaseEntity
     public LicenseTypeId LicenseTypeId { get; set; }
 
     public DateTimeOffset? DateLastChanged { get; set; }
-    
+
     [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
     // Navigation properties
-    
-    public virtual OfferType? OfferType { get; private set; }
-    
-    public virtual OfferStatus? OfferStatus{ get; set; }
 
-    public virtual LicenseType? LicenseType{ get; set; }
-    
-    public virtual AppInstanceSetup? AppInstanceSetup{ get; set; }
+    public virtual OfferType? OfferType { get; private set; }
+
+    public virtual OfferStatus? OfferStatus { get; set; }
+
+    public virtual LicenseType? LicenseType { get; set; }
+
+    public virtual AppInstanceSetup? AppInstanceSetup { get; set; }
     public virtual ICollection<AgreementAssignedOffer> AgreementAssignedOffers { get; private set; }
     public virtual ICollection<OfferDescription> OfferDescriptions { get; private set; }
     public virtual ICollection<AppInstance> AppInstances { get; private set; }

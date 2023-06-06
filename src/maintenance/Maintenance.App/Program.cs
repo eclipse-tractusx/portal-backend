@@ -19,11 +19,11 @@
  ********************************************************************************/
 // See https://aka.ms/new-console-template for more information
 
-using System.Reflection;
-using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using System.Reflection;
 
 var host = Host.CreateDefaultBuilder(args)
     .UseSystemd()

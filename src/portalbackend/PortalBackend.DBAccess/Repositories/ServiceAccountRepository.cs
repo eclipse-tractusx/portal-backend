@@ -44,17 +44,16 @@ public class ServiceAccountRepository : IServiceAccountRepository
         CompanyServiceAccountTypeId companyServiceAccountTypeId,
         Action<CompanyServiceAccount>? setOptionalParameters = null)
     {
-        var serviceAccount = _dbContext.CompanyServiceAccounts.Add(
-            new CompanyServiceAccount(
-                Guid.NewGuid(),
-                companyId,
-                companyServiceAccountStatusId,
-                name,
-                description,
-                DateTimeOffset.UtcNow,
-                companyServiceAccountTypeId)).Entity;
-        setOptionalParameters?.Invoke(serviceAccount);
-        return serviceAccount;
+        var entity = new CompanyServiceAccount(
+            Guid.NewGuid(),
+            companyId,
+            companyServiceAccountStatusId,
+            name,
+            description,
+            DateTimeOffset.UtcNow,
+            companyServiceAccountTypeId);
+        setOptionalParameters?.Invoke(entity);
+        return _dbContext.CompanyServiceAccounts.Add(entity).Entity;
     }
 
     public void AttachAndModifyCompanyServiceAccount(
@@ -151,7 +150,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                     serviceAccount.OfferSubscriptionId))
             .SingleOrDefaultAsync();
 
-    public Func<int,int,Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(string adminUserId) =>
+    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(string adminUserId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,

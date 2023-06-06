@@ -24,8 +24,8 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
 using Newtonsoft.Json;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationPermissions;
 
@@ -44,7 +44,7 @@ public class AuthorizationPermission
     public AuthorizationPermissionType Type { get; set; }
 
     [JsonConverter(typeof(PolicyDecisionLogicConverter))]
-    public PolicyDecisionLogic Logic { get; set; } 
+    public PolicyDecisionLogic Logic { get; set; }
 
     [JsonConverter(typeof(DecisionStrategiesConverter))]
     public DecisionStrategy DecisionStrategy { get; set; }
@@ -64,19 +64,19 @@ public class AuthorizationPermission
 
 public enum PolicyDecisionLogic
 {
-    Positive, 
+    Positive,
     Negative
 }
 
 public enum AuthorizationPermissionType
-{   
-    Scope, 
+{
+    Scope,
     Resource
 }
 
 public enum DecisionStrategy
 {
-    Unanimous, 
-    Affirmative, 
+    Unanimous,
+    Affirmative,
     Consensus
 }

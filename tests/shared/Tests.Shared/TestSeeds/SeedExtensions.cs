@@ -86,7 +86,7 @@ public static class SeedExtensions
     {
         dbContext.AgreementAssignedOffers.AddRange(agreementAssignedOffers);
     };
-    
+
     public static Action<PortalDbContext> SeedOfferSubscriptions(params OfferSubscription[] offerSubscriptions) => dbContext =>
     {
         dbContext.OfferSubscriptions.AddRange(offerSubscriptions);

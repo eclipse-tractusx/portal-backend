@@ -46,7 +46,7 @@ public class StaticDataControllerTest
 
         //Act
         var result = await this._controller.GetLicenseTypes().ToListAsync().ConfigureAwait(false);
-        
+
         // Assert 
         A.CallTo(() => _logic.GetAllLicenseType()).MustHaveHappenedOnceExactly();
         Assert.IsType<List<LicenseTypeData>>(result);

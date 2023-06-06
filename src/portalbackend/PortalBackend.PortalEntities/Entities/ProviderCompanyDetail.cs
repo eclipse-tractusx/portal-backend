@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -28,8 +28,8 @@ public class ProviderCompanyDetail : IBaseEntity
     {
         AutoSetupUrl = null!;
     }
-    
-    public ProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, DateTimeOffset dateCreated) 
+
+    public ProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, DateTimeOffset dateCreated)
         : this()
     {
         Id = id;
@@ -43,6 +43,8 @@ public class ProviderCompanyDetail : IBaseEntity
     public DateTimeOffset DateCreated { get; private set; }
 
     public string AutoSetupUrl { get; set; }
+
+    public string? AutoSetupCallbackUrl { get; set; }
 
     public Guid CompanyId { get; set; }
 

@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net.Mime;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Net.Mime;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 
@@ -30,21 +30,21 @@ public static class ContentTypeMapperExtensions
     {
         return mediaTypeId switch
         {
-            MediaTypeId.JPEG  => MediaTypeNames.Image.Jpeg,
-            MediaTypeId.GIF  => MediaTypeNames.Image.Gif,
-            MediaTypeId.PNG  => "image/png",
-            MediaTypeId.SVG  => "image/svg+xml",
-            MediaTypeId.TIFF  => MediaTypeNames.Image.Tiff,
-            MediaTypeId.PDF  => MediaTypeNames.Application.Pdf,
-            MediaTypeId.JSON  => MediaTypeNames.Application.Json,
-            MediaTypeId.PEM  => "application/x-pem-file",
-            MediaTypeId.CA_CERT  => "application/x-x509-ca-cert",
-            MediaTypeId.PKX_CER  => "application/pkix-cert",
-            MediaTypeId.OCTET  => MediaTypeNames.Application.Octet,
+            MediaTypeId.JPEG => MediaTypeNames.Image.Jpeg,
+            MediaTypeId.GIF => MediaTypeNames.Image.Gif,
+            MediaTypeId.PNG => "image/png",
+            MediaTypeId.SVG => "image/svg+xml",
+            MediaTypeId.TIFF => MediaTypeNames.Image.Tiff,
+            MediaTypeId.PDF => MediaTypeNames.Application.Pdf,
+            MediaTypeId.JSON => MediaTypeNames.Application.Json,
+            MediaTypeId.PEM => "application/x-pem-file",
+            MediaTypeId.CA_CERT => "application/x-x509-ca-cert",
+            MediaTypeId.PKX_CER => "application/pkix-cert",
+            MediaTypeId.OCTET => MediaTypeNames.Application.Octet,
             _ => throw new ConflictException($"document mediatype {mediaTypeId} is not supported")
         };
     }
-    
+
     public static MediaTypeId ParseMediaTypeId(this string mediaType)
     {
         return mediaType.ToLower() switch
@@ -57,7 +57,7 @@ public static class ContentTypeMapperExtensions
             MediaTypeNames.Application.Pdf => MediaTypeId.PDF,
             MediaTypeNames.Application.Json => MediaTypeId.JSON,
             "application/x-pem-file" => MediaTypeId.PEM,
-            "application/x-x509-ca-cert" => MediaTypeId.CA_CERT, 
+            "application/x-x509-ca-cert" => MediaTypeId.CA_CERT,
             "application/pkix-cert" => MediaTypeId.PKX_CER,
             MediaTypeNames.Application.Octet => MediaTypeId.OCTET,
             _ => throw new UnsupportedMediaTypeException($"mediaType '{mediaType}' is not supported")

@@ -55,7 +55,7 @@ public abstract class JsonEnumConverter<TEnum> : JsonConverter
             return items;
         }
 
-        string s = (string)reader.Value;
+        var s = (string)reader.Value;
         return ConvertFromString(s);
     }
 

@@ -24,11 +24,11 @@
  * SOFTWARE.
  ********************************************************************************/
 
+using Newtonsoft.Json;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Groups;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
-using Newtonsoft.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 

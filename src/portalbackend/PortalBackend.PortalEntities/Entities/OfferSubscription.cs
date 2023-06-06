@@ -18,18 +18,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
-using System.ComponentModel.DataAnnotations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 /// <summary>
 /// App subscription relationship between companies and apps.
 /// </summary>
-[AuditEntityV1(typeof(AuditOfferSubscription20221005))]
+[AuditEntityV1(typeof(AuditOfferSubscription20230317))]
 public class OfferSubscription : IAuditableV1, IBaseEntity
 {
     /// <summary>
@@ -84,7 +84,7 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     /// </summary>
     [MaxLength(255)]
     public string? DisplayName { get; set; }
-    
+
     /// <summary>
     /// Additional description for clarification
     /// </summary>
@@ -95,9 +95,11 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     /// Id of the app requester 
     /// </summary>
     public Guid RequesterId { get; set; }
-    
+
     [AuditLastEditorV1]
     public Guid? LastEditorId { get; set; }
+
+    public Guid? ProcessId { get; set; }
 
     // Navigation properties
     /// <summary>
@@ -111,6 +113,11 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     public virtual Company? Company { get; private set; }
 
     /// <summary>
+    /// Assigned Process.
+    /// </summary>
+    public virtual Process? Process { get; private set; }
+
+    /// <summary>
     /// Requester
     /// </summary>
     public virtual CompanyUser? Requester { get; private set; }
@@ -119,8 +126,10 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     /// Subscription status.
     /// </summary>
     public virtual OfferSubscriptionStatus? OfferSubscriptionStatus { get; private set; }
-    
+
     public virtual AppSubscriptionDetail? AppSubscriptionDetail { get; private set; }
+
+    public virtual OfferSubscriptionProcessData? OfferSubscriptionProcessData { get; private set; }
 
     public virtual ICollection<ConsentAssignedOfferSubscription> ConsentAssignedOfferSubscriptions { get; private set; }
     public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }

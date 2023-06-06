@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
@@ -45,6 +45,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="Documents">documents assigned to offer</param>
 /// <param name="PrivacyPolicies">Privacy Policies assigned to offer</param>
 /// <param name="IsSingleInstance">Defines whether the app is a single instance</param>
+/// <param name="TechnicalUserProfile">Technical User Profile for app</param>
 public record AppDetailResponse(
     Guid Id,
     string Title,
@@ -63,5 +64,6 @@ public record AppDetailResponse(
     IEnumerable<string> Languages,
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
     IEnumerable<PrivacyPolicyId> PrivacyPolicies,
-    bool IsSingleInstance
+    bool IsSingleInstance,
+    IDictionary<Guid, IEnumerable<string>> TechnicalUserProfile
 );

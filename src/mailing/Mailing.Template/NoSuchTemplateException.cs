@@ -26,7 +26,7 @@ public class NoSuchTemplateException : Exception
     {
     }
 
-    public NoSuchTemplateException(string message, Exception inner) : base(message,inner)
+    public NoSuchTemplateException(string message, Exception inner) : base(message, inner)
     {
     }
 }

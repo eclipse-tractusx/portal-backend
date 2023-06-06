@@ -36,8 +36,9 @@ public class AddAuthFilter : IOperationFilter
             .OfType<AuthorizeAttribute>()
             .ToList();
 
-        if (!authorizeAttributes.Any()) return;
-        
+        if (!authorizeAttributes.Any())
+            return;
+
         var authorizationDescription = new StringBuilder(" (Authorization required");
         var policies = authorizeAttributes
             .Where(a => !string.IsNullOrEmpty(a.Roles))
@@ -49,7 +50,7 @@ public class AddAuthFilter : IOperationFilter
         {
             authorizationDescription.Append($" - Roles: {string.Join(", ", policies)};");
         }
-        
+
         operation.Responses.Add(StatusCodes.Status401Unauthorized.ToString(), new OpenApiResponse { Description = "The User is unauthorized" });
         operation.Summary += authorizationDescription.ToString().TrimEnd(';') + ")";
     }

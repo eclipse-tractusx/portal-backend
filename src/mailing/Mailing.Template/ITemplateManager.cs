@@ -24,5 +24,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
 
 public interface ITemplateManager
 {
-    Task<Mail> ApplyTemplateAsync(string id, IDictionary<string,string> parameters);
+    Task<Mail> ApplyTemplateAsync(string id, IDictionary<string, string> parameters);
 }

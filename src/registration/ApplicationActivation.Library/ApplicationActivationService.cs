@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -64,12 +64,12 @@ public class ApplicationActivationService : IApplicationActivationService
     {
         if (!InProcessingTime())
         {
-            return Task.FromResult(new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO,null,null,null,false,null));
+            return Task.FromResult(new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO, null, null, null, false, null));
         }
         var prerequisiteEntries = context.Checklist.Where(entry => entry.Key != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION);
         if (prerequisiteEntries.Any(entry => entry.Value != ApplicationChecklistEntryStatusId.DONE))
         {
-            throw new ConflictException($"cannot activate application {context.ApplicationId}. Checklist entries that are not in status DONE: {string.Join(",",prerequisiteEntries)}");
+            throw new ConflictException($"cannot activate application {context.ApplicationId}. Checklist entries that are not in status DONE: {string.Join(",", prerequisiteEntries)}");
         }
         return HandleApplicationActivationInternal(context);
     }
@@ -93,11 +93,11 @@ public class ApplicationActivationService : IApplicationActivationService
         var assignedRoles = await AssignRolesAndBpn(context.ApplicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(false);
         await RemoveRegistrationRoles(context.ApplicationId, userRolesRepository).ConfigureAwait(false);
         await SetTheme(iamIdpAliasse).ConfigureAwait(false);
-        
+
         applicationRepository.AttachAndModifyCompanyApplication(context.ApplicationId, ca =>
         {
             ca.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
-            ca.DateLastChanged = DateTimeOffset.UtcNow;    
+            ca.DateLastChanged = DateTimeOffset.UtcNow;
         });
 
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null, c =>
@@ -128,7 +128,7 @@ public class ApplicationActivationService : IApplicationActivationService
             ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
             null,
-            Enum.GetValues<ProcessStepTypeId>().Except(new [] { ProcessStepTypeId.ACTIVATE_APPLICATION }),
+            Enum.GetValues<ProcessStepTypeId>().Except(new[] { ProcessStepTypeId.ACTIVATE_APPLICATION }),
             true,
             null);
     }
@@ -143,7 +143,7 @@ public class ApplicationActivationService : IApplicationActivationService
         }
 
         var now = _dateTime.Now.TimeOfDay;
-        return startTime > endTime ? 
+        return startTime > endTime ?
             now >= startTime || now <= endTime :
             now >= startTime && now <= endTime;
     }
@@ -171,7 +171,8 @@ public class ApplicationActivationService : IApplicationActivationService
                 userRolesRepository.CreateCompanyUserAssignedRole(userData.CompanyUserId, roleData.UserRoleId);
             }
 
-            if (userData.BusinessPartnerNumbers.Contains(businessPartnerNumber)) continue;
+            if (userData.BusinessPartnerNumbers.Contains(businessPartnerNumber))
+                continue;
 
             userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(userData.CompanyUserId, businessPartnerNumber);
             await _provisioningManager
@@ -196,7 +197,8 @@ public class ApplicationActivationService : IApplicationActivationService
 
         await foreach (var userData in invitedUsersData.ConfigureAwait(false))
         {
-            if (!userData.UserRoleIds.Any()) {
+            if (!userData.UserRoleIds.Any())
+            {
                 throw new UnexpectedConditionException("userRoleIds should never be empty here");
             }
 
@@ -241,7 +243,7 @@ public class ApplicationActivationService : IApplicationActivationService
                 { "bpn", businessPartnerNumber }
             };
 
-            await _mailingService.SendMails(user.Email, mailParameters, new [] { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
+            await _mailingService.SendMails(user.Email, mailParameters, new[] { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
         }
 
         if (failedUserNames.Any())

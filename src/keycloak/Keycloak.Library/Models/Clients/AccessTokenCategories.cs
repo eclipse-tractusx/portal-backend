@@ -28,9 +28,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public enum AccessTokenCategories
 {
-    Internal, 
-    Access, 
-    Id, 
-    Admin, 
+    Internal,
+    Access,
+    Id,
+    Admin,
     Userinfo
 }

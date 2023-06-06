@@ -19,17 +19,17 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
-    private static readonly IReadOnlyDictionary<string,IamClientAuthMethod> CredentialTypesIamClientAuthMethodDictionary = new Dictionary<string,IamClientAuthMethod>()
+    private static readonly IReadOnlyDictionary<string, IamClientAuthMethod> CredentialTypesIamClientAuthMethodDictionary = new Dictionary<string, IamClientAuthMethod>()
     {
         { "jwt", IamClientAuthMethod.JWT },
         { "secret", IamClientAuthMethod.SECRET },
@@ -37,7 +37,7 @@ public partial class ProvisioningManager
         { "secret-jwt", IamClientAuthMethod.SECRET_JWT }
     };
 
-    private static readonly IReadOnlyDictionary<IamClientAuthMethod,string> IamClientAuthMethodsInternalDictionary = new Dictionary<IamClientAuthMethod,string>()
+    private static readonly IReadOnlyDictionary<IamClientAuthMethod, string> IamClientAuthMethodsInternalDictionary = new Dictionary<IamClientAuthMethod, string>()
     {
         { IamClientAuthMethod.JWT, "client-jwt" },
         { IamClientAuthMethod.SECRET, "client-secret" },
@@ -57,7 +57,7 @@ public partial class ProvisioningManager
         _CentralIdp.DeleteClientAsync(_Settings.CentralRealm, internalClientId);
 
     public async Task UpdateClient(string clientId, string url, string redirectUrl)
-    { 
+    {
         var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(false);
 
         var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false);
@@ -66,11 +66,12 @@ public partial class ProvisioningManager
         await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, idOfClient, client).ConfigureAwait(false);
     }
 
-    public async Task EnableClient(string internalClientId)
+    public async Task EnableClient(string clientId)
     {
-        var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
+        var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(false);
+        var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false);
         client.Enabled = true;
-        await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, internalClientId, client).ConfigureAwait(false);
+        await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, idOfClient, client).ConfigureAwait(false);
     }
 
     public async Task<ClientAuthData> GetCentralClientAuthDataAsync(string internalClientId)
@@ -78,9 +79,9 @@ public partial class ProvisioningManager
         var credentials = await _CentralIdp.GetClientSecretAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
         return new ClientAuthData(
             CredentialsTypeToIamClientAuthMethod(credentials.Type))
-            {
-                Secret = credentials.Value
-            };
+        {
+            Secret = credentials.Value
+        };
     }
 
     public async Task<ClientAuthData> ResetCentralClientAuthDataAsync(string internalClientId)
@@ -88,9 +89,9 @@ public partial class ProvisioningManager
         var credentials = await _CentralIdp.GenerateClientSecretAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
         return new ClientAuthData(
             CredentialsTypeToIamClientAuthMethod(credentials.Type))
-            {
-                Secret = credentials.Value
-            };
+        {
+            Secret = credentials.Value
+        };
     }
 
     private async Task<string> GetIdOfCentralClientAsync(string clientId)
@@ -109,7 +110,7 @@ public partial class ProvisioningManager
         var newClient = Clone(_Settings.SharedRealmClient);
         newClient.RedirectUris = Enumerable.Repeat<string>(config.RedirectUri, 1);
         newClient.Attributes["jwks.url"] = config.JwksUrl;
-        await keycloak.CreateClientAsync(realm,newClient).ConfigureAwait(false);
+        await keycloak.CreateClientAsync(realm, newClient).ConfigureAwait(false);
     }
 
     private async Task<string> CreateCentralOIDCClientAsync(string clientId, string redirectUri, string? baseUrl, bool enabled)
@@ -131,19 +132,21 @@ public partial class ProvisioningManager
     }
 
     private Task CreateCentralOIDCClientAudienceMapperAsync(string internalClientId, string clientAudienceId) =>
-        _CentralIdp.CreateClientProtocolMapperAsync(_Settings.CentralRealm, internalClientId, new ProtocolMapper {
+        _CentralIdp.CreateClientProtocolMapperAsync(_Settings.CentralRealm, internalClientId, new ProtocolMapper
+        {
             Name = $"{clientAudienceId}-mapper",
             Protocol = "openid-connect",
             _ProtocolMapper = "oidc-audience-mapper",
-            ConsentRequired =  false,
-            Config = new Config {
+            ConsentRequired = false,
+            Config = new Config
+            {
                 IncludedClientAudience = clientAudienceId,
                 IdTokenClaim = "false",
                 AccessTokenClaim = "true",
             }
         });
 
-    private IamClientAuthMethod CredentialsTypeToIamClientAuthMethod(string clientAuthMethod)
+    private static IamClientAuthMethod CredentialsTypeToIamClientAuthMethod(string clientAuthMethod)
     {
         if (!CredentialTypesIamClientAuthMethodDictionary.TryGetValue(clientAuthMethod, out var iamClientAuthMethod))
         {
@@ -152,7 +155,7 @@ public partial class ProvisioningManager
         return iamClientAuthMethod;
     }
 
-    private string IamClientAuthMethodToInternal(IamClientAuthMethod iamClientAuthMethod)
+    private static string IamClientAuthMethodToInternal(IamClientAuthMethod iamClientAuthMethod)
     {
         if (!IamClientAuthMethodsInternalDictionary.TryGetValue(iamClientAuthMethod, out var clientAuthMethod))
         {

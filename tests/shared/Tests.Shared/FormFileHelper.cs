@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -33,10 +33,10 @@ public static class FormFileHelper
         writer.Flush();
         stream.Position = 0;
 
-        var headers = new HeaderDictionary {{HeaderNames.ContentType, contentType}};
+        var headers = new HeaderDictionary { { HeaderNames.ContentType, contentType } };
         return new FormFile(stream, 0, stream.Length, fileName.Split(".").First(), fileName)
         {
-            Headers = headers 
+            Headers = headers
         };
     }
 }

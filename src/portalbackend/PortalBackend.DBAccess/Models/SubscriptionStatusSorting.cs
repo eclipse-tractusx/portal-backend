@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -29,17 +29,17 @@ public enum SubscriptionStatusSorting
     /// Ascending by date
     /// </summary>
     CompanyNameAsc = 1,
-    
+
     /// <summary>
     /// Descending by date
     /// </summary>
     CompanyNameDesc = 2,
-    
+
     /// <summary>
     /// Ascending by the offer id
     /// </summary>
     OfferIdAsc = 3,
-    
+
     /// <summary>
     /// Descending by offer id
     /// </summary>

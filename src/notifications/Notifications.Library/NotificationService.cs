@@ -40,7 +40,7 @@ public class NotificationService : INotificationService
     {
         _portalRepositories = portalRepositories;
     }
-    
+
     /// <inheritdoc />
     async IAsyncEnumerable<Guid> INotificationService.CreateNotifications(
         IDictionary<string, IEnumerable<string>> receiverUserRoles,

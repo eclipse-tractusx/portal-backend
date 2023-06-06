@@ -74,10 +74,9 @@ public class LanguageRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region GetLanguageCodes
-    
-    
+
     [Fact]
     public async Task GetLanguageCodesUntrackedAsync_ReturnsExpectedResult()
     {
@@ -85,7 +84,7 @@ public class LanguageRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var languageCodes = await sut.GetLanguageCodesUntrackedAsync(new []
+        var languageCodes = await sut.GetLanguageCodesUntrackedAsync(new[]
         {
             "de",
             "en",
@@ -97,11 +96,11 @@ public class LanguageRepositoryTests : IAssemblyFixture<TestDbFixture>
         languageCodes.Should().Contain("de");
         languageCodes.Should().Contain("en");
     }
-    
+
     #endregion
-    
+
     #region Setup
-    
+
     private async Task<LanguageRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

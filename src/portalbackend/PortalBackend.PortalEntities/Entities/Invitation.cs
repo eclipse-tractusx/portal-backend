@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class Invitation : IBaseEntity
 {
-    private Invitation() {}
+    private Invitation() { }
 
     public Invitation(Guid id, Guid companyApplicationId, Guid companyUserId, InvitationStatusId invitationStatusId, DateTimeOffset dateCreated)
     {

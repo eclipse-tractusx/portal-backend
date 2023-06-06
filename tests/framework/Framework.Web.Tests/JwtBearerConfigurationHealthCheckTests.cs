@@ -47,8 +47,9 @@ public class JwtBearerConfigurationHealthCheckTests
         var config = _fixture.Create<OpenIdConnectConfiguration>();
 
         var jsonOptions = new JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
-        
-        var jwtOptions = new JwtBearerOptions() {
+
+        var jwtOptions = new JwtBearerOptions()
+        {
             MetadataAddress = "https://foo.bar",
             BackchannelHttpHandler = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
@@ -73,7 +74,8 @@ public class JwtBearerConfigurationHealthCheckTests
     public async Task CheckHealthAsync_Failure_ReturnsExpected()
     {
         // Arrange
-        var jwtOptions = new JwtBearerOptions() {
+        var jwtOptions = new JwtBearerOptions()
+        {
             MetadataAddress = "https://foo.bar",
             BackchannelHttpHandler = new HttpMessageHandlerMock(HttpStatusCode.BadRequest)
         };

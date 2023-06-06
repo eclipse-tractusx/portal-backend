@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Flurl;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.OpenIDConfiguration;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using System.Collections.Immutable;
 using System.Net;
 using System.Text.Json;
@@ -32,7 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
-    private static readonly ImmutableDictionary<string,IamIdentityProviderClientAuthMethod> IdentityProviderClientAuthTypesIamClientAuthMethodDictionary = new Dictionary<string,IamIdentityProviderClientAuthMethod>()
+    private static readonly ImmutableDictionary<string, IamIdentityProviderClientAuthMethod> IdentityProviderClientAuthTypesIamClientAuthMethodDictionary = new Dictionary<string, IamIdentityProviderClientAuthMethod>()
     {
         { "private_key_jwt", IamIdentityProviderClientAuthMethod.JWT },
         { "client_secret_post", IamIdentityProviderClientAuthMethod.SECRET_POST },
@@ -40,7 +40,7 @@ public partial class ProvisioningManager
         { "client_secret_jwt", IamIdentityProviderClientAuthMethod.SECRET_JWT }
     }.ToImmutableDictionary();
 
-    private static readonly ImmutableDictionary<IamIdentityProviderClientAuthMethod,string> IamIdentityProviderClientAuthMethodsInternalDictionary = new Dictionary<IamIdentityProviderClientAuthMethod,string>()
+    private static readonly ImmutableDictionary<IamIdentityProviderClientAuthMethod, string> IamIdentityProviderClientAuthMethodsInternalDictionary = new Dictionary<IamIdentityProviderClientAuthMethod, string>()
     {
         { IamIdentityProviderClientAuthMethod.JWT, "private_key_jwt" },
         { IamIdentityProviderClientAuthMethod.SECRET_POST, "client_secret_post" },
@@ -48,7 +48,7 @@ public partial class ProvisioningManager
         { IamIdentityProviderClientAuthMethod.SECRET_JWT, "client_secret_jwt" }
     }.ToImmutableDictionary();
 
-    private static readonly ImmutableDictionary<string,IdentityProviderMapperType> IdentityProviderKeycloakMapperTypesToEnumDictionary = new Dictionary<string,IdentityProviderMapperType>()
+    private static readonly ImmutableDictionary<string, IdentityProviderMapperType> IdentityProviderKeycloakMapperTypesToEnumDictionary = new Dictionary<string, IdentityProviderMapperType>()
     {
         { "hardcoded-user-session-attribute-idp-mapper", IdentityProviderMapperType.HARDCODED_SESSION_ATTRIBUTE },
         { "hardcoded-attribute-idp-mapper", IdentityProviderMapperType.HARDCODED_ATTRIBUTE },
@@ -60,7 +60,7 @@ public partial class ProvisioningManager
         { "oidc-username-idp-mapper", IdentityProviderMapperType.OIDC_USERNAME },
         { "keycloak-oidc-role-to-role-idp-mapper", IdentityProviderMapperType.KEYCLOAK_OIDC_ROLE }
     }.ToImmutableDictionary();
-    
+
     public async ValueTask<string> GetNextCentralIdentityProviderNameAsync() =>
         _Settings.IdpPrefix + (await _ProvisioningDBAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false));
 
@@ -91,9 +91,9 @@ public partial class ProvisioningManager
         }
         var changed = CloneIdentityProvider(identityProvider);
         changed.Config ??= new Config();
-        foreach(var (key, value) in metadata)
+        foreach (var (key, value) in metadata)
         {
-            switch(key)
+            switch (key)
             {
                 case "userInfoUrl":
                     changed.Config.UserInfoUrl = value as string;
@@ -137,7 +137,7 @@ public partial class ProvisioningManager
 
     public async IAsyncEnumerable<IdentityProviderMapperModel> GetIdentityProviderMappers(string alias)
     {
-        foreach(var mapper in await _CentralIdp.GetIdentityProviderMappersAsync(_Settings.CentralRealm, alias).ConfigureAwait(false))
+        foreach (var mapper in await _CentralIdp.GetIdentityProviderMappersAsync(_Settings.CentralRealm, alias).ConfigureAwait(false))
         {
             yield return new IdentityProviderMapperModel(
                 mapper.Id,
@@ -184,14 +184,14 @@ public partial class ProvisioningManager
             alias,
             new IdentityProviderMapper
             {
-                Name=_Settings.MappedCompanyAttribute + "-mapper",
-                _IdentityProviderMapper="hardcoded-attribute-idp-mapper",
-                IdentityProviderAlias=alias,
-                Config=new Dictionary<string,object>
+                Name = _Settings.MappedCompanyAttribute + "-mapper",
+                _IdentityProviderMapper = "hardcoded-attribute-idp-mapper",
+                IdentityProviderAlias = alias,
+                Config = new Dictionary<string, object>
                 {
-                    ["syncMode"]="INHERIT",
-                    ["attribute"]=_Settings.MappedCompanyAttribute,
-                    ["attribute.value"]=organisationName
+                    ["syncMode"] = "INHERIT",
+                    ["attribute"] = _Settings.MappedCompanyAttribute,
+                    ["attribute.value"] = organisationName
                 }
             });
 
@@ -244,6 +244,6 @@ public partial class ProvisioningManager
         }
     }
 
-    private IdentityProvider CloneIdentityProvider(IdentityProvider identityProvider) =>
+    private static IdentityProvider CloneIdentityProvider(IdentityProvider identityProvider) =>
         JsonSerializer.Deserialize<IdentityProvider>(JsonSerializer.Serialize(identityProvider))!;
 }

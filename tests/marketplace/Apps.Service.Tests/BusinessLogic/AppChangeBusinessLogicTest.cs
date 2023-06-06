@@ -27,15 +27,15 @@ using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using System.Collections.Immutable;
 using Xunit;
 
@@ -78,7 +78,7 @@ public class AppChangeBusinessLogicTest
 
         var settings = new AppsSettings
         {
-            ActiveAppNotificationTypeIds = new []
+            ActiveAppNotificationTypeIds = new[]
             {
                 NotificationTypeId.APP_ROLE_ADDED
             },
@@ -109,13 +109,13 @@ public class AppChangeBusinessLogicTest
         var companyId = _fixture.Create<Guid>();
         var appName = _fixture.Create<string>();
         var appAssignedRoleDesc = _fixture.CreateMany<string>(3).Select(role => new AppUserRole(role, _fixture.CreateMany<AppUserRoleDescription>(2).ToImmutableArray())).ToImmutableArray();
-        var clientIds = new[] {"client"};
+        var clientIds = new[] { "client" };
 
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetInsertActiveAppUserRoleDataAsync(appId, _iamUserId, OfferTypeId.APP))
             .Returns((true, appName, _companyUserId, companyId, clientIds));
 
         IEnumerable<UserRole>? userRoles = null;
-        A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid,string)>>._))
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid, string)>>._))
             .ReturnsLazily((IEnumerable<(Guid AppId, string Role)> appRoles) =>
             {
                 userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToImmutableArray();
@@ -123,7 +123,7 @@ public class AppChangeBusinessLogicTest
             });
 
         var userRoleDescriptions = new List<IEnumerable<UserRoleDescription>>();
-        A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescriptions(A<IEnumerable<(Guid,string,string)>>._))
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescriptions(A<IEnumerable<(Guid, string, string)>>._))
             .ReturnsLazily((IEnumerable<(Guid RoleId, string LanguageCode, string Description)> roleLanguageDescriptions) =>
             {
                 var createdUserRoleDescriptions = roleLanguageDescriptions.Select(x => new UserRoleDescription(x.RoleId, x.LanguageCode, x.Description)).ToImmutableArray();
@@ -140,7 +140,7 @@ public class AppChangeBusinessLogicTest
         //Assert
         A.CallTo(() => _offerRepository.GetInsertActiveAppUserRoleDataAsync(appId, _iamUserId, OfferTypeId.APP)).MustHaveHappened();
 
-        A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid,string)>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid, string)>>._)).MustHaveHappenedOnceExactly();
         userRoles.Should().NotBeNull()
             .And.HaveSameCount(appAssignedRoleDesc)
             .And.AllSatisfy(x =>
@@ -154,7 +154,7 @@ public class AppChangeBusinessLogicTest
                 x => x.UserRoleText == appAssignedRoleDesc[2].Role
             );
 
-        A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescriptions(A<IEnumerable<(Guid,string,string)>>._)).MustHaveHappened(appAssignedRoleDesc.Length, Times.Exactly);
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescriptions(A<IEnumerable<(Guid, string, string)>>._)).MustHaveHappened(appAssignedRoleDesc.Length, Times.Exactly);
         userRoleDescriptions.Should()
             .HaveSameCount(appAssignedRoleDesc)
             .And.SatisfyRespectively(
@@ -196,7 +196,7 @@ public class AppChangeBusinessLogicTest
             new("en","this is test2"),
         };
         var appAssignedRoleDesc = new AppUserRole[] { new("Legal Admin", appUserRoleDescription) };
-        var clientIds = new[] {"client"};
+        var clientIds = new[] { "client" };
         A.CallTo(() => _offerRepository.GetInsertActiveAppUserRoleDataAsync(appId, _iamUserId, OfferTypeId.APP))
             .Returns((true, appName, Guid.Empty, null, clientIds));
 
@@ -220,7 +220,7 @@ public class AppChangeBusinessLogicTest
             new("en","this is test2"),
         };
         var appAssignedRoleDesc = new AppUserRole[] { new("Legal Admin", appUserRoleDescription) };
-        var clientIds = new[] {"client"};
+        var clientIds = new[] { "client" };
         A.CallTo(() => _offerRepository.GetInsertActiveAppUserRoleDataAsync(appId, _iamUserId, OfferTypeId.APP))
             .Returns((true, appName, _companyUserId, null, clientIds));
 
@@ -236,7 +236,7 @@ public class AppChangeBusinessLogicTest
 
     #region GetAppUpdateDescriptionById
 
-   [Fact]
+    [Fact]
     public async Task GetAppUpdateDescriptionByIdAsync_ReturnsExpected()
     {
         // Arrange
@@ -246,7 +246,7 @@ public class AppChangeBusinessLogicTest
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _iamUserId))
             .Returns(appDescriptionData);
-        
+
         // Act
         var result = await _sut.GetAppUpdateDescriptionByIdAsync(appId, _iamUserId).ConfigureAwait(false);
 
@@ -255,7 +255,7 @@ public class AppChangeBusinessLogicTest
         result.Select(x => x.LanguageCode).Should().Contain(offerDescription.Select(od => od.LanguageCode));
     }
 
-    [Fact]    
+    [Fact]
     public async Task GetAppUpdateDescriptionByIdAsync_ThrowsNotFoundException()
     {
         // Arrange
@@ -263,16 +263,16 @@ public class AppChangeBusinessLogicTest
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _iamUserId))
             .Returns(((bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<LocalizedDescription> OfferDescriptionDatas))default);
-        
+
         // Act
         async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId, _iamUserId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"App {appId} does not exist.");  
+        ex.Message.Should().Be($"App {appId} does not exist.");
     }
-    
-    [Fact]    
+
+    [Fact]
     public async Task GetAppUpdateDescriptionByIdAsync_ThrowsConflictException()
     {
         // Arrange
@@ -282,16 +282,16 @@ public class AppChangeBusinessLogicTest
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _iamUserId))
             .Returns(appDescriptionData);
-        
+
         // Act
         async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId, _iamUserId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"App {appId} is in InCorrect Status");  
+        ex.Message.Should().Be($"App {appId} is in InCorrect Status");
     }
 
-    [Fact]    
+    [Fact]
     public async Task GetAppUpdateDescriptionByIdAsync_ThrowsForbiddenException()
     {
         // Arrange
@@ -301,13 +301,13 @@ public class AppChangeBusinessLogicTest
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _iamUserId))
             .Returns(appDescriptionData);
-        
+
         // Act
         async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId, _iamUserId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"user {_iamUserId} is not a member of the providercompany of App {appId}");  
+        ex.Message.Should().Be($"user {_iamUserId} is not a member of the providercompany of App {appId}");
     }
 
     [Fact]
@@ -329,15 +329,15 @@ public class AppChangeBusinessLogicTest
     }
 
     #endregion
-    
+
     #region Add / Update App Description
-    
+
     [Fact]
     public async Task CreateOrUpdateAppDescriptionByIdAsync_withEmptyExistingDescriptionData_ReturnExpectedResult()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var updateDescriptionData =  new []{
+        var updateDescriptionData = new[]{
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
@@ -350,7 +350,7 @@ public class AppChangeBusinessLogicTest
         await _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, _iamUserId, updateDescriptionData).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(appId, A<IEnumerable<LocalizedDescription>>._, A<IEnumerable<(string,string,string)>>.That.IsSameSequenceAs(updateDescriptionData.Select(x => new ValueTuple<string,string,string>(x.LanguageCode, x.LongDescription, x.ShortDescription)))))
+        A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(appId, A<IEnumerable<LocalizedDescription>>._, A<IEnumerable<(string, string, string)>>.That.IsSameSequenceAs(updateDescriptionData.Select(x => new ValueTuple<string, string, string>(x.LanguageCode, x.LongDescription, x.ShortDescription)))))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -359,7 +359,7 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var updateDescriptionData =  new []{
+        var updateDescriptionData = new[]{
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
@@ -382,7 +382,7 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var updateDescriptionData =  new []{
+        var updateDescriptionData = new[]{
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
@@ -397,7 +397,7 @@ public class AppChangeBusinessLogicTest
         // Assert
         var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
         result.Message.Should().Be($"user {_iamUserId} is not a member of the providercompany of App {appId}");
-        
+
     }
 
     [Fact]
@@ -405,7 +405,7 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var updateDescriptionData =  new []{
+        var updateDescriptionData = new[]{
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
@@ -420,15 +420,15 @@ public class AppChangeBusinessLogicTest
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
         result.Message.Should().Be($"App {appId} is in InCorrect Status");
-        
+
     }
 
-     [Fact]
+    [Fact]
     public async Task CreateOrUpdateAppDescriptionByIdAsync_ThrowsNotFoundException()
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var updateDescriptionData =  new []{
+        var updateDescriptionData = new[]{
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
@@ -442,7 +442,7 @@ public class AppChangeBusinessLogicTest
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
         result.Message.Should().Be($"App {appId} does not exist.");
-        
+
     }
 
     #endregion
@@ -457,7 +457,7 @@ public class AppChangeBusinessLogicTest
         var iamUserId = _fixture.Create<Guid>().ToString();
         var documentId = _fixture.Create<Guid>();
         var documentStatusData = _fixture.CreateMany<DocumentStatusData>(2).ToImmutableArray();
-        var companyUserId =  _fixture.Create<Guid>();
+        var companyUserId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
         var documents = new List<Document>();
         var offerAssignedDocuments = new List<OfferAssignedDocument>();
@@ -465,7 +465,7 @@ public class AppChangeBusinessLogicTest
         A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(A<Guid>._, A<string>._, A<OfferTypeId>._))
             .Returns((true, companyUserId, documentStatusData));
 
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._,A<Action<Document>?>._))
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._, A<Action<Document>?>._))
             .ReturnsLazily((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentType, Action<Document>? setupOptionalFields) =>
             {
                 var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, documentType);
@@ -486,9 +486,9 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._,A<Action<Document>?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._, A<Action<Document>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.CreateOfferAssignedDocument(A<Guid>._, A<Guid>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.RemoveOfferAssignedDocuments(A<IEnumerable<(Guid OfferId, Guid DocumentId)>>.That.IsSameSequenceAs(documentStatusData.Select(data => new ValueTuple<Guid,Guid>(appId, data.DocumentId))))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.RemoveOfferAssignedDocuments(A<IEnumerable<(Guid OfferId, Guid DocumentId)>>.That.IsSameSequenceAs(documentStatusData.Select(data => new ValueTuple<Guid, Guid>(appId, data.DocumentId))))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.RemoveDocuments(A<IEnumerable<Guid>>.That.IsSameSequenceAs(documentStatusData.Select(data => data.DocumentId)))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         documents.Should().ContainSingle().Which.Should().Match<Document>(x => x.Id == documentId && x.MediaTypeId == MediaTypeId.JPEG && x.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && x.DocumentStatusId == DocumentStatusId.LOCKED);
@@ -501,7 +501,7 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var iamUserId = _fixture.Create<Guid>().ToString();
-        var appLeadImageContentTypes = new [] {MediaTypeId.JPEG,MediaTypeId.PNG};
+        var appLeadImageContentTypes = new[] { MediaTypeId.JPEG, MediaTypeId.PNG };
         var file = FormFileHelper.GetFormFile("Test File", "TestImage.pdf", "application/pdf");
 
         // Act
@@ -561,7 +561,7 @@ public class AppChangeBusinessLogicTest
         var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
 
         A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, iamUserId, OfferTypeId.APP))
-            .ReturnsLazily(() => new ValueTuple<bool,Guid,IEnumerable<DocumentStatusData>>());
+            .ReturnsLazily(() => new ValueTuple<bool, Guid, IEnumerable<DocumentStatusData>>());
 
         // Act
         async Task Act() => await _sut.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, iamUserId, file, CancellationToken.None);
@@ -586,7 +586,7 @@ public class AppChangeBusinessLogicTest
             BasePortalAddress = "test"
         };
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), null!);
-        
+
         // Act
         await _sut.DeactivateOfferByAppIdAsync(appId, _iamUserId).ConfigureAwait(false);
 
@@ -595,9 +595,9 @@ public class AppChangeBusinessLogicTest
     }
 
     #endregion
-    
+
     #region Update TenantUrl
-    
+
     [Fact]
     public async Task UpdateTenantUrlAsync_WithValidData_CallsExpected()
     {
@@ -743,7 +743,7 @@ public class AppChangeBusinessLogicTest
         var detailId = _fixture.Create<Guid>();
         A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _iamUserId))
             .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
-        
+
         // Act
         await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
 
@@ -864,7 +864,7 @@ public class AppChangeBusinessLogicTest
         var detailId = _fixture.Create<Guid>();
         A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _iamUserId))
             .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.PENDING, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
-        
+
         // Act
         async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
 
@@ -888,7 +888,7 @@ public class AppChangeBusinessLogicTest
         var subscribingCompany = _fixture.Create<Guid>();
         A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _iamUserId))
             .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, null));
-        
+
         // Act
         async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data, _iamUserId).ConfigureAwait(false);
 

@@ -30,7 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 /// Business logic for handling service-related operations. Includes persistence layer access.
 /// </summary>
 public interface IServiceBusinessLogic
-{ 
+{
     /// <summary>
     /// Gets all active services from the database
     /// </summary>
@@ -135,4 +135,21 @@ public interface IServiceBusinessLogic
     /// <param name="iamUserId">Id of the iam user</param>
     /// <returns>Returns the details of the subscription</returns>
     Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid serviceId, Guid subscriptionId, string iamUserId);
+
+    /// <summary>
+    /// Retrieves subscription statuses of subscribed Service of the provided user's company.
+    /// </summary>
+    /// <param name="iamUserId">IAM ID of the user to retrieve Service subscription statuses for.</param>
+    /// <param name ="page">page</param>
+    /// <param name ="size">size</param>
+    /// <returns>Returns the details of the subscription status for Service user</returns>
+    Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size, string iamUserId);
+
+    /// <summary>
+    /// Starts the auto setup process.
+    /// </summary>
+    /// <param name="data">The offer subscription id and url for the service</param>
+    /// <param name="iamUserId">Id of the iam user</param>
+    /// <returns>Returns the response data</returns>
+    Task StartAutoSetupAsync(OfferAutoSetupData data, string iamUserId);
 }

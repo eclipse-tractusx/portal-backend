@@ -24,9 +24,9 @@
  * SOFTWARE.
  ********************************************************************************/
 
+using Flurl.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.SAMLMetaData;
 using System.Xml.Serialization;
-using Flurl.Http;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 

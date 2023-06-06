@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
@@ -38,7 +38,7 @@ public static class ControllerExtensions
     public static void AddControllerContextWithClaimAndBearerTokenX(this ControllerBase controller, string iamUserId, string accessToken)
     {
         var claimsIdentity = new ClaimsIdentity();
-        claimsIdentity.AddClaims(new[] {new Claim("sub", iamUserId)});
+        claimsIdentity.AddClaims(new[] { new Claim("sub", iamUserId) });
         var httpContext = new DefaultHttpContext
         {
             User = new ClaimsPrincipal(claimsIdentity)
@@ -52,7 +52,7 @@ public static class ControllerExtensions
 
         controller.ControllerContext = controllerContext;
     }
-    
+
     /// <summary>
     /// Creates a claim for the identity user and adds it to the controller context
     /// </summary>
@@ -61,7 +61,7 @@ public static class ControllerExtensions
     public static void AddControllerContextWithClaim(this ControllerBase controller, string iamUserId)
     {
         var claimsIdentity = new ClaimsIdentity();
-        claimsIdentity.AddClaims(new[] {new Claim("sub", iamUserId)});
+        claimsIdentity.AddClaims(new[] { new Claim("sub", iamUserId) });
         var httpContext = new DefaultHttpContext
         {
             User = new ClaimsPrincipal(claimsIdentity)
@@ -83,7 +83,7 @@ public static class ControllerExtensions
     public static void AddControllerContextWithClaimAndBearer(this ControllerBase controller, string iamUserId, string accessToken)
     {
         var claimsIdentity = new ClaimsIdentity();
-        claimsIdentity.AddClaims(new[] {new Claim("sub", iamUserId)});
+        claimsIdentity.AddClaims(new[] { new Claim("sub", iamUserId) });
         var httpContext = new DefaultHttpContext
         {
             User = new ClaimsPrincipal(claimsIdentity)

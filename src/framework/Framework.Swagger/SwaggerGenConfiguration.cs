@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;
@@ -31,7 +31,7 @@ public static class SwaggerGenConfiguration
     {
         var assemblyName = typeof(TProgram).Assembly.FullName?.Split(',')[0];
 
-        c.SwaggerDoc(version, new OpenApiInfo {Title = assemblyName, Version = version});
+        c.SwaggerDoc(version, new OpenApiInfo { Title = assemblyName, Version = version });
         c.OperationFilter<SwaggerFileOperationFilter>();
 
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -58,7 +58,7 @@ public static class SwaggerGenConfiguration
             var filePath = Path.Combine(AppContext.BaseDirectory, assemblyName + ".xml");
             c.IncludeXmlComments(filePath);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             throw new ConfigurationException("error configuring swagger xmldocumentation", e);
         }

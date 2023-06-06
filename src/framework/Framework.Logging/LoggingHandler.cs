@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -22,7 +22,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 
-public class LoggingHandler<TLogger> : DelegatingHandler 
+public class LoggingHandler<TLogger> : DelegatingHandler
     where TLogger : class
 {
     private readonly ILogger<TLogger> _logger;

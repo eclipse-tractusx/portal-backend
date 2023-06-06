@@ -33,13 +33,13 @@ public interface IRegistrationBusinessLogic
     Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null);
     Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null);
     Task UpdateCompanyBpn(Guid applicationId, string bpn);
-    
+
     /// <summary>
     /// Approves the given application.
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
     Task ApproveRegistrationVerification(Guid applicationId);
-    
+
     /// <summary>
     /// Declines the given application.
     /// </summary>
@@ -75,7 +75,7 @@ public interface IRegistrationBusinessLogic
     /// <param name="data">The response data</param>
     /// <param name="cancellationToken">CancellationToken</param>
     Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken);
-    
+
     /// <summary>
     /// Gets the document with the given id
     /// </summary>

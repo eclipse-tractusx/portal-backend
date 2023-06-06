@@ -45,7 +45,7 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #region CreateAppInstance
-    
+
     [Fact]
     public async Task CreateAppInstance_CallsExpected()
     {
@@ -87,7 +87,7 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var entry = changedEntries.Single();
         entry.Entity.Should().BeOfType<AppInstance>();
         entry.State.Should().Be(EntityState.Deleted);
-   }
+    }
 
     #endregion
 
@@ -115,7 +115,7 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
-    
+
     #region GetAssignedServiceAccounts
 
     [Fact]
@@ -184,7 +184,7 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     #region Setup
-    
+
     private async Task<(AppInstanceRepository repo, PortalDbContext context)> CreateSutWithContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

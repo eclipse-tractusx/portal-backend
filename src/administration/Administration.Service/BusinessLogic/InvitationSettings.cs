@@ -35,7 +35,7 @@ public class InvitationSettings
     public string RegistrationAppAddress { get; set; }
 
     [Required]
-    public IDictionary<string,IEnumerable<string>> InvitedUserInitialRoles { get; set; }
+    public IDictionary<string, IEnumerable<string>> InvitedUserInitialRoles { get; set; }
 
     [Required(AllowEmptyStrings = false)]
     public string InitialLoginTheme { get; set; }

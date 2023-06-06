@@ -33,21 +33,21 @@ public class CustodianBusinessLogicTests
 {
     #region Initialization
 
-    private static readonly Guid IdWithoutBpn = new ("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
-    private static readonly Guid IdWithBpn = new ("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
+    private static readonly Guid IdWithoutBpn = new("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
+    private static readonly Guid IdWithBpn = new("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
     private static readonly Guid CompanyId = new("95c4339e-e087-4cd2-a5b8-44d385e64630");
     private const string ValidBpn = "BPNL123698762345";
     private const string ValidCompanyName = "valid company";
 
     private readonly IFixture _fixture;
     private readonly IApplicationRepository _applicationRepository;
-    
+
     private readonly ICustodianService _custodianService;
     private readonly CustodianBusinessLogic _logic;
 
     public CustodianBusinessLogicTests()
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization {ConfigureMembers = true});
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
@@ -112,7 +112,7 @@ public class CustodianBusinessLogicTests
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForCreateWallet();
-        
+
         // Act
         var result = await _logic.CreateIdentityWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
 
@@ -122,7 +122,7 @@ public class CustodianBusinessLogicTests
         result.SkipStepTypeIds.Should().BeNull();
         result.Modified.Should().BeFalse();
         result.StepStatusId.Should().Be(ProcessStepStatusId.TODO);
-        A.CallTo(() =>  _custodianService.CreateWalletAsync(A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
+        A.CallTo(() => _custodianService.CreateWalletAsync(A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -137,14 +137,14 @@ public class CustodianBusinessLogicTests
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForCreateWallet();
-        
+
         // Act
         var result = await _logic.CreateIdentityWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Modified.Should().BeTrue();
         result.StepStatusId.Should().Be(ProcessStepStatusId.SKIPPED);
-        A.CallTo(() =>  _custodianService.CreateWalletAsync(A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
+        A.CallTo(() => _custodianService.CreateWalletAsync(A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -160,14 +160,14 @@ public class CustodianBusinessLogicTests
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForCreateWallet();
-        
+
         // Act
         var result = await _logic.CreateIdentityWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         result.Modified.Should().BeTrue();
         result.StepStatusId.Should().Be(ProcessStepStatusId.SKIPPED);
-        A.CallTo(() =>  _custodianService.CreateWalletAsync(A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
+        A.CallTo(() => _custodianService.CreateWalletAsync(A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -184,7 +184,7 @@ public class CustodianBusinessLogicTests
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(applicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForCreateWallet();
-        
+
         // Act
         async Task Act() => await _logic.CreateIdentityWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
 
@@ -243,7 +243,7 @@ public class CustodianBusinessLogicTests
         stepStatusId.Should().Be(ProcessStepStatusId.DONE);
 
         stepsToSkip.Should().BeNull();
-        
+
         modified.Should().BeTrue();
 
         stepTypeIds.Should().NotBeNull();
@@ -263,7 +263,7 @@ public class CustodianBusinessLogicTests
     #endregion
 
     #region Setup
-    
+
     private void SetupForCreateWallet()
     {
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(IdWithoutBpn))

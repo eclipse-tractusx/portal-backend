@@ -18,10 +18,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text;
-using System.Text.Json;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
+using System.Text;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests.EnpointSetup;
 

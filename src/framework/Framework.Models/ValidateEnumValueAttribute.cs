@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 public class ValidateEnumValueAttribute : ValidationAttribute
 {
-    override protected ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
         var type = value?.GetType();
         if (type is null || !type.IsEnum)

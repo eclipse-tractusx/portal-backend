@@ -57,7 +57,7 @@ public class AuditConsent20230412 : IAuditEntityV1
 
     /// <inheritdoc />
     public AuditOperationId AuditV1OperationId { get; set; }
-    
+
     /// <inheritdoc />
     public DateTimeOffset AuditV1DateLastChanged { get; set; }
 }

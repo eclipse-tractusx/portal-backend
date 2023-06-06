@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 public class ValidateEnumValuesAttribute : ValidationAttribute
 {
-    override protected ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
         var type = value?
             .GetType()
@@ -48,7 +48,7 @@ public class ValidateEnumValuesAttribute : ValidationAttribute
         }
         while (true)
         {
-            var hasNext = moveNext.Invoke(enumerator,null);
+            var hasNext = moveNext.Invoke(enumerator, null);
             if (hasNext is null)
             {
                 throw new UnexpectedConditionException($"attribute ValidateEnumValues failed to enumerate {validationContext.MemberName}: hasNext should never be null here");
@@ -57,7 +57,7 @@ public class ValidateEnumValuesAttribute : ValidationAttribute
             {
                 return null;
             }
-            var item = current.Invoke(enumerator,null);
+            var item = current.Invoke(enumerator, null);
             if (item is null || Array.BinarySearch(values, item) < 0)
             {
                 return new ValidationResult($"{item} is not a valid value for {type}. Valid values are: {string.Join(", ", type.GetEnumNames())}");

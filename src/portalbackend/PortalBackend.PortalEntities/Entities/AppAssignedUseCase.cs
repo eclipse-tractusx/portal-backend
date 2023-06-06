@@ -22,7 +22,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class AppAssignedUseCase
 {
-    private AppAssignedUseCase() {}
+    private AppAssignedUseCase() { }
 
     public AppAssignedUseCase(Guid appId, Guid useCaseId)
     {

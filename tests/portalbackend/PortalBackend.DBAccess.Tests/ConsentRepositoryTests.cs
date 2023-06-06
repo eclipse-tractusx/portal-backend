@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Microsoft.EntityFrameworkCore;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -127,7 +127,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, dbContext) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        sut.RemoveConsents(new [] { dbContext.Consents.First() });
+        sut.RemoveConsents(new[] { dbContext.Consents.First() });
 
         // Assert
         var changeTracker = dbContext.ChangeTracker;
@@ -151,7 +151,7 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        sut.AttachAndModifiesConsents(new []
+        sut.AttachAndModifiesConsents(new[]
             {
                 new Guid("ac1cf001-7fbc-1f2f-817f-bce058019910"),
                 new Guid("ac1cf001-7fbc-1f2f-817f-bce058019911")
@@ -237,7 +237,6 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
                 x => x.State == EntityState.Added && x.Entity.ConsentId == addedConsents[1].Id && x.Entity.OfferId == offerId
             );
     }
-
 
     [Fact]
     public async Task AddAttachAndModifyConsents_CompanyRole_ReturnsExpected()

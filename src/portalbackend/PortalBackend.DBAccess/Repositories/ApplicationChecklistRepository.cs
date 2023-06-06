@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
@@ -66,11 +66,11 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
             .AsNoTracking()
             .Where(process => process.Id == processId)
             .Select(process =>
-                new ValueTuple<bool,Guid,CompanyApplicationStatusId,IEnumerable<(ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId)>>(
+                new ValueTuple<bool, Guid, CompanyApplicationStatusId, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>(
                     true,
                     process.CompanyApplication!.Id,
                     process.CompanyApplication.ApplicationStatusId,
-                    process.CompanyApplication.ApplicationChecklistEntries.Select(entry => new ValueTuple<ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId>(
+                    process.CompanyApplication.ApplicationChecklistEntries.Select(entry => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(
                         entry.ApplicationChecklistEntryTypeId,
                         entry.ApplicationChecklistEntryStatusId
                     ))
@@ -82,7 +82,8 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
             .AsNoTracking()
             .AsSplitQuery()
             .Where(application => application.Id == applicationId)
-            .Select(application => new {
+            .Select(application => new
+            {
                 Application = application,
                 IsSubmitted = application.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED,
                 Process = application.ChecklistProcess,
@@ -95,12 +96,12 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
                 x.IsSubmitted
                     ? x.Application.ApplicationChecklistEntries
                         .Where(entry => entryTypeIds.Contains(entry.ApplicationChecklistEntryTypeId))
-                        .Select(entry => new ValueTuple<ApplicationChecklistEntryTypeId,ApplicationChecklistEntryStatusId>(entry.ApplicationChecklistEntryTypeId, entry.ApplicationChecklistEntryStatusId))
+                        .Select(entry => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(entry.ApplicationChecklistEntryTypeId, entry.ApplicationChecklistEntryStatusId))
                     : null,
                 x.IsSubmitted
                     ? x.Process!.ProcessSteps
                         .Where(step =>
-                            processStepTypeIds.Contains(step.ProcessStepTypeId) && 
+                            processStepTypeIds.Contains(step.ProcessStepTypeId) &&
                             step.ProcessStepStatusId == ProcessStepStatusId.TODO)
                     : null))
             .SingleOrDefaultAsync();

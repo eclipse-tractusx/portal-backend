@@ -41,7 +41,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers;
 public class AppReleaseProcessController : ControllerBase
 {
     private readonly IAppReleaseBusinessLogic _appReleaseBusinessLogic;
-    
+
     /// <summary>
     /// Constructor
     /// </summary>
@@ -50,7 +50,7 @@ public class AppReleaseProcessController : ControllerBase
     {
         _appReleaseBusinessLogic = appReleaseBusinessLogic;
     }
-    
+
     /// <summary>
     /// Add app details to a newly created owned app under the app release/publishing process.
     /// </summary>
@@ -71,7 +71,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<NoContentResult> UpdateApp([FromRoute] Guid appId, [FromBody] AppEditableDetail updateModel) 
+    public async Task<NoContentResult> UpdateApp([FromRoute] Guid appId, [FromBody] AppEditableDetail updateModel)
     {
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.UpdateAppAsync(appId, updateModel, userId)).ConfigureAwait(false);
         return NoContent();
@@ -107,7 +107,7 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.CreateAppDocumentAsync(appId, documentTypeId, document, iamUserId, cancellationToken));
         return NoContent();
     }
-    
+
     /// <summary>
     /// Add role and role description for App 
     /// </summary>
@@ -125,7 +125,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IEnumerable<AppRoleData>> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> userRoles)=>
+    public async Task<IEnumerable<AppRoleData>> AddAppUserRole([FromRoute] Guid appId, [FromBody] IEnumerable<AppUserRole> userRoles) =>
          await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddAppUserRoleAsync(appId, userRoles, iamUserId)).ConfigureAwait(false);
 
     /// <summary>
@@ -139,7 +139,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<AgreementDocumentData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync() =>
         _appReleaseBusinessLogic.GetOfferAgreementDataAsync();
-    
+
     /// <summary>
     /// Gets the agreement consent status for the given app id
     /// </summary>
@@ -176,7 +176,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<IEnumerable<ConsentStatusData>> SubmitOfferConsentToAgreementsAsync([FromRoute] Guid appId, [FromBody] OfferAgreementConsent offerAgreementConsents) =>
         this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.SubmitOfferConsentAsync(appId, offerAgreementConsents, iamUserId));
-    
+
     /// <summary>
     /// Return app detail with status
     /// </summary>
@@ -193,7 +193,7 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<AppProviderResponse> GetAppDetailsForStatusAsync([FromRoute] Guid appId) =>
         this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.GetAppDetailsForStatusAsync(appId, iamUserId));
-    
+
     /// <summary>
     /// Removes a role from persistence layer by appId and roleId.
     /// </summary>
@@ -216,7 +216,7 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.DeleteAppRoleAsync(appId, roleId, iamUserId));
         return NoContent();
     }
-    
+
     /// <summary>
     /// Get All Users with Role of Sales Manager
     /// </summary>
@@ -243,11 +243,11 @@ public class AppReleaseProcessController : ControllerBase
     [Authorize(Roles = "add_apps")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<CreatedAtRouteResult> ExecuteAppCreation([FromBody] AppRequestModel appRequestModel)
     {
         var appId = await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.AddAppAsync(appRequestModel, iamUserId).ConfigureAwait(false));
-        return CreatedAtRoute(nameof(AppsController.GetAppDetailsByIdAsync), new {controller = "Apps", appId = appId}, appId);
+        return CreatedAtRoute(nameof(AppsController.GetAppDetailsByIdAsync), new { controller = "Apps", appId = appId }, appId);
     }
 
     /// <summary>
@@ -314,7 +314,7 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(userId => _appReleaseBusinessLogic.SubmitAppReleaseRequestAsync(appId, userId)).ConfigureAwait(false);
         return NoContent();
     }
-    
+
     /// <summary>
     /// Approve App to change status from IN_REVIEW to Active and create notification
     /// </summary>
@@ -418,7 +418,7 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.DeleteAppDocumentsAsync(documentId, iamUserId));
         return NoContent();
     }
-    
+
     /// <summary>
     /// Delete App by Id
     /// </summary>
@@ -463,7 +463,7 @@ public class AppReleaseProcessController : ControllerBase
         await this.WithIamUserId(iamUserId => _appReleaseBusinessLogic.SetInstanceType(appId, data, iamUserId)).ConfigureAwait(false);
         return NoContent();
     }
-    
+
     /// <summary>
     /// Retrieve the technical user profile information
     /// </summary>

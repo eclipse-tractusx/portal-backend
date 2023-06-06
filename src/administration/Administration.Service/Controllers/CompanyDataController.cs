@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
@@ -62,7 +62,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(CompanyAddressDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync() =>
-        this.WithIamUserId(iamUserId =>_logic.GetOwnCompanyDetailsAsync(iamUserId));
+        this.WithIamUserId(iamUserId => _logic.GetOwnCompanyDetailsAsync(iamUserId));
 
     /// <summary>
     /// Gets the CompanyAssigned UseCase details
@@ -76,7 +76,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(CompanyAssignedUseCaseData), StatusCodes.Status200OK)]
     public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync() =>
        this.WithIamUserId(iamUserId => _logic.GetCompanyAssigendUseCaseDetailsAsync(iamUserId));
-    
+
     /// <summary>
     /// Create the CompanyAssigned UseCase details
     /// </summary>
@@ -126,7 +126,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(CompanyRoleConsentViewData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync([FromQuery]string? languageShortName = null) =>
+    public IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync([FromQuery] string? languageShortName = null) =>
         this.WithIamUserId(iamUserId => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(iamUserId, languageShortName));
 
     /// <summary>
@@ -145,7 +145,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> CreateCompanyRoleAndConsentAgreementDetailsAsync([FromBody] IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails)
     {
-       await this.WithIamUserId(iamUserId => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(iamUserId, companyRoleConsentDetails));
-       return NoContent();
+        await this.WithIamUserId(iamUserId => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(iamUserId, companyRoleConsentDetails));
+        return NoContent();
     }
 }

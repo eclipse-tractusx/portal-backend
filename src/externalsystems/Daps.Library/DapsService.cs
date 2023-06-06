@@ -18,21 +18,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Net.Http.Json;
-using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Daps.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Daps.Library;
 
 public class DapsService : IDapsService
 {
     private const string BaseSecurityProfile = "BASE_SECURITY_PROFILE";
-    private static readonly JsonSerializerOptions Options = new (){ PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly ITokenService _tokenService;
     private readonly DapsSettings _settings;
 
@@ -70,7 +70,7 @@ public class DapsService : IDapsService
         var result = await httpClient.PostAsync(string.Empty, multiPartStream, cancellationToken)
             .CatchingIntoServiceExceptionFor("daps-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return await result.Content.ReadFromJsonAsync<DapsResponse>(Options, cancellationToken)
-            .ConfigureAwait(false); 
+            .ConfigureAwait(false);
     }
     /// <inheritdoc />
     public async Task<bool> DeleteDapsClient(string dapsClientId, CancellationToken cancellationToken)
