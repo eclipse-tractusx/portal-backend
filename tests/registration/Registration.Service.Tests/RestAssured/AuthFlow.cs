@@ -12,7 +12,7 @@ public class AuthFlow
     private readonly string _basePortalUrl = "https://portal.dev.demo.catena-x.net/";
     private readonly string _baseCentralIdpUrl = "https://centralidp.dev.demo.catena-x.net/";
 
-    private readonly string _startCentralidpEndpoint = "auth/realms/CX-Central/protocol/openid-connect/auth";
+    private readonly string _startCentralIdpEndpoint = "auth/realms/CX-Central/protocol/openid-connect/auth";
 
     private readonly string _companyCentralIdpEndpoint = "auth/realms/CX-Central/broker";
     private static List<string>? _cookies;
@@ -20,8 +20,7 @@ public class AuthFlow
     private readonly HttpClientHandler _httpClientHandler = new () { AllowAutoRedirect = false };
 
     private readonly HttpClient _client;
-    private static string _companyName;
-    private readonly Secrets _secrets = new ();
+    private static string? _companyName;
 
     public AuthFlow(string companyName)
     {
@@ -43,7 +42,7 @@ public class AuthFlow
             .RelaxedHttpsValidation()
             .QueryParams(queryParams)
             .When()
-            .Get($"{_baseCentralIdpUrl}{_startCentralidpEndpoint}")
+            .Get($"{_baseCentralIdpUrl}{_startCentralIdpEndpoint}")
             .Then()
             .StatusCode(200)
             .Extract()

@@ -17,7 +17,6 @@ public class UnHappyPathRegistrationWithoutDocument
 
     private readonly string _adminEndPoint = "/api/administration";
     private static string _companyName = "Test-Catena-X";
-    private static RegistrationEndpointHelper _registrationEndpointHelper;
 
     #region UnHappy Path - new registration without document
     
@@ -85,7 +84,7 @@ public class UnHappyPathRegistrationWithoutDocument
     [Fact]
     public void Test3_SetCompanyDetailData_ReturnsExpectedResult()
     {
-        CompanyDetailData companyDetailData = _registrationEndpointHelper.GetCompanyDetailData();
+        CompanyDetailData companyDetailData = RegistrationEndpointHelper.GetCompanyDetailData();
         _companyName = companyDetailData.Name;
         string companyId = companyDetailData.CompanyId.ToString();
         var response = Given()

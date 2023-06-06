@@ -1,0 +1,86 @@
+﻿[
+  {
+    "companyDetailData": {
+      "companyId": "00000000-0000-0000-0000-000000000000",
+      "name": "Test-Catena-X",
+      "city": "Munich",
+      "streetName": "Main street",
+      "countryAlpha2Code": "DE",
+      "bpn": null,
+      "shortName": "Test-Catena-X",
+      "region": "Bayern",
+      "streetAdditional": "Test",
+      "streetNumber": "1",
+      "zipCode": "12345",
+      "countryDe": "Deutschland",
+      "uniqueIds": [
+        {
+          "type": "COMMERCIAL_REG_NUMBER",
+          "value": "HRB 12345"
+        }
+      ]
+    },
+    "updateCompanyDetailData": {
+      "companyId": "00000000-0000-0000-0000-000000000000",
+      "name": "Test-Catena-X-Update",
+      "city": "Munich",
+      "streetName": "Main street update",
+      "countryAlpha2Code": "DE",
+      "bpn": null,
+      "shortName": "Test-Catena-X",
+      "region": "Bayern",
+      "streetAdditional": "Test",
+      "streetNumber": "12",
+      "zipCode": "12345",
+      "countryDe": "Deutschland",
+      "uniqueIds": [
+        {
+          "type": "VAT_ID",
+          "value": "DE123456789"
+        }
+      ]
+    }
+  },
+  {
+    "companyDetailData": {
+      "companyId": "00000000-0000-0000-0000-000000000000",
+      "name": "Test-Catena-X",
+      "city": "Munich",
+      "streetName": "Main street",
+      "countryAlpha2Code": "DE",
+      "bpn": null,
+      "shortName": "Test-Catena-X",
+      "region": "Bayern",
+      "streetAdditional": "Test",
+      "streetNumber": "1",
+      "zipCode": "12345",
+      "countryDe": "Deutschland",
+      "uniqueIds": [
+        {
+          "type": "COMMERCIAL_REG_NUMBER",
+          "value": "HRB 12345"
+        }
+      ]
+    },
+    "updateCompanyDetailData": {
+      "companyId": "00000000-0000-0000-0000-000000000000",
+      "name": "Test-Catena-X-Update",
+      "city": "Munich",
+      "streetName": "Main street update",
+      "countryAlpha2Code": "DE",
+      "bpn": null,
+      "shortName": "Test-Catena-X",
+      "region": "Bayern",
+      "streetAdditional": "Test",
+      "streetNumber": "12",
+      "zipCode": "12345",
+      "countryDe": "Deutschland",
+      "uniqueIds": [
+        {
+          "type": "VAT_ID",
+          "value": "DE123456789"
+        }
+      ]
+    }
+  }
+]
