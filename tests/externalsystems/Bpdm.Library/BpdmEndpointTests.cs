@@ -1,47 +1,46 @@
 ﻿using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using static RestAssured.Dsl;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
 
 public class BpdmEndpointTests
 {
-    private static readonly string _baseUrl = "https://partners-pool.dev.demo.catena-x.net";
-    private static readonly string _endPoint = "/api/catena/legal-entities";
+    private static readonly string BaseUrl = "https://partners-pool.dev.demo.catena-x.net";
+    private static readonly string EndPoint = "/api/catena/legal-entities";
+    private static string? _interfaceHealthCheckTechUserToken;
 
-    private static readonly Secrets _secrets = new ();
+    private static readonly Secrets Secrets = new ();
 
     [Fact]
     public void BpdmInterfaceHealthCheck_ReturnsExpectedResult()
     {
-        string? _interfaceHealthCheckTechUserToken = RetrieveHealthCheckTechUserToken();
+        RetrieveHealthCheckTechUserToken();
         var response = Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
                 $"Bearer {_interfaceHealthCheckTechUserToken}")
             .When()
-            .Get($"{_baseUrl}{_endPoint}")
+            .Get($"{BaseUrl}{EndPoint}")
             .Then()
             .StatusCode(200)
             .And()
             .Extract()
             .Body("$.totalElements");
-            //.Response();
-        //Assert.Contains(response.Content.ReadAsStringAsync());
         Assert.NotEqual(0, response);
     }
-    
-    private string? RetrieveHealthCheckTechUserToken()
+
+    private void RetrieveHealthCheckTechUserToken()
     {
         var formData = new[]
         {
-            new KeyValuePair<string, string>("client_secret", _secrets.InterfaceHealthCheckTechUserPassword),
+            new KeyValuePair<string, string>("client_secret", Secrets.InterfaceHealthCheckTechUserPassword),
             new KeyValuePair<string, string>("grant_type", "client_credentials"),
             new KeyValuePair<string, string>("scope", "openid"),
-            new KeyValuePair<string, string>("client_id", _secrets.InterfaceHealthCheckTechUserName),
+            new KeyValuePair<string, string>("client_id", Secrets.InterfaceHealthCheckTechUserName),
         };
-      
-      
-        var interfaceHealthCheckTechUserToken = Given()
+
+        _interfaceHealthCheckTechUserToken = Given()
             .ContentType("application/x-www-form-urlencoded")
             .FormData(formData)
             .When()
@@ -51,6 +50,5 @@ public class BpdmEndpointTests
             .And()
             .Extract()
             .Body("$.access_token").ToString();
-        return interfaceHealthCheckTechUserToken;
     }
 }
