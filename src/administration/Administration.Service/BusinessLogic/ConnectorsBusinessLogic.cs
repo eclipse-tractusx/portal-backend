@@ -289,27 +289,48 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     public async Task DeleteConnectorAsync(Guid connectorId, Guid userId, CancellationToken cancellationToken)
     {
         var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
-        var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId).ConfigureAwait(false);
-        if (!result.IsConnectorIdExist)
+        var result= await connectorsRepository.GetConnectorDeleteDataAsync(connectorId).ConfigureAwait(false);
+        var (IsConnectorIdExist, DapsClientId, SelfDescriptionDocumentid, DocumentStatus, ConnectorStatus,DapsRegistrationSuccess)  = result;
+        if (!IsConnectorIdExist)
         {
             throw new NotFoundException($"Connector {connectorId} does not exist");
         }
-
-        if (result.ConnectorStatus == ConnectorStatusId.INACTIVE)
+        if ((SelfDescriptionDocumentid == null) && DapsRegistrationSuccess!.Value && ConnectorStatus == ConnectorStatusId.ACTIVE)
         {
-            throw new ConflictException("INACTIVE Connector can not be deleted");
+            await DeleteConnectorWithStatusUpdate(connectorId, iamUserId, cancellationToken, DapsClientId, connectorsRepository);
         }
+        else if ((SelfDescriptionDocumentid != null) && !DapsRegistrationSuccess!.Value && ConnectorStatus == ConnectorStatusId.PENDING)
+        {
+            await DeleteConnectorWithDocuments(connectorId, SelfDescriptionDocumentid, connectorsRepository);
+        }
+        else if ((SelfDescriptionDocumentid != null) && DapsRegistrationSuccess!.Value && ConnectorStatus == ConnectorStatusId.ACTIVE)
+        {
+            await DeleteConnector(connectorId, iamUserId, cancellationToken, DapsClientId, SelfDescriptionDocumentid, DocumentStatus, ConnectorStatus, connectorsRepository);
+        }
+        else if ((SelfDescriptionDocumentid == null) && !DapsRegistrationSuccess!.Value && ConnectorStatus == ConnectorStatusId.PENDING)
+        {
+            await DeleteConnectorWithoutDocuments(connectorId, connectorsRepository);
+        }
+        else
+        {
+            throw new ConflictException($"Connector status does not match a deletion scenario. Deletion declined");
+        }
+        
+    }
 
-        if (string.IsNullOrWhiteSpace(result.DapsClientId))
+    private async Task DeleteConnector(Guid connectorId, string iamUserId, CancellationToken cancellationToken, string? DapsClientId, Guid? SelfDescriptionDocumentid, DocumentStatusId? DocumentStatus, ConnectorStatusId ConnectorStatus, IConnectorsRepository connectorsRepository)
+    {
+
+        if (string.IsNullOrWhiteSpace(DapsClientId))
         {
             throw new ConflictException("DapsClientId must be set");
         }
 
-        if (result.SelfDescriptionDocumentId != null)
+        if (SelfDescriptionDocumentid != null)
         {
             _portalRepositories.GetInstance<IDocumentRepository>().AttachAndModifyDocument(
-                result.SelfDescriptionDocumentId.Value,
-                a => { a.DocumentStatusId = result.DocumentStatusId!.Value; },
+                SelfDescriptionDocumentid.Value,
+                a => { a.DocumentStatusId = DocumentStatus!.Value; },
                 a => { a.DocumentStatusId = DocumentStatusId.INACTIVE; });
         }
 
@@ -320,8 +341,47 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             con.LastEditorId = userId;
             con.DateLastChanged = DateTimeOffset.UtcNow;
         });
-        await _dapsService.DeleteDapsClient(result.DapsClientId, cancellationToken).ConfigureAwait(false);
+        await _dapsService.DeleteDapsClient(DapsClientId, cancellationToken).ConfigureAwait(false);
         await _portalRepositories.SaveAsync();
+    }
+
+    private async Task DeleteConnectorWithStatusUpdate(Guid connectorId, string iamUserId, CancellationToken cancellationToken, string? DapsClientId, IConnectorsRepository connectorsRepository)
+    {
+
+        if (string.IsNullOrWhiteSpace(DapsClientId))
+        {
+            throw new ConflictException("DapsClientId must be set");
+        }
+
+        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
+
+        if (companyUserId == Guid.Empty)
+        {
+            throw new ConflictException($"user {iamUserId} is not mapped to a valid companyUser");
+        }
+
+        connectorsRepository.DeleteConnectorClientDetails(connectorId);
+        connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
+        {
+            con.StatusId = ConnectorStatusId.INACTIVE;
+            con.LastEditorId = companyUserId;
+            con.DateLastChanged = DateTimeOffset.UtcNow;
+        });
+        await _dapsService.DeleteDapsClient(DapsClientId, cancellationToken).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync();
+    }
+
+    private async Task DeleteConnectorWithDocuments(Guid connectorId, Guid? SelfDescriptionDocumentid, IConnectorsRepository connectorsRepository)
+    {
+        _portalRepositories.GetInstance<IDocumentRepository>().RemoveDocument(SelfDescriptionDocumentid!.Value);
+        connectorsRepository.DeleteConnectorDetails(connectorId);
+        await _portalRepositories.SaveAsync();
+    }
+
+    private async Task DeleteConnectorWithoutDocuments(Guid connectorId, IConnectorsRepository connectorsRepository)
+    {
+         connectorsRepository.DeleteConnectorDetails(connectorId);
+         await _portalRepositories.SaveAsync();
     }
 
     /// <inheritdoc/>

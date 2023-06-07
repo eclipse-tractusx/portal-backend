@@ -139,15 +139,16 @@ public class ConnectorsRepository : IConnectorsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsConnectorIdExist, string? DapsClientId, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus)> GetConnectorDeleteDataAsync(Guid connectorId) =>
+    public Task<(bool IsConnectorIdExist, string? DapsClientId, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus, bool? DapsRegistrationSuccessful)> GetConnectorDeleteDataAsync(Guid connectorId) =>
         _context.Connectors
             .Where(x => x.Id == connectorId)
-            .Select(connector => new ValueTuple<bool, string?, Guid?, DocumentStatusId?, ConnectorStatusId>(
+            .Select(connector => new ValueTuple<bool, string?, Guid?, DocumentStatusId?, ConnectorStatusId, bool?>(
                 true,
                 connector.ClientDetails == null ? null : connector.ClientDetails!.ClientId,
                 connector.SelfDescriptionDocumentId,
                 connector.SelfDescriptionDocument!.DocumentStatusId,
-                connector.StatusId
+                connector.StatusId,
+                connector.DapsRegistrationSuccessful
             )).SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -171,4 +172,7 @@ public class ConnectorsRepository : IConnectorsRepository
                 c.ClientDetails!.ClientId
             ))
             .SingleOrDefaultAsync();
+
+    public void DeleteConnectorDetails(Guid connectorId) =>
+        _context.Connectors.Remove(new Connector(connectorId, null!, null!, null!));
 }

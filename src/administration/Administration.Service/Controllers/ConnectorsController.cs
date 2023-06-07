@@ -227,12 +227,14 @@ public class ConnectorsController : ControllerBase
     /// <remarks>Example: DELETE: /api/administration/connectors/5636F9B9-C3DE-4BA5-8027-00D17A2FECFB</remarks>
     /// <response code="204">Empty response on success.</response>
     /// <response code="404">Record not found.</response>
+    /// <response code="409">Connector status does not match a deletion scenario. Deletion declined.</response>
     [HttpDelete]
     [Route("{connectorId}")]
     [Authorize(Roles = "delete_connectors")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> DeleteConnectorAsync([FromRoute] Guid connectorId, CancellationToken cancellationToken)
     {
         await this.WithUserId(userId => _businessLogic.DeleteConnectorAsync(connectorId, userId, cancellationToken));
