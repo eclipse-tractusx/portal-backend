@@ -10,11 +10,12 @@ public class SdFactoryEndpointTests
     private static readonly string WalletBaseUrl = "https://managed-identity-wallets.dev.demo.catena-x.net";
     private static readonly string WalletEndPoint = "/api/wallets";
     private static string? _interfaceHealthCheckTechUserToken;
+    private static string? _bpn;
 
     private static readonly Secrets Secrets = new ();
 
     [Fact]
-    public void InterfaceHealthCheck_ReturnsExpectedResult()
+    public void InterfaceHealthCheckSdDocCreation_ReturnsExpectedResult()
     {
         RetrieveHealthCheckTechUserToken();
         Given()
@@ -30,9 +31,20 @@ public class SdFactoryEndpointTests
             .StatusCode(202);
     }
 
-    //GET https://managed-identity-wallets.dev.demo.catena-x.net/api/wallets
     [Fact]
-    public void GetListOfWallets_ReturnsExpectedResult()
+    public void Scenario_InterfaceHealthCheckWalletCreation()
+    {
+        _bpn = $"TestAutomation_{DateTime.Now:s}";
+        RetrieveHealthCheckTechUserToken();
+        GetListOfWallets_ReturnsExpectedResult();
+        Thread.Sleep(3000);
+        CreateWallet_ReturnsExpectedResult(201);
+        Thread.Sleep(3000);
+        CreateWallet_ReturnsExpectedResult(409);
+    }
+
+    //GET https://managed-identity-wallets.dev.demo.catena-x.net/api/wallets
+    private void GetListOfWallets_ReturnsExpectedResult()
     {
         RetrieveHealthCheckTechUserToken();
         Given()
@@ -46,9 +58,8 @@ public class SdFactoryEndpointTests
             .StatusCode(200);
     }
 
-    [Fact]
     //POST /api/wallets
-    public void CreateWalletFirstTime_ReturnsExpectedResult()
+    private void CreateWallet_ReturnsExpectedResult(int statusCode)
     {
         RetrieveHealthCheckTechUserToken();
         Given()
@@ -57,31 +68,13 @@ public class SdFactoryEndpointTests
                 "authorization",
                 $"Bearer {_interfaceHealthCheckTechUserToken}")
             .When()
-            .Body("{\"bpn\": \"BPNL000000000001\", \"name\": \"bpn\"}")
-            .Post($"{BaseUrl}{EndPoint}")
+            .Body($"{{\"bpn\": \"{_bpn}\", \"name\": \"bpn\"}}")
+            .Post($"{WalletBaseUrl}{WalletEndPoint}")
             .Then()
-            .StatusCode(201);
+            .StatusCode(statusCode);
     }
 
-    [Fact]
-    //POST /api/wallets
-    public void CreateWalletSecondTime_ReturnsExpectedResult()
-    {
-        RetrieveHealthCheckTechUserToken();
-        Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_interfaceHealthCheckTechUserToken}")
-            .When()
-            .Body("{\"bpn\": \"BPNL000000000000\", \"name\": \"bpn\"}")
-            .Post($"{BaseUrl}{EndPoint}")
-            .Then()
-            .StatusCode(409);
-    }
-
-    [Fact]
-    public void RetrieveHealthCheckTechUserToken()
+    private void RetrieveHealthCheckTechUserToken()
     {
         var formData = new[]
         {
