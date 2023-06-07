@@ -305,7 +305,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         }
         else if ((SelfDescriptionDocumentid != null) && DapsRegistrationSuccess!.Value && ConnectorStatus == ConnectorStatusId.ACTIVE)
         {
-            await DeleteConnector(connectorId, iamUserId, cancellationToken, DapsClientId, SelfDescriptionDocumentid, DocumentStatus, ConnectorStatus, connectorsRepository);
+            await DeleteConnector(connectorId, iamUserId, cancellationToken, DapsClientId, SelfDescriptionDocumentid, DocumentStatus, connectorsRepository);
         }
         else if ((SelfDescriptionDocumentid == null) && !DapsRegistrationSuccess!.Value && ConnectorStatus == ConnectorStatusId.PENDING)
         {
@@ -317,7 +317,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         }
     }
 
-    private async Task DeleteConnector(Guid connectorId, string iamUserId, CancellationToken cancellationToken, string? DapsClientId, Guid? SelfDescriptionDocumentid, DocumentStatusId? DocumentStatus, ConnectorStatusId ConnectorStatus, IConnectorsRepository connectorsRepository)
+    private async Task DeleteConnector(Guid connectorId, string iamUserId, CancellationToken cancellationToken, string? DapsClientId, Guid? SelfDescriptionDocumentid, DocumentStatusId? DocumentStatus, IConnectorsRepository connectorsRepository)
     {
 
         if (string.IsNullOrWhiteSpace(DapsClientId))
