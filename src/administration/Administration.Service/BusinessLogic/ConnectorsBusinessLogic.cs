@@ -289,8 +289,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     public async Task DeleteConnectorAsync(Guid connectorId, Guid userId, CancellationToken cancellationToken)
     {
         var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
-        var result= await connectorsRepository.GetConnectorDeleteDataAsync(connectorId).ConfigureAwait(false);
-        var (IsConnectorIdExist, DapsClientId, SelfDescriptionDocumentid, DocumentStatus, ConnectorStatus,DapsRegistrationSuccess)  = result;
+        var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId).ConfigureAwait(false);
+        var (IsConnectorIdExist, DapsClientId, SelfDescriptionDocumentid, DocumentStatus, ConnectorStatus, DapsRegistrationSuccess) = result;
         if (!IsConnectorIdExist)
         {
             throw new NotFoundException($"Connector {connectorId} does not exist");
@@ -315,7 +315,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         {
             throw new ConflictException($"Connector status does not match a deletion scenario. Deletion declined");
         }
-        
     }
 
     private async Task DeleteConnector(Guid connectorId, string iamUserId, CancellationToken cancellationToken, string? DapsClientId, Guid? SelfDescriptionDocumentid, DocumentStatusId? DocumentStatus, ConnectorStatusId ConnectorStatus, IConnectorsRepository connectorsRepository)
@@ -380,8 +379,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
     private async Task DeleteConnectorWithoutDocuments(Guid connectorId, IConnectorsRepository connectorsRepository)
     {
-         connectorsRepository.DeleteConnectorDetails(connectorId);
-         await _portalRepositories.SaveAsync();
+        connectorsRepository.DeleteConnectorDetails(connectorId);
+        await _portalRepositories.SaveAsync();
     }
 
     /// <inheritdoc/>
