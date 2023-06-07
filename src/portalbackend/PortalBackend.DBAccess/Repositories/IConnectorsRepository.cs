@@ -108,9 +108,9 @@ public interface IConnectorsRepository
     /// <param name="companyId">Id of the Users company</param>
     /// <returns>Returns the update information</returns>
     Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, Guid companyId);
-    
+
     /// <summary>
-    /// 
+    /// Delete connector by Id
     /// </summary>
     /// <param name="connectorId"></param>
     void DeleteConnectorDetails(Guid connectorId);
