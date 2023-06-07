@@ -406,6 +406,23 @@ public class ServiceAccountBusinessLogicTests
         ex.Message.Should().Be($"serviceAccount {serviceAccountId} not found for company {_identity.CompanyId}");
     }
 
+    [Fact]
+    public async Task DeleteOwnCompanyServiceAccountAsync_WithInvalidConnectorStatus_ThrowsConflictException()
+    {
+        // Arrange
+        //var serviceAccountId = Guid.NewGuid();
+        SetupDeleteOwnCompanyServiceAccountForInvalidConnectorStatus(false, false);
+
+        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!);
+
+        // Act
+        async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId, _identity.CompanyId).ConfigureAwait(false);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Technical User is linked to an active connector. Change the link or deactivate the connector to delete the technical user.");
+    }
+
     [Theory]
     [InlineData(true, false)]
     [InlineData(false, true)]
@@ -545,12 +562,42 @@ public class ServiceAccountBusinessLogicTests
             .Returns((CompanyServiceAccountDetailedData?)null);
     }
 
-    private void SetupDeleteOwnCompanyServiceAccount(bool withServiceAccount, bool withClient, Connector? connector = null, Identity? identity = null)
+    private void SetupDeleteOwnCompanyServiceAccount(bool withServiceAccount, bool withClient, Connector? connector = null, Identity? identity = null, CompanyServiceAccount? companyServiceAccount = null)
     {
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, _identity.CompanyId))
-            .Returns((_userRoleIds, withServiceAccount ? ValidConnectorId : null, withClient ? ClientId : null));
+            .Returns((_userRoleIds, withServiceAccount ? ValidConnectorId : null, withClient ? ClientId : null, statusId: ConnectorStatusId.INACTIVE));
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), _identity.CompanyId))
-            .Returns(((IEnumerable<Guid>, Guid?, string?))default);
+            .Returns(((IEnumerable<Guid>, Guid?, string?, ConnectorStatusId))default);
+
+        if (companyServiceAccount != null)
+        {
+            A.CallTo(() => _serviceAccountRepository.AttachAndModifyCompanyServiceAccount(ValidServiceAccountId, null, A<Action<CompanyServiceAccount>>._))
+                .Invokes((Guid _, Action<CompanyServiceAccount>? _, Action<CompanyServiceAccount> modify) =>
+                {
+                    modify.Invoke(companyServiceAccount);
+                });
+        }
+
+        if (connector != null)
+        {
+            A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(ValidConnectorId, A<Action<Connector>>._, A<Action<Connector>>._))
+                .Invokes((Guid _, Action<Connector>? initialize, Action<Connector> modify) =>
+                {
+                    initialize?.Invoke(connector);
+                    modify.Invoke(connector);
+                });
+        }
+
+        A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorsRepository);
+    }
+
+    private void SetupDeleteOwnCompanyServiceAccountForInvalidConnectorStatus(bool withServiceAccount, bool withClient, Connector? connector = null, Identity? identity = null, CompanyServiceAccount? companyServiceAccount = null)
+    {
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, _identity.CompanyId))
+            .Returns((_userRoleIds, withServiceAccount ? ValidConnectorId : null, withClient ? ClientId : null, statusId: ConnectorStatusId.ACTIVE));
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), _identity.CompanyId))
+            .Returns(((IEnumerable<Guid>, Guid?, string?, ConnectorStatusId))default);
 
         if (identity != null)
         {
