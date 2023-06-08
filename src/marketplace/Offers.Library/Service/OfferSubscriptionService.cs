@@ -181,9 +181,9 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         }
     }
 
-    public  IEnumerable<OfferSubscriptionStatusId> GetOfferSubscriptionStatusIds(OfferSubscriptionStatusId? offerStatusIdFilter)
+    public IEnumerable<OfferSubscriptionStatusId> GetOfferSubscriptionStatusIds(OfferSubscriptionStatusId? offerStatusIdFilter)
     {
-         switch (offerStatusIdFilter)
+        switch (offerStatusIdFilter)
         {
             case OfferSubscriptionStatusId.ACTIVE:
                 {
@@ -199,7 +199,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                 }
             default:
                 {
-                    return  new[] { OfferSubscriptionStatusId.PENDING , OfferSubscriptionStatusId.ACTIVE};
+                    return new[] { OfferSubscriptionStatusId.PENDING, OfferSubscriptionStatusId.ACTIVE };
                 }
         }
     }
