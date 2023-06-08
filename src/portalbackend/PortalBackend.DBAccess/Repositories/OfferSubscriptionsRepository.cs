@@ -47,7 +47,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
         _context.OfferSubscriptions.Add(new OfferSubscription(Guid.NewGuid(), offerId, companyId, offerSubscriptionStatusId, requesterId, creatorId)).Entity;
 
     /// <inheritdoc />
-    public Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId statusId, Guid? offerId) =>
+    public Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, IEnumerable<OfferSubscriptionStatusId> statusId, Guid? offerId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
                 skip,
                 take,
@@ -57,7 +57,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                         os.OfferTypeId == offerTypeId &&
                         (!offerId.HasValue || os.Id == offerId.Value) &&
                         os.ProviderCompanyId == userCompanyId &&
-                        os.OfferSubscriptions.Any(x => x.OfferSubscriptionStatusId == statusId))
+                        os.OfferSubscriptions.Any(x => statusId.Contains(x.OfferSubscriptionStatusId)))
                     .GroupBy(s => s.ProviderCompanyId),
                 sorting switch
                 {
@@ -72,7 +72,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     OfferId = g.Id,
                     ServiceName = g.Name,
                     CompanySubscriptionStatuses = g.OfferSubscriptions
-                        .Where(os => os.OfferSubscriptionStatusId == statusId)
+                        .Where(os => statusId.Contains(os.OfferSubscriptionStatusId))
                         .Select(s =>
                             new CompanySubscriptionStatusData(
                                 s.CompanyId,

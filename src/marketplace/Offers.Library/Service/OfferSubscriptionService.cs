@@ -180,4 +180,27 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                 .CreateConsentAssignedOfferSubscription(consent.Id, offerSubscriptionId);
         }
     }
+
+    public  IEnumerable<OfferSubscriptionStatusId> GetOfferSubscriptionStatusIds(OfferSubscriptionStatusId? offerStatusIdFilter)
+    {
+         switch (offerStatusIdFilter)
+        {
+            case OfferSubscriptionStatusId.ACTIVE:
+                {
+                    return new[] { OfferSubscriptionStatusId.ACTIVE };
+                }
+            case OfferSubscriptionStatusId.INACTIVE:
+                {
+                    return new[] { OfferSubscriptionStatusId.INACTIVE };
+                }
+            case OfferSubscriptionStatusId.PENDING:
+                {
+                    return new[] { OfferSubscriptionStatusId.PENDING };
+                }
+            default:
+                {
+                    return  new[] { OfferSubscriptionStatusId.PENDING , OfferSubscriptionStatusId.ACTIVE};
+                }
+        }
+    }
 }
