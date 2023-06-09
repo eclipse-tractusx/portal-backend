@@ -31,4 +31,12 @@ public record CompanyServiceAccountDetailedData(
     string Description,
     IEnumerable<UserRoleData> UserRoleDatas,
     CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
-    Guid? SubscriptionId);
+    Guid? SubscriptionId,
+    //IEnumerable<ConnectorData> ConnectorsData,
+    //IEnumerable<OfferSubscroiptionData> OfferSubscroiptionsData
+    ConnectorData ConnectorData,
+    OfferSubscroiptionData OfferSubscroiptionsData);
+
+public record ConnectorData(Guid Id, string Name);
+
+public record OfferSubscroiptionData(Guid Id, OfferTypeId Type, string Name, Guid SubscriptionId); 
