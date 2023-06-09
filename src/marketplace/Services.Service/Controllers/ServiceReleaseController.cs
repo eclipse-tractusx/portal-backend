@@ -348,17 +348,17 @@ public class ServiceReleaseController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieve the technical user profile information
+    /// Retrieve service specific stored technical user profile configured to get created if a related service subscription is getting activated.
     /// </summary>
     /// <param name="serviceId">id of the service to receive the technical user profiles for</param>
     /// <remarks>Example: GET: /api/services/servicerelease/{serviceId}/technical-user-profiles</remarks>
-    /// <response code="200">Returns a list of profiles</response>
+    /// <response code="200">Returns a list of Technical User profiles</response>
     /// <response code="403">Requesting user is not part of the providing company for the service.</response>
     [HttpGet]
     [Route("{serviceId}/technical-user-profiles")]
     [Authorize(Roles = "add_service_offering")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<TechnicalUserProfileInformation>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfiles([FromRoute] Guid serviceId) =>
         this.WithCompanyId(companyId => _serviceReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(serviceId, companyId));
