@@ -131,8 +131,8 @@ public class ServiceAccountRepository : IServiceAccountRepository
                             userRole.UserRoleText)),
                     serviceAccount.CompanyServiceAccountTypeId,
                     serviceAccount.OfferSubscriptionId,
-                    new ConnectorData(serviceAccount.Connector!.Id,serviceAccount.Connector.Name),
-                    new OfferSubscroiptionData(serviceAccount!.OfferSubscription!.Offer!.Id, serviceAccount!.OfferSubscription!.Offer.OfferTypeId,serviceAccount!.OfferSubscription!.Offer!.Name!, serviceAccount!.OfferSubscription!.Id)))
+                    (serviceAccount.Connector == null) ? null : new ConnectorResponseData(serviceAccount.Connector!.Id, serviceAccount.Connector!.Name),
+                    (serviceAccount!.OfferSubscription == null) ? null : new OfferResponseData(serviceAccount.OfferSubscription!.OfferId, serviceAccount.OfferSubscription!.Offer!.OfferTypeId, serviceAccount.OfferSubscription!.Offer!.Name!, serviceAccount.OfferSubscription!.Id)))
             .SingleOrDefaultAsync();
 
     public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId) =>
@@ -151,7 +151,9 @@ public class ServiceAccountRepository : IServiceAccountRepository
                         serviceAccount.ClientClientId,
                         serviceAccount.Name,
                         serviceAccount.CompanyServiceAccountTypeId,
-                        serviceAccount.OfferSubscriptionId)
+                        serviceAccount.OfferSubscriptionId,
+                        (serviceAccount.Connector == null) ? null : new ConnectorResponseData(serviceAccount.Connector!.Id, serviceAccount.Connector!.Name),
+                        (serviceAccount!.OfferSubscription == null) ? null : new OfferResponseData(serviceAccount.OfferSubscription!.OfferId, serviceAccount.OfferSubscription!.Offer!.OfferTypeId, serviceAccount.OfferSubscription!.Offer!.Name!, serviceAccount.OfferSubscription!.Id))
         ).SingleOrDefaultAsync();
 
     /// <inheritdoc />
