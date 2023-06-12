@@ -621,18 +621,18 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             (await _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementsForCompanyRolesUntrackedAsync().ToListAsync().ConfigureAwait(false)).AsEnumerable()
         );
 
-    public async Task<bool> SubmitRegistrationAsync(Guid applicationId, IdentityData user)
+    public async Task<bool> SubmitRegistrationAsync(Guid applicationId, Guid userId)
     {
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, user.UserId).ConfigureAwait(false);
+        var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId).ConfigureAwait(false);
         if (applicationUserData == null)
         {
             throw new NotFoundException($"application {applicationId} does not exist");
         }
 
-        if (applicationUserData.CompanyUserId == Guid.Empty)
+        if (!applicationUserData.IsApplicationCompanyUser)
         {
-            throw new ForbiddenException($"iamUserId {user.UserEntityId} is not assigned with CompanyApplication {applicationId}");
+            throw new ForbiddenException($"userId {userId} is not associated with CompanyApplication {applicationId}");
         }
 
         if (applicationUserData.DocumentDatas.Any())
@@ -684,7 +684,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         else
         {
-            _logger.LogInformation("user {IamUserId} has no email-address", user.UserEntityId);
+            _logger.LogInformation("user {userId} has no email-address", userId);
         }
 
         return true;

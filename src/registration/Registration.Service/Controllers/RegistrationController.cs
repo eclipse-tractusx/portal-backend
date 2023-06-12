@@ -369,7 +369,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public Task<bool> SubmitRegistrationAsync([FromRoute] Guid applicationId) =>
-            this.WithIdentityData(identity => _registrationBusinessLogic.SubmitRegistrationAsync(applicationId, identity));
+            this.WithUserId(userId => _registrationBusinessLogic.SubmitRegistrationAsync(applicationId, userId));
 
         /// <summary>
         /// Gets all invited users for a given application

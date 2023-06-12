@@ -93,8 +93,8 @@ public class ApplicationRepository : IApplicationRepository
             })
             .Select(data => new CompanyApplicationUserEmailData(
                 data.Application.ApplicationStatusId,
-                data.CompanyUser!.Id,
-                data.CompanyUser.Email,
+                data.CompanyUser != null,
+                data.CompanyUser!.Email,
                 data.Documents.Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId))
                 ))
             .SingleOrDefaultAsync();

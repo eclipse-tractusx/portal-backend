@@ -52,7 +52,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         Task<int> SubmitRoleConsentAsync(Guid applicationId, CompanyRoleAgreementConsents roleAgreementConsentStatuses, Guid userId, Guid companyId);
         Task<CompanyRoleAgreementConsents> GetRoleAgreementConsentsAsync(Guid applicationId, Guid userId);
         Task<CompanyRoleAgreementData> GetCompanyRoleAgreementDataAsync();
-        Task<bool> SubmitRegistrationAsync(Guid applicationId, IdentityData user);
+        Task<bool> SubmitRegistrationAsync(Guid applicationId, Guid userId);
         IAsyncEnumerable<InvitedUser> GetInvitedUsersAsync(Guid applicationId);
         Task<IEnumerable<UploadDocuments>> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, Guid userId);
         Task<int> SetInvitationStatusAsync(Guid userId);
