@@ -59,17 +59,24 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = sut.CreateProviderCompanyDetail(_validCompanyId, url);
+        var results = sut.CreateProviderCompanyDetail(_validCompanyId, url, entity =>
+        {
+            entity.AutoSetupCallbackUrl = "https://test.de";
+        });
 
         // Assert
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         results.CompanyId.Should().Be(_validCompanyId);
         results.AutoSetupUrl.Should().Be(url);
+        results.AutoSetupCallbackUrl.Should().Be("https://test.de");
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<ProviderCompanyDetail>().Which.AutoSetupUrl.Should().Be(url);
+        changedEntries.Single().Entity.Should().BeOfType<ProviderCompanyDetail>();
+        var providerCompanyDetail = changedEntries.Single().Entity as ProviderCompanyDetail;
+        providerCompanyDetail!.AutoSetupUrl.Should().Be(url);
+        providerCompanyDetail.AutoSetupCallbackUrl.Should().Be("https://test.de");
     }
 
     #endregion
@@ -130,7 +137,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("8be5ee49-4b9c-4008-b641-138305430cc4", CompanyRoleId.SERVICE_PROVIDER);
+        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("8be5ee49-4b9c-4008-b641-138305430cc4", Enumerable.Repeat(CompanyRoleId.SERVICE_PROVIDER, 1));
 
         // Assert
         results.Should().NotBe(default);
@@ -145,7 +152,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("ad56702b-5908-44eb-a668-9a11a0e100d6", CompanyRoleId.SERVICE_PROVIDER);
+        var results = await sut.GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync("ad56702b-5908-44eb-a668-9a11a0e100d6", Enumerable.Repeat(CompanyRoleId.SERVICE_PROVIDER, 1));
 
         // Assert
         results.Should().NotBe(default);
@@ -668,7 +675,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #region Setup
 
-    private async Task<(CompanyRepository, PortalDbContext)> CreateSut()
+    private async Task<(ICompanyRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
         var sut = new CompanyRepository(context);

@@ -44,6 +44,8 @@ public class ProviderCompanyDetail : IBaseEntity
 
     public string AutoSetupUrl { get; set; }
 
+    public string? AutoSetupCallbackUrl { get; set; }
+
     public Guid CompanyId { get; set; }
 
     // Navigation properties

@@ -22,11 +22,11 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Services.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.DependencyInjection;
 
 var VERSION = "v2";
 
@@ -38,15 +38,14 @@ builder.Services.AddDefaultServices<Program>(builder.Configuration, VERSION)
     .AddProvisioningManager(builder.Configuration);
 
 builder.Services.AddTransient<INotificationService, NotificationService>();
-builder.Services.AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
-    .AddTransient<IOfferService, OfferService>()
-    .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
+builder.Services
+    .AddServiceBusinessLogic(builder.Configuration)
     .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
     .AddTransient<IServiceChangeBusinessLogic, ServiceChangeBusinessLogic>()
     .AddTechnicalUserProfile()
-    .ConfigureServiceSettings(builder.Configuration.GetSection("Services"));
+    .AddOfferDocumentServices();
 
-builder.Services.AddOfferSetupService();
+builder.Services.AddOfferServices();
 
 builder.Build()
     .CreateApp<Program>("services", VERSION, builder.Environment)

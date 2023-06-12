@@ -66,11 +66,12 @@ public partial class ProvisioningManager
         await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, idOfClient, client).ConfigureAwait(false);
     }
 
-    public async Task EnableClient(string internalClientId)
+    public async Task EnableClient(string clientId)
     {
-        var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
+        var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(false);
+        var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false);
         client.Enabled = true;
-        await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, internalClientId, client).ConfigureAwait(false);
+        await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, idOfClient, client).ConfigureAwait(false);
     }
 
     public async Task<ClientAuthData> GetCentralClientAuthDataAsync(string internalClientId)

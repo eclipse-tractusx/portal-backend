@@ -27,11 +27,11 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using PortalBackend.DBAccess.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -43,6 +43,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly AppsSettings _settings;
     private readonly IOfferService _offerService;
+    private readonly IOfferDocumentService _offerDocumentService;
     private readonly IOfferSetupService _offerSetupService;
 
     /// <summary>
@@ -51,12 +52,14 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <param name="portalRepositories"></param>
     /// <param name="settings"></param>
     /// <param name="offerService"></param>
+    /// <param name="offerDocumentService"></param>
     /// <param name="offerSetupService"></param>
-    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories, IOptions<AppsSettings> settings, IOfferService offerService, IOfferSetupService offerSetupService)
+    public AppReleaseBusinessLogic(IPortalRepositories portalRepositories, IOptions<AppsSettings> settings, IOfferService offerService, IOfferDocumentService offerDocumentService, IOfferSetupService offerSetupService)
     {
         _portalRepositories = portalRepositories;
         _settings = settings.Value;
         _offerService = offerService;
+        _offerDocumentService = offerDocumentService;
         _offerSetupService = offerSetupService;
     }
 
@@ -117,7 +120,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         UploadAppDoc(appId, documentTypeId, document, iamUserId, OfferTypeId.APP, cancellationToken);
 
     private async Task UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
-        await _offerService.UploadDocumentAsync(appId, documentTypeId, document, iamUserId, offerTypeId, _settings.UploadAppDocumentTypeIds, cancellationToken).ConfigureAwait(false);
+        await _offerDocumentService.UploadDocumentAsync(appId, documentTypeId, document, iamUserId, offerTypeId, _settings.UploadAppDocumentTypeIds, cancellationToken).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles, string iamUserId)
@@ -483,20 +486,14 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc />
     public Task SetInstanceType(Guid appId, AppInstanceSetupData data, string iamUserId)
     {
-        switch (data.IsSingleInstance)
+        if (data.IsSingleInstance)
         {
-            case true:
-                if (string.IsNullOrWhiteSpace(data.InstanceUrl))
-                {
-                    throw new ControllerArgumentException("InstanceUrl must be set for a single instance app",
-                        nameof(data.InstanceUrl));
-                }
-                data.InstanceUrl!.EnsureValidHttpUrl(() => nameof(data.InstanceUrl));
-                break;
-
-            case false when !string.IsNullOrWhiteSpace(data.InstanceUrl):
-                throw new ControllerArgumentException("Multi instance app must not have a instance url set",
-                    nameof(data.InstanceUrl));
+            data.InstanceUrl.EnsureValidHttpUrl(() => nameof(data.InstanceUrl));
+        }
+        else if (!string.IsNullOrWhiteSpace(data.InstanceUrl))
+        {
+            throw new ControllerArgumentException("Multi instance app must not have a instance url set",
+                nameof(data.InstanceUrl));
         }
 
         return SetInstanceTypeInternal(appId, data, iamUserId);

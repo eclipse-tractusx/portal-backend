@@ -155,6 +155,7 @@ public class ServicesController : ControllerBase
     /// <response code="200">Returns the service agreement data.</response>
     /// <response code="400">Offer Subscription is pending or not the providing company.</response>
     /// <response code="404">Offer Subscription not found.</response>
+    [Obsolete("Will be removed in the future, please use /start-autoSetup in the future")]
     [HttpPost]
     [Route("autoSetup")]
     [Authorize(Roles = "activate_subscription")]
@@ -164,6 +165,24 @@ public class ServicesController : ControllerBase
     public async Task<OfferAutoSetupResponseData> AutoSetupService([FromBody] OfferAutoSetupData data)
         => await this.WithIamUserId(iamUserId => _serviceBusinessLogic.AutoSetupServiceAsync(data, iamUserId));
 
+    /// <summary>
+    /// Auto setup the app
+    /// </summary>
+    /// <remarks>Example: POST: /api/apps/start-autoSetup</remarks>
+    /// <response code="200">Returns the app agreement data.</response>
+    /// <response code="400">Offer Subscription is pending or not the providing company.</response>
+    /// <response code="404">Offer Subscription not found.</response>
+    [HttpPost]
+    [Route("start-autoSetup")]
+    [Authorize(Roles = "activate_subscription")]
+    [ProducesResponseType(typeof(OfferAutoSetupResponseData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> StartAutoSetupServiceProcess([FromBody] OfferAutoSetupData data)
+    {
+        await this.WithIamUserId(iamUserId => _serviceBusinessLogic.StartAutoSetupAsync(data, iamUserId)).ConfigureAwait(false);
+        return NoContent();
+    }
     /// <summary>
     /// Retrieves subscription statuses of provided services of the currently logged in user's company.
     /// </summary>

@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -38,6 +39,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferService _offerService;
+    private readonly IOfferDocumentService _offerDocumentService;
     private readonly ServiceSettings _settings;
 
     /// <summary>
@@ -45,14 +47,17 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="offerService">Access to the offer service</param>
+    /// <param name="offerDocumentService">Access to the offer document service</param>
     /// <param name="settings">Access to the settings</param>
     public ServiceReleaseBusinessLogic(
         IPortalRepositories portalRepositories,
         IOfferService offerService,
+        IOfferDocumentService offerDocumentService,
         IOptions<ServiceSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _offerService = offerService;
+        _offerDocumentService = offerDocumentService;
         _settings = settings.Value;
     }
 
@@ -240,7 +245,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 
     /// <inheritdoc />
     public Task CreateServiceDocumentAsync(Guid serviceId, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, CancellationToken cancellationToken) =>
-        _offerService.UploadDocumentAsync(serviceId, documentTypeId, document, iamUserId, OfferTypeId.SERVICE, _settings.UploadServiceDocumentTypeIds, cancellationToken);
+        _offerDocumentService.UploadDocumentAsync(serviceId, documentTypeId, document, iamUserId, OfferTypeId.SERVICE, _settings.UploadServiceDocumentTypeIds, cancellationToken);
 
     /// <inheritdoc/>
     public Task DeleteServiceDocumentsAsync(Guid documentId, string iamUserId) =>

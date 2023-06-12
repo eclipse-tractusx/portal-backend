@@ -38,13 +38,21 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
 
     async Task<IApplicationChecklistService.ManualChecklistProcessStepData> IApplicationChecklistService.VerifyChecklistEntryAndProcessSteps(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, IEnumerable<ApplicationChecklistEntryStatusId> entryStatusIds, ProcessStepTypeId processStepTypeId, IEnumerable<ApplicationChecklistEntryTypeId>? entryTypeIds, IEnumerable<ProcessStepTypeId>? processStepTypeIds)
     {
-        var allProcessStepTypeIds = processStepTypeIds == null
-            ? new[] { processStepTypeId }
-            : processStepTypeIds.Append(processStepTypeId);
+        var allProcessStepTypeIds = processStepTypeIds switch
+        {
+            null => new[] { processStepTypeId },
+            _ => processStepTypeIds.Contains(processStepTypeId)
+                    ? processStepTypeIds
+                    : processStepTypeIds.Append(processStepTypeId)
+        };
 
-        var allEntryTypeIds = entryTypeIds == null
-            ? new[] { entryTypeId }
-            : entryTypeIds.Append(entryTypeId);
+        var allEntryTypeIds = entryTypeIds switch
+        {
+            null => new[] { entryTypeId },
+            _ => entryTypeIds.Contains(entryTypeId)
+                    ? entryTypeIds
+                    : entryTypeIds.Append(entryTypeId)
+        };
 
         var checklistData = await _portalRepositories.GetInstance<IApplicationChecklistRepository>()
             .GetChecklistProcessStepData(applicationId, allEntryTypeIds, allProcessStepTypeIds).ConfigureAwait(false);
