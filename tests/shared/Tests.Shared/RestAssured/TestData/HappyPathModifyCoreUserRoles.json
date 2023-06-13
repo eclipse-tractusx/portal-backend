@@ -1,5 +1,18 @@
 ﻿[
-  "[\"Purchaser\", \"App Manager\", \"CX Admin\", \"CX User\", \"IT Admin\", \"Company Admin\", \"Service Manager\", \"App Developer\", \"Sales Manager\", \"Business Admin\", \"Viewer\"]",
-  "[\"Purchaser\", \"App Manager\", \"CX Admin\", \"CX User\"]",
-  "[\"IT Admin\", \"Company Admin\", \"Service Manager\", \"App Developer\", \"Sales Manager\", \"Business Admin\", \"Viewer\"]"
+  {
+    "rolesToAssign": ["IT Admin"],
+    "rolesToUnAssign": ["IT Admin"]
+  },
+  {
+    "rolesToAssign": ["Purchaser", "App Manager", "CX Admin", "CX User", "IT Admin", "Company Admin", "Service Manager", "App Developer", "Sales Manager", "Business Admin", "Viewer"],
+    "rolesToUnAssign": ["Purchaser", "App Manager", "CX Admin", "CX User", "IT Admin", "Company Admin", "Service Manager", "App Developer", "Sales Manager", "Viewer"]
+  },
+  {
+    "rolesToAssign": ["Purchaser", "App Manager", "CX Admin", "CX User"],
+    "rolesToUnAssign": ["Purchaser", "App Manager", "CX Admin"]
+  },
+  {
+    "rolesToAssign": ["IT Admin", "Company Admin", "Service Manager", "App Developer", "Sales Manager", "Business Admin", "Viewer"],
+    "rolesToUnAssign": ["IT Admin", "Company Admin", "Service Manager", "App Developer", "Sales Manager", "Business Admin", "Viewer"]
+  }
 ]

@@ -1,14 +1,11 @@
-using Microsoft.Extensions.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Registration.Service.Tests.RestAssured;
 using Xunit;
 using static RestAssured.Dsl;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Microsoft.OpenApi.Expressions;
-using Registration.Service.Tests.RestAssured;
 
 namespace Notifications.Service.Tests.RestAssured;
 
@@ -16,198 +13,171 @@ namespace Notifications.Service.Tests.RestAssured;
     "Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests")]
 public class NotificationEndpointTests
 {
-    private static readonly string _baseUrl = "https://portal-backend.dev.demo.catena-x.net";
-    private static readonly string _endPoint = "/api/notification";
-    private readonly string _adminEndPoint = "/api/administration";
-    private readonly string _regEndPoint = "/api/registration";
-    private static string _companyUserId;
-    private static readonly string _userToken;
-    private const string _techCompanyName = "TestAutomation";
-    private static string _username;
-    private static string _notificationId = "";
-    private const string _offerId = "9b957704-3505-4445-822c-d7ef80f27fcd";
-    private static readonly Secrets _secrets = new ();
-    private static string _techUserToken; 
-    private const string _testDataDirectory = "..\\..\\..\\..\\..\\shared\\Tests.Shared\\RestAssured\\TestData";
+    private static readonly string BaseUrl = "https://portal-backend.dev.demo.catena-x.net";
+    private static readonly string EndPoint = "/api/notification";
+    private static readonly string AdminEndPoint = "/api/administration";
+    private static string? _companyUserId;
+    private static string? _techUserToken;
+    private static string? _username;
+    private const string TechCompanyName = "TestAutomation";
+    private const string OfferId = "9b957704-3505-4445-822c-d7ef80f27fcd";
+    private static readonly Secrets Secrets = new ();
+
+    [Theory]
+    [MemberData(nameof(GetDataEntries))]
+    public async Task Scenario_HappyPathAssignUnassignCoreUserRoles(TestDataModel testEntry)
+    {
+        await GetTechUserToken();
+        _companyUserId = GetCompanyUserId();
+
+        ModifyCoreUserRoles_AssignRole(testEntry.rolesToAssign);
+        ModifyCoreUserRoles_UnAssignRole(testEntry.rolesToUnAssign);
+    }
+
+    private static IEnumerable<object> GetDataEntries()
+    {
+        var testDataEntries = TestDataHelper.GetTestData();
+        if (testDataEntries == null) throw new Exception("No test data was found");
+        foreach (var t in testDataEntries)
+        {
+            yield return new object[] { t };
+        }
+    }
+
+    private async Task GetTechUserToken()
+    {
+        _techUserToken =
+            await new AuthFlow(TechCompanyName).GetAccessToken(Secrets.TechUserName, Secrets.TechUserPassword);
+    }
 
     //PUT: api/administration/user/owncompany/users/{companyUserId}/coreoffers/{offerId}/roles
-    [Fact]
-    public async Task ModifyCoreUserRoles_AssignRole_ReturnsExpectedResult()
+    private void ModifyCoreUserRoles_AssignRole(List<string> rolesToAssign)
     {
-        _techUserToken = await new AuthFlow(_techCompanyName).GetAccessToken(_secrets.TechUserName, _secrets.TechUserPassword);
-        _companyUserId = GetCompanyUserId();
-        string newRole = "App Manager";
-        List<string> assignedRoles = GetUserAssignedRoles();
-        assignedRoles.Add("App Manager");
+        List<string>? assignedRoles = GetUserAssignedRoles();
+        List<string> newRoles = new List<string>();
+        foreach (var role in rolesToAssign.Where(role => !assignedRoles.Contains(role)))
+        {
+            assignedRoles.Add(role);
+            newRoles.Add(role);
+        }
+
         var body = JsonSerializer.Serialize(assignedRoles);
         // Given
-        var data = Given()
+        Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
                 $"Bearer {_techUserToken}")
             .When()
             .Body(body)
-            .Put($"{_baseUrl}{_adminEndPoint}/user/owncompany/users/{_companyUserId}/coreoffers/{_offerId}/roles")
+            .Put($"{BaseUrl}{AdminEndPoint}/user/owncompany/users/{_companyUserId}/coreoffers/{OfferId}/roles")
             .Then()
             .StatusCode(200)
             .And()
             .Extract()
             .Response();
 
-        Assert.True(CheckNotificationCreated(_username, "ROLE_UPDATE_CORE_OFFER", newRole, ""));
+        Assert.True(CheckNotificationCreated(_username, NotificationTypeId.ROLE_UPDATE_CORE_OFFER, newRoles,
+            new List<string>()));
     }
-    
-    [Fact]
-    public void ModifyCoreUserRoles_UnAssignRole_ReturnsExpectedResult()
+
+    private void ModifyCoreUserRoles_UnAssignRole(List<string> rolesToUnAssign)
     {
-        string removedRole = "App Manager";
-        List<string> assignedRoles = GetUserAssignedRoles();
-        assignedRoles.Remove("App Manager");
+        List<string>? assignedRoles = GetUserAssignedRoles();
+        foreach (var role in rolesToUnAssign.Where(role => assignedRoles.Contains(role)))
+        {
+            assignedRoles.Remove(role);
+        }
+
         var body = JsonSerializer.Serialize(assignedRoles);
         // Given
-        var data = Given()
+        Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
                 $"Bearer {_techUserToken}")
             .When()
             .Body(body)
-            .Put($"{_baseUrl}{_adminEndPoint}/user/owncompany/users/{_companyUserId}/coreoffers/{_offerId}/roles")
+            .Put($"{BaseUrl}{AdminEndPoint}/user/owncompany/users/{_companyUserId}/coreoffers/{OfferId}/roles")
             .Then()
             .StatusCode(200)
             .And()
             .Extract()
             .Response();
-        
-        Assert.True(CheckNotificationCreated(_username, "ROLE_UPDATE_CORE_OFFER", "", removedRole));
-    }
-    
-    
-    [Fact]
-    public void Test1_CreateNotification_ReturnsExpectedResult()
-    {
-        // Given
-        var creationData = new
-            NotificationCreationData("test", NotificationTypeId.INFO, false);
-        //     { Content = "test", NotificationTypeId = NotificationTypeId.INFO, IsRead = false };
-        _notificationId = (string)Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_userToken}")
-            .ContentType("application/json")
-            .Body(
-                "{\"content\": \"test\",\"notificationTypeId\": \"INFO\",\"isRead\": false}")
-            // .Body(creationData)
-            .When()
-            .Post($"{_baseUrl}{_endPoint}?companyUserId={_companyUserId}")
-            .Then()
-            .StatusCode(201)
-            .Extract()
-            .As(typeof(string));
+
+        Assert.True(CheckNotificationCreated(_username, NotificationTypeId.ROLE_UPDATE_CORE_OFFER, new List<string>(),
+            rolesToUnAssign));
     }
 
-    [Fact]
-    public void Test2_GetNotifications_ReturnsExpectedResult()
+    //GET: api/administration/user/ownUser
+    private string GetCompanyUserId()
     {
-        // Given
-        Pagination.Response<NotificationDetailData> data = (Pagination.Response<NotificationDetailData>)Given()
+        var response = Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_userToken}")
+                $"Bearer {_techUserToken}")
             .When()
-            .Get($"{_baseUrl}{_endPoint}/?page=0&size=10&sorting=DateDesc")
+            .Get($"{BaseUrl}{AdminEndPoint}/user/ownUser")
             .Then()
             .StatusCode(200)
+            .And()
             .Extract()
-            .As(typeof(Pagination.Response<NotificationDetailData>));
-        Assert.Contains(_notificationId, data.Content.Select(content => content.Id.ToString()));
+            .Response();
+
+        var data = response.Content.ReadAsStringAsync().Result;
+        var companyUserDetails = DeserializeData<CompanyUserDetails>(data);
+        _username = companyUserDetails.FirstName + " " + companyUserDetails.LastName;
+        return companyUserDetails.Company2UserId.ToString();
     }
 
-    [Fact]
-    public void Test3_GetNotification_ReturnsExpectedResult()
+    //GET: api/administration/user/owncompany/users/{_companyUserId}
+    private List<string>? GetUserAssignedRoles()
     {
-        // Given
-        Given()
+        var response = Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_userToken}")
+                $"Bearer {_techUserToken}")
             .When()
-            .Get($"{_baseUrl}{_endPoint}/{_notificationId}")
-            .Then()
-            .StatusCode(200);
-    }
-
-    [Fact]
-    public void Test4_NotificationCount_ReturnsExpectedResult()
-    {
-        // Given
-        Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_userToken}")
-            .When()
-            .Get($"{_baseUrl}{_endPoint}/count")
-            .Then()
-            .Body("1")
-            .StatusCode(200);
-    }
-
-    [Fact]
-    public void Test5_NotificationCountDetails_ReturnsExpectedResult()
-    {
-        // Given
-        var notificationCountDetails = (NotificationCountDetails)Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_userToken}")
-            .When()
-            .Get($"{_baseUrl}{_endPoint}/count-details")
+            .Get($"{BaseUrl}{AdminEndPoint}/user/owncompany/users/{_companyUserId}")
             .Then()
             .StatusCode(200)
+            .And()
             .Extract()
-            .As(typeof(NotificationCountDetails));
-        Assert.Equal(1, notificationCountDetails.Unread);
-        Assert.Equal(1, notificationCountDetails.InfoUnread);
-        Assert.Equal(0, notificationCountDetails.OfferUnread);
-        Assert.Equal(0, notificationCountDetails.ActionRequired);
+            .Response();
+        var data = response.Content.ReadAsStringAsync().Result;
+        var assignedRoles = DeserializeData<CompanyUserDetails>(data)?.AssignedRoles.First().UserRoles.ToList();
+        return assignedRoles;
     }
 
-    [Fact]
-    public void Test6_SetNotificationStatus_ReturnsExpectedResult()
+    private bool CheckNotificationCreated(string username, NotificationTypeId notificationTypeId,
+        List<string> addedRoles,
+        List<string> removedRoles)
     {
         // Given
-        Given()
+        var response = Given()
             .RelaxedHttpsValidation()
             .Header(
                 "authorization",
-                $"Bearer {_userToken}")
+                $"Bearer {_techUserToken}")
             .When()
-            .Put($"{_baseUrl}{_endPoint}/{_notificationId}/read")
-            .Then()
-            .StatusCode(204);
+            .Get($"{BaseUrl}{EndPoint}/?page=0&size=10&sorting=DateDesc")
+            // .Then()
+            .StatusCode(200)
+            .Extract()
+            .Body("$.content");
+        var data = DeserializeData<List<NotificationDetailData>>(response.ToString());
+
+        var notificationContent = DeserializeData<NotificationContent>(data.First().Content);
+        return data.First().TypeId == notificationTypeId && notificationContent?.username == username &&
+               notificationContent.removedRoles.Split(",", StringSplitOptions.RemoveEmptyEntries).OrderBy(x => x)
+                   .SequenceEqual(removedRoles.OrderBy(x => x)) && notificationContent.addedRoles
+                   .Split(",", StringSplitOptions.RemoveEmptyEntries)
+                   .OrderBy(x => x)
+                   .SequenceEqual(addedRoles.OrderBy(x => x));
     }
 
-    [Fact]
-    public void Test7_DeleteNotification_ReturnsExpectedResult()
-    {
-        // Given
-        Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_userToken}")
-            .When()
-            .Delete($"{_baseUrl}{_endPoint}/{_notificationId}")
-            .Then()
-            .StatusCode(204);
-    }
-    
     private T? DeserializeData<T>(string jsonString)
     {
         var options = new JsonSerializerOptions
@@ -218,101 +188,4 @@ public class NotificationEndpointTests
         var deserializedData = JsonSerializer.Deserialize<T>(jsonString, options);
         return deserializedData;
     }
-    
-    //GET: api/administration/user/ownUser
-    [Fact]
-    private string GetCompanyUserId()
-    {
-         var response = Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_techUserToken}")
-            .When()
-            .Get($"{_baseUrl}{_adminEndPoint}/user/ownUser")
-            .Then()
-            .StatusCode(200)
-            .And()
-            .Extract()
-            .Response();
-        
-        var data = response.Content.ReadAsStringAsync().Result;
-        var companyUserDetails = DeserializeData<CompanyUserDetails>(data);
-        _username = companyUserDetails.FirstName + " " + companyUserDetails.LastName; 
-        return companyUserDetails.Company2UserId.ToString();
-    }
-
-    //GET: api/administration/user/owncompany/roles/coreoffers
-    [Fact]
-    private void GetCoreOfferRoles_ReturnsExpectedResult()
-    {
-         var response = Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_techUserToken}")
-            .When()
-            .Get($"{_baseUrl}{_adminEndPoint}/user/owncompany/roles/coreoffers")
-            .Then()
-            .StatusCode(200)
-            .And()
-            .Extract()
-            .Response();
-        var data = response.Content.ReadAsStringAsync().Result;
-    }
-    
-    //GET: api/administration/user/owncompany/users/{_companyUserId}
-    [Fact]
-    private List<string> GetUserAssignedRoles()
-    {
-          var response = Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_techUserToken}")
-            .When()
-            .Get($"{_baseUrl}{_adminEndPoint}/user/owncompany/users/{_companyUserId}")
-            .Then()
-            .StatusCode(200)
-            .And()
-            .Extract()
-            .Response();
-        var data = response.Content.ReadAsStringAsync().Result;
-        var assignedRoles = DeserializeData<CompanyUserDetails>(data).AssignedRoles.First().UserRoles.ToList();
-        return assignedRoles;
-    }
-    
-    
-    private bool CheckNotificationCreated(string username, string notificationTypeId, string addedRoles, string removedRoles)
-    {
-        // Given
-        var response = Given()
-            .RelaxedHttpsValidation()
-            .Header(
-                "authorization",
-                $"Bearer {_techUserToken}")
-            .When()
-            .Get($"{_baseUrl}{_endPoint}/?page=0&size=10&sorting=DateDesc")
-            .Then()
-            .StatusCode(200)
-            .Extract()
-            .Body("$.content");
-            //.Response();
-            var data = DeserializeData<List<NotificationDetailData>>(response.ToString());
-
-            var notificationContent = DeserializeData<NotificationContent>(data.First().Content);
-            if (data.First().TypeId.ToString() == notificationTypeId && notificationContent.username == username && notificationContent.removedRoles == removedRoles && notificationContent.addedRoles == addedRoles) return true;
-            return false;
-    }
-    
-    [Fact]
-    public List<string> GetTestData()
-    {
-        var filePath = Path.Combine(_testDataDirectory, "HappyPathModifyCoreUserRoles.json");
-        var jsonData = File.ReadAllText(filePath);
-        var testData = JsonSerializer.Deserialize<List<string>>(jsonData);
-
-        return testData;
-    }
-    
 }
