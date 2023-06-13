@@ -20,6 +20,7 @@
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Authorization;
@@ -69,7 +70,8 @@ public static class StartupServiceExtensions
                 };
             }
         });
-
+        services.AddTransient<IAuthorizationHandler, MandatoryClaimHandler>();
+        services.AddTransient<IAuthorizationHandler, MandatoryEnumTypeClaimHandler>();
         services.AddAuthorization(options =>
         {
             options.AddPolicy(PolicyTypes.ValidIdentity, policy => policy.Requirements.Add(new MandatoryGuidClaimRequirement(PortalClaimTypes.IdentityId)));
