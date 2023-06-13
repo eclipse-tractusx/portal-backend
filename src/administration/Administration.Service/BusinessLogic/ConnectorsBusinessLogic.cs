@@ -289,16 +289,16 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     public async Task DeleteConnectorAsync(Guid connectorId, Guid userId, CancellationToken cancellationToken)
     {
         var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
-        var (isValidConnectorId, dapsClientId, selfDescriptionDocumentId, 
-        documentStatus, connectorStatus, dapsRegistrationSuccess) = await 
+        var (isValidConnectorId, dapsClientId, selfDescriptionDocumentId,
+        documentStatus, connectorStatus, dapsRegistrationSuccess) = await
         connectorsRepository.GetConnectorDeleteDataAsync(connectorId).ConfigureAwait(false);
 
         if (!isValidConnectorId)
         {
             throw new NotFoundException($"Connector {connectorId} does not exist");
         }
-        
-        switch((dapsRegistrationSuccess ?? false, connectorStatus))
+
+        switch ((dapsRegistrationSuccess ?? false, connectorStatus))
         {
             case (true, ConnectorStatusId.ACTIVE) when selfDescriptionDocumentId == null:
                 await DeleteUpdateConnectorDetail(connectorId, iamUserId, cancellationToken, dapsClientId, connectorsRepository);
@@ -315,7 +315,6 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             default:
                 throw new ConflictException($"Connector status does not match a deletion scenario. Deletion declined");
         }
-
     }
 
     private async Task DeleteConnector(Guid connectorId, string iamUserId, CancellationToken cancellationToken, string? dapsClientId, Guid selfDescriptionDocumentId, DocumentStatusId documentStatus, IConnectorsRepository connectorsRepository)
