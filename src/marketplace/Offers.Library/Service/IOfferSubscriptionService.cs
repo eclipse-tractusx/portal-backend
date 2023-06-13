@@ -28,6 +28,4 @@ public interface IOfferSubscriptionService
     Task<Guid> AddOfferSubscriptionAsync(Guid offerId,
         IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, (Guid UserId, Guid CompanyId) identity,
         OfferTypeId offerTypeId, string basePortalAddress);
-
-    IEnumerable<OfferSubscriptionStatusId> GetOfferSubscriptionStatusIds(OfferSubscriptionStatusId? offerStatusIdFilter);
 }

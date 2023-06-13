@@ -23,7 +23,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
-using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -132,7 +131,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         async Task<Pagination.Source<OfferCompanySubscriptionStatusResponse>?> GetCompanyProvidedAppSubscriptionStatusData(int skip, int take)
         {
             var offerCompanySubscriptionResponse = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(companyId, OfferTypeId.SERVICE, sorting, _offerSubscriptionService.GetOfferSubscriptionStatusIds(statusId), offerId)(skip, take).ConfigureAwait(false);
+                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(companyId, OfferTypeId.SERVICE, sorting, OfferSubscriptionService.GetOfferSubscriptionFilterStatusIds(statusId), offerId)(skip, take).ConfigureAwait(false);
 
             return offerCompanySubscriptionResponse == null
                 ? null
