@@ -6,6 +6,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Tests.Shared.RestAssured.AuthFlow;
 using static RestAssured.Dsl;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestAssured;
@@ -16,7 +17,8 @@ public static class AdministrationEndpointHelper
     private static readonly string EndPoint = "/api/administration";
     private static readonly string OperatorCompanyName = "CX-Operator";
     private static string? _userCompanyToken;
-    private static string? _operatorToken = "";
+    private static readonly Secrets Secrets = new();
+    private static string? _operatorToken;
 
     private static string? _applicationId;
 
@@ -26,7 +28,10 @@ public static class AdministrationEndpointHelper
         Converters = { new JsonStringEnumConverter() }
     };
 
-    private static readonly Secrets Secrets = new();
+    public static async Task GetOperatorToken()
+    {
+        _operatorToken = await new AuthFlow(OperatorCompanyName).GetAccessToken(Secrets.OperatorUserName, Secrets.OperatorUserPassword);
+    }
 
     //GET: api/administration/serviceaccount/owncompany/serviceaccounts
     public static List<CompanyServiceAccountData>? GetServiceAccounts()
@@ -172,7 +177,7 @@ public static class AdministrationEndpointHelper
         return DeserializeData<ServiceAccountDetails>(response.Content.ReadAsStringAsync()
             .Result);
     }
-
+    
     //GET: api/administration/serviceaccount/user/roles
     private static List<UserRoleWithDescription>? GetAllServiceAccountRoles()
     {

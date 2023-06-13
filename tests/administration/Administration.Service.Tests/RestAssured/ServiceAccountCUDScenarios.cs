@@ -4,8 +4,10 @@ public class ServiceAccountCUDScenarios
 {
     //Scenario - Create a new service account
     [Fact]
-    public void Scenario_HappyPathCreateServiceAccount()
+    public async Task Scenario_HappyPathCreateServiceAccount()
     {
+        await AdministrationEndpointHelper.GetOperatorToken();
+        
         var now = DateTime.Now;
         var techUserName = $"NewTechUserName_{now:s}";
 
@@ -24,8 +26,9 @@ public class ServiceAccountCUDScenarios
 
     //Scenario - Create a new service account and update the same
     [Fact]
-    public void Scenario_HappyPathCreateAndUpdateServiceAccount()
+    public async Task Scenario_HappyPathCreateAndUpdateServiceAccount()
     {
+        await AdministrationEndpointHelper.GetOperatorToken();
         var now = DateTime.Now;
         var techUserName = $"NewTechUserName_{now:s}";
 
@@ -49,8 +52,10 @@ public class ServiceAccountCUDScenarios
 
     //Scenario - Create a new service account and update the credentials
     [Fact]
-    public void Scenario_HappyPathCreateServiceAccountAndUpdateCredentials()
+    public async Task Scenario_HappyPathCreateServiceAccountAndUpdateCredentials()
     {
+        await AdministrationEndpointHelper.GetOperatorToken();
+        
         var now = DateTime.Now;
         var techUserName = $"NewTechUserName_{now:s}";
 
@@ -71,8 +76,9 @@ public class ServiceAccountCUDScenarios
 
     //Scenario - Create and delete a new service account
     [Fact]
-    public void Scenario_HappyPathCreateAndDeleteServiceAccount()
+    public async Task Scenario_HappyPathCreateAndDeleteServiceAccount()
     {
+        await AdministrationEndpointHelper.GetOperatorToken();
         var now = DateTime.Now;
         var techUserName = $"NewTechUserName_{now:s}";
 
