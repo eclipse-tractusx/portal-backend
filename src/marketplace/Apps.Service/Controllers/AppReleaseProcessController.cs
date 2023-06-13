@@ -484,7 +484,7 @@ public class AppReleaseProcessController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieve the technical user profile information
+    /// Retrieve app specific stored technical user profile configured to get created if a related app subscription is getting activated.
     /// </summary>
     /// <param name="appId">id of the app to receive the technical user profiles for</param>
     /// <remarks>Example: GET: /api/apps/{appId}/appreleaseprocess/technical-user-profiles</remarks>
@@ -494,7 +494,7 @@ public class AppReleaseProcessController : ControllerBase
     [Route("{appId}/technical-user-profiles")]
     [Authorize(Roles = "add_apps")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<TechnicalUserProfileInformation>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfiles([FromRoute] Guid appId) =>
         this.WithCompanyId(companyId => _appReleaseBusinessLogic.GetTechnicalUserProfilesForOffer(appId, companyId));
