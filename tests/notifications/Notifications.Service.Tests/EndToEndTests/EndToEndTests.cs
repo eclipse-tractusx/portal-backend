@@ -21,7 +21,7 @@ public class EndToEndTests
     private static string? _companyUserId;
     private static string? _techUserToken;
     private static string? _username;
-    private const string TechCompanyName = "TestAutomation";
+    private static readonly string TechCompanyName = TestResources.TechCompanyName;
     private static readonly string OfferId = TestResources.NotificationOfferId;
     private static readonly Secrets Secrets = new ();
 

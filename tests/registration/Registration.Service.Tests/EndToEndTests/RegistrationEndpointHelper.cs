@@ -21,6 +21,7 @@ public static class RegistrationEndpointHelper
     private static readonly string BaseUrl = TestResources.BaseUrl;
     private static readonly string EndPoint = "/api/registration";
     private static readonly string AdminEndPoint = "/api/administration";
+    private static readonly string OperatorCompanyName = TestResources.OperatorCompanyName;
     private static string? _userCompanyToken;
     private static string? _operatorToken;
     private static string? _applicationId;
@@ -30,8 +31,6 @@ public static class RegistrationEndpointHelper
         PropertyNameCaseInsensitive = true,
         Converters = { new JsonStringEnumConverter() }
     };
-
-    private static readonly string OperatorCompanyName = "CX-Operator";
 
     private static readonly Secrets Secrets = new ();
 

@@ -15,7 +15,7 @@ public static class AdministrationEndpointHelper
 {
     private static readonly string BaseUrl = TestResources.BaseUrl;
     private static readonly string EndPoint = "/api/administration";
-    private static readonly string OperatorCompanyName = "CX-Operator";
+    private static readonly string OperatorCompanyName = TestResources.OperatorCompanyName;
     private static string? _userCompanyToken;
     private static string? _operatorToken = "";
 
