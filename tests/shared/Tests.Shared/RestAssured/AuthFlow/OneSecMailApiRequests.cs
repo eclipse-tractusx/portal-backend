@@ -1,4 +1,4 @@
-﻿namespace Registration.Service.Tests.RestAssured;
+﻿namespace Tests.Shared.RestAssured.AuthFlow;
 
 public class OneSecMailApiRequests
 {
