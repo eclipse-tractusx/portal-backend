@@ -313,6 +313,9 @@
     <Content Update="Seeder\Data\company_service_accounts.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>
+    <Content Update="Seeder\Data\identities.test.json">
+      <LinkBase>Seeder\Data\</LinkBase>
+    </Content>
     <Content Update="Seeder\Data\offer_assigned_privacy_policies.test.json">
       <LinkBase>Seeder\Data\</LinkBase>
     </Content>

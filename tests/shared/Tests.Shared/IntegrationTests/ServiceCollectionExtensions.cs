@@ -34,7 +34,7 @@ public static class ServiceCollectionExtensions
             services.Remove(descriptor);
     }
 
-    public static void EnsureDbCreated(this IServiceCollection services, IList<Action<PortalDbContext>>? setupDbActions)
+    public static void EnsureDbCreated(this IServiceCollection services)
     {
         var serviceProvider = services.BuildServiceProvider();
 
@@ -43,13 +43,6 @@ public static class ServiceCollectionExtensions
         var context = scopedServices.GetRequiredService<PortalDbContext>();
         context.Database.Migrate();
         BaseSeed.SeedBasedata().Invoke(context);
-        if (setupDbActions is not null && setupDbActions.Any())
-        {
-            foreach (var setupAction in setupDbActions)
-            {
-                setupAction?.Invoke(context);
-            }
-        }
 
         context.SaveChanges();
     }

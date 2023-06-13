@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
 /// <summary>
@@ -29,6 +31,6 @@ public interface IServiceChangeBusinessLogic
     /// Deactivate Offer Status by serviceId
     /// </summary>
     /// <param name="serviceId">Id of the service</param>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    public Task DeactivateOfferByServiceIdAsync(Guid serviceId, string iamUserId);
+    /// <param name="companyId">Id of the users company</param>
+    public Task DeactivateOfferByServiceIdAsync(Guid serviceId, Guid companyId);
 }

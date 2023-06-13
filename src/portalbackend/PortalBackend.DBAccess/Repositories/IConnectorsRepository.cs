@@ -33,20 +33,20 @@ public interface IConnectorsRepository
     /// <summary>
     /// Get all connectors of a user's company by iam user ID.
     /// </summary>
-    /// <param name="iamUserId">ID of the iam user used to determine company's connectors for.</param>
+    /// <param name="companyId">The id of the provider company.</param>
     /// <returns>Queryable of connectors that allows transformation.</returns>
-    IQueryable<Connector> GetAllCompanyConnectorsForIamUser(string iamUserId);
+    IQueryable<Connector> GetAllCompanyConnectorsForIamUser(Guid companyId);
 
     /// <summary>
     /// Get all managed connectors of a user's company by iam user ID.
     /// </summary>
-    /// <param name="iamUserId">ID of the iam user used to determine company's connectors for.</param>
+    /// <param name="userCompanyId">users company id.</param>
     /// <returns>Pagination.Source of connectors that allows transformation.</returns>
-    Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForIamUser(string iamUserId);
+    Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForCompany(Guid companyId);
 
-    Task<(ConnectorData ConnectorData, bool IsProviderUser)> GetConnectorByIdForIamUser(Guid connectorId, string iamUser);
+    Task<(ConnectorData ConnectorData, bool IsProviderCompany)> GetConnectorByIdForCompany(Guid connectorId, Guid companyId);
 
-    Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, string iamUser);
+    Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, Guid userCompanyId);
 
     /// <summary>
     /// Creates a given connector in persistence layer. 
@@ -105,7 +105,7 @@ public interface IConnectorsRepository
     /// Gets the data required for the connector update
     /// </summary>
     /// <param name="connectorId">Id of the connector</param>
-    /// <param name="iamUser">Id of the IamUser</param>
+    /// <param name="companyId">Id of the Users company</param>
     /// <returns>Returns the update information</returns>
-    Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, string iamUser);
+    Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, Guid companyId);
 }

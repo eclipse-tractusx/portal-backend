@@ -21,9 +21,9 @@
 using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
-using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
@@ -33,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.Tests.BusinessLog
 
 public class ServiceChangeBusinessLogicTests
 {
-    private readonly string _iamUserId = Guid.NewGuid().ToString();
+    private readonly IdentityData _identity = new("4C1A6851-D4E7-4E10-A011-3732CD045E8A", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferRepository _offerRepository;
@@ -66,10 +66,10 @@ public class ServiceChangeBusinessLogicTests
         // Arrange
         var serviceId = _fixture.Create<Guid>();
         // Act
-        await _sut.DeactivateOfferByServiceIdAsync(serviceId, _iamUserId).ConfigureAwait(false);
+        await _sut.DeactivateOfferByServiceIdAsync(serviceId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _offerService.DeactivateOfferIdAsync(serviceId, _iamUserId, OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerService.DeactivateOfferIdAsync(serviceId, _identity.CompanyId, OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

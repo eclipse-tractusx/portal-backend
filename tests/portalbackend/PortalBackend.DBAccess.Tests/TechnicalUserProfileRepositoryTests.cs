@@ -40,7 +40,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
 {
     private readonly TestDbFixture _dbTestDbFixture;
     private readonly IFixture _fixture;
-    private const string IamUserId = "502dabcf-01c7-47d9-a88e-0be4279097b5";
+    private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
     private readonly Guid _validServiceId = new("ac1cf001-7fbc-1f2f-817f-bce0000c0001");
     private readonly Guid _validAppId = new("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4");
 
@@ -63,7 +63,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferProfileData(_validServiceId, OfferTypeId.SERVICE, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOfferProfileData(_validServiceId, OfferTypeId.SERVICE, _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -79,7 +79,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferProfileData(_validAppId, OfferTypeId.APP, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOfferProfileData(_validAppId, OfferTypeId.APP, _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -95,7 +95,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferProfileData(_validServiceId, OfferTypeId.SERVICE, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        var result = await sut.GetOfferProfileData(_validServiceId, OfferTypeId.SERVICE, Guid.NewGuid()).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -111,7 +111,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferProfileData(_validServiceId, OfferTypeId.APP, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOfferProfileData(_validServiceId, OfferTypeId.APP, _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -124,7 +124,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferProfileData(Guid.NewGuid(), OfferTypeId.SERVICE, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOfferProfileData(Guid.NewGuid(), OfferTypeId.SERVICE, _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -256,7 +256,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, IamUserId, OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -271,7 +271,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, Guid.NewGuid().ToString(), OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, Guid.NewGuid(), OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -285,7 +285,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(Guid.NewGuid(), IamUserId, OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.GetTechnicalUserProfileInformation(Guid.NewGuid(), _validCompanyId, OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(default);
@@ -298,7 +298,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, IamUserId, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(default);

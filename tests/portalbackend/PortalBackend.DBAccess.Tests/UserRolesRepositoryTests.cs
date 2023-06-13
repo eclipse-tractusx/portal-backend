@@ -29,7 +29,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private static readonly Guid ApplicationWithBpn = new("6b2d1263-c073-4a48-bfaf-704dc154ca9e");
     private const string ClientId = "technical_roles_management";
-    private const string ValidIamUserId = "502dabcf-01c7-47d9-a88e-0be4279097b5";
+    private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
     private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
 
@@ -52,7 +52,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var data = await sut.GetCoreOfferRolesAsync(ValidIamUserId, "en", ClientId).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetCoreOfferRolesAsync(_validCompanyId, "en", ClientId).ToListAsync().ConfigureAwait(false);
 
         // Assert
         data.Should().HaveCount(9);
@@ -130,7 +130,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var data = await sut.GetServiceAccountRolesAsync(ValidIamUserId, ClientId, Constants.DefaultLanguage).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetServiceAccountRolesAsync(_validCompanyId, ClientId, Constants.DefaultLanguage).ToListAsync().ConfigureAwait(false);
 
         // Assert
         data.Should().HaveCount(9);

@@ -92,12 +92,12 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetRegistrationDataUntrackedAsync(SubmittedApplicationWithBpn, "3d8142f1-860b-48aa-8c2b-1ccb18699f65", new[] { DocumentTypeId.CX_FRAME_CONTRACT, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }).ConfigureAwait(false);
+        var result = await sut.GetRegistrationDataUntrackedAsync(SubmittedApplicationWithBpn, new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"), new[] { DocumentTypeId.CX_FRAME_CONTRACT, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result.IsValidApplicationId.Should().BeTrue();
-        result.IsSameCompanyUser.Should().BeTrue();
+        result.IsValidCompany.Should().BeTrue();
         result.Data.Should().NotBeNull();
         result.Data!.DocumentNames.Should().NotBeNull();
     }
@@ -110,12 +110,12 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var applicationId = Guid.NewGuid();
 
         // Act
-        var result = await sut.GetRegistrationDataUntrackedAsync(applicationId, "3d8142f1-860b-48aa-8c2b-1ccb18699f65", new[] { DocumentTypeId.CX_FRAME_CONTRACT, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }).ConfigureAwait(false);
+        var result = await sut.GetRegistrationDataUntrackedAsync(applicationId, new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"), new[] { DocumentTypeId.CX_FRAME_CONTRACT, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result.IsValidApplicationId.Should().BeFalse();
-        result.IsSameCompanyUser.Should().BeFalse();
+        result.IsValidCompany.Should().BeFalse();
         result.Data.Should().BeNull();
     }
 
@@ -126,12 +126,12 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetRegistrationDataUntrackedAsync(SubmittedApplicationWithBpn, _fixture.Create<string>(), new[] { DocumentTypeId.CX_FRAME_CONTRACT, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }).ConfigureAwait(false);
+        var result = await sut.GetRegistrationDataUntrackedAsync(SubmittedApplicationWithBpn, Guid.NewGuid(), new[] { DocumentTypeId.CX_FRAME_CONTRACT, DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result.IsValidApplicationId.Should().BeTrue();
-        result.IsSameCompanyUser.Should().BeFalse();
+        result.IsValidCompany.Should().BeFalse();
         result.Data.Should().BeNull();
     }
 

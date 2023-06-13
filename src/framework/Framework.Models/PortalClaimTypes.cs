@@ -18,11 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
-public enum CompanyUserStatusId
+public static class PortalClaimTypes
 {
-    ACTIVE = 1,
-    INACTIVE = 2,
-    DELETED = 3,
+    private const string Base = "https://catena-x.net//schema/2023/05/identity/claims";
+    public const string Sub = "sub";
+    public const string ResourceAccess = "resource_access";
+    public const string CompanyId = $"{Base}/company_id";
+    public const string IdentityId = $"{Base}/identity_id";
+    public const string IdentityType = $"{Base}/identity_type";
 }

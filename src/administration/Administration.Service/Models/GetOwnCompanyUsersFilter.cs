@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
+ * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,17 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
-public class CompanyApplicationUserData
-{
-    public CompanyApplicationUserData(CompanyApplication companyApplication)
-    {
-        CompanyApplication = companyApplication;
-    }
-
-    public CompanyApplication CompanyApplication { get; }
-    public Guid CompanyUserId { get; set; }
-}
+public record GetOwnCompanyUsersFilter(
+    Guid? CompanyUserId,
+    string? UserEntityId,
+    string? FirstName,
+    string? LastName,
+    string? Email
+);

@@ -20,7 +20,6 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -48,10 +47,10 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId, string iamUserId)
+    public async Task<(string FileName, byte[] Content, string MediaType)> GetDocumentAsync(Guid documentId, Guid companyId)
     {
         var documentDetails = await _portalRepositories.GetInstance<IDocumentRepository>()
-            .GetDocumentDataAndIsCompanyUserAsync(documentId, iamUserId)
+            .GetDocumentDataAndIsCompanyUserAsync(documentId, companyId)
             .ConfigureAwait(false);
         if (documentDetails == default)
         {
@@ -85,10 +84,10 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task<bool> DeleteDocumentAsync(Guid documentId, string iamUserId)
+    public async Task<bool> DeleteDocumentAsync(Guid documentId, Guid companyUserId)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, iamUserId).ConfigureAwait(false);
+        var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, companyUserId).ConfigureAwait(false);
 
         if (details.DocumentId == Guid.Empty)
         {

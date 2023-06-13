@@ -41,11 +41,11 @@ public class OfferDocumentService : IOfferDocumentService
         _portalRepositories = portalRepositories;
     }
 
-    public async Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, string iamUserId, OfferTypeId offerTypeId, IDictionary<DocumentTypeId, IEnumerable<string>> uploadDocumentTypeIdSettings, CancellationToken cancellationToken)
+    public async Task UploadDocumentAsync(Guid id, DocumentTypeId documentTypeId, IFormFile document, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, IDictionary<DocumentTypeId, IEnumerable<string>> uploadDocumentTypeIdSettings, CancellationToken cancellationToken)
     {
         if (id == Guid.Empty)
         {
-            throw new ControllerArgumentException($"{offerTypeId}id should not be null");
+            throw new ControllerArgumentException($"{offerTypeId} id should not be null");
         }
 
         if (string.IsNullOrEmpty(document.FileName))
@@ -65,20 +65,19 @@ public class OfferDocumentService : IOfferDocumentService
         }
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, iamUserId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
+        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, identity.CompanyId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
 
         if (result == default)
         {
             throw new NotFoundException($"{offerTypeId} {id} does not exist");
         }
 
-        if (!result.IsStatusCreated)
-            throw new ConflictException($"offerStatus is in Incorrect State");
+        if (!result.IsStatusMatching)
+            throw new ConflictException("offerStatus is in Incorrect State");
 
-        var companyUserId = result.CompanyUserId;
-        if (companyUserId == Guid.Empty)
+        if (!result.IsUserOfProvider)
         {
-            throw new ForbiddenException($"user {iamUserId} is not a member of the providercompany of {offerTypeId} {id}");
+            throw new ForbiddenException($"Company {identity.CompanyId} is not the provider company of {offerTypeId} {id}");
         }
 
         var documentName = document.FileName;
@@ -95,7 +94,7 @@ public class OfferDocumentService : IOfferDocumentService
 
         var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(documentName, documentContent, hash, documentContentType.ParseMediaTypeId(), documentTypeId, x =>
         {
-            x.CompanyUserId = companyUserId;
+            x.CompanyUserId = identity.UserId;
         });
         _portalRepositories.GetInstance<IOfferRepository>().CreateOfferAssignedDocument(id, doc.Id);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);

@@ -19,44 +19,45 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Authorization
 {
-    public class ClaimRequestPathRequirement : IAuthorizationRequirement
+    public class MandatoryEnumTypeClaimRequirement : IAuthorizationRequirement
     {
         private readonly string _claim;
-        private readonly string _parameter;
-        public ClaimRequestPathRequirement(string claim, string parameter)
+        private readonly Type _enumType;
+        private readonly int _value;
+        public MandatoryEnumTypeClaimRequirement(string claim, object value)
         {
             _claim = claim;
-            _parameter = parameter;
+            var type = value.GetType();
+            if (type is null || !type.IsEnum)
+            {
+                throw new ArgumentException($"{value} is not an enum type");
+            }
+            _enumType = type;
+            _value = (int)value;
         }
-        public bool IsSuccess(IDictionary<string, object> routeValues, IEnumerable<Claim> claims)
+        public bool IsSuccess(IEnumerable<Claim> claims)
         {
-            var routeValue = routeValues[_parameter];
-            if (routeValue == null)
+            var claimValue = claims.FirstOrDefault(x => x.Type == _claim)?.Value;
+            if (string.IsNullOrWhiteSpace(claimValue) ||
+                !Enum.TryParse(_enumType, claimValue, out var enumValue) ||
+                enumValue == null ||
+                Array.BinarySearch(_enumType.GetEnumValues(), enumValue) < 0)
+            {
                 return false;
-            var claim = claims.SingleOrDefault(x => x.Type == _claim);
-            if (claim == null)
-                return false;
-            return claim.Value.Equals(routeValue);
+            }
+            return _value == (int)enumValue;
         }
     }
 
-    public class ClaimRequestPathHandler : AuthorizationHandler<ClaimRequestPathRequirement>
+    public class MandatoryEnumTypeClaimHandler : AuthorizationHandler<MandatoryEnumTypeClaimRequirement>
     {
-        private readonly IHttpContextAccessor _contextAccessor;
-
-        public ClaimRequestPathHandler(IHttpContextAccessor contextAccessor)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, MandatoryEnumTypeClaimRequirement requirement)
         {
-            _contextAccessor = contextAccessor;
-        }
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, ClaimRequestPathRequirement requirement)
-        {
-            if (_contextAccessor.HttpContext?.Request.RouteValues != null &&
-                requirement.IsSuccess(_contextAccessor.HttpContext.Request.RouteValues!, context.User.Claims))
+            if (requirement.IsSuccess(context.User.Claims))
             {
                 context.Succeed(requirement);
             }

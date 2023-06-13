@@ -48,19 +48,19 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     }
 
     /// <inheritdoc />
-    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress)
+    public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, string basePortalAddress)
     {
-        var (companyInformation, companyUserId) = await ValidateCompanyInformationAsync(iamUserId).ConfigureAwait(false);
+        var companyInformation = await ValidateCompanyInformationAsync(identity.CompanyId).ConfigureAwait(false);
         var offerProviderDetails = await ValidateOfferProviderDetailDataAsync(offerId, offerTypeId).ConfigureAwait(false);
         await ValidateConsent(offerAgreementConsentData, offerId).ConfigureAwait(false);
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var (offerSubscription, process, processSteps) = offerTypeId == OfferTypeId.APP
-            ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, companyUserId).ConfigureAwait(false)
-            : (offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, companyUserId, companyUserId), null, null);
+            ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, identity.UserId).ConfigureAwait(false)
+            : (offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, identity.UserId, identity.UserId), null, null);
 
         CreateProcessSteps(offerSubscription, process, processSteps);
-        CreateConsentsForSubscription(offerSubscription.Id, offerAgreementConsentData, companyInformation.CompanyId, companyUserId);
+        CreateConsentsForSubscription(offerSubscription.Id, offerAgreementConsentData, companyInformation.CompanyId, identity.UserId);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(offerProviderDetails.ProviderContactEmail))
@@ -121,27 +121,21 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         }
     }
 
-    private async Task<(CompanyInformationData companyInformation, Guid companyUserId)> ValidateCompanyInformationAsync(string iamUserId)
+    private async Task<CompanyInformationData> ValidateCompanyInformationAsync(Guid companyId)
     {
-        var (companyInformation, companyUserId, _) = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetOwnCompanyInformationWithCompanyUserIdAndEmailAsync(iamUserId).ConfigureAwait(false);
-        if (companyInformation.CompanyId == Guid.Empty)
+        var companyInformation = await _portalRepositories.GetInstance<ICompanyRepository>()
+            .GetOwnCompanyInformationAsync(companyId).ConfigureAwait(false);
+        if (companyInformation == null)
         {
-            throw new ControllerArgumentException($"User {iamUserId} has no company assigned", nameof(iamUserId));
-        }
-
-        if (companyUserId == Guid.Empty)
-        {
-            throw new ControllerArgumentException($"User {iamUserId} has no company user assigned", nameof(iamUserId));
+            throw new ControllerArgumentException($"Company {companyId} does not exist", nameof(companyId));
         }
 
         if (companyInformation.BusinessPartnerNumber == null)
         {
-            throw new ConflictException(
-                $"company {companyInformation.OrganizationName} has no BusinessPartnerNumber assigned");
+            throw new ConflictException($"company {companyInformation.OrganizationName} has no BusinessPartnerNumber assigned");
         }
 
-        return (companyInformation, companyUserId);
+        return companyInformation;
     }
 
     private static async Task<(OfferSubscription, Process?, IEnumerable<ProcessStepTypeId>?)> HandleAppSubscriptionAsync(

@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -30,14 +31,13 @@ namespace Offer.Library.Web.Tests;
 
 public class OfferDocumentServiceTests
 {
-    private readonly Guid _companyUserCompanyId = new("395f955b-f11b-4a74-ab51-92a526c1973a");
+    private static readonly Guid CompanyUserCompanyId = new("395f955b-f11b-4a74-ab51-92a526c1973a");
     private readonly Guid _validAppId = Guid.NewGuid();
+    private readonly IdentityData _identity = new("395f955b-f11b-4a55-ab51-92a526c1974b", Guid.NewGuid(), IdentityTypeId.COMPANY_USER, CompanyUserCompanyId);
 
-    private readonly CompanyUser _companyUser;
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferRepository _offerRepository;
-    private readonly IamUser _iamUser;
     private readonly IDocumentRepository _documentRepository;
     private readonly OfferDocumentService _sut;
 
@@ -48,15 +48,8 @@ public class OfferDocumentServiceTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _companyUser = _fixture.Build<CompanyUser>()
-            .Without(u => u.IamUser)
-            .With(u => u.CompanyId, _companyUserCompanyId)
-            .Create();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _offerRepository = A.Fake<IOfferRepository>();
-        _iamUser = _fixture.Build<IamUser>()
-            .With(u => u.CompanyUser, _companyUser)
-            .Create();
         _documentRepository = A.Fake<IDocumentRepository>();
         SetupCreateDocument();
 
@@ -93,7 +86,7 @@ public class OfferDocumentServiceTests
             });
 
         // Act
-        await _sut.UploadDocumentAsync(_validAppId, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        await _sut.UploadDocumentAsync(_validAppId, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -112,37 +105,15 @@ public class OfferDocumentServiceTests
             {DocumentTypeId.APP_CONTRACT, new []{ "application/pdf" }}} : new Dictionary<DocumentTypeId, IEnumerable<string>> {
             {DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" }}};
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
-        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, _iamUser.UserEntityId, OfferStatusId.CREATED, offerTypeId))
-            .Returns(((bool, bool, Guid))default);
+        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, _identity.CompanyId, OfferStatusId.CREATED, offerTypeId))
+            .Returns(((bool, bool, bool))default);
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
         ex.Message.Should().Be($"{offerTypeId} {id} does not exist");
-    }
-
-    [Theory]
-    [InlineData(OfferTypeId.APP, DocumentTypeId.APP_CONTRACT)]
-    [InlineData(OfferTypeId.SERVICE, DocumentTypeId.ADDITIONAL_DETAILS)]
-    public async Task UploadDocumentAsync_InValidData_ThrowsForbiddenException(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
-    {
-        // Arrange
-        var id = _fixture.Create<Guid>();
-        var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP ? new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.APP_CONTRACT, new []{ "application/pdf" }}} : new Dictionary<DocumentTypeId, IEnumerable<string>> {
-            {DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" }}};
-        var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
-        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, _iamUser.UserEntityId, OfferStatusId.CREATED, offerTypeId))
-            .Returns((true, true, Guid.Empty));
-
-        // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
-
-        // Arrange
-        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be($"user {_iamUser.UserEntityId} is not a member of the providercompany of {offerTypeId} {id}");
     }
 
     [Theory]
@@ -157,11 +128,11 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(Guid.Empty, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(Guid.Empty, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-        ex.Message.Should().Be($"{offerTypeId}id should not be null");
+        ex.Message.Should().Be($"{offerTypeId} id should not be null");
     }
 
     [Theory]
@@ -177,7 +148,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "", "application/pdf");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -197,7 +168,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "TestFile.txt", "text/csv");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
@@ -217,7 +188,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, (_identity.UserId, _identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
@@ -231,15 +202,16 @@ public class OfferDocumentServiceTests
     {
         // Arrange
         var id = _fixture.Create<Guid>();
+        var identity = _fixture.Create<IdentityData>();
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP ? new Dictionary<DocumentTypeId, IEnumerable<string>> {
             {DocumentTypeId.APP_CONTRACT, new []{ "application/pdf" }}} : new Dictionary<DocumentTypeId, IEnumerable<string>> {
             {DocumentTypeId.ADDITIONAL_DETAILS, new []{ "application/pdf" }}};
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
-        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, _iamUser.UserEntityId, OfferStatusId.CREATED, offerTypeId))
-            .Returns((true, false, Guid.NewGuid()));
+        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, identity.CompanyId, OfferStatusId.CREATED, offerTypeId))
+            .Returns((true, false, true));
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, _iamUser.UserEntityId, offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, (identity.UserId, identity.CompanyId), offerTypeId, uploadDocumentTypeIdSettings, CancellationToken.None).ConfigureAwait(false);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
@@ -250,8 +222,8 @@ public class OfferDocumentServiceTests
 
     private void SetupCreateDocument()
     {
-        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(_validAppId, _iamUser.UserEntityId, OfferStatusId.CREATED, A<OfferTypeId>._))
-            .Returns((true, true, _companyUser.Id));
+        A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(_validAppId, _identity.CompanyId, OfferStatusId.CREATED, A<OfferTypeId>._))
+            .Returns((true, true, true));
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
     }

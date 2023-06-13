@@ -18,29 +18,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class IamUser
+public class IdentityUserStatus
 {
-    public IamUser()
+    private IdentityUserStatus()
     {
-        UserEntityId = null!;
+        Label = null!;
+        Identities = new HashSet<Identity>();
     }
 
-    public IamUser(string iamUserId, Guid companyUserId)
+    public IdentityUserStatus(UserStatusId userStatusId) : this()
     {
-        UserEntityId = iamUserId;
-        CompanyUserId = companyUserId;
+        Id = userStatusId;
+        Label = userStatusId.ToString();
     }
 
-    [Key]
-    [MaxLength(36)]
-    public string UserEntityId { get; set; }
+    public UserStatusId Id { get; private set; }
 
-    public Guid CompanyUserId { get; set; }
+    [MaxLength(255)]
+    public string Label { get; private set; }
 
     // Navigation properties
-    public virtual CompanyUser? CompanyUser { get; set; }
+    public virtual ICollection<Identity> Identities { get; private set; }
 }

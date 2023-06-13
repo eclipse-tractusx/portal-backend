@@ -30,11 +30,11 @@ public interface IApplicationRepository
     void AttachAndModifyCompanyApplication(Guid companyApplicationId, Action<CompanyApplication> setOptionalParameters);
     Invitation CreateInvitation(Guid applicationId, Guid companyUserId);
     void DeleteInvitations(IEnumerable<Guid> invitationIds);
-    Task<CompanyApplicationUserData?> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, string iamUserId);
-    Task<CompanyApplicationStatusUserData?> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, string iamUserId);
-    Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, string iamUserId);
+    Task<(bool Exists, CompanyApplicationStatusId StatusId)> GetOwnCompanyApplicationUserDataAsync(Guid applicationId, Guid userCompanyId);
+    Task<(bool Exists, bool IsUserOfCompany, CompanyApplicationStatusId ApplicationStatus)> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, Guid companyId);
+    Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, Guid companyUserId);
     IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null, IEnumerable<CompanyApplicationStatusId>? applicationStatusIds = null);
-    Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, string iamUserId, Guid? companyId = null);
+    Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, Guid userCompanyId, Guid? companyId = null);
     Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdSubmissionStatusForApplication(Guid applicationId);
     Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IamIdpAliasse)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId);
     Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber)> GetCompanyAndApplicationDetailsForCreateWalletAsync(Guid applicationId);
@@ -42,7 +42,7 @@ public interface IApplicationRepository
     IAsyncEnumerable<EmailData> GetEmailDataUntrackedAsync(Guid applicationId);
     IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null);
     Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAddressUntrackedAsync(Guid companyApplicationId);
-    Task<(bool IsValidApplicationId, bool IsSameCompanyUser, RegistrationData? Data)> GetRegistrationDataUntrackedAsync(Guid applicationId, string iamUserId, IEnumerable<DocumentTypeId> documentTypes);
+    Task<(bool IsValidApplicationId, bool IsValidCompany, RegistrationData? Data)> GetRegistrationDataUntrackedAsync(Guid applicationId, Guid userCompanyId, IEnumerable<DocumentTypeId> documentTypes);
     Task<(string? Bpn, IEnumerable<ApplicationChecklistEntryTypeId> ExistingChecklistEntryTypeIds)> GetBpnAndChecklistCheckForApplicationIdAsync(Guid applicationId);
 
     Task<(Guid CompanyId, string? BusinessPartnerNumber, string Alpha2Code, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers)> GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(Guid applicationId);
@@ -96,4 +96,6 @@ public interface IApplicationRepository
     /// <param name="applicationId">Id of the application</param>
     /// <returns>The id of the company for the given application</returns>
     Task<(Guid CompanyId, string CompanyName)> GetCompanyIdNameForSubmittedApplication(Guid applicationId);
+
+    Task<bool> IsValidApplicationForCompany(Guid applicationId, Guid companyId);
 }

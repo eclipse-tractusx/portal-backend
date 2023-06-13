@@ -48,31 +48,32 @@ public interface IDocumentRepository
     /// <returns>Returns the document</returns>
     Task<Document?> GetDocumentByIdAsync(Guid documentId);
 
-    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> ConsentIds, bool IsSameUser)> GetDocumentDetailsForIdUntrackedAsync(Guid documentId, string iamUserId);
+    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> ConsentIds, bool IsSameUser)> GetDocumentDetailsForIdUntrackedAsync(Guid documentId, Guid companyUserId);
 
     /// <summary>
     /// Gets all documents for the given applicationId, documentId and userId
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
     /// <param name="documentTypeId">Id of the document type</param>
-    /// <param name="iamUserId">Id of the user</param>
+    /// <param name="companyUserId">Id of the user</param>
     /// <returns>A collection of documents</returns>
-    Task<(bool IsApplicationAssignedUser, IEnumerable<UploadDocuments> Documents)> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, string iamUserId);
+    Task<(bool IsApplicationAssignedUser, IEnumerable<UploadDocuments> Documents)> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, Guid companyUserId);
 
     /// <summary>
     /// Gets the documents userid by the document id
     /// </summary>
     /// <param name="documentId">id of the document the user id should be selected for</param>
+    /// <param name="companyUserId"></param>
     /// <returns>Returns the user id if a document is found for the given id, otherwise null</returns>
-    Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdCompanyUserSameAsIamUserAsync(Guid documentId, string iamUserId);
+    Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdWithCompanyUserCheckAsync(Guid documentId, Guid companyUserId);
 
     /// <summary>
     /// Get the document data and checks if the user 
     /// </summary>
     /// <param name="documentId">id of the document</param>
-    /// <param name="iamUserId">id of the iamUser</param>
+    /// <param name="userCompanyId"></param>
     /// <returns>Returns the document data</returns>
-    Task<(byte[]? Content, string FileName, MediaTypeId MediaTypeId, bool IsUserInCompany)> GetDocumentDataAndIsCompanyUserAsync(Guid documentId, string iamUserId);
+    Task<(byte[]? Content, string FileName, MediaTypeId MediaTypeId, bool IsUserInCompany)> GetDocumentDataAndIsCompanyUserAsync(Guid documentId, Guid userCompanyId);
 
     /// <summary>
     /// Gets the document data for the given id and type
@@ -92,9 +93,9 @@ public interface IDocumentRepository
     /// Gets the documents and User by the document id
     /// </summary>
     /// <param name="documentId"></param>
-    /// <param name="iamUserId"></param>
+    /// <param name="userCompanyId"></param>
     /// <param name="applicationStatusIds"></param>
-    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, string iamUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
+    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
 
     /// <summary>
     /// Attaches the document and sets the optional parameters
@@ -136,7 +137,7 @@ public interface IDocumentRepository
     /// <param name="documentTypeIds"></param>
     /// <param name="offerTypeId"></param>
     /// <returns></returns>
-    Task<(IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)> OfferData, bool IsDocumentTypeMatch, DocumentStatusId DocumentStatusId, bool IsProviderCompanyUser)> GetOfferDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId);
+    Task<(IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)> OfferData, bool IsDocumentTypeMatch, DocumentStatusId DocumentStatusId, bool IsProviderCompanyUser)> GetOfferDocumentsAsync(Guid documentId, Guid userCompanyId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Delete List Of Document

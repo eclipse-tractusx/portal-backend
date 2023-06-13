@@ -33,12 +33,12 @@ public interface IOfferSetupService
     /// </summary>
     /// <param name="data">The offer subscription id and url for the service</param>
     /// <param name="itAdminRoles">Roles that will be assigned to the company admin</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <param name="offerTypeId">OfferTypeId of offer to be created</param>
     /// <param name="basePortalAddress">Address of the portal</param>
     /// <param name="serviceManagerRoles">Roles of the service Managers</param>
     /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string, IEnumerable<string>> itAdminRoles, string iamUserId, OfferTypeId offerTypeId, string basePortalAddress, IDictionary<string, IEnumerable<string>> serviceManagerRoles);
+    Task<OfferAutoSetupResponseData> AutoSetupOfferAsync(OfferAutoSetupData data, IDictionary<string, IEnumerable<string>> itAdminRoles, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId, string basePortalAddress, IDictionary<string, IEnumerable<string>> serviceManagerRoles);
 
     /// <summary>
     /// Setup a single instance app
@@ -72,10 +72,10 @@ public interface IOfferSetupService
     /// Internally auto setup the offer.
     /// </summary>
     /// <param name="data">The offer subscription id and url for the service</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="companyId">Id of the company</param>
     /// <param name="offerTypeId">OfferTypeId of offer to be created</param>
     /// <returns>Returns the response data</returns>
-    Task StartAutoSetupAsync(OfferAutoSetupData data, string iamUserId, OfferTypeId offerTypeId);
+    Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId, OfferTypeId offerTypeId);
 
     /// <inheritdoc />
     Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSingleInstanceSubscriptionDetail(Guid offerSubscriptionId);

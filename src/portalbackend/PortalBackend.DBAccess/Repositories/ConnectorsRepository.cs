@@ -42,18 +42,18 @@ public class ConnectorsRepository : IConnectorsRepository
     }
 
     /// <inheritdoc/>
-    public IQueryable<Connector> GetAllCompanyConnectorsForIamUser(string iamUserId) =>
-        _context.IamUsers.AsNoTracking()
-            .Where(u => u.UserEntityId == iamUserId)
-            .SelectMany(u => u.CompanyUser!.Company!.ProvidedConnectors.Where(c => c.StatusId != ConnectorStatusId.INACTIVE));
+    public IQueryable<Connector> GetAllCompanyConnectorsForIamUser(Guid companyId) =>
+        _context.Connectors
+            .AsNoTracking()
+            .Where(x => x.ProviderId == companyId && x.StatusId != ConnectorStatusId.INACTIVE);
 
     /// <inheritdoc/>
-    public Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForIamUser(string iamUserId) =>
+    public Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForCompany(Guid companyId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
             _context.Connectors.AsNoTracking()
-                .Where(c => c.Host!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUserId) &&
+                .Where(c => c.HostId == companyId &&
                             c.StatusId != ConnectorStatusId.INACTIVE &&
                             c.TypeId == ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
                 .GroupBy(c => c.HostId),
@@ -69,7 +69,7 @@ public class ConnectorsRepository : IConnectorsRepository
                     c.SelfDescriptionDocumentId)
         ).SingleOrDefaultAsync();
 
-    public Task<(ConnectorData ConnectorData, bool IsProviderUser)> GetConnectorByIdForIamUser(Guid connectorId, string iamUser) =>
+    public Task<(ConnectorData ConnectorData, bool IsProviderCompany)> GetConnectorByIdForCompany(Guid connectorId, Guid companyId) =>
         _context.Connectors
             .AsNoTracking()
             .Where(connector => connector.Id == connectorId && connector.StatusId != ConnectorStatusId.INACTIVE)
@@ -86,17 +86,17 @@ public class ConnectorsRepository : IConnectorsRepository
                     connector.SelfDescriptionDocumentId,
                     connector.SelfDescriptionDocument!.DocumentName
                 ),
-                connector.Provider!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUser)
+                connector.ProviderId == companyId
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, string iamUser) =>
+    public Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, Guid userCompanyId) =>
         _context.Connectors
             .AsNoTracking()
             .Where(connector => connector.Id == connectorId && connector.StatusId != ConnectorStatusId.INACTIVE)
             .Select(connector => new ValueTuple<ConnectorInformationData, bool>(
                 new ConnectorInformationData(connector.Name, connector.Provider!.BusinessPartnerNumber!, connector.Id, connector.ConnectorUrl),
-                connector.Provider!.CompanyUsers.Any(companyUser => companyUser.IamUser!.UserEntityId == iamUser)
+                connector.ProviderId == userCompanyId
             ))
             .SingleOrDefaultAsync();
 
@@ -159,13 +159,13 @@ public class ConnectorsRepository : IConnectorsRepository
         _context.ConnectorClientDetails.Remove(new ConnectorClientDetail(connectorId, null!));
 
     /// <inheritdoc />
-    public Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, string iamUser) =>
+    public Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, Guid companyId) =>
         _context.Connectors
             .Where(c => c.Id == connectorId)
             .Select(c => new ConnectorUpdateInformation(
                 c.StatusId,
                 c.TypeId,
-                c.Host!.CompanyUsers.Any(cu => cu.IamUser!.UserEntityId == iamUser),
+                c.HostId == companyId,
                 c.ConnectorUrl,
                 c.Provider!.BusinessPartnerNumber,
                 c.ClientDetails!.ClientId

@@ -20,8 +20,8 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public enum CompanyServiceAccountStatusId : int
+public enum IdentityTypeId
 {
-    ACTIVE = 1,
-    INACTIVE = 2
+    COMPANY_USER = 1,
+    COMPANY_SERVICE_ACCOUNT = 2
 }

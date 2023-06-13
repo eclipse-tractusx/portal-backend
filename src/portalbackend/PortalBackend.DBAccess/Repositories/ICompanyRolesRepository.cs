@@ -29,9 +29,9 @@ public interface ICompanyRolesRepository
     CompanyAssignedRole CreateCompanyAssignedRole(Guid companyId, CompanyRoleId companyRoleId);
     void CreateCompanyAssignedRoles(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds);
     void RemoveCompanyAssignedRoles(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds);
-    Task<CompanyRoleAgreementConsentData?> GetCompanyRoleAgreementConsentDataAsync(Guid applicationId, string iamUserId);
+    Task<CompanyRoleAgreementConsentData?> GetCompanyRoleAgreementConsentDataAsync(Guid applicationId);
     IAsyncEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> GetAgreementAssignedCompanyRolesUntrackedAsync(IEnumerable<CompanyRoleId> companyRoleIds);
-    Task<CompanyRoleAgreementConsents?> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, string iamUserId);
+    Task<CompanyRoleAgreementConsents?> GetCompanyRoleAgreementConsentStatusUntrackedAsync(Guid applicationId, Guid companyUserId);
     IAsyncEnumerable<CompanyRoleData> GetCompanyRoleAgreementsUntrackedAsync();
     IAsyncEnumerable<CompanyRolesDetails> GetCompanyRolesAsync(string? languageShortName = null);
 }

@@ -61,9 +61,9 @@ public class OfferService : IOfferService
 
     /// <inheritdoc />
     public async Task<Guid> CreateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId,
-        Guid agreementId, ConsentStatusId consentStatusId, string iamUserId, OfferTypeId offerTypeId)
+        Guid agreementId, ConsentStatusId consentStatusId, IdentityData identity, OfferTypeId offerTypeId)
     {
-        var (companyId, offerSubscription, companyUserId) = await GetOfferSubscriptionCompanyAndUserAsync(subscriptionId, iamUserId, offerTypeId).ConfigureAwait(false);
+        var (companyId, offerSubscription, companyUserId) = await GetOfferSubscriptionCompanyAndUserAsync(subscriptionId, identity, offerTypeId).ConfigureAwait(false);
 
         if (!await _portalRepositories.GetInstance<IAgreementRepository>()
                 .CheckAgreementExistsForSubscriptionAsync(agreementId, subscriptionId, offerTypeId).ConfigureAwait(false))
@@ -79,9 +79,9 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public async Task CreateOrUpdateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, string iamUserId, OfferTypeId offerTypeId)
+    public async Task CreateOrUpdateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, IdentityData identity, OfferTypeId offerTypeId)
     {
-        var (companyId, offerSubscription, companyUserId) = await GetOfferSubscriptionCompanyAndUserAsync(subscriptionId, iamUserId, offerTypeId).ConfigureAwait(false);
+        var (companyId, offerSubscription, companyUserId) = await GetOfferSubscriptionCompanyAndUserAsync(subscriptionId, identity, offerTypeId).ConfigureAwait(false);
 
         if (!await _portalRepositories
                 .GetInstance<IAgreementRepository>()
@@ -111,21 +111,21 @@ public class OfferService : IOfferService
         }
     }
 
-    private async Task<(Guid CompanyId, OfferSubscription OfferSubscription, Guid CompanyUserId)> GetOfferSubscriptionCompanyAndUserAsync(Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId)
+    private async Task<(Guid CompanyId, OfferSubscription OfferSubscription, Guid CompanyUserId)> GetOfferSubscriptionCompanyAndUserAsync(Guid subscriptionId, IdentityData identity, OfferTypeId offerTypeId)
     {
         var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(subscriptionId, iamUserId, offerTypeId)
+            .GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(subscriptionId, identity.UserId, offerTypeId)
             .ConfigureAwait(false);
         if (result == default)
         {
-            throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(iamUserId));
+            throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(identity.UserEntityId));
         }
-        var (companyId, offerSubscription, companyUserId) = result;
+        var (companyId, offerSubscription) = result;
         if (offerSubscription is null)
         {
             throw new NotFoundException($"Invalid OfferSubscription {subscriptionId} for OfferType {offerTypeId}");
         }
-        return (companyId, offerSubscription, companyUserId);
+        return (companyId, offerSubscription, identity.UserId);
     }
 
     /// <inheritdoc />
@@ -148,23 +148,23 @@ public class OfferService : IOfferService
     public IAsyncEnumerable<AgreementDocumentData> GetOfferTypeAgreements(OfferTypeId offerTypeId) =>
         _portalRepositories.GetInstance<IAgreementRepository>().GetAgreementDataForOfferType(offerTypeId);
 
-    public async Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, string iamUserId, OfferTypeId offerTypeId)
+    public async Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, Guid companyId, OfferTypeId offerTypeId)
     {
-        var result = await _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsentById(offerId, iamUserId, offerTypeId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsentById(offerId, companyId, offerTypeId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"offer {offerId}, offertype {offerTypeId} does not exist");
         }
         if (!result.IsProviderCompany)
         {
-            throw new ForbiddenException($"UserId {iamUserId} is not assigned with Offer {offerId}");
+            throw new ForbiddenException($"Company {companyId} is not assigned with Offer {offerId}");
         }
         return result.OfferAgreementConsent;
     }
 
-    public async Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, string iamUserId, OfferTypeId offerTypeId)
+    public async Task<IEnumerable<ConsentStatusData>> CreateOrUpdateProviderOfferAgreementConsent(Guid offerId, OfferAgreementConsent offerAgreementConsent, Guid companyId, OfferTypeId offerTypeId)
     {
-        var (companyUserId, companyId, dbAgreements, requiredAgreementIds) = await GetProviderOfferAgreementConsent(offerId, iamUserId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
+        var (companyUserId, dbAgreements, requiredAgreementIds) = await GetProviderOfferAgreementConsent(offerId, companyId, OfferStatusId.CREATED, offerTypeId).ConfigureAwait(false);
         var invalidConsents = offerAgreementConsent.Agreements.ExceptBy(requiredAgreementIds, consent => consent.AgreementId);
         if (invalidConsents.Any())
         {
@@ -184,22 +184,22 @@ public class OfferService : IOfferService
         return ConsentStatusdata;
     }
 
-    private async Task<OfferAgreementConsentUpdate> GetProviderOfferAgreementConsent(Guid offerId, string iamUserId, OfferStatusId statusId, OfferTypeId offerTypeId)
+    private async Task<OfferAgreementConsentUpdate> GetProviderOfferAgreementConsent(Guid offerId, Guid companyId, OfferStatusId statusId, OfferTypeId offerTypeId)
     {
-        var result = await _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsent(offerId, iamUserId, statusId, offerTypeId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsent(offerId, companyId, statusId, offerTypeId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"offer {offerId}, offertype {offerTypeId}, offerStatus {statusId} does not exist");
         }
         if (!result.IsProviderCompany)
         {
-            throw new ForbiddenException($"UserId {iamUserId} is not assigned with Offer {offerId}");
+            throw new ForbiddenException($"Company {companyId} is not assigned with Offer {offerId}");
         }
         return result.OfferAgreementConsentUpdate;
     }
 
     /// <inheritdoc />
-    public async Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, string iamUserId, OfferTypeId offerTypeId)
+    public async Task<Guid> CreateServiceOfferingAsync(ServiceOfferingData data, (Guid UserId, Guid CompanyId) identity, OfferTypeId offerTypeId)
     {
         if (!data.ServiceTypeIds.Any())
         {
@@ -209,16 +209,14 @@ public class OfferService : IOfferService
         {
             throw new ControllerArgumentException("Title should be at least three character long", nameof(data.Title));
         }
-        var results = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserWithIamUserCheckAndCompanyName(iamUserId, data.SalesManager)
-            .ToListAsync().ConfigureAwait(false);
 
-        var iamUserResult = results.Where(x => x.IsIamUser).Select(x => (x.CompanyName, x.CompanyId)).SingleOrDefault();
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyNameUntrackedAsync(identity.CompanyId).ConfigureAwait(false);
+        if (!result.IsValidCompany)
+        {
+            throw new ControllerArgumentException($"No company {identity.CompanyId} found");
+        }
 
-        if (iamUserResult == default)
-            throw new ControllerArgumentException($"IamUser is not assignable to company user {iamUserId}", nameof(iamUserId));
-
-        if (data.SalesManager.HasValue && results.All(x => x.CompanyUserId != data.SalesManager))
+        if (data.SalesManager.HasValue && identity.UserId != data.SalesManager.Value)
             throw new ControllerArgumentException("SalesManager does not exist", nameof(data.SalesManager));
 
         await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode)).ConfigureAwait(false);
@@ -229,9 +227,9 @@ public class OfferService : IOfferService
             service.ContactEmail = data.ContactEmail;
             service.Name = data.Title;
             service.SalesManagerId = data.SalesManager;
-            service.Provider = iamUserResult.CompanyName;
+            service.Provider = result.CompanyName;
             service.OfferStatusId = OfferStatusId.CREATED;
-            service.ProviderCompanyId = iamUserResult.CompanyId;
+            service.ProviderCompanyId = identity.CompanyId;
             service.MarketingUrl = data.ProviderUri;
             service.LicenseTypeId = LicenseTypeId.COTS;
         });
@@ -247,16 +245,16 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public async Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, string userId, OfferTypeId offerTypeId)
+    public async Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId)
     {
-        var offerDetail = await _portalRepositories.GetInstance<IOfferRepository>().GetProviderOfferDataWithConsentStatusAsync(offerId, userId, offerTypeId).ConfigureAwait(false);
+        var offerDetail = await _portalRepositories.GetInstance<IOfferRepository>().GetProviderOfferDataWithConsentStatusAsync(offerId, companyId, offerTypeId).ConfigureAwait(false);
         if (offerDetail == default)
         {
             throw new NotFoundException($"Offer {offerId} does not exist");
         }
         if (!offerDetail.IsProviderCompanyUser)
         {
-            throw new ForbiddenException($"userId {userId} is not associated with provider-company of offer {offerId}");
+            throw new ForbiddenException($"Company {companyId} is not associated with provider-company of offer {offerId}");
         }
         if (offerDetail.OfferProviderData == null)
         {
@@ -287,13 +285,14 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public async Task<Guid> ValidateSalesManager(Guid salesManagerId, string iamUserId, IDictionary<string, IEnumerable<string>> salesManagerRoles)
+    public async Task ValidateSalesManager(Guid salesManagerId, Guid companyId, IDictionary<string, IEnumerable<string>> salesManagerRoles)
     {
         var userRoleIds = await _portalRepositories.GetInstance<IUserRolesRepository>()
             .GetUserRoleIdsUntrackedAsync(salesManagerRoles).ToListAsync().ConfigureAwait(false);
         var responseData = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetRolesAndCompanyMembershipUntrackedAsync(iamUserId, userRoleIds, salesManagerId)
+            .GetRolesForCompanyUser(companyId, userRoleIds, salesManagerId)
             .ConfigureAwait(false);
+
         if (responseData == default)
         {
             throw new ControllerArgumentException($"invalid salesManagerId {salesManagerId}", nameof(salesManagerId));
@@ -301,7 +300,7 @@ public class OfferService : IOfferService
 
         if (!responseData.IsSameCompany)
         {
-            throw new ForbiddenException($"user {iamUserId} is not a member of the company");
+            throw new ForbiddenException($"SalesManger is not a member of the company {companyId}");
         }
 
         if (userRoleIds.Except(responseData.RoleIds).Any())
@@ -309,8 +308,6 @@ public class OfferService : IOfferService
             throw new ControllerArgumentException(
                 $"User {salesManagerId} does not have sales Manager Role", nameof(salesManagerId));
         }
-
-        return responseData.UserCompanyId;
     }
 
     public void UpsertRemoveOfferDescription(Guid offerId, IEnumerable<LocalizedDescription> updateDescriptions, IEnumerable<LocalizedDescription> existingDescriptions)
@@ -339,7 +336,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc/>
-    public async Task SubmitOfferAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds)
+    public async Task SubmitOfferAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, IEnumerable<DocumentTypeId> submitAppDocumentTypeIds)
     {
         var offerDetails = await GetOfferReleaseData(offerId, offerTypeId).ConfigureAwait(false);
 
@@ -361,14 +358,14 @@ public class OfferService : IOfferService
             throw new ConflictException("PrivacyPolicies is missing for the app");
         }
 
-        await SubmitAppServiceAsync(offerId, iamUserId, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(false);
+        await SubmitAppServiceAsync(offerId, userId, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async Task SubmitServiceAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
+    public async Task SubmitServiceAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
     {
         var offerDetails = await GetOfferReleaseData(offerId, offerTypeId).ConfigureAwait(false);
-        await SubmitAppServiceAsync(offerId, iamUserId, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(false);
+        await SubmitAppServiceAsync(offerId, userId, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(false);
     }
 
     private async Task<OfferReleaseData> GetOfferReleaseData(Guid offerId, OfferTypeId offerTypeId)
@@ -382,7 +379,7 @@ public class OfferService : IOfferService
         return offerDetails;
     }
 
-    private async Task SubmitAppServiceAsync(Guid offerId, string iamUserId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, OfferReleaseData offerDetails)
+    private async Task SubmitAppServiceAsync(Guid offerId, Guid userId, IEnumerable<NotificationTypeId> notificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles, OfferReleaseData offerDetails)
     {
         GetAndValidateOfferDetails(offerDetails);
         var pendingDocuments = offerDetails.DocumentDatas.Where(data => data.StatusId == DocumentStatusId.PENDING);
@@ -402,13 +399,6 @@ public class OfferService : IOfferService
             offer.DateLastChanged = DateTimeOffset.UtcNow;
         });
 
-        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        if (requesterId == Guid.Empty)
-        {
-            throw new ConflictException($"keycloak user {iamUserId} is not associated with any portal user");
-        }
-
         var notificationContent = new
         {
             offerId,
@@ -418,7 +408,7 @@ public class OfferService : IOfferService
 
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = notificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(catenaAdminRoles, requesterId, content, false).ConfigureAwait(false);
+        await _notificationService.CreateNotifications(catenaAdminRoles, userId, content, false).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -456,7 +446,7 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc/>
-    public async Task ApproveOfferRequestAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
+    public async Task ApproveOfferRequestAsync(Guid offerId, Guid userId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var offerDetails = await offerRepository.GetOfferStatusDataByIdAsync(offerId, offerTypeId).ConfigureAwait(false);
@@ -478,13 +468,6 @@ public class OfferService : IOfferService
         if (offerDetails.ProviderCompanyId == null)
         {
             throw new ConflictException($"Offer {offerId} providing company is not yet set.");
-        }
-
-        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-        if (requesterId == Guid.Empty)
-        {
-            throw new ConflictException($"keycloak user ${iamUserId} is not associated with any portal user");
         }
 
         offerRepository.AttachAndModifyOffer(offerId, offer =>
@@ -515,17 +498,17 @@ public class OfferService : IOfferService
 
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = approveOfferNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(approveOfferRoles, requesterId, content, offerDetails.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
+        await _notificationService.CreateNotifications(approveOfferRoles, userId, content, offerDetails.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _notificationService.SetNotificationsForOfferToDone(catenaAdminRoles, submitOfferNotificationTypeIds, offerId).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task DeclineOfferAsync(Guid offerId, string iamUserId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string, IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
+    public async Task DeclineOfferAsync(Guid offerId, Guid userId, OfferDeclineRequest data, OfferTypeId offerType, NotificationTypeId notificationTypeId, IDictionary<string, IEnumerable<string>> notificationRecipients, string basePortalAddress, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IDictionary<string, IEnumerable<string>> catenaAdminRoles)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var declineData = await offerRepository.GetOfferDeclineDataAsync(offerId, iamUserId, offerType).ConfigureAwait(false);
+        var declineData = await offerRepository.GetOfferDeclineDataAsync(offerId, offerType).ConfigureAwait(false);
 
         if (declineData == default)
         {
@@ -562,8 +545,6 @@ public class OfferService : IOfferService
                         document => document.DocumentStatusId = x.StatusId,
                         document => document.DocumentStatusId = DocumentStatusId.PENDING)));
         }
-        var requesterId = await _portalRepositories.GetInstance<IUserRepository>()
-            .GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
         var notificationContent = new
         {
             declineData.OfferName,
@@ -573,7 +554,7 @@ public class OfferService : IOfferService
 
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = Enumerable.Repeat(notificationTypeId, 1).Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
-        await _notificationService.CreateNotifications(notificationRecipients, requesterId, content, declineData.CompanyId.Value).AwaitAll().ConfigureAwait(false);
+        await _notificationService.CreateNotifications(notificationRecipients, userId, content, declineData.CompanyId.Value).AwaitAll().ConfigureAwait(false);
         await _notificationService.SetNotificationsForOfferToDone(catenaAdminRoles, submitOfferNotificationTypeIds, offerId).ConfigureAwait(false);
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
@@ -629,19 +610,19 @@ public class OfferService : IOfferService
         }
     }
 
-    public async Task DeactivateOfferIdAsync(Guid offerId, string iamUserId, OfferTypeId offerTypeId)
+    public async Task DeactivateOfferIdAsync(Guid offerId, Guid companyId, OfferTypeId offerTypeId)
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var offerdata = await offerRepository.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, iamUserId).ConfigureAwait(false);
-        if (offerdata == default)
+        var offerData = await offerRepository.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, companyId).ConfigureAwait(false);
+        if (offerData == default)
         {
             throw new NotFoundException($"{offerTypeId} {offerId} does not exist.");
         }
-        if (!offerdata.IsUserCompanyProvider)
+        if (!offerData.IsUserCompanyProvider)
         {
             throw new ForbiddenException("Missing permission: The user's company does not provide the requested app so they cannot deactivate it.");
         }
-        if (!offerdata.IsStatusActive)
+        if (!offerData.IsStatusActive)
         {
             throw new ConflictException($"offerStatus is in Incorrect State");
         }
@@ -683,9 +664,9 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc/>
-    public async Task DeleteDocumentsAsync(Guid documentId, string iamUserId, IEnumerable<DocumentTypeId> documentTypeIdSettings, OfferTypeId offerTypeId)
+    public async Task DeleteDocumentsAsync(Guid documentId, Guid companyId, IEnumerable<DocumentTypeId> documentTypeIdSettings, OfferTypeId offerTypeId)
     {
-        var result = await _portalRepositories.GetInstance<IDocumentRepository>().GetOfferDocumentsAsync(documentId, iamUserId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IDocumentRepository>().GetOfferDocumentsAsync(documentId, companyId, documentTypeIdSettings, offerTypeId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"Document {documentId} does not exist");
@@ -693,7 +674,7 @@ public class OfferService : IOfferService
 
         if (!result.IsProviderCompanyUser)
         {
-            throw new ForbiddenException($"user {iamUserId} is not a member of the same company of document {documentId}");
+            throw new ForbiddenException($"Company {companyId} is not the same company of document {documentId}");
         }
 
         if (!result.OfferData.Any())
@@ -732,10 +713,10 @@ public class OfferService : IOfferService
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
-    public async Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, string iamUserId, OfferTypeId offerTypeId)
+    public async Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, Guid companyId, OfferTypeId offerTypeId)
     {
         var result = await _portalRepositories.GetInstance<ITechnicalUserProfileRepository>()
-            .GetTechnicalUserProfileInformation(offerId, iamUserId, offerTypeId).ConfigureAwait(false);
+            .GetTechnicalUserProfileInformation(offerId, companyId, offerTypeId).ConfigureAwait(false);
         if (result == default)
         {
             throw new NotFoundException($"Offer {offerId} does not exist");
@@ -743,17 +724,17 @@ public class OfferService : IOfferService
 
         if (!result.IsUserOfProvidingCompany)
         {
-            throw new ForbiddenException($"User {iamUserId} is not in providing company");
+            throw new ForbiddenException($"Company {companyId} is not the providing company");
         }
 
         return result.Information;
     }
 
     /// <inheritdoc />
-    public async Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, string iamUserId, string technicalUserProfileClient)
+    public async Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, Guid companyId, string technicalUserProfileClient)
     {
         var technicalUserProfileRepository = _portalRepositories.GetInstance<ITechnicalUserProfileRepository>();
-        var offerProfileData = await technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, iamUserId).ConfigureAwait(false);
+        var offerProfileData = await technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, companyId).ConfigureAwait(false);
         var roles = await _portalRepositories.GetInstance<IUserRolesRepository>()
             .GetRolesForClient(technicalUserProfileClient)
             .ToListAsync()
@@ -766,7 +747,7 @@ public class OfferService : IOfferService
 
         if (!offerProfileData.IsProvidingCompanyUser)
         {
-            throw new ForbiddenException($"User {iamUserId} is not in providing company");
+            throw new ForbiddenException($"Company {companyId} is not the providing company");
         }
 
         if (offerProfileData.ServiceTypeIds?.All(x => x == ServiceTypeId.CONSULTANCE_SERVICE) ?? false)
@@ -801,9 +782,9 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public async Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles)
+    public async Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles)
     {
-        var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, iamUserId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider);
+        var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, companyId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider);
         return new ProviderSubscriptionDetailData(
             details.Id,
             details.OfferSubscriptionStatus,
@@ -815,9 +796,9 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public async Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, string iamUserId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles)
+    public async Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, Guid companyId, OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles)
     {
-        var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, iamUserId, offerTypeId, contactUserRoles, OfferCompanyRole.Subscriber);
+        var details = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, companyId, offerTypeId, contactUserRoles, OfferCompanyRole.Subscriber);
         return new SubscriberSubscriptionDetailData(
             details.Id,
             details.OfferSubscriptionStatus,
@@ -827,13 +808,13 @@ public class OfferService : IOfferService
             details.TechnicalUserData);
     }
 
-    private async Task<OfferSubscriptionDetailData> GetOfferSubscriptionDetailsInternal(Guid offerId, Guid subscriptionId, string iamUserId,
+    private async Task<OfferSubscriptionDetailData> GetOfferSubscriptionDetailsInternal(Guid offerId, Guid subscriptionId, Guid companyId,
         OfferTypeId offerTypeId, IDictionary<string, IEnumerable<string>> contactUserRoles, OfferCompanyRole offerCompanyRole)
     {
         var userRoleIds = await ValidateRoleData(contactUserRoles).ConfigureAwait(false);
 
         var (exists, isUserOfCompany, details) = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetSubscriptionDetailsAsync(offerId, subscriptionId, iamUserId, offerTypeId, userRoleIds, offerCompanyRole == OfferCompanyRole.Provider)
+            .GetSubscriptionDetailsAsync(offerId, subscriptionId, companyId, offerTypeId, userRoleIds, offerCompanyRole == OfferCompanyRole.Provider)
             .ConfigureAwait(false);
 
         if (!exists)
@@ -843,7 +824,7 @@ public class OfferService : IOfferService
 
         if (!isUserOfCompany)
         {
-            throw new ForbiddenException($"User {iamUserId} is not part of the {offerCompanyRole} company");
+            throw new ForbiddenException($"Company {companyId} is not part of the {offerCompanyRole} company");
         }
 
         return details;
@@ -864,12 +845,12 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc/>
-    public async Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(int page, int size, string iamUserId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    public async Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(int page, int size, Guid companyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
     {
         async Task<Pagination.Source<OfferSubscriptionStatusDetailData>?> GetCompanySubscribedOfferSubscriptionStatusesData(int skip, int take)
         {
             var offerCompanySubscriptionResponse = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-                .GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(iamUserId, offerTypeId, documentTypeId)(skip, take).ConfigureAwait(false);
+                .GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(companyId, offerTypeId, documentTypeId)(skip, take).ConfigureAwait(false);
 
             return offerCompanySubscriptionResponse == null
                 ? null

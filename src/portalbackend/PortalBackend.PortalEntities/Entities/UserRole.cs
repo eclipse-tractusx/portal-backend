@@ -33,8 +33,7 @@ public class UserRole : IAuditableV1, IBaseEntity
     private UserRole()
     {
         UserRoleText = null!;
-        CompanyUsers = new HashSet<CompanyUser>();
-        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
+        IdentityAssignedRoles = new HashSet<IdentityAssignedRole>();
         UserRoleCollections = new HashSet<UserRoleCollection>();
         UserRoleDescriptions = new HashSet<UserRoleDescription>();
         TechnicalUserProfiles = new HashSet<TechnicalUserProfile>();
@@ -60,8 +59,7 @@ public class UserRole : IAuditableV1, IBaseEntity
     public Guid? LastEditorId { get; set; }
     // Navigation properties
     public virtual Offer? Offer { get; set; }
-    public virtual ICollection<CompanyUser> CompanyUsers { get; private set; }
-    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
+    public virtual ICollection<IdentityAssignedRole> IdentityAssignedRoles { get; private set; }
     public virtual ICollection<UserRoleCollection> UserRoleCollections { get; private set; }
     public virtual ICollection<UserRoleDescription> UserRoleDescriptions { get; private set; }
     public virtual ICollection<TechnicalUserProfile> TechnicalUserProfiles { get; private set; }

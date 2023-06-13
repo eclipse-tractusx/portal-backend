@@ -32,6 +32,7 @@ public class DocumentsBusinessLogicTests
 {
     private static readonly Guid ValidDocumentId = Guid.NewGuid();
     private static readonly string IamUserId = Guid.NewGuid().ToString();
+    private readonly IdentityData _identity = new(IamUserId, Guid.NewGuid(), IdentityTypeId.COMPANY_USER, Guid.NewGuid());
     private readonly IFixture _fixture;
     private readonly IDocumentRepository _documentRepository;
     private readonly IPortalRepositories _portalRepositories;
@@ -115,7 +116,7 @@ public class DocumentsBusinessLogicTests
         SetupFakesForGetDocument();
 
         // Act
-        var result = await _sut.GetDocumentAsync(ValidDocumentId, IamUserId).ConfigureAwait(false);
+        var result = await _sut.GetDocumentAsync(ValidDocumentId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -131,7 +132,7 @@ public class DocumentsBusinessLogicTests
         SetupFakesForGetDocument();
 
         // Act
-        async Task Act() => await _sut.GetDocumentAsync(documentId, IamUserId).ConfigureAwait(false);
+        async Task Act() => await _sut.GetDocumentAsync(documentId, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -142,10 +143,11 @@ public class DocumentsBusinessLogicTests
     public async Task GetDocumentAsync_WithWrongUser_ThrowsForbiddenException()
     {
         // Arrange
+        var identity = _fixture.Create<IdentityData>();
         SetupFakesForGetDocument();
 
         // Act
-        async Task Act() => await _sut.GetDocumentAsync(ValidDocumentId, Guid.NewGuid().ToString()).ConfigureAwait(false);
+        async Task Act() => await _sut.GetDocumentAsync(ValidDocumentId, identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -256,11 +258,11 @@ public class DocumentsBusinessLogicTests
     private void SetupFakesForGetDocument()
     {
         var content = new byte[7];
-        A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(ValidDocumentId, IamUserId))
+        A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(ValidDocumentId, _identity.CompanyId))
             .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, true));
-        A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(A<Guid>.That.Not.Matches(x => x == ValidDocumentId), IamUserId))
+        A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(A<Guid>.That.Not.Matches(x => x == ValidDocumentId), _identity.CompanyId))
             .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>());
-        A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(ValidDocumentId, A<string>.That.Not.Matches(x => x == IamUserId)))
+        A.CallTo(() => _documentRepository.GetDocumentDataAndIsCompanyUserAsync(ValidDocumentId, A<Guid>.That.Not.Matches(x => x == _identity.CompanyId)))
             .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, false));
     }
 

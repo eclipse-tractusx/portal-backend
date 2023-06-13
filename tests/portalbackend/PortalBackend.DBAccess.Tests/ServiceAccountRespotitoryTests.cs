@@ -36,7 +36,6 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
-    private const string IamUserId = "502dabcf-01c7-47d9-a88e-0be4279097b5";
     private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
     private readonly Guid _validSubscriptionId = new("eb98bdf5-14e1-4feb-a954-453eac0b93cd");
     private readonly Guid _validServiceAccountId = new("7e85a0b8-0001-ab67-10d1-0ef508201006");
@@ -62,9 +61,10 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Act
         var result = sut.CreateCompanyServiceAccount(
             _validCompanyId,
-            CompanyServiceAccountStatusId.ACTIVE,
             "test",
             "Only a test service account",
+            "test-1",
+            "sa1",
             CompanyServiceAccountTypeId.MANAGED,
             sa =>
             {
@@ -76,85 +76,12 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changedEntries = changeTracker.Entries().ToList();
         result.OfferSubscriptionId.Should().Be(_validSubscriptionId);
         result.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
+        result.ClientId.Should().Be("test-1");
+        result.ClientClientId.Should().Be("sa1");
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);
         changedEntries.Single().Entity.Should().BeOfType<CompanyServiceAccount>().Which.OfferSubscriptionId.Should().Be(_validSubscriptionId);
-    }
-
-    #endregion
-
-    #region RemoveIamServiceAccount
-
-    [Fact]
-    public async Task RemoveIamServiceAccount_ReturnsExpectedResult()
-    {
-        // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        sut.RemoveIamServiceAccount(IamUserId);
-
-        // Assert
-        var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Should().AllSatisfy(x => x.State.Should().Be(EntityState.Deleted));
-        changedEntries.Single().Entity.Should().BeOfType<IamServiceAccount>().Which.ClientId.Should().Be(IamUserId);
-    }
-
-    #endregion
-
-    #region CreateCompanyServiceAccountAssignedRoles
-
-    [Fact]
-    public async Task CreateCompanyServiceAccountAssignedRole_ReturnsExpectedResult()
-    {
-        // Arrange
-        var companyServiceAccountAssignedRoleIds = _fixture.CreateMany<(Guid ServiceAccountId, Guid UserRoleId)>(3).ToImmutableArray();
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        sut.CreateCompanyServiceAccountAssignedRoles(companyServiceAccountAssignedRoleIds);
-
-        // Assert
-        var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().HaveCount(3).And.AllSatisfy(x => x.State.Should().Be(EntityState.Added));
-        changedEntries.Select(entry => entry.Entity).Should().AllBeOfType<CompanyServiceAccountAssignedRole>().Which.Should().Satisfy(
-            x => x.CompanyServiceAccountId == companyServiceAccountAssignedRoleIds[0].ServiceAccountId && x.UserRoleId == companyServiceAccountAssignedRoleIds[0].UserRoleId,
-            x => x.CompanyServiceAccountId == companyServiceAccountAssignedRoleIds[1].ServiceAccountId && x.UserRoleId == companyServiceAccountAssignedRoleIds[1].UserRoleId,
-            x => x.CompanyServiceAccountId == companyServiceAccountAssignedRoleIds[2].ServiceAccountId && x.UserRoleId == companyServiceAccountAssignedRoleIds[2].UserRoleId
-        );
-    }
-
-    #endregion
-
-    #region RemoveCompanyServiceAccountAssignedRoles
-
-    [Fact]
-    public async Task RemoveCompanyServiceAccountAssignedRole_ReturnsExpectedResult()
-    {
-        // Arrange
-        var companyServiceAccountAssignedRoleIds = _fixture.CreateMany<(Guid ServiceAccountId, Guid UserRoleId)>(3).ToImmutableArray();
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
-
-        // Act
-        sut.RemoveCompanyServiceAccountAssignedRoles(companyServiceAccountAssignedRoleIds);
-
-        // Assert
-        var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().HaveCount(3).And.AllSatisfy(x => x.State.Should().Be(EntityState.Deleted));
-        changedEntries.Select(entry => entry.Entity).Should().AllBeOfType<CompanyServiceAccountAssignedRole>().Which.Should().Satisfy(
-            x => x.CompanyServiceAccountId == companyServiceAccountAssignedRoleIds[0].ServiceAccountId && x.UserRoleId == companyServiceAccountAssignedRoleIds[0].UserRoleId,
-            x => x.CompanyServiceAccountId == companyServiceAccountAssignedRoleIds[1].ServiceAccountId && x.UserRoleId == companyServiceAccountAssignedRoleIds[1].UserRoleId,
-            x => x.CompanyServiceAccountId == companyServiceAccountAssignedRoleIds[2].ServiceAccountId && x.UserRoleId == companyServiceAccountAssignedRoleIds[2].UserRoleId
-        );
     }
 
     #endregion
@@ -168,7 +95,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamClientIdAsync(_validServiceAccountId, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountWithIamClientIdAsync(_validServiceAccountId, _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -182,7 +109,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid.NewGuid(), _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -199,7 +126,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(_validServiceAccountId, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(_validServiceAccountId, _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBe(default);
@@ -213,7 +140,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid.NewGuid(), _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(default);
@@ -230,7 +157,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(_validServiceAccountId, IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(_validServiceAccountId, _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -244,7 +171,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid.NewGuid(), IamUserId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid.NewGuid(), _validCompanyId).ConfigureAwait(false);
 
         // Assert
         result.Should().BeNull();
@@ -263,7 +190,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(IamUserId)(page, size).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId)(page, size).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();

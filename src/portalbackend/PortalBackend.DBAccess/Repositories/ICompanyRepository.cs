@@ -44,7 +44,9 @@ public interface ICompanyRepository
 
     void CreateUpdateDeleteIdentifiers(Guid companyId, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> initialItems, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> modifiedItems);
 
-    Task<(string CompanyName, Guid CompanyId)> GetCompanyNameIdUntrackedAsync(string iamUserId);
+    Task<(bool IsValidCompany, string CompanyName)> GetCompanyNameUntrackedAsync(Guid companyId);
+
+    Task<(string? Bpn, IEnumerable<Guid> TechnicalUserRoleIds)> GetBpnAndTechnicalUserRoleIds(Guid companyId, string technicalUserClientId);
 
     /// <summary>
     /// Checks the bpn for existence and returns the associated CompanyId
@@ -58,17 +60,17 @@ public interface ICompanyRepository
     /// </summary>
     /// <returns> Business partner numbers of all active companies</returns>
     IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync();
-    Task<CompanyAddressDetailData?> GetOwnCompanyDetailsAsync(string iamUserId);
+    Task<CompanyAddressDetailData?> GetCompanyDetailsAsync(Guid companyId);
 
     /// <summary>
     /// Checks whether the iamUser is assigned to the company and the company exists
     /// </summary>
-    /// <param name="iamUserId">IAm User Id</param>
+    /// <param name="companyId">Id of the users company</param>
     /// <param name="companyRoleIds">The company Roles</param>
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
-    Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(string iamUserId, IEnumerable<CompanyRoleId> companyRoleIds);
+    Task<(Guid CompanyId, bool IsServiceProviderCompany)> GetCompanyIdMatchingRoleAndIamUserOrTechnicalUserAsync(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds);
 
-    Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(string iamUserId);
+    Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(Guid companyId);
 
     /// <summary>
     /// Creates service provider company details
@@ -83,9 +85,9 @@ public interface ICompanyRepository
     /// Gets the service provider company details data
     /// </summary>
     /// <param name="companyRoleId">Id of the details</param>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="companyId">Id of the users company</param>
     /// <returns>Returns the details data</returns>
-    Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, string iamUserId);
+    Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, Guid companyId);
 
     /// <summary>
     /// Updates the service provider company details
@@ -106,17 +108,17 @@ public interface ICompanyRepository
     /// <summary>
     /// Gets the the companyAssigendUeseCase Details
     /// </summary>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="userCompanyId">Id of the iam users company</param>
     /// <returns>Returns the companyAssigendUeseCase Details</returns>
-    IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(string iamUserId);
+    IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(Guid userCompanyId);
 
     /// <summary>
     /// Gets the CompanyActive Status and companyAssigendUeseCase Id
     /// </summary>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="companyId">Id of the users company</param>
     /// <param name="useCaseId">Id of the UseCase</param>
     /// <returns>Returns the CompanyActive Status, companyAssigendUeseCase Id and CompanyId</returns>
-    Task<(bool IsUseCaseIdExists, bool IsActiveCompanyStatus, Guid CompanyId)> GetCompanyStatusAndUseCaseIdAsync(string iamUserId, Guid useCaseId);
+    Task<(bool IsUseCaseIdExists, bool IsActiveCompanyStatus, bool IsValidCompany)> GetCompanyStatusAndUseCaseIdAsync(Guid companyId, Guid useCaseId);
 
     /// <summary>
     /// creates the companyAssigendUeseCase record
@@ -131,18 +133,21 @@ public interface ICompanyRepository
     /// <param name="companyId">Id of the comapny</param>
     /// <param name="useCaseId">Id of the UseCase</param>
     void RemoveCompanyAssignedUseCase(Guid companyId, Guid useCaseId);
+
+    /// <summary>
     /// Gets the the companyRole and ConsentAgreemnet
     /// </summary>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="companyId">Id of the company</param>
+    /// <param name="languageShortName"></param>
     /// <returns>Returns the companyRole and ConsentAgreemnet</returns>
     IAsyncEnumerable<CompanyRoleConsentData> GetCompanyRoleAndConsentAgreementDataAsync(Guid companyId, string languageShortName);
 
     /// <summary>
     /// Gets the the companyRole
     /// </summary>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="companyId">Id of the companyr</param>
     /// <returns>Returns the companyRole</returns>
-    Task<(bool IsCompanyActive, Guid CompanyId, IEnumerable<CompanyRoleId>? CompanyRoleIds, Guid CompanyUserId, IEnumerable<ConsentStatusDetails>? ConsentStatusDetails)> GetCompanyRolesDataAsync(string iamUserId, IEnumerable<CompanyRoleId> companyRoleIds);
+    Task<(bool IsValidCompany, bool IsCompanyActive, IEnumerable<CompanyRoleId>? CompanyRoleIds, IEnumerable<ConsentStatusDetails>? ConsentStatusDetails)> GetCompanyRolesDataAsync(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds);
 
     /// <summary>
     /// Gets the the AgreementAssignedCompanyRoles Data
@@ -154,14 +159,9 @@ public interface ICompanyRepository
     /// <summary>
     /// Gets the the CompanyStatus Data
     /// </summary>
-    /// <param name="iamUserId">Id of the iam user</param>
+    /// <param name="companyId">Id of the users company</param>
     /// <returns>Returns the CompanyStatus Data</returns>
-    Task<(bool IsActive, Guid CompanyId)> GetCompanyStatusDataAsync(string iamUserId);
+    Task<(bool IsActive, bool IsValid)> GetCompanyStatusDataAsync(Guid companyId);
 
-    /// <summary>
-    /// Gets the company id for the calling user and the CompanyUserId if the user is a company user
-    /// </summary>
-    /// <param name="iamUserId">Id of the iamUser</param>
-    /// <returns>Returns the company id and the companyUserId</returns>
-    Task<(Guid CompanyId, Guid CompanyUserId)> GetCompanyIdAndUserIdForUserOrTechnicalUser(string iamUserId);
+    Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId);
 }

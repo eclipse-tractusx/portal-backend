@@ -85,7 +85,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var results = await sut.GetOfferDetailByIdUntrackedAsync(Guid.NewGuid(), "en", "3d8142f1-860b-48aa-8c2b-1ccb18699f65", OfferTypeId.SERVICE).ConfigureAwait(false);
+        var results = await sut.GetOfferDetailByIdUntrackedAsync(Guid.NewGuid(), "en", new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"), OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
         (results == default).Should().BeTrue();
@@ -98,7 +98,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferDetailByIdUntrackedAsync(_offerId, "en", "3d8142f1-860b-48aa-8c2b-1ccb18699f65", OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.GetOfferDetailByIdUntrackedAsync(_offerId, "en", new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"), OfferTypeId.SERVICE).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
