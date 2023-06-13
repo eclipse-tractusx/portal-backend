@@ -3,7 +3,7 @@ using static RestAssured.Dsl;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
 
-public class BpdmEndpointTests
+public class BpdmEndToEndTests
 {
     private static readonly string BaseUrl = "https://partners-pool.dev.demo.catena-x.net";
     private static readonly string EndPoint = "/api/catena/legal-entities";

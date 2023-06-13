@@ -3,7 +3,7 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Tests;
 using static RestAssured.Dsl;
 
-public class ClearinghouseEndPointTests
+public class ClearinghouseEndToEndTests
 {
     private static readonly string _baseUrl = "https://validation.dev.dih-cloud.com";
     private static readonly string _endPoint = "/api/v1/validation ";

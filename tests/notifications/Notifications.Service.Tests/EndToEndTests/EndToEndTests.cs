@@ -12,7 +12,7 @@ namespace Notifications.Service.Tests.RestAssured;
 
 [TestCaseOrderer("Notifications.Service.Tests.RestAssured.AlphabeticalOrderer",
     "Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Tests")]
-public class NotificationEndpointTests
+public class EndToEndTests
 {
     private static readonly string BaseUrl = "https://portal-backend.dev.demo.catena-x.net";
     private static readonly string EndPoint = "/api/notification";
