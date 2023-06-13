@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
@@ -180,4 +181,18 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                 .CreateConsentAssignedOfferSubscription(consent.Id, offerSubscriptionId);
         }
     }
+
+    private static readonly IEnumerable<OfferSubscriptionStatusId> _offerSubcriptionStatusIdFilterActive = ImmutableArray.Create(OfferSubscriptionStatusId.ACTIVE);
+    private static readonly IEnumerable<OfferSubscriptionStatusId> _offerSubcriptionStatusIdFilterInActive = ImmutableArray.Create(OfferSubscriptionStatusId.INACTIVE);
+    private static readonly IEnumerable<OfferSubscriptionStatusId> _offerSubcriptionStatusIdFilterPending = ImmutableArray.Create(OfferSubscriptionStatusId.PENDING);
+    private static readonly IEnumerable<OfferSubscriptionStatusId> _offerSubcriptionStatusIdFilterDefault = ImmutableArray.Create(OfferSubscriptionStatusId.PENDING, OfferSubscriptionStatusId.ACTIVE);
+
+    public static IEnumerable<OfferSubscriptionStatusId> GetOfferSubscriptionFilterStatusIds(OfferSubscriptionStatusId? offerStatusIdFilter) =>
+        offerStatusIdFilter switch
+        {
+            OfferSubscriptionStatusId.ACTIVE => _offerSubcriptionStatusIdFilterActive,
+            OfferSubscriptionStatusId.INACTIVE => _offerSubcriptionStatusIdFilterInActive,
+            OfferSubscriptionStatusId.PENDING => _offerSubcriptionStatusIdFilterPending,
+            _ => _offerSubcriptionStatusIdFilterDefault
+        };
 }

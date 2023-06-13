@@ -193,7 +193,7 @@ public class ServiceControllerTest
         var data = _fixture.CreateMany<OfferCompanySubscriptionStatusResponse>(5);
         var pagination = new Pagination.Response<OfferCompanySubscriptionStatusResponse>(new Pagination.Metadata(data.Count(), 1, 0, data.Count()), data);
         A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<Guid>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._, A<Guid?>._))
-                    .Returns(pagination);
+            .Returns(pagination);
 
         //Act
         var result = await this._controller.GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync(offerId: offerId).ConfigureAwait(false);

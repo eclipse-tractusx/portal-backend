@@ -47,17 +47,17 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
         _context.OfferSubscriptions.Add(new OfferSubscription(Guid.NewGuid(), offerId, companyId, offerSubscriptionStatusId, requesterId, creatorId)).Entity;
 
     /// <inheritdoc />
-    public Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId statusId, Guid? offerId) =>
+    public Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, IEnumerable<OfferSubscriptionStatusId> statusIds, Guid? offerId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
                 skip,
                 take,
                 _context.Offers
                     .AsNoTracking()
-                    .Where(os =>
-                        os.OfferTypeId == offerTypeId &&
-                        (!offerId.HasValue || os.Id == offerId.Value) &&
-                        os.ProviderCompanyId == userCompanyId &&
-                        os.OfferSubscriptions.Any(x => x.OfferSubscriptionStatusId == statusId))
+                    .Where(offer =>
+                        offer.OfferTypeId == offerTypeId &&
+                        (!offerId.HasValue || offer.Id == offerId.Value) &&
+                        offer.ProviderCompanyId == userCompanyId &&
+                        offer.OfferSubscriptions.Any(os => statusIds.Contains(os.OfferSubscriptionStatusId)))
                     .GroupBy(s => s.ProviderCompanyId),
                 sorting switch
                 {
@@ -72,7 +72,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     OfferId = g.Id,
                     ServiceName = g.Name,
                     CompanySubscriptionStatuses = g.OfferSubscriptions
-                        .Where(os => os.OfferSubscriptionStatusId == statusId)
+                        .Where(os => statusIds.Contains(os.OfferSubscriptionStatusId))
                         .Select(s =>
                             new CompanySubscriptionStatusData(
                                 s.CompanyId,

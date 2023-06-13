@@ -46,9 +46,9 @@ public interface IOfferSubscriptionsRepository
     /// <param name="userCompanyId"></param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <param name="sorting"></param>
-    /// <param name="statusId"></param>
+    /// <param name="statusIds"></param>
     /// <returns>Returns a func with skip, take and the pagination of the source</returns>
-    Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId statusId, Guid? offerId);
+    Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, IEnumerable<OfferSubscriptionStatusId> statusIds, Guid? offerId);
 
     Task<(Guid SubscriptionId, OfferSubscriptionStatusId SubscriptionStatusId, Guid RequestorId, string? AppName, bool IsUserOfProvider, RequesterData Requester)> GetCompanyAssignedAppDataForProvidingCompanyUserAsync(Guid appId, Guid companyId, Guid userCompanyId);
 

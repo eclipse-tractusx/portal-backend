@@ -428,6 +428,24 @@ public class OfferSubscriptionServiceTests
 
     #endregion
 
+    #region GetOfferSubscriptionFilterStatusIds
+
+    [Theory]
+    [InlineData(OfferSubscriptionStatusId.ACTIVE, new[] { OfferSubscriptionStatusId.ACTIVE })]
+    [InlineData(OfferSubscriptionStatusId.INACTIVE, new[] { OfferSubscriptionStatusId.INACTIVE })]
+    [InlineData(OfferSubscriptionStatusId.PENDING, new[] { OfferSubscriptionStatusId.PENDING })]
+    [InlineData(null, new[] { OfferSubscriptionStatusId.PENDING, OfferSubscriptionStatusId.ACTIVE })]
+    public void GetOfferSubscriptionFilterStatusIds_ReturnsExpected(OfferSubscriptionStatusId? offerStatusIdFilter, IEnumerable<OfferSubscriptionStatusId> expectedStatusIds)
+    {
+        // Act
+        var result = OfferSubscriptionService.GetOfferSubscriptionFilterStatusIds(offerStatusIdFilter);
+
+        // Assert
+        result.Should().ContainInOrder(expectedStatusIds);
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupRepositories()
