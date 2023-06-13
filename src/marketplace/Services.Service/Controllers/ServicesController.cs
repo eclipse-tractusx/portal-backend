@@ -164,11 +164,12 @@ public class ServicesController : ControllerBase
     [Route("autoSetup")]
     [Authorize(Roles = "activate_subscription")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(OfferAutoSetupResponseData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<OfferAutoSetupResponseData> AutoSetupService([FromBody] OfferAutoSetupData data)
-        => await this.WithUserId(userId => _serviceBusinessLogic.AutoSetupServiceAsync(data, userId));
+        => await this.WithUserIdAndCompanyId(identity => _serviceBusinessLogic.AutoSetupServiceAsync(data, identity));
 
     /// <summary>
     /// Auto setup the app
@@ -180,13 +181,13 @@ public class ServicesController : ControllerBase
     [HttpPost]
     [Route("start-autoSetup")]
     [Authorize(Roles = "activate_subscription")]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(OfferAutoSetupResponseData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> StartAutoSetupServiceProcess([FromBody] OfferAutoSetupData data)
     {
-        await this.WithUserId(userId => _serviceBusinessLogic.StartAutoSetupAsync(data, userId)).ConfigureAwait(false);
+        await this.WithCompanyId(companyId => _serviceBusinessLogic.StartAutoSetupAsync(data, companyId)).ConfigureAwait(false);
         return NoContent();
     }
     /// <summary>

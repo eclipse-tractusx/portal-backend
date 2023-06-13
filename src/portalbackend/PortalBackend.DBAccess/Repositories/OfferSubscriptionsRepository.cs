@@ -137,15 +137,12 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, Guid userId, OfferTypeId offerTypeId) =>
+    public Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckUser(Guid offerSubscriptionId, Guid providerCompanyId, OfferTypeId offerTypeId) =>
         _context.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId && x.Offer!.OfferTypeId == offerTypeId)
             .Select(x => new OfferSubscriptionTransferData(
                 x.OfferSubscriptionStatusId,
-                x.Offer!.ProviderCompany!.Identities
-                    .Where(i => i.Id == userId)
-                    .Select(i => new ValueTuple<bool, Guid, IdentityTypeId>(true, i.Id, i.IdentityTypeId))
-                    .SingleOrDefault(),
+                x.Offer!.ProviderCompanyId == providerCompanyId,
                 x.Company!.Name,
                 x.CompanyId,
                 x.RequesterId,

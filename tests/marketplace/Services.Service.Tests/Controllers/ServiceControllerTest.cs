@@ -174,14 +174,14 @@ public class ServiceControllerTest
             new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcPW", "sa1"),
             new ClientInfoData(Guid.NewGuid().ToString(), "http://www.google.com")
         );
-        A.CallTo(() => _logic.AutoSetupServiceAsync(A<OfferAutoSetupData>._, _identity.UserId))
+        A.CallTo(() => _logic.AutoSetupServiceAsync(A<OfferAutoSetupData>._, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId)))
             .Returns(responseData);
 
         //Act
         var result = await this._controller.AutoSetupService(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.AutoSetupServiceAsync(data, _identity.UserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.AutoSetupServiceAsync(data, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId))).MustHaveHappenedOnceExactly();
         Assert.IsType<OfferAutoSetupResponseData>(result);
         result.Should().Be(responseData);
     }
@@ -256,7 +256,7 @@ public class ServiceControllerTest
         var result = await this._controller.StartAutoSetupServiceProcess(data).ConfigureAwait(false);
 
         //Assert
-        A.CallTo(() => _logic.StartAutoSetupAsync(data, _identity.UserId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.StartAutoSetupAsync(data, _identity.CompanyId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 

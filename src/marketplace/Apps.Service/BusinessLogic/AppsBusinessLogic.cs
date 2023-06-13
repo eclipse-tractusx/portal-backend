@@ -266,12 +266,12 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _portalRepositories.GetInstance<IOfferRepository>().GetProvidedOffersData(OfferTypeId.APP, companyId);
 
     /// <inheritdoc />
-    public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, Guid userId) =>
-        _offerSetupService.AutoSetupOfferAsync(data, _settings.ITAdminRoles, userId, OfferTypeId.APP, _settings.UserManagementAddress, _settings.ServiceManagerRoles);
+    public Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, (Guid UserId, Guid CompanyId) identity) =>
+        _offerSetupService.AutoSetupOfferAsync(data, _settings.ITAdminRoles, identity, OfferTypeId.APP, _settings.UserManagementAddress, _settings.ServiceManagerRoles);
 
     /// <inheritdoc />
-    public Task StartAutoSetupAsync(OfferAutoSetupData data, Guid userId) =>
-        _offerSetupService.StartAutoSetupAsync(data, userId, OfferTypeId.APP);
+    public Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId) =>
+        _offerSetupService.StartAutoSetupAsync(data, companyId, OfferTypeId.APP);
 
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetAppAgreement(Guid appId) =>

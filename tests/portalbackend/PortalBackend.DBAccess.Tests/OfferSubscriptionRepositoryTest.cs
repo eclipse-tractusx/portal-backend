@@ -181,7 +181,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOfferDetailsAndCheckUser(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"), new("ac1cf001-7fbc-1f2f-817f-bce058020006"), OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferDetailsAndCheckUser(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"), new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferTypeId.APP).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -190,9 +190,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.Status.Should().Be(OfferSubscriptionStatusId.ACTIVE);
         result.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
         result.CompanyName.Should().Be("Catena-X");
-        result.IdentityData.IsUserOfProvider.Should().BeTrue();
-        result.IdentityData.IdentityType.Should().Be(IdentityTypeId.COMPANY_USER);
-        result.IdentityData.UserId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"));
+        result.IsUserOfProvider.Should().BeTrue();
         result.Bpn.Should().Be("BPNL00000003CRHK");
         result.OfferName.Should().Be("Trace-X");
     }

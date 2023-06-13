@@ -82,9 +82,9 @@ public interface IServiceBusinessLogic
     /// Auto setup the service.
     /// </summary>
     /// <param name="data">The offer subscription id and url for the service</param>
-    /// <param name="userId">Id of the user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, Guid userId);
+    Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, (Guid UserId, Guid CompanyId) identity);
 
     /// <summary>
     /// Retrieves subscription statuses of provided services of the provided user's company.
@@ -149,7 +149,7 @@ public interface IServiceBusinessLogic
     /// Starts the auto setup process.
     /// </summary>
     /// <param name="data">The offer subscription id and url for the service</param>
-    /// <param name="userId">Id of the user</param>
+    /// <param name="companyId">Id of the company</param>
     /// <returns>Returns the response data</returns>
-    Task StartAutoSetupAsync(OfferAutoSetupData data, Guid userId);
+    Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId);
 }

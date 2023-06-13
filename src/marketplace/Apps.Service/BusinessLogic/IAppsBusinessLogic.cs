@@ -132,17 +132,17 @@ public interface IAppsBusinessLogic
     /// Auto setup the app.
     /// </summary>
     /// <param name="data">The offer subscription id and url for the service</param>
-    /// <param name="userId">Id of the user</param>
+    /// <param name="identity">Identity of the user</param>
     /// <returns>Returns the response data</returns>
-    Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, Guid userId);
+    Task<OfferAutoSetupResponseData> AutoSetupAppAsync(OfferAutoSetupData data, (Guid UserId, Guid CompanyId) identity);
 
     /// <summary>
     /// Starts the auto setup process.
     /// </summary>
     /// <param name="data">The offer subscription id and url for the service</param>
-    /// <param name="userId">Id of the user</param>
+    /// <param name="companyId">Id of the company</param>
     /// <returns>Returns the response data</returns>
-    Task StartAutoSetupAsync(OfferAutoSetupData data, Guid userId);
+    Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId);
 
     /// <summary>
     /// Gets the app agreement data

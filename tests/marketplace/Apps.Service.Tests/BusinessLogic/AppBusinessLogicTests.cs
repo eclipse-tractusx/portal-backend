@@ -206,14 +206,14 @@ public class AppBusinessLogicTests
         var offerAutoSetupResponseData = _fixture.Create<OfferAutoSetupResponseData>();
         // Arrange
         var offerSetupService = A.Fake<IOfferSetupService>();
-        A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<OfferTypeId>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<ValueTuple<Guid, Guid>>._, A<OfferTypeId>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
             .Returns(offerAutoSetupResponseData);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
 
         var sut = new AppsBusinessLogic(null!, null!, null!, offerSetupService, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
 
         // Act
-        var result = await sut.AutoSetupAppAsync(data, _identity.UserId).ConfigureAwait(false);
+        var result = await sut.AutoSetupAppAsync(data, (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(offerAutoSetupResponseData);
@@ -233,7 +233,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(null!, null!, null!, offerSetupService, _fixture.Create<IOptions<AppsSettings>>(), A.Fake<MailingService>());
 
         // Act
-        await sut.StartAutoSetupAsync(data, _identity.UserId).ConfigureAwait(false);
+        await sut.StartAutoSetupAsync(data, _identity.CompanyId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => offerSetupService.StartAutoSetupAsync(A<OfferAutoSetupData>._, A<Guid>._, OfferTypeId.APP)).MustHaveHappenedOnceExactly();

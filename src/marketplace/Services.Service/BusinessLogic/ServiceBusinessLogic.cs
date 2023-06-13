@@ -123,8 +123,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService.GetConsentDetailDataAsync(serviceConsentId, OfferTypeId.SERVICE);
 
     /// <inheritdoc />
-    public Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, Guid userId) =>
-        _offerSetupService.AutoSetupOfferAsync(data, _settings.ITAdminRoles, userId, OfferTypeId.SERVICE, _settings.UserManagementAddress, _settings.ServiceManagerRoles);
+    public Task<OfferAutoSetupResponseData> AutoSetupServiceAsync(OfferAutoSetupData data, (Guid UserId, Guid CompanyId) identity) =>
+        _offerSetupService.AutoSetupOfferAsync(data, _settings.ITAdminRoles, identity, OfferTypeId.SERVICE, _settings.UserManagementAddress, _settings.ServiceManagerRoles);
 
     /// <inheritdoc/>
     public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, Guid companyId, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId)
@@ -198,6 +198,6 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, companyId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE);
 
     /// <inheritdoc />
-    public Task StartAutoSetupAsync(OfferAutoSetupData data, Guid userId) =>
-        _offerSetupService.StartAutoSetupAsync(data, userId, OfferTypeId.SERVICE);
+    public Task StartAutoSetupAsync(OfferAutoSetupData data, Guid companyId) =>
+        _offerSetupService.StartAutoSetupAsync(data, companyId, OfferTypeId.SERVICE);
 }

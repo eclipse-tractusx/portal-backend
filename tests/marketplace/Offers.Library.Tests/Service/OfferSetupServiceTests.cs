@@ -54,8 +54,9 @@ public class OfferSetupServiceTests
     private readonly Guid _validInstanceSetupId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47666");
     private readonly Guid _technicalUserId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47998");
     private readonly Guid _salesManagerId = new("9aae7a3b-b188-4a42-b46b-fb2ea5f47999");
+    private readonly Guid _companyUserWithoutMailId = new("9aae7a3b-b188-4a99-b46b-fb2ea5f47111");
+    private readonly Guid _companyUserWithoutMailCompanyId = new("9aae7a3b-b188-4a99-b46b-fb2ea5f47112");
 
-    private readonly CompanyUser _companyUserWithoutMail;
     private readonly IFixture _fixture;
     private readonly IAppInstanceRepository _appInstanceRepository;
     private readonly IClientRepository _clientRepository;
@@ -79,7 +80,6 @@ public class OfferSetupServiceTests
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-        _companyUserWithoutMail = _fixture.Create<CompanyUser>();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _appSubscriptionDetailRepository = A.Fake<IAppSubscriptionDetailRepository>();
         _appInstanceRepository = A.Fake<IAppInstanceRepository>();
@@ -176,7 +176,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
         // Act
-        var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, _identity.UserId, offerTypeId, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
+        var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, (_identity.UserId, _identity.CompanyId), offerTypeId, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -275,7 +275,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
         // Act
-        async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, _identity.UserId, OfferTypeId.APP, "https://base-address.com", serviceManagerAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles,(_identity.UserId, _identity.CompanyId), OfferTypeId.APP, "https://base-address.com", serviceManagerAdminRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -299,7 +299,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
         // Act
-        var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, _companyUserWithoutMail.Id, OfferTypeId.SERVICE, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
+        var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, (_companyUserWithoutMailId, _companyUserWithoutMailCompanyId), OfferTypeId.SERVICE, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -326,7 +326,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_offerIdWithMultipleInstances, "https://new-url.com/");
 
         // Act
-        async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, _identity.UserId, OfferTypeId.APP, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, (_identity.UserId, _identity.CompanyId), OfferTypeId.APP, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -340,11 +340,11 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://new-url.com/");
-        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(data.RequestId, _identity.UserId, OfferTypeId.SERVICE))
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(data.RequestId, _identity.CompanyId, OfferTypeId.SERVICE))
             .Returns((OfferSubscriptionTransferData?)null);
 
         // Act
-        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), _identity.UserId, OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
+        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), (_identity.UserId, _identity.CompanyId), OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -361,7 +361,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_validSubscriptionId, "https://new-url.com/");
 
         // Act
-        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), _identity.UserId, OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
+        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), (_identity.UserId, _identity.CompanyId), OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -377,7 +377,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
         // Act
-        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), Guid.NewGuid(), OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
+        async Task Action() => await _sut.AutoSetupOfferAsync(data, new Dictionary<string, IEnumerable<string>>(), (Guid.NewGuid(),Guid.NewGuid()), OfferTypeId.SERVICE, "https://base-address.com", new Dictionary<string, IEnumerable<string>>());
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
@@ -661,7 +661,7 @@ public class OfferSetupServiceTests
         // Arrange
         var transferData = _fixture.Build<OfferSubscriptionTransferData>()
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
-            .With(x => x.IdentityData, (false, Guid.Empty, default))
+            .With(x => x.IsUserOfProvider, false)
             .Create();
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://www.test.de");
@@ -684,7 +684,7 @@ public class OfferSetupServiceTests
         // Arrange
         var transferData = _fixture.Build<OfferSubscriptionTransferData>()
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
-            .With(x => x.IdentityData, new ValueTuple<bool, Guid, IdentityTypeId>(true, _identity.UserId, IdentityTypeId.COMPANY_USER))
+            .With(x => x.IsUserOfProvider, true)
             .With(x => x.InstanceData, new ValueTuple<bool, string?>(true, null))
             .With(x => x.AppInstanceIds, new[] { Guid.NewGuid(), Guid.NewGuid() })
             .Create();
@@ -708,8 +708,8 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var transferData = _fixture.Build<OfferSubscriptionTransferData>()
-            .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
-            .With(x => x.IdentityData, new ValueTuple<bool, Guid, IdentityTypeId>(true, _identity.UserId, IdentityTypeId.COMPANY_USER))
+            .With(x => x.Status, OfferSubscriptionStatusId.PENDING)            
+            .With(x => x.IsUserOfProvider, true)
             .With(x => x.InstanceData, new ValueTuple<bool, string?>(true, "https://www.test.de"))
             .With(x => x.AppInstanceIds, new[] { Guid.NewGuid() })
             .Create();
@@ -745,8 +745,8 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var transferData = _fixture.Build<OfferSubscriptionTransferData>()
-            .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
-            .With(x => x.IdentityData, new ValueTuple<bool, Guid, IdentityTypeId>(true, _identity.UserId, IdentityTypeId.COMPANY_USER))
+            .With(x => x.Status, OfferSubscriptionStatusId.PENDING)            
+            .With(x => x.IsUserOfProvider, true)
             .With(x => x.InstanceData, new ValueTuple<bool, string?>(false, null))
             .With(x => x.AppInstanceIds, new[] { Guid.NewGuid(), Guid.NewGuid() })
             .Create();
@@ -1182,55 +1182,55 @@ public class OfferSetupServiceTests
 
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 _validSubscriptionId,
-                _identity.UserId,
+                _identity.CompanyId,
                 A<OfferTypeId>._))
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.ACTIVE,
-                (true, _identity.UserId, IdentityTypeId.COMPANY_USER),
+                true,
                 CompanyName, CompanyUserCompanyId, _identity.UserId, _existingServiceId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
                 _salesManagerId));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 _pendingSubscriptionId,
-                _companyUserWithoutMail.Id,
+                _companyUserWithoutMailCompanyId,
                 A<OfferTypeId>._))
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING,
-                (true, _identity.UserId, IdentityTypeId.COMPANY_USER),
+                true,
                 CompanyName, CompanyUserCompanyId, _identity.UserId, _existingServiceId, "Test Service",
                 Bpn, null, null, null, (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
                 _salesManagerId));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 _pendingSubscriptionId,
-                _identity.UserId,
+                _identity.CompanyId,
                 A<OfferTypeId>._))
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING,
-                (true, _identity.UserId, IdentityTypeId.COMPANY_USER),
+                true,
                 string.Empty, CompanyUserCompanyId, _identity.UserId, _existingServiceId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },
                 _salesManagerId));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 _offerIdWithMultipleInstances,
-                _identity.UserId,
+                _identity.CompanyId,
                 A<OfferTypeId>._))
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING,
-                (true, _identity.UserId, IdentityTypeId.COMPANY_USER),
+                true,
                 string.Empty, CompanyUserCompanyId, _identity.UserId, _existingServiceId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, null),
                 Enumerable.Empty<Guid>(),
                 null));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 A<Guid>.That.Not.Matches(x => x == _pendingSubscriptionId || x == _validSubscriptionId || x == _offerIdWithMultipleInstances),
-                _identity.UserId,
+                _identity.CompanyId,
                 A<OfferTypeId>._))
             .Returns((OfferSubscriptionTransferData?)null);
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckUser(
                 _pendingSubscriptionId,
-                A<Guid>.That.Not.Matches(x => x == _identity.UserId || x == _companyUserWithoutMail.Id),
+                A<Guid>.That.Not.Matches(x => x == _identity.CompanyId || x == _companyUserWithoutMailCompanyId),
                 A<OfferTypeId>._))
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING,
-                (false, Guid.Empty, default),
+                false,
                 string.Empty, CompanyUserCompanyId, _identity.UserId, _existingServiceId, "Test Service",
                 Bpn, null, null, null, (isSingleInstance, "https://test.de"),
                 new[] { Guid.NewGuid() },

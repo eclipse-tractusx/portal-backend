@@ -418,18 +418,18 @@ public class ServiceBusinessLogicTests
             "IT Manager"
         };
         var responseData = new OfferAutoSetupResponseData(new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcSecret", "sa1"), new ClientInfoData(_fixture.Create<string>(), "http://www.google.com"));
-        A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<Guid>._, A<OfferTypeId>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
+        A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IDictionary<string, IEnumerable<string>>>._, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), A<OfferTypeId>._, A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
             .Returns(responseData);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
         var settings = _fixture.Create<ServiceSettings>();
         var sut = new ServiceBusinessLogic(null!, null!, null!, offerSetupService, Options.Create(settings));
 
         // Act
-        var result = await sut.AutoSetupServiceAsync(data, _identity.UserId).ConfigureAwait(false);
+        var result = await sut.AutoSetupServiceAsync(data, (_identity.UserId, _identity.CompanyId)).ConfigureAwait(false);
 
         // Assert
         result.Should().Be(responseData);
-        A.CallTo(() => offerSetupService.AutoSetupOfferAsync(data, settings.ITAdminRoles, _identity.UserId, OfferTypeId.SERVICE, settings.UserManagementAddress, settings.ServiceManagerRoles))
+        A.CallTo(() => offerSetupService.AutoSetupOfferAsync(data, settings.ITAdminRoles, A<ValueTuple<Guid, Guid>>.That.Matches(x => x.Item1 == _identity.UserId && x.Item2 == _identity.CompanyId), OfferTypeId.SERVICE, settings.UserManagementAddress, settings.ServiceManagerRoles))
             .MustHaveHappenedOnceExactly();
     }
 
