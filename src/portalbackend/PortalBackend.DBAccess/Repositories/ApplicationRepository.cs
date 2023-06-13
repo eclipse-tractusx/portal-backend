@@ -85,6 +85,7 @@ public class ApplicationRepository : IApplicationRepository
     public Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, Guid companyUserId, IEnumerable<DocumentTypeId> submitDocumentTypeIds) =>
         _dbContext.CompanyApplications
             .AsSplitQuery()
+            .AsNoTracking()
             .Where(application => application.Id == applicationId)
             .Select(application => new
             {
@@ -92,17 +93,23 @@ public class ApplicationRepository : IApplicationRepository
                 CompanyUser = application.Company!.Identities.Select(x => x.CompanyUser!).SingleOrDefault(companyUser => companyUser.Id == companyUserId),
                 Documents = application.Company.Identities.Select(x => x.CompanyUser!).SelectMany(companyUser => companyUser.Documents).Where(doc => doc.DocumentStatusId != DocumentStatusId.LOCKED && submitDocumentTypeIds.Contains(Doc.DocumentTypeId))
             })
-            .Select(companyApplication => new CompanyApplicationUserEmailData(
-                companyApplication.Application.ApplicationStatusId,
-                companyApplication.CompanyUser!.Id,
-                companyApplication.CompanyUser.Email,
-                companyApplication.Documents.Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId)),
-                new CompanyData(companyApplication.Application.Company!.Name,companyApplication.Application.Company!.AddressId,companyApplication.Application.Company!.Address!.Streetname,companyApplication.Application.Company!.Address!.City,companyApplication.Application.Company!.Address!.Country!.CountryNameDe,companyApplication.Application.Company!.CompanyIdentifiers.Select(x => x.UniqueIdentifierId),companyApplication.Application.Company!.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId)),
-                companyApplication.Application.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)
+            .Select(data => new CompanyApplicationUserEmailData(
+                data.Application.ApplicationStatusId,
+                data.CompanyUser!.Id,
+                data.CompanyUser.Email,
+                data.Documents.Select(doc => new DocumentStatusData(doc.Id, doc.DocumentStatusId)),
+                new CompanyData(
+                    data.Application.Company!.Name,
+                    data.Application.Company.AddressId,
+                    data.Application.Company.Address!.Streetname,
+                    data.Application.Company.Address.City,
+                    data.Application.Company.Address.Country!.CountryNameDe,
+                    data.Application.Company.CompanyIdentifiers.Select(x => x.UniqueIdentifierId),
+                    data.Application.Company.CompanyAssignedRoles.Select(companyAssignedRole => companyAssignedRole.CompanyRoleId)),
+                data.Application.Company.Consents.Where(consent => consent.ConsentStatusId == ConsentStatusId.ACTIVE)
                         .Select(consent => new ValueTuple<Guid, ConsentStatusId>(
                             consent.AgreementId, consent.ConsentStatusId))
                 ))
-            .AsNoTracking()
             .SingleOrDefaultAsync();
 
     public IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null, IEnumerable<CompanyApplicationStatusId>? applicationStatusIds = null) =>
