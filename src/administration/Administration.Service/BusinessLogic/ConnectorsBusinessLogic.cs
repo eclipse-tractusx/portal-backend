@@ -290,8 +290,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     {
         var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
         var (isValidConnectorId, dapsClientId, selfDescriptionDocumentId,
-        documentStatus, connectorStatus, dapsRegistrationSuccess) = await
-        connectorsRepository.GetConnectorDeleteDataAsync(connectorId).ConfigureAwait(false);
+            documentStatus, connectorStatus, dapsRegistrationSuccess) = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId).ConfigureAwait(false);
 
         if (!isValidConnectorId)
         {
@@ -301,10 +300,10 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         switch ((dapsRegistrationSuccess ?? false, connectorStatus))
         {
             case (true, ConnectorStatusId.ACTIVE) when selfDescriptionDocumentId == null:
-                await DeleteUpdateConnectorDetail(connectorId, iamUserId, cancellationToken, dapsClientId, connectorsRepository);
+                await DeleteUpdateConnectorDetail(connectorId, userId, cancellationToken, dapsClientId, connectorsRepository);
                 break;
-            case (true, ConnectorStatusId.ACTIVE) when selfDescriptionDocumentId != null:
-                await DeleteConnector(connectorId, iamUserId, cancellationToken, dapsClientId, selfDescriptionDocumentId.Value, documentStatus!.Value, connectorsRepository);
+            case (true, ConnectorStatusId.ACTIVE) when selfDescriptionDocumentId != null && documentStatus != null:
+                await DeleteConnector(connectorId, userId, cancellationToken, dapsClientId, selfDescriptionDocumentId.Value, documentStatus.Value, connectorsRepository);
                 break;
             case (false, ConnectorStatusId.PENDING) when selfDescriptionDocumentId == null:
                 await DeleteConnectorWithoutDocuments(connectorId, connectorsRepository);
@@ -312,42 +311,35 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             case (false, ConnectorStatusId.PENDING) when selfDescriptionDocumentId != null:
                 await DeleteConnectorWithDocuments(connectorId, selfDescriptionDocumentId.Value, connectorsRepository);
                 break;
+            case (true, ConnectorStatusId.ACTIVE) when selfDescriptionDocumentId != null && documentStatus == null:
+                throw new UnexpectedConditionException("documentStatus should never be null here");
             default:
                 throw new ConflictException($"Connector status does not match a deletion scenario. Deletion declined");
         }
     }
 
-    private async Task DeleteConnector(Guid connectorId, string iamUserId, CancellationToken cancellationToken, string? dapsClientId, Guid selfDescriptionDocumentId, DocumentStatusId documentStatus, IConnectorsRepository connectorsRepository)
+    private async Task DeleteConnector(Guid connectorId, Guid userId, CancellationToken cancellationToken, string? dapsClientId, Guid selfDescriptionDocumentId, DocumentStatusId documentStatus, IConnectorsRepository connectorsRepository)
     {
-        if (selfDescriptionDocumentId != null)
-        {
-            _portalRepositories.GetInstance<IDocumentRepository>().AttachAndModifyDocument(
-                selfDescriptionDocumentId,
-                a => { a.DocumentStatusId = documentStatus; },
-                a => { a.DocumentStatusId = DocumentStatusId.INACTIVE; });
-        }
-        await DeleteUpdateConnectorDetail(connectorId, iamUserId, cancellationToken, dapsClientId, connectorsRepository);
+        _portalRepositories.GetInstance<IDocumentRepository>().AttachAndModifyDocument(
+            selfDescriptionDocumentId,
+            a => { a.DocumentStatusId = documentStatus; },
+            a => { a.DocumentStatusId = DocumentStatusId.INACTIVE; });
+
+        await DeleteUpdateConnectorDetail(connectorId, userId, cancellationToken, dapsClientId, connectorsRepository);
     }
 
-    private async Task DeleteUpdateConnectorDetail(Guid connectorId, string iamUserId, CancellationToken cancellationToken, string? dapsClientId, IConnectorsRepository connectorsRepository)
+    private async Task DeleteUpdateConnectorDetail(Guid connectorId, Guid userId, CancellationToken cancellationToken, string? dapsClientId, IConnectorsRepository connectorsRepository)
     {
         if (string.IsNullOrWhiteSpace(dapsClientId))
         {
             throw new ConflictException("DapsClientId must be set");
         }
 
-        var companyUserId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForIamUserUntrackedAsync(iamUserId).ConfigureAwait(false);
-
-        if (companyUserId == Guid.Empty)
-        {
-            throw new ConflictException($"user {iamUserId} is not mapped to a valid companyUser");
-        }
-
         connectorsRepository.DeleteConnectorClientDetails(connectorId);
         connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
         {
             con.StatusId = ConnectorStatusId.INACTIVE;
-            con.LastEditorId = companyUserId;
+            con.LastEditorId = userId;
             con.DateLastChanged = DateTimeOffset.UtcNow;
         });
         await _dapsService.DeleteDapsClient(dapsClientId, cancellationToken).ConfigureAwait(false);

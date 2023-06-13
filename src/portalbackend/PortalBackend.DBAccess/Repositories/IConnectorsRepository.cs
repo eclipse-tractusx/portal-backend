@@ -86,7 +86,7 @@ public interface IConnectorsRepository
     /// </summary>
     /// <param name="connectorId">Id of the connector</param>
     /// <returns>returns SelfDescriptionDocument Data/c></returns>
-    Task<(bool IsConnectorIdExist, string? DapsClientId, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus, bool? DapsRegistrationSuccessful)> GetConnectorDeleteDataAsync(Guid connectorId);
+    Task<(bool IsValidConnectorId, string? DapsClientId, Guid? SelfDescriptionDocumentId, DocumentStatusId? DocumentStatusId, ConnectorStatusId ConnectorStatus, bool? DapsRegistrationSuccessful)> GetConnectorDeleteDataAsync(Guid connectorId);
 
     /// <summary>
     /// Creates the connector details
