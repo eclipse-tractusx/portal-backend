@@ -2,18 +2,17 @@
 using System.Text.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+using Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
+using Tests.Shared.EndToEndTests;
 
-namespace Registration.Service.Tests.RestAssured.RegistrationEndpointTests;
+namespace Registration.Service.Tests.EndToEndTests;
 
 public static class TestDataHelper
 {
-    private static readonly string TestDataDirectory = ".." + Path.DirectorySeparatorChar + ".." +
-                                                       Path.DirectorySeparatorChar + ".." +
-                                                       Path.DirectorySeparatorChar + ".." +
-                                                       Path.DirectorySeparatorChar + ".." +
+    private static readonly string TestDataDirectory = Directory.GetParent(TestResources.GetSourceFilePathName()).Parent.Parent.Parent.FullName +
                                                        Path.DirectorySeparatorChar + "shared" +
                                                        Path.DirectorySeparatorChar + "Tests.Shared" +
-                                                       Path.DirectorySeparatorChar + "RestAssured" +
+                                                       Path.DirectorySeparatorChar + "EndToEndTests" +
                                                        Path.DirectorySeparatorChar + "TestData";
 
     public static List<TestDataModel> GetTestData(string fileName)

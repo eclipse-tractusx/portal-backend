@@ -64,4 +64,10 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="EndToEndTests\appsettings.EndToEndTests.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
