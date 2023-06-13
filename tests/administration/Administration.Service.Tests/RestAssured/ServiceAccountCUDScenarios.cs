@@ -1,4 +1,7 @@
-﻿namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestAssured;
+﻿using System.IdentityModel.Tokens.Jwt;
+using static RestAssured.Dsl;
+
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.RestAssured;
 
 public class ServiceAccountCUDScenarios
 {
@@ -7,7 +10,7 @@ public class ServiceAccountCUDScenarios
     public async Task Scenario_HappyPathCreateServiceAccount()
     {
         await AdministrationEndpointHelper.GetOperatorToken();
-        
+
         var now = DateTime.Now;
         var techUserName = $"NewTechUserName_{now:s}";
 
@@ -22,6 +25,9 @@ public class ServiceAccountCUDScenarios
         var updatedServiceAccounts = AdministrationEndpointHelper.GetServiceAccounts();
 
         //fetch the serviceAccount token and validate if the token includes a attribute "bpn"
+        var token = RetrieveTechUserToken(newServiceAccount.ClientId, newServiceAccount.Secret);
+        Assert.NotEmpty(token);
+        Assert.True(CheckTokenForAttribute(token, "bpn"));
     }
 
     //Scenario - Create a new service account and update the same
@@ -55,7 +61,7 @@ public class ServiceAccountCUDScenarios
     public async Task Scenario_HappyPathCreateServiceAccountAndUpdateCredentials()
     {
         await AdministrationEndpointHelper.GetOperatorToken();
-        
+
         var now = DateTime.Now;
         var techUserName = $"NewTechUserName_{now:s}";
 
@@ -96,5 +102,39 @@ public class ServiceAccountCUDScenarios
         var updatedServiceAccounts = AdministrationEndpointHelper.GetServiceAccounts();
 
         Assert.Empty(updatedServiceAccounts.Where(item => item.ServiceAccountId == newServiceAccount.ServiceAccountId));
+    }
+
+    private string? RetrieveTechUserToken(string client_id, string client_secret)
+        // [Fact]
+        // public void RetrieveTechUserToken()
+    {
+        // string client_id = "sa39", client_secret = "";
+        var formData = new[]
+        {
+            new KeyValuePair<string, string>("client_secret", client_secret),
+            new KeyValuePair<string, string>("grant_type", "client_credentials"),
+            new KeyValuePair<string, string>("scope", "openid"),
+            new KeyValuePair<string, string>("client_id", client_id),
+        };
+
+        var accessToken = Given()
+            .ContentType("application/x-www-form-urlencoded")
+            .FormData(formData)
+            .When()
+            .Post("https://centralidp.dev.demo.catena-x.net/auth/realms/CX-Central/protocol/openid-connect/token")
+            .Then()
+            .StatusCode(200)
+            .And()
+            .Extract()
+            .Body("$.access_token").ToString();
+
+        return accessToken;
+    }
+
+    private static bool CheckTokenForAttribute(string jwtToken, string attribute)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtSecurityToken = handler.ReadJwtToken(jwtToken);
+        return jwtSecurityToken.Payload.ContainsKey(attribute);
     }
 }
