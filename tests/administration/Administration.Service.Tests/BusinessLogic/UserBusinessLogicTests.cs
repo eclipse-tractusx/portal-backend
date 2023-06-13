@@ -624,7 +624,7 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         });
-        await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, _createdCentralIdentity).ConfigureAwait(false);
+        await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, _createdCentralIdentity.CompanyId).ConfigureAwait(false);
 
         // Assert
         _companyUserAssignedRole.Should().HaveCount(2);
@@ -647,7 +647,7 @@ public class UserBusinessLogicTests
         {
             "Company Admin"
         });
-        await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, _adminIdentity).ConfigureAwait(false);
+        await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, _adminIdentity.CompanyId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.RemoveRange(A<IEnumerable<IdentityAssignedRole>>.That.Matches(x => x.Count() == 1))).MustHaveHappenedOnceExactly();
@@ -671,7 +671,7 @@ public class UserBusinessLogicTests
             "NotExisting",
             "Buyer"
         });
-        async Task Action() => await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, _adminIdentity).ConfigureAwait(false);
+        async Task Action() => await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, _adminIdentity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -697,11 +697,11 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         });
-        async Task Action() => await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, _adminIdentity).ConfigureAwait(false);
+        async Task Action() => await sut.ModifyUserRoleAsync(_validOfferId, userRoleInfo, _adminIdentity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
-        ex.Message.Should().Be($"CompanyUserId {userRoleInfo.CompanyUserId} is not associated with the same company as adminUserId {_adminIamUser}");
+        ex.Message.Should().Be($"CompanyUserId {userRoleInfo.CompanyUserId} is not associated with company {_adminIdentity.CompanyId}");
     }
 
     [Fact]
@@ -724,7 +724,7 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         });
-        async Task Action() => await sut.ModifyUserRoleAsync(invalidAppId, userRoleInfo, _adminIdentity).ConfigureAwait(false);
+        async Task Action() => await sut.ModifyUserRoleAsync(invalidAppId, userRoleInfo, _adminIdentity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -756,7 +756,7 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         };
-        await sut.ModifyCoreOfferUserRolesAsync(_validOfferId, _companyUserId, userRoles, _createdCentralIdentity).ConfigureAwait(false);
+        await sut.ModifyCoreOfferUserRolesAsync(_validOfferId, _companyUserId, userRoles, _createdCentralIdentity.CompanyId).ConfigureAwait(false);
 
         // Assert
         _companyUserAssignedRole.Should().HaveCount(2);
@@ -790,7 +790,7 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         };
-        await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles, _createdCentralIdentity).ConfigureAwait(false);
+        await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles, _createdCentralIdentity.CompanyId).ConfigureAwait(false);
 
         // Assert
         _companyUserAssignedRole.Should().HaveCount(2);
@@ -817,7 +817,7 @@ public class UserBusinessLogicTests
         {
             "Company Admin"
         };
-        await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles, _adminIdentity).ConfigureAwait(false);
+        await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles, _adminIdentity.CompanyId).ConfigureAwait(false);
 
         // Assert
         A.CallTo(() => _portalRepositories.RemoveRange(A<IEnumerable<IdentityAssignedRole>>.That.Matches(x => x.Count() == 1))).MustHaveHappenedOnceExactly();
@@ -844,7 +844,7 @@ public class UserBusinessLogicTests
             "NotExisting",
             "Buyer"
         };
-        async Task Action() => await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles, _adminIdentity).ConfigureAwait(false);
+        async Task Action() => await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles, _adminIdentity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -873,11 +873,11 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         };
-        async Task Action() => await sut.ModifyAppUserRolesAsync(_validOfferId, companyUserId, userRoles, _adminIdentity).ConfigureAwait(false);
+        async Task Action() => await sut.ModifyAppUserRolesAsync(_validOfferId, companyUserId, userRoles, _adminIdentity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
-        ex.Message.Should().Be($"CompanyUserId {companyUserId} is not associated with the same company as adminUserId {_adminIamUser}");
+        ex.Message.Should().Be($"CompanyUserId {companyUserId} is not associated with company {_adminIdentity.CompanyId}");
         A.CallTo(() => _notificationRepository.CreateNotification(_companyUserId, NotificationTypeId.ROLE_UPDATE_CORE_OFFER, false, A<Action<Notification>>._))
             .MustNotHaveHappened();
     }
@@ -902,7 +902,7 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         };
-        async Task Action() => await sut.ModifyAppUserRolesAsync(invalidAppId, _companyUserId, userRoles, _adminIdentity).ConfigureAwait(false);
+        async Task Action() => await sut.ModifyAppUserRolesAsync(invalidAppId, _companyUserId, userRoles, _adminIdentity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
@@ -930,7 +930,7 @@ public class UserBusinessLogicTests
             "Buyer",
             "Supplier"
         };
-        async Task Action() => await sut.ModifyAppUserRolesAsync(_offerWithoutNameId, _companyUserId, userRoles, _adminIdentity).ConfigureAwait(false);
+        async Task Action() => await sut.ModifyAppUserRolesAsync(_offerWithoutNameId, _companyUserId, userRoles, _adminIdentity.CompanyId).ConfigureAwait(false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);

@@ -22,18 +22,20 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
 
 #nullable disable
 
-namespace Org.Eclipse.TractusX.Provisioning.Migrations.Migrations
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Migrations.Migrations
 {
     [DbContext(typeof(ProvisioningDbContext))]
-    partial class ProvisioningDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230613120413_CPLP-2553-AlignUsers")]
+    partial class CPLP2553AlignUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -314,17 +314,17 @@ public class UserBusinessLogic : IUserBusinessLogic
         return details;
     }
 
-    public async Task<CompanyUserDetails> UpdateOwnUserDetails(Guid userId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, IdentityData identity)
+    public async Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, Guid userId)
     {
+        if (companyUserId != userId)
+        {
+            throw new ForbiddenException($"invalid userId {companyUserId} for user {userId}");
+        }
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
-        var userData = await userRepository.GetUserWithCompanyIdpAsync(identity.UserId).ConfigureAwait(false);
+        var userData = await userRepository.GetUserWithCompanyIdpAsync(companyUserId).ConfigureAwait(false);
         if (userData == null)
         {
-            throw new ArgumentOutOfRangeException($"iamUser {identity.UserEntityId} is not a shared idp user");
-        }
-        if (userData.CompanyUser.Id != userId)
-        {
-            throw new ForbiddenException($"invalid userId {userId} for user {identity.UserEntityId}");
+            throw new ArgumentOutOfRangeException($"user {companyUserId} is not a shared idp user");
         }
         var companyUser = userData.CompanyUser;
         if (string.IsNullOrWhiteSpace(companyUser.UserEntityId))
@@ -345,7 +345,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             ownCompanyUserEditableDetails.LastName ?? "",
             ownCompanyUserEditableDetails.Email ?? "").ConfigureAwait(false);
 
-        userRepository.AttachAndModifyCompanyUser(userId, cu =>
+        userRepository.AttachAndModifyCompanyUser(companyUserId, cu =>
             {
                 cu.Firstname = companyUser.Firstname;
                 cu.Lastname = companyUser.Lastname;
@@ -359,7 +359,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             });
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return new CompanyUserDetails(
-            companyUser.Id,
+            companyUserId,
             companyUser.DateCreated,
             userData.BusinessPartnerNumbers,
             companyUser.CompanyName,
@@ -470,7 +470,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         await _provisioningManager.DeleteCentralRealmUserAsync(userEntityId).ConfigureAwait(false);
     }
 
-    private async Task<bool> CanResetPassword(string userId)
+    private async Task<bool> CanResetPassword(Guid userId)
     {
         var now = DateTimeOffset.UtcNow;
 
@@ -496,19 +496,19 @@ public class UserBusinessLogic : IUserBusinessLogic
         return false;
     }
 
-    public async Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid userId, IdentityData identity)
+    public async Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId, (Guid UserId, Guid CompanyId) identity)
     {
-        var idpUserName = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetIdpCategoryIdByUserIdAsync(userId, identity.CompanyId).ConfigureAwait(false);
+        var idpUserName = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetIdpCategoryIdByUserIdAsync(companyUserId, identity.CompanyId).ConfigureAwait(false);
         if (idpUserName != null && !string.IsNullOrWhiteSpace(idpUserName.TargetIamUserId) && !string.IsNullOrWhiteSpace(idpUserName.IdpName))
         {
-            if (await CanResetPassword(identity.UserEntityId).ConfigureAwait(false))
+            if (await CanResetPassword(identity.UserId).ConfigureAwait(false))
             {
                 await _provisioningManager.ResetSharedUserPasswordAsync(idpUserName.IdpName, idpUserName.TargetIamUserId).ConfigureAwait(false);
                 return true;
             }
             throw new ArgumentException($"cannot reset password more often than {_settings.PasswordReset.MaxNoOfReset} in {_settings.PasswordReset.NoOfHours} hours");
         }
-        throw new NotFoundException($"Cannot identify companyId or shared idp : userId {userId} is not associated with the same company as adminUserId {identity.UserEntityId}");
+        throw new NotFoundException($"Cannot identify companyId or shared idp : userId {companyUserId} is not associated with admin users company {identity.CompanyId}");
     }
 
     public Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, Guid userId, int page, int size, CompanyUserFilter filter) =>

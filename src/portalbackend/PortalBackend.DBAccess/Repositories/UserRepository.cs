@@ -211,12 +211,12 @@ public class UserRepository : IUserRepository
 
     public Task<CompanyUserWithIdpBusinessPartnerData?> GetUserWithCompanyIdpAsync(Guid companyUserId) =>
         _dbContext.CompanyUsers
+            .AsSplitQuery()
             .Where(companyUser => companyUser.Id == companyUserId
                                   && companyUser.Identity!.Company!.IdentityProviders
                                       .Any(identityProvider =>
                                           identityProvider.IdentityProviderCategoryId ==
                                           IdentityProviderCategoryId.KEYCLOAK_SHARED))
-            .AsSplitQuery()
             .Select(companyUser => new CompanyUserWithIdpBusinessPartnerData(
                 new CompanyUserInformation(
                     companyUser.Id,

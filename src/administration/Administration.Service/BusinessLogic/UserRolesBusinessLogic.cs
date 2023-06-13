@@ -56,13 +56,13 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
         _portalRepositories.GetInstance<IUserRolesRepository>()
             .GetAppRolesAsync(appId, companyId, languageShortName ?? Constants.DefaultLanguage);
 
-    public Task<IEnumerable<UserRoleWithId>> ModifyCoreOfferUserRolesAsync(Guid offerId, Guid companyUserId, IEnumerable<string> roles, IdentityData identity)
+    public Task<IEnumerable<UserRoleWithId>> ModifyCoreOfferUserRolesAsync(Guid offerId, Guid companyUserId, IEnumerable<string> roles, Guid companyId)
     {
         return ModifyUserRolesInternal(
             async () =>
             {
                 var result = await _portalRepositories.GetInstance<IUserRepository>()
-                    .GetCoreOfferAssignedIamClientUserDataUntrackedAsync(offerId, companyUserId, identity.CompanyId).ConfigureAwait(false);
+                    .GetCoreOfferAssignedIamClientUserDataUntrackedAsync(offerId, companyUserId, companyId).ConfigureAwait(false);
                 return result == null
                     ? null
                     : new OfferIamUserData(
@@ -77,7 +77,7 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             },
             (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
                 .GetAssignedAndMatchingCoreOfferRoles(companyUserId, roles, offerId),
-            offerId, companyUserId, roles, identity.UserEntityId,
+            offerId, companyUserId, roles, companyId,
             data =>
             {
                 var userName = $"{data.firstname} {data.lastname}";
@@ -92,13 +92,13 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             });
     }
 
-    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, IEnumerable<string> roles, IdentityData identity) =>
+    public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync(Guid appId, Guid companyUserId, IEnumerable<string> roles, Guid companyId) =>
         ModifyUserRolesInternal(
             () => _portalRepositories.GetInstance<IUserRepository>()
-                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, companyUserId, identity.CompanyId),
+                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, companyUserId, companyId),
             (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
                 .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId),
-            appId, companyUserId, roles, identity.UserEntityId,
+            appId, companyUserId, roles, companyId,
             data =>
             {
                 var userName = $"{data.firstname} {data.lastname}";
@@ -113,18 +113,18 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             });
 
     [Obsolete("to be replaced by endpoint UserRolesBusinessLogic.ModifyAppUserRolesAsync. Remove as soon frontend is adjusted")]
-    public Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, IdentityData identity) =>
+    public Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo, Guid companyId) =>
         ModifyUserRolesInternal(
             () => _portalRepositories.GetInstance<IUserRepository>()
-                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, userRoleInfo.CompanyUserId, identity.CompanyId),
+                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, userRoleInfo.CompanyUserId, companyId),
             (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
                 .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId),
-            appId, userRoleInfo.CompanyUserId, userRoleInfo.Roles, identity.UserEntityId, null);
+            appId, userRoleInfo.CompanyUserId, userRoleInfo.Roles, companyId, null);
 
     private async Task<IEnumerable<UserRoleWithId>> ModifyUserRolesInternal(
         Func<Task<OfferIamUserData?>> getIamUserData,
         Func<Guid, IEnumerable<string>, Guid, IAsyncEnumerable<UserRoleModificationData>> getUserRoleModificationData,
-        Guid offerId, Guid companyUserId, IEnumerable<string> roles, string iamUserId,
+        Guid offerId, Guid companyUserId, IEnumerable<string> roles, Guid adminCompanyId,
         Func<(Guid offerId, string offerName, string? firstname, string? lastname, IEnumerable<string> removedRoles, IEnumerable<string> addedRoles), (string content, NotificationTypeId notificationTypeId)>? getNotificationData)
     {
         var result = await getIamUserData().ConfigureAwait(false);
@@ -136,7 +136,7 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
         if (!result.IsSameCompany)
         {
             throw new ForbiddenException(
-                $"CompanyUserId {companyUserId} is not associated with the same company as adminUserId {iamUserId}");
+                $"CompanyUserId {companyUserId} is not associated with company {adminCompanyId}");
         }
 
         if (!result.IsValidOffer)
@@ -175,7 +175,7 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
 
         if (rolesToDelete.Any())
         {
-            await DeleteRoles(companyUserId, result.IamClientIds, rolesToDelete, iamUserId).ConfigureAwait(false);
+            await DeleteRoles(companyUserId, result.IamClientIds, rolesToDelete, result.IamUserId).ConfigureAwait(false);
         }
 
         if (getNotificationData != null)

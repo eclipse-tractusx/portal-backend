@@ -46,19 +46,19 @@ public class ProvisioningDBAccess : IProvisioningDBAccess
         return nextSequence.SequenceId;
     }
 
-    public UserPasswordReset CreateUserPasswordResetInfo(string userEntityId, DateTimeOffset passwordModifiedAt, int resetCount) =>
+    public UserPasswordReset CreateUserPasswordResetInfo(Guid companyUserId, DateTimeOffset passwordModifiedAt, int resetCount) =>
         _dbContext.UserPasswordResets.Add(
             new UserPasswordReset(
-                userEntityId,
+                companyUserId,
                 passwordModifiedAt,
                 resetCount
             )
         ).Entity;
 
-    public Task<UserPasswordReset?> GetUserPasswordResetInfo(string userEntityId)
+    public Task<UserPasswordReset?> GetUserPasswordResetInfo(Guid companyUserId)
     {
         return _dbContext.UserPasswordResets
-            .Where(x => x.UserEntityId == userEntityId)
+            .Where(x => x.CompanyUserId == companyUserId)
             .SingleOrDefaultAsync();
     }
 

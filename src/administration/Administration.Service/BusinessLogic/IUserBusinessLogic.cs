@@ -20,7 +20,6 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
@@ -39,7 +38,7 @@ public interface IUserBusinessLogic
     Task<int> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, IEnumerable<string> businessPartnerNumbers, Guid companyId);
     Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid userId, string businessPartnerNumber, Guid companyId);
     Task<CompanyOwnUserDetails> GetOwnUserDetails(Guid userId);
-    Task<CompanyUserDetails> UpdateOwnUserDetails(Guid userId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, IdentityData identity);
+    Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails, Guid userId);
 
     /// <summary>
     /// Delete User Own Account using userId
@@ -49,7 +48,7 @@ public interface IUserBusinessLogic
     /// <returns></returns>
     Task<int> DeleteOwnUserAsync(Guid companyUserId, Guid userId);
     IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> userIds, (Guid UserId, Guid CompanyId) identity);
-    Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid userId, IdentityData identity);
+    Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId, (Guid UserId, Guid CompanyId) identity);
     Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, Guid userId, int page, int size, CompanyUserFilter filter);
     Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid userId, string businessPartnerNumber, (Guid UserId, Guid CompanyId) identity);
 }

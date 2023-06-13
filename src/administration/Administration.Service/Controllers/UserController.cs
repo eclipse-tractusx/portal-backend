@@ -223,12 +223,13 @@ public class UserController : ControllerBase
     /// <response code="404">User not found</response>
     [HttpPut]
     [Authorize(Roles = "modify_user_account")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/users/{companyUserId}/coreoffers/{offerId}/roles")]
     [ProducesResponseType(typeof(IEnumerable<UserRoleWithId>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<IEnumerable<UserRoleWithId>> ModifyCoreUserRolesAsync([FromRoute] Guid companyUserId, [FromRoute] Guid offerId, [FromBody] IEnumerable<string> roles) =>
-        this.WithIdentityData(identity => _rolesLogic.ModifyCoreOfferUserRolesAsync(offerId, companyUserId, roles, identity));
+        this.WithCompanyId(companyId => _rolesLogic.ModifyCoreOfferUserRolesAsync(offerId, companyUserId, roles, companyId));
 
     /// <summary>
     /// Updates the app-roles for the user
@@ -243,12 +244,13 @@ public class UserController : ControllerBase
     /// <response code="404">User not found</response>
     [HttpPut]
     [Authorize(Roles = "modify_user_account")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/users/{companyUserId}/apps/{appId}/roles")]
     [ProducesResponseType(typeof(IEnumerable<UserRoleWithId>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<IEnumerable<UserRoleWithId>> ModifyAppUserRolesAsync([FromRoute] Guid companyUserId, [FromRoute] Guid appId, [FromBody] IEnumerable<string> roles) =>
-        this.WithIdentityData(identity => _rolesLogic.ModifyAppUserRolesAsync(appId, companyUserId, roles, identity));
+        this.WithCompanyId(companyId => _rolesLogic.ModifyAppUserRolesAsync(appId, companyUserId, roles, companyId));
 
     /// <summary>
     /// Adds the given business partner numbers to the user for the given id.
@@ -332,7 +334,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task<bool> ResetOwnCompanyUserPassword([FromRoute] Guid companyUserId) =>
-        this.WithIdentityData(identity => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, identity));
+        this.WithUserIdAndCompanyId(identity => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, identity));
 
     /// <summary>
     /// Gets the core offer roles
@@ -399,6 +401,7 @@ public class UserController : ControllerBase
     /// <response code="404">User is not existing/found.</response>
     [HttpGet]
     [Authorize(Roles = "view_own_user_account")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Route("ownUser")]
     [ProducesResponseType(typeof(CompanyOwnUserDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -422,7 +425,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<CompanyUserDetails> UpdateOwnUserDetails([FromRoute] Guid companyUserId, [FromBody] OwnCompanyUserEditableDetails ownCompanyUserEditableDetails) =>
-        this.WithIdentityData(identity => _logic.UpdateOwnUserDetails(companyUserId, ownCompanyUserEditableDetails, identity));
+        this.WithUserId(userId => _logic.UpdateOwnUserDetails(companyUserId, ownCompanyUserEditableDetails, userId));
 
     /// <summary>
     /// Deletes the own user
@@ -435,6 +438,7 @@ public class UserController : ControllerBase
     /// <response code="409">User is not associated with company.</response>
     [HttpDelete]
     [Authorize(Roles = "delete_own_user_account")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Route("ownUser/{companyUserId}")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
@@ -447,7 +451,7 @@ public class UserController : ControllerBase
     [Authorize(Roles = "modify_user_account")]
     [Route("users/{companyUserId}/resetpassword")]
     public Task<bool> ResetUserPassword([FromRoute] Guid companyUserId) =>
-        this.WithIdentityData(identity => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, identity));
+        this.WithUserIdAndCompanyId(identity => _logic.ExecuteOwnCompanyUserPasswordReset(companyUserId, identity));
 
     /// <summary>
     /// Get for given app id all the company assigned users
@@ -502,12 +506,13 @@ public class UserController : ControllerBase
     [Obsolete("to be replaced by endpoint /user/owncompany/users/{companyUserId}/apps/{appId}/roles. remove as soon frontend has been adjusted")]
     [HttpPut]
     [Authorize(Roles = "modify_user_account")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("app/{appId}/roles")]
     [ProducesResponseType(typeof(IEnumerable<UserRoleWithId>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<IEnumerable<UserRoleWithId>> ModifyUserRolesAsync([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
-        this.WithIdentityData(identity => _rolesLogic.ModifyUserRoleAsync(appId, userRoleInfo, identity));
+        this.WithCompanyId(companyId => _rolesLogic.ModifyUserRoleAsync(appId, userRoleInfo, companyId));
 
     /// <summary>
     /// Delete BPN assigned to user from DB and Keycloack.
